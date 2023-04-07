@@ -1,22 +1,44 @@
+"""Main entrypoint for executing the voting node service from the shell command-line."""
+from typing import Final
+
 import click
 import uvicorn
 
 from . import api, logs, service
 from .models import ServiceSettings
 
+# Environment variables
+VOTING_HOST: Final = "VOTING_HOST"
+VOTING_PORT: Final = "VOTING_PORT"
+VOTING_LOG_LEVEL: Final = "VOTING_LOG_LEVEL"
+VOTING_NODE_STORAGE: Final = "VOTING_NODE_STORAGE"
+IS_NODE_RELOADABLE: Final = "IS_NODE_RELOADABLE"
+EVENTDB_URL: Final = "EVENTDB_URL"
+JORM_PATH: Final = "JORM_PATH"
+JORM_PORT_REST: Final = "JORM_PORT_REST"
+JORM_PORT_JRPC: Final = "JORM_PORT_JRPC"
+JORM_PORT_P2P: Final = "JORM_PORT_P2P"
+
 
 @click.group()
-@click.option("--debug/--no-debug", default=False)
-@click.option("--hot-reload/--no-hot-reload", default=False)
-def cli(debug, hot_reload):
-    click.echo(f"debug-mode={debug}")
-    click.echo(f"hot-reload-mode={hot_reload}")
+def cli():
+    """Invoke the 'voting-node' command from the command-line."""
 
 
 @click.command()
 @click.option(
+    "--reloadable",
+    is_flag=True,
+    envvar="IS_NODE_RELOADABLE",
+    help="""\
+    Enables the node to reload when it detects changes to the current Voting Event.\
+    If not set, the node will still detect changes to the Voting Event, but will use\
+    the configuration it has, emitting warnings in the logs.
+    """,
+)
+@click.option(
     "--host",
-    envvar="VOTING_HOST",
+    envvar=VOTING_HOST,
     default="0.0.0.0",
     help="""\
     Host for the voting node API. If left unset it will look for VOTING_HOST.\
@@ -24,7 +46,7 @@ def cli(debug, hot_reload):
 )
 @click.option(
     "--port",
-    envvar="VOTING_PORT",
+    envvar=VOTING_PORT,
     default=8000,
     help="""\
     Port for the voting node API. If left unset it will look for VOTING_PORT.\
@@ -32,7 +54,7 @@ def cli(debug, hot_reload):
 )
 @click.option(
     "--log-level",
-    envvar="VOTING_LOG_LEVEL",
+    envvar=VOTING_LOG_LEVEL,
     default="info",
     type=click.Choice(["info", "debug", "warn", "error", "trace"]),
     help="""\
@@ -41,39 +63,59 @@ def cli(debug, hot_reload):
 )
 @click.option(
     "--database-url",
-    envvar="DATABASE_URL",
+    envvar=EVENTDB_URL,
     default="postgres://localhost/CatalystEventDev",
     help="""\
     Sets the URL for the database. Default: postgres://localhost/CatalystEventDev""",
 )
 @click.option(
     "--node-storage",
-    envvar="VOTING_NODE_STORAGE",
+    envvar=VOTING_NODE_STORAGE,
     default="./node_storage",
-    help="Sets the location for the voting node's storage",
+    help="Sets the path to the voting node storage directory",
 )
 @click.option(
     "--jorm-path",
-    envvar="JORM_PATH",
+    envvar=JORM_PATH,
     default="jormungandr",
+    help="""\
+    Path to the 'jormungandr' executable.
+    """,
 )
 @click.option(
-    "--jorm-rest-port",
-    envvar="JORM_REST_PORT",
+    "--jorm-port-rest",
+    envvar=JORM_PORT_REST,
     default=10080,
+    help="""\
+    jormungandr REST listening port
+    """,
 )
 @click.option(
-    "--jorm-jrpc-port",
-    envvar="JORM_JRPC_PORT",
+    "--jorm-port-jrpc",
+    envvar=JORM_PORT_JRPC,
     default=10085,
+    help="""\
+    jormungandr JRPC listening port
+    """,
 )
 @click.option(
-    "--jorm-p2p-port",
-    envvar="JORM_P2P_PORT",
+    "--jorm-port-p2p",
+    envvar=JORM_PORT_P2P,
     default=10090,
+    help="""\
+    jormungandr P2P listening port
+    """,
 )
-@click.option("--jcli-path", envvar="JCLI_PATH", default="jcli")
+@click.option(
+    "--jcli-path",
+    envvar="JCLI_PATH",
+    default="jcli",
+    help="""\
+    Path to the 'jcli' executable.
+    """,
+)
 def start(
+    reloadable,
     host,
     port,
     log_level,
@@ -81,24 +123,31 @@ def start(
     node_storage,
     jorm_path,
     jcli_path,
-    jorm_rest_port,
-    jorm_jrpc_port,
-    jorm_p2p_port,
+    jorm_port_rest,
+    jorm_port_jrpc,
+    jorm_port_p2p,
 ):
+    """Invoke the 'voting-node start' sub-command.
+
+    Start the Voting Service process.
+    """
     logs.configLogger(log_level)
+    click.echo(f"reloadable={reloadable}")
 
     api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
     settings = ServiceSettings(
-        jorm_rest_port,
-        jorm_jrpc_port,
-        jorm_p2p_port,
+        jorm_port_rest,
+        jorm_port_jrpc,
+        jorm_port_p2p,
         node_storage,
         jcli_path,
         jorm_path,
+        database_url,
+        reloadable,
     )
 
-    voting_node = service.VotingNode(api_config, settings, database_url)
-    voting_node.start()
+    voting = service.VotingService(api_config, settings)
+    voting.start()
 
 
 # this groups commands in the main 'cli' group

@@ -8,6 +8,10 @@ extend = [
     { path = "Makefiles/docker.toml"  }
 ]
 
+env_files = [
+    { path = ".config/rustdoc.env", defaults_only = true },
+]
+
 [config]
 min_version = "0.36.3"
 
@@ -20,5 +24,3 @@ min_version = "0.36.3"
 # env vars specific to a production build profile
 [env.production]
 
-
-# TODO: Replace install-all.sh with this tool (if it makes sense).

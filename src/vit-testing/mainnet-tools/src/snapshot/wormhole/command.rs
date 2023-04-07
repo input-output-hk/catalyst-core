@@ -40,10 +40,11 @@ pub struct Command {
 /// - schedule - Run job continuously based on cron string.
 ///              WARNING: there is custom cron string used which allows to program scheduler based on seconds.
 ///              The scheduling format is as follows:
+///```cron
+///sec   min   hour   day of month   month   day of week   year
 ///
-///              sec   min   hour   day of month   month   day of week   year
-///
-///              *     *     *      *              *       *             *
+///*     *     *      *              *       *             *
+///```
 #[derive(Parser, Debug)]
 pub enum Operation {
     /// run single job

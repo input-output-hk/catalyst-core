@@ -97,18 +97,18 @@ class Client:
     IdeaScale API client.
     """
 
-    API_URL = "https://cardano.ideascale.com/a/rest"
+    DEFAULT_API_URL = "https://cardano.ideascale.com"
 
-    def __init__(self, api_token: str):
+    def __init__(self, api_token: str, api_url: str = DEFAULT_API_URL):
         self.api_token = api_token
-        self.inner = utils.JsonHttpClient(Client.API_URL)
+        self.inner = utils.JsonHttpClient(api_url)
 
     async def campaigns(self, group_id: int) -> List[Campaign]:
         """
         Gets all campaigns from the campaign group with the given id.
         """
 
-        res = await self._get(f"/v1/campaigns/groups/{group_id}")
+        res = await self._get(f"/a/rest/v1/campaigns/groups/{group_id}")
 
         campaigns: List[Campaign] = []
         for group in res:
@@ -117,7 +117,7 @@ class Client:
             if "campaigns" in group:
                 group_campaigns = []
                 for c in group["campaigns"]:
-                    pydantic.tools.parse_obj_as(Campaign, c)
+                    group_campaigns.append(pydantic.tools.parse_obj_as(Campaign, c))
                     await asyncio.sleep(0)
 
                 campaigns.extend(group_campaigns)
@@ -129,11 +129,11 @@ class Client:
         Gets all campaign groups.
         """
 
-        res = await self._get("/v1/campaigns/groups")
+        res = await self._get("/a/rest/v1/campaigns/groups")
 
         campaign_groups: List[CampaignGroup] = []
         for cg in res:
-            pydantic.tools.parse_obj_as(CampaignGroup, cg)
+            campaign_groups.append(pydantic.tools.parse_obj_as(CampaignGroup, cg))
             await asyncio.sleep(0)
 
         return campaign_groups
@@ -143,11 +143,11 @@ class Client:
         Gets all ideas from the campaign with the given id.
         """
 
-        res = await self._get(f"/v1/campaigns/{campaign_id}/ideas")
+        res = await self._get(f"/a/rest/v1/campaigns/{campaign_id}/ideas")
 
         ideas = []
         for i in res:
-            pydantic.tools.parse_obj_as(Idea, i)
+            ideas.append(pydantic.tools.parse_obj_as(Idea, i))
             await asyncio.sleep(0)
 
         return ideas
@@ -173,11 +173,11 @@ class Client:
                 p = d.page
                 d.page += 1
 
-                res = await self._get(f"/v1/stages/{stage_id}/ideas/{p}/{page_size}")
+                res = await self._get(f"/a/rest/v1/stages/{stage_id}/ideas/{p}/{page_size}")
 
                 res_ideas: List[Idea] = []
                 for i in res:
-                    pydantic.tools.parse_obj_as(Idea, i)
+                    res_ideas.append(pydantic.tools.parse_obj_as(Idea, i))
 
                 d.ideas.extend(res_ideas)
 

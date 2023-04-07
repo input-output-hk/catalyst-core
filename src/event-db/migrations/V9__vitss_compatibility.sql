@@ -60,11 +60,11 @@ CREATE VIEW proposals AS SELECT
 
     proposal.bb_proposal_id AS chain_proposal_id,
     proposal.bb_vote_options AS chain_vote_options,
-    proposal.challenge  AS challenge_id,
+    objective.id  AS challenge_id,
 
     proposal.extra #>> '{}' AS extra
 FROM proposal
-INNER JOIN challenge ON challenge.id = proposal.challenge;
+INNER JOIN objective ON objective.row_id = proposal.objective;
 
 COMMENT ON VIEW proposals IS
     '@omit
@@ -93,8 +93,8 @@ CREATE VIEW proposal_simple_challenge AS SELECT
     (proposal.extra->'solution') #>> '{}' AS proposal_solution
 FROM
     proposal
-    INNER JOIN challenge ON proposal.challenge = challenge.id
-WHERE challenge.category = 'simple';
+    INNER JOIN objective ON proposal.objective = objective.row_id
+WHERE objective.category = 'simple';
 
 COMMENT ON VIEW proposal_simple_challenge IS
     '@omit
@@ -112,8 +112,8 @@ CREATE VIEW proposal_community_choice_challenge AS SELECT
     (proposal.extra->'metrics') #>> '{}' AS proposal_metrics
 FROM
     proposal
-    INNER JOIN challenge ON proposal.challenge = challenge.id
-WHERE challenge.category = 'community-choice';
+    INNER JOIN objective ON proposal.objective = objective.row_id
+WHERE objective.category = 'community-choice';
 
 COMMENT ON VIEW proposal_community_choice_challenge IS
     'This view maps the original VIT-SS proposal_community_choice_challenge table to the new proposal table.
@@ -161,17 +161,17 @@ encrypted.  It should be obsoleted at the earliest opportunity.';
 -- VIT-SS Compatibility View - challenges table.
 
 CREATE VIEW challenges AS SELECT
-    challenge.row_id AS internal_id,
-    challenge.id AS id,
-    challenge.category AS challenge_type,
-    challenge.title AS title,
-    challenge.description AS description,
-    challenge.rewards_total AS rewards_total,
-    challenge.proposers_rewards AS proposers_rewards,
-    challenge.event AS fund_id,
-    (challenge.extra->'url'->'challenge') #>> '{}' AS challenge_url,
-    (challenge.extra->'highlights') #>> '{}' AS highlights
-FROM challenge;
+    objective.row_id AS internal_id,
+    objective.id AS id,
+    objective.category AS challenge_type,
+    objective.title AS title,
+    objective.description AS description,
+    objective.rewards_total AS rewards_total,
+    objective.proposers_rewards AS proposers_rewards,
+    objective.event AS fund_id,
+    (objective.extra->'url'->'objective') #>> '{}' AS challenge_url,
+    (objective.extra->'highlights') #>> '{}' AS highlights
+FROM objective;
 
 COMMENT ON VIEW challenges IS
     '@omit
@@ -191,11 +191,12 @@ CREATE VIEW community_advisors_reviews AS SELECT
     auditability_rating_given,
     auditability_note,
     ranking
-FROM community_advisors_review;
+FROM proposal_review;
 
 COMMENT ON VIEW community_advisors_reviews IS
     '@omit
 This view maps the original VIT-SS community_advisors_reviews table to the new community_advisors_review table.
+    'This view maps the original VIT-SS community_advisors_reviews table to the new proposal_review table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - goals.
@@ -246,7 +247,7 @@ SELECT
     pvp.chain_voteplan_id,
     gr.group_id
 FROM proposals p
-INNER JOIN proposals_voteplans pvp ON p.proposal_id = pvp.proposal_id
+INNER JOIN proposals_voteplans pvp ON p.id::VARCHAR = pvp.proposal_id
 INNER JOIN voteplans vp ON pvp.chain_voteplan_id = vp.chain_voteplan_id
 INNER JOIN challenges ch ON ch.id = p.challenge_id
 INNER JOIN groups gr ON vp.token_identifier = gr.token_identifier

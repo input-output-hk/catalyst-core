@@ -15,13 +15,40 @@ Install [Poetry](https://python-poetry.org/docs/#installation). Then install dep
 
 ```sh
 poetry env use python
+```
+
+Initialize poetry's virtual environment.
+```sh
+poetry shell
+```
+
+Install the package.
+```sh
 poetry install
 ```
 
 To see the available commands:
 
 ```sh
-PYTHONPATH=$(pwd) poetry run python ideascale_importer --help
+poetry run python -m ideascale_importer --help
+```
+
+or
+
+```sh
+python -m ideascale_importer --help
+```
+
+or, use the executable script:
+
+```sh
+ideascale-importer --help
+```
+
+To leave the virtual environment, just type:
+
+```sh
+exit
 ```
 
 ## Documentation

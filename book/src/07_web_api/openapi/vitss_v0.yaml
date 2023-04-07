@@ -1,7 +1,12 @@
 openapi: 3.0.3
 info:
   title: VIT as a Service Rest API
-  description: Voting Implementation Testnet Rest API v0
+  description: |-
+    Voting Implementation Testnet Rest API v0
+
+    ## This API is *DEPRECATED*
+
+    ## This API will no longer be available following Catalyst Fund 10.
   version: 0.2.2
   contact:
     url: 'http://github.com/input-output-hk/vit-servicing-station'
@@ -40,6 +45,7 @@ paths:
                 allOf:
                   - $ref: '#/components/schemas/Fund'
                   - $ref: '#/components/schemas/NextFundInfo'
+      deprecated: true
   '/api/v0/fund/{id}':
     parameters:
       - in: path
@@ -63,6 +69,7 @@ paths:
                 $ref: '#/components/schemas/Fund'
         '404':
           description: The requested fund was not found
+      deprecated: true
   /api/v0/funds:
     get:
       operationId: getFunds
@@ -86,6 +93,7 @@ paths:
                       description: Identifier of the fund campaign.
         '404':
           description: The requested fund was not found
+      deprecated: true
   /api/v0/proposals:
     post:
       summary: Get proposals by chain id
@@ -108,6 +116,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProposalWithChallengeInfo'
+      x-internal: false
+      deprecated: true
   '/api/v0/proposals/{voter_group_id}':
     parameters:
       - in: path
@@ -131,6 +141,7 @@ paths:
               schema:
                 items:
                   $ref: '#/components/schemas/ProposalWithChallengeInfo'
+      deprecated: true
   '/api/v0/proposal/{id}/{voter_group_id}':
     parameters:
       - in: path
@@ -159,6 +170,7 @@ paths:
                 $ref: '#/components/schemas/ProposalWithChallengeInfo'
         '404':
           description: The requested proposal was not found
+      deprecated: true
   /api/v0/challenges:
     get:
       operationId: getAllChallenges
@@ -177,6 +189,7 @@ paths:
                   $ref: '#/components/schemas/Challenge'
         '404':
           description: The requested challenge was not found
+      deprecated: true
   '/api/v0/challenges/{id}':
     parameters:
       - in: path
@@ -201,6 +214,7 @@ paths:
                 $ref: '#/components/schemas/ChallengeWithProposals'
         '404':
           description: The requested challenge was not found
+      deprecated: true
   '/api/v0/challenges/{id}/{voter_group_id}':
     parameters:
       - in: path
@@ -231,6 +245,7 @@ paths:
                 $ref: '#/components/schemas/ChallengeWithProposals'
         '404':
           description: The requested challenge was not found
+      deprecated: true
   '/api/v0/reviews/{proposal_id}':
     parameters:
       - in: path
@@ -252,6 +267,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AdvisorReviews'
+      deprecated: true
   /api/v0/search:
     post:
       summary: Search various resources with various constraints
@@ -279,6 +295,7 @@ paths:
                       $ref: '#/components/schemas/ProposalWithChallengeInfo'
         '400':
           description: Invalid combination of table/column (e.g. using funds column on challenges table)
+      deprecated: true
   /api/v0/search_count:
     post:
       summary: Returns count of the result set of search operation
@@ -302,6 +319,7 @@ paths:
                 description: Count of the result set
         '400':
           description: Invalid combination of table/column (e.g. using funds column on challenges table)
+      deprecated: true
   '/api/v0/snapshot/voter/{event}/{voting_key}':
     parameters:
       - schema:
@@ -334,6 +352,8 @@ paths:
           description: There is an error with the request.
         '404':
           description: Voting Key not found for requested event.
+      deprecated: true
+      x-internal: true
   '/api/v0/snapshot/delegator/{event}/{stake_public_key}':
     parameters:
       - in: path
@@ -367,6 +387,8 @@ paths:
           description: An error occured
         '404':
           description: Stake Address for the event was not found in the snapshot.
+      deprecated: true
+      x-internal: true
   /api/v0/snapshot:
     get:
       operationId: getSnapshotTags
@@ -400,6 +422,8 @@ paths:
                 items:
                   type: string
                   example: latest
+      deprecated: true
+      x-internal: true
   '/api/v0/admin/snapshot/snapshot_info/{tag}':
     put:
       operationId: updateSnapshotFromSnapshotInfo
@@ -515,7 +539,7 @@ components:
     Fund:
       description: |-
         Note, ANY date-time formatted field in this API may report:
-        "1970-01-01T00:00:00Z" 
+        "1970-01-01T00:00:00Z"
         Which is The unix Epoch.         This date is to be interpreted that the date-time for the event the  field represents is not yet known.
         The UI may either not display anything for this field, or TBD or an  equivalent message.
       properties:
@@ -1044,7 +1068,7 @@ components:
         next:
           description: |-
             Note, ANY date-time formatted field in this API may report:
-            "1970-01-01T00:00:00Z" 
+            "1970-01-01T00:00:00Z"
             Which is The unix Epoch.         This date is to be interpreted that the date-time for the event the  field represents is not yet known.
             The UI may either not display anything for this field, or TBD or an  equivalent message.
           properties:

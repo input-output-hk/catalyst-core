@@ -51,10 +51,12 @@ pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
 
     let rest_client = server.rest_client_with_token(&hash);
 
-    let _actual_proposal = rest_client.proposal(
-        &expected_proposal.proposal.internal_id.to_string(),
-        &expected_proposal.group_id,
-    )?;
+    let _actual_proposal = rest_client
+        .proposal(
+            &expected_proposal.proposal.internal_id.to_string(),
+            &expected_proposal.group_id,
+        )
+        .expect("cannot get proposal");
     // TODO: confirm election dates vs. voteplan dates
     // assert_eq!(actual_proposal, expected_proposal);
 

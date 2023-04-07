@@ -1,10 +1,12 @@
+from dataclasses import dataclass
+from datetime import datetime
+import sys
+import aiohttp
 import asyncio
 import json
-import aiohttp
-import rich
-import rich.progress
+from loguru import logger
 import re
-from typing import Any, Dict, Iterable, List, Mapping, TypeVar
+from typing import Any, Dict, Iterable, List, Mapping, TypeVar, TYPE_CHECKING
 
 
 DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
@@ -54,22 +56,33 @@ class RunCmdFailed(Exception):
         return "\n".join(lines)
 
 
-async def run_cmd(console: rich.console.Console, name: str, cmd: str):
-    console.print(f"Executing {cmd}")
-    p = await asyncio.create_subprocess_shell(
-        cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        stdin=asyncio.subprocess.PIPE,
-    )
+async def run_cmd(name: str, cmd: str):
+    with logger.contextualize(name=name):
+        logger.info("Executing command", command_line=cmd)
+        p = await asyncio.create_subprocess_shell(
+            cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            stdin=asyncio.subprocess.PIPE,
+        )
 
-    (stdout, stderr) = await p.communicate()
-    if p.returncode is not None and p.returncode != 0:
-        raise RunCmdFailed(cmd_name=name, exit_code=p.returncode, stdout=stdout, stderr=stderr)
-    else:
-        console.print(f"Successfully ran {name}")
-        if len(stdout) > 0:
-            console.print(f"STDOUT:\n{stdout.decode()}")
+        (stdout, stderr) = await p.communicate()
+        if p.returncode is not None and p.returncode != 0:
+            raise RunCmdFailed(cmd_name=name, exit_code=p.returncode, stdout=stdout, stderr=stderr)
+        else:
+            logger.info("Successfully ran command", output=stdout.decode())
+
+
+@dataclass
+class RequestProgressInfo:
+    """
+    Information about a request's progress.
+    """
+
+    method: str
+    url: str
+    bytes_received: int
+    last_update: datetime
 
 
 class RequestProgressObserver:
@@ -78,33 +91,37 @@ class RequestProgressObserver:
     """
 
     def __init__(self):
-        self.inflight_requests = {}
-        self.progress = rich.progress.Progress(
-            rich.progress.TextColumn("{task.description}"),
-            rich.progress.DownloadColumn(),
-            rich.progress.TransferSpeedColumn(),
-            rich.progress.SpinnerColumn(),
-        )
+        self.inflight_requests: Dict[int, RequestProgressInfo] = {}
 
     def request_start(self, req_id: int, method: str, url: str):
-        self.inflight_requests[req_id] = [self.progress.add_task(f"({req_id}) {method} {url}", total=None), 0]
+        logger.info("Request started", req_id=req_id, method=method, url=url)
+        self.inflight_requests[req_id] = RequestProgressInfo(method, url, 0, datetime.now())
 
-    def request_progress(self, req_id: int, total_bytes_received: int):
-        self.inflight_requests[req_id][1] = total_bytes_received
-        self.progress.update(self.inflight_requests[req_id][0], completed=total_bytes_received)
+    def request_progress(self, req_id: int, bytes_received: int):
+        info = self.inflight_requests[req_id]
+        info.bytes_received += bytes_received
+
+        now = datetime.now()
+        if (now - info.last_update).total_seconds() > 1:
+            logger.debug(
+                "Request progress",
+                req_id=req_id,
+                method=info.method,
+                url=info.url,
+                bytes_received=info.bytes_received,
+            )
+        info.last_update = now
 
     def request_end(self, req_id):
-        self.progress.update(self.inflight_requests[req_id][0], total=self.inflight_requests[req_id][1])
-
-    def __enter__(self):
-        self.progress.__enter__()
-
-    def __exit__(self, *args):
-        self.progress.__exit__(*args)
-
-        for [task_id, _] in self.inflight_requests.values():
-            self.progress.remove_task(task_id)
-        self.inflight_requests.clear()
+        info = self.inflight_requests[req_id]
+        logger.info(
+            "Request finished",
+            req_id=req_id,
+            method=info.method,
+            url=info.url,
+            bytes_received=info.bytes_received,
+        )
+        del self.inflight_requests[req_id]
 
 
 class BadResponse(Exception):
@@ -148,7 +165,7 @@ class JsonHttpClient:
 
                 async for c, _ in r.content.iter_chunks():
                     content += c
-                    self.request_progress_observer.request_progress(req_id, len(content))
+                    self.request_progress_observer.request_progress(req_id, len(c))
 
                 self.request_progress_observer.request_end(req_id)
 
@@ -160,3 +177,58 @@ class JsonHttpClient:
                     return parsed_json
                 else:
                     raise GetFailed(r.status, r.reason, content)
+
+
+log_level_colors = {
+    "DEBUG": "blue",
+    "INFO": "green",
+    "WARNING": "yellow",
+    "ERROR": "red",
+}
+
+
+if TYPE_CHECKING:
+    from loguru import Record
+
+
+def logger_formatter(record: "Record") -> str:
+    """
+    Formatter for Loguru logger.
+    """
+
+    s = ""
+    for k, v in record["extra"].items():
+        s += f"<yellow>{k}</yellow>=<cyan>{json.dumps(v)}</cyan> "
+
+    level_c = log_level_colors[record["level"].name]
+
+    return f"{{time}} <{level_c}>{{level: <8}}</{level_c}> {{message}} {s.strip()}\n"
+
+
+def json_logger_formatter(record: "Record") -> str:
+    """
+    JSON Formatter for Loguru logger.
+    """
+
+    record["extra"]["__json_serialized"] = json.dumps({
+        "timestamp": record["time"].timestamp(),
+        "level": record["level"].name,
+        "message": record["message"],
+        "source": f"{record['file'].path}:{record['line']}",
+        "extra": record["extra"],
+    })
+
+    return "{extra[__json_serialized]}\n"
+
+
+def configure_logger(log_level: str, log_format: str):
+    """
+    Configures Loguru logger.
+    """
+
+    formatter = logger_formatter
+    if log_format == "json":
+        formatter = json_logger_formatter
+
+    logger.remove()
+    logger.add(sys.stdout, level=log_level.upper(), format=formatter, enqueue=True)

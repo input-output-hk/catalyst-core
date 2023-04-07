@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["event","events_exec","events_with_offset_and_limit_exec","events_with_offset_exec"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"fn":["event","event_exec","events_exec","events_with_offset_and_limit_exec","events_with_offset_exec"],"opaque":[""],"static":["CALLSITE","META"]};

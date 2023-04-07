@@ -259,16 +259,88 @@
 <a href="#259" id="259">259</a>
 <a href="#260" id="260">260</a>
 <a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
 };
 <span class="kw">use </span>axum::{extract::Path, routing::get, Router};
-<span class="kw">use </span>event_db::types::event::EventSummary;
+<span class="kw">use </span>event_db::types::event::{EventId, EventSummary};
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub fn </span>event(state: Arc&lt;State&gt;) -&gt; Router {
     Router::new()
+        .route(
+            <span class="string">&quot;/event/:event&quot;</span>,
+            get({
+                <span class="kw">let </span>state = state.clone();
+                <span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(event_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}
+            }),
+        )
         .route(
             <span class="string">&quot;/events&quot;</span>,
             get({
@@ -288,12 +360,18 @@
         .route(
             <span class="string">&quot;/events/:offset/:limit&quot;</span>,
             get({
-                <span class="kw">let </span>state = state.clone();
                 <span class="kw">move </span>|path| <span class="kw">async </span>{
                     handle_result(events_with_offset_and_limit_exec(path, state).<span class="kw">await</span>).<span class="kw">await
                 </span>}
             }),
         )
+}
+
+<span class="kw">async fn </span>event_exec(Path(event): Path&lt;EventId&gt;, state: Arc&lt;State&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;EventSummary, Error&gt; {
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;event_exec, event: {0}&quot;</span>, event.<span class="number">0</span>);
+
+    <span class="kw">let </span>event = state.event_db.get_event(event).<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(event)
 }
 
 <span class="kw">async fn </span>events_exec(state: Arc&lt;State&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
@@ -341,6 +419,44 @@
     <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
     <span class="kw">use </span>event_db::types::event::EventId;
     <span class="kw">use </span>tower::ServiceExt;
+
+    <span class="attr">#[tokio::test]
+    </span><span class="kw">async fn </span>event_test() {
+        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
+        <span class="kw">let </span>app = app(state);
+
+        <span class="kw">let </span>request = Request::builder()
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}&quot;</span>, <span class="number">1</span>))
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
+        <span class="macro">assert_eq!</span>(
+            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(<span class="kw-2">&amp;</span>EventSummary {
+                id: EventId(<span class="number">1</span>),
+                name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
+                starts: DateTime::&lt;Utc&gt;::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
+                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                    ),
+                    Utc
+                ),
+                ends: DateTime::&lt;Utc&gt;::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
+                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                    ),
+                    Utc
+                ),
+                is_final: <span class="bool-val">true</span>,
+                reg_checked: <span class="prelude-val">None</span>,
+            },)
+            .unwrap()
+        );
+    }
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>events_test() {
@@ -420,6 +536,13 @@
             ])
             .unwrap()
         );
+
+        <span class="kw">let </span>request = Request::builder()
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}&quot;</span>, <span class="number">10</span>))
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NOT_FOUND);
     }
 
     <span class="attr">#[tokio::test]
@@ -428,7 +551,7 @@
         <span class="kw">let </span>app = app(state);
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events/1&quot;</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events/{0}&quot;</span>, <span class="number">1</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
@@ -480,6 +603,13 @@
             ])
             .unwrap()
         );
+
+        <span class="kw">let </span>request = Request::builder()
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events/{0}&quot;</span>, <span class="number">10</span>))
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NOT_FOUND);
     }
 
     <span class="attr">#[tokio::test]
@@ -488,7 +618,7 @@
         <span class="kw">let </span>app = app(state);
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events/1/1&quot;</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events/{0}/{1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["PrivateTallyState","Tally","TallyError"],"struct":["TallyResult","Weight"]};

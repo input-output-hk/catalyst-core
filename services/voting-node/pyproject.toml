@@ -26,8 +26,9 @@ prometheus-fastapi-instrumentator = "^5.10.0"
 PyYAML = "^6.0"
 uvicorn = {extras = ["standard"], version = "^0.20.0"}
 aiofile = "^3.8.5"
-pydantic = "^1.10.7"
+pydantic = "~1.10.7"
 cryptography = "^40.0.1"
+ideascale-importer = {path = "../../utilities/ideascale-importer"}
 
 [tool.poetry.group.dev.dependencies]
 # formatting

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["LOG_LEVEL_DEFAULT"],"enum":["LogLevel"],"fn":["init"]};

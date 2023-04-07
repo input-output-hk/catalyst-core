@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["_read_secret_key_from_file","parse_ed25519_secret_key","parse_pub_key","read_ed25519_secret_key_from_file","read_secret_key"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["MethodType","MockExitCode","ProtocolVersion"],"fn":["start_thread"],"mod":["builder","controller","data","logger","verifier"],"static":["CALLSITE","META"],"struct":["JormungandrServerImpl","MockBuilder","MockController","MockLogger","MockServerData","MockVerifier"]};

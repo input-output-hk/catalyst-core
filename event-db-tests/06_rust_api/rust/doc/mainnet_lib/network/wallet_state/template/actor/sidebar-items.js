@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["Actor","Error","__Field"],"fn":["delegator","registration","representative"],"struct":["DelegatorBuilder","Registration","RegistrationBuilder","RepresentativeBuilder","Target","__FieldVisitor","__Visitor"],"type":["RepNameOrVotingKey"]};

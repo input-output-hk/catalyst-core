@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["delegations_by_event_exec","delegations_by_latest_event_exec","registration","voter_by_event_exec","voter_by_latest_event_exec"],"opaque":[""],"static":["CALLSITE","META"]};

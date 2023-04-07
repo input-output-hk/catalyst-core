@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Address","Error"],"fn":["address_info","mk_account","mk_address","mk_address_1","mk_address_2","mk_delegation","mk_discrimination","mk_single"],"struct":["AccountArgs","DiscriminationData","InfoArgs","SingleArgs"]};

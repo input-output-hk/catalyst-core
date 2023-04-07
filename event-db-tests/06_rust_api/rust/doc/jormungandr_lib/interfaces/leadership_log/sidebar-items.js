@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["LeadershipLogStatus","__Field"],"struct":["LeadershipLog","LeadershipLogId","__FieldVisitor","__Visitor"]};

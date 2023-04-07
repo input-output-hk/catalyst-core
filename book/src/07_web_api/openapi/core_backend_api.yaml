@@ -442,12 +442,12 @@ components:
         ends:
           $ref: '#/components/schemas/DateTime'
           description: Date-Time when the Voting Event is expected to finish.
-        finalized:
+        final:
           type: boolean
           description: True if the event is finished and no changes can be made to it.<br>Does not Including payment of rewards or funding of projects.
         reg_checked:
           $ref: '#/components/schemas/DateTime'
-          description: 'Last time registrations and Voting power were checed.If not present, no registration or voting power records exist for this event.'
+          description: 'Last time registrations and Voting power were checked. If not present, no registration or voting power records exist for this event.'
       required:
         - id
         - name

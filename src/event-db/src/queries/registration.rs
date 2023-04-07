@@ -1,12 +1,15 @@
 use crate::{
-    types::snapshot::{Delegation, Delegator, EventId, Voter, VoterInfo},
+    types::{
+        event::EventId,
+        registration::{Delegation, Delegator, Voter, VoterInfo},
+    },
     Error, EventDB,
 };
 use async_trait::async_trait;
 use chrono::{NaiveDateTime, Utc};
 
 #[async_trait]
-pub trait SnapshotQueries: Sync + Send + 'static {
+pub trait RegistrationQueries: Sync + Send + 'static {
     async fn get_voter(
         &self,
         version: &Option<EventId>,
@@ -80,16 +83,12 @@ impl EventDB {
 }
 
 #[async_trait]
-impl SnapshotQueries for EventDB {
-    async fn get_voter(
-        &self,
-        version: &Option<EventId>,
-        voting_key: String,
-    ) -> Result<Voter, Error> {
+impl RegistrationQueries for EventDB {
+    async fn get_voter(&self, event: &Option<EventId>, voting_key: String) -> Result<Voter, Error> {
         let conn = self.pool.get().await?;
 
-        let rows = if let Some(version) = version {
-            conn.query(Self::VOTER_BY_EVENT_QUERY, &[&voting_key, &version.0])
+        let rows = if let Some(event) = event {
+            conn.query(Self::VOTER_BY_EVENT_QUERY, &[&voting_key, &event.0])
                 .await?
         } else {
             conn.query(Self::VOTER_BY_LAST_EVENT_QUERY, &[&voting_key])
@@ -100,10 +99,10 @@ impl SnapshotQueries for EventDB {
         let voting_group = voter.try_get("voting_group")?;
         let voting_power = voter.try_get("voting_power")?;
 
-        let rows = if let Some(version) = version {
+        let rows = if let Some(event) = event {
             conn.query(
                 Self::TOTAL_BY_EVENT_VOTING_QUERY,
-                &[&voting_group, &version.0],
+                &[&voting_group, &event.0],
             )
             .await?
         } else {
@@ -143,14 +142,14 @@ impl SnapshotQueries for EventDB {
 
     async fn get_delegator(
         &self,
-        version: &Option<EventId>,
+        event: &Option<EventId>,
         stake_public_key: String,
     ) -> Result<Delegator, Error> {
         let conn = self.pool.get().await?;
-        let rows = if let Some(version) = version {
+        let rows = if let Some(event) = event {
             conn.query(
                 Self::DELEGATOR_BY_EVENT_QUERY,
-                &[&stake_public_key, &version.0],
+                &[&stake_public_key, &event.0],
             )
             .await?
         } else {
@@ -159,10 +158,10 @@ impl SnapshotQueries for EventDB {
         };
         let delegator = rows.get(0).ok_or(Error::NotFound)?;
 
-        let delegation_rows = if let Some(version) = version {
+        let delegation_rows = if let Some(event) = event {
             conn.query(
                 Self::DELEGATIONS_BY_EVENT_QUERY,
-                &[&stake_public_key, &version.0],
+                &[&stake_public_key, &event.0],
             )
             .await?
         } else {
@@ -180,7 +179,7 @@ impl SnapshotQueries for EventDB {
             })
         }
 
-        let rows = if let Some(version) = version {
+        let rows = if let Some(version) = event {
             conn.query(Self::TOTAL_POWER_BY_EVENT_QUERY, &[&version.0])
                 .await?
         } else {

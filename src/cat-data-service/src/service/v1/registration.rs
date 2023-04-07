@@ -3,7 +3,10 @@ use crate::{
     state::State,
 };
 use axum::{extract::Path, routing::get, Router};
-use event_db::types::snapshot::{Delegator, EventId, Voter};
+use event_db::types::{
+    event::EventId,
+    registration::{Delegator, Voter},
+};
 use std::sync::Arc;
 
 pub fn registration(state: Arc<State>) -> Router {
@@ -111,7 +114,7 @@ mod tests {
         http::{Request, StatusCode},
     };
     use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-    use event_db::types::snapshot::{Delegation, VoterInfo};
+    use event_db::types::registration::{Delegation, VoterInfo};
     use tower::ServiceExt;
 
     #[tokio::test]

@@ -1,9 +1,9 @@
 use crate::cli::Error;
-use event_db::queries::snapshot::SnapshotQueries;
+use event_db::queries::EventDbQueries;
 use std::sync::Arc;
 
 pub struct State {
-    pub event_db: Arc<dyn SnapshotQueries>,
+    pub event_db: Arc<dyn EventDbQueries>,
 }
 
 impl State {

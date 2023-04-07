@@ -1,9 +1,6 @@
 use crate::types::utils::serialize_datetime_as_rfc3339;
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct EventId(pub i32);
+use serde::Serialize;
 
 #[derive(Debug, Serialize, Clone, PartialEq)]
 pub struct VoterInfo {
@@ -51,16 +48,6 @@ mod tests {
     use super::*;
     use chrono::NaiveDateTime;
     use serde_json::json;
-
-    #[test]
-    fn snapshot_version_json_test() {
-        let snapshot_versions = vec![EventId(10), EventId(11), EventId(12)];
-        let json = serde_json::to_value(&snapshot_versions).unwrap();
-        assert_eq!(json, json!([10, 11, 12]));
-
-        let decoded: Vec<EventId> = serde_json::from_value(json).unwrap();
-        assert_eq!(decoded, snapshot_versions);
-    }
 
     #[test]
     fn voter_json_test() {

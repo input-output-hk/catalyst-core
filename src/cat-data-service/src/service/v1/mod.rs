@@ -2,10 +2,12 @@ use crate::state::State;
 use axum::Router;
 use std::sync::Arc;
 
+mod event;
 mod registration;
 
 pub fn v1(state: Arc<State>) -> Router {
-    let registration = registration::registration(state);
+    let registration = registration::registration(state.clone());
+    let event = event::event(state);
 
-    Router::new().nest("/v1", registration)
+    Router::new().nest("/v1", registration.merge(event))
 }

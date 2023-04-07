@@ -19,7 +19,7 @@ pub fn event(state: Arc<State>) -> Router {
 async fn events_exec(state: Arc<State>) -> Result<Vec<EventSummary>, Error> {
     tracing::debug!("events_exec");
 
-    let events = state.event_db.get_events(None).await?;
+    let events = state.event_db.get_events(None, None).await?;
     Ok(events)
 }
 

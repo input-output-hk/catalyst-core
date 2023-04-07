@@ -8,22 +8,48 @@ use chrono::{NaiveDateTime, Utc};
 
 #[async_trait]
 pub trait EventQueries: Sync + Send + 'static {
-    async fn get_events(&self, limit: Option<i32>) -> Result<Vec<EventSummary>, Error>;
+    async fn get_events(
+        &self,
+        limit: Option<i64>,
+        offset: Option<i64>,
+    ) -> Result<Vec<EventSummary>, Error>;
 }
 
 impl EventDB {
     const EVENTS_QUERY: &'static str =
         "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.final
         FROM event
-        INNER JOIN snapshot ON event.row_id = snapshot.event;";
+        INNER JOIN snapshot ON event.row_id = snapshot.event
+        ORDER BY event.row_id ASC
+        OFFSET $1;";
+
+    const EVENTS_WITH_LIMIT_QUERY: &'static str =
+        "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.final
+        FROM event
+        INNER JOIN snapshot ON event.row_id = snapshot.event
+        ORDER BY event.row_id ASC
+        LIMIT $1 OFFSET $2";
 }
 
 #[async_trait]
 impl EventQueries for EventDB {
-    async fn get_events(&self, _limit: Option<i32>) -> Result<Vec<EventSummary>, Error> {
+    async fn get_events(
+        &self,
+        limit: Option<i64>,
+        offset: Option<i64>,
+    ) -> Result<Vec<EventSummary>, Error> {
         let conn = self.pool.get().await?;
 
-        let rows = conn.query(Self::EVENTS_QUERY, &[]).await?;
+        let rows = if let Some(limit) = limit {
+            conn.query(
+                Self::EVENTS_WITH_LIMIT_QUERY,
+                &[&limit, &offset.unwrap_or(0)],
+            )
+            .await?
+        } else {
+            conn.query(Self::EVENTS_QUERY, &[&offset.unwrap_or(0)])
+                .await?
+        };
         if rows.is_empty() {
             return Err(Error::NotFound);
         }
@@ -67,8 +93,7 @@ mod tests {
     async fn get_events_test() {
         let event_db = establish_connection(None).await.unwrap();
 
-        let events = event_db.get_events(None).await.unwrap();
-
+        let events = event_db.get_events(None, None).await.unwrap();
         assert_eq!(
             events,
             vec![
@@ -92,6 +117,100 @@ mod tests {
                     is_final: true,
                     reg_checked: None,
                 },
+                EventSummary {
+                    id: EventId(2),
+                    name: "Test Fund 2".to_string(),
+                    starts: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    ),
+                    ends: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    ),
+                    is_final: true,
+                    reg_checked: None,
+                },
+                EventSummary {
+                    id: EventId(3),
+                    name: "Test Fund 3".to_string(),
+                    starts: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    ),
+                    ends: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    ),
+                    is_final: true,
+                    reg_checked: None,
+                }
+            ]
+        );
+
+        let events = event_db.get_events(Some(2), None).await.unwrap();
+        assert_eq!(
+            events,
+            vec![
+                EventSummary {
+                    id: EventId(1),
+                    name: "Test Fund 1".to_string(),
+                    starts: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    ),
+                    ends: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    ),
+                    is_final: true,
+                    reg_checked: None,
+                },
+                EventSummary {
+                    id: EventId(2),
+                    name: "Test Fund 2".to_string(),
+                    starts: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    ),
+                    ends: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    ),
+                    is_final: true,
+                    reg_checked: None,
+                },
+            ]
+        );
+
+        let events = event_db.get_events(Some(2), Some(1)).await.unwrap();
+        assert_eq!(
+            events,
+            vec![
                 EventSummary {
                     id: EventId(2),
                     name: "Test Fund 2".to_string(),

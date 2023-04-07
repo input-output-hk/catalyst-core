@@ -81,6 +81,65 @@ digraph erd {
     
         
 
+    "committee_member" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>committee_member</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+            
+            <tr>
+                <td port="committee"  align='text'><font>committee</font><br align='left'/></td>
+                <td port="committee_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="member_index"  align='text'><font>member_index</font><br align='left'/></td>
+                <td port="member_index_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="threshold"  align='text'><font>threshold</font><br align='left'/></td>
+                <td port="threshold_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="comm_pk"  align='text'><font>comm_pk</font><br align='left'/></td>
+                <td port="comm_pk_out"  ><font>text</font></td>
+            </tr>
+            
+            <tr>
+                <td port="comm_sk"  align='text'><font>comm_sk</font><br align='left'/></td>
+                <td port="comm_sk_out"  ><font>text</font></td>
+            </tr>
+            
+            <tr>
+                <td port="member_pk"  align='text'><font>member_pk</font><br align='left'/></td>
+                <td port="member_pk_out"  ><font>text</font></td>
+            </tr>
+            
+            <tr>
+                <td port="member_sk"  align='text'><font>member_sk</font><br align='left'/></td>
+                <td port="member_sk_out"  ><font>text</font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
     "config" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
             <tr>
@@ -963,6 +1022,21 @@ digraph erd {
                 <td port="event_out"  ><font>integer</font></td>
             </tr>
             
+            <tr>
+                <td port="committee_id"  align='text'><font>committee_id</font><br align='left'/></td>
+                <td port="committee_id_out"  ><font>text</font></td>
+            </tr>
+            
+            <tr>
+                <td port="member_crs"  align='text'><font>member_crs</font><br align='left'/></td>
+                <td port="member_crs_out"  ><font><i>text</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="election_key"  align='text'><font>election_key</font><br align='left'/></td>
+                <td port="election_key_out"  ><font><i>text</i></font></td>
+            </tr>
+            
 
         </table>
     >];
@@ -1303,6 +1377,8 @@ digraph erd {
     "voting_node":"event_out" -> "event":"row_id"
     
     "tally_committee":"event_out" -> "event":"row_id"
+    
+    "committee_member":"committee_out" -> "tally_committee":"row_id"
     
 
 

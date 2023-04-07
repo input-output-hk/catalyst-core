@@ -17,8 +17,8 @@ type Query implements Node {
     nodeId: ID!
   ): Node
 
-  """Reads and enables pagination through a set of `Challenge`."""
-  challenges(
+  """Reads and enables pagination through a set of `Ballot`."""
+  ballots(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -37,17 +37,17 @@ type Query implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `Challenge`."""
-    orderBy: [ChallengesOrderBy!] = [PRIMARY_KEY_ASC]
+    """The method to use when ordering `Ballot`."""
+    orderBy: [BallotsOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: ChallengeCondition
-  ): ChallengesConnection
+    condition: BallotCondition
+  ): BallotsConnection
 
-  """Reads and enables pagination through a set of `ChallengeCategory`."""
-  challengeCategories(
+  """Reads and enables pagination through a set of `CommitteeMember`."""
+  committeeMembers(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -66,45 +66,14 @@ type Query implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `ChallengeCategory`."""
-    orderBy: [ChallengeCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+    """The method to use when ordering `CommitteeMember`."""
+    orderBy: [CommitteeMembersOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: ChallengeCategoryCondition
-  ): ChallengeCategoriesConnection
-
-  """
-  Reads and enables pagination through a set of `CommunityAdvisorsReview`.
-  """
-  communityAdvisorsReviews(
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """The method to use when ordering `CommunityAdvisorsReview`."""
-    orderBy: [CommunityAdvisorsReviewsOrderBy!] = [PRIMARY_KEY_ASC]
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: CommunityAdvisorsReviewCondition
-  ): CommunityAdvisorsReviewsConnection
+    condition: CommitteeMemberCondition
+  ): CommitteeMembersConnection
 
   """Reads and enables pagination through a set of `Config`."""
   configs(
@@ -251,6 +220,93 @@ type Query implements Node {
     condition: GoalCondition
   ): GoalsConnection
 
+  """Reads and enables pagination through a set of `Objective`."""
+  objectives(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `Objective`."""
+    orderBy: [ObjectivesOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ObjectiveCondition
+  ): ObjectivesConnection
+
+  """Reads and enables pagination through a set of `ObjectiveCategory`."""
+  objectiveCategories(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `ObjectiveCategory`."""
+    orderBy: [ObjectiveCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ObjectiveCategoryCondition
+  ): ObjectiveCategoriesConnection
+
+  """Reads and enables pagination through a set of `ObjectiveReviewMetric`."""
+  objectiveReviewMetrics(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `ObjectiveReviewMetric`."""
+    orderBy: [ObjectiveReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ObjectiveReviewMetricCondition
+  ): ObjectiveReviewMetricsConnection
+
   """Reads and enables pagination through a set of `Proposal`."""
   proposals(
     """Only read the first `n` values of the set."""
@@ -280,10 +336,8 @@ type Query implements Node {
     condition: ProposalCondition
   ): ProposalsConnection
 
-  """
-  Reads and enables pagination through a set of `ProposalCommunityChoiceChallenge`.
-  """
-  proposalCommunityChoiceChallenges(
+  """Reads and enables pagination through a set of `ProposalReview`."""
+  proposalReviews(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -302,14 +356,14 @@ type Query implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `ProposalCommunityChoiceChallenge`."""
-    orderBy: [ProposalCommunityChoiceChallengesOrderBy!] = [NATURAL]
+    """The method to use when ordering `ProposalReview`."""
+    orderBy: [ProposalReviewsOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: ProposalCommunityChoiceChallengeCondition
-  ): ProposalCommunityChoiceChallengesConnection
+    condition: ProposalReviewCondition
+  ): ProposalReviewsConnection
 
   """Reads and enables pagination through a set of `ProposalVoteplan`."""
   proposalVoteplans(
@@ -369,6 +423,64 @@ type Query implements Node {
     condition: RefinerySchemaHistoryCondition
   ): RefinerySchemaHistoriesConnection
 
+  """Reads and enables pagination through a set of `ReviewMetric`."""
+  reviewMetrics(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `ReviewMetric`."""
+    orderBy: [ReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ReviewMetricCondition
+  ): ReviewMetricsConnection
+
+  """Reads and enables pagination through a set of `ReviewRating`."""
+  reviewRatings(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `ReviewRating`."""
+    orderBy: [ReviewRatingsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ReviewRatingCondition
+  ): ReviewRatingsConnection
+
   """Reads and enables pagination through a set of `Snapshot`."""
   snapshots(
     """Only read the first `n` values of the set."""
@@ -426,35 +538,6 @@ type Query implements Node {
     """
     condition: TallyCommitteeCondition
   ): TallyCommitteesConnection
-
-  """Reads and enables pagination through a set of `Vote`."""
-  votes(
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: VoteCondition
-  ): VotesConnection
 
   """Reads and enables pagination through a set of `VoteOption`."""
   voteOptions(
@@ -629,26 +712,32 @@ type Query implements Node {
     """
     condition: VotingNodeCondition
   ): VotingNodesConnection
-  challenge(rowId: Int!): Challenge
-  challengeCategory(name: String!): ChallengeCategory
-  communityAdvisorsReview(rowId: Int!): CommunityAdvisorsReview
+  ballot(rowId: BigInt!): Ballot
+  committeeMember(rowId: Int!): CommitteeMember
   config(rowId: Int!): Config
   contribution(rowId: BigInt!): Contribution
   currency(name: String!): Currency
   event(rowId: Int!): Event
   goal(id: Int!): Goal
+  objective(rowId: Int!): Objective
+  objectiveCategory(name: String!): ObjectiveCategory
+  objectiveReviewMetric(rowId: Int!): ObjectiveReviewMetric
+  objectiveReviewMetricByObjectiveAndMetricAndReviewGroup(objective: Int!, metric: Int!, reviewGroup: String!): ObjectiveReviewMetric
   proposal(rowId: Int!): Proposal
   proposalById(id: Int!): Proposal
+  proposalReview(rowId: Int!): ProposalReview
   proposalVoteplan(rowId: Int!): ProposalVoteplan
   refinerySchemaHistory(version: Int!): RefinerySchemaHistory
+  reviewMetric(rowId: Int!): ReviewMetric
+  reviewRating(rowId: Int!): ReviewRating
+  reviewRatingByReviewIdAndMetric(reviewId: Int!, metric: Int!): ReviewRating
   snapshot(rowId: Int!): Snapshot
   snapshotByEvent(event: Int!): Snapshot
   tallyCommittee(rowId: Int!): TallyCommittee
   tallyCommitteeByEvent(event: Int!): TallyCommittee
-  vote(rowId: BigInt!): Vote
   voteOption(id: Int!): VoteOption
   voteOptionByIdeaScale(ideaScale: String!): VoteOption
-  voteOptionByChallenge(challenge: String!): VoteOption
+  voteOptionByObjective(objective: String!): VoteOption
   voteplan(rowId: Int!): Voteplan
   voteplanById(id: String!): Voteplan
   voteplanCategory(name: String!): VoteplanCategory
@@ -658,30 +747,21 @@ type Query implements Node {
 
   """Gets the account identified by our JWT."""
   currentAcct: AdminAccount
+  currentRole: String
 
-  """Reads a single `Challenge` using its globally unique `ID`."""
-  challengeByNodeId(
-    """The globally unique `ID` to be used in selecting a single `Challenge`."""
+  """Reads a single `Ballot` using its globally unique `ID`."""
+  ballotByNodeId(
+    """The globally unique `ID` to be used in selecting a single `Ballot`."""
     nodeId: ID!
-  ): Challenge
+  ): Ballot
 
-  """Reads a single `ChallengeCategory` using its globally unique `ID`."""
-  challengeCategoryByNodeId(
+  """Reads a single `CommitteeMember` using its globally unique `ID`."""
+  committeeMemberByNodeId(
     """
-    The globally unique `ID` to be used in selecting a single `ChallengeCategory`.
-    """
-    nodeId: ID!
-  ): ChallengeCategory
-
-  """
-  Reads a single `CommunityAdvisorsReview` using its globally unique `ID`.
-  """
-  communityAdvisorsReviewByNodeId(
-    """
-    The globally unique `ID` to be used in selecting a single `CommunityAdvisorsReview`.
+    The globally unique `ID` to be used in selecting a single `CommitteeMember`.
     """
     nodeId: ID!
-  ): CommunityAdvisorsReview
+  ): CommitteeMember
 
   """Reads a single `Config` using its globally unique `ID`."""
   configByNodeId(
@@ -715,11 +795,41 @@ type Query implements Node {
     nodeId: ID!
   ): Goal
 
+  """Reads a single `Objective` using its globally unique `ID`."""
+  objectiveByNodeId(
+    """The globally unique `ID` to be used in selecting a single `Objective`."""
+    nodeId: ID!
+  ): Objective
+
+  """Reads a single `ObjectiveCategory` using its globally unique `ID`."""
+  objectiveCategoryByNodeId(
+    """
+    The globally unique `ID` to be used in selecting a single `ObjectiveCategory`.
+    """
+    nodeId: ID!
+  ): ObjectiveCategory
+
+  """Reads a single `ObjectiveReviewMetric` using its globally unique `ID`."""
+  objectiveReviewMetricByNodeId(
+    """
+    The globally unique `ID` to be used in selecting a single `ObjectiveReviewMetric`.
+    """
+    nodeId: ID!
+  ): ObjectiveReviewMetric
+
   """Reads a single `Proposal` using its globally unique `ID`."""
   proposalByNodeId(
     """The globally unique `ID` to be used in selecting a single `Proposal`."""
     nodeId: ID!
   ): Proposal
+
+  """Reads a single `ProposalReview` using its globally unique `ID`."""
+  proposalReviewByNodeId(
+    """
+    The globally unique `ID` to be used in selecting a single `ProposalReview`.
+    """
+    nodeId: ID!
+  ): ProposalReview
 
   """Reads a single `ProposalVoteplan` using its globally unique `ID`."""
   proposalVoteplanByNodeId(
@@ -737,6 +847,22 @@ type Query implements Node {
     nodeId: ID!
   ): RefinerySchemaHistory
 
+  """Reads a single `ReviewMetric` using its globally unique `ID`."""
+  reviewMetricByNodeId(
+    """
+    The globally unique `ID` to be used in selecting a single `ReviewMetric`.
+    """
+    nodeId: ID!
+  ): ReviewMetric
+
+  """Reads a single `ReviewRating` using its globally unique `ID`."""
+  reviewRatingByNodeId(
+    """
+    The globally unique `ID` to be used in selecting a single `ReviewRating`.
+    """
+    nodeId: ID!
+  ): ReviewRating
+
   """Reads a single `Snapshot` using its globally unique `ID`."""
   snapshotByNodeId(
     """The globally unique `ID` to be used in selecting a single `Snapshot`."""
@@ -750,12 +876,6 @@ type Query implements Node {
     """
     nodeId: ID!
   ): TallyCommittee
-
-  """Reads a single `Vote` using its globally unique `ID`."""
-  voteByNodeId(
-    """The globally unique `ID` to be used in selecting a single `Vote`."""
-    nodeId: ID!
-  ): Vote
 
   """Reads a single `VoteOption` using its globally unique `ID`."""
   voteOptionByNodeId(
@@ -810,28 +930,83 @@ interface Node {
   nodeId: ID!
 }
 
-"""A connection to a list of `Challenge` values."""
-type ChallengesConnection {
-  """A list of `Challenge` objects."""
-  nodes: [Challenge!]!
+"""A connection to a list of `Ballot` values."""
+type BallotsConnection {
+  """A list of `Ballot` objects."""
+  nodes: [Ballot!]!
 
   """
-  A list of edges which contains the `Challenge` and cursor to aid in pagination.
+  A list of edges which contains the `Ballot` and cursor to aid in pagination.
   """
-  edges: [ChallengesEdge!]!
+  edges: [BallotsEdge!]!
 
   """Information to aid in pagination."""
   pageInfo: PageInfo!
 
-  """The count of *all* `Challenge` you could get from the connection."""
+  """The count of *all* `Ballot` you could get from the connection."""
   totalCount: Int!
 }
 
+"""All Ballots cast on an event."""
+type Ballot implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  rowId: BigInt!
+
+  """Reference to the Objective the ballot was for."""
+  objective: Int!
+
+  """
+  Reference to the Proposal the ballot was for.
+  May be NULL if this ballot covers ALL proposals in the challenge.
+  """
+  proposal: Int
+
+  """Reference to the Voter who cast the ballot"""
+  voter: Int!
+
+  """Unique ID of this Ballot"""
+  fragmentId: String!
+
+  """When this ballot was recorded as properly cast"""
+  castAt: Datetime!
+
+  """If a public vote, the choice on the ballot, otherwise NULL."""
+  choice: Int
+
+  """The raw ballot record."""
+  rawFragment: String!
+
+  """Reads a single `Objective` that is related to this `Ballot`."""
+  objectiveByObjective: Objective
+
+  """Reads a single `Proposal` that is related to this `Ballot`."""
+  proposalByProposal: Proposal
+
+  """Reads a single `Voter` that is related to this `Ballot`."""
+  voterByVoter: Voter
+}
+
 """
-All Challenges for all events.
-A Challenge is a group category for selection in an event.
+A signed eight-byte integer. The upper big integer values are greater than the
+max value for a JavaScript number. Therefore all big integers will be output as
+strings and not numbers.
 """
-type Challenge implements Node {
+scalar BigInt
+
+"""
+A point in time as described by the [ISO
+8601](https://en.wikipedia.org/wiki/ISO_8601) standard. May or may not include a timezone.
+"""
+scalar Datetime
+
+"""
+All objectives for all events.
+A objective is a group category for selection in an event.
+"""
+type Objective implements Node {
   """
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
@@ -841,62 +1016,62 @@ type Challenge implements Node {
   rowId: Int!
 
   """
-  Event specific Challenge ID.
-  Can be non-unique between events (Eg, Ideascale ID for challenge).
+  Event specific objective ID.
+  Can be non-unique between events (Eg, Ideascale ID for objective).
   """
   id: Int!
 
-  """The specific Event ID this Challenge is part of."""
+  """The specific Event ID this objective is part of."""
   event: Int!
 
   """
-  What category of challenge is this.
-  See the challenge_category table for allowed values.
+  What category of objective is this.
+  See the objective_category table for allowed values.
   """
   category: String!
 
-  """The  title of the challenge."""
+  """The  title of the objective."""
   title: String!
 
-  """Long form description of the challenge."""
+  """Long form description of the objective."""
   description: String!
 
   """The currency rewards values are represented as."""
   rewardsCurrency: String
 
-  """The total reward pool to pay on this challenge to winning proposals."""
+  """The total reward pool to pay on this objective to winning proposals."""
   rewardsTotal: BigInt
 
   """Not sure how this is different from rewards_total???"""
   proposersRewards: BigInt
 
-  """The Vote Options applicable to all proposals in this challenge."""
+  """The Vote Options applicable to all proposals in this objective."""
   voteOptions: Int
 
   """
-  Extra Data  for this challenge represented as JSON.
-  "url"."challenge" is a URL for more info about the challenge.
+  Extra Data  for this objective represented as JSON.
+  "url"."objective" is a URL for more info about the objective.
   "highlights" is ???
   
   """
   extra: JSON
 
-  """Reads a single `Event` that is related to this `Challenge`."""
+  """Reads a single `Event` that is related to this `Objective`."""
   eventByEvent: Event
 
   """
-  Reads a single `ChallengeCategory` that is related to this `Challenge`.
+  Reads a single `ObjectiveCategory` that is related to this `Objective`.
   """
-  challengeCategoryByCategory: ChallengeCategory
+  objectiveCategoryByCategory: ObjectiveCategory
 
-  """Reads a single `Currency` that is related to this `Challenge`."""
+  """Reads a single `Currency` that is related to this `Objective`."""
   currencyByRewardsCurrency: Currency
 
-  """Reads a single `VoteOption` that is related to this `Challenge`."""
+  """Reads a single `VoteOption` that is related to this `Objective`."""
   voteOptionByVoteOptions: VoteOption
 
   """Reads and enables pagination through a set of `Proposal`."""
-  proposalsByChallenge(
+  proposalsByObjective(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -924,8 +1099,8 @@ type Challenge implements Node {
     condition: ProposalCondition
   ): ProposalsConnection!
 
-  """Reads and enables pagination through a set of `Vote`."""
-  votesByChallenge(
+  """Reads and enables pagination through a set of `ObjectiveReviewMetric`."""
+  objectiveReviewMetricsByObjective(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -944,22 +1119,44 @@ type Challenge implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
+    """The method to use when ordering `ObjectiveReviewMetric`."""
+    orderBy: [ObjectiveReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: VoteCondition
-  ): VotesConnection!
-}
+    condition: ObjectiveReviewMetricCondition
+  ): ObjectiveReviewMetricsConnection!
 
-"""
-A signed eight-byte integer. The upper big integer values are greater than the
-max value for a JavaScript number. Therefore all big integers will be output as
-strings and not numbers.
-"""
-scalar BigInt
+  """Reads and enables pagination through a set of `Ballot`."""
+  ballotsByObjective(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `Ballot`."""
+    orderBy: [BallotsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: BallotCondition
+  ): BallotsConnection!
+}
 
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
@@ -1109,6 +1306,35 @@ type Event implements Node {
   """
   extra: JSON
 
+  """
+  Json Map defining parameters which control where the vote is to be cast.
+  Multiple destinations can be defined simultaneously.
+  In this case the vote gets cast to all defined destinations.
+  `NULL` = Default Jormungandr Blockchain.
+  ```jsonc
+  "jorm" : { // Voting on Jormungandr Blockchain
+      chain_id: <int>, // Jormungandr chain id. Defaults to 0.
+      // Other parameters TBD.
+  },
+  "caradno" : { // Voting on Cardano Directly
+      chain_id: <int>, // 0 = pre-prod, 1 = mainnet.
+      // Other parameters TBD.
+  },
+  "postgres" : { // Store votes in Web 2 postgres backed DB only.
+      url: "<postgres URL. Defaults to system default>"
+      // Other parameters TBD.
+      // Note: Votes that arrive in the Cat1 system are always stored in the DB.
+      // This Option only allows the vote storage DB to be tuned.
+  },
+  "cat2" : { // Store votes to the Catalyst 2.0 P2P Network.
+      gateway: "<URL of the gateway to use"
+      // Other parameters TBD.
+  }
+  ```
+  
+  """
+  castTo: JSON
+
   """Reads and enables pagination through a set of `Goal`."""
   goals(
     """Only read the first `n` values of the set."""
@@ -1138,8 +1364,8 @@ type Event implements Node {
     condition: GoalCondition
   ): GoalsConnection!
 
-  """Reads and enables pagination through a set of `Challenge`."""
-  challengesByEvent(
+  """Reads and enables pagination through a set of `Objective`."""
+  objectivesByEvent(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -1158,14 +1384,14 @@ type Event implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `Challenge`."""
-    orderBy: [ChallengesOrderBy!] = [PRIMARY_KEY_ASC]
+    """The method to use when ordering `Objective`."""
+    orderBy: [ObjectivesOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: ChallengeCondition
-  ): ChallengesConnection!
+    condition: ObjectiveCondition
+  ): ObjectivesConnection!
 
   """Reads and enables pagination through a set of `VotingGroup`."""
   votingGroups(
@@ -1228,35 +1454,6 @@ type Event implements Node {
   """Reads a single `Snapshot` that is related to this `Event`."""
   snapshotByEvent: Snapshot
 
-  """Reads and enables pagination through a set of `Vote`."""
-  votesByEvent(
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: VoteCondition
-  ): VotesConnection!
-
   """Reads and enables pagination through a set of `VotingNode`."""
   votingNodesByEvent(
     """Only read the first `n` values of the set."""
@@ -1289,12 +1486,6 @@ type Event implements Node {
   """Reads a single `TallyCommittee` that is related to this `Event`."""
   tallyCommitteeByEvent: TallyCommittee
 }
-
-"""
-A point in time as described by the [ISO
-8601](https://en.wikipedia.org/wiki/ISO_8601) standard. May or may not include a timezone.
-"""
-scalar Datetime
 
 """
 A floating point number that requires more precision than IEEE 754 binary 64
@@ -1400,8 +1591,34 @@ input GoalCondition {
   name: String
 }
 
-"""Methods to use when ordering `Challenge`."""
-enum ChallengesOrderBy {
+"""A connection to a list of `Objective` values."""
+type ObjectivesConnection {
+  """A list of `Objective` objects."""
+  nodes: [Objective!]!
+
+  """
+  A list of edges which contains the `Objective` and cursor to aid in pagination.
+  """
+  edges: [ObjectivesEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `Objective` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `Objective` edge in the connection."""
+type ObjectivesEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Objective` at the end of the edge."""
+  node: Objective!
+}
+
+"""Methods to use when ordering `Objective`."""
+enum ObjectivesOrderBy {
   NATURAL
   ROW_ID_ASC
   ROW_ID_DESC
@@ -1430,10 +1647,10 @@ enum ChallengesOrderBy {
 }
 
 """
-A condition to be used against `Challenge` object types. All fields are tested
+A condition to be used against `Objective` object types. All fields are tested
 for equality and combined with a logical ‘and.’
 """
-input ChallengeCondition {
+input ObjectiveCondition {
   """Checks for equality with the object’s `rowId` field."""
   rowId: Int
 
@@ -1620,35 +1837,6 @@ type Voteplan implements Node {
     """
     condition: ProposalVoteplanCondition
   ): ProposalVoteplansConnection!
-
-  """Reads and enables pagination through a set of `Vote`."""
-  votesByVoteplan(
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: VoteCondition
-  ): VotesConnection!
 }
 
 """The category of vote plan currently supported."""
@@ -1797,8 +1985,8 @@ type Proposal implements Node {
   """Actual Proposal Unique ID"""
   id: Int!
 
-  """The Challenge this proposal falls under."""
-  challenge: Int!
+  """The Objective this proposal falls under."""
+  objective: Int!
 
   """Brief title of the proposal."""
   title: String!
@@ -1807,7 +1995,7 @@ type Proposal implements Node {
   summary: String!
   category: String!
 
-  """???"""
+  """Proposals Reward Address (CIP-19 Payment Key)"""
   publicKey: String!
 
   """How much funds (in the currency of the fund)"""
@@ -1858,19 +2046,19 @@ type Proposal implements Node {
   """
   bbProposalId: String
 
-  """The selectable options by the voter."""
+  """
+  The selectable options by the voter. DEPRECATED: Only used for Vit-SS compatibility.
+  """
   bbVoteOptions: String
 
-  """Reads a single `Challenge` that is related to this `Proposal`."""
-  challengeByChallenge: Challenge
+  """Reads a single `Objective` that is related to this `Proposal`."""
+  objectiveByObjective: Objective
 
   """Reads a single `VoteOption` that is related to this `Proposal`."""
   voteOptionByBbVoteOptions: VoteOption
 
-  """
-  Reads and enables pagination through a set of `CommunityAdvisorsReview`.
-  """
-  communityAdvisorsReviews(
+  """Reads and enables pagination through a set of `ProposalReview`."""
+  proposalReviews(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -1889,14 +2077,14 @@ type Proposal implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `CommunityAdvisorsReview`."""
-    orderBy: [CommunityAdvisorsReviewsOrderBy!] = [PRIMARY_KEY_ASC]
+    """The method to use when ordering `ProposalReview`."""
+    orderBy: [ProposalReviewsOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: CommunityAdvisorsReviewCondition
-  ): CommunityAdvisorsReviewsConnection!
+    condition: ProposalReviewCondition
+  ): ProposalReviewsConnection!
 
   """Reads and enables pagination through a set of `ProposalVoteplan`."""
   proposalVoteplans(
@@ -1927,8 +2115,8 @@ type Proposal implements Node {
     condition: ProposalVoteplanCondition
   ): ProposalVoteplansConnection!
 
-  """Reads and enables pagination through a set of `Vote`."""
-  votesByChallengeAndProposal(
+  """Reads and enables pagination through a set of `Ballot`."""
+  ballotsByProposal(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -1947,43 +2135,14 @@ type Proposal implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
+    """The method to use when ordering `Ballot`."""
+    orderBy: [BallotsOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: VoteCondition
-  ): VotesConnection!
-
-  """Reads and enables pagination through a set of `Vote`."""
-  votesByProposal(
-    """Only read the first `n` values of the set."""
-    first: Int
-
-    """Only read the last `n` values of the set."""
-    last: Int
-
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
-
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
-
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: VoteCondition
-  ): VotesConnection!
+    condition: BallotCondition
+  ): BallotsConnection!
 }
 
 """Defines all known vote plan option types."""
@@ -1999,11 +2158,11 @@ type VoteOption implements Node {
   """How this vote option is represented in idea scale."""
   ideaScale: String
 
-  """How the vote options is represented in the challenge."""
-  challenge: String
+  """How the vote options is represented in the objective."""
+  objective: String
 
-  """Reads and enables pagination through a set of `Challenge`."""
-  challengesByVoteOptions(
+  """Reads and enables pagination through a set of `Objective`."""
+  objectivesByVoteOptions(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -2022,14 +2181,14 @@ type VoteOption implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `Challenge`."""
-    orderBy: [ChallengesOrderBy!] = [PRIMARY_KEY_ASC]
+    """The method to use when ordering `Objective`."""
+    orderBy: [ObjectivesOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: ChallengeCondition
-  ): ChallengesConnection!
+    condition: ObjectiveCondition
+  ): ObjectivesConnection!
 
   """Reads and enables pagination through a set of `Proposal`."""
   proposalsByBbVoteOptions(
@@ -2094,8 +2253,8 @@ enum ProposalsOrderBy {
   ROW_ID_DESC
   ID_ASC
   ID_DESC
-  CHALLENGE_ASC
-  CHALLENGE_DESC
+  OBJECTIVE_ASC
+  OBJECTIVE_DESC
   TITLE_ASC
   TITLE_DESC
   SUMMARY_ASC
@@ -2141,8 +2300,8 @@ input ProposalCondition {
   """Checks for equality with the object’s `id` field."""
   id: Int
 
-  """Checks for equality with the object’s `challenge` field."""
-  challenge: Int
+  """Checks for equality with the object’s `objective` field."""
+  objective: Int
 
   """Checks for equality with the object’s `title` field."""
   title: String
@@ -2192,27 +2351,25 @@ input ProposalCondition {
   bbVoteOptions: String
 }
 
-"""A connection to a list of `CommunityAdvisorsReview` values."""
-type CommunityAdvisorsReviewsConnection {
-  """A list of `CommunityAdvisorsReview` objects."""
-  nodes: [CommunityAdvisorsReview!]!
+"""A connection to a list of `ProposalReview` values."""
+type ProposalReviewsConnection {
+  """A list of `ProposalReview` objects."""
+  nodes: [ProposalReview!]!
 
   """
-  A list of edges which contains the `CommunityAdvisorsReview` and cursor to aid in pagination.
+  A list of edges which contains the `ProposalReview` and cursor to aid in pagination.
   """
-  edges: [CommunityAdvisorsReviewsEdge!]!
+  edges: [ProposalReviewsEdge!]!
 
   """Information to aid in pagination."""
   pageInfo: PageInfo!
 
-  """
-  The count of *all* `CommunityAdvisorsReview` you could get from the connection.
-  """
+  """The count of *all* `ProposalReview` you could get from the connection."""
   totalCount: Int!
 }
 
 """All Reviews."""
-type CommunityAdvisorsReview implements Node {
+type ProposalReview implements Node {
   """
   A globally unique identifier. Can be used in various places throughout the system to identify this single value.
   """
@@ -2227,46 +2384,255 @@ type CommunityAdvisorsReview implements Node {
   """Assessors Anonymized ID"""
   assessor: String!
 
-  """The  numeric rating assigned to the proposal by the assessor."""
+  """
+  The  numeric rating assigned to the proposal by the assessor.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
   impactAlignmentRatingGiven: Int
 
-  """A note about why the impact rating was given."""
+  """
+  A note about why the impact rating was given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
   impactAlignmentNote: String
 
-  """The numeric feasibility rating given."""
+  """
+  The numeric feasibility rating given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
   feasibilityRatingGiven: Int
 
-  """A note about why the feasibility rating was given."""
+  """
+  A note about why the feasibility rating was given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
   feasibilityNote: String
 
-  """The numeric auditability rating given."""
+  """
+  The numeric auditability rating given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
   auditabilityRatingGiven: Int
 
-  """A note about the auditability rating given."""
+  """
+  A note about the auditability rating given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
   auditabilityNote: String
 
   """
   Numeric  Measure of quality of this review according to veteran community advisors.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  
   """
   ranking: Int
 
-  """
-  Reads a single `Proposal` that is related to this `CommunityAdvisorsReview`.
-  """
+  """Reads a single `Proposal` that is related to this `ProposalReview`."""
   proposal: Proposal
+
+  """Reads and enables pagination through a set of `ReviewRating`."""
+  reviewRatingsByReviewId(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `ReviewRating`."""
+    orderBy: [ReviewRatingsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ReviewRatingCondition
+  ): ReviewRatingsConnection!
 }
 
-"""A `CommunityAdvisorsReview` edge in the connection."""
-type CommunityAdvisorsReviewsEdge {
+"""A connection to a list of `ReviewRating` values."""
+type ReviewRatingsConnection {
+  """A list of `ReviewRating` objects."""
+  nodes: [ReviewRating!]!
+
+  """
+  A list of edges which contains the `ReviewRating` and cursor to aid in pagination.
+  """
+  edges: [ReviewRatingsEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `ReviewRating` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""An Individual rating for a metric given on a review."""
+type ReviewRating implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+
+  """Synthetic ID of this individual rating."""
+  rowId: Int!
+
+  """The review the metric is being given for."""
+  reviewId: Int!
+
+  """Metric the rating is being given for."""
+  metric: Int!
+
+  """The rating being given to the metric."""
+  rating: Int!
+
+  """OPTIONAL: Note about the rating given."""
+  note: String
+
+  """
+  Reads a single `ProposalReview` that is related to this `ReviewRating`.
+  """
+  review: ProposalReview
+
+  """Reads a single `ReviewMetric` that is related to this `ReviewRating`."""
+  reviewMetricByMetric: ReviewMetric
+}
+
+"""Definition of all possible review metrics."""
+type ReviewMetric implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+
+  """The synthetic ID of this metric."""
+  rowId: Int!
+
+  """The short name for this review metric."""
+  name: String!
+
+  """Long form description of what the review metric means."""
+  description: String
+
+  """The minimum value of the metric (inclusive)."""
+  min: Int!
+
+  """The maximum value of the metric (inclusive)."""
+  max: Int!
+
+  """
+  OPTIONAL: JSON Array which defines extra details for each metric score.
+  There MUST be one entry per possible score in the range.
+  Entries are IN ORDER, from the lowest numeric score to the highest.
+  Each entry =
+  ```jsonc
+  {
+     "name" : "<name>", // Symbolic Name for the metric score.
+     "description" : "<desc>", // Description of what the named metric score means.
+  }
+  ```
+  
+  """
+  map: JSON
+
+  """Reads and enables pagination through a set of `ReviewRating`."""
+  reviewRatingsByMetric(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `ReviewRating`."""
+    orderBy: [ReviewRatingsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ReviewRatingCondition
+  ): ReviewRatingsConnection!
+}
+
+"""Methods to use when ordering `ReviewRating`."""
+enum ReviewRatingsOrderBy {
+  NATURAL
+  ROW_ID_ASC
+  ROW_ID_DESC
+  REVIEW_ID_ASC
+  REVIEW_ID_DESC
+  METRIC_ASC
+  METRIC_DESC
+  RATING_ASC
+  RATING_DESC
+  NOTE_ASC
+  NOTE_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""
+A condition to be used against `ReviewRating` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input ReviewRatingCondition {
+  """Checks for equality with the object’s `rowId` field."""
+  rowId: Int
+
+  """Checks for equality with the object’s `reviewId` field."""
+  reviewId: Int
+
+  """Checks for equality with the object’s `metric` field."""
+  metric: Int
+
+  """Checks for equality with the object’s `rating` field."""
+  rating: Int
+
+  """Checks for equality with the object’s `note` field."""
+  note: String
+}
+
+"""A `ReviewRating` edge in the connection."""
+type ReviewRatingsEdge {
   """A cursor for use in pagination."""
   cursor: Cursor
 
-  """The `CommunityAdvisorsReview` at the end of the edge."""
-  node: CommunityAdvisorsReview!
+  """The `ReviewRating` at the end of the edge."""
+  node: ReviewRating!
 }
 
-"""Methods to use when ordering `CommunityAdvisorsReview`."""
-enum CommunityAdvisorsReviewsOrderBy {
+"""A `ProposalReview` edge in the connection."""
+type ProposalReviewsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `ProposalReview` at the end of the edge."""
+  node: ProposalReview!
+}
+
+"""Methods to use when ordering `ProposalReview`."""
+enum ProposalReviewsOrderBy {
   NATURAL
   ROW_ID_ASC
   ROW_ID_DESC
@@ -2293,10 +2659,10 @@ enum CommunityAdvisorsReviewsOrderBy {
 }
 
 """
-A condition to be used against `CommunityAdvisorsReview` object types. All
-fields are tested for equality and combined with a logical ‘and.’
+A condition to be used against `ProposalReview` object types. All fields are
+tested for equality and combined with a logical ‘and.’
 """
-input CommunityAdvisorsReviewCondition {
+input ProposalReviewCondition {
   """Checks for equality with the object’s `rowId` field."""
   rowId: Int
 
@@ -2363,129 +2729,116 @@ input ProposalVoteplanCondition {
   bbProposalIndex: BigInt
 }
 
-"""A connection to a list of `Vote` values."""
-type VotesConnection {
-  """A list of `Vote` objects."""
-  nodes: [Vote!]!
-
-  """
-  A list of edges which contains the `Vote` and cursor to aid in pagination.
-  """
-  edges: [VotesEdge!]!
-
-  """Information to aid in pagination."""
-  pageInfo: PageInfo!
-
-  """The count of *all* `Vote` you could get from the connection."""
-  totalCount: Int!
+"""Methods to use when ordering `Ballot`."""
+enum BallotsOrderBy {
+  NATURAL
+  ROW_ID_ASC
+  ROW_ID_DESC
+  OBJECTIVE_ASC
+  OBJECTIVE_DESC
+  PROPOSAL_ASC
+  PROPOSAL_DESC
+  VOTER_ASC
+  VOTER_DESC
+  FRAGMENT_ID_ASC
+  FRAGMENT_ID_DESC
+  CAST_AT_ASC
+  CAST_AT_DESC
+  CHOICE_ASC
+  CHOICE_DESC
+  RAW_FRAGMENT_ASC
+  RAW_FRAGMENT_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
 }
 
-"""All Votes."""
-type Vote implements Node {
-  """
-  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
-  """
-  nodeId: ID!
-  rowId: BigInt!
-  event: Int
+"""
+A condition to be used against `Ballot` object types. All fields are tested for equality and combined with a logical ‘and.’
+"""
+input BallotCondition {
+  """Checks for equality with the object’s `rowId` field."""
+  rowId: BigInt
 
-  """Unique ID of this Vote"""
-  fragmentId: String
+  """Checks for equality with the object’s `objective` field."""
+  objective: Int
 
-  """Reference to the Voter who cast the vote"""
-  voter: Int!
-
-  """Reference to the Challenge the vote was for."""
-  challenge: Int!
-
-  """
-  Reference to the Proposal the vote was for.
-  May be NULL if this vote covers ALL proposals in the challenge.
-  """
+  """Checks for equality with the object’s `proposal` field."""
   proposal: Int
 
-  """The Voteplan this vote was cast in"""
-  voteplan: Int!
+  """Checks for equality with the object’s `voter` field."""
+  voter: Int
 
-  """When this vote was recorded as properly cast"""
-  castAt: Datetime!
+  """Checks for equality with the object’s `fragmentId` field."""
+  fragmentId: String
 
-  """If a public vote, the choice of the vote, otherwise NULL."""
+  """Checks for equality with the object’s `castAt` field."""
+  castAt: Datetime
+
+  """Checks for equality with the object’s `choice` field."""
   choice: Int
 
-  """The raw vote record."""
-  rawFragment: String!
-
-  """Reads a single `Event` that is related to this `Vote`."""
-  eventByEvent: Event
-
-  """Reads a single `Voter` that is related to this `Vote`."""
-  voterByVoter: Voter
-
-  """Reads a single `Challenge` that is related to this `Vote`."""
-  challengeByChallenge: Challenge
-
-  """Reads a single `Proposal` that is related to this `Vote`."""
-  proposalByChallengeAndProposal: Proposal
-
-  """Reads a single `Proposal` that is related to this `Vote`."""
-  proposalByProposal: Proposal
-
-  """Reads a single `Voteplan` that is related to this `Vote`."""
-  voteplanByVoteplan: Voteplan
+  """Checks for equality with the object’s `rawFragment` field."""
+  rawFragment: String
 }
 
-"""Voting Power for every voting key."""
-type Voter implements Node {
-  """
-  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
-  """
-  nodeId: ID!
-  rowId: BigInt!
+"""A `ProposalVoteplan` edge in the connection."""
+type ProposalVoteplansEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
 
-  """Either the voting key."""
-  votingKey: String!
+  """The `ProposalVoteplan` at the end of the edge."""
+  node: ProposalVoteplan!
+}
 
-  """The ID of the snapshot this record belongs to."""
-  snapshotId: Int!
+"""A `Voteplan` edge in the connection."""
+type VoteplansEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
 
-  """The voter group the voter belongs to."""
-  votingGroup: String!
+  """The `Voteplan` at the end of the edge."""
+  node: Voteplan!
+}
 
-  """Calculated Voting Power associated with this key."""
-  votingPower: BigInt!
+"""A `VotingGroup` edge in the connection."""
+type VotingGroupsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
 
-  """Reads a single `Snapshot` that is related to this `Voter`."""
-  snapshot: Snapshot
+  """The `VotingGroup` at the end of the edge."""
+  node: VotingGroup!
+}
 
-  """Reads and enables pagination through a set of `Vote`."""
-  votesByVoter(
-    """Only read the first `n` values of the set."""
-    first: Int
+"""Methods to use when ordering `VotingGroup`."""
+enum VotingGroupsOrderBy {
+  NATURAL
+  ROW_ID_ASC
+  ROW_ID_DESC
+  GROUP_ID_ASC
+  GROUP_ID_DESC
+  EVENT_ID_ASC
+  EVENT_ID_DESC
+  TOKEN_ID_ASC
+  TOKEN_ID_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
 
-    """Only read the last `n` values of the set."""
-    last: Int
+"""
+A condition to be used against `VotingGroup` object types. All fields are tested
+for equality and combined with a logical ‘and.’
+"""
+input VotingGroupCondition {
+  """Checks for equality with the object’s `rowId` field."""
+  rowId: Int
 
-    """
-    Skip the first `n` values from our `after` cursor, an alternative to cursor
-    based pagination. May not be used with `last`.
-    """
-    offset: Int
+  """Checks for equality with the object’s `groupId` field."""
+  groupId: String
 
-    """Read all values in the set before (above) this cursor."""
-    before: Cursor
+  """Checks for equality with the object’s `eventId` field."""
+  eventId: Int
 
-    """Read all values in the set after (below) this cursor."""
-    after: Cursor
-
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
-
-    """
-    A condition to be used in determining which values should be returned by the collection.
-    """
-    condition: VoteCondition
-  ): VotesConnection!
+  """Checks for equality with the object’s `tokenId` field."""
+  tokenId: String
 }
 
 """
@@ -2503,14 +2856,15 @@ type Snapshot implements Node {
   event: Int!
 
   """
-  The time the snapshot was collected from dbsync
+  The time the snapshot was collected from dbsync.
+  This is the snapshot *DEADLINE*, i.e the time when registrations are final.
   (Should be the slot time the dbsync_snapshot_cmd was run against.)
   """
   asAt: Datetime!
 
   """
   The last time the snapshot was run
-  (Should be the real time the snapshot was started.
+  (Should be the latest block time taken from dbsync just before the snapshot was run.)
   """
   lastUpdated: Datetime!
 
@@ -2529,14 +2883,27 @@ type Snapshot implements Node {
   dbsyncSnapshotParams: JSON
 
   """
-  The raw json result stored as TEXT from the dbsync snapshot.
-  (This is JSON data but we store as raw text to prevent any processing of it).
+  The BROTLI COMPRESSED raw json result stored as BINARY from the dbsync snapshot.
+  (This is JSON data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
   """
   dbsyncSnapshotData: String
 
   """
+  The BROTLI COMPRESSED raw json errors stored as BINARY from the dbsync snapshot.
+  (This is JSON data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
+  """
+  dbsyncSnapshotError: String
+
+  """
+  The BROTLI COMPRESSED unregistered voting power stored as BINARY from the dbsync snapshot.
+  (This is JSON data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
+  """
+  dbsyncSnapshotUnregistered: String
+
+  """
   The latest drep data obtained from GVC, and used in this snapshot calculation.
   Should be in a form directly usable by the `catalyst_snapshot_cmd`
+  However, in order to save space this data is stored as BROTLI COMPRESSED BINARY.
   """
   drepData: String
 
@@ -2547,8 +2914,8 @@ type Snapshot implements Node {
   catalystSnapshotParams: JSON
 
   """
-  The raw yaml result stored as TEXT from the catalyst snapshot calculation.
-  (This is YAML data but we store as raw text to prevent any processing of it).
+  The BROTLI COMPRESSED raw yaml result stored as BINARY from the catalyst snapshot calculation.
+  (This is YAML data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
   """
   catalystSnapshotData: String
 
@@ -2629,6 +2996,59 @@ type VotersConnection {
 
   """The count of *all* `Voter` you could get from the connection."""
   totalCount: Int!
+}
+
+"""Voting Power for every voting key."""
+type Voter implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  rowId: BigInt!
+
+  """Either the voting key."""
+  votingKey: String!
+
+  """The ID of the snapshot this record belongs to."""
+  snapshotId: Int!
+
+  """The voter group the voter belongs to."""
+  votingGroup: String!
+
+  """Calculated Voting Power associated with this key."""
+  votingPower: BigInt!
+
+  """Reads a single `Snapshot` that is related to this `Voter`."""
+  snapshot: Snapshot
+
+  """Reads and enables pagination through a set of `Ballot`."""
+  ballotsByVoter(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `Ballot`."""
+    orderBy: [BallotsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: BallotCondition
+  ): BallotsConnection!
 }
 
 """A `Voter` edge in the connection."""
@@ -2803,137 +3223,6 @@ input ContributionCondition {
   rewardAddress: String
 }
 
-"""Methods to use when ordering `Vote`."""
-enum VotesOrderBy {
-  NATURAL
-  ROW_ID_ASC
-  ROW_ID_DESC
-  EVENT_ASC
-  EVENT_DESC
-  FRAGMENT_ID_ASC
-  FRAGMENT_ID_DESC
-  VOTER_ASC
-  VOTER_DESC
-  CHALLENGE_ASC
-  CHALLENGE_DESC
-  PROPOSAL_ASC
-  PROPOSAL_DESC
-  VOTEPLAN_ASC
-  VOTEPLAN_DESC
-  CAST_AT_ASC
-  CAST_AT_DESC
-  CHOICE_ASC
-  CHOICE_DESC
-  RAW_FRAGMENT_ASC
-  RAW_FRAGMENT_DESC
-  PRIMARY_KEY_ASC
-  PRIMARY_KEY_DESC
-}
-
-"""
-A condition to be used against `Vote` object types. All fields are tested for equality and combined with a logical ‘and.’
-"""
-input VoteCondition {
-  """Checks for equality with the object’s `rowId` field."""
-  rowId: BigInt
-
-  """Checks for equality with the object’s `event` field."""
-  event: Int
-
-  """Checks for equality with the object’s `fragmentId` field."""
-  fragmentId: String
-
-  """Checks for equality with the object’s `voter` field."""
-  voter: Int
-
-  """Checks for equality with the object’s `challenge` field."""
-  challenge: Int
-
-  """Checks for equality with the object’s `proposal` field."""
-  proposal: Int
-
-  """Checks for equality with the object’s `voteplan` field."""
-  voteplan: Int
-
-  """Checks for equality with the object’s `castAt` field."""
-  castAt: Datetime
-
-  """Checks for equality with the object’s `choice` field."""
-  choice: Int
-
-  """Checks for equality with the object’s `rawFragment` field."""
-  rawFragment: String
-}
-
-"""A `Vote` edge in the connection."""
-type VotesEdge {
-  """A cursor for use in pagination."""
-  cursor: Cursor
-
-  """The `Vote` at the end of the edge."""
-  node: Vote!
-}
-
-"""A `ProposalVoteplan` edge in the connection."""
-type ProposalVoteplansEdge {
-  """A cursor for use in pagination."""
-  cursor: Cursor
-
-  """The `ProposalVoteplan` at the end of the edge."""
-  node: ProposalVoteplan!
-}
-
-"""A `Voteplan` edge in the connection."""
-type VoteplansEdge {
-  """A cursor for use in pagination."""
-  cursor: Cursor
-
-  """The `Voteplan` at the end of the edge."""
-  node: Voteplan!
-}
-
-"""A `VotingGroup` edge in the connection."""
-type VotingGroupsEdge {
-  """A cursor for use in pagination."""
-  cursor: Cursor
-
-  """The `VotingGroup` at the end of the edge."""
-  node: VotingGroup!
-}
-
-"""Methods to use when ordering `VotingGroup`."""
-enum VotingGroupsOrderBy {
-  NATURAL
-  ROW_ID_ASC
-  ROW_ID_DESC
-  GROUP_ID_ASC
-  GROUP_ID_DESC
-  EVENT_ID_ASC
-  EVENT_ID_DESC
-  TOKEN_ID_ASC
-  TOKEN_ID_DESC
-  PRIMARY_KEY_ASC
-  PRIMARY_KEY_DESC
-}
-
-"""
-A condition to be used against `VotingGroup` object types. All fields are tested
-for equality and combined with a logical ‘and.’
-"""
-input VotingGroupCondition {
-  """Checks for equality with the object’s `rowId` field."""
-  rowId: Int
-
-  """Checks for equality with the object’s `groupId` field."""
-  groupId: String
-
-  """Checks for equality with the object’s `eventId` field."""
-  eventId: Int
-
-  """Checks for equality with the object’s `tokenId` field."""
-  tokenId: String
-}
-
 """A connection to a list of `VotingNode` values."""
 type VotingNodesConnection {
   """A list of `VotingNode` objects."""
@@ -2968,17 +3257,17 @@ type VotingNode implements Node {
   event: Int!
 
   """
-  Public key from Ed25519 pair for the node.
-  Used as consensus_leader_id when the node is a leader.
+  Public key from Ed25519 pair for the node. Used as consensus_leader_id when the node is a leader.
   """
   pubkey: String!
 
-  """Secret key from Ed25519 pair for the node. Used as the node secret."""
+  """
+  Encrypted secret key from Ed25519 pair for the node. Used as the node secret.
+  """
   seckey: String!
 
   """
-  Ed25519 secret key for the node.
-  Used as the node p2p topology key.
+  Encrypted Ed25519 secret key for the node. Used as the node p2p topology key.
   """
   netkey: String!
 
@@ -3046,25 +3335,24 @@ type TallyCommittee implements Node {
   """The event this committee member is for."""
   event: Int!
 
+  """The hex-encoded public key for the committee wallet."""
+  committeeId: String!
+
+  """
+  Encrypted Common Reference String shared in the creation of every set of committee member keys.
+  """
+  memberCrs: String
+
+  """
+  Public key generated with all committee member public keys, and is used to encrypt votes. NULL if the event.committee_size is 0.
+  """
+  electionKey: String
+
   """Reads a single `Event` that is related to this `TallyCommittee`."""
   eventByEvent: Event
-}
 
-"""Defines all known and valid challenge categories."""
-type ChallengeCategory implements Node {
-  """
-  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
-  """
-  nodeId: ID!
-
-  """The name of this challenge category."""
-  name: String!
-
-  """A Description of this kind of challenge category."""
-  description: String
-
-  """Reads and enables pagination through a set of `Challenge`."""
-  challengesByCategory(
+  """Reads and enables pagination through a set of `CommitteeMember`."""
+  committeeMembersByCommittee(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -3083,14 +3371,175 @@ type ChallengeCategory implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `Challenge`."""
-    orderBy: [ChallengesOrderBy!] = [PRIMARY_KEY_ASC]
+    """The method to use when ordering `CommitteeMember`."""
+    orderBy: [CommitteeMembersOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: ChallengeCondition
-  ): ChallengesConnection!
+    condition: CommitteeMemberCondition
+  ): CommitteeMembersConnection!
+}
+
+"""A connection to a list of `CommitteeMember` values."""
+type CommitteeMembersConnection {
+  """A list of `CommitteeMember` objects."""
+  nodes: [CommitteeMember!]!
+
+  """
+  A list of edges which contains the `CommitteeMember` and cursor to aid in pagination.
+  """
+  edges: [CommitteeMembersEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """
+  The count of *all* `CommitteeMember` you could get from the connection.
+  """
+  totalCount: Int!
+}
+
+"""Table for storing data about the tally committee members."""
+type CommitteeMember implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+
+  """Unique ID for this committee member for this event."""
+  rowId: Int!
+
+  """The committee this member belongs to."""
+  committee: Int!
+
+  """
+  the zero-based index of the member, ranging from 0 <= index < committee_size.
+  """
+  memberIndex: Int!
+  threshold: Int!
+
+  """Committee member communication public key."""
+  commPk: String!
+
+  """Encrypted committee member communication secret key."""
+  commSk: String!
+
+  """Committee member public key"""
+  memberPk: String!
+
+  """Encrypted committee member secret key"""
+  memberSk: String!
+
+  """
+  Reads a single `TallyCommittee` that is related to this `CommitteeMember`.
+  """
+  tallyCommitteeByCommittee: TallyCommittee
+}
+
+"""A `CommitteeMember` edge in the connection."""
+type CommitteeMembersEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `CommitteeMember` at the end of the edge."""
+  node: CommitteeMember!
+}
+
+"""Methods to use when ordering `CommitteeMember`."""
+enum CommitteeMembersOrderBy {
+  NATURAL
+  ROW_ID_ASC
+  ROW_ID_DESC
+  COMMITTEE_ASC
+  COMMITTEE_DESC
+  MEMBER_INDEX_ASC
+  MEMBER_INDEX_DESC
+  THRESHOLD_ASC
+  THRESHOLD_DESC
+  COMM_PK_ASC
+  COMM_PK_DESC
+  COMM_SK_ASC
+  COMM_SK_DESC
+  MEMBER_PK_ASC
+  MEMBER_PK_DESC
+  MEMBER_SK_ASC
+  MEMBER_SK_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""
+A condition to be used against `CommitteeMember` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input CommitteeMemberCondition {
+  """Checks for equality with the object’s `rowId` field."""
+  rowId: Int
+
+  """Checks for equality with the object’s `committee` field."""
+  committee: Int
+
+  """Checks for equality with the object’s `memberIndex` field."""
+  memberIndex: Int
+
+  """Checks for equality with the object’s `threshold` field."""
+  threshold: Int
+
+  """Checks for equality with the object’s `commPk` field."""
+  commPk: String
+
+  """Checks for equality with the object’s `commSk` field."""
+  commSk: String
+
+  """Checks for equality with the object’s `memberPk` field."""
+  memberPk: String
+
+  """Checks for equality with the object’s `memberSk` field."""
+  memberSk: String
+}
+
+"""Defines all known and valid objective categories."""
+type ObjectiveCategory implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+
+  """The name of this objective category."""
+  name: String!
+
+  """A Description of this kind of objective category."""
+  description: String
+
+  """Reads and enables pagination through a set of `Objective`."""
+  objectivesByCategory(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `Objective`."""
+    orderBy: [ObjectivesOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ObjectiveCondition
+  ): ObjectivesConnection!
 }
 
 """Defines all known and valid currencies."""
@@ -3106,8 +3555,8 @@ type Currency implements Node {
   """A Description of this kind of currency type."""
   description: String
 
-  """Reads and enables pagination through a set of `Challenge`."""
-  challengesByRewardsCurrency(
+  """Reads and enables pagination through a set of `Objective`."""
+  objectivesByRewardsCurrency(
     """Only read the first `n` values of the set."""
     first: Int
 
@@ -3126,74 +3575,154 @@ type Currency implements Node {
     """Read all values in the set after (below) this cursor."""
     after: Cursor
 
-    """The method to use when ordering `Challenge`."""
-    orderBy: [ChallengesOrderBy!] = [PRIMARY_KEY_ASC]
+    """The method to use when ordering `Objective`."""
+    orderBy: [ObjectivesOrderBy!] = [PRIMARY_KEY_ASC]
 
     """
     A condition to be used in determining which values should be returned by the collection.
     """
-    condition: ChallengeCondition
-  ): ChallengesConnection!
+    condition: ObjectiveCondition
+  ): ObjectivesConnection!
 }
 
-"""A `Challenge` edge in the connection."""
-type ChallengesEdge {
-  """A cursor for use in pagination."""
-  cursor: Cursor
-
-  """The `Challenge` at the end of the edge."""
-  node: Challenge!
-}
-
-"""A connection to a list of `ChallengeCategory` values."""
-type ChallengeCategoriesConnection {
-  """A list of `ChallengeCategory` objects."""
-  nodes: [ChallengeCategory!]!
+"""A connection to a list of `ObjectiveReviewMetric` values."""
+type ObjectiveReviewMetricsConnection {
+  """A list of `ObjectiveReviewMetric` objects."""
+  nodes: [ObjectiveReviewMetric!]!
 
   """
-  A list of edges which contains the `ChallengeCategory` and cursor to aid in pagination.
+  A list of edges which contains the `ObjectiveReviewMetric` and cursor to aid in pagination.
   """
-  edges: [ChallengeCategoriesEdge!]!
+  edges: [ObjectiveReviewMetricsEdge!]!
 
   """Information to aid in pagination."""
   pageInfo: PageInfo!
 
   """
-  The count of *all* `ChallengeCategory` you could get from the connection.
+  The count of *all* `ObjectiveReviewMetric` you could get from the connection.
   """
   totalCount: Int!
 }
 
-"""A `ChallengeCategory` edge in the connection."""
-type ChallengeCategoriesEdge {
-  """A cursor for use in pagination."""
-  cursor: Cursor
+"""All valid metrics for reviews on an objective."""
+type ObjectiveReviewMetric implements Node {
+  """
+  A globally unique identifier. Can be used in various places throughout the system to identify this single value.
+  """
+  nodeId: ID!
+  rowId: Int!
 
-  """The `ChallengeCategory` at the end of the edge."""
-  node: ChallengeCategory!
+  """The objective that can use this review metric."""
+  objective: Int!
+
+  """The review metric that the objective can use."""
+  metric: Int!
+
+  """
+  Does the metric require a Note?
+  NULL = Optional.
+  True = MUST include Note.
+  False = MUST NOT include Note.
+  """
+  note: Boolean
+
+  """The review group that can give this metric. Details TBD."""
+  reviewGroup: String
+
+  """
+  Reads a single `Objective` that is related to this `ObjectiveReviewMetric`.
+  """
+  objectiveByObjective: Objective
+
+  """
+  Reads a single `ObjectiveReviewMetric` that is related to this `ObjectiveReviewMetric`.
+  """
+  objectiveReviewMetricByMetric: ObjectiveReviewMetric
+
+  """Reads and enables pagination through a set of `ObjectiveReviewMetric`."""
+  objectiveReviewMetricsByMetric(
+    """Only read the first `n` values of the set."""
+    first: Int
+
+    """Only read the last `n` values of the set."""
+    last: Int
+
+    """
+    Skip the first `n` values from our `after` cursor, an alternative to cursor
+    based pagination. May not be used with `last`.
+    """
+    offset: Int
+
+    """Read all values in the set before (above) this cursor."""
+    before: Cursor
+
+    """Read all values in the set after (below) this cursor."""
+    after: Cursor
+
+    """The method to use when ordering `ObjectiveReviewMetric`."""
+    orderBy: [ObjectiveReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+
+    """
+    A condition to be used in determining which values should be returned by the collection.
+    """
+    condition: ObjectiveReviewMetricCondition
+  ): ObjectiveReviewMetricsConnection!
 }
 
-"""Methods to use when ordering `ChallengeCategory`."""
-enum ChallengeCategoriesOrderBy {
+"""Methods to use when ordering `ObjectiveReviewMetric`."""
+enum ObjectiveReviewMetricsOrderBy {
   NATURAL
-  NAME_ASC
-  NAME_DESC
-  DESCRIPTION_ASC
-  DESCRIPTION_DESC
+  ROW_ID_ASC
+  ROW_ID_DESC
+  OBJECTIVE_ASC
+  OBJECTIVE_DESC
+  METRIC_ASC
+  METRIC_DESC
+  NOTE_ASC
+  NOTE_DESC
+  REVIEW_GROUP_ASC
+  REVIEW_GROUP_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
 }
 
 """
-A condition to be used against `ChallengeCategory` object types. All fields are
-tested for equality and combined with a logical ‘and.’
+A condition to be used against `ObjectiveReviewMetric` object types. All fields
+are tested for equality and combined with a logical ‘and.’
 """
-input ChallengeCategoryCondition {
-  """Checks for equality with the object’s `name` field."""
-  name: String
+input ObjectiveReviewMetricCondition {
+  """Checks for equality with the object’s `rowId` field."""
+  rowId: Int
 
-  """Checks for equality with the object’s `description` field."""
-  description: String
+  """Checks for equality with the object’s `objective` field."""
+  objective: Int
+
+  """Checks for equality with the object’s `metric` field."""
+  metric: Int
+
+  """Checks for equality with the object’s `note` field."""
+  note: Boolean
+
+  """Checks for equality with the object’s `reviewGroup` field."""
+  reviewGroup: String
+}
+
+"""A `ObjectiveReviewMetric` edge in the connection."""
+type ObjectiveReviewMetricsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `ObjectiveReviewMetric` at the end of the edge."""
+  node: ObjectiveReviewMetric!
+}
+
+"""A `Ballot` edge in the connection."""
+type BallotsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `Ballot` at the end of the edge."""
+  node: Ballot!
 }
 
 """A connection to a list of `Config` values."""
@@ -3427,6 +3956,8 @@ enum EventsOrderBy {
   COMMITTEE_THRESHOLD_DESC
   EXTRA_ASC
   EXTRA_DESC
+  CAST_TO_ASC
+  CAST_TO_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
 }
@@ -3505,90 +4036,60 @@ input EventCondition {
 
   """Checks for equality with the object’s `extra` field."""
   extra: JSON
+
+  """Checks for equality with the object’s `castTo` field."""
+  castTo: JSON
 }
 
-"""A connection to a list of `ProposalCommunityChoiceChallenge` values."""
-type ProposalCommunityChoiceChallengesConnection {
-  """A list of `ProposalCommunityChoiceChallenge` objects."""
-  nodes: [ProposalCommunityChoiceChallenge!]!
+"""A connection to a list of `ObjectiveCategory` values."""
+type ObjectiveCategoriesConnection {
+  """A list of `ObjectiveCategory` objects."""
+  nodes: [ObjectiveCategory!]!
 
   """
-  A list of edges which contains the `ProposalCommunityChoiceChallenge` and cursor to aid in pagination.
+  A list of edges which contains the `ObjectiveCategory` and cursor to aid in pagination.
   """
-  edges: [ProposalCommunityChoiceChallengesEdge!]!
+  edges: [ObjectiveCategoriesEdge!]!
 
   """Information to aid in pagination."""
   pageInfo: PageInfo!
 
   """
-  The count of *all* `ProposalCommunityChoiceChallenge` you could get from the connection.
+  The count of *all* `ObjectiveCategory` you could get from the connection.
   """
   totalCount: Int!
 }
 
-"""
-This view maps the original VIT-SS proposal_community_choice_challenge table to the new proposal table.
-Do not use this VIEW for new queries, its ONLY for backward compatibility.
-@name vitss_proposal_community_choice_challenge
-@omit
-"""
-type ProposalCommunityChoiceChallenge {
-  proposalId: String
-  proposalSolution: String
-  proposalBrief: String
-  proposalImportance: String
-  proposalGoal: String
-  proposalMetrics: String
-}
-
-"""A `ProposalCommunityChoiceChallenge` edge in the connection."""
-type ProposalCommunityChoiceChallengesEdge {
+"""A `ObjectiveCategory` edge in the connection."""
+type ObjectiveCategoriesEdge {
   """A cursor for use in pagination."""
   cursor: Cursor
 
-  """The `ProposalCommunityChoiceChallenge` at the end of the edge."""
-  node: ProposalCommunityChoiceChallenge!
+  """The `ObjectiveCategory` at the end of the edge."""
+  node: ObjectiveCategory!
 }
 
-"""Methods to use when ordering `ProposalCommunityChoiceChallenge`."""
-enum ProposalCommunityChoiceChallengesOrderBy {
+"""Methods to use when ordering `ObjectiveCategory`."""
+enum ObjectiveCategoriesOrderBy {
   NATURAL
-  PROPOSAL_ID_ASC
-  PROPOSAL_ID_DESC
-  PROPOSAL_SOLUTION_ASC
-  PROPOSAL_SOLUTION_DESC
-  PROPOSAL_BRIEF_ASC
-  PROPOSAL_BRIEF_DESC
-  PROPOSAL_IMPORTANCE_ASC
-  PROPOSAL_IMPORTANCE_DESC
-  PROPOSAL_GOAL_ASC
-  PROPOSAL_GOAL_DESC
-  PROPOSAL_METRICS_ASC
-  PROPOSAL_METRICS_DESC
+  NAME_ASC
+  NAME_DESC
+  DESCRIPTION_ASC
+  DESCRIPTION_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
 }
 
 """
-A condition to be used against `ProposalCommunityChoiceChallenge` object types.
-All fields are tested for equality and combined with a logical ‘and.’
+A condition to be used against `ObjectiveCategory` object types. All fields are
+tested for equality and combined with a logical ‘and.’
 """
-input ProposalCommunityChoiceChallengeCondition {
-  """Checks for equality with the object’s `proposalId` field."""
-  proposalId: String
+input ObjectiveCategoryCondition {
+  """Checks for equality with the object’s `name` field."""
+  name: String
 
-  """Checks for equality with the object’s `proposalSolution` field."""
-  proposalSolution: String
-
-  """Checks for equality with the object’s `proposalBrief` field."""
-  proposalBrief: String
-
-  """Checks for equality with the object’s `proposalImportance` field."""
-  proposalImportance: String
-
-  """Checks for equality with the object’s `proposalGoal` field."""
-  proposalGoal: String
-
-  """Checks for equality with the object’s `proposalMetrics` field."""
-  proposalMetrics: String
+  """Checks for equality with the object’s `description` field."""
+  description: String
 }
 
 """A connection to a list of `RefinerySchemaHistory` values."""
@@ -3668,6 +4169,75 @@ input RefinerySchemaHistoryCondition {
   checksum: String
 }
 
+"""A connection to a list of `ReviewMetric` values."""
+type ReviewMetricsConnection {
+  """A list of `ReviewMetric` objects."""
+  nodes: [ReviewMetric!]!
+
+  """
+  A list of edges which contains the `ReviewMetric` and cursor to aid in pagination.
+  """
+  edges: [ReviewMetricsEdge!]!
+
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """The count of *all* `ReviewMetric` you could get from the connection."""
+  totalCount: Int!
+}
+
+"""A `ReviewMetric` edge in the connection."""
+type ReviewMetricsEdge {
+  """A cursor for use in pagination."""
+  cursor: Cursor
+
+  """The `ReviewMetric` at the end of the edge."""
+  node: ReviewMetric!
+}
+
+"""Methods to use when ordering `ReviewMetric`."""
+enum ReviewMetricsOrderBy {
+  NATURAL
+  ROW_ID_ASC
+  ROW_ID_DESC
+  NAME_ASC
+  NAME_DESC
+  DESCRIPTION_ASC
+  DESCRIPTION_DESC
+  MIN_ASC
+  MIN_DESC
+  MAX_ASC
+  MAX_DESC
+  MAP_ASC
+  MAP_DESC
+  PRIMARY_KEY_ASC
+  PRIMARY_KEY_DESC
+}
+
+"""
+A condition to be used against `ReviewMetric` object types. All fields are
+tested for equality and combined with a logical ‘and.’
+"""
+input ReviewMetricCondition {
+  """Checks for equality with the object’s `rowId` field."""
+  rowId: Int
+
+  """Checks for equality with the object’s `name` field."""
+  name: String
+
+  """Checks for equality with the object’s `description` field."""
+  description: String
+
+  """Checks for equality with the object’s `min` field."""
+  min: Int
+
+  """Checks for equality with the object’s `max` field."""
+  max: Int
+
+  """Checks for equality with the object’s `map` field."""
+  map: JSON
+}
+
 """A connection to a list of `Snapshot` values."""
 type SnapshotsConnection {
   """A list of `Snapshot` objects."""
@@ -3713,6 +4283,10 @@ enum SnapshotsOrderBy {
   DBSYNC_SNAPSHOT_PARAMS_DESC
   DBSYNC_SNAPSHOT_DATA_ASC
   DBSYNC_SNAPSHOT_DATA_DESC
+  DBSYNC_SNAPSHOT_ERROR_ASC
+  DBSYNC_SNAPSHOT_ERROR_DESC
+  DBSYNC_SNAPSHOT_UNREGISTERED_ASC
+  DBSYNC_SNAPSHOT_UNREGISTERED_DESC
   DREP_DATA_ASC
   DREP_DATA_DESC
   CATALYST_SNAPSHOT_CMD_ASC
@@ -3753,6 +4327,14 @@ input SnapshotCondition {
 
   """Checks for equality with the object’s `dbsyncSnapshotData` field."""
   dbsyncSnapshotData: String
+
+  """Checks for equality with the object’s `dbsyncSnapshotError` field."""
+  dbsyncSnapshotError: String
+
+  """
+  Checks for equality with the object’s `dbsyncSnapshotUnregistered` field.
+  """
+  dbsyncSnapshotUnregistered: String
 
   """Checks for equality with the object’s `drepData` field."""
   drepData: String
@@ -3800,6 +4382,12 @@ enum TallyCommitteesOrderBy {
   ROW_ID_DESC
   EVENT_ASC
   EVENT_DESC
+  COMMITTEE_ID_ASC
+  COMMITTEE_ID_DESC
+  MEMBER_CRS_ASC
+  MEMBER_CRS_DESC
+  ELECTION_KEY_ASC
+  ELECTION_KEY_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
 }
@@ -3814,6 +4402,15 @@ input TallyCommitteeCondition {
 
   """Checks for equality with the object’s `event` field."""
   event: Int
+
+  """Checks for equality with the object’s `committeeId` field."""
+  committeeId: String
+
+  """Checks for equality with the object’s `memberCrs` field."""
+  memberCrs: String
+
+  """Checks for equality with the object’s `electionKey` field."""
+  electionKey: String
 }
 
 """A connection to a list of `VoteOption` values."""
@@ -3849,8 +4446,8 @@ enum VoteOptionsOrderBy {
   ID_DESC
   IDEA_SCALE_ASC
   IDEA_SCALE_DESC
-  CHALLENGE_ASC
-  CHALLENGE_DESC
+  OBJECTIVE_ASC
+  OBJECTIVE_DESC
   PRIMARY_KEY_ASC
   PRIMARY_KEY_DESC
 }
@@ -3866,8 +4463,8 @@ input VoteOptionCondition {
   """Checks for equality with the object’s `ideaScale` field."""
   ideaScale: String
 
-  """Checks for equality with the object’s `challenge` field."""
-  challenge: String
+  """Checks for equality with the object’s `objective` field."""
+  objective: String
 }
 
 """A connection to a list of `VoteplanCategory` values."""
@@ -3940,29 +4537,21 @@ type AdminAccount implements Node {
 The root mutation type which contains root level fields which mutate data.
 """
 type Mutation {
-  """Creates a single `Challenge`."""
-  createChallenge(
+  """Creates a single `Ballot`."""
+  createBallot(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: CreateChallengeInput!
-  ): CreateChallengePayload
+    input: CreateBallotInput!
+  ): CreateBallotPayload
 
-  """Creates a single `ChallengeCategory`."""
-  createChallengeCategory(
+  """Creates a single `CommitteeMember`."""
+  createCommitteeMember(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: CreateChallengeCategoryInput!
-  ): CreateChallengeCategoryPayload
-
-  """Creates a single `CommunityAdvisorsReview`."""
-  createCommunityAdvisorsReview(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: CreateCommunityAdvisorsReviewInput!
-  ): CreateCommunityAdvisorsReviewPayload
+    input: CreateCommitteeMemberInput!
+  ): CreateCommitteeMemberPayload
 
   """Creates a single `Config`."""
   createConfig(
@@ -4004,6 +4593,30 @@ type Mutation {
     input: CreateGoalInput!
   ): CreateGoalPayload
 
+  """Creates a single `Objective`."""
+  createObjective(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateObjectiveInput!
+  ): CreateObjectivePayload
+
+  """Creates a single `ObjectiveCategory`."""
+  createObjectiveCategory(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateObjectiveCategoryInput!
+  ): CreateObjectiveCategoryPayload
+
+  """Creates a single `ObjectiveReviewMetric`."""
+  createObjectiveReviewMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateObjectiveReviewMetricInput!
+  ): CreateObjectiveReviewMetricPayload
+
   """Creates a single `Proposal`."""
   createProposal(
     """
@@ -4011,6 +4624,14 @@ type Mutation {
     """
     input: CreateProposalInput!
   ): CreateProposalPayload
+
+  """Creates a single `ProposalReview`."""
+  createProposalReview(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateProposalReviewInput!
+  ): CreateProposalReviewPayload
 
   """Creates a single `ProposalVoteplan`."""
   createProposalVoteplan(
@@ -4028,6 +4649,22 @@ type Mutation {
     input: CreateRefinerySchemaHistoryInput!
   ): CreateRefinerySchemaHistoryPayload
 
+  """Creates a single `ReviewMetric`."""
+  createReviewMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateReviewMetricInput!
+  ): CreateReviewMetricPayload
+
+  """Creates a single `ReviewRating`."""
+  createReviewRating(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: CreateReviewRatingInput!
+  ): CreateReviewRatingPayload
+
   """Creates a single `Snapshot`."""
   createSnapshot(
     """
@@ -4043,14 +4680,6 @@ type Mutation {
     """
     input: CreateTallyCommitteeInput!
   ): CreateTallyCommitteePayload
-
-  """Creates a single `Vote`."""
-  createVote(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: CreateVoteInput!
-  ): CreateVotePayload
 
   """Creates a single `VoteOption`."""
   createVoteOption(
@@ -4100,59 +4729,39 @@ type Mutation {
     input: CreateVotingNodeInput!
   ): CreateVotingNodePayload
 
-  """Updates a single `Challenge` using its globally unique id and a patch."""
-  updateChallengeByNodeId(
+  """Updates a single `Ballot` using its globally unique id and a patch."""
+  updateBallotByNodeId(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: UpdateChallengeByNodeIdInput!
-  ): UpdateChallengePayload
+    input: UpdateBallotByNodeIdInput!
+  ): UpdateBallotPayload
 
-  """Updates a single `Challenge` using a unique key and a patch."""
-  updateChallenge(
+  """Updates a single `Ballot` using a unique key and a patch."""
+  updateBallot(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: UpdateChallengeInput!
-  ): UpdateChallengePayload
-
-  """
-  Updates a single `ChallengeCategory` using its globally unique id and a patch.
-  """
-  updateChallengeCategoryByNodeId(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: UpdateChallengeCategoryByNodeIdInput!
-  ): UpdateChallengeCategoryPayload
-
-  """Updates a single `ChallengeCategory` using a unique key and a patch."""
-  updateChallengeCategory(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: UpdateChallengeCategoryInput!
-  ): UpdateChallengeCategoryPayload
+    input: UpdateBallotInput!
+  ): UpdateBallotPayload
 
   """
-  Updates a single `CommunityAdvisorsReview` using its globally unique id and a patch.
+  Updates a single `CommitteeMember` using its globally unique id and a patch.
   """
-  updateCommunityAdvisorsReviewByNodeId(
+  updateCommitteeMemberByNodeId(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: UpdateCommunityAdvisorsReviewByNodeIdInput!
-  ): UpdateCommunityAdvisorsReviewPayload
+    input: UpdateCommitteeMemberByNodeIdInput!
+  ): UpdateCommitteeMemberPayload
 
-  """
-  Updates a single `CommunityAdvisorsReview` using a unique key and a patch.
-  """
-  updateCommunityAdvisorsReview(
+  """Updates a single `CommitteeMember` using a unique key and a patch."""
+  updateCommitteeMember(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: UpdateCommunityAdvisorsReviewInput!
-  ): UpdateCommunityAdvisorsReviewPayload
+    input: UpdateCommitteeMemberInput!
+  ): UpdateCommitteeMemberPayload
 
   """Updates a single `Config` using its globally unique id and a patch."""
   updateConfigByNodeId(
@@ -4236,6 +4845,70 @@ type Mutation {
     input: UpdateGoalInput!
   ): UpdateGoalPayload
 
+  """Updates a single `Objective` using its globally unique id and a patch."""
+  updateObjectiveByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateObjectiveByNodeIdInput!
+  ): UpdateObjectivePayload
+
+  """Updates a single `Objective` using a unique key and a patch."""
+  updateObjective(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateObjectiveInput!
+  ): UpdateObjectivePayload
+
+  """
+  Updates a single `ObjectiveCategory` using its globally unique id and a patch.
+  """
+  updateObjectiveCategoryByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateObjectiveCategoryByNodeIdInput!
+  ): UpdateObjectiveCategoryPayload
+
+  """Updates a single `ObjectiveCategory` using a unique key and a patch."""
+  updateObjectiveCategory(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateObjectiveCategoryInput!
+  ): UpdateObjectiveCategoryPayload
+
+  """
+  Updates a single `ObjectiveReviewMetric` using its globally unique id and a patch.
+  """
+  updateObjectiveReviewMetricByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateObjectiveReviewMetricByNodeIdInput!
+  ): UpdateObjectiveReviewMetricPayload
+
+  """
+  Updates a single `ObjectiveReviewMetric` using a unique key and a patch.
+  """
+  updateObjectiveReviewMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateObjectiveReviewMetricInput!
+  ): UpdateObjectiveReviewMetricPayload
+
+  """
+  Updates a single `ObjectiveReviewMetric` using a unique key and a patch.
+  """
+  updateObjectiveReviewMetricByObjectiveAndMetricAndReviewGroup(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateObjectiveReviewMetricByObjectiveAndMetricAndReviewGroupInput!
+  ): UpdateObjectiveReviewMetricPayload
+
   """Updates a single `Proposal` using its globally unique id and a patch."""
   updateProposalByNodeId(
     """
@@ -4259,6 +4932,24 @@ type Mutation {
     """
     input: UpdateProposalByIdInput!
   ): UpdateProposalPayload
+
+  """
+  Updates a single `ProposalReview` using its globally unique id and a patch.
+  """
+  updateProposalReviewByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateProposalReviewByNodeIdInput!
+  ): UpdateProposalReviewPayload
+
+  """Updates a single `ProposalReview` using a unique key and a patch."""
+  updateProposalReview(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateProposalReviewInput!
+  ): UpdateProposalReviewPayload
 
   """
   Updates a single `ProposalVoteplan` using its globally unique id and a patch.
@@ -4297,6 +4988,50 @@ type Mutation {
     """
     input: UpdateRefinerySchemaHistoryInput!
   ): UpdateRefinerySchemaHistoryPayload
+
+  """
+  Updates a single `ReviewMetric` using its globally unique id and a patch.
+  """
+  updateReviewMetricByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateReviewMetricByNodeIdInput!
+  ): UpdateReviewMetricPayload
+
+  """Updates a single `ReviewMetric` using a unique key and a patch."""
+  updateReviewMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateReviewMetricInput!
+  ): UpdateReviewMetricPayload
+
+  """
+  Updates a single `ReviewRating` using its globally unique id and a patch.
+  """
+  updateReviewRatingByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateReviewRatingByNodeIdInput!
+  ): UpdateReviewRatingPayload
+
+  """Updates a single `ReviewRating` using a unique key and a patch."""
+  updateReviewRating(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateReviewRatingInput!
+  ): UpdateReviewRatingPayload
+
+  """Updates a single `ReviewRating` using a unique key and a patch."""
+  updateReviewRatingByReviewIdAndMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: UpdateReviewRatingByReviewIdAndMetricInput!
+  ): UpdateReviewRatingPayload
 
   """Updates a single `Snapshot` using its globally unique id and a patch."""
   updateSnapshotByNodeId(
@@ -4348,22 +5083,6 @@ type Mutation {
     input: UpdateTallyCommitteeByEventInput!
   ): UpdateTallyCommitteePayload
 
-  """Updates a single `Vote` using its globally unique id and a patch."""
-  updateVoteByNodeId(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: UpdateVoteByNodeIdInput!
-  ): UpdateVotePayload
-
-  """Updates a single `Vote` using a unique key and a patch."""
-  updateVote(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: UpdateVoteInput!
-  ): UpdateVotePayload
-
   """
   Updates a single `VoteOption` using its globally unique id and a patch.
   """
@@ -4391,11 +5110,11 @@ type Mutation {
   ): UpdateVoteOptionPayload
 
   """Updates a single `VoteOption` using a unique key and a patch."""
-  updateVoteOptionByChallenge(
+  updateVoteOptionByObjective(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: UpdateVoteOptionByChallengeInput!
+    input: UpdateVoteOptionByObjectiveInput!
   ): UpdateVoteOptionPayload
 
   """Updates a single `Voteplan` using its globally unique id and a patch."""
@@ -4492,55 +5211,37 @@ type Mutation {
     input: UpdateVotingNodeInput!
   ): UpdateVotingNodePayload
 
-  """Deletes a single `Challenge` using its globally unique id."""
-  deleteChallengeByNodeId(
+  """Deletes a single `Ballot` using its globally unique id."""
+  deleteBallotByNodeId(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: DeleteChallengeByNodeIdInput!
-  ): DeleteChallengePayload
+    input: DeleteBallotByNodeIdInput!
+  ): DeleteBallotPayload
 
-  """Deletes a single `Challenge` using a unique key."""
-  deleteChallenge(
+  """Deletes a single `Ballot` using a unique key."""
+  deleteBallot(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: DeleteChallengeInput!
-  ): DeleteChallengePayload
+    input: DeleteBallotInput!
+  ): DeleteBallotPayload
 
-  """Deletes a single `ChallengeCategory` using its globally unique id."""
-  deleteChallengeCategoryByNodeId(
+  """Deletes a single `CommitteeMember` using its globally unique id."""
+  deleteCommitteeMemberByNodeId(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: DeleteChallengeCategoryByNodeIdInput!
-  ): DeleteChallengeCategoryPayload
+    input: DeleteCommitteeMemberByNodeIdInput!
+  ): DeleteCommitteeMemberPayload
 
-  """Deletes a single `ChallengeCategory` using a unique key."""
-  deleteChallengeCategory(
+  """Deletes a single `CommitteeMember` using a unique key."""
+  deleteCommitteeMember(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: DeleteChallengeCategoryInput!
-  ): DeleteChallengeCategoryPayload
-
-  """
-  Deletes a single `CommunityAdvisorsReview` using its globally unique id.
-  """
-  deleteCommunityAdvisorsReviewByNodeId(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: DeleteCommunityAdvisorsReviewByNodeIdInput!
-  ): DeleteCommunityAdvisorsReviewPayload
-
-  """Deletes a single `CommunityAdvisorsReview` using a unique key."""
-  deleteCommunityAdvisorsReview(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: DeleteCommunityAdvisorsReviewInput!
-  ): DeleteCommunityAdvisorsReviewPayload
+    input: DeleteCommitteeMemberInput!
+  ): DeleteCommitteeMemberPayload
 
   """Deletes a single `Config` using its globally unique id."""
   deleteConfigByNodeId(
@@ -4622,6 +5323,62 @@ type Mutation {
     input: DeleteGoalInput!
   ): DeleteGoalPayload
 
+  """Deletes a single `Objective` using its globally unique id."""
+  deleteObjectiveByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteObjectiveByNodeIdInput!
+  ): DeleteObjectivePayload
+
+  """Deletes a single `Objective` using a unique key."""
+  deleteObjective(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteObjectiveInput!
+  ): DeleteObjectivePayload
+
+  """Deletes a single `ObjectiveCategory` using its globally unique id."""
+  deleteObjectiveCategoryByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteObjectiveCategoryByNodeIdInput!
+  ): DeleteObjectiveCategoryPayload
+
+  """Deletes a single `ObjectiveCategory` using a unique key."""
+  deleteObjectiveCategory(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteObjectiveCategoryInput!
+  ): DeleteObjectiveCategoryPayload
+
+  """Deletes a single `ObjectiveReviewMetric` using its globally unique id."""
+  deleteObjectiveReviewMetricByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteObjectiveReviewMetricByNodeIdInput!
+  ): DeleteObjectiveReviewMetricPayload
+
+  """Deletes a single `ObjectiveReviewMetric` using a unique key."""
+  deleteObjectiveReviewMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteObjectiveReviewMetricInput!
+  ): DeleteObjectiveReviewMetricPayload
+
+  """Deletes a single `ObjectiveReviewMetric` using a unique key."""
+  deleteObjectiveReviewMetricByObjectiveAndMetricAndReviewGroup(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteObjectiveReviewMetricByObjectiveAndMetricAndReviewGroupInput!
+  ): DeleteObjectiveReviewMetricPayload
+
   """Deletes a single `Proposal` using its globally unique id."""
   deleteProposalByNodeId(
     """
@@ -4645,6 +5402,22 @@ type Mutation {
     """
     input: DeleteProposalByIdInput!
   ): DeleteProposalPayload
+
+  """Deletes a single `ProposalReview` using its globally unique id."""
+  deleteProposalReviewByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteProposalReviewByNodeIdInput!
+  ): DeleteProposalReviewPayload
+
+  """Deletes a single `ProposalReview` using a unique key."""
+  deleteProposalReview(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteProposalReviewInput!
+  ): DeleteProposalReviewPayload
 
   """Deletes a single `ProposalVoteplan` using its globally unique id."""
   deleteProposalVoteplanByNodeId(
@@ -4677,6 +5450,46 @@ type Mutation {
     """
     input: DeleteRefinerySchemaHistoryInput!
   ): DeleteRefinerySchemaHistoryPayload
+
+  """Deletes a single `ReviewMetric` using its globally unique id."""
+  deleteReviewMetricByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteReviewMetricByNodeIdInput!
+  ): DeleteReviewMetricPayload
+
+  """Deletes a single `ReviewMetric` using a unique key."""
+  deleteReviewMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteReviewMetricInput!
+  ): DeleteReviewMetricPayload
+
+  """Deletes a single `ReviewRating` using its globally unique id."""
+  deleteReviewRatingByNodeId(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteReviewRatingByNodeIdInput!
+  ): DeleteReviewRatingPayload
+
+  """Deletes a single `ReviewRating` using a unique key."""
+  deleteReviewRating(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteReviewRatingInput!
+  ): DeleteReviewRatingPayload
+
+  """Deletes a single `ReviewRating` using a unique key."""
+  deleteReviewRatingByReviewIdAndMetric(
+    """
+    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
+    """
+    input: DeleteReviewRatingByReviewIdAndMetricInput!
+  ): DeleteReviewRatingPayload
 
   """Deletes a single `Snapshot` using its globally unique id."""
   deleteSnapshotByNodeId(
@@ -4726,22 +5539,6 @@ type Mutation {
     input: DeleteTallyCommitteeByEventInput!
   ): DeleteTallyCommitteePayload
 
-  """Deletes a single `Vote` using its globally unique id."""
-  deleteVoteByNodeId(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: DeleteVoteByNodeIdInput!
-  ): DeleteVotePayload
-
-  """Deletes a single `Vote` using a unique key."""
-  deleteVote(
-    """
-    The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
-    """
-    input: DeleteVoteInput!
-  ): DeleteVotePayload
-
   """Deletes a single `VoteOption` using its globally unique id."""
   deleteVoteOptionByNodeId(
     """
@@ -4767,11 +5564,11 @@ type Mutation {
   ): DeleteVoteOptionPayload
 
   """Deletes a single `VoteOption` using a unique key."""
-  deleteVoteOptionByChallenge(
+  deleteVoteOptionByObjective(
     """
     The exclusive input argument for this mutation. An object type, make sure to see documentation for this object’s fields.
     """
-    input: DeleteVoteOptionByChallengeInput!
+    input: DeleteVoteOptionByObjectiveInput!
   ): DeleteVoteOptionPayload
 
   """Deletes a single `Voteplan` using its globally unique id."""
@@ -4881,219 +5678,144 @@ type Mutation {
   ): RegisterAdminPayload
 }
 
-"""The output of our create `Challenge` mutation."""
-type CreateChallengePayload {
+"""The output of our create `Ballot` mutation."""
+type CreateBallotPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
   """
   clientMutationId: String
 
-  """The `Challenge` that was created by this mutation."""
-  challenge: Challenge
+  """The `Ballot` that was created by this mutation."""
+  ballot: Ballot
 
   """
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
 
-  """Reads a single `Event` that is related to this `Challenge`."""
-  eventByEvent: Event
+  """Reads a single `Objective` that is related to this `Ballot`."""
+  objectiveByObjective: Objective
 
-  """
-  Reads a single `ChallengeCategory` that is related to this `Challenge`.
-  """
-  challengeCategoryByCategory: ChallengeCategory
+  """Reads a single `Proposal` that is related to this `Ballot`."""
+  proposalByProposal: Proposal
 
-  """Reads a single `Currency` that is related to this `Challenge`."""
-  currencyByRewardsCurrency: Currency
+  """Reads a single `Voter` that is related to this `Ballot`."""
+  voterByVoter: Voter
 
-  """Reads a single `VoteOption` that is related to this `Challenge`."""
-  voteOptionByVoteOptions: VoteOption
-
-  """An edge for our `Challenge`. May be used by Relay 1."""
-  challengeEdge(
-    """The method to use when ordering `Challenge`."""
-    orderBy: [ChallengesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): ChallengesEdge
+  """An edge for our `Ballot`. May be used by Relay 1."""
+  ballotEdge(
+    """The method to use when ordering `Ballot`."""
+    orderBy: [BallotsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BallotsEdge
 }
 
-"""All input for the create `Challenge` mutation."""
-input CreateChallengeInput {
+"""All input for the create `Ballot` mutation."""
+input CreateBallotInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
 
-  """The `Challenge` to be created by this mutation."""
-  challenge: ChallengeInput!
+  """The `Ballot` to be created by this mutation."""
+  ballot: BallotInput!
 }
 
-"""An input for mutations affecting `Challenge`"""
-input ChallengeInput {
-  """Synthetic Unique Key"""
+"""An input for mutations affecting `Ballot`"""
+input BallotInput {
+  rowId: BigInt
+
+  """Reference to the Objective the ballot was for."""
+  objective: Int!
+
+  """
+  Reference to the Proposal the ballot was for.
+  May be NULL if this ballot covers ALL proposals in the challenge.
+  """
+  proposal: Int
+
+  """Reference to the Voter who cast the ballot"""
+  voter: Int!
+
+  """Unique ID of this Ballot"""
+  fragmentId: String!
+
+  """When this ballot was recorded as properly cast"""
+  castAt: Datetime!
+
+  """If a public vote, the choice on the ballot, otherwise NULL."""
+  choice: Int
+
+  """The raw ballot record."""
+  rawFragment: String!
+}
+
+"""The output of our create `CommitteeMember` mutation."""
+type CreateCommitteeMemberPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `CommitteeMember` that was created by this mutation."""
+  committeeMember: CommitteeMember
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """
+  Reads a single `TallyCommittee` that is related to this `CommitteeMember`.
+  """
+  tallyCommitteeByCommittee: TallyCommittee
+
+  """An edge for our `CommitteeMember`. May be used by Relay 1."""
+  committeeMemberEdge(
+    """The method to use when ordering `CommitteeMember`."""
+    orderBy: [CommitteeMembersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CommitteeMembersEdge
+}
+
+"""All input for the create `CommitteeMember` mutation."""
+input CreateCommitteeMemberInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `CommitteeMember` to be created by this mutation."""
+  committeeMember: CommitteeMemberInput!
+}
+
+"""An input for mutations affecting `CommitteeMember`"""
+input CommitteeMemberInput {
+  """Unique ID for this committee member for this event."""
   rowId: Int
 
-  """
-  Event specific Challenge ID.
-  Can be non-unique between events (Eg, Ideascale ID for challenge).
-  """
-  id: Int!
-
-  """The specific Event ID this Challenge is part of."""
-  event: Int!
+  """The committee this member belongs to."""
+  committee: Int!
 
   """
-  What category of challenge is this.
-  See the challenge_category table for allowed values.
+  the zero-based index of the member, ranging from 0 <= index < committee_size.
   """
-  category: String!
+  memberIndex: Int!
+  threshold: Int!
 
-  """The  title of the challenge."""
-  title: String!
+  """Committee member communication public key."""
+  commPk: String!
 
-  """Long form description of the challenge."""
-  description: String!
+  """Encrypted committee member communication secret key."""
+  commSk: String!
 
-  """The currency rewards values are represented as."""
-  rewardsCurrency: String
+  """Committee member public key"""
+  memberPk: String!
 
-  """The total reward pool to pay on this challenge to winning proposals."""
-  rewardsTotal: BigInt
-
-  """Not sure how this is different from rewards_total???"""
-  proposersRewards: BigInt
-
-  """The Vote Options applicable to all proposals in this challenge."""
-  voteOptions: Int
-
-  """
-  Extra Data  for this challenge represented as JSON.
-  "url"."challenge" is a URL for more info about the challenge.
-  "highlights" is ???
-  
-  """
-  extra: JSON
-}
-
-"""The output of our create `ChallengeCategory` mutation."""
-type CreateChallengeCategoryPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """The `ChallengeCategory` that was created by this mutation."""
-  challengeCategory: ChallengeCategory
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """An edge for our `ChallengeCategory`. May be used by Relay 1."""
-  challengeCategoryEdge(
-    """The method to use when ordering `ChallengeCategory`."""
-    orderBy: [ChallengeCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): ChallengeCategoriesEdge
-}
-
-"""All input for the create `ChallengeCategory` mutation."""
-input CreateChallengeCategoryInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """The `ChallengeCategory` to be created by this mutation."""
-  challengeCategory: ChallengeCategoryInput!
-}
-
-"""An input for mutations affecting `ChallengeCategory`"""
-input ChallengeCategoryInput {
-  """The name of this challenge category."""
-  name: String!
-
-  """A Description of this kind of challenge category."""
-  description: String
-}
-
-"""The output of our create `CommunityAdvisorsReview` mutation."""
-type CreateCommunityAdvisorsReviewPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """The `CommunityAdvisorsReview` that was created by this mutation."""
-  communityAdvisorsReview: CommunityAdvisorsReview
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """
-  Reads a single `Proposal` that is related to this `CommunityAdvisorsReview`.
-  """
-  proposal: Proposal
-
-  """An edge for our `CommunityAdvisorsReview`. May be used by Relay 1."""
-  communityAdvisorsReviewEdge(
-    """The method to use when ordering `CommunityAdvisorsReview`."""
-    orderBy: [CommunityAdvisorsReviewsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): CommunityAdvisorsReviewsEdge
-}
-
-"""All input for the create `CommunityAdvisorsReview` mutation."""
-input CreateCommunityAdvisorsReviewInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """The `CommunityAdvisorsReview` to be created by this mutation."""
-  communityAdvisorsReview: CommunityAdvisorsReviewInput!
-}
-
-"""An input for mutations affecting `CommunityAdvisorsReview`"""
-input CommunityAdvisorsReviewInput {
-  """Synthetic Unique Key."""
-  rowId: Int
-
-  """The Proposal this review is for."""
-  proposalId: Int!
-
-  """Assessors Anonymized ID"""
-  assessor: String!
-
-  """The  numeric rating assigned to the proposal by the assessor."""
-  impactAlignmentRatingGiven: Int
-
-  """A note about why the impact rating was given."""
-  impactAlignmentNote: String
-
-  """The numeric feasibility rating given."""
-  feasibilityRatingGiven: Int
-
-  """A note about why the feasibility rating was given."""
-  feasibilityNote: String
-
-  """The numeric auditability rating given."""
-  auditabilityRatingGiven: Int
-
-  """A note about the auditability rating given."""
-  auditabilityNote: String
-
-  """
-  Numeric  Measure of quality of this review according to veteran community advisors.
-  """
-  ranking: Int
+  """Encrypted committee member secret key"""
+  memberSk: String!
 }
 
 """The output of our create `Config` mutation."""
@@ -5446,6 +6168,35 @@ input EventInput {
   others can be defined as required.
   """
   extra: JSON
+
+  """
+  Json Map defining parameters which control where the vote is to be cast.
+  Multiple destinations can be defined simultaneously.
+  In this case the vote gets cast to all defined destinations.
+  `NULL` = Default Jormungandr Blockchain.
+  ```jsonc
+  "jorm" : { // Voting on Jormungandr Blockchain
+      chain_id: <int>, // Jormungandr chain id. Defaults to 0.
+      // Other parameters TBD.
+  },
+  "caradno" : { // Voting on Cardano Directly
+      chain_id: <int>, // 0 = pre-prod, 1 = mainnet.
+      // Other parameters TBD.
+  },
+  "postgres" : { // Store votes in Web 2 postgres backed DB only.
+      url: "<postgres URL. Defaults to system default>"
+      // Other parameters TBD.
+      // Note: Votes that arrive in the Cat1 system are always stored in the DB.
+      // This Option only allows the vote storage DB to be tuned.
+  },
+  "cat2" : { // Store votes to the Catalyst 2.0 P2P Network.
+      gateway: "<URL of the gateway to use"
+      // Other parameters TBD.
+  }
+  ```
+  
+  """
+  castTo: JSON
 }
 
 """The output of our create `Goal` mutation."""
@@ -5501,6 +6252,213 @@ input GoalInput {
   name: String!
 }
 
+"""The output of our create `Objective` mutation."""
+type CreateObjectivePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `Objective` that was created by this mutation."""
+  objective: Objective
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Event` that is related to this `Objective`."""
+  eventByEvent: Event
+
+  """
+  Reads a single `ObjectiveCategory` that is related to this `Objective`.
+  """
+  objectiveCategoryByCategory: ObjectiveCategory
+
+  """Reads a single `Currency` that is related to this `Objective`."""
+  currencyByRewardsCurrency: Currency
+
+  """Reads a single `VoteOption` that is related to this `Objective`."""
+  voteOptionByVoteOptions: VoteOption
+
+  """An edge for our `Objective`. May be used by Relay 1."""
+  objectiveEdge(
+    """The method to use when ordering `Objective`."""
+    orderBy: [ObjectivesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ObjectivesEdge
+}
+
+"""All input for the create `Objective` mutation."""
+input CreateObjectiveInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `Objective` to be created by this mutation."""
+  objective: ObjectiveInput!
+}
+
+"""An input for mutations affecting `Objective`"""
+input ObjectiveInput {
+  """Synthetic Unique Key"""
+  rowId: Int
+
+  """
+  Event specific objective ID.
+  Can be non-unique between events (Eg, Ideascale ID for objective).
+  """
+  id: Int!
+
+  """The specific Event ID this objective is part of."""
+  event: Int!
+
+  """
+  What category of objective is this.
+  See the objective_category table for allowed values.
+  """
+  category: String!
+
+  """The  title of the objective."""
+  title: String!
+
+  """Long form description of the objective."""
+  description: String!
+
+  """The currency rewards values are represented as."""
+  rewardsCurrency: String
+
+  """The total reward pool to pay on this objective to winning proposals."""
+  rewardsTotal: BigInt
+
+  """Not sure how this is different from rewards_total???"""
+  proposersRewards: BigInt
+
+  """The Vote Options applicable to all proposals in this objective."""
+  voteOptions: Int
+
+  """
+  Extra Data  for this objective represented as JSON.
+  "url"."objective" is a URL for more info about the objective.
+  "highlights" is ???
+  
+  """
+  extra: JSON
+}
+
+"""The output of our create `ObjectiveCategory` mutation."""
+type CreateObjectiveCategoryPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ObjectiveCategory` that was created by this mutation."""
+  objectiveCategory: ObjectiveCategory
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `ObjectiveCategory`. May be used by Relay 1."""
+  objectiveCategoryEdge(
+    """The method to use when ordering `ObjectiveCategory`."""
+    orderBy: [ObjectiveCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ObjectiveCategoriesEdge
+}
+
+"""All input for the create `ObjectiveCategory` mutation."""
+input CreateObjectiveCategoryInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `ObjectiveCategory` to be created by this mutation."""
+  objectiveCategory: ObjectiveCategoryInput!
+}
+
+"""An input for mutations affecting `ObjectiveCategory`"""
+input ObjectiveCategoryInput {
+  """The name of this objective category."""
+  name: String!
+
+  """A Description of this kind of objective category."""
+  description: String
+}
+
+"""The output of our create `ObjectiveReviewMetric` mutation."""
+type CreateObjectiveReviewMetricPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ObjectiveReviewMetric` that was created by this mutation."""
+  objectiveReviewMetric: ObjectiveReviewMetric
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """
+  Reads a single `Objective` that is related to this `ObjectiveReviewMetric`.
+  """
+  objectiveByObjective: Objective
+
+  """
+  Reads a single `ObjectiveReviewMetric` that is related to this `ObjectiveReviewMetric`.
+  """
+  objectiveReviewMetricByMetric: ObjectiveReviewMetric
+
+  """An edge for our `ObjectiveReviewMetric`. May be used by Relay 1."""
+  objectiveReviewMetricEdge(
+    """The method to use when ordering `ObjectiveReviewMetric`."""
+    orderBy: [ObjectiveReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ObjectiveReviewMetricsEdge
+}
+
+"""All input for the create `ObjectiveReviewMetric` mutation."""
+input CreateObjectiveReviewMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `ObjectiveReviewMetric` to be created by this mutation."""
+  objectiveReviewMetric: ObjectiveReviewMetricInput!
+}
+
+"""An input for mutations affecting `ObjectiveReviewMetric`"""
+input ObjectiveReviewMetricInput {
+  rowId: Int
+
+  """The objective that can use this review metric."""
+  objective: Int!
+
+  """The review metric that the objective can use."""
+  metric: Int!
+
+  """
+  Does the metric require a Note?
+  NULL = Optional.
+  True = MUST include Note.
+  False = MUST NOT include Note.
+  """
+  note: Boolean
+
+  """The review group that can give this metric. Details TBD."""
+  reviewGroup: String
+}
+
 """The output of our create `Proposal` mutation."""
 type CreateProposalPayload {
   """
@@ -5517,8 +6475,8 @@ type CreateProposalPayload {
   """
   query: Query
 
-  """Reads a single `Challenge` that is related to this `Proposal`."""
-  challengeByChallenge: Challenge
+  """Reads a single `Objective` that is related to this `Proposal`."""
+  objectiveByObjective: Objective
 
   """Reads a single `VoteOption` that is related to this `Proposal`."""
   voteOptionByBbVoteOptions: VoteOption
@@ -5550,8 +6508,8 @@ input ProposalInput {
   """Actual Proposal Unique ID"""
   id: Int!
 
-  """The Challenge this proposal falls under."""
-  challenge: Int!
+  """The Objective this proposal falls under."""
+  objective: Int!
 
   """Brief title of the proposal."""
   title: String!
@@ -5560,7 +6518,7 @@ input ProposalInput {
   summary: String!
   category: String!
 
-  """???"""
+  """Proposals Reward Address (CIP-19 Payment Key)"""
   publicKey: String!
 
   """How much funds (in the currency of the fund)"""
@@ -5611,8 +6569,103 @@ input ProposalInput {
   """
   bbProposalId: String
 
-  """The selectable options by the voter."""
+  """
+  The selectable options by the voter. DEPRECATED: Only used for Vit-SS compatibility.
+  """
   bbVoteOptions: String
+}
+
+"""The output of our create `ProposalReview` mutation."""
+type CreateProposalReviewPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ProposalReview` that was created by this mutation."""
+  proposalReview: ProposalReview
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Proposal` that is related to this `ProposalReview`."""
+  proposal: Proposal
+
+  """An edge for our `ProposalReview`. May be used by Relay 1."""
+  proposalReviewEdge(
+    """The method to use when ordering `ProposalReview`."""
+    orderBy: [ProposalReviewsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ProposalReviewsEdge
+}
+
+"""All input for the create `ProposalReview` mutation."""
+input CreateProposalReviewInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `ProposalReview` to be created by this mutation."""
+  proposalReview: ProposalReviewInput!
+}
+
+"""An input for mutations affecting `ProposalReview`"""
+input ProposalReviewInput {
+  """Synthetic Unique Key."""
+  rowId: Int
+
+  """The Proposal this review is for."""
+  proposalId: Int!
+
+  """Assessors Anonymized ID"""
+  assessor: String!
+
+  """
+  The  numeric rating assigned to the proposal by the assessor.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  impactAlignmentRatingGiven: Int
+
+  """
+  A note about why the impact rating was given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  impactAlignmentNote: String
+
+  """
+  The numeric feasibility rating given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  feasibilityRatingGiven: Int
+
+  """
+  A note about why the feasibility rating was given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  feasibilityNote: String
+
+  """
+  The numeric auditability rating given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  auditabilityRatingGiven: Int
+
+  """
+  A note about the auditability rating given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  auditabilityNote: String
+
+  """
+  Numeric  Measure of quality of this review according to veteran community advisors.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  
+  """
+  ranking: Int
 }
 
 """The output of our create `ProposalVoteplan` mutation."""
@@ -5716,6 +6769,135 @@ input RefinerySchemaHistoryInput {
   checksum: String
 }
 
+"""The output of our create `ReviewMetric` mutation."""
+type CreateReviewMetricPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ReviewMetric` that was created by this mutation."""
+  reviewMetric: ReviewMetric
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `ReviewMetric`. May be used by Relay 1."""
+  reviewMetricEdge(
+    """The method to use when ordering `ReviewMetric`."""
+    orderBy: [ReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ReviewMetricsEdge
+}
+
+"""All input for the create `ReviewMetric` mutation."""
+input CreateReviewMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `ReviewMetric` to be created by this mutation."""
+  reviewMetric: ReviewMetricInput!
+}
+
+"""An input for mutations affecting `ReviewMetric`"""
+input ReviewMetricInput {
+  """The synthetic ID of this metric."""
+  rowId: Int
+
+  """The short name for this review metric."""
+  name: String!
+
+  """Long form description of what the review metric means."""
+  description: String
+
+  """The minimum value of the metric (inclusive)."""
+  min: Int!
+
+  """The maximum value of the metric (inclusive)."""
+  max: Int!
+
+  """
+  OPTIONAL: JSON Array which defines extra details for each metric score.
+  There MUST be one entry per possible score in the range.
+  Entries are IN ORDER, from the lowest numeric score to the highest.
+  Each entry =
+  ```jsonc
+  {
+     "name" : "<name>", // Symbolic Name for the metric score.
+     "description" : "<desc>", // Description of what the named metric score means.
+  }
+  ```
+  
+  """
+  map: JSON
+}
+
+"""The output of our create `ReviewRating` mutation."""
+type CreateReviewRatingPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ReviewRating` that was created by this mutation."""
+  reviewRating: ReviewRating
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """
+  Reads a single `ProposalReview` that is related to this `ReviewRating`.
+  """
+  review: ProposalReview
+
+  """Reads a single `ReviewMetric` that is related to this `ReviewRating`."""
+  reviewMetricByMetric: ReviewMetric
+
+  """An edge for our `ReviewRating`. May be used by Relay 1."""
+  reviewRatingEdge(
+    """The method to use when ordering `ReviewRating`."""
+    orderBy: [ReviewRatingsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ReviewRatingsEdge
+}
+
+"""All input for the create `ReviewRating` mutation."""
+input CreateReviewRatingInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The `ReviewRating` to be created by this mutation."""
+  reviewRating: ReviewRatingInput!
+}
+
+"""An input for mutations affecting `ReviewRating`"""
+input ReviewRatingInput {
+  """Synthetic ID of this individual rating."""
+  rowId: Int
+
+  """The review the metric is being given for."""
+  reviewId: Int!
+
+  """Metric the rating is being given for."""
+  metric: Int!
+
+  """The rating being given to the metric."""
+  rating: Int!
+
+  """OPTIONAL: Note about the rating given."""
+  note: String
+}
+
 """The output of our create `Snapshot` mutation."""
 type CreateSnapshotPayload {
   """
@@ -5762,14 +6944,15 @@ input SnapshotInput {
   event: Int!
 
   """
-  The time the snapshot was collected from dbsync
+  The time the snapshot was collected from dbsync.
+  This is the snapshot *DEADLINE*, i.e the time when registrations are final.
   (Should be the slot time the dbsync_snapshot_cmd was run against.)
   """
   asAt: Datetime!
 
   """
   The last time the snapshot was run
-  (Should be the real time the snapshot was started.
+  (Should be the latest block time taken from dbsync just before the snapshot was run.)
   """
   lastUpdated: Datetime!
 
@@ -5788,14 +6971,27 @@ input SnapshotInput {
   dbsyncSnapshotParams: JSON
 
   """
-  The raw json result stored as TEXT from the dbsync snapshot.
-  (This is JSON data but we store as raw text to prevent any processing of it).
+  The BROTLI COMPRESSED raw json result stored as BINARY from the dbsync snapshot.
+  (This is JSON data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
   """
   dbsyncSnapshotData: String
 
   """
+  The BROTLI COMPRESSED raw json errors stored as BINARY from the dbsync snapshot.
+  (This is JSON data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
+  """
+  dbsyncSnapshotError: String
+
+  """
+  The BROTLI COMPRESSED unregistered voting power stored as BINARY from the dbsync snapshot.
+  (This is JSON data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
+  """
+  dbsyncSnapshotUnregistered: String
+
+  """
   The latest drep data obtained from GVC, and used in this snapshot calculation.
   Should be in a form directly usable by the `catalyst_snapshot_cmd`
+  However, in order to save space this data is stored as BROTLI COMPRESSED BINARY.
   """
   drepData: String
 
@@ -5806,8 +7002,8 @@ input SnapshotInput {
   catalystSnapshotParams: JSON
 
   """
-  The raw yaml result stored as TEXT from the catalyst snapshot calculation.
-  (This is YAML data but we store as raw text to prevent any processing of it).
+  The BROTLI COMPRESSED raw yaml result stored as BINARY from the catalyst snapshot calculation.
+  (This is YAML data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
   """
   catalystSnapshotData: String
 }
@@ -5857,92 +7053,19 @@ input TallyCommitteeInput {
 
   """The event this committee member is for."""
   event: Int!
-}
 
-"""The output of our create `Vote` mutation."""
-type CreateVotePayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """The `Vote` that was created by this mutation."""
-  vote: Vote
+  """The hex-encoded public key for the committee wallet."""
+  committeeId: String!
 
   """
-  Our root query field type. Allows us to run any query from our mutation payload.
+  Encrypted Common Reference String shared in the creation of every set of committee member keys.
   """
-  query: Query
-
-  """Reads a single `Event` that is related to this `Vote`."""
-  eventByEvent: Event
-
-  """Reads a single `Voter` that is related to this `Vote`."""
-  voterByVoter: Voter
-
-  """Reads a single `Challenge` that is related to this `Vote`."""
-  challengeByChallenge: Challenge
-
-  """Reads a single `Proposal` that is related to this `Vote`."""
-  proposalByChallengeAndProposal: Proposal
-
-  """Reads a single `Proposal` that is related to this `Vote`."""
-  proposalByProposal: Proposal
-
-  """Reads a single `Voteplan` that is related to this `Vote`."""
-  voteplanByVoteplan: Voteplan
-
-  """An edge for our `Vote`. May be used by Relay 1."""
-  voteEdge(
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): VotesEdge
-}
-
-"""All input for the create `Vote` mutation."""
-input CreateVoteInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """The `Vote` to be created by this mutation."""
-  vote: VoteInput!
-}
-
-"""An input for mutations affecting `Vote`"""
-input VoteInput {
-  rowId: BigInt
-  event: Int
-
-  """Unique ID of this Vote"""
-  fragmentId: String
-
-  """Reference to the Voter who cast the vote"""
-  voter: Int!
-
-  """Reference to the Challenge the vote was for."""
-  challenge: Int!
+  memberCrs: String
 
   """
-  Reference to the Proposal the vote was for.
-  May be NULL if this vote covers ALL proposals in the challenge.
+  Public key generated with all committee member public keys, and is used to encrypt votes. NULL if the event.committee_size is 0.
   """
-  proposal: Int
-
-  """The Voteplan this vote was cast in"""
-  voteplan: Int!
-
-  """When this vote was recorded as properly cast"""
-  castAt: Datetime!
-
-  """If a public vote, the choice of the vote, otherwise NULL."""
-  choice: Int
-
-  """The raw vote record."""
-  rawFragment: String!
+  electionKey: String
 }
 
 """The output of our create `VoteOption` mutation."""
@@ -5988,8 +7111,8 @@ input VoteOptionInput {
   """How this vote option is represented in idea scale."""
   ideaScale: String
 
-  """How the vote options is represented in the challenge."""
-  challenge: String
+  """How the vote options is represented in the objective."""
+  objective: String
 }
 
 """The output of our create `Voteplan` mutation."""
@@ -6260,60 +7383,55 @@ input VotingNodeInput {
   event: Int!
 
   """
-  Public key from Ed25519 pair for the node.
-  Used as consensus_leader_id when the node is a leader.
+  Public key from Ed25519 pair for the node. Used as consensus_leader_id when the node is a leader.
   """
   pubkey: String!
 
-  """Secret key from Ed25519 pair for the node. Used as the node secret."""
+  """
+  Encrypted secret key from Ed25519 pair for the node. Used as the node secret.
+  """
   seckey: String!
 
   """
-  Ed25519 secret key for the node.
-  Used as the node p2p topology key.
+  Encrypted Ed25519 secret key for the node. Used as the node p2p topology key.
   """
   netkey: String!
 }
 
-"""The output of our update `Challenge` mutation."""
-type UpdateChallengePayload {
+"""The output of our update `Ballot` mutation."""
+type UpdateBallotPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
   """
   clientMutationId: String
 
-  """The `Challenge` that was updated by this mutation."""
-  challenge: Challenge
+  """The `Ballot` that was updated by this mutation."""
+  ballot: Ballot
 
   """
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
 
-  """Reads a single `Event` that is related to this `Challenge`."""
-  eventByEvent: Event
+  """Reads a single `Objective` that is related to this `Ballot`."""
+  objectiveByObjective: Objective
 
-  """
-  Reads a single `ChallengeCategory` that is related to this `Challenge`.
-  """
-  challengeCategoryByCategory: ChallengeCategory
+  """Reads a single `Proposal` that is related to this `Ballot`."""
+  proposalByProposal: Proposal
 
-  """Reads a single `Currency` that is related to this `Challenge`."""
-  currencyByRewardsCurrency: Currency
+  """Reads a single `Voter` that is related to this `Ballot`."""
+  voterByVoter: Voter
 
-  """Reads a single `VoteOption` that is related to this `Challenge`."""
-  voteOptionByVoteOptions: VoteOption
-
-  """An edge for our `Challenge`. May be used by Relay 1."""
-  challengeEdge(
-    """The method to use when ordering `Challenge`."""
-    orderBy: [ChallengesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): ChallengesEdge
+  """An edge for our `Ballot`. May be used by Relay 1."""
+  ballotEdge(
+    """The method to use when ordering `Ballot`."""
+    orderBy: [BallotsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BallotsEdge
 }
 
-"""All input for the `updateChallengeByNodeId` mutation."""
-input UpdateChallengeByNodeIdInput {
+"""All input for the `updateBallotByNodeId` mutation."""
+input UpdateBallotByNodeIdInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
@@ -6321,67 +7439,140 @@ input UpdateChallengeByNodeIdInput {
   clientMutationId: String
 
   """
-  The globally unique `ID` which will identify a single `Challenge` to be updated.
+  The globally unique `ID` which will identify a single `Ballot` to be updated.
   """
   nodeId: ID!
 
   """
-  An object where the defined keys will be set on the `Challenge` being updated.
+  An object where the defined keys will be set on the `Ballot` being updated.
   """
-  patch: ChallengePatch!
+  patch: BallotPatch!
 }
 
 """
-Represents an update to a `Challenge`. Fields that are set will be updated.
+Represents an update to a `Ballot`. Fields that are set will be updated.
 """
-input ChallengePatch {
-  """Synthetic Unique Key"""
+input BallotPatch {
+  rowId: BigInt
+
+  """Reference to the Objective the ballot was for."""
+  objective: Int
+
+  """
+  Reference to the Proposal the ballot was for.
+  May be NULL if this ballot covers ALL proposals in the challenge.
+  """
+  proposal: Int
+
+  """Reference to the Voter who cast the ballot"""
+  voter: Int
+
+  """Unique ID of this Ballot"""
+  fragmentId: String
+
+  """When this ballot was recorded as properly cast"""
+  castAt: Datetime
+
+  """If a public vote, the choice on the ballot, otherwise NULL."""
+  choice: Int
+
+  """The raw ballot record."""
+  rawFragment: String
+}
+
+"""All input for the `updateBallot` mutation."""
+input UpdateBallotInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `Ballot` being updated.
+  """
+  patch: BallotPatch!
+  rowId: BigInt!
+}
+
+"""The output of our update `CommitteeMember` mutation."""
+type UpdateCommitteeMemberPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `CommitteeMember` that was updated by this mutation."""
+  committeeMember: CommitteeMember
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """
+  Reads a single `TallyCommittee` that is related to this `CommitteeMember`.
+  """
+  tallyCommitteeByCommittee: TallyCommittee
+
+  """An edge for our `CommitteeMember`. May be used by Relay 1."""
+  committeeMemberEdge(
+    """The method to use when ordering `CommitteeMember`."""
+    orderBy: [CommitteeMembersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CommitteeMembersEdge
+}
+
+"""All input for the `updateCommitteeMemberByNodeId` mutation."""
+input UpdateCommitteeMemberByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `CommitteeMember` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `CommitteeMember` being updated.
+  """
+  patch: CommitteeMemberPatch!
+}
+
+"""
+Represents an update to a `CommitteeMember`. Fields that are set will be updated.
+"""
+input CommitteeMemberPatch {
+  """Unique ID for this committee member for this event."""
   rowId: Int
 
-  """
-  Event specific Challenge ID.
-  Can be non-unique between events (Eg, Ideascale ID for challenge).
-  """
-  id: Int
-
-  """The specific Event ID this Challenge is part of."""
-  event: Int
+  """The committee this member belongs to."""
+  committee: Int
 
   """
-  What category of challenge is this.
-  See the challenge_category table for allowed values.
+  the zero-based index of the member, ranging from 0 <= index < committee_size.
   """
-  category: String
+  memberIndex: Int
+  threshold: Int
 
-  """The  title of the challenge."""
-  title: String
+  """Committee member communication public key."""
+  commPk: String
 
-  """Long form description of the challenge."""
-  description: String
+  """Encrypted committee member communication secret key."""
+  commSk: String
 
-  """The currency rewards values are represented as."""
-  rewardsCurrency: String
+  """Committee member public key"""
+  memberPk: String
 
-  """The total reward pool to pay on this challenge to winning proposals."""
-  rewardsTotal: BigInt
-
-  """Not sure how this is different from rewards_total???"""
-  proposersRewards: BigInt
-
-  """The Vote Options applicable to all proposals in this challenge."""
-  voteOptions: Int
-
-  """
-  Extra Data  for this challenge represented as JSON.
-  "url"."challenge" is a URL for more info about the challenge.
-  "highlights" is ???
-  
-  """
-  extra: JSON
+  """Encrypted committee member secret key"""
+  memberSk: String
 }
 
-"""All input for the `updateChallenge` mutation."""
-input UpdateChallengeInput {
+"""All input for the `updateCommitteeMember` mutation."""
+input UpdateCommitteeMemberInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
@@ -6389,182 +7580,11 @@ input UpdateChallengeInput {
   clientMutationId: String
 
   """
-  An object where the defined keys will be set on the `Challenge` being updated.
+  An object where the defined keys will be set on the `CommitteeMember` being updated.
   """
-  patch: ChallengePatch!
+  patch: CommitteeMemberPatch!
 
-  """Synthetic Unique Key"""
-  rowId: Int!
-}
-
-"""The output of our update `ChallengeCategory` mutation."""
-type UpdateChallengeCategoryPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """The `ChallengeCategory` that was updated by this mutation."""
-  challengeCategory: ChallengeCategory
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """An edge for our `ChallengeCategory`. May be used by Relay 1."""
-  challengeCategoryEdge(
-    """The method to use when ordering `ChallengeCategory`."""
-    orderBy: [ChallengeCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): ChallengeCategoriesEdge
-}
-
-"""All input for the `updateChallengeCategoryByNodeId` mutation."""
-input UpdateChallengeCategoryByNodeIdInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """
-  The globally unique `ID` which will identify a single `ChallengeCategory` to be updated.
-  """
-  nodeId: ID!
-
-  """
-  An object where the defined keys will be set on the `ChallengeCategory` being updated.
-  """
-  patch: ChallengeCategoryPatch!
-}
-
-"""
-Represents an update to a `ChallengeCategory`. Fields that are set will be updated.
-"""
-input ChallengeCategoryPatch {
-  """The name of this challenge category."""
-  name: String
-
-  """A Description of this kind of challenge category."""
-  description: String
-}
-
-"""All input for the `updateChallengeCategory` mutation."""
-input UpdateChallengeCategoryInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """
-  An object where the defined keys will be set on the `ChallengeCategory` being updated.
-  """
-  patch: ChallengeCategoryPatch!
-
-  """The name of this challenge category."""
-  name: String!
-}
-
-"""The output of our update `CommunityAdvisorsReview` mutation."""
-type UpdateCommunityAdvisorsReviewPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """The `CommunityAdvisorsReview` that was updated by this mutation."""
-  communityAdvisorsReview: CommunityAdvisorsReview
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """
-  Reads a single `Proposal` that is related to this `CommunityAdvisorsReview`.
-  """
-  proposal: Proposal
-
-  """An edge for our `CommunityAdvisorsReview`. May be used by Relay 1."""
-  communityAdvisorsReviewEdge(
-    """The method to use when ordering `CommunityAdvisorsReview`."""
-    orderBy: [CommunityAdvisorsReviewsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): CommunityAdvisorsReviewsEdge
-}
-
-"""All input for the `updateCommunityAdvisorsReviewByNodeId` mutation."""
-input UpdateCommunityAdvisorsReviewByNodeIdInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """
-  The globally unique `ID` which will identify a single `CommunityAdvisorsReview` to be updated.
-  """
-  nodeId: ID!
-
-  """
-  An object where the defined keys will be set on the `CommunityAdvisorsReview` being updated.
-  """
-  patch: CommunityAdvisorsReviewPatch!
-}
-
-"""
-Represents an update to a `CommunityAdvisorsReview`. Fields that are set will be updated.
-"""
-input CommunityAdvisorsReviewPatch {
-  """Synthetic Unique Key."""
-  rowId: Int
-
-  """The Proposal this review is for."""
-  proposalId: Int
-
-  """Assessors Anonymized ID"""
-  assessor: String
-
-  """The  numeric rating assigned to the proposal by the assessor."""
-  impactAlignmentRatingGiven: Int
-
-  """A note about why the impact rating was given."""
-  impactAlignmentNote: String
-
-  """The numeric feasibility rating given."""
-  feasibilityRatingGiven: Int
-
-  """A note about why the feasibility rating was given."""
-  feasibilityNote: String
-
-  """The numeric auditability rating given."""
-  auditabilityRatingGiven: Int
-
-  """A note about the auditability rating given."""
-  auditabilityNote: String
-
-  """
-  Numeric  Measure of quality of this review according to veteran community advisors.
-  """
-  ranking: Int
-}
-
-"""All input for the `updateCommunityAdvisorsReview` mutation."""
-input UpdateCommunityAdvisorsReviewInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """
-  An object where the defined keys will be set on the `CommunityAdvisorsReview` being updated.
-  """
-  patch: CommunityAdvisorsReviewPatch!
-
-  """Synthetic Unique Key."""
+  """Unique ID for this committee member for this event."""
   rowId: Int!
 }
 
@@ -7008,6 +8028,35 @@ input EventPatch {
   others can be defined as required.
   """
   extra: JSON
+
+  """
+  Json Map defining parameters which control where the vote is to be cast.
+  Multiple destinations can be defined simultaneously.
+  In this case the vote gets cast to all defined destinations.
+  `NULL` = Default Jormungandr Blockchain.
+  ```jsonc
+  "jorm" : { // Voting on Jormungandr Blockchain
+      chain_id: <int>, // Jormungandr chain id. Defaults to 0.
+      // Other parameters TBD.
+  },
+  "caradno" : { // Voting on Cardano Directly
+      chain_id: <int>, // 0 = pre-prod, 1 = mainnet.
+      // Other parameters TBD.
+  },
+  "postgres" : { // Store votes in Web 2 postgres backed DB only.
+      url: "<postgres URL. Defaults to system default>"
+      // Other parameters TBD.
+      // Note: Votes that arrive in the Cat1 system are always stored in the DB.
+      // This Option only allows the vote storage DB to be tuned.
+  },
+  "cat2" : { // Store votes to the Catalyst 2.0 P2P Network.
+      gateway: "<URL of the gateway to use"
+      // Other parameters TBD.
+  }
+  ```
+  
+  """
+  castTo: JSON
 }
 
 """All input for the `updateEvent` mutation."""
@@ -7104,6 +8153,314 @@ input UpdateGoalInput {
   id: Int!
 }
 
+"""The output of our update `Objective` mutation."""
+type UpdateObjectivePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `Objective` that was updated by this mutation."""
+  objective: Objective
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Event` that is related to this `Objective`."""
+  eventByEvent: Event
+
+  """
+  Reads a single `ObjectiveCategory` that is related to this `Objective`.
+  """
+  objectiveCategoryByCategory: ObjectiveCategory
+
+  """Reads a single `Currency` that is related to this `Objective`."""
+  currencyByRewardsCurrency: Currency
+
+  """Reads a single `VoteOption` that is related to this `Objective`."""
+  voteOptionByVoteOptions: VoteOption
+
+  """An edge for our `Objective`. May be used by Relay 1."""
+  objectiveEdge(
+    """The method to use when ordering `Objective`."""
+    orderBy: [ObjectivesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ObjectivesEdge
+}
+
+"""All input for the `updateObjectiveByNodeId` mutation."""
+input UpdateObjectiveByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `Objective` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `Objective` being updated.
+  """
+  patch: ObjectivePatch!
+}
+
+"""
+Represents an update to a `Objective`. Fields that are set will be updated.
+"""
+input ObjectivePatch {
+  """Synthetic Unique Key"""
+  rowId: Int
+
+  """
+  Event specific objective ID.
+  Can be non-unique between events (Eg, Ideascale ID for objective).
+  """
+  id: Int
+
+  """The specific Event ID this objective is part of."""
+  event: Int
+
+  """
+  What category of objective is this.
+  See the objective_category table for allowed values.
+  """
+  category: String
+
+  """The  title of the objective."""
+  title: String
+
+  """Long form description of the objective."""
+  description: String
+
+  """The currency rewards values are represented as."""
+  rewardsCurrency: String
+
+  """The total reward pool to pay on this objective to winning proposals."""
+  rewardsTotal: BigInt
+
+  """Not sure how this is different from rewards_total???"""
+  proposersRewards: BigInt
+
+  """The Vote Options applicable to all proposals in this objective."""
+  voteOptions: Int
+
+  """
+  Extra Data  for this objective represented as JSON.
+  "url"."objective" is a URL for more info about the objective.
+  "highlights" is ???
+  
+  """
+  extra: JSON
+}
+
+"""All input for the `updateObjective` mutation."""
+input UpdateObjectiveInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `Objective` being updated.
+  """
+  patch: ObjectivePatch!
+
+  """Synthetic Unique Key"""
+  rowId: Int!
+}
+
+"""The output of our update `ObjectiveCategory` mutation."""
+type UpdateObjectiveCategoryPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ObjectiveCategory` that was updated by this mutation."""
+  objectiveCategory: ObjectiveCategory
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `ObjectiveCategory`. May be used by Relay 1."""
+  objectiveCategoryEdge(
+    """The method to use when ordering `ObjectiveCategory`."""
+    orderBy: [ObjectiveCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ObjectiveCategoriesEdge
+}
+
+"""All input for the `updateObjectiveCategoryByNodeId` mutation."""
+input UpdateObjectiveCategoryByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ObjectiveCategory` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `ObjectiveCategory` being updated.
+  """
+  patch: ObjectiveCategoryPatch!
+}
+
+"""
+Represents an update to a `ObjectiveCategory`. Fields that are set will be updated.
+"""
+input ObjectiveCategoryPatch {
+  """The name of this objective category."""
+  name: String
+
+  """A Description of this kind of objective category."""
+  description: String
+}
+
+"""All input for the `updateObjectiveCategory` mutation."""
+input UpdateObjectiveCategoryInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `ObjectiveCategory` being updated.
+  """
+  patch: ObjectiveCategoryPatch!
+
+  """The name of this objective category."""
+  name: String!
+}
+
+"""The output of our update `ObjectiveReviewMetric` mutation."""
+type UpdateObjectiveReviewMetricPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ObjectiveReviewMetric` that was updated by this mutation."""
+  objectiveReviewMetric: ObjectiveReviewMetric
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """
+  Reads a single `Objective` that is related to this `ObjectiveReviewMetric`.
+  """
+  objectiveByObjective: Objective
+
+  """
+  Reads a single `ObjectiveReviewMetric` that is related to this `ObjectiveReviewMetric`.
+  """
+  objectiveReviewMetricByMetric: ObjectiveReviewMetric
+
+  """An edge for our `ObjectiveReviewMetric`. May be used by Relay 1."""
+  objectiveReviewMetricEdge(
+    """The method to use when ordering `ObjectiveReviewMetric`."""
+    orderBy: [ObjectiveReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ObjectiveReviewMetricsEdge
+}
+
+"""All input for the `updateObjectiveReviewMetricByNodeId` mutation."""
+input UpdateObjectiveReviewMetricByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ObjectiveReviewMetric` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `ObjectiveReviewMetric` being updated.
+  """
+  patch: ObjectiveReviewMetricPatch!
+}
+
+"""
+Represents an update to a `ObjectiveReviewMetric`. Fields that are set will be updated.
+"""
+input ObjectiveReviewMetricPatch {
+  rowId: Int
+
+  """The objective that can use this review metric."""
+  objective: Int
+
+  """The review metric that the objective can use."""
+  metric: Int
+
+  """
+  Does the metric require a Note?
+  NULL = Optional.
+  True = MUST include Note.
+  False = MUST NOT include Note.
+  """
+  note: Boolean
+
+  """The review group that can give this metric. Details TBD."""
+  reviewGroup: String
+}
+
+"""All input for the `updateObjectiveReviewMetric` mutation."""
+input UpdateObjectiveReviewMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `ObjectiveReviewMetric` being updated.
+  """
+  patch: ObjectiveReviewMetricPatch!
+  rowId: Int!
+}
+
+"""
+All input for the `updateObjectiveReviewMetricByObjectiveAndMetricAndReviewGroup` mutation.
+"""
+input UpdateObjectiveReviewMetricByObjectiveAndMetricAndReviewGroupInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `ObjectiveReviewMetric` being updated.
+  """
+  patch: ObjectiveReviewMetricPatch!
+
+  """The objective that can use this review metric."""
+  objective: Int!
+
+  """The review metric that the objective can use."""
+  metric: Int!
+
+  """The review group that can give this metric. Details TBD."""
+  reviewGroup: String!
+}
+
 """The output of our update `Proposal` mutation."""
 type UpdateProposalPayload {
   """
@@ -7120,8 +8477,8 @@ type UpdateProposalPayload {
   """
   query: Query
 
-  """Reads a single `Challenge` that is related to this `Proposal`."""
-  challengeByChallenge: Challenge
+  """Reads a single `Objective` that is related to this `Proposal`."""
+  objectiveByObjective: Objective
 
   """Reads a single `VoteOption` that is related to this `Proposal`."""
   voteOptionByBbVoteOptions: VoteOption
@@ -7162,8 +8519,8 @@ input ProposalPatch {
   """Actual Proposal Unique ID"""
   id: Int
 
-  """The Challenge this proposal falls under."""
-  challenge: Int
+  """The Objective this proposal falls under."""
+  objective: Int
 
   """Brief title of the proposal."""
   title: String
@@ -7172,7 +8529,7 @@ input ProposalPatch {
   summary: String
   category: String
 
-  """???"""
+  """Proposals Reward Address (CIP-19 Payment Key)"""
   publicKey: String
 
   """How much funds (in the currency of the fund)"""
@@ -7223,7 +8580,9 @@ input ProposalPatch {
   """
   bbProposalId: String
 
-  """The selectable options by the voter."""
+  """
+  The selectable options by the voter. DEPRECATED: Only used for Vit-SS compatibility.
+  """
   bbVoteOptions: String
 }
 
@@ -7259,6 +8618,125 @@ input UpdateProposalByIdInput {
 
   """Actual Proposal Unique ID"""
   id: Int!
+}
+
+"""The output of our update `ProposalReview` mutation."""
+type UpdateProposalReviewPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ProposalReview` that was updated by this mutation."""
+  proposalReview: ProposalReview
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Proposal` that is related to this `ProposalReview`."""
+  proposal: Proposal
+
+  """An edge for our `ProposalReview`. May be used by Relay 1."""
+  proposalReviewEdge(
+    """The method to use when ordering `ProposalReview`."""
+    orderBy: [ProposalReviewsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ProposalReviewsEdge
+}
+
+"""All input for the `updateProposalReviewByNodeId` mutation."""
+input UpdateProposalReviewByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ProposalReview` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `ProposalReview` being updated.
+  """
+  patch: ProposalReviewPatch!
+}
+
+"""
+Represents an update to a `ProposalReview`. Fields that are set will be updated.
+"""
+input ProposalReviewPatch {
+  """Synthetic Unique Key."""
+  rowId: Int
+
+  """The Proposal this review is for."""
+  proposalId: Int
+
+  """Assessors Anonymized ID"""
+  assessor: String
+
+  """
+  The  numeric rating assigned to the proposal by the assessor.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  impactAlignmentRatingGiven: Int
+
+  """
+  A note about why the impact rating was given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  impactAlignmentNote: String
+
+  """
+  The numeric feasibility rating given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  feasibilityRatingGiven: Int
+
+  """
+  A note about why the feasibility rating was given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  feasibilityNote: String
+
+  """
+  The numeric auditability rating given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  auditabilityRatingGiven: Int
+
+  """
+  A note about the auditability rating given.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  """
+  auditabilityNote: String
+
+  """
+  Numeric  Measure of quality of this review according to veteran community advisors.
+  DEPRECATED: Only used for Vit-SS compatibility.
+  
+  """
+  ranking: Int
+}
+
+"""All input for the `updateProposalReview` mutation."""
+input UpdateProposalReviewInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `ProposalReview` being updated.
+  """
+  patch: ProposalReviewPatch!
+
+  """Synthetic Unique Key."""
+  rowId: Int!
 }
 
 """The output of our update `ProposalVoteplan` mutation."""
@@ -7412,6 +8890,207 @@ input UpdateRefinerySchemaHistoryInput {
   version: Int!
 }
 
+"""The output of our update `ReviewMetric` mutation."""
+type UpdateReviewMetricPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ReviewMetric` that was updated by this mutation."""
+  reviewMetric: ReviewMetric
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `ReviewMetric`. May be used by Relay 1."""
+  reviewMetricEdge(
+    """The method to use when ordering `ReviewMetric`."""
+    orderBy: [ReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ReviewMetricsEdge
+}
+
+"""All input for the `updateReviewMetricByNodeId` mutation."""
+input UpdateReviewMetricByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ReviewMetric` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `ReviewMetric` being updated.
+  """
+  patch: ReviewMetricPatch!
+}
+
+"""
+Represents an update to a `ReviewMetric`. Fields that are set will be updated.
+"""
+input ReviewMetricPatch {
+  """The synthetic ID of this metric."""
+  rowId: Int
+
+  """The short name for this review metric."""
+  name: String
+
+  """Long form description of what the review metric means."""
+  description: String
+
+  """The minimum value of the metric (inclusive)."""
+  min: Int
+
+  """The maximum value of the metric (inclusive)."""
+  max: Int
+
+  """
+  OPTIONAL: JSON Array which defines extra details for each metric score.
+  There MUST be one entry per possible score in the range.
+  Entries are IN ORDER, from the lowest numeric score to the highest.
+  Each entry =
+  ```jsonc
+  {
+     "name" : "<name>", // Symbolic Name for the metric score.
+     "description" : "<desc>", // Description of what the named metric score means.
+  }
+  ```
+  
+  """
+  map: JSON
+}
+
+"""All input for the `updateReviewMetric` mutation."""
+input UpdateReviewMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `ReviewMetric` being updated.
+  """
+  patch: ReviewMetricPatch!
+
+  """The synthetic ID of this metric."""
+  rowId: Int!
+}
+
+"""The output of our update `ReviewRating` mutation."""
+type UpdateReviewRatingPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ReviewRating` that was updated by this mutation."""
+  reviewRating: ReviewRating
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """
+  Reads a single `ProposalReview` that is related to this `ReviewRating`.
+  """
+  review: ProposalReview
+
+  """Reads a single `ReviewMetric` that is related to this `ReviewRating`."""
+  reviewMetricByMetric: ReviewMetric
+
+  """An edge for our `ReviewRating`. May be used by Relay 1."""
+  reviewRatingEdge(
+    """The method to use when ordering `ReviewRating`."""
+    orderBy: [ReviewRatingsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ReviewRatingsEdge
+}
+
+"""All input for the `updateReviewRatingByNodeId` mutation."""
+input UpdateReviewRatingByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ReviewRating` to be updated.
+  """
+  nodeId: ID!
+
+  """
+  An object where the defined keys will be set on the `ReviewRating` being updated.
+  """
+  patch: ReviewRatingPatch!
+}
+
+"""
+Represents an update to a `ReviewRating`. Fields that are set will be updated.
+"""
+input ReviewRatingPatch {
+  """Synthetic ID of this individual rating."""
+  rowId: Int
+
+  """The review the metric is being given for."""
+  reviewId: Int
+
+  """Metric the rating is being given for."""
+  metric: Int
+
+  """The rating being given to the metric."""
+  rating: Int
+
+  """OPTIONAL: Note about the rating given."""
+  note: String
+}
+
+"""All input for the `updateReviewRating` mutation."""
+input UpdateReviewRatingInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `ReviewRating` being updated.
+  """
+  patch: ReviewRatingPatch!
+
+  """Synthetic ID of this individual rating."""
+  rowId: Int!
+}
+
+"""All input for the `updateReviewRatingByReviewIdAndMetric` mutation."""
+input UpdateReviewRatingByReviewIdAndMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  An object where the defined keys will be set on the `ReviewRating` being updated.
+  """
+  patch: ReviewRatingPatch!
+
+  """The review the metric is being given for."""
+  reviewId: Int!
+
+  """Metric the rating is being given for."""
+  metric: Int!
+}
+
 """The output of our update `Snapshot` mutation."""
 type UpdateSnapshotPayload {
   """
@@ -7467,14 +9146,15 @@ input SnapshotPatch {
   event: Int
 
   """
-  The time the snapshot was collected from dbsync
+  The time the snapshot was collected from dbsync.
+  This is the snapshot *DEADLINE*, i.e the time when registrations are final.
   (Should be the slot time the dbsync_snapshot_cmd was run against.)
   """
   asAt: Datetime
 
   """
   The last time the snapshot was run
-  (Should be the real time the snapshot was started.
+  (Should be the latest block time taken from dbsync just before the snapshot was run.)
   """
   lastUpdated: Datetime
 
@@ -7493,14 +9173,27 @@ input SnapshotPatch {
   dbsyncSnapshotParams: JSON
 
   """
-  The raw json result stored as TEXT from the dbsync snapshot.
-  (This is JSON data but we store as raw text to prevent any processing of it).
+  The BROTLI COMPRESSED raw json result stored as BINARY from the dbsync snapshot.
+  (This is JSON data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
   """
   dbsyncSnapshotData: String
 
   """
+  The BROTLI COMPRESSED raw json errors stored as BINARY from the dbsync snapshot.
+  (This is JSON data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
+  """
+  dbsyncSnapshotError: String
+
+  """
+  The BROTLI COMPRESSED unregistered voting power stored as BINARY from the dbsync snapshot.
+  (This is JSON data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
+  """
+  dbsyncSnapshotUnregistered: String
+
+  """
   The latest drep data obtained from GVC, and used in this snapshot calculation.
   Should be in a form directly usable by the `catalyst_snapshot_cmd`
+  However, in order to save space this data is stored as BROTLI COMPRESSED BINARY.
   """
   drepData: String
 
@@ -7511,8 +9204,8 @@ input SnapshotPatch {
   catalystSnapshotParams: JSON
 
   """
-  The raw yaml result stored as TEXT from the catalyst snapshot calculation.
-  (This is YAML data but we store as raw text to prevent any processing of it).
+  The BROTLI COMPRESSED raw yaml result stored as BINARY from the catalyst snapshot calculation.
+  (This is YAML data but we store as raw text to prevent any processing of it, and BROTLI compress to save space).
   """
   catalystSnapshotData: String
 }
@@ -7603,6 +9296,19 @@ input TallyCommitteePatch {
 
   """The event this committee member is for."""
   event: Int
+
+  """The hex-encoded public key for the committee wallet."""
+  committeeId: String
+
+  """
+  Encrypted Common Reference String shared in the creation of every set of committee member keys.
+  """
+  memberCrs: String
+
+  """
+  Public key generated with all committee member public keys, and is used to encrypt votes. NULL if the event.committee_size is 0.
+  """
+  electionKey: String
 }
 
 """All input for the `updateTallyCommittee` mutation."""
@@ -7637,114 +9343,6 @@ input UpdateTallyCommitteeByEventInput {
 
   """The event this committee member is for."""
   event: Int!
-}
-
-"""The output of our update `Vote` mutation."""
-type UpdateVotePayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """The `Vote` that was updated by this mutation."""
-  vote: Vote
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """Reads a single `Event` that is related to this `Vote`."""
-  eventByEvent: Event
-
-  """Reads a single `Voter` that is related to this `Vote`."""
-  voterByVoter: Voter
-
-  """Reads a single `Challenge` that is related to this `Vote`."""
-  challengeByChallenge: Challenge
-
-  """Reads a single `Proposal` that is related to this `Vote`."""
-  proposalByChallengeAndProposal: Proposal
-
-  """Reads a single `Proposal` that is related to this `Vote`."""
-  proposalByProposal: Proposal
-
-  """Reads a single `Voteplan` that is related to this `Vote`."""
-  voteplanByVoteplan: Voteplan
-
-  """An edge for our `Vote`. May be used by Relay 1."""
-  voteEdge(
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): VotesEdge
-}
-
-"""All input for the `updateVoteByNodeId` mutation."""
-input UpdateVoteByNodeIdInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """
-  The globally unique `ID` which will identify a single `Vote` to be updated.
-  """
-  nodeId: ID!
-
-  """
-  An object where the defined keys will be set on the `Vote` being updated.
-  """
-  patch: VotePatch!
-}
-
-"""Represents an update to a `Vote`. Fields that are set will be updated."""
-input VotePatch {
-  rowId: BigInt
-  event: Int
-
-  """Unique ID of this Vote"""
-  fragmentId: String
-
-  """Reference to the Voter who cast the vote"""
-  voter: Int
-
-  """Reference to the Challenge the vote was for."""
-  challenge: Int
-
-  """
-  Reference to the Proposal the vote was for.
-  May be NULL if this vote covers ALL proposals in the challenge.
-  """
-  proposal: Int
-
-  """The Voteplan this vote was cast in"""
-  voteplan: Int
-
-  """When this vote was recorded as properly cast"""
-  castAt: Datetime
-
-  """If a public vote, the choice of the vote, otherwise NULL."""
-  choice: Int
-
-  """The raw vote record."""
-  rawFragment: String
-}
-
-"""All input for the `updateVote` mutation."""
-input UpdateVoteInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """
-  An object where the defined keys will be set on the `Vote` being updated.
-  """
-  patch: VotePatch!
-  rowId: BigInt!
 }
 
 """The output of our update `VoteOption` mutation."""
@@ -7799,8 +9397,8 @@ input VoteOptionPatch {
   """How this vote option is represented in idea scale."""
   ideaScale: String
 
-  """How the vote options is represented in the challenge."""
-  challenge: String
+  """How the vote options is represented in the objective."""
+  objective: String
 }
 
 """All input for the `updateVoteOption` mutation."""
@@ -7837,8 +9435,8 @@ input UpdateVoteOptionByIdeaScaleInput {
   ideaScale: String!
 }
 
-"""All input for the `updateVoteOptionByChallenge` mutation."""
-input UpdateVoteOptionByChallengeInput {
+"""All input for the `updateVoteOptionByObjective` mutation."""
+input UpdateVoteOptionByObjectiveInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
@@ -7850,8 +9448,8 @@ input UpdateVoteOptionByChallengeInput {
   """
   patch: VoteOptionPatch!
 
-  """How the vote options is represented in the challenge."""
-  challenge: String!
+  """How the vote options is represented in the objective."""
+  objective: String!
 }
 
 """The output of our update `Voteplan` mutation."""
@@ -8253,17 +9851,17 @@ input VotingNodePatch {
   event: Int
 
   """
-  Public key from Ed25519 pair for the node.
-  Used as consensus_leader_id when the node is a leader.
+  Public key from Ed25519 pair for the node. Used as consensus_leader_id when the node is a leader.
   """
   pubkey: String
 
-  """Secret key from Ed25519 pair for the node. Used as the node secret."""
+  """
+  Encrypted secret key from Ed25519 pair for the node. Used as the node secret.
+  """
   seckey: String
 
   """
-  Ed25519 secret key for the node.
-  Used as the node p2p topology key.
+  Encrypted Ed25519 secret key for the node. Used as the node p2p topology key.
   """
   netkey: String
 }
@@ -8288,46 +9886,41 @@ input UpdateVotingNodeInput {
   event: Int!
 }
 
-"""The output of our delete `Challenge` mutation."""
-type DeleteChallengePayload {
+"""The output of our delete `Ballot` mutation."""
+type DeleteBallotPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
   """
   clientMutationId: String
 
-  """The `Challenge` that was deleted by this mutation."""
-  challenge: Challenge
-  deletedChallengeNodeId: ID
+  """The `Ballot` that was deleted by this mutation."""
+  ballot: Ballot
+  deletedBallotNodeId: ID
 
   """
   Our root query field type. Allows us to run any query from our mutation payload.
   """
   query: Query
 
-  """Reads a single `Event` that is related to this `Challenge`."""
-  eventByEvent: Event
+  """Reads a single `Objective` that is related to this `Ballot`."""
+  objectiveByObjective: Objective
 
-  """
-  Reads a single `ChallengeCategory` that is related to this `Challenge`.
-  """
-  challengeCategoryByCategory: ChallengeCategory
+  """Reads a single `Proposal` that is related to this `Ballot`."""
+  proposalByProposal: Proposal
 
-  """Reads a single `Currency` that is related to this `Challenge`."""
-  currencyByRewardsCurrency: Currency
+  """Reads a single `Voter` that is related to this `Ballot`."""
+  voterByVoter: Voter
 
-  """Reads a single `VoteOption` that is related to this `Challenge`."""
-  voteOptionByVoteOptions: VoteOption
-
-  """An edge for our `Challenge`. May be used by Relay 1."""
-  challengeEdge(
-    """The method to use when ordering `Challenge`."""
-    orderBy: [ChallengesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): ChallengesEdge
+  """An edge for our `Ballot`. May be used by Relay 1."""
+  ballotEdge(
+    """The method to use when ordering `Ballot`."""
+    orderBy: [BallotsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): BallotsEdge
 }
 
-"""All input for the `deleteChallengeByNodeId` mutation."""
-input DeleteChallengeByNodeIdInput {
+"""All input for the `deleteBallotByNodeId` mutation."""
+input DeleteBallotByNodeIdInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
@@ -8335,84 +9928,32 @@ input DeleteChallengeByNodeIdInput {
   clientMutationId: String
 
   """
-  The globally unique `ID` which will identify a single `Challenge` to be deleted.
+  The globally unique `ID` which will identify a single `Ballot` to be deleted.
   """
   nodeId: ID!
 }
 
-"""All input for the `deleteChallenge` mutation."""
-input DeleteChallengeInput {
+"""All input for the `deleteBallot` mutation."""
+input DeleteBallotInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
-
-  """Synthetic Unique Key"""
-  rowId: Int!
+  rowId: BigInt!
 }
 
-"""The output of our delete `ChallengeCategory` mutation."""
-type DeleteChallengeCategoryPayload {
+"""The output of our delete `CommitteeMember` mutation."""
+type DeleteCommitteeMemberPayload {
   """
   The exact same `clientMutationId` that was provided in the mutation input,
   unchanged and unused. May be used by a client to track mutations.
   """
   clientMutationId: String
 
-  """The `ChallengeCategory` that was deleted by this mutation."""
-  challengeCategory: ChallengeCategory
-  deletedChallengeCategoryNodeId: ID
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """An edge for our `ChallengeCategory`. May be used by Relay 1."""
-  challengeCategoryEdge(
-    """The method to use when ordering `ChallengeCategory`."""
-    orderBy: [ChallengeCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): ChallengeCategoriesEdge
-}
-
-"""All input for the `deleteChallengeCategoryByNodeId` mutation."""
-input DeleteChallengeCategoryByNodeIdInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """
-  The globally unique `ID` which will identify a single `ChallengeCategory` to be deleted.
-  """
-  nodeId: ID!
-}
-
-"""All input for the `deleteChallengeCategory` mutation."""
-input DeleteChallengeCategoryInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """The name of this challenge category."""
-  name: String!
-}
-
-"""The output of our delete `CommunityAdvisorsReview` mutation."""
-type DeleteCommunityAdvisorsReviewPayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """The `CommunityAdvisorsReview` that was deleted by this mutation."""
-  communityAdvisorsReview: CommunityAdvisorsReview
-  deletedCommunityAdvisorsReviewNodeId: ID
+  """The `CommitteeMember` that was deleted by this mutation."""
+  committeeMember: CommitteeMember
+  deletedCommitteeMemberNodeId: ID
 
   """
   Our root query field type. Allows us to run any query from our mutation payload.
@@ -8420,19 +9961,19 @@ type DeleteCommunityAdvisorsReviewPayload {
   query: Query
 
   """
-  Reads a single `Proposal` that is related to this `CommunityAdvisorsReview`.
+  Reads a single `TallyCommittee` that is related to this `CommitteeMember`.
   """
-  proposal: Proposal
+  tallyCommitteeByCommittee: TallyCommittee
 
-  """An edge for our `CommunityAdvisorsReview`. May be used by Relay 1."""
-  communityAdvisorsReviewEdge(
-    """The method to use when ordering `CommunityAdvisorsReview`."""
-    orderBy: [CommunityAdvisorsReviewsOrderBy!] = [PRIMARY_KEY_ASC]
-  ): CommunityAdvisorsReviewsEdge
+  """An edge for our `CommitteeMember`. May be used by Relay 1."""
+  committeeMemberEdge(
+    """The method to use when ordering `CommitteeMember`."""
+    orderBy: [CommitteeMembersOrderBy!] = [PRIMARY_KEY_ASC]
+  ): CommitteeMembersEdge
 }
 
-"""All input for the `deleteCommunityAdvisorsReviewByNodeId` mutation."""
-input DeleteCommunityAdvisorsReviewByNodeIdInput {
+"""All input for the `deleteCommitteeMemberByNodeId` mutation."""
+input DeleteCommitteeMemberByNodeIdInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
@@ -8440,20 +9981,20 @@ input DeleteCommunityAdvisorsReviewByNodeIdInput {
   clientMutationId: String
 
   """
-  The globally unique `ID` which will identify a single `CommunityAdvisorsReview` to be deleted.
+  The globally unique `ID` which will identify a single `CommitteeMember` to be deleted.
   """
   nodeId: ID!
 }
 
-"""All input for the `deleteCommunityAdvisorsReview` mutation."""
-input DeleteCommunityAdvisorsReviewInput {
+"""All input for the `deleteCommitteeMember` mutation."""
+input DeleteCommitteeMemberInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
 
-  """Synthetic Unique Key."""
+  """Unique ID for this committee member for this event."""
   rowId: Int!
 }
 
@@ -8716,6 +10257,198 @@ input DeleteGoalInput {
   id: Int!
 }
 
+"""The output of our delete `Objective` mutation."""
+type DeleteObjectivePayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `Objective` that was deleted by this mutation."""
+  objective: Objective
+  deletedObjectiveNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Event` that is related to this `Objective`."""
+  eventByEvent: Event
+
+  """
+  Reads a single `ObjectiveCategory` that is related to this `Objective`.
+  """
+  objectiveCategoryByCategory: ObjectiveCategory
+
+  """Reads a single `Currency` that is related to this `Objective`."""
+  currencyByRewardsCurrency: Currency
+
+  """Reads a single `VoteOption` that is related to this `Objective`."""
+  voteOptionByVoteOptions: VoteOption
+
+  """An edge for our `Objective`. May be used by Relay 1."""
+  objectiveEdge(
+    """The method to use when ordering `Objective`."""
+    orderBy: [ObjectivesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ObjectivesEdge
+}
+
+"""All input for the `deleteObjectiveByNodeId` mutation."""
+input DeleteObjectiveByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `Objective` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""All input for the `deleteObjective` mutation."""
+input DeleteObjectiveInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """Synthetic Unique Key"""
+  rowId: Int!
+}
+
+"""The output of our delete `ObjectiveCategory` mutation."""
+type DeleteObjectiveCategoryPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ObjectiveCategory` that was deleted by this mutation."""
+  objectiveCategory: ObjectiveCategory
+  deletedObjectiveCategoryNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `ObjectiveCategory`. May be used by Relay 1."""
+  objectiveCategoryEdge(
+    """The method to use when ordering `ObjectiveCategory`."""
+    orderBy: [ObjectiveCategoriesOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ObjectiveCategoriesEdge
+}
+
+"""All input for the `deleteObjectiveCategoryByNodeId` mutation."""
+input DeleteObjectiveCategoryByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ObjectiveCategory` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""All input for the `deleteObjectiveCategory` mutation."""
+input DeleteObjectiveCategoryInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The name of this objective category."""
+  name: String!
+}
+
+"""The output of our delete `ObjectiveReviewMetric` mutation."""
+type DeleteObjectiveReviewMetricPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ObjectiveReviewMetric` that was deleted by this mutation."""
+  objectiveReviewMetric: ObjectiveReviewMetric
+  deletedObjectiveReviewMetricNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """
+  Reads a single `Objective` that is related to this `ObjectiveReviewMetric`.
+  """
+  objectiveByObjective: Objective
+
+  """
+  Reads a single `ObjectiveReviewMetric` that is related to this `ObjectiveReviewMetric`.
+  """
+  objectiveReviewMetricByMetric: ObjectiveReviewMetric
+
+  """An edge for our `ObjectiveReviewMetric`. May be used by Relay 1."""
+  objectiveReviewMetricEdge(
+    """The method to use when ordering `ObjectiveReviewMetric`."""
+    orderBy: [ObjectiveReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ObjectiveReviewMetricsEdge
+}
+
+"""All input for the `deleteObjectiveReviewMetricByNodeId` mutation."""
+input DeleteObjectiveReviewMetricByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ObjectiveReviewMetric` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""All input for the `deleteObjectiveReviewMetric` mutation."""
+input DeleteObjectiveReviewMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+  rowId: Int!
+}
+
+"""
+All input for the `deleteObjectiveReviewMetricByObjectiveAndMetricAndReviewGroup` mutation.
+"""
+input DeleteObjectiveReviewMetricByObjectiveAndMetricAndReviewGroupInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The objective that can use this review metric."""
+  objective: Int!
+
+  """The review metric that the objective can use."""
+  metric: Int!
+
+  """The review group that can give this metric. Details TBD."""
+  reviewGroup: String!
+}
+
 """The output of our delete `Proposal` mutation."""
 type DeleteProposalPayload {
   """
@@ -8733,8 +10466,8 @@ type DeleteProposalPayload {
   """
   query: Query
 
-  """Reads a single `Challenge` that is related to this `Proposal`."""
-  challengeByChallenge: Challenge
+  """Reads a single `Objective` that is related to this `Proposal`."""
+  objectiveByObjective: Objective
 
   """Reads a single `VoteOption` that is related to this `Proposal`."""
   voteOptionByBbVoteOptions: VoteOption
@@ -8782,6 +10515,59 @@ input DeleteProposalByIdInput {
 
   """Actual Proposal Unique ID"""
   id: Int!
+}
+
+"""The output of our delete `ProposalReview` mutation."""
+type DeleteProposalReviewPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ProposalReview` that was deleted by this mutation."""
+  proposalReview: ProposalReview
+  deletedProposalReviewNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """Reads a single `Proposal` that is related to this `ProposalReview`."""
+  proposal: Proposal
+
+  """An edge for our `ProposalReview`. May be used by Relay 1."""
+  proposalReviewEdge(
+    """The method to use when ordering `ProposalReview`."""
+    orderBy: [ProposalReviewsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ProposalReviewsEdge
+}
+
+"""All input for the `deleteProposalReviewByNodeId` mutation."""
+input DeleteProposalReviewByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ProposalReview` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""All input for the `deleteProposalReview` mutation."""
+input DeleteProposalReviewInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """Synthetic Unique Key."""
+  rowId: Int!
 }
 
 """The output of our delete `ProposalVoteplan` mutation."""
@@ -8886,6 +10672,129 @@ input DeleteRefinerySchemaHistoryInput {
   """
   clientMutationId: String
   version: Int!
+}
+
+"""The output of our delete `ReviewMetric` mutation."""
+type DeleteReviewMetricPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ReviewMetric` that was deleted by this mutation."""
+  reviewMetric: ReviewMetric
+  deletedReviewMetricNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """An edge for our `ReviewMetric`. May be used by Relay 1."""
+  reviewMetricEdge(
+    """The method to use when ordering `ReviewMetric`."""
+    orderBy: [ReviewMetricsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ReviewMetricsEdge
+}
+
+"""All input for the `deleteReviewMetricByNodeId` mutation."""
+input DeleteReviewMetricByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ReviewMetric` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""All input for the `deleteReviewMetric` mutation."""
+input DeleteReviewMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The synthetic ID of this metric."""
+  rowId: Int!
+}
+
+"""The output of our delete `ReviewRating` mutation."""
+type DeleteReviewRatingPayload {
+  """
+  The exact same `clientMutationId` that was provided in the mutation input,
+  unchanged and unused. May be used by a client to track mutations.
+  """
+  clientMutationId: String
+
+  """The `ReviewRating` that was deleted by this mutation."""
+  reviewRating: ReviewRating
+  deletedReviewRatingNodeId: ID
+
+  """
+  Our root query field type. Allows us to run any query from our mutation payload.
+  """
+  query: Query
+
+  """
+  Reads a single `ProposalReview` that is related to this `ReviewRating`.
+  """
+  review: ProposalReview
+
+  """Reads a single `ReviewMetric` that is related to this `ReviewRating`."""
+  reviewMetricByMetric: ReviewMetric
+
+  """An edge for our `ReviewRating`. May be used by Relay 1."""
+  reviewRatingEdge(
+    """The method to use when ordering `ReviewRating`."""
+    orderBy: [ReviewRatingsOrderBy!] = [PRIMARY_KEY_ASC]
+  ): ReviewRatingsEdge
+}
+
+"""All input for the `deleteReviewRatingByNodeId` mutation."""
+input DeleteReviewRatingByNodeIdInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """
+  The globally unique `ID` which will identify a single `ReviewRating` to be deleted.
+  """
+  nodeId: ID!
+}
+
+"""All input for the `deleteReviewRating` mutation."""
+input DeleteReviewRatingInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """Synthetic ID of this individual rating."""
+  rowId: Int!
+}
+
+"""All input for the `deleteReviewRatingByReviewIdAndMetric` mutation."""
+input DeleteReviewRatingByReviewIdAndMetricInput {
+  """
+  An arbitrary string value with no semantic meaning. Will be included in the
+  payload verbatim. May be used to track mutations by the client.
+  """
+  clientMutationId: String
+
+  """The review the metric is being given for."""
+  reviewId: Int!
+
+  """Metric the rating is being given for."""
+  metric: Int!
 }
 
 """The output of our delete `Snapshot` mutation."""
@@ -9016,72 +10925,6 @@ input DeleteTallyCommitteeByEventInput {
   event: Int!
 }
 
-"""The output of our delete `Vote` mutation."""
-type DeleteVotePayload {
-  """
-  The exact same `clientMutationId` that was provided in the mutation input,
-  unchanged and unused. May be used by a client to track mutations.
-  """
-  clientMutationId: String
-
-  """The `Vote` that was deleted by this mutation."""
-  vote: Vote
-  deletedVoteNodeId: ID
-
-  """
-  Our root query field type. Allows us to run any query from our mutation payload.
-  """
-  query: Query
-
-  """Reads a single `Event` that is related to this `Vote`."""
-  eventByEvent: Event
-
-  """Reads a single `Voter` that is related to this `Vote`."""
-  voterByVoter: Voter
-
-  """Reads a single `Challenge` that is related to this `Vote`."""
-  challengeByChallenge: Challenge
-
-  """Reads a single `Proposal` that is related to this `Vote`."""
-  proposalByChallengeAndProposal: Proposal
-
-  """Reads a single `Proposal` that is related to this `Vote`."""
-  proposalByProposal: Proposal
-
-  """Reads a single `Voteplan` that is related to this `Vote`."""
-  voteplanByVoteplan: Voteplan
-
-  """An edge for our `Vote`. May be used by Relay 1."""
-  voteEdge(
-    """The method to use when ordering `Vote`."""
-    orderBy: [VotesOrderBy!] = [PRIMARY_KEY_ASC]
-  ): VotesEdge
-}
-
-"""All input for the `deleteVoteByNodeId` mutation."""
-input DeleteVoteByNodeIdInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-
-  """
-  The globally unique `ID` which will identify a single `Vote` to be deleted.
-  """
-  nodeId: ID!
-}
-
-"""All input for the `deleteVote` mutation."""
-input DeleteVoteInput {
-  """
-  An arbitrary string value with no semantic meaning. Will be included in the
-  payload verbatim. May be used to track mutations by the client.
-  """
-  clientMutationId: String
-  rowId: BigInt!
-}
-
 """The output of our delete `VoteOption` mutation."""
 type DeleteVoteOptionPayload {
   """
@@ -9144,16 +10987,16 @@ input DeleteVoteOptionByIdeaScaleInput {
   ideaScale: String!
 }
 
-"""All input for the `deleteVoteOptionByChallenge` mutation."""
-input DeleteVoteOptionByChallengeInput {
+"""All input for the `deleteVoteOptionByObjective` mutation."""
+input DeleteVoteOptionByObjectiveInput {
   """
   An arbitrary string value with no semantic meaning. Will be included in the
   payload verbatim. May be used to track mutations by the client.
   """
   clientMutationId: String
 
-  """How the vote options is represented in the challenge."""
-  challenge: String!
+  """How the vote options is represented in the objective."""
+  objective: String!
 }
 
 """The output of our delete `Voteplan` mutation."""

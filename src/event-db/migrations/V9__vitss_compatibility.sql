@@ -116,10 +116,9 @@ FROM
 WHERE objective.category = 'community-choice';
 
 COMMENT ON VIEW proposal_community_choice_challenge IS
-    'This view maps the original VIT-SS proposal_community_choice_challenge table to the new proposal table.
-Do not use this VIEW for new queries, its ONLY for backward compatibility.
-@name vitss_proposal_community_choice_challenge
-@omit';
+    '@omit
+This view maps the original VIT-SS proposal_community_choice_challenge table to the new proposal table.
+Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - voteplans table.
 
@@ -195,8 +194,7 @@ FROM proposal_review;
 
 COMMENT ON VIEW community_advisors_reviews IS
     '@omit
-This view maps the original VIT-SS community_advisors_reviews table to the new community_advisors_review table.
-    'This view maps the original VIT-SS community_advisors_reviews table to the new proposal_review table.
+This view maps the original VIT-SS community_advisors_reviews table to the new proposal_review table.
 Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 
 -- VIT-SS Compatibility View - goals.

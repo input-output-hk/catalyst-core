@@ -50,6 +50,50 @@ create table private.admin_account (
     created_at      timestamp default now()
 );
 
+-- Create default ADMIN user.
+
+insert into private.admin_account (first_name, last_name, role, about, email, password_hash) values
+  ('Admin', 'Default', 'cat_admin', 'Default Admin User', 'admin.default@nowhere.io', crypt('CHANGE_ME', gen_salt('bf')));
+SELECT * from private.admin_account;
+
+-- Function to get details about the current authenticated account.
+-- Anyone can call this.
+drop function if exists private.current_acct;
+create function private.current_acct() returns private.admin_account as $$
+declare
+  account private.admin_account;
+begin
+  select a.* into account
+  from private.admin_account as a
+  where id = nullif(current_setting('jwt.claims.admin_id', true), '')::integer;
+
+  if not FOUND then
+    account.id := -1;
+    account.first_name := ('');
+    account.role := ('cat_anon');
+    account.email := ('');
+    account.created_at := now();
+  end if;
+
+  account.password_hash := ('xxx');
+
+  return account;
+end;
+$$ language plpgsql stable security definer;
+
+comment on function private.current_acct() is 'Gets the account identified by our JWT.';
+
+grant execute on function private.current_acct() to "catalyst-event-dev", "cat_anon", "cat_admin";
+
+-- Test if we can get the current account.
+select private.current_acct();
+
+-- Get users current role.
+drop function if exists private.current_role;
+create function private.current_role() returns text as $$
+  select current_setting('jwt.claims.role', true);
+$$ language sql stable;
+
 -- Function to register an admin.
 -- Should ONLY be executable by admin level accounts.
 drop function if exists private.register_admin;
@@ -62,12 +106,21 @@ create function private.register_admin(
 ) returns private.admin_account as $$
 declare
   admin private.admin_account;
+  role TEXT;
 begin
+
+  SELECT * FROM private.current_role() into role;
+  RAISE NOTICE 'role = %', role;
+
+  if role IS NULL or role != 'cat_admin' then
+    RAISE EXCEPTION SQLSTATE '90001' USING MESSAGE = 'Not Authorized';
+  end if;
+
   insert into private.admin_account (first_name, last_name, role, email, password_hash) values
     (first_name, last_name, role, email, crypt(password, gen_salt('bf')))
     returning * into admin;
 
-  admin.password_hash := ('xxx');
+    admin.password_hash := ('xxx');
 
   return admin;
 end;
@@ -116,36 +169,5 @@ comment on function private.authenticate(text, text) is 'Creates a JWT token tha
 grant execute on function private.authenticate(text, text) to "catalyst-event-dev", "cat_anon", "cat_admin";
 
 -- Test it works with the default user.  CHANGE_ME...
-select private.authenticate('nothing@nowhere.com','CHANGE_ME');
+select private.authenticate('admin.default@nowhere.io','CHANGE_ME');
 
--- Function to get details about the current authenticated account.
--- Anyone can call this.
-drop function if exists private.current_acct;
-create function private.current_acct() returns private.admin_account as $$
-declare
-  account private.admin_account;
-begin
-  select a.* into account
-  from private.admin_account as a
-  where id = nullif(current_setting('jwt.claims.admin_id', true), '')::integer;
-
-  if not FOUND then
-    account.id := -1;
-    account.first_name := ('');
-    account.role := ('cat_anon');
-    account.email := ('');
-    account.created_at := now();
-  end if;
-
-  account.password_hash := ('xxx');
-
-  return account;
-end;
-$$ language plpgsql stable security definer;
-
-comment on function private.current_acct() is 'Gets the account identified by our JWT.';
-
-grant execute on function private.current_acct() to "catalyst-event-dev", "cat_anon", "cat_admin";
-
--- Test if we can get the current account.
-select private.current_acct();

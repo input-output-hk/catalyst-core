@@ -1,3 +1,4 @@
+"""Base templates used for node deployment."""
 from typing import Final
 
 """Default template for node_config.yaml."""

@@ -1,6 +1,6 @@
 use microtype::secrecy::ExposeSecret;
 
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 use postgres::{Client, NoTls};
 use std::{fs::File, io::BufWriter};
@@ -10,7 +10,7 @@ use color_eyre::Result;
 use tracing::{debug, info, Level};
 
 use voting_tools_rs::{
-    verify::StakeKeyHashNoStake, voting_power, Args, DbConfig, DryRunCommand, InvalidRegistration,
+    verify::Unregistered, voting_power, Args, DbConfig, DryRunCommand, InvalidRegistration,
     SnapshotEntry, VotingPowerArgs,
 };
 
@@ -65,12 +65,12 @@ fn main() -> Result<()> {
     let db_client_registrations = db_conn(db_config.clone())?;
     let db_client_stakes = db_conn(db_config)?;
 
-    let (valids, invalids, no_stake) =
+    let (valids, invalids, unregistered) =
         load(dry_run, args, db_client_stakes, db_client_registrations)?;
 
     handle_invalids(&out_file, &invalids)?;
 
-    handle_no_stake(&out_file, &no_stake)?;
+    handle_unregistered(&out_file, unregistered)?;
 
     info!(
         "calculated {} valids invalids {}",
@@ -112,11 +112,7 @@ fn load(
     args: VotingPowerArgs,
     db_client_stakes: Client,
     db_client_registrations: Client,
-) -> Result<(
-    Vec<SnapshotEntry>,
-    Vec<InvalidRegistration>,
-    Vec<StakeKeyHashNoStake>,
-)> {
+) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>, Unregistered)> {
     if let Some(DryRunCommand::DryRun { mock_json_file }) = dry_run {
         info!("Using dryrun file: {}", mock_json_file.to_string_lossy());
         voting_power(db_client_stakes, db_client_registrations, args)
@@ -151,17 +147,19 @@ fn handle_invalids(path: &Path, invalids: &[InvalidRegistration]) -> Result<()> 
     Ok(())
 }
 
-/// Handle Registrations with no staked ada. No UTXO's.
-fn handle_no_stake(path: &Path, no_stake: &Vec<StakeKeyHashNoStake>) -> Result<()> {
-    info!("handling no stake registrations");
-    if no_stake.is_empty() {
-        return Ok(());
-    }
+/// Handle stake addresses that are not registered
+fn handle_unregistered(path: &Path, unregistered: Unregistered) -> Result<()> {
+    info!("handling unregistered");
 
-    let path = path.with_extension("no_stake.json");
+    let unregistered = unregistered
+        .into_iter()
+        .map(|(key, value)| (hex::encode(key), value))
+        .collect::<HashMap<String, u128>>();
+
+    let path = path.with_extension("unregistered.json");
 
     tracing::warn!(
-        "found no stake records: writing to {}",
+        "found unregistered stake addresses: writing to {}",
         path.to_string_lossy()
     );
 
@@ -172,7 +170,7 @@ fn handle_no_stake(path: &Path, no_stake: &Vec<StakeKeyHashNoStake>) -> Result<(
         .open(path)?;
     let writer = BufWriter::new(file);
 
-    serde_json::to_writer_pretty(writer, no_stake)?;
+    serde_json::to_writer_pretty(writer, &unregistered)?;
 
     Ok(())
 }

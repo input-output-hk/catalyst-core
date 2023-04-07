@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use dashmap::DashMap;
 use postgres::fallible_iterator::FallibleIterator;
 use postgres::Client;
 
@@ -26,8 +27,8 @@ pub type Invalids = Vec<InvalidRegistration>;
 /// `Network_id` + Blake2b-224( Stake Public Key )
 pub type StakeKeyHash = Vec<u8>;
 
-/// Registrations with no staked ada. No UTXO's.
-pub type StakeKeyHashNoStake = String;
+/// Unregistered voters stake
+pub type Unregistered = DashMap<Vec<u8>, u128>;
 
 ///
 /// Query gathers all possible registration transactions

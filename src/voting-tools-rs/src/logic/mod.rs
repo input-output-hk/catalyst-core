@@ -6,7 +6,7 @@ use crate::{
     data::{Registration, SignedRegistration, SlotNo},
     db::queries::staked_utxo_ada::staked_utxo_ada,
     error::InvalidRegistration,
-    verify::{filter_registrations, StakeKeyHash, StakeKeyHashNoStake},
+    verify::{filter_registrations, StakeKeyHash},
     SnapshotEntry,
 };
 
@@ -62,7 +62,7 @@ pub fn voting_power(
 ) -> Result<(
     Vec<SnapshotEntry>,
     Vec<InvalidRegistration>,
-    Vec<StakeKeyHashNoStake>,
+    DashMap<Vec<u8>, u128>,
 )> {
     const ABS_MIN_SLOT: SlotNo = SlotNo(0);
     const ABS_MAX_SLOT: SlotNo = SlotNo(i64::MAX as u64);
@@ -82,24 +82,22 @@ pub fn voting_power(
 
     let (valids, invalids) = registrations.join().unwrap();
     info!("finished processing registrations");
+
+    // UTXOs for all possible Stake Addresses
     let staked_ada_records = stakes.join().unwrap();
     info!("finished processing stakes");
 
-    // registrations with no UTXO's.
-    let mut no_staked_ada = Vec::new();
-
     let snapshot = valids
         .into_iter()
-        .map(|reg| convert_to_snapshot_entry(reg, &staked_ada_records, &mut no_staked_ada))
+        .map(|reg| convert_to_snapshot_entry(reg, &staked_ada_records))
         .collect::<Result<_, _>>()?;
 
-    Ok((snapshot, invalids, no_staked_ada))
+    Ok((snapshot, invalids, staked_ada_records))
 }
 
 fn convert_to_snapshot_entry(
     registration: SignedRegistration,
     stakes: &DashMap<StakeKeyHash, u128>,
-    no_staked_ada: &mut Vec<StakeKeyHashNoStake>,
 ) -> Result<SnapshotEntry> {
     let SignedRegistration {
         registration:
@@ -115,14 +113,16 @@ fn convert_to_snapshot_entry(
         ..
     } = registration;
 
-    // look up stake key hash of valid registration in stakes map to get staked ada associated with the key
+    // look up stake key hash of valid registration in stakes map to obtain staked ada associated with the key
     let voting_power = if let Some(voting_power) = stakes.get(&stake_key_hash) {
         *voting_power
     } else {
-        // No UTXO's.
-        no_staked_ada.push(hex::encode(&stake_key_hash));
+        // Registrations with no staked ada. No UTXO's.
         0
     };
+
+    // remove registered, what is left (difference) are stake addresses that are not registered
+    stakes.remove(&stake_key_hash);
 
     Ok(SnapshotEntry {
         voting_key,

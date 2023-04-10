@@ -1,123 +1,132 @@
-"""Main entrypoint for executing the voting node service from the shell command-line."""
-from typing import Final
+"""Command-line Interface for the Voting Node Servie.
+
+Main entrypoint for executing the voting node service from the shell command-line.
+"""
 
 import click
 import uvicorn
 
 from . import api, logs, service
+from .envvar import (
+    EVENTDB_URL,
+    IS_NODE_RELOADABLE,
+    JCLI_PATH,
+    JORM_PATH,
+    JORM_PORT_JRPC,
+    JORM_PORT_P2P,
+    JORM_PORT_REST,
+    VOTING_HOST,
+    VOTING_LOG_LEVEL,
+    VOTING_NODE_STORAGE,
+    VOTING_PORT,
+)
 from .models import ServiceSettings
-
-# Environment variables
-VOTING_HOST: Final = "VOTING_HOST"
-VOTING_PORT: Final = "VOTING_PORT"
-VOTING_LOG_LEVEL: Final = "VOTING_LOG_LEVEL"
-VOTING_NODE_STORAGE: Final = "VOTING_NODE_STORAGE"
-IS_NODE_RELOADABLE: Final = "IS_NODE_RELOADABLE"
-EVENTDB_URL: Final = "EVENTDB_URL"
-JORM_PATH: Final = "JORM_PATH"
-JORM_PORT_REST: Final = "JORM_PORT_REST"
-JORM_PORT_JRPC: Final = "JORM_PORT_JRPC"
-JORM_PORT_P2P: Final = "JORM_PORT_P2P"
 
 
 @click.group()
-def cli():
-    """Invoke the 'voting-node' command from the command-line."""
+def voting_node_cli():
+    """Deploy a jormungandr node for voting events."""
 
 
 @click.command()
 @click.option(
     "--reloadable",
     is_flag=True,
-    envvar="IS_NODE_RELOADABLE",
-    help="""\
-    Enables the node to reload when it detects changes to the current Voting Event.\
-    If not set, the node will still detect changes to the Voting Event, but will use\
-    the configuration it has, emitting warnings in the logs.
+    envvar=IS_NODE_RELOADABLE,
+    help=r"""Flag to enable the voting node to run in reloadable mode.
+
+    When set, the node will reload its settings whenever changes to the current voting event are detected.
+    Otherwise, the node will still detect changes in the event, but will not override its settings. Log warnings will be emitted.
+
+    If left unset it will look for envvar `IS_NODE_RELOADABLE`.
     """,
 )
 @click.option(
-    "--host",
+    "--api-host",
     envvar=VOTING_HOST,
     default="0.0.0.0",
-    help="""\
-    Host for the voting node API. If left unset it will look for VOTING_HOST.\
-    If no host is found, the default value is: 0.0.0.0""",
+    help="""Host for the voting node API.
+
+    If left unset it will look for envvar `VOTING_HOST`. If no host is found, the default value is: 0.0.0.0""",
 )
 @click.option(
-    "--port",
+    "--api-port",
     envvar=VOTING_PORT,
     default=8000,
-    help="""\
-    Port for the voting node API. If left unset it will look for VOTING_PORT.\
-    If no port is found, the default value is: 8000""",
+    help="""Port for the voting node API.
+
+    If left unset it will look for envvar `VOTING_PORT`. If no port is found, the default value is: 8000""",
 )
 @click.option(
     "--log-level",
     envvar=VOTING_LOG_LEVEL,
     default="info",
     type=click.Choice(["info", "debug", "warn", "error", "trace"]),
-    help="""\
-    Sets the level for logs in the voting node. If left unset it will look for\
-    VOTING_LOG_LEVEL. If no level is found, the default value is: info""",
+    help="""Set the level for logs in the voting node.
+
+    If left unset it will look for envvar `VOTING_LOG_LEVEL`. If no level is found, the default value is: info""",
 )
 @click.option(
     "--database-url",
     envvar=EVENTDB_URL,
-    default="postgres://localhost/CatalystEventDev",
-    help="""\
-    Sets the URL for the database. Default: postgres://localhost/CatalystEventDev""",
+    help="""Sets the URL for the database.
+
+    Example: postgres://localhost/CatalystEventDev
+
+    If left unset, it will look for envvar `EVENTDB_URL`.""",
 )
 @click.option(
     "--node-storage",
     envvar=VOTING_NODE_STORAGE,
     default="./node_storage",
-    help="Sets the path to the voting node storage directory",
+    help="""Sets the path to the voting node storage directory.
+
+    If left unset, it will look for envvar `JORM_PATH`.""",
 )
 @click.option(
     "--jorm-path",
     envvar=JORM_PATH,
     default="jormungandr",
-    help="""\
-    Path to the 'jormungandr' executable.
-    """,
+    help="""Path to the 'jormungandr' executable.
+
+    If left unset, it will look for envvar `JORM_PATH`.""",
 )
 @click.option(
     "--jorm-port-rest",
     envvar=JORM_PORT_REST,
     default=10080,
-    help="""\
-    jormungandr REST listening port
-    """,
+    help="""jormungandr REST listening port.
+
+    If left unset, it will look for envvar `JORM_PORT_REST`.""",
 )
 @click.option(
     "--jorm-port-jrpc",
     envvar=JORM_PORT_JRPC,
     default=10085,
-    help="""\
-    jormungandr JRPC listening port
-    """,
+    help="""jormungandr JRPC listening port.
+
+    If left unset, it will look for envvar `JORM_PORT_JRPC`.""",
 )
 @click.option(
     "--jorm-port-p2p",
     envvar=JORM_PORT_P2P,
     default=10090,
-    help="""\
-    jormungandr P2P listening port
-    """,
+    help="""jormungandr P2P listening port.
+
+    If left unset, it will look for envvar `JORM_PORT_P2P`.""",
 )
 @click.option(
     "--jcli-path",
-    envvar="JCLI_PATH",
+    envvar=JCLI_PATH,
     default="jcli",
-    help="""\
-    Path to the 'jcli' executable.
-    """,
+    help="""Path to the 'jcli' executable.
+
+    If left unset, it will look for envvar `JCLI_PATH`.""",
 )
 def start(
     reloadable,
-    host,
-    port,
+    api_host,
+    api_port,
     log_level,
     database_url,
     node_storage,
@@ -127,14 +136,11 @@ def start(
     jorm_port_jrpc,
     jorm_port_p2p,
 ):
-    """Invoke the 'voting-node start' sub-command.
-
-    Start the Voting Service process.
-    """
+    """Start the Voting Service."""
     logs.configLogger(log_level)
     click.echo(f"reloadable={reloadable}")
 
-    api_config = uvicorn.Config(api.app, host=host, port=port, log_level=log_level)
+    api_config = uvicorn.Config(api.app, host=api_host, port=api_port, log_level=log_level)
     settings = ServiceSettings(
         jorm_port_rest,
         jorm_port_jrpc,
@@ -150,8 +156,8 @@ def start(
     voting.start()
 
 
-# this groups commands in the main 'cli' group
-cli.add_command(start)
+# this groups commands in the main 'voting_node_cli' group
+voting_node_cli.add_command(start)
 
 if __name__ == "__main__":
-    cli()
+    voting_node_cli()

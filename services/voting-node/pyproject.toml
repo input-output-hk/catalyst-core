@@ -38,7 +38,7 @@ ruff = "^0.0.254"
 pdoc = "^13.1.0"
 
 [tool.poetry.scripts]
-voting-node = "voting_node.main:cli"
+voting-node = "voting_node.main:voting_node_cli"
 
 [tool.black]
 line-length = 132

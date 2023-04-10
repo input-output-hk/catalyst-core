@@ -1,8 +1,9 @@
 """Provides an instance connected to the EventDB, as well as queries used by the running node schedule."""
 import datetime
-from typing import Any
 
 import asyncpg
+from asyncpg import Connection
+from pydantic import BaseModel
 
 from .logs import getLogger
 from .models import Event, HostInfo, LeaderHostInfo, Proposal, Snapshot, VotePlan
@@ -12,27 +13,37 @@ from .utils import LEADER_REGEX, get_hostname
 logger = getLogger()
 
 
-class EventDb:
+class EventDb(BaseModel):
     """Convenient abstraction to call the EventDB within the voting node service."""
 
-    conn: Any = None
+    connection: Connection | None = None
     db_url: str
 
-    def __init__(self, db_url: str) -> None:
-        """Set the EventDB url."""
-        self.db_url = db_url
+    class Config:
+        """Pydantic model configuration parameters."""
+        arbitrary_types_allowed = True
+
 
     async def connect(self):
         """Create a connection to the DB."""
         conn = await asyncpg.connect(self.db_url)
         if conn is None:
             raise Exception("failed to connect to the database")
-        self.conn = conn
+        self.connection = conn
+
+    def conn(self) -> Connection:
+        """Return the connection to the DB.
+
+        Raise exception if connection is None.
+        """
+        if self.connection is None:
+            raise Exception("no connection to EventDB found")
+        return self.connection
 
     async def close(self):
         """Close a connection to the DB."""
-        if self.conn is not None:
-            await self.conn.close()
+        if self.connection is not None:
+            await self.connection.close()
 
     async def fetch_current_event(self) -> Event:
         """Look in EventDB for the event that will start voting."""
@@ -41,14 +52,14 @@ class EventDb:
         filter_by = "(voting_end > $1 or voting_end = $2) and voting_start < $1"
         sort_by = "voting_start ASC"
         query = f"SELECT * FROM event WHERE {filter_by} ORDER BY {sort_by} LIMIT 1"
-        result = await self.conn.fetchrow(query, now, None)
+        result = await self.conn().fetchrow(query, now, None)
         if result is not None:
             logger.debug(f"fetched ongoing event: {result}")
             return Event(**dict(result))
 
         filter_by = "voting_start > $1"
         query = f"SELECT * FROM event WHERE {filter_by} ORDER BY {sort_by} LIMIT 1"
-        result = await self.conn.fetchrow(query, now)
+        result = await self.conn().fetchrow(query, now)
         if result is None:
             raise Exception("failed to fetch event from DB")
         logger.debug(f"fetched upcoming event: {result}")
@@ -58,7 +69,7 @@ class EventDb:
         """Return HostInfo for leaders, sorted by hostname."""
         filter_by = "hostname = $1 AND event = $2"
         query = f"SELECT * FROM voting_node WHERE {filter_by}"
-        result = await self.conn.fetchrow(query, get_hostname(), event_row_id)
+        result = await self.conn().fetchrow(query, get_hostname(), event_row_id)
         if result is None:
             raise Exception("failed to fetch leader node info from DB")
         host_info = HostInfo(**dict(result))
@@ -70,7 +81,7 @@ class EventDb:
         values = "$1, $2, $3, $4, $5"
         query = f"INSERT INTO voting_node({fields}) VALUES({values}) RETURNING *"
         h = host_info
-        result = await self.conn.execute(
+        result = await self.conn().execute(
             query,
             h.hostname,
             h.event,
@@ -91,7 +102,7 @@ class EventDb:
         where = f"WHERE hostname ~ '{LEADER_REGEX}'"
         order_by = "ORDER BY hostname ASC"
         query = f"SELECT (hostname, pubkey) FROM voting_node {where} {order_by}"
-        result = await self.conn.fetch(query)
+        result = await self.conn().fetch(query)
         match result:
             case None:
                 raise Exception("DB error fetching leaders host info")
@@ -110,7 +121,7 @@ class EventDb:
     async def fetch_proposals(self) -> list[Proposal]:
         """Return a list of proposals ."""
         query = "SELECT * FROM proposal ORDER BY id ASC"
-        result = await self.conn.fetch(query)
+        result = await self.conn().fetch(query)
         if result is None:
             raise Exception("proposals DB error")
         logger.debug(f"proposals retrieved from DB: {len(result)}")
@@ -126,7 +137,7 @@ class EventDb:
     async def check_if_snapshot_is_final(self, event_id: int) -> bool:
         """Query if the snapshot is finalized."""
         query = "SELECT final FROM snapshot WHERE event = $1"
-        result = await self.conn.fetchrow(query, event_id)
+        result = await self.conn().fetchrow(query, event_id)
         match result:
             case None:
                 raise Exception("snapshot DB error")
@@ -141,7 +152,7 @@ class EventDb:
         columns = "(row_id, event, as_at, last_updated, dbsync_snapshot_data"
         columns += ", drep_data, catalyst_snapshot_data, final)"
         query = f"SELECT {columns} FROM snapshot WHERE event = $1"
-        result = await self.conn.fetchrow(query, event_id)
+        result = await self.conn().fetchrow(query, event_id)
         if result is None:
             raise Exception("snapshot DB error")
         logger.debug(f"snapshot retrieved from DB: {result}")
@@ -156,7 +167,7 @@ class EventDb:
     async def fetch_voteplans(self, event_id: int) -> list[VotePlan]:
         """Fetch the voteplans for the event_id."""
         query = "SELECT * FROM voteplan WHERE event_id = $1 ORDER BY id ASC"
-        result = await self.conn.fetch(query, event_id)
+        result = await self.conn().fetch(query, event_id)
         if result is None:
             raise Exception("voteplan DB error")
         logger.debug(f"voteplans retrieved from DB: {len(result)}")
@@ -176,7 +187,7 @@ class EventDb:
         returning = "name"
         query = f"UPDATE event SET {columns} WHERE {condition} RETURNING {returning}"
         try:
-            result = await self.conn.execute(query, block0_bytes, block0_hash, event_row_id)
+            result = await self.conn().execute(query, block0_bytes, block0_hash, event_row_id)
             if result is None:
                 raise Exception("failed to insert block0 info from DB")
             logger.debug(f"block0 info added to event: {result}")

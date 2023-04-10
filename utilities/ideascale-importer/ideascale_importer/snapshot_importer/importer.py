@@ -64,13 +64,15 @@ class WriteDbDataFailed(Exception):
 
 
 class Importer:
-    def __init__(self,
-                 config_path: str,
-                 database_url: str,
-                 event_id: int,
-                 output_dir: str,
-                 raw_snapshot_file: Optional[str] = None,
-                 dreps_file: Optional[str] = None):
+    def __init__(
+        self,
+        config_path: str,
+        database_url: str,
+        event_id: int,
+        output_dir: str,
+        raw_snapshot_file: Optional[str] = None,
+        dreps_file: Optional[str] = None,
+    ):
         self.config = config.from_json_file(config_path)
         self.database_url = database_url
         self.event_id = event_id
@@ -97,27 +99,25 @@ class Importer:
             # Fetch max slot
             logger.info("Querying max slot parameter")
             conn = await ideascale_importer.db.connect(
-                f"postgres://{self.config.dbsync_database.user}:" +
-                f"{self.config.dbsync_database.password}@{self.config.dbsync_database.host}"
+                f"postgres://{self.config.dbsync_database.user}:"
+                + f"{self.config.dbsync_database.password}@{self.config.dbsync_database.host}"
                 f"/{self.config.dbsync_database.db}"
             )
 
             row = await conn.fetchrow(
-                "SELECT slot_no FROM block WHERE time <= $1 ORDER BY time DESC LIMIT 1",
-                self.config.snapshot_tool.max_time
+                "SELECT slot_no FROM block WHERE time <= $1 ORDER BY time DESC LIMIT 1", self.config.snapshot_tool.max_time
             )
 
             if row is None:
                 raise FetchParametersFailed(
-                    "Failed to get max_slot parameter from db_sync database: "
-                    "no data returned by the query"
+                    "Failed to get max_slot parameter from db_sync database: " "no data returned by the query"
                 )
 
             self.snapshot_tool_max_slot = row["slot_no"]
             logger.info(
                 "Got max_slot for max_time",
                 snapshot_tool_max_slot=self.snapshot_tool_max_slot,
-                max_time=self.config.snapshot_tool.max_time.isoformat()
+                max_time=self.config.snapshot_tool.max_time.isoformat(),
             )
 
             await conn.close()
@@ -127,14 +127,11 @@ class Importer:
         # Fetch min_stake_threshold and voting_power_cap
         conn = await ideascale_importer.db.connect(self.database_url)
 
-        row = await conn.fetchrow(
-            "SELECT voting_power_threshold, max_voting_power_pct FROM event WHERE row_id = $1",
-            self.event_id
-        )
+        row = await conn.fetchrow("SELECT voting_power_threshold, max_voting_power_pct FROM event WHERE row_id = $1", self.event_id)
         if row is None:
             raise FetchParametersFailed(
-                "Failed to get min_stake_threshold and voting_power_cap parameters from the event database: " +
-                f"event_id={self.event_id} not found"
+                "Failed to get min_stake_threshold and voting_power_cap parameters from the event database: "
+                + f"event_id={self.event_id} not found"
             )
 
         self.catalyst_toolbox_voting_power_cap = row["max_voting_power_pct"]
@@ -169,8 +166,9 @@ class Importer:
     async def _run_catalyst_toolbox_snapshot(self):
         # Could happen when the event in the database does not have these set
         if self.catalyst_toolbox_min_stake_threshold is None or self.catalyst_toolbox_voting_power_cap is None:
-            raise RunCatalystToolboxSnapshotFailed("min_stake_threshold and voting_power_cap must be set "
-                                                   "either as CLI arguments or in the database")
+            raise RunCatalystToolboxSnapshotFailed(
+                "min_stake_threshold and voting_power_cap must be set " "either as CLI arguments or in the database"
+            )
 
         catalyst_toolbox_cmd = (
             f"{self.config.catalyst_toolbox.path} snapshot"
@@ -188,21 +186,15 @@ class Importer:
         with open(self.catalyst_toolbox_out_file) as f:
             catalyst_toolbox_data_raw_json = f.read()
 
-        catalyst_toolbox_data: Optional[List[SnapshotProcessedEntry]] = []
+        catalyst_toolbox_data: List[SnapshotProcessedEntry] = []
         for e in json.loads(catalyst_toolbox_data_raw_json):
             catalyst_toolbox_data.append(pydantic.tools.parse_obj_as(SnapshotProcessedEntry, e))
             await asyncio.sleep(0)
 
-        if catalyst_toolbox_data is None:
-            raise WriteDbDataFailed("Failed to load catalyst-toolbox generated data")
-
-        snapshot_tool_data: Optional[List[Registration]] = []
+        snapshot_tool_data: List[Registration] = []
         for r in json.loads(snapshot_tool_data_raw_json):
             snapshot_tool_data.append(pydantic.tools.parse_obj_as(Registration, r))
             await asyncio.sleep(0)
-
-        if snapshot_tool_data is None:
-            raise WriteDbDataFailed("Failed to load snapshot_tool generated data")
 
         total_registered_voting_power = 0
         registration_delegation_data = {}
@@ -219,7 +211,7 @@ class Importer:
                     "voting_weight": voting_weight,
                 }
             elif isinstance(r.delegations, list):  # CIP36 registration
-                for (idx, d) in enumerate(r.delegations):
+                for idx, d in enumerate(r.delegations):
                     voting_key = d[0]
                     voting_key_idx = idx
                     voting_weight = d[1]
@@ -242,7 +234,7 @@ class Importer:
             dbsync_snapshot_data=snapshot_tool_data_raw_json,
             drep_data=json.dumps(self.dreps),
             catalyst_snapshot_cmd=os.path.basename(self.config.catalyst_toolbox.path),
-            catalyst_snapshot_data=catalyst_toolbox_data_raw_json
+            catalyst_snapshot_data=catalyst_toolbox_data_raw_json,
         )
 
         voters: Dict[str, models.Voter] = {}
@@ -290,7 +282,8 @@ class Importer:
             "Done processing contributions and voters",
             total_registered_voting_power=total_registered_voting_power,
             total_contributed_voting_power=total_contributed_voting_power,
-            total_hir_voting_power=total_hir_voting_power)
+            total_hir_voting_power=total_hir_voting_power,
+        )
 
         conn = await ideascale_importer.db.connect(self.database_url)
 

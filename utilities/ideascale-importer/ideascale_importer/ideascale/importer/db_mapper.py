@@ -19,9 +19,7 @@ class Mapper:
         self.vote_options_id = vote_options_id
 
     def map_challenge(
-        self,
-        a: ideascale_importer.ideascale.client.Campaign,
-        event_id: int
+        self, a: ideascale_importer.ideascale.client.Campaign, event_id: int
     ) -> ideascale_importer.db.models.Challenge:
         """
         Maps a IdeaScale campaign into a challenge.
@@ -39,7 +37,7 @@ class Mapper:
             rewards_total=reward.amount,
             proposers_rewards=reward.amount,
             vote_options=self.vote_options_id,
-            extra={"url": {"challenge": a.campaign_url}}
+            extra={"url": {"challenge": a.campaign_url}},
         )
 
     def map_proposal(
@@ -53,12 +51,11 @@ class Mapper:
 
         field_mappings = self.config.proposals.field_mappings
 
-        proposer_name = ", ".join([a.author_info.name]+a.contributors_name())
+        proposer_name = ", ".join([a.author_info.name] + a.contributors_name())
         proposer_url = get_value(a.custom_fields_by_key, field_mappings.proposer_url) or ""
-        proposer_relevant_experience = html_to_md(get_value(
-            a.custom_fields_by_key,
-            field_mappings.proposer_relevant_experience
-        ) or "")
+        proposer_relevant_experience = html_to_md(
+            get_value(a.custom_fields_by_key, field_mappings.proposer_relevant_experience) or ""
+        )
         funds = int(get_value(a.custom_fields_by_key, field_mappings.funds) or "0", base=10)
         public_key = get_value(a.custom_fields_by_key, field_mappings.public_key) or ""
 
@@ -111,7 +108,7 @@ def html_to_md(s: str) -> str:
     Transforms a HTML string into a Markdown string.
     """
 
-    tags_to_strip = ['a', 'b', 'img', 'strong', 'u', 'i', 'embed', 'iframe']
+    tags_to_strip = ["a", "b", "img", "strong", "u", "i", "embed", "iframe"]
     return markdownify(s, strip=tags_to_strip).strip()
 
 
@@ -152,9 +149,9 @@ def get_challenge_category(c: ideascale_importer.ideascale.client.Campaign) -> s
 
     r = c.name.lower()
 
-    if 'catalyst natives' in r:
-        return 'native'
-    elif 'challenge setting' in r:
-        return 'community-choice'
+    if "catalyst natives" in r:
+        return "native"
+    elif "challenge setting" in r:
+        return "community-choice"
     else:
-        return 'simple'
+        return "simple"

@@ -309,6 +309,54 @@
 <a href="#309" id="309">309</a>
 <a href="#310" id="310">310</a>
 <a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{Event, EventId, EventSummary},
@@ -329,21 +377,23 @@
 
 <span class="kw">impl </span>EventDB {
     <span class="kw">const </span>EVENTS_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time
+        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
         FROM event
+        LEFT JOIN snapshot ON event.row_id = snapshot.event
         ORDER BY event.row_id ASC
         OFFSET $1;&quot;</span>;
 
     <span class="kw">const </span>EVENTS_WITH_LIMIT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time
+        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
         FROM event
+        LEFT JOIN snapshot ON event.row_id = snapshot.event
         ORDER BY event.row_id ASC
         LIMIT $1 OFFSET $2&quot;</span>;
 
     <span class="kw">const </span>EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time
+        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
         FROM event
-        INNER JOIN snapshot ON event.row_id = snapshot.event
+        LEFT JOIN snapshot ON event.row_id = snapshot.event
         WHERE event.row_id = $1;&quot;</span>;
 }
 
@@ -379,8 +429,10 @@
                 starts: row
                     .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
                     </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+                reg_checked: row
+                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;last_updated&quot;</span>)<span class="question-mark">?
+                    </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
                 ends,
-                reg_checked: <span class="prelude-val">None</span>,
                 is_final,
             })
         }
@@ -406,8 +458,10 @@
                 starts: row
                     .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
                     </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+                reg_checked: row
+                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;last_updated&quot;</span>)<span class="question-mark">?
+                    </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
                 ends,
-                reg_checked: <span class="prelude-val">None</span>,
                 is_final,
             },
             event_details: <span class="prelude-val">None</span>,
@@ -453,7 +507,13 @@
                         ),
                         Utc
                     )),
-                    reg_checked: <span class="prelude-val">None</span>,
+                    reg_checked: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                            NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: <span class="bool-val">true</span>,
                 },
                 EventSummary {
@@ -473,7 +533,13 @@
                         ),
                         Utc
                     )),
-                    reg_checked: <span class="prelude-val">None</span>,
+                    reg_checked: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                            NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: <span class="bool-val">true</span>,
                 },
                 EventSummary {
@@ -493,7 +559,13 @@
                         ),
                         Utc
                     )),
-                    reg_checked: <span class="prelude-val">None</span>,
+                    reg_checked: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(<span class="number">2022</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                            NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: <span class="bool-val">true</span>,
                 },
                 EventSummary {
@@ -528,7 +600,13 @@
                         ),
                         Utc
                     )),
-                    reg_checked: <span class="prelude-val">None</span>,
+                    reg_checked: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                            NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: <span class="bool-val">true</span>,
                 },
                 EventSummary {
@@ -548,7 +626,13 @@
                         ),
                         Utc
                     )),
-                    reg_checked: <span class="prelude-val">None</span>,
+                    reg_checked: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                            NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: <span class="bool-val">true</span>,
                 },
             ]
@@ -574,8 +658,14 @@
                     ),
                     Utc
                 )),
+                reg_checked: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                    ),
+                    Utc
+                )),
                 is_final: <span class="bool-val">true</span>,
-                reg_checked: <span class="prelude-val">None</span>,
             },]
         );
 
@@ -610,8 +700,14 @@
                         ),
                         Utc
                     )),
+                    reg_checked: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                            NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: <span class="bool-val">true</span>,
-                    reg_checked: <span class="prelude-val">None</span>,
                 },
                 event_details: <span class="prelude-val">None</span>,
             },

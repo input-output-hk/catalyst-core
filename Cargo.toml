@@ -107,5 +107,7 @@ clap_complete = "4"  # shell autocomplete for CLIs
 # async traits
 async-trait = "0.1.64"
 
+rust_decimal = { version = "1.29" }
+
 [patch.crates-io]
 cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }

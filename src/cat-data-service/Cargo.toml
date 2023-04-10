@@ -22,3 +22,5 @@ axum = { version = "0.6.9" }
 serde_json = { version = "1.0" }
 tower = { version = "0.4", features = ["util"] }
 chrono = { workspace = true }
+rust_decimal = {  workspace = true }
+

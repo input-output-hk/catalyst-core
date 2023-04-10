@@ -75,7 +75,10 @@ mod tests {
         http::{Request, StatusCode},
     };
     use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-    use event_db::types::event::EventId;
+    use event_db::types::event::{
+        EventDetails, EventId, EventSchedule, VotingPowerAlgorithm, VotingPowerSettings,
+    };
+    use rust_decimal::Decimal;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -92,31 +95,108 @@ mod tests {
         assert_eq!(
             String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
                 .unwrap(),
-            serde_json::to_string(&EventSummary {
-                id: EventId(1),
-                name: "Test Fund 1".to_string(),
-                starts: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                ends: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                reg_checked: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                is_final: true,
+            serde_json::to_string(&Event {
+                event_summary: EventSummary {
+                    id: EventId(1),
+                    name: "Test Fund 1".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    is_final: true,
+                },
+                event_details: EventDetails {
+                    voting_power: VotingPowerSettings {
+                        alg: VotingPowerAlgorithm::ThresholdStakedADA,
+                        min_ada: Some(1),
+                        max_pct: Some(Decimal::new(100, 0)),
+                    },
+                    registration: None,
+                    schedule: EventSchedule {
+                        insight_sharing: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        proposal_submission: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        refine_proposals: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        finalize_proposals: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        proposal_assessment: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        assessment_qa_start: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        voting: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        tallying: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        tallying_end: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 7, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                    },
+                    goals: vec![],
+                    groups: vec![]
+                },
             },)
             .unwrap()
         );

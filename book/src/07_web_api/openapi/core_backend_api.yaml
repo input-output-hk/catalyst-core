@@ -451,6 +451,7 @@ components:
       required:
         - id
         - name
+        - final
       description: A Summary of an individual Voting Event
     VotingPowerSettings:
       title: Voting Power Settings
@@ -587,10 +588,6 @@ components:
         tallying_end:
           $ref: '#/components/schemas/DateTime'
           description: Date-Time when Tallying Ends.
-      required:
-        - voting
-        - tallying
-        - tallying_end
       x-stoplight:
         id: c1q1b5jtfd4ue
     ObjectiveId:

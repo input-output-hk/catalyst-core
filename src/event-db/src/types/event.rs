@@ -1,5 +1,6 @@
 use crate::types::utils::{serialize_datetime_as_rfc3339, serialize_option_datetime_as_rfc3339};
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -29,28 +30,37 @@ pub struct EventSummary {
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq)]
+pub enum VotingPowerAlgorithm {
+    #[serde(rename = "threshold_staked_ADA")]
+    ThresholdStakedADA
+}
+
+#[derive(Debug, Serialize, Clone, PartialEq)]
 pub struct VotingPowerSettings {
-    alg: String,
+    pub alg: VotingPowerAlgorithm,
     #[serde(skip_serializing_if = "Option::is_none")]
-    min_ada: Option<i64>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    max_pct: Option<f64>,
+    pub min_ada: Option<i64>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        with = "rust_decimal::serde::float_option"
+    )]
+    pub max_pct: Option<Decimal>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct EventRegistration {
     #[serde(skip_serializing_if = "Option::is_none")]
-    purpose: Option<i64>,
+    pub purpose: Option<i64>,
     #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
-    deadline: DateTime<Utc>,
+    pub deadline: DateTime<Utc>,
     #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
-    taken: DateTime<Utc>,
+    pub taken: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct EventGoal {
-    idx: i64,
-    name: String,
+    pub idx: i64,
+    pub name: String,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -59,52 +69,62 @@ pub struct EventSchedule {
         skip_serializing_if = "Option::is_none",
         serialize_with = "serialize_option_datetime_as_rfc3339"
     )]
-    insight_sharing: Option<DateTime<Utc>>,
+    pub insight_sharing: Option<DateTime<Utc>>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "serialize_option_datetime_as_rfc3339"
     )]
-    proposal_submission: Option<DateTime<Utc>>,
+    pub proposal_submission: Option<DateTime<Utc>>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "serialize_option_datetime_as_rfc3339"
     )]
-    refine_proposals: Option<DateTime<Utc>>,
+    pub refine_proposals: Option<DateTime<Utc>>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "serialize_option_datetime_as_rfc3339"
     )]
-    finalize_proposals: Option<DateTime<Utc>>,
+    pub finalize_proposals: Option<DateTime<Utc>>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "serialize_option_datetime_as_rfc3339"
     )]
-    proposal_assessment: Option<DateTime<Utc>>,
+    pub proposal_assessment: Option<DateTime<Utc>>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "serialize_option_datetime_as_rfc3339"
     )]
-    assessment_qa_start: Option<DateTime<Utc>>,
-    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
-    voting: DateTime<Utc>,
-    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
-    tallying: DateTime<Utc>,
-    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
-    tallying_end: DateTime<Utc>,
+    pub assessment_qa_start: Option<DateTime<Utc>>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_option_datetime_as_rfc3339"
+    )]
+    pub voting: Option<DateTime<Utc>>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_option_datetime_as_rfc3339"
+    )]
+    pub tallying: Option<DateTime<Utc>>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_option_datetime_as_rfc3339"
+    )]
+    pub tallying_end: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct VoterGroup {
-    id: String,
-    voting_token: String,
+    pub id: String,
+    pub voting_token: String,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq)]
 pub struct EventDetails {
     pub voting_power: VotingPowerSettings,
-    pub registration: EventRegistration,
-    pub goals: Vec<EventGoal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub registration: Option<EventRegistration>,
     pub schedule: EventSchedule,
+    pub goals: Vec<EventGoal>,
     pub groups: Vec<VoterGroup>,
 }
 
@@ -112,8 +132,8 @@ pub struct EventDetails {
 pub struct Event {
     #[serde(flatten)]
     pub event_summary: EventSummary,
-    #[serde(skip_serializing_if = "Option::is_none", flatten)]
-    pub event_details: Option<EventDetails>,
+    #[serde(flatten)]
+    pub event_details: EventDetails,
 }
 
 #[cfg(test)]
@@ -192,9 +212,9 @@ mod tests {
     #[test]
     fn voting_power_settings_json_test() {
         let voting_power_settings = VotingPowerSettings {
-            alg: "threshold_staked_ADA".to_string(),
+            alg: VotingPowerAlgorithm::ThresholdStakedADA,
             min_ada: Some(500),
-            max_pct: Some(1.23),
+            max_pct: Some(Decimal::new(123, 2)),
         };
 
         let json = serde_json::to_value(&voting_power_settings).unwrap();
@@ -210,7 +230,7 @@ mod tests {
         );
 
         let voting_power_settings = VotingPowerSettings {
-            alg: "threshold_staked_ADA".to_string(),
+            alg: VotingPowerAlgorithm::ThresholdStakedADA,
             min_ada: None,
             max_pct: None,
         };
@@ -310,9 +330,18 @@ mod tests {
                 NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                 Utc,
             )),
-            voting: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            tallying: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            tallying_end: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            voting: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
+            tallying: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
+            tallying_end: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
         };
 
         let json = serde_json::to_value(&event_schedule).unwrap();
@@ -340,9 +369,18 @@ mod tests {
             finalize_proposals: None,
             proposal_assessment: None,
             assessment_qa_start: None,
-            voting: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            tallying: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            tallying_end: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            voting: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
+            tallying: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
+            tallying_end: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
         };
 
         let json = serde_json::to_value(&event_schedule).unwrap();
@@ -381,15 +419,15 @@ mod tests {
     fn event_details_json_test() {
         let event_details = EventDetails {
             voting_power: VotingPowerSettings {
-                alg: "threshold_staked_ADA".to_string(),
+                alg: VotingPowerAlgorithm::ThresholdStakedADA,
                 min_ada: Some(500),
-                max_pct: Some(1.23),
+                max_pct: Some(Decimal::new(123, 2)),
             },
-            registration: EventRegistration {
+            registration: Some(EventRegistration {
                 purpose: Some(1),
                 deadline: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
                 taken: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            },
+            }),
             goals: vec![EventGoal {
                 idx: 1,
                 name: "goal 1".to_string(),
@@ -419,12 +457,18 @@ mod tests {
                     NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                     Utc,
                 )),
-                voting: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-                tallying: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-                tallying_end: DateTime::from_utc(
+                voting: Some(DateTime::from_utc(
                     NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                     Utc,
-                ),
+                )),
+                tallying: Some(DateTime::from_utc(
+                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                    Utc,
+                )),
+                tallying_end: Some(DateTime::from_utc(
+                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                    Utc,
+                )),
             },
             groups: vec![VoterGroup {
                 id: "rep".to_string(),
@@ -495,13 +539,13 @@ mod tests {
                 )),
                 is_final: true,
             },
-            event_details: Some(EventDetails {
+            event_details: EventDetails {
                 voting_power: VotingPowerSettings {
-                    alg: "threshold_staked_ADA".to_string(),
+                    alg: VotingPowerAlgorithm::ThresholdStakedADA,
                     min_ada: Some(500),
-                    max_pct: Some(1.23),
+                    max_pct: Some(Decimal::new(123, 2)),
                 },
-                registration: EventRegistration {
+                registration: Some(EventRegistration {
                     purpose: Some(1),
                     deadline: DateTime::from_utc(
                         NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
@@ -511,7 +555,7 @@ mod tests {
                         NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                         Utc,
                     ),
-                },
+                }),
                 goals: vec![EventGoal {
                     idx: 1,
                     name: "goal 1".to_string(),
@@ -541,24 +585,24 @@ mod tests {
                         NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                         Utc,
                     )),
-                    voting: DateTime::from_utc(
+                    voting: Some(DateTime::from_utc(
                         NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                         Utc,
-                    ),
-                    tallying: DateTime::from_utc(
+                    )),
+                    tallying: Some(DateTime::from_utc(
                         NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                         Utc,
-                    ),
-                    tallying_end: DateTime::from_utc(
+                    )),
+                    tallying_end: Some(DateTime::from_utc(
                         NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                         Utc,
-                    ),
+                    )),
                 },
                 groups: vec![VoterGroup {
                     id: "rep".to_string(),
                     voting_token: "voting token 1".to_string(),
                 }],
-            }),
+            },
         };
 
         let json = serde_json::to_value(&event_summary).unwrap();

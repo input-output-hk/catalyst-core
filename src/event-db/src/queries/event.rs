@@ -1,6 +1,9 @@
 use crate::{
     error::Error,
-    types::event::{Event, EventId, EventSummary},
+    types::event::{
+        Event, EventDetails, EventId, EventSchedule, EventSummary, VotingPowerAlgorithm,
+        VotingPowerSettings,
+    },
     EventDB,
 };
 use async_trait::async_trait;
@@ -32,7 +35,10 @@ impl EventDB {
         LIMIT $1 OFFSET $2";
 
     const EVENT_QUERY: &'static str =
-        "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
+        "SELECT event.row_id, event.name, event.start_time, event.end_time,
+        event.voting_power_threshold, event.max_voting_power_pct,
+        event.insight_sharing_start, event.proposal_submission_start, event.refine_proposals_start, event.finalize_proposals_start, event.proposal_assessment_start, event.assessment_qa_start, event.voting_start, event.voting_end, event.tallying_end,
+        snapshot.last_updated
         FROM event
         LEFT JOIN snapshot ON event.row_id = snapshot.event
         WHERE event.row_id = $1;";
@@ -92,6 +98,42 @@ impl EventQueries for EventDB {
             .map(|val| val.and_local_timezone(Utc).unwrap());
         let is_final = ends.map(|ends| Utc::now() > ends).unwrap_or(false);
 
+        let voting_power = VotingPowerSettings {
+            alg: VotingPowerAlgorithm::ThresholdStakedADA,
+            min_ada: row.try_get("voting_power_threshold")?,
+            max_pct: row.try_get("max_voting_power_pct")?,
+        };
+
+        let schedule = EventSchedule {
+            insight_sharing: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("insight_sharing_start")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+            proposal_submission: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("proposal_submission_start")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+            refine_proposals: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("refine_proposals_start")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+            finalize_proposals: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("finalize_proposals_start")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+            proposal_assessment: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("proposal_assessment_start")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+            assessment_qa_start: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("assessment_qa_start")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+            voting: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("voting_start")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+            tallying: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("voting_end")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+            tallying_end: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("tallying_end")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+        };
+
         Ok(Event {
             event_summary: EventSummary {
                 id: EventId(row.try_get("row_id")?),
@@ -105,7 +147,13 @@ impl EventQueries for EventDB {
                 ends,
                 is_final,
             },
-            event_details: None,
+            event_details: EventDetails {
+                voting_power,
+                schedule,
+                registration: None,
+                goals: vec![],
+                groups: vec![],
+            },
         })
     }
 }
@@ -122,6 +170,7 @@ mod tests {
     use super::*;
     use crate::establish_connection;
     use chrono::{DateTime, NaiveDate, NaiveTime};
+    use rust_decimal::Decimal;
 
     #[tokio::test]
     async fn get_events_test() {
@@ -350,7 +399,81 @@ mod tests {
                     )),
                     is_final: true,
                 },
-                event_details: None,
+                event_details: EventDetails {
+                    voting_power: VotingPowerSettings {
+                        alg: VotingPowerAlgorithm::ThresholdStakedADA,
+                        min_ada: Some(1),
+                        max_pct: Some(Decimal::new(100, 0)),
+                    },
+                    registration: None,
+                    schedule: EventSchedule {
+                        insight_sharing: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        proposal_submission: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        refine_proposals: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        finalize_proposals: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        proposal_assessment: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        assessment_qa_start: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        voting: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        tallying: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        tallying_end: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 7, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                    },
+                    goals: vec![],
+                    groups: vec![]
+                },
             },
         );
 

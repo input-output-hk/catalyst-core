@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["PrivateParameters","VotePlanTemplate","__DeserializeWith","__FieldVisitor","__Visitor"]};

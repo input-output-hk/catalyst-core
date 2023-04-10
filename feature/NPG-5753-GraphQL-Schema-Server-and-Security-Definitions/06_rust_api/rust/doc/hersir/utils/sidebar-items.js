@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["print_intro"],"mod":["dotifier","introduction","vote_plan"],"struct":["Dotifier"]};

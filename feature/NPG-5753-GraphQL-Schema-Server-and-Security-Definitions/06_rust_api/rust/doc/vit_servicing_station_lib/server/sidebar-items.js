@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["bootstrapping","exit_codes","settings","signals"]};

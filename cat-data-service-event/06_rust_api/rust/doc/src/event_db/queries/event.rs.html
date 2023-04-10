@@ -357,9 +357,49 @@
 <a href="#357" id="357">357</a>
 <a href="#358" id="358">358</a>
 <a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
-    types::event::{Event, EventId, EventSummary},
+    types::event::{Event, EventId, EventRegistration, EventSchedule, EventSummary, VotingPowerSettings},
     EventDB,
 };
 <span class="kw">use </span>async_trait::async_trait;
@@ -391,7 +431,10 @@
         LIMIT $1 OFFSET $2&quot;</span>;
 
     <span class="kw">const </span>EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
+        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time,
+        event.voting_power_threshold, event.max_voting_power_pct,
+        event.insight_sharing_start, event.proposal_submission_start, event.refine_proposals_start, event.finalize_proposals_start, event.proposal_assessment_start, event.assessment_qa_start, event.voting_start, event.voting_end, event.tallying_end,
+        snapshot.last_updated
         FROM event
         LEFT JOIN snapshot ON event.row_id = snapshot.event
         WHERE event.row_id = $1;&quot;</span>;
@@ -450,6 +493,43 @@
             .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
             </span>.map(|val| val.and_local_timezone(Utc).unwrap());
         <span class="kw">let </span>is_final = ends.map(|ends| Utc::now() &gt; ends).unwrap_or(<span class="bool-val">false</span>);
+
+        <span class="kw">let </span>voting_power = VotingPowerSettings {
+            <span class="comment">// TODO: properly define `alg` field
+            </span>alg: <span class="string">&quot;algorithm&quot;</span>.to_string(),
+            min_ada: row.try_get(<span class="string">&quot;voting_power_threshold&quot;</span>)<span class="question-mark">?</span>,
+            max_pct: row.try_get(<span class="string">&quot;max_voting_power_pct&quot;</span>)<span class="question-mark">?</span>,
+        };
+
+        <span class="kw">let </span>event_schedule = EventSchedule {
+            insight_sharing: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;insight_sharing_start&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+            proposal_submission: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;proposal_submission_start&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+            refine_proposals: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;refine_proposals_start&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+            finalize_proposals: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;finalize_proposals_start&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+            proposal_assessment: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;proposal_assessment_start&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+            assessment_qa_start: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;assessment_qa_start&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+            voting: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;voting_start&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+            tallying: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;voting_end&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+            tallying_end: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;tallying_end&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+        };
 
         <span class="prelude-val">Ok</span>(Event {
             event_summary: EventSummary {

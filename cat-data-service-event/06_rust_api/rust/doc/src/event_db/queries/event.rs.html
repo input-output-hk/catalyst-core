@@ -302,6 +302,13 @@
 <a href="#302" id="302">302</a>
 <a href="#303" id="303">303</a>
 <a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{Event, EventId, EventSummary},
@@ -322,21 +329,19 @@
 
 <span class="kw">impl </span>EventDB {
     <span class="kw">const </span>EVENTS_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.final
+        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time
         FROM event
-        INNER JOIN snapshot ON event.row_id = snapshot.event
         ORDER BY event.row_id ASC
         OFFSET $1;&quot;</span>;
 
     <span class="kw">const </span>EVENTS_WITH_LIMIT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.final
+        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time
         FROM event
-        INNER JOIN snapshot ON event.row_id = snapshot.event
         ORDER BY event.row_id ASC
         LIMIT $1 OFFSET $2&quot;</span>;
 
     <span class="kw">const </span>EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.final
+        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time
         FROM event
         INNER JOIN snapshot ON event.row_id = snapshot.event
         WHERE event.row_id = $1;&quot;</span>;
@@ -364,19 +369,19 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>events = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {
+            <span class="kw">let </span>ends = row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap());
+            <span class="kw">let </span>is_final = ends.map(|ends| Utc::now() &gt; ends).unwrap_or(<span class="bool-val">false</span>);
             events.push(EventSummary {
                 id: EventId(row.try_get(<span class="string">&quot;row_id&quot;</span>)<span class="question-mark">?</span>),
                 name: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
                 starts: row
-                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
-                    .unwrap(),
-                ends: row
-                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
-                    .unwrap(),
-                is_final: row.try_get(<span class="string">&quot;final&quot;</span>)<span class="question-mark">?</span>,
+                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
+                    </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+                ends,
                 reg_checked: <span class="prelude-val">None</span>,
+                is_final,
             })
         }
 
@@ -389,20 +394,21 @@
         <span class="kw">let </span>rows = conn.query(<span class="self">Self</span>::EVENT_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>]).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>row = rows.get(<span class="number">0</span>).ok_or(Error::NotFound)<span class="question-mark">?</span>;
 
+        <span class="kw">let </span>ends = row
+            .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
+            </span>.map(|val| val.and_local_timezone(Utc).unwrap());
+        <span class="kw">let </span>is_final = ends.map(|ends| Utc::now() &gt; ends).unwrap_or(<span class="bool-val">false</span>);
+
         <span class="prelude-val">Ok</span>(Event {
             event_summary: EventSummary {
                 id: EventId(row.try_get(<span class="string">&quot;row_id&quot;</span>)<span class="question-mark">?</span>),
                 name: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
                 starts: row
-                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
-                    .unwrap(),
-                ends: row
-                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
-                    .unwrap(),
-                is_final: row.try_get(<span class="string">&quot;final&quot;</span>)<span class="question-mark">?</span>,
+                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
+                    </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+                ends,
                 reg_checked: <span class="prelude-val">None</span>,
+                is_final,
             },
             event_details: <span class="prelude-val">None</span>,
         })
@@ -433,62 +439,70 @@
                 EventSummary {
                     id: EventId(<span class="number">1</span>),
                     name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
-                    starts: DateTime::&lt;Utc&gt;::from_utc(
+                    starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::&lt;Utc&gt;::from_utc(
+                    )),
+                    ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    is_final: <span class="bool-val">true</span>,
+                    )),
                     reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">true</span>,
                 },
                 EventSummary {
                     id: EventId(<span class="number">2</span>),
                     name: <span class="string">&quot;Test Fund 2&quot;</span>.to_string(),
-                    starts: DateTime::&lt;Utc&gt;::from_utc(
+                    starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::&lt;Utc&gt;::from_utc(
+                    )),
+                    ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    is_final: <span class="bool-val">true</span>,
+                    )),
                     reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">true</span>,
                 },
                 EventSummary {
                     id: EventId(<span class="number">3</span>),
                     name: <span class="string">&quot;Test Fund 3&quot;</span>.to_string(),
-                    starts: DateTime::&lt;Utc&gt;::from_utc(
+                    starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2022</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::&lt;Utc&gt;::from_utc(
+                    )),
+                    ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2022</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    is_final: <span class="bool-val">true</span>,
+                    )),
                     reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">true</span>,
+                },
+                EventSummary {
+                    id: EventId(<span class="number">4</span>),
+                    name: <span class="string">&quot;Test Fund 4&quot;</span>.to_string(),
+                    starts: <span class="prelude-val">None</span>,
+                    ends: <span class="prelude-val">None</span>,
+                    reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">false</span>,
                 }
             ]
         );
@@ -500,42 +514,42 @@
                 EventSummary {
                     id: EventId(<span class="number">1</span>),
                     name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
-                    starts: DateTime::&lt;Utc&gt;::from_utc(
+                    starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::&lt;Utc&gt;::from_utc(
+                    )),
+                    ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    is_final: <span class="bool-val">true</span>,
+                    )),
                     reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">true</span>,
                 },
                 EventSummary {
                     id: EventId(<span class="number">2</span>),
                     name: <span class="string">&quot;Test Fund 2&quot;</span>.to_string(),
-                    starts: DateTime::&lt;Utc&gt;::from_utc(
+                    starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::&lt;Utc&gt;::from_utc(
+                    )),
+                    ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    is_final: <span class="bool-val">true</span>,
+                    )),
                     reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">true</span>,
                 },
             ]
         );
@@ -546,20 +560,20 @@
             <span class="macro">vec!</span>[EventSummary {
                 id: EventId(<span class="number">2</span>),
                 name: <span class="string">&quot;Test Fund 2&quot;</span>.to_string(),
-                starts: DateTime::&lt;Utc&gt;::from_utc(
+                starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
                         NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                     ),
                     Utc
-                ),
-                ends: DateTime::&lt;Utc&gt;::from_utc(
+                )),
+                ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
                         NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                     ),
                     Utc
-                ),
+                )),
                 is_final: <span class="bool-val">true</span>,
                 reg_checked: <span class="prelude-val">None</span>,
             },]
@@ -582,20 +596,20 @@
                 event_summary: EventSummary {
                     id: EventId(<span class="number">1</span>),
                     name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
-                    starts: DateTime::&lt;Utc&gt;::from_utc(
+                    starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::&lt;Utc&gt;::from_utc(
+                    )),
+                    ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
                             NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
                     is_final: <span class="bool-val">true</span>,
                     reg_checked: <span class="prelude-val">None</span>,
                 },

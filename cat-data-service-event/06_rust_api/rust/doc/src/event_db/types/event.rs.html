@@ -594,6 +594,22 @@
 <a href="#594" id="594">594</a>
 <a href="#595" id="595">595</a>
 <a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
+<a href="#606" id="606">606</a>
+<a href="#607" id="607">607</a>
+<a href="#608" id="608">608</a>
+<a href="#609" id="609">609</a>
+<a href="#610" id="610">610</a>
+<a href="#611" id="611">611</a>
+<a href="#612" id="612">612</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::{serialize_datetime_as_rfc3339, serialize_option_datetime_as_rfc3339};
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -605,17 +621,23 @@
 </span><span class="kw">pub struct </span>EventSummary {
     <span class="kw">pub </span>id: EventId,
     <span class="kw">pub </span>name: String,
-    <span class="attr">#[serde(serialize_with = <span class="string">&quot;serialize_datetime_as_rfc3339&quot;</span>)]
-    </span><span class="kw">pub </span>starts: DateTime&lt;Utc&gt;,
-    <span class="attr">#[serde(serialize_with = <span class="string">&quot;serialize_datetime_as_rfc3339&quot;</span>)]
-    </span><span class="kw">pub </span>ends: DateTime&lt;Utc&gt;,
-    <span class="attr">#[serde(rename = <span class="string">&quot;final&quot;</span>)]
-    </span><span class="kw">pub </span>is_final: bool,
+    <span class="attr">#[serde(
+        skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>,
+        serialize_with = <span class="string">&quot;serialize_option_datetime_as_rfc3339&quot;
+    </span>)]
+    </span><span class="kw">pub </span>starts: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
+    <span class="attr">#[serde(
+        skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>,
+        serialize_with = <span class="string">&quot;serialize_option_datetime_as_rfc3339&quot;
+    </span>)]
+    </span><span class="kw">pub </span>ends: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
     <span class="attr">#[serde(
         skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>,
         serialize_with = <span class="string">&quot;serialize_option_datetime_as_rfc3339&quot;
     </span>)]
     </span><span class="kw">pub </span>reg_checked: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
+    <span class="attr">#[serde(rename = <span class="string">&quot;final&quot;</span>)]
+    </span><span class="kw">pub </span>is_final: bool,
 }
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
@@ -727,13 +749,19 @@
         <span class="kw">let </span>event_summary = EventSummary {
             id: EventId(<span class="number">1</span>),
             name: <span class="string">&quot;Fund 10&quot;</span>.to_string(),
-            starts: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
-            ends: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
-            is_final: <span class="bool-val">true</span>,
+            starts: <span class="prelude-val">Some</span>(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
+                Utc,
+            )),
+            ends: <span class="prelude-val">Some</span>(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
+                Utc,
+            )),
             reg_checked: <span class="prelude-val">Some</span>(DateTime::from_utc(
                 NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
                 Utc,
             )),
+            is_final: <span class="bool-val">true</span>,
         };
 
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>event_summary).unwrap();
@@ -754,10 +782,10 @@
         <span class="kw">let </span>event_summary = EventSummary {
             id: EventId(<span class="number">1</span>),
             name: <span class="string">&quot;Fund 10&quot;</span>.to_string(),
-            starts: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
-            ends: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
-            is_final: <span class="bool-val">true</span>,
+            starts: <span class="prelude-val">None</span>,
+            ends: <span class="prelude-val">None</span>,
             reg_checked: <span class="prelude-val">None</span>,
+            is_final: <span class="bool-val">true</span>,
         };
 
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>event_summary).unwrap();
@@ -767,8 +795,6 @@
                 {
                     <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
                     <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Fund 10&quot;</span>,
-                    <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                    <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
                     <span class="string">&quot;final&quot;</span>: <span class="bool-val">true</span>,
                 }
             )
@@ -1067,13 +1093,19 @@
             event_summary: EventSummary {
                 id: EventId(<span class="number">1</span>),
                 name: <span class="string">&quot;Fund 10&quot;</span>.to_string(),
-                starts: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
-                ends: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
-                is_final: <span class="bool-val">true</span>,
+                starts: <span class="prelude-val">Some</span>(DateTime::from_utc(
+                    NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
+                    Utc,
+                )),
+                ends: <span class="prelude-val">Some</span>(DateTime::from_utc(
+                    NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
+                    Utc,
+                )),
                 reg_checked: <span class="prelude-val">Some</span>(DateTime::from_utc(
                     NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
                     Utc,
                 )),
+                is_final: <span class="bool-val">true</span>,
             },
             event_details: <span class="prelude-val">Some</span>(EventDetails {
                 voting_power: VotingPowerSettings {

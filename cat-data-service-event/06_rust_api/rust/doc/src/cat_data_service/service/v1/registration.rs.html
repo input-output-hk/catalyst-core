@@ -313,51 +313,20 @@
 <a href="#313" id="313">313</a>
 <a href="#314" id="314">314</a>
 <a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
-<a href="#323" id="323">323</a>
-<a href="#324" id="324">324</a>
-<a href="#325" id="325">325</a>
-<a href="#326" id="326">326</a>
-<a href="#327" id="327">327</a>
-<a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
-<a href="#337" id="337">337</a>
-<a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
-<a href="#340" id="340">340</a>
-<a href="#341" id="341">341</a>
-<a href="#342" id="342">342</a>
-<a href="#343" id="343">343</a>
-<a href="#344" id="344">344</a>
-<a href="#345" id="345">345</a>
-<a href="#346" id="346">346</a>
-<a href="#347" id="347">347</a>
-<a href="#348" id="348">348</a>
-<a href="#349" id="349">349</a>
-<a href="#350" id="350">350</a>
-<a href="#351" id="351">351</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
 };
-<span class="kw">use </span>axum::{extract::Path, routing::get, Router};
+<span class="kw">use </span>axum::{
+    extract::{Path, Query},
+    routing::get,
+    Router,
+};
 <span class="kw">use </span>event_db::types::{
     event::EventId,
     registration::{Delegator, Voter},
 };
+<span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub fn </span>registration(state: Arc&lt;State&gt;) -&gt; Router {
@@ -366,85 +335,56 @@
             <span class="string">&quot;/registration/voter/:voting_key&quot;</span>,
             get({
                 <span class="kw">let </span>state = state.clone();
-                <span class="kw">move </span>|path| <span class="kw">async </span>{
-                    handle_result(voter_by_latest_event_exec(path, state).<span class="kw">await</span>).<span class="kw">await
+                <span class="kw">move </span>|path, query| <span class="kw">async </span>{
+                    handle_result(voter_exec(path, query, state).<span class="kw">await</span>).<span class="kw">await
                 </span>}
-            }),
-        )
-        .route(
-            <span class="string">&quot;/registration/voter/:voting_key/:event&quot;</span>,
-            get({
-                <span class="kw">let </span>state = state.clone();
-                <span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(voter_by_event_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}
             }),
         )
         .route(
             <span class="string">&quot;/registration/delegations/:stake_public_key&quot;</span>,
             get({
                 <span class="kw">let </span>state = state.clone();
-                <span class="kw">move </span>|path| <span class="kw">async </span>{
-                    handle_result(delegations_by_latest_event_exec(path, state).<span class="kw">await</span>).<span class="kw">await
+                <span class="kw">move </span>|path, query| <span class="kw">async </span>{
+                    handle_result(delegations_exec(path, query, state).<span class="kw">await</span>).<span class="kw">await
                 </span>}
             }),
         )
-        .route(
-            <span class="string">&quot;/registration/delegations/:stake_public_key/:event&quot;</span>,
-            get(<span class="kw">move </span>|path| <span class="kw">async </span>{
-                handle_result(delegations_by_event_exec(path, state).<span class="kw">await</span>).<span class="kw">await
-            </span>}),
-        )
 }
 
-<span class="kw">async fn </span>voter_by_latest_event_exec(
+<span class="attr">#[derive(Deserialize)]
+</span><span class="kw">struct </span>EventIdQuery {
+    eid: <span class="prelude-ty">Option</span>&lt;EventId&gt;,
+}
+
+<span class="kw">async fn </span>voter_exec(
     Path(voting_key): Path&lt;String&gt;,
-    state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Voter, Error&gt; {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;voter_by_latest_event_exec: voting_key: {0}&quot;</span>, voting_key);
-
-    <span class="kw">let </span>voter = state.event_db.get_voter(<span class="kw-2">&amp;</span><span class="prelude-val">None</span>, voting_key).<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(voter)
-}
-
-<span class="kw">async fn </span>voter_by_event_exec(
-    Path((voting_key, event)): Path&lt;(String, EventId)&gt;,
+    eid_query: Query&lt;EventIdQuery&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Voter, Error&gt; {
     <span class="macro">tracing::debug!</span>(
-        <span class="string">&quot;voter_by_event_exec: voting_key: {0}, event: {1}&quot;</span>,
+        <span class="string">&quot;voter_exec: voting_key: {0}, eid: {1:?}&quot;</span>,
         voting_key,
-        event.<span class="number">0
-    </span>);
+        eid_query.eid
+    );
 
-    <span class="kw">let </span>voter = state.event_db.get_voter(<span class="kw-2">&amp;</span><span class="prelude-val">Some</span>(event), voting_key).<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="kw">let </span>voter = state.event_db.get_voter(<span class="kw-2">&amp;</span>eid_query.eid, voting_key).<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(voter)
 }
 
-<span class="kw">async fn </span>delegations_by_latest_event_exec(
+<span class="kw">async fn </span>delegations_exec(
     Path(stake_public_key): Path&lt;String&gt;,
-    state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Delegator, Error&gt; {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;delegator_exec: stake_public_key: {0}&quot;</span>, stake_public_key);
-
-    <span class="kw">let </span>delegator = state
-        .event_db
-        .get_delegator(<span class="kw-2">&amp;</span><span class="prelude-val">None</span>, stake_public_key)
-        .<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(delegator)
-}
-
-<span class="kw">async fn </span>delegations_by_event_exec(
-    Path((stake_public_key, event)): Path&lt;(String, EventId)&gt;,
+    eid_query: Query&lt;EventIdQuery&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Delegator, Error&gt; {
     <span class="macro">tracing::debug!</span>(
-        <span class="string">&quot;delegator_exec: stake_public_key: {0}, event: {1}&quot;</span>,
+        <span class="string">&quot;delegator_exec: stake_public_key: {0}, eid: {1:?}&quot;</span>,
         stake_public_key,
-        event.<span class="number">0
-    </span>);
+        eid_query.eid
+    );
 
     <span class="kw">let </span>delegator = state
         .event_db
-        .get_delegator(<span class="kw-2">&amp;</span><span class="prelude-val">Some</span>(event), stake_public_key)
+        .get_delegator(<span class="kw-2">&amp;</span>eid_query.eid, stake_public_key)
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(delegator)
 }
@@ -469,7 +409,7 @@
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
-    </span><span class="kw">async fn </span>voter_by_latest_event_test() {
+    </span><span class="kw">async fn </span>voter_test() {
         <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = app(state);
 
@@ -510,21 +450,8 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/registration/voter/{0}&quot;</span>, <span class="string">&quot;voting_key&quot;</span>))
-            .body(Body::empty())
-            .unwrap();
-        <span class="kw">let </span>response = app.oneshot(request).<span class="kw">await</span>.unwrap();
-        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    <span class="attr">#[tokio::test]
-    </span><span class="kw">async fn </span>voter_by_event_test() {
-        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
-        <span class="kw">let </span>app = app(state);
-
-        <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/registration/voter/{0}/{1}&quot;</span>,
+                <span class="string">&quot;/api/v1/registration/voter/{0}?eid={1}&quot;</span>,
                 <span class="string">&quot;voting_key_1&quot;</span>, <span class="number">1
             </span>))
             .body(Body::empty())
@@ -562,8 +489,15 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/registration/voter/{0}&quot;</span>, <span class="string">&quot;voting_key&quot;</span>))
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NOT_FOUND);
+
+        <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/registration/voter/{0}/{1}&quot;</span>,
+                <span class="string">&quot;/api/v1/registration/voter/{0}?eid={1}&quot;</span>,
                 <span class="string">&quot;voting_key&quot;</span>, <span class="number">1
             </span>))
             .body(Body::empty())
@@ -573,7 +507,7 @@
     }
 
     <span class="attr">#[tokio::test]
-    </span><span class="kw">async fn </span>delegations_by_latest_event_test() {
+    </span><span class="kw">async fn </span>delegations_test() {
         <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = app(state);
 
@@ -627,23 +561,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/registration/delegations/{0}&quot;</span>,
-                <span class="string">&quot;stake_public_key&quot;
-            </span>))
-            .body(Body::empty())
-            .unwrap();
-        <span class="kw">let </span>response = app.oneshot(request).<span class="kw">await</span>.unwrap();
-        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    <span class="attr">#[tokio::test]
-    </span><span class="kw">async fn </span>delegations_by_event_test() {
-        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
-        <span class="kw">let </span>app = app(state);
-
-        <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/registration/delegations/{0}/{1}&quot;</span>,
+                <span class="string">&quot;/api/v1/registration/delegations/{0}?eid={1}&quot;</span>,
                 <span class="string">&quot;stake_public_key_1&quot;</span>, <span class="number">1
             </span>))
             .body(Body::empty())
@@ -691,7 +609,17 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/registration/delegations/{0}/{1}&quot;</span>,
+                <span class="string">&quot;/api/v1/registration/delegations/{0}&quot;</span>,
+                <span class="string">&quot;stake_public_key&quot;
+            </span>))
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NOT_FOUND);
+
+        <span class="kw">let </span>request = Request::builder()
+            .uri(<span class="macro">format!</span>(
+                <span class="string">&quot;/api/v1/registration/delegations/{0}?eid={1}&quot;</span>,
                 <span class="string">&quot;stake_public_key&quot;</span>, <span class="number">1
             </span>))
             .body(Body::empty())

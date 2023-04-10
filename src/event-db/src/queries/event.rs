@@ -1,6 +1,6 @@
 use crate::{
     error::Error,
-    types::event::{EventId, EventSummary},
+    types::event::{Event, EventId, EventSummary},
     EventDB,
 };
 use async_trait::async_trait;
@@ -13,7 +13,7 @@ pub trait EventQueries: Sync + Send + 'static {
         limit: Option<i64>,
         offset: Option<i64>,
     ) -> Result<Vec<EventSummary>, Error>;
-    async fn get_event(&self, event: EventId) -> Result<EventSummary, Error>;
+    async fn get_event(&self, event: EventId) -> Result<Event, Error>;
 }
 
 impl EventDB {
@@ -79,25 +79,28 @@ impl EventQueries for EventDB {
         Ok(events)
     }
 
-    async fn get_event(&self, event: EventId) -> Result<EventSummary, Error> {
+    async fn get_event(&self, event: EventId) -> Result<Event, Error> {
         let conn = self.pool.get().await?;
 
         let rows = conn.query(Self::EVENT_QUERY, &[&event.0]).await?;
         let row = rows.get(0).ok_or(Error::NotFound)?;
 
-        Ok(EventSummary {
-            id: EventId(row.try_get("row_id")?),
-            name: row.try_get("name")?,
-            starts: row
-                .try_get::<&'static str, NaiveDateTime>("start_time")?
-                .and_local_timezone(Utc)
-                .unwrap(),
-            ends: row
-                .try_get::<&'static str, NaiveDateTime>("end_time")?
-                .and_local_timezone(Utc)
-                .unwrap(),
-            is_final: row.try_get("final")?,
-            reg_checked: None,
+        Ok(Event {
+            event_summary: EventSummary {
+                id: EventId(row.try_get("row_id")?),
+                name: row.try_get("name")?,
+                starts: row
+                    .try_get::<&'static str, NaiveDateTime>("start_time")?
+                    .and_local_timezone(Utc)
+                    .unwrap(),
+                ends: row
+                    .try_get::<&'static str, NaiveDateTime>("end_time")?
+                    .and_local_timezone(Utc)
+                    .unwrap(),
+                is_final: row.try_get("final")?,
+                reg_checked: None,
+            },
+            event_details: None,
         })
     }
 }
@@ -271,25 +274,28 @@ mod tests {
         let event = event_db.get_event(EventId(1)).await.unwrap();
         assert_eq!(
             event,
-            EventSummary {
-                id: EventId(1),
-                name: "Test Fund 1".to_string(),
-                starts: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+            Event {
+                event_summary: EventSummary {
+                    id: EventId(1),
+                    name: "Test Fund 1".to_string(),
+                    starts: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
                     ),
-                    Utc
-                ),
-                ends: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ends: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
                     ),
-                    Utc
-                ),
-                is_final: true,
-                reg_checked: None,
+                    is_final: true,
+                    reg_checked: None,
+                },
+                event_details: None,
             },
         );
 

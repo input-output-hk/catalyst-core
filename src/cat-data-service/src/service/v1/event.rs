@@ -7,7 +7,7 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::types::event::{EventId, EventSummary};
+use event_db::types::event::{Event, EventId, EventSummary};
 use serde::Deserialize;
 use std::sync::Arc;
 
@@ -29,7 +29,7 @@ pub fn event(state: Arc<State>) -> Router {
         )
 }
 
-async fn event_exec(Path(event): Path<EventId>, state: Arc<State>) -> Result<EventSummary, Error> {
+async fn event_exec(Path(event): Path<EventId>, state: Arc<State>) -> Result<Event, Error> {
     tracing::debug!("event_exec, event: {0}", event.0);
 
     let event = state.event_db.get_event(event).await?;

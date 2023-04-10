@@ -2,11 +2,16 @@ use crate::{
     service::{handle_result, Error},
     state::State,
 };
-use axum::{extract::Path, routing::get, Router};
+use axum::{
+    extract::{Path, Query},
+    routing::get,
+    Router,
+};
 use event_db::types::{
     event::EventId,
     registration::{Delegator, Voter},
 };
+use serde::Deserialize;
 use std::sync::Arc;
 
 pub fn registration(state: Arc<State>) -> Router {
@@ -15,85 +20,56 @@ pub fn registration(state: Arc<State>) -> Router {
             "/registration/voter/:voting_key",
             get({
                 let state = state.clone();
-                move |path| async {
-                    handle_result(voter_by_latest_event_exec(path, state).await).await
+                move |path, query| async {
+                    handle_result(voter_exec(path, query, state).await).await
                 }
-            }),
-        )
-        .route(
-            "/registration/voter/:voting_key/:event",
-            get({
-                let state = state.clone();
-                move |path| async { handle_result(voter_by_event_exec(path, state).await).await }
             }),
         )
         .route(
             "/registration/delegations/:stake_public_key",
             get({
                 let state = state.clone();
-                move |path| async {
-                    handle_result(delegations_by_latest_event_exec(path, state).await).await
+                move |path, query| async {
+                    handle_result(delegations_exec(path, query, state).await).await
                 }
             }),
         )
-        .route(
-            "/registration/delegations/:stake_public_key/:event",
-            get(move |path| async {
-                handle_result(delegations_by_event_exec(path, state).await).await
-            }),
-        )
 }
 
-async fn voter_by_latest_event_exec(
+#[derive(Deserialize)]
+struct EventIdQuery {
+    eid: Option<EventId>,
+}
+
+async fn voter_exec(
     Path(voting_key): Path<String>,
-    state: Arc<State>,
-) -> Result<Voter, Error> {
-    tracing::debug!("voter_by_latest_event_exec: voting_key: {0}", voting_key);
-
-    let voter = state.event_db.get_voter(&None, voting_key).await?;
-    Ok(voter)
-}
-
-async fn voter_by_event_exec(
-    Path((voting_key, event)): Path<(String, EventId)>,
+    eid_query: Query<EventIdQuery>,
     state: Arc<State>,
 ) -> Result<Voter, Error> {
     tracing::debug!(
-        "voter_by_event_exec: voting_key: {0}, event: {1}",
+        "voter_exec: voting_key: {0}, eid: {1:?}",
         voting_key,
-        event.0
+        eid_query.eid
     );
 
-    let voter = state.event_db.get_voter(&Some(event), voting_key).await?;
+    let voter = state.event_db.get_voter(&eid_query.eid, voting_key).await?;
     Ok(voter)
 }
 
-async fn delegations_by_latest_event_exec(
+async fn delegations_exec(
     Path(stake_public_key): Path<String>,
-    state: Arc<State>,
-) -> Result<Delegator, Error> {
-    tracing::debug!("delegator_exec: stake_public_key: {0}", stake_public_key);
-
-    let delegator = state
-        .event_db
-        .get_delegator(&None, stake_public_key)
-        .await?;
-    Ok(delegator)
-}
-
-async fn delegations_by_event_exec(
-    Path((stake_public_key, event)): Path<(String, EventId)>,
+    eid_query: Query<EventIdQuery>,
     state: Arc<State>,
 ) -> Result<Delegator, Error> {
     tracing::debug!(
-        "delegator_exec: stake_public_key: {0}, event: {1}",
+        "delegator_exec: stake_public_key: {0}, eid: {1:?}",
         stake_public_key,
-        event.0
+        eid_query.eid
     );
 
     let delegator = state
         .event_db
-        .get_delegator(&Some(event), stake_public_key)
+        .get_delegator(&eid_query.eid, stake_public_key)
         .await?;
     Ok(delegator)
 }
@@ -118,7 +94,7 @@ mod tests {
     use tower::ServiceExt;
 
     #[tokio::test]
-    async fn voter_by_latest_event_test() {
+    async fn voter_test() {
         let state = Arc::new(State::new(None).await.unwrap());
         let app = app(state);
 
@@ -159,21 +135,8 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/registration/voter/{0}", "voting_key"))
-            .body(Body::empty())
-            .unwrap();
-        let response = app.oneshot(request).await.unwrap();
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[tokio::test]
-    async fn voter_by_event_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
-        let app = app(state);
-
-        let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/voter/{0}/{1}",
+                "/api/v1/registration/voter/{0}?eid={1}",
                 "voting_key_1", 1
             ))
             .body(Body::empty())
@@ -211,8 +174,15 @@ mod tests {
         );
 
         let request = Request::builder()
+            .uri(format!("/api/v1/registration/voter/{0}", "voting_key"))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+
+        let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/voter/{0}/{1}",
+                "/api/v1/registration/voter/{0}?eid={1}",
                 "voting_key", 1
             ))
             .body(Body::empty())
@@ -222,7 +192,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn delegations_by_latest_event_test() {
+    async fn delegations_test() {
         let state = Arc::new(State::new(None).await.unwrap());
         let app = app(state);
 
@@ -276,23 +246,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/delegations/{0}",
-                "stake_public_key"
-            ))
-            .body(Body::empty())
-            .unwrap();
-        let response = app.oneshot(request).await.unwrap();
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[tokio::test]
-    async fn delegations_by_event_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
-        let app = app(state);
-
-        let request = Request::builder()
-            .uri(format!(
-                "/api/v1/registration/delegations/{0}/{1}",
+                "/api/v1/registration/delegations/{0}?eid={1}",
                 "stake_public_key_1", 1
             ))
             .body(Body::empty())
@@ -340,7 +294,17 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/delegations/{0}/{1}",
+                "/api/v1/registration/delegations/{0}",
+                "stake_public_key"
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/delegations/{0}?eid={1}",
                 "stake_public_key", 1
             ))
             .body(Body::empty())

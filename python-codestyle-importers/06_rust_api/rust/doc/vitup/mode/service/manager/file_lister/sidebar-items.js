@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["BLOCKCHAIN","COMMITTEE","COMMITTEES","FIELDS","NETWORK","PRIVATE_DATA","PRIVATE_KEYS","QR_CODES","WALLET"],"enum":["Error","__Field"],"fn":["dump_json","is_storage"],"struct":["FolderDump","__FieldVisitor","__Visitor"]};

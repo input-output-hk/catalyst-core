@@ -647,6 +647,13 @@
 <a href="#647" id="647">647</a>
 <a href="#648" id="648">648</a>
 <a href="#649" id="649">649</a>
+<a href="#650" id="650">650</a>
+<a href="#651" id="651">651</a>
+<a href="#652" id="652">652</a>
+<a href="#653" id="653">653</a>
+<a href="#654" id="654">654</a>
+<a href="#655" id="655">655</a>
+<a href="#656" id="656">656</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::{serialize_datetime_as_rfc3339, serialize_option_datetime_as_rfc3339};
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>rust_decimal::Decimal;
@@ -679,8 +686,14 @@
 }
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+</span><span class="kw">pub enum </span>VotingPowerAlgorithm {
+    <span class="attr">#[serde(rename = <span class="string">&quot;threshold_staked_ADA&quot;</span>)]
+    </span>ThresholdStakedADA
+}
+
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
 </span><span class="kw">pub struct </span>VotingPowerSettings {
-    <span class="kw">pub </span>alg: String,
+    <span class="kw">pub </span>alg: VotingPowerAlgorithm,
     <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>min_ada: <span class="prelude-ty">Option</span>&lt;i64&gt;,
     <span class="attr">#[serde(
@@ -764,9 +777,10 @@
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
 </span><span class="kw">pub struct </span>EventDetails {
     <span class="kw">pub </span>voting_power: VotingPowerSettings,
-    <span class="kw">pub </span>registration: EventRegistration,
-    <span class="kw">pub </span>goals: Vec&lt;EventGoal&gt;,
+    <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>registration: <span class="prelude-ty">Option</span>&lt;EventRegistration&gt;,
     <span class="kw">pub </span>schedule: EventSchedule,
+    <span class="kw">pub </span>goals: Vec&lt;EventGoal&gt;,
     <span class="kw">pub </span>groups: Vec&lt;VoterGroup&gt;,
 }
 
@@ -774,8 +788,8 @@
 </span><span class="kw">pub struct </span>Event {
     <span class="attr">#[serde(flatten)]
     </span><span class="kw">pub </span>event_summary: EventSummary,
-    <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>, flatten)]
-    </span><span class="kw">pub </span>event_details: <span class="prelude-ty">Option</span>&lt;EventDetails&gt;,
+    <span class="attr">#[serde(flatten)]
+    </span><span class="kw">pub </span>event_details: EventDetails,
 }
 
 <span class="attr">#[cfg(test)]
@@ -854,7 +868,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>voting_power_settings_json_test() {
         <span class="kw">let </span>voting_power_settings = VotingPowerSettings {
-            alg: <span class="string">&quot;threshold_staked_ADA&quot;</span>.to_string(),
+            alg: VotingPowerAlgorithm::ThresholdStakedADA,
             min_ada: <span class="prelude-val">Some</span>(<span class="number">500</span>),
             max_pct: <span class="prelude-val">Some</span>(Decimal::new(<span class="number">123</span>, <span class="number">2</span>)),
         };
@@ -872,7 +886,7 @@
         );
 
         <span class="kw">let </span>voting_power_settings = VotingPowerSettings {
-            alg: <span class="string">&quot;threshold_staked_ADA&quot;</span>.to_string(),
+            alg: VotingPowerAlgorithm::ThresholdStakedADA,
             min_ada: <span class="prelude-val">None</span>,
             max_pct: <span class="prelude-val">None</span>,
         };
@@ -1061,15 +1075,15 @@
     </span><span class="kw">fn </span>event_details_json_test() {
         <span class="kw">let </span>event_details = EventDetails {
             voting_power: VotingPowerSettings {
-                alg: <span class="string">&quot;threshold_staked_ADA&quot;</span>.to_string(),
+                alg: VotingPowerAlgorithm::ThresholdStakedADA,
                 min_ada: <span class="prelude-val">Some</span>(<span class="number">500</span>),
                 max_pct: <span class="prelude-val">Some</span>(Decimal::new(<span class="number">123</span>, <span class="number">2</span>)),
             },
-            registration: EventRegistration {
+            registration: <span class="prelude-val">Some</span>(EventRegistration {
                 purpose: <span class="prelude-val">Some</span>(<span class="number">1</span>),
                 deadline: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
                 taken: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
-            },
+            }),
             goals: <span class="macro">vec!</span>[EventGoal {
                 idx: <span class="number">1</span>,
                 name: <span class="string">&quot;goal 1&quot;</span>.to_string(),
@@ -1181,13 +1195,13 @@
                 )),
                 is_final: <span class="bool-val">true</span>,
             },
-            event_details: <span class="prelude-val">Some</span>(EventDetails {
+            event_details: EventDetails {
                 voting_power: VotingPowerSettings {
-                    alg: <span class="string">&quot;threshold_staked_ADA&quot;</span>.to_string(),
+                    alg: VotingPowerAlgorithm::ThresholdStakedADA,
                     min_ada: <span class="prelude-val">Some</span>(<span class="number">500</span>),
                     max_pct: <span class="prelude-val">Some</span>(Decimal::new(<span class="number">123</span>, <span class="number">2</span>)),
                 },
-                registration: EventRegistration {
+                registration: <span class="prelude-val">Some</span>(EventRegistration {
                     purpose: <span class="prelude-val">Some</span>(<span class="number">1</span>),
                     deadline: DateTime::from_utc(
                         NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
@@ -1197,7 +1211,7 @@
                         NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
                         Utc,
                     ),
-                },
+                }),
                 goals: <span class="macro">vec!</span>[EventGoal {
                     idx: <span class="number">1</span>,
                     name: <span class="string">&quot;goal 1&quot;</span>.to_string(),
@@ -1244,7 +1258,7 @@
                     id: <span class="string">&quot;rep&quot;</span>.to_string(),
                     voting_token: <span class="string">&quot;voting token 1&quot;</span>.to_string(),
                 }],
-            }),
+            },
         };
 
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>event_summary).unwrap();

@@ -324,12 +324,59 @@
 <a href="#324" id="324">324</a>
 <a href="#325" id="325">325</a>
 <a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
 };
-<span class="kw">use </span>axum::{extract::Path, routing::get, Router};
+<span class="kw">use </span>axum::{
+    extract::{Path, Query},
+    routing::get,
+    Router,
+};
 <span class="kw">use </span>event_db::types::event::{EventId, EventSummary};
+<span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub fn </span>event(state: Arc&lt;State&gt;) -&gt; Router {
@@ -345,24 +392,7 @@
             <span class="string">&quot;/events&quot;</span>,
             get({
                 <span class="kw">let </span>state = state.clone();
-                <span class="kw">move </span>|| <span class="kw">async </span>{ handle_result(events_exec(state).<span class="kw">await</span>).<span class="kw">await </span>}
-            }),
-        )
-        .route(
-            <span class="string">&quot;/events/:offset&quot;</span>,
-            get({
-                <span class="kw">let </span>state = state.clone();
-                <span class="kw">move </span>|path| <span class="kw">async </span>{
-                    handle_result(events_with_offset_exec(path, state).<span class="kw">await</span>).<span class="kw">await
-                </span>}
-            }),
-        )
-        .route(
-            <span class="string">&quot;/events/:offset/:limit&quot;</span>,
-            get({
-                <span class="kw">move </span>|path| <span class="kw">async </span>{
-                    handle_result(events_with_offset_and_limit_exec(path, state).<span class="kw">await</span>).<span class="kw">await
-                </span>}
+                <span class="kw">move </span>|query| <span class="kw">async </span>{ handle_result(events_exec(query, state).<span class="kw">await</span>).<span class="kw">await </span>}
             }),
         )
 }
@@ -374,30 +404,26 @@
     <span class="prelude-val">Ok</span>(event)
 }
 
-<span class="kw">async fn </span>events_exec(state: Arc&lt;State&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;events_exec&quot;</span>);
-
-    <span class="kw">let </span>events = state.event_db.get_events(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(events)
+<span class="attr">#[derive(Deserialize)]
+</span><span class="kw">struct </span>EventsQuery {
+    limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
+    offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
 }
 
-<span class="kw">async fn </span>events_with_offset_exec(
-    Path(offset): Path&lt;i64&gt;,
+<span class="kw">async fn </span>events_exec(
+    events_query: Query&lt;EventsQuery&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;events_with_offset_exec, offset: {offset}&quot;</span>);
+    <span class="macro">tracing::debug!</span>(
+        <span class="string">&quot;events_exec, limit: {0:?}, offset: {1:?}&quot;</span>,
+        events_query.limit,
+        events_query.offset
+    );
 
-    <span class="kw">let </span>events = state.event_db.get_events(<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(offset)).<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(events)
-}
-
-<span class="kw">async fn </span>events_with_offset_and_limit_exec(
-    Path((limit, offset)): Path&lt;(i64, i64)&gt;,
-    state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;events_with_offset_and_limit_exec, offset: {offset}, limit: {limit}&quot;</span>);
-
-    <span class="kw">let </span>events = state.event_db.get_events(<span class="prelude-val">Some</span>(limit), <span class="prelude-val">Some</span>(offset)).<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="kw">let </span>events = state
+        .event_db
+        .get_events(events_query.limit, events_query.offset)
+        .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(events)
 }
 
@@ -456,6 +482,13 @@
             },)
             .unwrap()
         );
+
+        <span class="kw">let </span>request = Request::builder()
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}&quot;</span>, <span class="number">10</span>))
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NOT_FOUND);
     }
 
     <span class="attr">#[tokio::test]
@@ -538,20 +571,7 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}&quot;</span>, <span class="number">10</span>))
-            .body(Body::empty())
-            .unwrap();
-        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
-        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    <span class="attr">#[tokio::test]
-    </span><span class="kw">async fn </span>events_with_offset_test() {
-        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
-        <span class="kw">let </span>app = app(state);
-
-        <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events/{0}&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?offset={0}&quot;</span>, <span class="number">1</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
@@ -605,7 +625,71 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events/{0}&quot;</span>, <span class="number">10</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?limit={0}&quot;</span>, <span class="number">1</span>))
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
+        <span class="macro">assert_eq!</span>(
+            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[EventSummary {
+                id: EventId(<span class="number">1</span>),
+                name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
+                starts: DateTime::&lt;Utc&gt;::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
+                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                    ),
+                    Utc
+                ),
+                ends: DateTime::&lt;Utc&gt;::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
+                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                    ),
+                    Utc
+                ),
+                is_final: <span class="bool-val">true</span>,
+                reg_checked: <span class="prelude-val">None</span>,
+            },])
+            .unwrap()
+        );
+
+        <span class="kw">let </span>request = Request::builder()
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?limit={0}&amp;offset={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
+        <span class="macro">assert_eq!</span>(
+            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[EventSummary {
+                id: EventId(<span class="number">2</span>),
+                name: <span class="string">&quot;Test Fund 2&quot;</span>.to_string(),
+                starts: DateTime::&lt;Utc&gt;::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
+                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                    ),
+                    Utc
+                ),
+                ends: DateTime::&lt;Utc&gt;::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(<span class="number">2021</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
+                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                    ),
+                    Utc
+                ),
+                is_final: <span class="bool-val">true</span>,
+                reg_checked: <span class="prelude-val">None</span>,
+            },])
+            .unwrap()
+        );
+
+        <span class="kw">let </span>request = Request::builder()
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?offset={0}&quot;</span>, <span class="number">10</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();

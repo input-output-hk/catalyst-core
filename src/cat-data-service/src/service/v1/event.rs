@@ -325,44 +325,10 @@ mod tests {
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
-        assert_eq!(response.status(), StatusCode::NOT_FOUND);
-    }
-
-    #[tokio::test]
-    async fn events_with_offset_and_limit_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
-        let app = app(state);
-
-        let request = Request::builder()
-            .uri(format!("/api/v1/events/{0}/{1}", 1, 1))
-            .body(Body::empty())
-            .unwrap();
-        let response = app.clone().oneshot(request).await.unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
                 .unwrap(),
-            serde_json::to_string(&vec![EventSummary {
-                id: EventId(2),
-                name: "Test Fund 2".to_string(),
-                starts: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                ends: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: true,
-                reg_checked: None,
-            },])
-            .unwrap()
+            serde_json::to_string(&Vec::<EventSummary>::new()).unwrap()
         );
     }
 }

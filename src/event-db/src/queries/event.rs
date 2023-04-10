@@ -57,9 +57,6 @@ impl EventQueries for EventDB {
             conn.query(Self::EVENTS_QUERY, &[&offset.unwrap_or(0)])
                 .await?
         };
-        if rows.is_empty() {
-            return Err(Error::NotFound);
-        }
 
         let mut events = Vec::new();
         for row in rows {
@@ -262,8 +259,8 @@ mod tests {
         );
 
         assert_eq!(
-            event_db.get_events(Some(1), Some(10)).await,
-            Err(Error::NotFound)
+            event_db.get_events(Some(1), Some(10)).await.unwrap(),
+            vec![]
         );
     }
 

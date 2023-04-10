@@ -26,15 +26,16 @@ from .templates import (
 # gets voting node logger
 logger = getLogger()
 
-
-"""Regex expression to determine a node is a leader"""
 LEADER_REGEX: Final = r"^leader[0-9]+$"
-
-"""Regex expression to determine a node's leadership and number"""
+"""Regex expression to determine a node is a leader"""
 LEADERSHIP_REGEX: Final = r"^(leader|follower)([0-9]+)$"
-
-"""Hash iterations performed when encrypting secrets."""
+"""Regex expression to determine a node's leadership and number"""
 HASH_ITERATIONS: Final = 480000
+"""Hash iterations performed in key derivation."""
+SALT_BYTES: Final = 16
+"""Size in bytes of encryption salt."""
+KDF_LENGTH: Final = 32
+"""Length in bytes uses in key derivation."""
 
 
 def get_hostname() -> str:
@@ -318,12 +319,12 @@ async def make_block0_hash(jcli_path: str, block0_path: Path) -> str:
     return await jcli_exec.genesis_hash(block0_path)
 
 
-def encrypt_key(secret: str, password: str) -> str:
+def encrypt_secret(secret: str, password: str) -> str:
     """Encrypt secret with with Fernet."""
-    salt = secrets.token_bytes(16)
+    salt = secrets.token_bytes(SALT_BYTES)
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
-        length=32,
+        length=KDF_LENGTH,
         salt=salt,
         iterations=HASH_ITERATIONS,
     )
@@ -334,14 +335,14 @@ def encrypt_key(secret: str, password: str) -> str:
     return b64.decode()
 
 
-def decrypt_key(encrypted: str, password: str) -> str:
+def decrypt_secret(encrypted: str, password: str) -> str:
     """Decrypt secret with with Fernet."""
     b64 = base64.urlsafe_b64decode(encrypted)
-    salt = b64[:16]
-    encrypted_secret = b64[16:]
+    salt = b64[:SALT_BYTES]
+    encrypted_secret = b64[SALT_BYTES:]
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
-        length=32,
+        length=KDF_LENGTH,
         salt=salt,
         iterations=HASH_ITERATIONS,
     )

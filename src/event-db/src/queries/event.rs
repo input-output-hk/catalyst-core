@@ -18,23 +18,23 @@ pub trait EventQueries: Sync + Send + 'static {
 
 impl EventDB {
     const EVENTS_QUERY: &'static str =
-        "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.final
+        "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
         FROM event
-        INNER JOIN snapshot ON event.row_id = snapshot.event
+        LEFT JOIN snapshot ON event.row_id = snapshot.event
         ORDER BY event.row_id ASC
         OFFSET $1;";
 
     const EVENTS_WITH_LIMIT_QUERY: &'static str =
-        "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.final
+        "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
         FROM event
-        INNER JOIN snapshot ON event.row_id = snapshot.event
+        LEFT JOIN snapshot ON event.row_id = snapshot.event
         ORDER BY event.row_id ASC
         LIMIT $1 OFFSET $2";
 
     const EVENT_QUERY: &'static str =
-        "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.final
+        "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
         FROM event
-        INNER JOIN snapshot ON event.row_id = snapshot.event
+        LEFT JOIN snapshot ON event.row_id = snapshot.event
         WHERE event.row_id = $1;";
 }
 
@@ -60,19 +60,21 @@ impl EventQueries for EventDB {
 
         let mut events = Vec::new();
         for row in rows {
+            let ends = row
+                .try_get::<&'static str, Option<NaiveDateTime>>("end_time")?
+                .map(|val| val.and_local_timezone(Utc).unwrap());
+            let is_final = ends.map(|ends| Utc::now() > ends).unwrap_or(false);
             events.push(EventSummary {
                 id: EventId(row.try_get("row_id")?),
                 name: row.try_get("name")?,
                 starts: row
-                    .try_get::<&'static str, NaiveDateTime>("start_time")?
-                    .and_local_timezone(Utc)
-                    .unwrap(),
-                ends: row
-                    .try_get::<&'static str, NaiveDateTime>("end_time")?
-                    .and_local_timezone(Utc)
-                    .unwrap(),
-                is_final: row.try_get("final")?,
-                reg_checked: None,
+                    .try_get::<&'static str, Option<NaiveDateTime>>("start_time")?
+                    .map(|val| val.and_local_timezone(Utc).unwrap()),
+                reg_checked: row
+                    .try_get::<&'static str, Option<NaiveDateTime>>("last_updated")?
+                    .map(|val| val.and_local_timezone(Utc).unwrap()),
+                ends,
+                is_final,
             })
         }
 
@@ -85,20 +87,23 @@ impl EventQueries for EventDB {
         let rows = conn.query(Self::EVENT_QUERY, &[&event.0]).await?;
         let row = rows.get(0).ok_or(Error::NotFound)?;
 
+        let ends = row
+            .try_get::<&'static str, Option<NaiveDateTime>>("end_time")?
+            .map(|val| val.and_local_timezone(Utc).unwrap());
+        let is_final = ends.map(|ends| Utc::now() > ends).unwrap_or(false);
+
         Ok(Event {
             event_summary: EventSummary {
                 id: EventId(row.try_get("row_id")?),
                 name: row.try_get("name")?,
                 starts: row
-                    .try_get::<&'static str, NaiveDateTime>("start_time")?
-                    .and_local_timezone(Utc)
-                    .unwrap(),
-                ends: row
-                    .try_get::<&'static str, NaiveDateTime>("end_time")?
-                    .and_local_timezone(Utc)
-                    .unwrap(),
-                is_final: row.try_get("final")?,
-                reg_checked: None,
+                    .try_get::<&'static str, Option<NaiveDateTime>>("start_time")?
+                    .map(|val| val.and_local_timezone(Utc).unwrap()),
+                reg_checked: row
+                    .try_get::<&'static str, Option<NaiveDateTime>>("last_updated")?
+                    .map(|val| val.and_local_timezone(Utc).unwrap()),
+                ends,
+                is_final,
             },
             event_details: None,
         })
@@ -129,62 +134,88 @@ mod tests {
                 EventSummary {
                     id: EventId(1),
                     name: "Test Fund 1".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
-                    reg_checked: None,
                 },
                 EventSummary {
                     id: EventId(2),
                     name: "Test Fund 2".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
-                    reg_checked: None,
                 },
                 EventSummary {
                     id: EventId(3),
                     name: "Test Fund 3".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
+                },
+                EventSummary {
+                    id: EventId(4),
+                    name: "Test Fund 4".to_string(),
+                    starts: None,
+                    ends: None,
                     reg_checked: None,
+                    is_final: false,
                 }
             ]
         );
@@ -196,42 +227,54 @@ mod tests {
                 EventSummary {
                     id: EventId(1),
                     name: "Test Fund 1".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
-                    reg_checked: None,
                 },
                 EventSummary {
                     id: EventId(2),
                     name: "Test Fund 2".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
-                    reg_checked: None,
                 },
             ]
         );
@@ -242,22 +285,28 @@ mod tests {
             vec![EventSummary {
                 id: EventId(2),
                 name: "Test Fund 2".to_string(),
-                starts: DateTime::<Utc>::from_utc(
+                starts: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
                         NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
                     Utc
-                ),
-                ends: DateTime::<Utc>::from_utc(
+                )),
+                ends: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
                         NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
                     Utc
-                ),
+                )),
+                reg_checked: Some(DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                )),
                 is_final: true,
-                reg_checked: None,
             },]
         );
 
@@ -278,22 +327,28 @@ mod tests {
                 event_summary: EventSummary {
                     id: EventId(1),
                     name: "Test Fund 1".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
-                    reg_checked: None,
                 },
                 event_details: None,
             },

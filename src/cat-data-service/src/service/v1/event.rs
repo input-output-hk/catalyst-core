@@ -95,22 +95,28 @@ mod tests {
             serde_json::to_string(&EventSummary {
                 id: EventId(1),
                 name: "Test Fund 1".to_string(),
-                starts: DateTime::<Utc>::from_utc(
+                starts: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
                         NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
                     Utc
-                ),
-                ends: DateTime::<Utc>::from_utc(
+                )),
+                ends: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
                         NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
                     Utc
-                ),
+                )),
+                reg_checked: Some(DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                )),
                 is_final: true,
-                reg_checked: None,
             },)
             .unwrap()
         );
@@ -141,62 +147,88 @@ mod tests {
                 EventSummary {
                     id: EventId(1),
                     name: "Test Fund 1".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
-                    reg_checked: None,
                 },
                 EventSummary {
                     id: EventId(2),
                     name: "Test Fund 2".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
-                    reg_checked: None,
                 },
                 EventSummary {
                     id: EventId(3),
                     name: "Test Fund 3".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
+                },
+                EventSummary {
+                    id: EventId(4),
+                    name: "Test Fund 4".to_string(),
+                    starts: None,
+                    ends: None,
                     reg_checked: None,
+                    is_final: false,
                 }
             ])
             .unwrap()
@@ -215,42 +247,62 @@ mod tests {
                 EventSummary {
                     id: EventId(2),
                     name: "Test Fund 2".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
-                    reg_checked: None,
                 },
                 EventSummary {
                     id: EventId(3),
                     name: "Test Fund 3".to_string(),
-                    starts: DateTime::<Utc>::from_utc(
+                    starts: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
-                    ends: DateTime::<Utc>::from_utc(
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
-                    ),
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     is_final: true,
+                },
+                EventSummary {
+                    id: EventId(4),
+                    name: "Test Fund 4".to_string(),
+                    starts: None,
+                    ends: None,
                     reg_checked: None,
+                    is_final: false,
                 }
             ])
             .unwrap()
@@ -268,22 +320,28 @@ mod tests {
             serde_json::to_string(&vec![EventSummary {
                 id: EventId(1),
                 name: "Test Fund 1".to_string(),
-                starts: DateTime::<Utc>::from_utc(
+                starts: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
                         NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
                     Utc
-                ),
-                ends: DateTime::<Utc>::from_utc(
+                )),
+                ends: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
                         NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
                     Utc
-                ),
+                )),
+                reg_checked: Some(DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                )),
                 is_final: true,
-                reg_checked: None,
             },])
             .unwrap()
         );
@@ -300,22 +358,28 @@ mod tests {
             serde_json::to_string(&vec![EventSummary {
                 id: EventId(2),
                 name: "Test Fund 2".to_string(),
-                starts: DateTime::<Utc>::from_utc(
+                starts: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
                         NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
                     Utc
-                ),
-                ends: DateTime::<Utc>::from_utc(
+                )),
+                ends: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
                         NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
                     Utc
-                ),
+                )),
+                reg_checked: Some(DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                )),
                 is_final: true,
-                reg_checked: None,
             },])
             .unwrap()
         );

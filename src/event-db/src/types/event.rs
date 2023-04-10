@@ -9,17 +9,23 @@ pub struct EventId(pub i32);
 pub struct EventSummary {
     pub id: EventId,
     pub name: String,
-    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
-    pub starts: DateTime<Utc>,
-    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
-    pub ends: DateTime<Utc>,
-    #[serde(rename = "final")]
-    pub is_final: bool,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_option_datetime_as_rfc3339"
+    )]
+    pub starts: Option<DateTime<Utc>>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_option_datetime_as_rfc3339"
+    )]
+    pub ends: Option<DateTime<Utc>>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "serialize_option_datetime_as_rfc3339"
     )]
     pub reg_checked: Option<DateTime<Utc>>,
+    #[serde(rename = "final")]
+    pub is_final: bool,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq)]
@@ -131,13 +137,19 @@ mod tests {
         let event_summary = EventSummary {
             id: EventId(1),
             name: "Fund 10".to_string(),
-            starts: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            ends: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            is_final: true,
+            starts: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
+            ends: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
             reg_checked: Some(DateTime::from_utc(
                 NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                 Utc,
             )),
+            is_final: true,
         };
 
         let json = serde_json::to_value(&event_summary).unwrap();
@@ -158,10 +170,10 @@ mod tests {
         let event_summary = EventSummary {
             id: EventId(1),
             name: "Fund 10".to_string(),
-            starts: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            ends: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            is_final: true,
+            starts: None,
+            ends: None,
             reg_checked: None,
+            is_final: true,
         };
 
         let json = serde_json::to_value(&event_summary).unwrap();
@@ -171,8 +183,6 @@ mod tests {
                 {
                     "id": 1,
                     "name": "Fund 10",
-                    "starts": "1970-01-01T00:00:00+00:00",
-                    "ends": "1970-01-01T00:00:00+00:00",
                     "final": true,
                 }
             )
@@ -471,13 +481,19 @@ mod tests {
             event_summary: EventSummary {
                 id: EventId(1),
                 name: "Fund 10".to_string(),
-                starts: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-                ends: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-                is_final: true,
+                starts: Some(DateTime::from_utc(
+                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                    Utc,
+                )),
+                ends: Some(DateTime::from_utc(
+                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                    Utc,
+                )),
                 reg_checked: Some(DateTime::from_utc(
                     NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                     Utc,
                 )),
+                is_final: true,
             },
             event_details: Some(EventDetails {
                 voting_power: VotingPowerSettings {

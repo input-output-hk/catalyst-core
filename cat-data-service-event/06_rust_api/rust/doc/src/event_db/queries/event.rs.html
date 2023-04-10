@@ -296,9 +296,15 @@
 <a href="#296" id="296">296</a>
 <a href="#297" id="297">297</a>
 <a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
-    types::event::{EventId, EventSummary},
+    types::event::{Event, EventId, EventSummary},
     EventDB,
 };
 <span class="kw">use </span>async_trait::async_trait;
@@ -311,7 +317,7 @@
         limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt;;
-    <span class="kw">async fn </span>get_event(<span class="kw-2">&amp;</span><span class="self">self</span>, event: EventId) -&gt; <span class="prelude-ty">Result</span>&lt;EventSummary, Error&gt;;
+    <span class="kw">async fn </span>get_event(<span class="kw-2">&amp;</span><span class="self">self</span>, event: EventId) -&gt; <span class="prelude-ty">Result</span>&lt;Event, Error&gt;;
 }
 
 <span class="kw">impl </span>EventDB {
@@ -377,25 +383,28 @@
         <span class="prelude-val">Ok</span>(events)
     }
 
-    <span class="kw">async fn </span>get_event(<span class="kw-2">&amp;</span><span class="self">self</span>, event: EventId) -&gt; <span class="prelude-ty">Result</span>&lt;EventSummary, Error&gt; {
+    <span class="kw">async fn </span>get_event(<span class="kw-2">&amp;</span><span class="self">self</span>, event: EventId) -&gt; <span class="prelude-ty">Result</span>&lt;Event, Error&gt; {
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span>rows = conn.query(<span class="self">Self</span>::EVENT_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>]).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>row = rows.get(<span class="number">0</span>).ok_or(Error::NotFound)<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(EventSummary {
-            id: EventId(row.try_get(<span class="string">&quot;row_id&quot;</span>)<span class="question-mark">?</span>),
-            name: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
-            starts: row
-                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
-                </span>.and_local_timezone(Utc)
-                .unwrap(),
-            ends: row
-                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
-                </span>.and_local_timezone(Utc)
-                .unwrap(),
-            is_final: row.try_get(<span class="string">&quot;final&quot;</span>)<span class="question-mark">?</span>,
-            reg_checked: <span class="prelude-val">None</span>,
+        <span class="prelude-val">Ok</span>(Event {
+            event_summary: EventSummary {
+                id: EventId(row.try_get(<span class="string">&quot;row_id&quot;</span>)<span class="question-mark">?</span>),
+                name: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
+                starts: row
+                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
+                    </span>.and_local_timezone(Utc)
+                    .unwrap(),
+                ends: row
+                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
+                    </span>.and_local_timezone(Utc)
+                    .unwrap(),
+                is_final: row.try_get(<span class="string">&quot;final&quot;</span>)<span class="question-mark">?</span>,
+                reg_checked: <span class="prelude-val">None</span>,
+            },
+            event_details: <span class="prelude-val">None</span>,
         })
     }
 }
@@ -569,25 +578,28 @@
         <span class="kw">let </span>event = event_db.get_event(EventId(<span class="number">1</span>)).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(
             event,
-            EventSummary {
-                id: EventId(<span class="number">1</span>),
-                name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
-                starts: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+            Event {
+                event_summary: EventSummary {
+                    id: EventId(<span class="number">1</span>),
+                    name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
+                    starts: DateTime::&lt;Utc&gt;::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">5</span>, <span class="number">1</span>).unwrap(),
+                            NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                        ),
+                        Utc
                     ),
-                    Utc
-                ),
-                ends: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                    ends: DateTime::&lt;Utc&gt;::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">6</span>, <span class="number">1</span>).unwrap(),
+                            NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                        ),
+                        Utc
                     ),
-                    Utc
-                ),
-                is_final: <span class="bool-val">true</span>,
-                reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">true</span>,
+                    reg_checked: <span class="prelude-val">None</span>,
+                },
+                event_details: <span class="prelude-val">None</span>,
             },
         );
 

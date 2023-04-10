@@ -341,7 +341,7 @@
     routing::get,
     Router,
 };
-<span class="kw">use </span>event_db::types::event::{EventId, EventSummary};
+<span class="kw">use </span>event_db::types::event::{Event, EventId, EventSummary};
 <span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
 
@@ -363,7 +363,7 @@
         )
 }
 
-<span class="kw">async fn </span>event_exec(Path(event): Path&lt;EventId&gt;, state: Arc&lt;State&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;EventSummary, Error&gt; {
+<span class="kw">async fn </span>event_exec(Path(event): Path&lt;EventId&gt;, state: Arc&lt;State&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Event, Error&gt; {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;event_exec, event: {0}&quot;</span>, event.<span class="number">0</span>);
 
     <span class="kw">let </span>event = state.event_db.get_event(event).<span class="kw">await</span><span class="question-mark">?</span>;

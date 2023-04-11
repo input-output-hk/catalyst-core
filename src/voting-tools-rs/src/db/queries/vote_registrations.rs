@@ -129,7 +129,6 @@ fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Result<SignedRegi
         stake_key_hash: vec![0; 29],
         tx_id,
         slot: 0,
-        staked_ada: None,
     })
 }
 

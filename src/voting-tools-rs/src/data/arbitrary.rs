@@ -68,7 +68,6 @@ pub(crate) fn arbitrary_signed_registration(
         stake_key_hash: vec![0; 29],
         tx_id,
         slot: 12345,
-        staked_ada: None,
     }
 }
 

@@ -29,6 +29,14 @@ pub struct DbConfig {
     pub host: DbHost,
     /// The corresponding password for this user
     pub password: Option<DbPass>,
+    /// The time limit in seconds applied to each socket-level connection attempt.
+    pub connect_timeout: u32,
+    /// The number of seconds of inactivity after which a keepalive message is sent to the server
+    pub keepalives_idle: u32,
+    /// The time interval between TCP keepalive probes
+    pub keepalives_interval: u32,
+    /// The maximum number of TCP keepalive probes that will be sent before dropping a connection.
+    pub keepalives_retries: u32,
 }
 
 /// Inner module to hide database internals from database code
@@ -66,6 +74,10 @@ mod inner {
                 user,
                 host,
                 password,
+                connect_timeout: _,
+                keepalives_idle: _,
+                keepalives_interval: _,
+                keepalives_retries: _,
             }: DbConfig,
         ) -> Result<Self> {
             use microtype::secrecy::ExposeSecret;

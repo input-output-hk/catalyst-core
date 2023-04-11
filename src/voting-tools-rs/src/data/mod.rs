@@ -166,9 +166,6 @@ pub struct SignedRegistration {
 
     /// The slot the registration was found in.
     pub slot: u64,
-
-    /// Raw Staked ADA
-    pub staked_ada: Option<u128>,
 }
 
 fn ox_hex<T, S>(v: &T, serializer: S) -> Result<S::Ok, S::Error>
@@ -245,7 +242,6 @@ impl RawRegistration {
             stake_key_hash: stake_key_hash(&registration.stake_key, network_id),
             tx_id: self.tx_id,
             slot: self.slot,
-            staked_ada: None,
         })
     }
 

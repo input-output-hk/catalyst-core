@@ -44,7 +44,6 @@ impl Validate for SignedRegistration {
             stake_key_hash: _,
             tx_id: _,
             slot: _,
-            staked_ada: _,
         } = self;
 
         validate_voting_power(&registration.voting_key)?;

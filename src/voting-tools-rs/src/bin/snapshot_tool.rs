@@ -54,6 +54,10 @@ fn main() -> Result<()> {
         user: db_user,
         host: db_host,
         password: db_pass,
+        connect_timeout: 20,
+        keepalives_idle: 900,
+        keepalives_interval: 900,
+        keepalives_retries: 8,
     };
 
     let mut args = VotingPowerArgs::default();
@@ -100,8 +104,8 @@ fn db_conn(db_config: DbConfig) -> Result<Client, postgres::Error> {
 
     Client::connect(
         &format!(
-            "postgres://{0}{1}@{2}/{3}",
-            db_config.user, password, db_config.host, db_config.name,
+            "postgres://{0}{1}@{2}/{3}?connect_timeout={4}&keepalives=1&keepalives_idle={5}&keepalives_interval={6}&keepalives_retries={7}",
+            db_config.user, password, db_config.host, db_config.name,db_config.connect_timeout,db_config.keepalives_idle,db_config.keepalives_interval,db_config.keepalives_retries
         ),
         NoTls,
     )

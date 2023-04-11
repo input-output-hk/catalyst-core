@@ -118,7 +118,6 @@ impl DataProvider for MockDbProvider {
                             signature: Signature {
                                 inner: Sig(sig.to_bytes().try_into().unwrap()),
                             },
-                            staked_ada: None,
                             stake_key_hash: vec![0; 29],
                         }
                     })

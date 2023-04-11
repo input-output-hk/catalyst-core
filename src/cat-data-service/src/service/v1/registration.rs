@@ -28,7 +28,6 @@ pub fn registration(state: Arc<State>) -> Router {
         .route(
             "/registration/delegations/:stake_public_key",
             get({
-                let state = state.clone();
                 move |path, query| async {
                     handle_result(delegations_exec(path, query, state).await).await
                 }

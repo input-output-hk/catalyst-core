@@ -22,10 +22,7 @@ pub fn event(state: Arc<State>) -> Router {
         )
         .route(
             "/events",
-            get({
-                let state = state.clone();
-                move |query| async { handle_result(events_exec(query, state).await).await }
-            }),
+            get(move |query| async { handle_result(events_exec(query, state).await).await }),
         )
 }
 

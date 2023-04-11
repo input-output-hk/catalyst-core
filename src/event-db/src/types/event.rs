@@ -29,13 +29,13 @@ pub struct EventSummary {
     pub is_final: bool,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub enum VotingPowerAlgorithm {
     #[serde(rename = "threshold_staked_ADA")]
     ThresholdStakedADA
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct VotingPowerSettings {
     pub alg: VotingPowerAlgorithm,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -118,7 +118,7 @@ pub struct VoterGroup {
     pub voting_token: String,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct EventDetails {
     pub voting_power: VotingPowerSettings,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -128,7 +128,7 @@ pub struct EventDetails {
     pub groups: Vec<VoterGroup>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Event {
     #[serde(flatten)]
     pub event_summary: EventSummary,

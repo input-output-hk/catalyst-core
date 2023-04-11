@@ -150,6 +150,7 @@ impl EventQueries for EventDB {
             event_details: EventDetails {
                 voting_power,
                 schedule,
+                // TODO implement queries
                 registration: None,
                 goals: vec![],
                 groups: vec![],

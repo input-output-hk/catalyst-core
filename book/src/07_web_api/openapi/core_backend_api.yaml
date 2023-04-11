@@ -442,15 +442,16 @@ components:
         ends:
           $ref: '#/components/schemas/DateTime'
           description: Date-Time when the Voting Event is expected to finish.
-        finalized:
+        final:
           type: boolean
           description: True if the event is finished and no changes can be made to it.<br>Does not Including payment of rewards or funding of projects.
         reg_checked:
           $ref: '#/components/schemas/DateTime'
-          description: 'Last time registrations and Voting power were checed.If not present, no registration or voting power records exist for this event.'
+          description: 'Last time registrations and Voting power were checked. If not present, no registration or voting power records exist for this event.'
       required:
         - id
         - name
+        - final
       description: A Summary of an individual Voting Event
     VotingPowerSettings:
       title: Voting Power Settings
@@ -587,10 +588,6 @@ components:
         tallying_end:
           $ref: '#/components/schemas/DateTime'
           description: Date-Time when Tallying Ends.
-      required:
-        - voting
-        - tallying
-        - tallying_end
       x-stoplight:
         id: c1q1b5jtfd4ue
     ObjectiveId:

@@ -7,6 +7,17 @@
 <a href="#7" id="7">7</a>
 <a href="#8" id="8">8</a>
 <a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
 </pre><pre class="rust"><code><span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::Serializer;
 
@@ -15,6 +26,17 @@
     serializer: S,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt; {
     serializer.serialize_str(<span class="kw-2">&amp;</span>time.to_rfc3339())
+}
+
+<span class="kw">pub fn </span>serialize_option_datetime_as_rfc3339&lt;S: Serializer&gt;(
+    time: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
+    serializer: S,
+) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt; {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(time) = time {
+        serializer.serialize_str(<span class="kw-2">&amp;</span>time.to_rfc3339())
+    } <span class="kw">else </span>{
+        serializer.serialize_none()
+    }
 }
 </code></pre></div>
 </section></main></body></html>

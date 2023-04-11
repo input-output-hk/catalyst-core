@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["delegations_by_event_exec","delegations_by_latest_event_exec","registration","voter_by_event_exec","voter_by_latest_event_exec"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["delegations_exec","registration","voter_exec"],"opaque":[""],"static":["CALLSITE","META"],"struct":["EventIdQuery","__FieldVisitor","__Visitor"]};

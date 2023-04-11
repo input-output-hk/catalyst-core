@@ -978,7 +978,7 @@ CREATE TABLE goal
     id SERIAL PRIMARY KEY,
     event_id INTEGER NOT NULL,
 
-    idx integer NOT NULL,
+    idx INTEGER NOT NULL,
     name VARCHAR NOT NULL,
 
     FOREIGN KEY(event_id) REFERENCES event(row_id)

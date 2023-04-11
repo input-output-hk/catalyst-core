@@ -17,11 +17,11 @@
 <a href="#17" id="17">17</a>
 <a href="#18" id="18">18</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cli::Error;
-<span class="kw">use </span>event_db::queries::snapshot::SnapshotQueries;
+<span class="kw">use </span>event_db::queries::EventDbQueries;
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub struct </span>State {
-    <span class="kw">pub </span>event_db: Arc&lt;<span class="kw">dyn </span>SnapshotQueries&gt;,
+    <span class="kw">pub </span>event_db: Arc&lt;<span class="kw">dyn </span>EventDbQueries&gt;,
 }
 
 <span class="kw">impl </span>State {

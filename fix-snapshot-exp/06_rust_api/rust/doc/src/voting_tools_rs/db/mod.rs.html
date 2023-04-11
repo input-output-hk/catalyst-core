@@ -120,6 +120,18 @@
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{DbHost, DbName, DbPass, DbUser};
 
 <span class="kw">pub mod </span>queries;
@@ -151,6 +163,14 @@
     </span><span class="kw">pub </span>host: DbHost,
     <span class="doccomment">/// The corresponding password for this user
     </span><span class="kw">pub </span>password: <span class="prelude-ty">Option</span>&lt;DbPass&gt;,
+    <span class="doccomment">/// The time limit in seconds applied to each socket-level connection attempt.
+    </span><span class="kw">pub </span>connect_timeout: u32,
+    <span class="doccomment">/// The number of seconds of inactivity after which a keepalive message is sent to the server
+    </span><span class="kw">pub </span>keepalives_idle: u32,
+    <span class="doccomment">/// The time interval between TCP keepalive probes
+    </span><span class="kw">pub </span>keepalives_interval: u32,
+    <span class="doccomment">/// The maximum number of TCP keepalive probes that will be sent before dropping a connection.
+    </span><span class="kw">pub </span>keepalives_retries: u32,
 }
 
 <span class="doccomment">/// Inner module to hide database internals from database code
@@ -188,6 +208,10 @@
                 user,
                 host,
                 password,
+                connect_timeout: <span class="kw">_</span>,
+                keepalives_idle: <span class="kw">_</span>,
+                keepalives_interval: <span class="kw">_</span>,
+                keepalives_retries: <span class="kw">_</span>,
             }: DbConfig,
         ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
             <span class="kw">use </span>microtype::secrecy::ExposeSecret;

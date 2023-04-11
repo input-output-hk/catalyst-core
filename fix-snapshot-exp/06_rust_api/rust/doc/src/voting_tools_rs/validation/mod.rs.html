@@ -134,7 +134,6 @@
 <a href="#134" id="134">134</a>
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{NetworkId, Registration, SignedRegistration, StakeKeyHex, VotingPurpose};
 <span class="kw">use </span><span class="kw">crate</span>::error::RegistrationError;
 <span class="kw">use crate</span>::{Signature, VotingKey};
@@ -181,7 +180,6 @@
             stake_key_hash: <span class="kw">_</span>,
             tx_id: <span class="kw">_</span>,
             slot: <span class="kw">_</span>,
-            staked_ada: <span class="kw">_</span>,
         } = <span class="self">self</span>;
 
         validate_voting_power(<span class="kw-2">&amp;</span>registration.voting_key)<span class="question-mark">?</span>;

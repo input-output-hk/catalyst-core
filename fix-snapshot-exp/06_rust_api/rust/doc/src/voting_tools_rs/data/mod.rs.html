@@ -732,10 +732,6 @@
 <a href="#732" id="732">732</a>
 <a href="#733" id="733">733</a>
 <a href="#734" id="734">734</a>
-<a href="#735" id="735">735</a>
-<a href="#736" id="736">736</a>
-<a href="#737" id="737">737</a>
-<a href="#738" id="738">738</a>
 </pre><pre class="rust"><code><span class="attr">#[allow(clippy::all)]
 </span><span class="kw">use </span>std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
 
@@ -904,9 +900,6 @@
 
     <span class="doccomment">/// The slot the registration was found in.
     </span><span class="kw">pub </span>slot: u64,
-
-    <span class="doccomment">/// Raw Staked ADA
-    </span><span class="kw">pub </span>staked_ada: <span class="prelude-ty">Option</span>&lt;u128&gt;,
 }
 
 <span class="kw">fn </span>ox_hex&lt;T, S&gt;(v: <span class="kw-2">&amp;</span>T, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
@@ -983,7 +976,6 @@
             stake_key_hash: stake_key_hash(<span class="kw-2">&amp;</span>registration.stake_key, network_id),
             tx_id: <span class="self">self</span>.tx_id,
             slot: <span class="self">self</span>.slot,
-            staked_ada: <span class="prelude-val">None</span>,
         })
     }
 

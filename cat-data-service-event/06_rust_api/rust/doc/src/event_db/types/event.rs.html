@@ -688,7 +688,7 @@
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>VotingPowerAlgorithm {
     <span class="attr">#[serde(rename = <span class="string">&quot;threshold_staked_ADA&quot;</span>)]
-    </span>ThresholdStakedADA
+    </span>ThresholdStakedADA,
 }
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -715,7 +715,7 @@
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>EventGoal {
-    <span class="kw">pub </span>idx: i64,
+    <span class="kw">pub </span>idx: i32,
     <span class="kw">pub </span>name: String,
 }
 

@@ -73,8 +73,8 @@ mod tests {
     };
     use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
     use event_db::types::event::{
-        EventDetails, EventGoal, EventId, EventSchedule, VoterGroup, VotingPowerAlgorithm,
-        VotingPowerSettings,
+        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VoterGroup,
+        VoterGroupId, VotingPowerAlgorithm, VotingPowerSettings,
     };
     use rust_decimal::Decimal;
     use tower::ServiceExt;
@@ -126,7 +126,23 @@ mod tests {
                         min_ada: Some(1),
                         max_pct: Some(Decimal::new(100, 0)),
                     },
-                    registration: None,
+                    registration: EventRegistration {
+                        purpose: None,
+                        deadline: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        taken: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ))
+                    },
                     schedule: EventSchedule {
                         insight_sharing: Some(DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
@@ -212,11 +228,11 @@ mod tests {
                     ],
                     groups: vec![
                         VoterGroup {
-                            id: "rep".to_string(),
+                            id: VoterGroupId::Rep,
                             voting_token: "rep token".to_string()
                         },
                         VoterGroup {
-                            id: "direct".to_string(),
+                            id: VoterGroupId::Direct,
                             voting_token: "direct token".to_string()
                         }
                     ]
@@ -239,7 +255,7 @@ mod tests {
         let app = app(state);
 
         let request = Request::builder()
-            .uri(format!("/api/v1/events"))
+            .uri("/api/v1/events".to_string())
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();

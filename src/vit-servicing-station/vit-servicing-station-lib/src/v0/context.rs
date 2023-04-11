@@ -66,7 +66,7 @@ pub mod test {
         db_url: &str,
         block0_path: Vec<PathBuf>,
     ) -> SharedContext {
-        let pool = db::load_db_connection_pool(&db_url).unwrap();
+        let pool = db::load_db_connection_pool(db_url).unwrap();
         new_shared_context(pool, block0_path, "2.0")
     }
 }

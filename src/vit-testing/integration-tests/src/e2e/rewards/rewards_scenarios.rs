@@ -224,7 +224,7 @@ pub fn mixed_rewards_happy_path() {
     .unwrap();
 
     let direct_records = calc_voter_rewards(
-        account_votes_count.clone(),
+        account_votes_count,
         snapshot_doctored_copy.clone(),
         Threshold::new(
             VOTE_THRESHOLD_PER_VOTER,
@@ -234,7 +234,7 @@ pub fn mixed_rewards_happy_path() {
                 .iter()
                 .map(|x| (x.id, VOTE_THRESHOLD_PER_CHALLENGE as usize))
                 .collect(),
-            proposals.clone(),
+            proposals,
         )
         .unwrap(),
         TOTAL_REWARD.into(),

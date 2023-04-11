@@ -1,4 +1,4 @@
-use crate::types::utils::{serialize_datetime_as_rfc3339, serialize_option_datetime_as_rfc3339};
+use crate::{error::Error, types::utils::serialize_option_datetime_as_rfc3339};
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
@@ -51,10 +51,16 @@ pub struct VotingPowerSettings {
 pub struct EventRegistration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub purpose: Option<i64>,
-    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
-    pub deadline: DateTime<Utc>,
-    #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
-    pub taken: DateTime<Utc>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_option_datetime_as_rfc3339"
+    )]
+    pub deadline: Option<DateTime<Utc>>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "serialize_option_datetime_as_rfc3339"
+    )]
+    pub taken: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -113,16 +119,39 @@ pub struct EventSchedule {
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+pub enum VoterGroupId {
+    #[serde(rename = "rep")]
+    Rep,
+    #[serde(rename = "direct")]
+    Direct,
+}
+
+impl TryFrom<String> for VoterGroupId {
+    type Error = Error;
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        if value == "rep".to_string() {
+            Ok(Self::Rep)
+        } else if value == "direct".to_string() {
+            Ok(Self::Direct)
+        } else {
+            Err(Error::Unknown(format!(
+                "Could be only one of the following options: [rep, direct], provided: {}",
+                value
+            )))
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct VoterGroup {
-    pub id: String,
+    pub id: VoterGroupId,
     pub voting_token: String,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct EventDetails {
     pub voting_power: VotingPowerSettings,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub registration: Option<EventRegistration>,
+    pub registration: EventRegistration,
     pub schedule: EventSchedule,
     pub goals: Vec<EventGoal>,
     pub groups: Vec<VoterGroup>,
@@ -250,8 +279,14 @@ mod tests {
     fn event_registration_json_test() {
         let event_registration = EventRegistration {
             purpose: Some(1),
-            deadline: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            taken: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            deadline: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
+            taken: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
         };
 
         let json = serde_json::to_value(&event_registration).unwrap();
@@ -268,8 +303,14 @@ mod tests {
 
         let event_registration = EventRegistration {
             purpose: None,
-            deadline: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            taken: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            deadline: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
+            taken: Some(DateTime::from_utc(
+                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                Utc,
+            )),
         };
 
         let json = serde_json::to_value(&event_registration).unwrap();
@@ -399,7 +440,7 @@ mod tests {
     #[test]
     fn voter_group_json_test() {
         let voter_group = VoterGroup {
-            id: "rep".to_string(),
+            id: VoterGroupId::Rep,
             voting_token: "voting token 1".to_string(),
         };
 
@@ -423,11 +464,17 @@ mod tests {
                 min_ada: Some(500),
                 max_pct: Some(Decimal::new(123, 2)),
             },
-            registration: Some(EventRegistration {
+            registration: EventRegistration {
                 purpose: Some(1),
-                deadline: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-                taken: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            }),
+                deadline: Some(DateTime::from_utc(
+                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                    Utc,
+                )),
+                taken: Some(DateTime::from_utc(
+                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
+                    Utc,
+                )),
+            },
             goals: vec![EventGoal {
                 idx: 1,
                 name: "goal 1".to_string(),
@@ -471,7 +518,7 @@ mod tests {
                 )),
             },
             groups: vec![VoterGroup {
-                id: "rep".to_string(),
+                id: VoterGroupId::Rep,
                 voting_token: "voting token 1".to_string(),
             }],
         };
@@ -545,17 +592,17 @@ mod tests {
                     min_ada: Some(500),
                     max_pct: Some(Decimal::new(123, 2)),
                 },
-                registration: Some(EventRegistration {
+                registration: EventRegistration {
                     purpose: Some(1),
-                    deadline: DateTime::from_utc(
+                    deadline: Some(DateTime::from_utc(
                         NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                         Utc,
-                    ),
-                    taken: DateTime::from_utc(
+                    )),
+                    taken: Some(DateTime::from_utc(
                         NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
                         Utc,
-                    ),
-                }),
+                    )),
+                },
                 goals: vec![EventGoal {
                     idx: 1,
                     name: "goal 1".to_string(),
@@ -599,7 +646,7 @@ mod tests {
                     )),
                 },
                 groups: vec![VoterGroup {
-                    id: "rep".to_string(),
+                    id: VoterGroupId::Rep,
                     voting_token: "voting token 1".to_string(),
                 }],
             },

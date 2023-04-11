@@ -73,7 +73,7 @@ mod tests {
     };
     use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
     use event_db::types::event::{
-        EventDetails, EventId, EventSchedule, VotingPowerAlgorithm, VotingPowerSettings,
+        EventDetails, EventGoal, EventId, EventSchedule, VotingPowerAlgorithm, VotingPowerSettings,
     };
     use rust_decimal::Decimal;
     use tower::ServiceExt;
@@ -191,7 +191,24 @@ mod tests {
                             Utc
                         )),
                     },
-                    goals: vec![],
+                    goals: vec![
+                        EventGoal {
+                            idx: 1,
+                            name: "goal 1".to_string(),
+                        },
+                        EventGoal {
+                            idx: 2,
+                            name: "goal 2".to_string(),
+                        },
+                        EventGoal {
+                            idx: 3,
+                            name: "goal 3".to_string(),
+                        },
+                        EventGoal {
+                            idx: 4,
+                            name: "goal 4".to_string(),
+                        }
+                    ],
                     groups: vec![]
                 },
             },)

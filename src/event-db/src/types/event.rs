@@ -32,7 +32,7 @@ pub struct EventSummary {
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub enum VotingPowerAlgorithm {
     #[serde(rename = "threshold_staked_ADA")]
-    ThresholdStakedADA
+    ThresholdStakedADA,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -59,7 +59,7 @@ pub struct EventRegistration {
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct EventGoal {
-    pub idx: i64,
+    pub idx: i32,
     pub name: String,
 }
 

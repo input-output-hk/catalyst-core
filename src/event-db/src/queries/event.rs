@@ -1,7 +1,7 @@
 use crate::{
     error::Error,
     types::event::{
-        Event, EventDetails, EventId, EventSchedule, EventSummary, VotingPowerAlgorithm,
+        Event, EventDetails, EventGoal, EventId, EventSchedule, EventSummary, VotingPowerAlgorithm,
         VotingPowerSettings,
     },
     EventDB,
@@ -42,6 +42,10 @@ impl EventDB {
         FROM event
         LEFT JOIN snapshot ON event.row_id = snapshot.event
         WHERE event.row_id = $1;";
+
+    const EVENT_GOALS_QUERY: &'static str = "SELECT goal.idx, goal.name 
+                                            FROM goal 
+                                            WHERE goal.event_id = $1;";
 }
 
 #[async_trait]
@@ -134,6 +138,15 @@ impl EventQueries for EventDB {
                 .map(|val| val.and_local_timezone(Utc).unwrap()),
         };
 
+        let rows = conn.query(Self::EVENT_GOALS_QUERY, &[&event.0]).await?;
+        let mut goals = Vec::new();
+        for row in rows {
+            goals.push(EventGoal {
+                idx: row.try_get("idx")?,
+                name: row.try_get("name")?,
+            })
+        }
+
         Ok(Event {
             event_summary: EventSummary {
                 id: EventId(row.try_get("row_id")?),
@@ -150,9 +163,9 @@ impl EventQueries for EventDB {
             event_details: EventDetails {
                 voting_power,
                 schedule,
+                goals,
                 // TODO implement queries
                 registration: None,
-                goals: vec![],
                 groups: vec![],
             },
         })
@@ -472,7 +485,24 @@ mod tests {
                             Utc
                         )),
                     },
-                    goals: vec![],
+                    goals: vec![
+                        EventGoal {
+                            idx: 1,
+                            name: "goal 1".to_string(),
+                        },
+                        EventGoal {
+                            idx: 2,
+                            name: "goal 2".to_string(),
+                        },
+                        EventGoal {
+                            idx: 3,
+                            name: "goal 3".to_string(),
+                        },
+                        EventGoal {
+                            idx: 4,
+                            name: "goal 4".to_string(),
+                        }
+                    ],
                     groups: vec![]
                 },
             },

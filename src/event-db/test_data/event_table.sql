@@ -1,4 +1,3 @@
-
 INSERT INTO event
 (row_id, name, description, registration_snapshot_time, snapshot_start,
  voting_power_threshold, max_voting_power_pct, start_time, end_time, insight_sharing_start,

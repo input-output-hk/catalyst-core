@@ -473,9 +473,6 @@
 <a href="#473" id="473">473</a>
 <a href="#474" id="474">474</a>
 <a href="#475" id="475">475</a>
-<a href="#476" id="476">476</a>
-<a href="#477" id="477">477</a>
-<a href="#478" id="478">478</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -500,10 +497,7 @@
         )
         .route(
             <span class="string">&quot;/events&quot;</span>,
-            get({
-                <span class="kw">let </span>state = state.clone();
-                <span class="kw">move </span>|query| <span class="kw">async </span>{ handle_result(events_exec(query, state).<span class="kw">await</span>).<span class="kw">await </span>}
-            }),
+            get(<span class="kw">move </span>|query| <span class="kw">async </span>{ handle_result(events_exec(query, state).<span class="kw">await</span>).<span class="kw">await </span>}),
         )
 }
 

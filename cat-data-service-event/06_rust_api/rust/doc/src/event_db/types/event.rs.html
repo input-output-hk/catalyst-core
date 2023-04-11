@@ -685,13 +685,13 @@
     </span><span class="kw">pub </span>is_final: bool,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>VotingPowerAlgorithm {
     <span class="attr">#[serde(rename = <span class="string">&quot;threshold_staked_ADA&quot;</span>)]
     </span>ThresholdStakedADA
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>VotingPowerSettings {
     <span class="kw">pub </span>alg: VotingPowerAlgorithm,
     <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
@@ -774,7 +774,7 @@
     <span class="kw">pub </span>voting_token: String,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>EventDetails {
     <span class="kw">pub </span>voting_power: VotingPowerSettings,
     <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
@@ -784,7 +784,7 @@
     <span class="kw">pub </span>groups: Vec&lt;VoterGroup&gt;,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Event {
     <span class="attr">#[serde(flatten)]
     </span><span class="kw">pub </span>event_summary: EventSummary,

@@ -480,6 +480,7 @@
 <a href="#480" id="480">480</a>
 <a href="#481" id="481">481</a>
 <a href="#482" id="482">482</a>
+<a href="#483" id="483">483</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
@@ -632,7 +633,8 @@
             event_details: EventDetails {
                 voting_power,
                 schedule,
-                registration: <span class="prelude-val">None</span>,
+                <span class="comment">// TODO implement queries
+                </span>registration: <span class="prelude-val">None</span>,
                 goals: <span class="macro">vec!</span>[],
                 groups: <span class="macro">vec!</span>[],
             },

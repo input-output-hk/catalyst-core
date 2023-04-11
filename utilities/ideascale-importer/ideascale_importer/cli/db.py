@@ -57,7 +57,8 @@ def seed_compatible(
                         "results": "https://event.com/results/10",
                         "survey": "https://event.com/survey/10",
                     }
-                })
+                },
+            )
             event_id = await ideascale_importer.db.insert(conn, event, returning="row_id")
             logger.info("Inserted event row_id={event_id}", event_id=event_id)
 
@@ -65,8 +66,13 @@ def seed_compatible(
             voting_group_row_id = await ideascale_importer.db.insert(conn, voting_group, returning="row_id")
             logger.info("Inserted voting_group row_id={voting_group_row_id}", voting_group_row_id=voting_group_row_id)
 
-            voteplan = models.Voteplan(event_id=event_id, id="voteplan-1", category="public",
-                                       encryption_key="encryption-key-1", group_id=voting_group_row_id)
+            voteplan = models.Voteplan(
+                event_id=event_id,
+                id="voteplan-1",
+                category="public",
+                encryption_key="encryption-key-1",
+                group_id=voting_group_row_id,
+            )
             voteplan_row_id = await ideascale_importer.db.insert(conn, voteplan, returning="row_id")
             logger.info("Inserted voteplan row_id={voteplan_row_id}", voteplan_row_id=voteplan_row_id)
 
@@ -84,13 +90,12 @@ def seed_compatible(
                     proposers_rewards=10000,
                     vote_options=await ideascale_importer.db.get_vote_options_id(conn, "yes,no"),
                     extra={
-                        "url": {
-                            "challenge": f"https://challenge.com/{i}"
-                        },
+                        "url": {"challenge": f"https://challenge.com/{i}"},
                         "highlights": {
                             "sponsor": f"Highlight {i} sponsor",
                         },
-                    })
+                    },
+                )
 
                 challenge_row_id = await ideascale_importer.db.insert(conn, challenge, returning="row_id")
                 logger.info("Inserted challenge row_id={challenge_row_id}", challenge_row_id=challenge_row_id)
@@ -115,14 +120,15 @@ def seed_compatible(
                         proposer_url=f"https://proposer-{i}-{j}.com",
                         proposer_relevant_experience="",
                         bb_proposal_id=b"someid",
-                        bb_vote_options="yes,no"
+                        bb_vote_options="yes,no",
                     )
 
                     proposal_row_id = await ideascale_importer.db.insert(conn, proposal, returning="row_id")
                     logger.info("Inserted proposal row_id={proposal_row_id}", proposal_row_id=proposal_row_id)
 
                     proposal_voteplan = models.ProposalVoteplan(
-                        proposal_id=proposal_row_id, voteplan_id=voteplan_row_id, bb_proposal_index=(i+1)*(j+1))
+                        proposal_id=proposal_row_id, voteplan_id=voteplan_row_id, bb_proposal_index=(i + 1) * (j + 1)
+                    )
                     await ideascale_importer.db.insert(conn, proposal_voteplan)
 
             for i in range(1):

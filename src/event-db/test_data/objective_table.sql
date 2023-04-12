@@ -5,10 +5,12 @@ VALUES
 1, 1,
 'catalyst-simple', 'title 1', 'description 1',
 'ADA', 100, 100, 1
-),
+);
 
+INSERT INTO objective
+(row_id, id, event, category, title, description)
+VALUES 
 (2,
 2, 1,
-'catalyst-native', 'title 2', 'description 2',
-'USD_ADA', 200, 200, 1
+'catalyst-native', 'title 2', 'description 2'
 );

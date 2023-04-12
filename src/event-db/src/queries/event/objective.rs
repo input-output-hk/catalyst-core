@@ -1,7 +1,9 @@
 use crate::{
     error::Error,
     types::event::{
-        objective::{Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveType},
+        objective::{
+            Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveType, RewardDefintion,
+        },
         EventId,
     },
     EventDB,
@@ -19,9 +21,13 @@ pub trait ObjectiveQueries: Sync + Send + 'static {
 }
 
 impl EventDB {
-    const OBJECTIVES_QUERY: &'static str = "SELECT objective.id, objective.title, objective.description, objective_category.name, objective_category.description as objective_category_description
+    const OBJECTIVES_QUERY: &'static str =
+        "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total,
+        objective_category.name, objective_category.description as objective_category_description,
+        vote_options.objective as choices
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
+        LEFT JOIN vote_options on objective.vote_options = vote_options.id
         WHERE objective.event = $1;";
 }
 
@@ -47,10 +53,16 @@ impl ObjectiveQueries for EventDB {
                 },
                 title: row.try_get("title")?,
             };
+            let currency: Option<_> = row.try_get("rewards_currency")?;
+            let value: Option<_> = row.try_get("rewards_total")?;
+            let reward = match (currency, value) {
+                (Some(currency), Some(value)) => Some(RewardDefintion { currency, value }),
+                _ => None,
+            };
             let details = ObjectiveDetails {
+                reward,
                 description: row.try_get("description")?,
-                reward: None,
-                choices: None,
+                choices: row.try_get("choices")?,
                 ballot: None,
                 url: None,
                 supplemental: None,
@@ -96,8 +108,11 @@ mod tests {
                     },
                     details: ObjectiveDetails {
                         description: "description 1".to_string(),
-                        reward: None,
-                        choices: None,
+                        reward: Some(RewardDefintion {
+                            currency: "ADA".to_string(),
+                            value: 100
+                        }),
+                        choices: Some(vec!["yes".to_string(), "no".to_string()]),
                         ballot: None,
                         url: None,
                         supplemental: None,

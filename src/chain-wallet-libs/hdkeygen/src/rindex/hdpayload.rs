@@ -8,6 +8,8 @@
 //! symmetric key used to encrypt, can then decrypt the address
 //! payload and find the derivation path associated with it.
 //!
+use std::convert::TryInto;
+
 use chain_path_derivation::{AnyScheme, Derivation, DerivationPath};
 use cryptoxide::{chacha20poly1305::ChaCha20Poly1305, hmac::Hmac, pbkdf2::pbkdf2, sha2::Sha512};
 use ed25519_bip32::XPub;
@@ -155,7 +157,7 @@ impl HdKey {
 
     #[cfg(test)]
     pub fn encrypt(&self, input: &[u8]) -> Vec<u8> {
-        let mut ctx = ChaCha20Poly1305::new(&self.0, NONCE, &[]);
+        let mut ctx = ChaCha20Poly1305::new(&self.0, NONCE.try_into().unwrap(), &[]);
 
         let len = input.len();
 
@@ -176,7 +178,7 @@ impl HdKey {
             return Err(Error::PayloadIsTooLarge(len, MAX_PAYLOAD_SIZE));
         }
 
-        let mut ctx = ChaCha20Poly1305::new(&self.0, NONCE, &[]);
+        let mut ctx = ChaCha20Poly1305::new(&self.0, NONCE.try_into().unwrap(), &[]);
 
         let mut out: Vec<u8> = vec![0; len];
 

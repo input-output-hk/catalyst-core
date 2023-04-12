@@ -190,7 +190,7 @@ impl SymmetricKey {
         let mut h = Blake2b::new(44);
         h.input(&self.group_repr.to_bytes());
         h.result(&mut out);
-        ChaCha20::new(&out[0..32], &out[32..44])
+        ChaCha20::new(&out[0..32], &out[32..44].try_into().unwrap())
     }
 
     // Encrypt/decrypt a message using the symmetric key

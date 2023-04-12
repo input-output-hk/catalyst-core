@@ -15,7 +15,6 @@ class DbSyncDatabaseConfig:
 @dataclass
 class SnapshotToolConfig:
     path: str
-    max_time: datetime
 
 
 @dataclass

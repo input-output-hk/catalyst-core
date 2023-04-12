@@ -204,13 +204,15 @@ class Snapshot(Model):
 
     event: int
     as_at: datetime
+    as_at_slotno: int
     last_updated: datetime
+    last_updated_slotno: int
     final: bool
     dbsync_snapshot_cmd: Optional[str]
-    dbsync_snapshot_data: Optional[str]
-    drep_data: Optional[str]
+    dbsync_snapshot_data: Optional[bytes]
+    drep_data: Optional[bytes]
     catalyst_snapshot_cmd: Optional[str]
-    catalyst_snapshot_data: Optional[str]
+    catalyst_snapshot_data: Optional[bytes]
 
     @staticmethod
     def table() -> str:

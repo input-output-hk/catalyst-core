@@ -169,7 +169,7 @@ pub struct ObjectiveDetails {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct Object {
+pub struct Objective {
     #[serde(flatten)]
     summary: ObjectiveSummary,
     #[serde(flatten)]

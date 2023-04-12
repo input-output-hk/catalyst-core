@@ -9,6 +9,8 @@ use crate::{
 use async_trait::async_trait;
 use chrono::{NaiveDateTime, Utc};
 
+pub mod objective;
+
 #[async_trait]
 pub trait EventQueries: Sync + Send + 'static {
     async fn get_events(

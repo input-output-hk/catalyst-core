@@ -42,8 +42,8 @@ VALUES
 CREATE TABLE vote_options
 (
     id SERIAL PRIMARY KEY,
-    idea_scale TEXT UNIQUE,
-    objective TEXT UNIQUE
+    idea_scale TEXT ARRAY UNIQUE,
+    objective TEXT ARRAY UNIQUE
 );
 
 COMMENT ON TABLE vote_options IS 'Defines all known vote plan option types.';
@@ -54,7 +54,7 @@ COMMENT ON COLUMN vote_options.objective IS 'How the vote options is represented
 -- Define known vote_options
 INSERT INTO vote_options (idea_scale,  objective)
 VALUES
-    ('blank,yes,no','yes,no');
+    ('{"blank", "yes", "no"}','{"yes", "no"}');
 
 
 

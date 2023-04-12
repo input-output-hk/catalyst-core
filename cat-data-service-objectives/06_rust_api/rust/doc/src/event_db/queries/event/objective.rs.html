@@ -125,10 +125,27 @@
 <a href="#125" id="125">125</a>
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
-        objective::{Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveType},
+        objective::{
+            Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveType, RewardDefintion,
+        },
         EventId,
     },
     EventDB,
@@ -146,9 +163,13 @@
 }
 
 <span class="kw">impl </span>EventDB {
-    <span class="kw">const </span>OBJECTIVES_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT objective.id, objective.title, objective.description, objective_category.name, objective_category.description as objective_category_description
+    <span class="kw">const </span>OBJECTIVES_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
+        <span class="string">&quot;SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total,
+        objective_category.name, objective_category.description as objective_category_description,
+        vote_options.objective as choices
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
+        LEFT JOIN vote_options on objective.vote_options = vote_options.id
         WHERE objective.event = $1;&quot;</span>;
 }
 
@@ -174,10 +195,16 @@
                 },
                 title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
             };
+            <span class="kw">let </span>currency: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;rewards_currency&quot;</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>value: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;rewards_total&quot;</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>reward = <span class="kw">match </span>(currency, value) {
+                (<span class="prelude-val">Some</span>(currency), <span class="prelude-val">Some</span>(value)) =&gt; <span class="prelude-val">Some</span>(RewardDefintion { currency, value }),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+            };
             <span class="kw">let </span>details = ObjectiveDetails {
+                reward,
                 description: row.try_get(<span class="string">&quot;description&quot;</span>)<span class="question-mark">?</span>,
-                reward: <span class="prelude-val">None</span>,
-                choices: <span class="prelude-val">None</span>,
+                choices: row.try_get(<span class="string">&quot;choices&quot;</span>)<span class="question-mark">?</span>,
                 ballot: <span class="prelude-val">None</span>,
                 url: <span class="prelude-val">None</span>,
                 supplemental: <span class="prelude-val">None</span>,
@@ -223,8 +250,11 @@
                     },
                     details: ObjectiveDetails {
                         description: <span class="string">&quot;description 1&quot;</span>.to_string(),
-                        reward: <span class="prelude-val">None</span>,
-                        choices: <span class="prelude-val">None</span>,
+                        reward: <span class="prelude-val">Some</span>(RewardDefintion {
+                            currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
+                            value: <span class="number">100
+                        </span>}),
+                        choices: <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
                         ballot: <span class="prelude-val">None</span>,
                         url: <span class="prelude-val">None</span>,
                         supplemental: <span class="prelude-val">None</span>,

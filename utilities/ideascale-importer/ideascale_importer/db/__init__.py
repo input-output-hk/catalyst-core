@@ -9,11 +9,7 @@ from .models import Model, Contribution, Voter
 M = TypeVar("M", bound=Model)
 
 
-async def insert_many(
-    conn: asyncpg.Connection,
-    models: List[M],
-    returning: Optional[str] = None
-) -> List[Any]:
+async def insert_many(conn: asyncpg.Connection, models: List[M], returning: Optional[str] = None) -> List[Any]:
     """
     Batch inserts all models.
     """
@@ -28,12 +24,12 @@ async def insert_many(
     # Creates a list for the placeholders for value params, e.g. ["($1, $2, $3)", "($4, $5, $6)"]
     val_nums = []
     for i in range(0, len(vals)):
-        nums = range(i*len(cols)+1, (i+1)*len(cols)+1)
+        nums = range(i * len(cols) + 1, (i + 1) * len(cols) + 1)
         nums_str = ",".join(map(lambda x: f"${x}", nums))
         val_nums.append(f"({nums_str})")
 
     val_nums_str = ",".join(val_nums)
-    cols_str = ','.join(cols)
+    cols_str = ",".join(cols)
 
     flat_vals = [v for vs in vals for v in vs]
 
@@ -72,12 +68,12 @@ async def upsert_many(
     # Creates a list for the placeholders for value params, e.g. ["($1, $2, $3)", "($4, $5, $6)"]
     val_nums = []
     for i in range(0, len(vals)):
-        nums = range(i*len(cols)+1, (i+1)*len(cols)+1)
+        nums = range(i * len(cols) + 1, (i + 1) * len(cols) + 1)
         nums_str = ",".join(map(lambda x: f"${x}", nums))
         val_nums.append(f"({nums_str})")
 
     val_nums_str = ",".join(val_nums)
-    cols_str = ','.join(cols)
+    cols_str = ",".join(cols)
 
     flat_vals = [v for vs in vals for v in vs]
 

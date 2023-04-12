@@ -161,7 +161,7 @@ class JsonHttpClient:
         async with aiohttp.ClientSession() as session:
             self.request_progress_observer.request_start(req_id, "GET", url)
             async with session.get(url, headers=headers) as r:
-                content = b''
+                content = b""
 
                 async for c, _ in r.content.iter_chunks():
                     content += c
@@ -210,13 +210,15 @@ def json_logger_formatter(record: "Record") -> str:
     JSON Formatter for Loguru logger.
     """
 
-    record["extra"]["__json_serialized"] = json.dumps({
-        "timestamp": record["time"].timestamp(),
-        "level": record["level"].name,
-        "message": record["message"],
-        "source": f"{record['file'].path}:{record['line']}",
-        "extra": record["extra"],
-    })
+    record["extra"]["__json_serialized"] = json.dumps(
+        {
+            "timestamp": record["time"].timestamp(),
+            "level": record["level"].name,
+            "message": record["message"],
+            "source": f"{record['file'].path}:{record['line']}",
+            "extra": record["extra"],
+        }
+    )
 
     return "{extra[__json_serialized]}\n"
 

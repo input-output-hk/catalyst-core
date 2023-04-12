@@ -40,14 +40,23 @@ loguru = "^0.6.0"
 brotlipy = "^0.7.0"
 
 [tool.poetry.group.dev.dependencies]
-autopep8 = "^2.0.1"
-flake8 = "6.0.0"
 mypy = "0.991"
 mypy-extensions = "0.4.3"
+ruff = "^0.0.261"
+black = "^23.3.0"
 
 [tool.poetry.scripts]
 ideascale-importer = "ideascale_importer.app:app"
 
+[tool.black]
+line-length = 132
+target-version = ['py311']
+
+[tool.ruff]
+line-length = 132
+target-version = 'py311'
+# add pydoc lints
+extend-select = ["D"]
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

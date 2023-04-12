@@ -108,7 +108,7 @@ class Goal(Model):
     idx: int
     name: str
 
-    @ staticmethod
+    @staticmethod
     def table() -> str:
         return "goal"
 
@@ -123,7 +123,7 @@ class VotingGroup(Model):
     event_id: int
     token_id: Optional[str]
 
-    @ staticmethod
+    @staticmethod
     def table() -> str:
         return "voting_group"
 

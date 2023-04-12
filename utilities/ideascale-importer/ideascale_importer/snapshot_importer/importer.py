@@ -153,8 +153,8 @@ class Importer:
         if not self.skip_snapshot_tool_execution:
             # Fetch max slot
             conn = await ideascale_importer.db.connect(
-                f"postgres://{self.config.dbsync_database.user}:" +
-                f"{self.config.dbsync_database.password}@{self.config.dbsync_database.host}"
+                f"postgres://{self.config.dbsync_database.user}:"
+                + f"{self.config.dbsync_database.password}@{self.config.dbsync_database.host}"
                 f"/{self.config.dbsync_database.db}"
             )
 
@@ -256,21 +256,15 @@ class Importer:
         with open(self.catalyst_toolbox_out_file) as f:
             catalyst_toolbox_data_raw_json = f.read()
 
-        catalyst_toolbox_data: Optional[List[SnapshotProcessedEntry]] = []
+        catalyst_toolbox_data: List[SnapshotProcessedEntry] = []
         for e in json.loads(catalyst_toolbox_data_raw_json):
             catalyst_toolbox_data.append(pydantic.tools.parse_obj_as(SnapshotProcessedEntry, e))
             await asyncio.sleep(0)
 
-        if catalyst_toolbox_data is None:
-            raise WriteDbDataFailed("Failed to load catalyst-toolbox generated data")
-
-        snapshot_tool_data: Optional[List[Registration]] = []
+        snapshot_tool_data: List[Registration] = []
         for r in json.loads(snapshot_tool_data_raw_json):
             snapshot_tool_data.append(pydantic.tools.parse_obj_as(Registration, r))
             await asyncio.sleep(0)
-
-        if snapshot_tool_data is None:
-            raise WriteDbDataFailed("Failed to load snapshot_tool generated data")
 
         total_registered_voting_power = 0
         registration_delegation_data = {}
@@ -287,7 +281,7 @@ class Importer:
                     "voting_weight": voting_weight,
                 }
             elif isinstance(r.delegations, list):  # CIP36 registration
-                for (idx, d) in enumerate(r.delegations):
+                for idx, d in enumerate(r.delegations):
                     voting_key = d[0]
                     voting_key_idx = idx
                     voting_weight = d[1]
@@ -392,7 +386,8 @@ class Importer:
             "Done processing contributions and voters",
             total_registered_voting_power=total_registered_voting_power,
             total_contributed_voting_power=total_contributed_voting_power,
-            total_hir_voting_power=total_hir_voting_power)
+            total_hir_voting_power=total_hir_voting_power,
+        )
 
         conn = await ideascale_importer.db.connect(self.database_url)
 

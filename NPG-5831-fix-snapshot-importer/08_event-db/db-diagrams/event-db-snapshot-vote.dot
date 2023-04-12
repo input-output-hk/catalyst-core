@@ -207,9 +207,21 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="as_at_slotno"  align='text'><font>as_at_slotno</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="as_at_slotno_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
                 <td port="last_updated"  align='text'><font>last_updated</font><br align='left'/></td>
                 <td   ><font>timestamp</font></td>
                 <td port="last_updated_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The last time the snapshot was run<br align='left'/>(Should be the latest block time taken<br align='left'/>from dbsync just before the snapshot<br align='left'/>was run.)</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="last_updated_slotno"  align='text'><font>last_updated_slotno</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="last_updated_slotno_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             
             <tr>

@@ -3,12 +3,12 @@ INSERT INTO objective
 VALUES 
 (1,
 1, 1,
-'simple', 'title 1', 'description 1',
+'catalyst-simple', 'title 1', 'description 1',
 'ADA', 100, 100, 1
 ),
 
 (2,
 2, 1,
-'native', 'title 2', 'description 2',
+'catalyst-native', 'title 2', 'description 2',
 'USD_ADA', 200, 200, 1
 );

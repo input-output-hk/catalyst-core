@@ -168,9 +168,7 @@ impl EventQueries for EventDB {
         let mut groups = Vec::new();
         for row in rows {
             groups.push(VoterGroup {
-                id: row
-                    .try_get::<&'static str, String>("group_id")?
-                    .try_into()?,
+                id: row.try_get("group_id")?,
                 voting_token: row.try_get("token_id")?,
             })
         }
@@ -209,7 +207,7 @@ impl EventQueries for EventDB {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{establish_connection, types::event::VoterGroupId};
+    use crate::establish_connection;
     use chrono::{DateTime, NaiveDate, NaiveTime};
     use rust_decimal::Decimal;
 
@@ -548,11 +546,11 @@ mod tests {
                     ],
                     groups: vec![
                         VoterGroup {
-                            id: VoterGroupId::Rep,
+                            id: "rep".to_string(),
                             voting_token: "rep token".to_string()
                         },
                         VoterGroup {
-                            id: VoterGroupId::Direct,
+                            id: "direct".to_string(),
                             voting_token: "direct token".to_string()
                         }
                     ]

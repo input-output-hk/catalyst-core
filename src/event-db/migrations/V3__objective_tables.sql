@@ -14,9 +14,10 @@ COMMENT ON COLUMN objective_category.description IS 'A Description of this kind 
 -- Define known objective categories
 INSERT INTO objective_category (name,  description)
 VALUES
-    ('simple','A Simple choice'),
-    ('native','??'),
-    ('community-choice','Community collective decision');
+    ('catalyst-simple','A Simple choice'),
+    ('catalyst-native','??'),
+    ('catalyst-community-choice','Community collective decision'),
+    ('sve-decision','Special voting event decision');
 
 -- known currencies - Defines all currently known currencies.
 CREATE TABLE currency

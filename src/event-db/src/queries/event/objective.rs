@@ -1,7 +1,7 @@
 use crate::{
     error::Error,
     types::event::{
-        objective::{Objective, ObjectiveSummary, ObjectiveType},
+        objective::{Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveType},
         EventId,
     },
     EventDB,
@@ -19,7 +19,7 @@ pub trait ObjectiveQueries: Sync + Send + 'static {
 }
 
 impl EventDB {
-    const OBJECTIVES_QUERY: &'static str = "SELECT objective.id, objective.title, objective_category.name, objective_category.description 
+    const OBJECTIVES_QUERY: &'static str = "SELECT objective.id, objective.title, objective.description, objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
         WHERE objective.event = $1;";
@@ -37,19 +37,28 @@ impl ObjectiveQueries for EventDB {
 
         let rows = conn.query(Self::OBJECTIVES_QUERY, &[&event.0]).await?;
 
-        let mut objects = Vec::new();
+        let mut objectives = Vec::new();
         for row in rows {
-            let objective_summary = ObjectiveSummary {
+            let summary = ObjectiveSummary {
                 id: row.try_get("id")?,
                 objective_type: ObjectiveType {
-                    id: row.try_get::<&'static str, String>("name")?.try_into()?,
-                    description: row.try_get("description")?,
+                    id: row.try_get("name")?,
+                    description: row.try_get("objective_category_description")?,
                 },
                 title: row.try_get("title")?,
             };
+            let details = ObjectiveDetails {
+                description: row.try_get("description")?,
+                reward: None,
+                choices: None,
+                ballot: None,
+                url: None,
+                supplemental: None,
+            };
+            objectives.push(Objective { summary, details });
         }
 
-        Ok(objects)
+        Ok(objectives)
     }
 }
 
@@ -73,6 +82,46 @@ mod tests {
             .get_objectives(EventId(1), None, None)
             .await
             .unwrap();
-        assert_eq!(objectives, vec![]);
+        assert_eq!(
+            objectives,
+            vec![
+                Objective {
+                    summary: ObjectiveSummary {
+                        id: 1,
+                        objective_type: ObjectiveType {
+                            id: "catalyst-simple".to_string(),
+                            description: "A Simple choice".to_string()
+                        },
+                        title: "title 1".to_string(),
+                    },
+                    details: ObjectiveDetails {
+                        description: "description 1".to_string(),
+                        reward: None,
+                        choices: None,
+                        ballot: None,
+                        url: None,
+                        supplemental: None,
+                    }
+                },
+                Objective {
+                    summary: ObjectiveSummary {
+                        id: 2,
+                        objective_type: ObjectiveType {
+                            id: "catalyst-native".to_string(),
+                            description: "??".to_string()
+                        },
+                        title: "title 2".to_string(),
+                    },
+                    details: ObjectiveDetails {
+                        description: "description 2".to_string(),
+                        reward: None,
+                        choices: None,
+                        ballot: None,
+                        url: None,
+                        supplemental: None,
+                    }
+                }
+            ]
+        );
     }
 }

@@ -94,7 +94,7 @@ mod tests {
             String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
                 .unwrap(),
             serde_json::to_string(&Event {
-                event_summary: EventSummary {
+                summary: EventSummary {
                     id: EventId(1),
                     name: "Test Fund 1".to_string(),
                     starts: Some(DateTime::<Utc>::from_utc(
@@ -120,7 +120,7 @@ mod tests {
                     )),
                     is_final: true,
                 },
-                event_details: EventDetails {
+                details: EventDetails {
                     voting_power: VotingPowerSettings {
                         alg: VotingPowerAlgorithm::ThresholdStakedADA,
                         min_ada: Some(1),

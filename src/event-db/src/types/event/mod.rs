@@ -3,6 +3,8 @@ use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
+pub mod objective;
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EventId(pub i32);
 
@@ -160,9 +162,9 @@ pub struct EventDetails {
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Event {
     #[serde(flatten)]
-    pub event_summary: EventSummary,
+    pub summary: EventSummary,
     #[serde(flatten)]
-    pub event_details: EventDetails,
+    pub details: EventDetails,
 }
 
 #[cfg(test)]
@@ -569,7 +571,7 @@ mod tests {
     #[test]
     fn event_json_test() {
         let event_summary = Event {
-            event_summary: EventSummary {
+            summary: EventSummary {
                 id: EventId(1),
                 name: "Fund 10".to_string(),
                 starts: Some(DateTime::from_utc(
@@ -586,7 +588,7 @@ mod tests {
                 )),
                 is_final: true,
             },
-            event_details: EventDetails {
+            details: EventDetails {
                 voting_power: VotingPowerSettings {
                     alg: VotingPowerAlgorithm::ThresholdStakedADA,
                     min_ada: Some(500),

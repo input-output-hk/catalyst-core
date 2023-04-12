@@ -500,6 +500,22 @@
 <a href="#500" id="500">500</a>
 <a href="#501" id="501">501</a>
 <a href="#502" id="502">502</a>
+<a href="#503" id="503">503</a>
+<a href="#504" id="504">504</a>
+<a href="#505" id="505">505</a>
+<a href="#506" id="506">506</a>
+<a href="#507" id="507">507</a>
+<a href="#508" id="508">508</a>
+<a href="#509" id="509">509</a>
+<a href="#510" id="510">510</a>
+<a href="#511" id="511">511</a>
+<a href="#512" id="512">512</a>
+<a href="#513" id="513">513</a>
+<a href="#514" id="514">514</a>
+<a href="#515" id="515">515</a>
+<a href="#516" id="516">516</a>
+<a href="#517" id="517">517</a>
+<a href="#518" id="518">518</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -575,8 +591,8 @@
     };
     <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
     <span class="kw">use </span>event_db::types::event::{
-        EventDetails, EventGoal, EventId, EventSchedule, VoterGroup, VotingPowerAlgorithm,
-        VotingPowerSettings,
+        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VoterGroup,
+        VoterGroupId, VotingPowerAlgorithm, VotingPowerSettings,
     };
     <span class="kw">use </span>rust_decimal::Decimal;
     <span class="kw">use </span>tower::ServiceExt;
@@ -628,7 +644,23 @@
                         min_ada: <span class="prelude-val">Some</span>(<span class="number">1</span>),
                         max_pct: <span class="prelude-val">Some</span>(Decimal::new(<span class="number">100</span>, <span class="number">0</span>)),
                     },
-                    registration: <span class="prelude-val">None</span>,
+                    registration: EventRegistration {
+                        purpose: <span class="prelude-val">None</span>,
+                        deadline: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                                NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                            ),
+                            Utc
+                        )),
+                        taken: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                                NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                            ),
+                            Utc
+                        ))
+                    },
                     schedule: EventSchedule {
                         insight_sharing: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                             NaiveDateTime::new(
@@ -714,11 +746,11 @@
                     ],
                     groups: <span class="macro">vec!</span>[
                         VoterGroup {
-                            id: <span class="string">&quot;rep&quot;</span>.to_string(),
+                            id: VoterGroupId::Rep,
                             voting_token: <span class="string">&quot;rep token&quot;</span>.to_string()
                         },
                         VoterGroup {
-                            id: <span class="string">&quot;direct&quot;</span>.to_string(),
+                            id: VoterGroupId::Direct,
                             voting_token: <span class="string">&quot;direct token&quot;</span>.to_string()
                         }
                     ]
@@ -741,7 +773,7 @@
         <span class="kw">let </span>app = app(state);
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events&quot;</span>))
+            .uri(<span class="string">&quot;/api/v1/events&quot;</span>.to_string())
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();

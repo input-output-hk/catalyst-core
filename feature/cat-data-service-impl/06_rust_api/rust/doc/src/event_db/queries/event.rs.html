@@ -533,11 +533,39 @@
 <a href="#533" id="533">533</a>
 <a href="#534" id="534">534</a>
 <a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a>
+<a href="#537" id="537">537</a>
+<a href="#538" id="538">538</a>
+<a href="#539" id="539">539</a>
+<a href="#540" id="540">540</a>
+<a href="#541" id="541">541</a>
+<a href="#542" id="542">542</a>
+<a href="#543" id="543">543</a>
+<a href="#544" id="544">544</a>
+<a href="#545" id="545">545</a>
+<a href="#546" id="546">546</a>
+<a href="#547" id="547">547</a>
+<a href="#548" id="548">548</a>
+<a href="#549" id="549">549</a>
+<a href="#550" id="550">550</a>
+<a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
+<a href="#557" id="557">557</a>
+<a href="#558" id="558">558</a>
+<a href="#559" id="559">559</a>
+<a href="#560" id="560">560</a>
+<a href="#561" id="561">561</a>
+<a href="#562" id="562">562</a>
+<a href="#563" id="563">563</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
-        Event, EventDetails, EventGoal, EventId, EventSchedule, EventSummary, VoterGroup,
-        VotingPowerAlgorithm, VotingPowerSettings,
+        Event, EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, EventSummary,
+        VoterGroup, VotingPowerAlgorithm, VotingPowerSettings,
     },
     EventDB,
 };
@@ -571,6 +599,7 @@
 
     <span class="kw">const </span>EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
         <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time,
+        event.snapshot_start, event.registration_snapshot_time,
         event.voting_power_threshold, event.max_voting_power_pct,
         event.insight_sharing_start, event.proposal_submission_start, event.refine_proposals_start, event.finalize_proposals_start, event.proposal_assessment_start, event.assessment_qa_start, event.voting_start, event.voting_end, event.tallying_end,
         snapshot.last_updated
@@ -647,6 +676,16 @@
             max_pct: row.try_get(<span class="string">&quot;max_voting_power_pct&quot;</span>)<span class="question-mark">?</span>,
         };
 
+        <span class="kw">let </span>registration = EventRegistration {
+            purpose: <span class="prelude-val">None</span>,
+            deadline: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;snapshot_start&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+            taken: row
+                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;registration_snapshot_time&quot;</span>)<span class="question-mark">?
+                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+        };
+
         <span class="kw">let </span>schedule = EventSchedule {
             insight_sharing: row
                 .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;insight_sharing_start&quot;</span>)<span class="question-mark">?
@@ -690,7 +729,9 @@
         <span class="kw">let </span><span class="kw-2">mut </span>groups = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {
             groups.push(VoterGroup {
-                id: row.try_get(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?</span>,
+                id: row
+                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, String&gt;(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?
+                    </span>.try_into()<span class="question-mark">?</span>,
                 voting_token: row.try_get(<span class="string">&quot;token_id&quot;</span>)<span class="question-mark">?</span>,
             })
         }
@@ -713,8 +754,7 @@
                 schedule,
                 goals,
                 groups,
-                <span class="comment">// TODO implement queries
-                </span>registration: <span class="prelude-val">None</span>,
+                registration,
             },
         })
     }
@@ -730,7 +770,7 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
+    <span class="kw">use crate</span>::{establish_connection, types::event::VoterGroupId};
     <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveTime};
     <span class="kw">use </span>rust_decimal::Decimal;
 
@@ -967,7 +1007,23 @@
                         min_ada: <span class="prelude-val">Some</span>(<span class="number">1</span>),
                         max_pct: <span class="prelude-val">Some</span>(Decimal::new(<span class="number">100</span>, <span class="number">0</span>)),
                     },
-                    registration: <span class="prelude-val">None</span>,
+                    registration: EventRegistration {
+                        purpose: <span class="prelude-val">None</span>,
+                        deadline: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                                NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                            ),
+                            Utc
+                        )),
+                        taken: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
+                                NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
+                            ),
+                            Utc
+                        ))
+                    },
                     schedule: EventSchedule {
                         insight_sharing: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
                             NaiveDateTime::new(
@@ -1053,11 +1109,11 @@
                     ],
                     groups: <span class="macro">vec!</span>[
                         VoterGroup {
-                            id: <span class="string">&quot;rep&quot;</span>.to_string(),
+                            id: VoterGroupId::Rep,
                             voting_token: <span class="string">&quot;rep token&quot;</span>.to_string()
                         },
                         VoterGroup {
-                            id: <span class="string">&quot;direct&quot;</span>.to_string(),
+                            id: VoterGroupId::Direct,
                             voting_token: <span class="string">&quot;direct token&quot;</span>.to_string()
                         }
                     ]

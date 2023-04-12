@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["filter","get_delegator_info","get_voters_info"],"mod":["handlers","routes"],"opaque":[""],"static":["CALLSITE","META"],"struct":["DelegatorInfo","RawSnapshotInput","SnapshotInfoInput","VoterInfo","VotersInfo","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"],"type":["Group","Tag"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":["std_ops_gen"]};

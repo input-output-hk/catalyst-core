@@ -69,14 +69,16 @@ class FinalSnapshotAlreadyPresent(Exception):
 
 
 class Importer:
-    def __init__(self,
-                 config_path: str,
-                 database_url: str,
-                 event_id: int,
-                 output_dir: str,
-                 network_id: str,
-                 raw_snapshot_file: Optional[str] = None,
-                 dreps_file: Optional[str] = None):
+    def __init__(
+        self,
+        config_path: str,
+        database_url: str,
+        event_id: int,
+        output_dir: str,
+        network_id: str,
+        raw_snapshot_file: Optional[str] = None,
+        dreps_file: Optional[str] = None,
+    ):
         self.config = config.from_json_file(config_path)
         self.database_url = database_url
         self.event_id = event_id
@@ -120,13 +122,10 @@ class Importer:
 
         row = await conn.fetchrow(
             "SELECT registration_snapshot_time, snapshot_start, voting_power_threshold, max_voting_power_pct FROM event WHERE row_id = $1",
-            self.event_id
+            self.event_id,
         )
         if row is None:
-            raise FetchParametersFailed(
-                "Failed to get event parameters from the database: "
-                f"event_id={self.event_id} not found"
-            )
+            raise FetchParametersFailed("Failed to get event parameters from the database: " f"event_id={self.event_id} not found")
 
         self.voting_power_cap = row["max_voting_power_pct"]
         self.min_stake_threshold = row["voting_power_threshold"]
@@ -145,7 +144,9 @@ class Importer:
             min_stake_threshold=self.min_stake_threshold,
             voting_power_cap=float(self.voting_power_cap),
             snapshot_start=None if self.snapshot_start_time is None else self.snapshot_start_time.isoformat(),
-            registration_snapshot_time=None if self.registration_snapshot_time is None else self.registration_snapshot_time.isoformat()
+            registration_snapshot_time=None
+            if self.registration_snapshot_time is None
+            else self.registration_snapshot_time.isoformat(),
         )
 
         await conn.close()
@@ -165,8 +166,7 @@ class Importer:
             )
             if row is None:
                 raise FetchParametersFailed(
-                    "Failed to get registration snapshot block data from db_sync database: "
-                    "no data returned by the query"
+                    "Failed to get registration snapshot block data from db_sync database: " "no data returned by the query"
                 )
 
             self.registration_snapshot_slot = row["slot_no"]
@@ -174,7 +174,7 @@ class Importer:
             logger.info(
                 "Got registration snapshot block data",
                 slot_no=self.registration_snapshot_slot,
-                block_time=self.registration_snapshot_block_time.isoformat()
+                block_time=self.registration_snapshot_block_time.isoformat(),
             )
 
             row = await conn.fetchrow(
@@ -182,8 +182,7 @@ class Importer:
             )
             if row is None:
                 raise FetchParametersFailed(
-                    "Failed to get latest block time and slot number from db_sync database:"
-                    "no data returned by the query"
+                    "Failed to get latest block time and slot number from db_sync database:" "no data returned by the query"
                 )
 
             self.latest_block_slot_no = row["slot_no"]
@@ -237,8 +236,9 @@ class Importer:
     async def _run_catalyst_toolbox_snapshot(self):
         # Could happen when the event in the database does not have these set
         if self.min_stake_threshold is None or self.voting_power_cap is None:
-            raise RunCatalystToolboxSnapshotFailed("min_stake_threshold and voting_power_cap must be set "
-                                                   "either as CLI arguments or in the database")
+            raise RunCatalystToolboxSnapshotFailed(
+                "min_stake_threshold and voting_power_cap must be set " "either as CLI arguments or in the database"
+            )
 
         catalyst_toolbox_cmd = (
             f"{self.config.catalyst_toolbox.path} snapshot"
@@ -298,8 +298,7 @@ class Importer:
         is_snapshot_final = False
         should_update_final = False
 
-        if self.lastest_block_time is not None and \
-                self.snapshot_start_time is not None:
+        if self.lastest_block_time is not None and self.snapshot_start_time is not None:
             is_snapshot_final = self.lastest_block_time >= self.snapshot_start_time
             should_update_final = True
             logger.info(
@@ -310,10 +309,16 @@ class Importer:
             )
 
         compressed_snapshot_tool_data = brotli.compress(bytes(snapshot_tool_data_raw_json, "utf-8"))
-        logger.debug("Compressed snapshot_tool data", size=len(compressed_snapshot_tool_data), original_size=len(snapshot_tool_data_raw_json))
+        logger.debug(
+            "Compressed snapshot_tool data", size=len(compressed_snapshot_tool_data), original_size=len(snapshot_tool_data_raw_json)
+        )
 
         compressed_catalyst_toolbox_data = brotli.compress(bytes(catalyst_toolbox_data_raw_json, "utf-8"))
-        logger.debug("Compressed catalyst_toolbox data", size=len(compressed_catalyst_toolbox_data), original_size=len(catalyst_toolbox_data_raw_json))
+        logger.debug(
+            "Compressed catalyst_toolbox data",
+            size=len(compressed_catalyst_toolbox_data),
+            original_size=len(catalyst_toolbox_data_raw_json),
+        )
 
         compressed_dreps_data = brotli.compress(bytes(json.dumps(self.dreps), "utf-8"))
         logger.debug("Compressed DREPs data", size=len(compressed_dreps_data), original_size=len(json.dumps(self.dreps)))
@@ -338,7 +343,7 @@ class Importer:
             dbsync_snapshot_data=compressed_snapshot_tool_data,
             drep_data=compressed_dreps_data,
             catalyst_snapshot_cmd=os.path.basename(self.config.catalyst_toolbox.path),
-            catalyst_snapshot_data=compressed_catalyst_toolbox_data
+            catalyst_snapshot_data=compressed_catalyst_toolbox_data,
         )
 
         voters: Dict[str, models.Voter] = {}

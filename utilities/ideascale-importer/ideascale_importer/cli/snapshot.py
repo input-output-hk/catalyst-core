@@ -47,13 +47,15 @@ def import_snapshot(
     configure_logger(log_level, log_format)
 
     async def inner():
-        importer = Importer(config_path=config_path,
-                            database_url=database_url,
-                            event_id=event_id,
-                            output_dir=output_dir,
-                            network_id=network_id,
-                            raw_snapshot_file=raw_snapshot_file,
-                            dreps_file=dreps_file)
+        importer = Importer(
+            config_path=config_path,
+            database_url=database_url,
+            event_id=event_id,
+            output_dir=output_dir,
+            network_id=network_id,
+            raw_snapshot_file=raw_snapshot_file,
+            dreps_file=dreps_file,
+        )
         await importer.import_all()
 
     asyncio.run(inner())

@@ -56,7 +56,7 @@ async def upsert_many(
     models: List[M],
     conflict_cols: List[str],
     exclude_update_cols: List[str] = [],
-    returning: Optional[str] = None
+    returning: Optional[str] = None,
 ) -> List[Any]:
     if len(models) == 0:
         return []
@@ -96,11 +96,13 @@ async def upsert_many(
         return [record[returning] for record in ret]
 
 
-async def upsert(conn: asyncpg.Connection,
-                 model: Model,
-                 conflict_cols: List[str],
-                 exclude_update_cols: List[str] = [],
-                 returning: Optional[str] = None):
+async def upsert(
+    conn: asyncpg.Connection,
+    model: Model,
+    conflict_cols: List[str],
+    exclude_update_cols: List[str] = [],
+    returning: Optional[str] = None,
+):
     ret = await upsert_many(conn, [model], conflict_cols, exclude_update_cols, returning)
     if len(ret) > 0:
         return ret[0]

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ParseError"],"fn":["_strategy_of_policy_hash","_strategy_of_token_name","_to_fn_ptr"],"mod":["tests"],"opaque":[""],"struct":["TokenIdentifier"]};

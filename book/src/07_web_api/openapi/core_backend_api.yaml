@@ -544,9 +544,6 @@ components:
           description: |-
             The time after which Final Registration/Voting Power will be calculated.
             This is usually after the deadline, to allow for potential instability in the head of the blockchain to stabilize.
-      required:
-        - deadline
-        - taken
       examples:
         - deadline: '2023-08-24T14:15:22Z'
           taken: '2023-08-24T14:15:22Z'

@@ -129,9 +129,9 @@ pub enum VoterGroupId {
 impl TryFrom<String> for VoterGroupId {
     type Error = Error;
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        if value == "rep".to_string() {
+        if &value == "rep" {
             Ok(Self::Rep)
-        } else if value == "direct".to_string() {
+        } else if &value == "direct" {
             Ok(Self::Direct)
         } else {
             Err(Error::Unknown(format!(

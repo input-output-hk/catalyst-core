@@ -815,6 +815,8 @@ components:
           format: uri
         supplemental:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
+      required:
+        - description
     VotePlan:
       title: Vote Plan
       type: object

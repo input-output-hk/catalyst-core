@@ -641,7 +641,7 @@ digraph erd {
             
             <tr>
                 <td port="bb_vote_options"  align='text'><font>bb_vote_options</font><br align='left'/></td>
-                <td port="bb_vote_options_out"  ><font><i>text</i></font></td>
+                <td port="bb_vote_options_out"  ><font>integer+</font></td>
             </tr>
             
 
@@ -989,12 +989,12 @@ digraph erd {
             
             <tr>
                 <td port="idea_scale"  align='text'><font>idea_scale</font><br align='left'/></td>
-                <td port="idea_scale_out"  ><font><i>text</i></font></td>
+                <td port="idea_scale_out"  ><font><i>ARRAY</i></font></td>
             </tr>
             
             <tr>
                 <td port="objective"  align='text'><font>objective</font><br align='left'/></td>
-                <td port="objective_out"  ><font><i>text</i></font></td>
+                <td port="objective_out"  ><font><i>ARRAY</i></font></td>
             </tr>
             
 
@@ -1264,7 +1264,7 @@ digraph erd {
     
     "proposal":"objective_out" -> "objective":"row_id"
     
-    "proposal":"bb_vote_options_out" -> "vote_options":"objective"
+    "proposal":"bb_vote_options_out" -> "vote_options":"id"
     
     "proposal_review":"proposal_id_out" -> "proposal":"row_id"
     

@@ -592,7 +592,7 @@
     <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
     <span class="kw">use </span>event_db::types::event::{
         EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VoterGroup,
-        VoterGroupId, VotingPowerAlgorithm, VotingPowerSettings,
+        VotingPowerAlgorithm, VotingPowerSettings,
     };
     <span class="kw">use </span>rust_decimal::Decimal;
     <span class="kw">use </span>tower::ServiceExt;
@@ -746,11 +746,11 @@
                     ],
                     groups: <span class="macro">vec!</span>[
                         VoterGroup {
-                            id: VoterGroupId::Rep,
+                            id: <span class="string">&quot;rep&quot;</span>.to_string(),
                             voting_token: <span class="string">&quot;rep token&quot;</span>.to_string()
                         },
                         VoterGroup {
-                            id: VoterGroupId::Direct,
+                            id: <span class="string">&quot;direct&quot;</span>.to_string(),
                             voting_token: <span class="string">&quot;direct token&quot;</span>.to_string()
                         }
                     ]

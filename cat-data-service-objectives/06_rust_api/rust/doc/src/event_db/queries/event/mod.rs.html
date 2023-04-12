@@ -572,6 +572,8 @@
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>chrono::{NaiveDateTime, Utc};
 
+<span class="kw">pub mod </span>objective;
+
 <span class="attr">#[async_trait]
 </span><span class="kw">pub trait </span>EventQueries: Sync + Send + <span class="lifetime">&#39;static </span>{
     <span class="kw">async fn </span>get_events(
@@ -729,9 +731,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>groups = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {
             groups.push(VoterGroup {
-                id: row
-                    .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, String&gt;(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?
-                    </span>.try_into()<span class="question-mark">?</span>,
+                id: row.try_get(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?</span>,
                 voting_token: row.try_get(<span class="string">&quot;token_id&quot;</span>)<span class="question-mark">?</span>,
             })
         }
@@ -770,7 +770,7 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use crate</span>::{establish_connection, types::event::VoterGroupId};
+    <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
     <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveTime};
     <span class="kw">use </span>rust_decimal::Decimal;
 
@@ -1109,11 +1109,11 @@
                     ],
                     groups: <span class="macro">vec!</span>[
                         VoterGroup {
-                            id: VoterGroupId::Rep,
+                            id: <span class="string">&quot;rep&quot;</span>.to_string(),
                             voting_token: <span class="string">&quot;rep token&quot;</span>.to_string()
                         },
                         VoterGroup {
-                            id: VoterGroupId::Direct,
+                            id: <span class="string">&quot;direct&quot;</span>.to_string(),
                             voting_token: <span class="string">&quot;direct token&quot;</span>.to_string()
                         }
                     ]

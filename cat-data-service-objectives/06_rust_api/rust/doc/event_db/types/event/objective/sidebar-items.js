@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["BallotType","ObjectiveProposalType","ObjectiveTypes","RewardCurrency"],"struct":["GroupBallotType","Object","ObjectiveDetails","ObjectiveSummary","ObjectiveSupplementalData","ObjectiveType","RewardDefintion"]};
+window.SIDEBAR_ITEMS = {"struct":["GroupBallotType","Objective","ObjectiveDetails","ObjectiveSummary","ObjectiveSupplementalData","ObjectiveType","RewardDefintion"]};

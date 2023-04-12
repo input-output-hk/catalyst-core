@@ -362,7 +362,7 @@ digraph erd {
             
             <tr>
                 <td port="bb_vote_options"  align='text'><font>bb_vote_options</font><br align='left'/></td>
-                <td   ><font><i>text</i></font></td>
+                <td   ><font>integer+</font></td>
                 <td port="bb_vote_options_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The selectable options by the voter.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
             </tr>
             
@@ -604,13 +604,13 @@ digraph erd {
             
             <tr>
                 <td port="idea_scale"  align='text'><font>idea_scale</font><br align='left'/></td>
-                <td   ><font><i>text</i></font></td>
+                <td   ><font><i>ARRAY</i></font></td>
                 <td port="idea_scale_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>How this vote option is represented in<br align='left'/>idea scale.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="objective"  align='text'><font>objective</font><br align='left'/></td>
-                <td   ><font><i>text</i></font></td>
+                <td   ><font><i>ARRAY</i></font></td>
                 <td port="objective_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>How the vote options is represented in<br align='left'/>the objective.</i><br align="left"/></font></td>
             </tr>
             
@@ -703,7 +703,7 @@ digraph erd {
     
     "proposal":"objective_out" -> "objective":"row_id"
     
-    "proposal":"bb_vote_options_out" -> "vote_options":"objective"
+    "proposal":"bb_vote_options_out" -> "vote_options":"id"
     
     "proposal_review":"proposal_id_out" -> "proposal":"row_id"
     

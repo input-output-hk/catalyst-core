@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["EventQueries"]};
+window.SIDEBAR_ITEMS = {"mod":["objective"],"trait":["EventQueries"]};

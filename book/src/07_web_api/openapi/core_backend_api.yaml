@@ -61,11 +61,14 @@ paths:
         Get list of all currently known past, present and future Voting Events.
       responses:
         '200':
-          description: List of all known Voting Events.
           content:
+            description: Valid response
             application/json:
               schema:
-                $ref: '#/components/schemas/EventSummary'
+                description: List of all known Voting Events.
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventSummary'
         '500':
           $ref: '#/components/responses/500'
       parameters:
@@ -541,9 +544,6 @@ components:
           description: |-
             The time after which Final Registration/Voting Power will be calculated.
             This is usually after the deadline, to allow for potential instability in the head of the blockchain to stabilize.
-      required:
-        - deadline
-        - taken
       examples:
         - deadline: '2023-08-24T14:15:22Z'
           taken: '2023-08-24T14:15:22Z'

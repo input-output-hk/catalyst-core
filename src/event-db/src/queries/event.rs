@@ -1,8 +1,8 @@
 use crate::{
     error::Error,
     types::event::{
-        Event, EventDetails, EventGoal, EventId, EventSchedule, EventSummary, VoterGroup,
-        VotingPowerAlgorithm, VotingPowerSettings,
+        Event, EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, EventSummary,
+        VoterGroup, VotingPowerAlgorithm, VotingPowerSettings,
     },
     EventDB,
 };
@@ -36,6 +36,7 @@ impl EventDB {
 
     const EVENT_QUERY: &'static str =
         "SELECT event.row_id, event.name, event.start_time, event.end_time,
+        event.snapshot_start, event.registration_snapshot_time,
         event.voting_power_threshold, event.max_voting_power_pct,
         event.insight_sharing_start, event.proposal_submission_start, event.refine_proposals_start, event.finalize_proposals_start, event.proposal_assessment_start, event.assessment_qa_start, event.voting_start, event.voting_end, event.tallying_end,
         snapshot.last_updated
@@ -112,6 +113,16 @@ impl EventQueries for EventDB {
             max_pct: row.try_get("max_voting_power_pct")?,
         };
 
+        let registration = EventRegistration {
+            purpose: None,
+            deadline: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("snapshot_start")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+            taken: row
+                .try_get::<&'static str, Option<NaiveDateTime>>("registration_snapshot_time")?
+                .map(|val| val.and_local_timezone(Utc).unwrap()),
+        };
+
         let schedule = EventSchedule {
             insight_sharing: row
                 .try_get::<&'static str, Option<NaiveDateTime>>("insight_sharing_start")?
@@ -155,7 +166,9 @@ impl EventQueries for EventDB {
         let mut groups = Vec::new();
         for row in rows {
             groups.push(VoterGroup {
-                id: row.try_get("group_id")?,
+                id: row
+                    .try_get::<&'static str, String>("group_id")?
+                    .try_into()?,
                 voting_token: row.try_get("token_id")?,
             })
         }
@@ -178,8 +191,7 @@ impl EventQueries for EventDB {
                 schedule,
                 goals,
                 groups,
-                // TODO implement queries
-                registration: None,
+                registration,
             },
         })
     }
@@ -195,7 +207,7 @@ impl EventQueries for EventDB {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::establish_connection;
+    use crate::{establish_connection, types::event::VoterGroupId};
     use chrono::{DateTime, NaiveDate, NaiveTime};
     use rust_decimal::Decimal;
 
@@ -432,7 +444,23 @@ mod tests {
                         min_ada: Some(1),
                         max_pct: Some(Decimal::new(100, 0)),
                     },
-                    registration: None,
+                    registration: EventRegistration {
+                        purpose: None,
+                        deadline: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        taken: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ))
+                    },
                     schedule: EventSchedule {
                         insight_sharing: Some(DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
@@ -518,11 +546,11 @@ mod tests {
                     ],
                     groups: vec![
                         VoterGroup {
-                            id: "rep".to_string(),
+                            id: VoterGroupId::Rep,
                             voting_token: "rep token".to_string()
                         },
                         VoterGroup {
-                            id: "direct".to_string(),
+                            id: VoterGroupId::Direct,
                             voting_token: "direct token".to_string()
                         }
                     ]

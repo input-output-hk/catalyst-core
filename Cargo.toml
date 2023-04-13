@@ -106,6 +106,7 @@ clap_complete = "4"  # shell autocomplete for CLIs
 async-trait = "0.1.64"
 
 reqwest = { version = "0.11", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+warp-reverse-proxy = { version = "0.3", default-features = false, features = ["rustls-tls"] }
 
 [patch.crates-io]
 cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }

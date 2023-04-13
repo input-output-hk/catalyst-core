@@ -260,7 +260,7 @@ async def create_committee_member_keys(
     return MemberKeys(seckey=member_sk, pubkey=member_sk)
 
 
-async def create_committee(jcli: JCli, committee_id: str, size: int, threshold: int, crs: str) -> Committee:
+async def create_committee(jcli: JCli, committee_id: str, event_id: int, size: int, threshold: int, crs: str) -> Committee:
     """Return a Committee.
 
     `committee_id` is the hex-encoded public key of the Committee wallet.
@@ -288,7 +288,15 @@ async def create_committee(jcli: JCli, committee_id: str, size: int, threshold: 
         CommitteeMember(index=idx, communication_keys=communication_keys[idx], member_keys=member_keys[idx]) for idx in range(size)
     ]
     election_key = await jcli.votes_election_key(member_pks)
-    return Committee(size=size, threshold=threshold, crs=crs, committee_id=committee_id, members=members, election_key=election_key)
+    return Committee(
+        event_id=event_id,
+        size=size,
+        threshold=threshold,
+        crs=crs,
+        committee_id=committee_id,
+        members=members,
+        election_key=election_key,
+    )
 
 
 def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_ids: list[str]) -> Genesis:

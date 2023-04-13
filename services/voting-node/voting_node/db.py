@@ -1,13 +1,15 @@
 """Provides an instance connected to the EventDB, as well as queries used by the running node schedule."""
 import datetime
+import os
 
 import asyncpg
 from asyncpg import Connection
 from pydantic import BaseModel
 
+from .envvar import SECRET_SECRET
 from .logs import getLogger
 from .models import Event, HostInfo, LeaderHostInfo, Proposal, Snapshot, VotePlan
-from .utils import LEADER_REGEX, get_hostname
+from .utils import LEADER_REGEX, decrypt_secret, encrypt_secret, get_hostname
 
 # gets voting node logger
 logger = getLogger()
@@ -21,8 +23,8 @@ class EventDb(BaseModel):
 
     class Config:
         """Pydantic model configuration parameters."""
-        arbitrary_types_allowed = True
 
+        arbitrary_types_allowed = True
 
     async def connect(self):
         """Create a connection to the DB."""
@@ -46,13 +48,17 @@ class EventDb(BaseModel):
             await self.connection.close()
 
     async def fetch_current_event(self) -> Event:
-        """Look in EventDB for the event that will start voting."""
+        """Look in EventDB for the event that will start voting.
+
+           |--before event--|start_time --- current event ---end_time|--- next event ---|
+
+        """
         # first, check if there is an event that has not finished
         now = datetime.datetime.utcnow()
-        filter_by = "(voting_end > $1 or voting_end = $2) and voting_start < $1"
+        filter_by = "(voting_end > $1 or voting_end IS NULL) and voting_start < $1"
         sort_by = "voting_start ASC"
         query = f"SELECT * FROM event WHERE {filter_by} ORDER BY {sort_by} LIMIT 1"
-        result = await self.conn().fetchrow(query, now, None)
+        result = await self.conn().fetchrow(query, now)
         if result is not None:
             logger.debug(f"fetched ongoing event: {result}")
             return Event(**dict(result))
@@ -70,10 +76,22 @@ class EventDb(BaseModel):
         filter_by = "hostname = $1 AND event = $2"
         query = f"SELECT * FROM voting_node WHERE {filter_by}"
         result = await self.conn().fetchrow(query, get_hostname(), event_row_id)
-        if result is None:
-            raise Exception("failed to fetch leader node info from DB")
-        host_info = HostInfo(**dict(result))
-        return host_info
+        match result:
+            case None:
+                raise Exception("failed to fetch leader node info from DB")
+            case record:
+                # fetch secret from envvar, fail if not present
+                encrypt_pass = os.environ[SECRET_SECRET]
+                seckey = decrypt_secret(record["seckey"], encrypt_pass)
+                netkey = decrypt_secret(record["netkey"], encrypt_pass)
+                host_info = HostInfo(
+                    hostname=record["hostname"],
+                    event=record["event"],
+                    seckey=seckey,
+                    pubkey=record["pubkey"],
+                    netkey=netkey,
+                )
+                return host_info
 
     async def insert_leader_host_info(self, host_info: HostInfo):
         """Insert the hostname row into the voting_node table."""
@@ -81,13 +99,18 @@ class EventDb(BaseModel):
         values = "$1, $2, $3, $4, $5"
         query = f"INSERT INTO voting_node({fields}) VALUES({values}) RETURNING *"
         h = host_info
+        # fetch secret from envvar, fail if not present
+        encrypt_pass = os.environ[SECRET_SECRET]
+
+        enc_sk = encrypt_secret(h.seckey, encrypt_pass)
+        enc_nk = encrypt_secret(h.netkey, encrypt_pass)
         result = await self.conn().execute(
             query,
             h.hostname,
             h.event,
-            h.seckey,
+            enc_sk,
             h.pubkey,
-            h.netkey,
+            enc_nk,
         )
         if result is None:
             raise Exception(f"failed to insert '{h.hostname}' info to DB")
@@ -143,8 +166,12 @@ class EventDb(BaseModel):
                 raise Exception("snapshot DB error")
             case record:
                 final = record.get("final")
-                logger.debug(f"snapshot finalized? {final}")
-                return final
+                if final is None:
+                    raise Exception("expected the snapshot to have the final field set")
+
+                final_flag = bool(final)
+                logger.debug(f"snapshot finalized? {final_flag}")
+                return final_flag
 
     async def fetch_snapshot(self, event_id: int) -> Snapshot:
         """Fetch the snapshot row for the event_id."""

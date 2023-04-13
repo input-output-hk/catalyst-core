@@ -24,7 +24,6 @@ from .models import (
     Proposal,
     VotePlanCertificate,
 )
-from .storage import SecretFileStorage
 
 # gets voting node logger
 logger = getLogger()
@@ -157,19 +156,10 @@ class LeaderNode(BaseNode):
 class Leader0Node(LeaderNode):
     """A leader0 node."""
 
-    # Path to the node's storage
-    secret_storage: SecretFileStorage = SecretFileStorage(path=Path("node_secret"))
     genesis: Genesis | None = None
     committee: Committee | None = None
     initial_fragments: list[FundsForToken | VotePlanCertificate] | None = None
     proposals: list[Proposal] | None = None
-
-    def set_secret_file_storage(self, path_str: str):
-        """Initialize the path directory in case it doesn't exist."""
-        storage = Path(path_str)
-        storage.mkdir(parents=True, exist_ok=True)
-        self.secret_storage = SecretFileStorage(path=storage)
-        logger.debug(f"Node Storage set to {path_str}")
 
     def get_committee(self) -> Committee:
         """Return the Committee data, raises exception if it is None."""

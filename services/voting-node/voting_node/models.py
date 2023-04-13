@@ -149,19 +149,23 @@ class LeaderHostInfo:
 class Committee(BaseModel):
     """The tallying committee.
 
+    `event_id` the number of committee members.
     `size` the number of committee members.
     `threshold` the minimum number of members needed to tally.
-    `committe_id` the hex-encoded public key of the Committee address.
+    `committee_id` the hex-encoded public key of the Committee address.
     `crs` the encrypted Common Reference String shared in the creation of every set of committee member keys.
     `members` list of containing the communication and member secrets of each member of the commitee.
-    `election_key` secret key used to sign every vote in the event.
+    `election_key` public key used to sign every vote in the event. This key is created from the committee member public keys.
     """
 
+    row_id: int | None = None
+    """`row_id` the unique key for this committee in the DB."""
+    event_id: int
     size: int
     threshold: int
     crs: str
     committee_id: str
-    members: list[CommitteeMember]
+    members: list[CommitteeMember] | None = None
     election_key: ElectionKey
 
     def as_yaml(self) -> str:
@@ -266,6 +270,7 @@ class Event:
     committee_threshold: int
 
     extra: Mapping[str, Any] | None
+    cast_to: Mapping[str, Any] | None
 
     def get_start_time(self) -> datetime:
         """Get the timestamp for the event start time.
@@ -348,7 +353,7 @@ class Proposal:
 
     row_id: int
     id: int
-    challenge: int
+    objective: int
     title: str
     summary: str
     category: str

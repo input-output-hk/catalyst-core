@@ -562,19 +562,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "blockfrost"
-version = "0.2.1"
-source = "git+https://github.com/dkijania/blockfrost-rust.git#5702277a41e70259586935b0f740f81507057d29"
-dependencies = [
- "futures",
- "paste 1.0.11",
- "reqwest",
- "serde",
- "serde_json",
- "toml",
-]
-
-[[package]]
 name = "borsh"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1008,7 +995,7 @@ dependencies = [
 name = "chain-path-derivation"
 version = "0.8.3"
 dependencies = [
- "paste 0.1.18",
+ "paste",
  "quickcheck",
  "quickcheck_macros",
  "thiserror",
@@ -1721,35 +1708,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48846bf4556c08a96570ca7a29cb7c3c83ce7bb70b027fbe143a0cfdbcb06aa1"
 dependencies = [
  "memmap2",
-]
-
-[[package]]
-name = "db-sync-explorer"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "bigdecimal",
- "cardano-serialization-lib",
- "chrono",
- "clap 4.1.4",
- "color-eyre",
- "diesel 2.0.3",
- "diesel-derive-enum",
- "futures-util",
- "http-zipkin",
- "jormungandr-lib",
- "jortestkit",
- "mainnet-lib",
- "microtype",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "vit-servicing-station-lib",
- "voting_tools_rs",
- "warp",
 ]
 
 [[package]]
@@ -3934,7 +3892,6 @@ dependencies = [
  "assert_fs",
  "async-trait",
  "bech32 0.8.1",
- "blockfrost",
  "cardano-serialization-lib",
  "chain-addr",
  "chain-crypto",
@@ -4863,12 +4820,6 @@ dependencies = [
  "paste-impl",
  "proc-macro-hack",
 ]
-
-[[package]]
-name = "paste"
-version = "1.0.11"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d01a5bd0424d00070b0098dd17ebca6f961a959dead1dbcbbbc1d1cd8d3deeba"
 
 [[package]]
 name = "paste-impl"
@@ -5891,7 +5842,6 @@ dependencies = [
  "js-sys",
  "log",
  "mime",
- "mime_guess",
  "native-tls",
  "once_cell",
  "percent-encoding",

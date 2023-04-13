@@ -14,7 +14,6 @@
     clippy::derive_partial_eq_without_eq
 )]
 
-mod blockfrost;
 mod cardano_node;
 mod db_sync;
 mod network;
@@ -25,7 +24,6 @@ pub const CARDANO_MAINNET_SLOTS_PER_EPOCH: u64 = 43200;
 
 pub use exports::*;
 mod exports {
-    pub use crate::blockfrost::{CatalystBlockFrostApi, Error as CatalystBlockFrostApiError};
     pub use crate::db_sync::{
         BlockDateFromCardanoAbsoluteSlotNo, Error as DbSyncError, InMemoryDbSync,
         SharedInMemoryDbSync,

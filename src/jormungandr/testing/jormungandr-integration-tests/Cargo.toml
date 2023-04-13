@@ -48,11 +48,7 @@ json = "0.12.4"
 multiaddr = { package = "parity-multiaddr", version = "0.11" }
 rstest = "0.12.0"
 tracing.workspace = true
-
-[dependencies.reqwest]
-version = "0.11"
-default-features = false
-features = ["blocking", "json", "rustls-tls"]
+reqwest = { workspace = true }
 
 [features]
 testnet = []

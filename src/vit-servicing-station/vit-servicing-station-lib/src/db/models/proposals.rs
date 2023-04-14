@@ -3,7 +3,7 @@ use crate::db::models::vote_options::VoteOptions;
 use crate::db::schema::proposals_voteplans;
 use crate::db::{schema::proposals, views_schema::full_proposals_info};
 use diesel::backend::Backend;
-use diesel::sql_types::{BigInt, Binary, Integer, Text};
+use diesel::sql_types::{Array, BigInt, Binary, Integer, Text};
 use diesel::types::FromSql;
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{de::Error, Deserialize, Deserializer, Serialize, Serializer};
@@ -221,7 +221,7 @@ type FullProposalsInfoRow = (
     // 14 -> chain_proposal_id
     Vec<u8>,
     // 15 -> chain_vote_options
-    String,
+    Vec<String>,
     // 16 -> challenge_id
     i32,
     // 17 -> extra_fields
@@ -266,6 +266,7 @@ where
     i64: FromSql<BigInt, DB>,
     String: FromSql<Text, DB>,
     Vec<u8>: FromSql<Binary, DB>,
+    Vec<String>: FromSql<Array<Text>, DB>,
 {
     type Row = FullProposalsInfoRow;
 
@@ -292,7 +293,7 @@ where
                 proposer_relevant_experience: row.13,
             },
             chain_proposal_id: row.14,
-            chain_vote_options: vote_options::VoteOptions::parse_coma_separated_value(&row.15),
+            chain_vote_options: vote_options::VoteOptions::from_vec_string(row.15),
             chain_vote_start_time: row.19,
             chain_vote_end_time: row.20,
             chain_committee_end_time: row.21,
@@ -314,6 +315,7 @@ where
     i64: FromSql<BigInt, DB>,
     String: FromSql<Text, DB>,
     Vec<u8>: FromSql<Binary, DB>,
+    Vec<String>: FromSql<Array<Text>, DB>,
 {
     type Row = FullProposalsInfoRow;
 
@@ -334,6 +336,7 @@ where
     i64: FromSql<BigInt, DB>,
     String: FromSql<Text, DB>,
     Vec<u8>: FromSql<Binary, DB>,
+    Vec<String>: FromSql<Array<Text>, DB>,
 {
     type Row = FullProposalsInfoRow;
 
@@ -391,7 +394,7 @@ impl Insertable<proposals::table> for Proposal {
         diesel::dsl::Eq<proposals::proposer_url, String>,
         diesel::dsl::Eq<proposals::proposer_relevant_experience, String>,
         diesel::dsl::Eq<proposals::chain_proposal_id, Vec<u8>>,
-        diesel::dsl::Eq<proposals::chain_vote_options, String>,
+        diesel::dsl::Eq<proposals::chain_vote_options, Vec<String>>,
         diesel::dsl::Eq<proposals::challenge_id, i32>,
         diesel::dsl::Eq<proposals::extra, Option<String>>,
     );
@@ -412,7 +415,7 @@ impl Insertable<proposals::table> for Proposal {
             proposals::proposer_url.eq(self.proposer.proposer_url),
             proposals::proposer_relevant_experience.eq(self.proposer.proposer_relevant_experience),
             proposals::chain_proposal_id.eq(self.chain_proposal_id),
-            proposals::chain_vote_options.eq(self.chain_vote_options.as_csv_string()),
+            proposals::chain_vote_options.eq(self.chain_vote_options.to_vec_string()),
             proposals::challenge_id.eq(self.challenge_id),
             proposals::extra.eq(self.extra.map(|h| serde_json::to_string(&h).unwrap())),
         )
@@ -607,7 +610,7 @@ pub mod test {
             proposals::proposer_relevant_experience
                 .eq(proposal.proposer.proposer_relevant_experience.clone()),
             proposals::chain_proposal_id.eq(proposal.chain_proposal_id.clone()),
-            proposals::chain_vote_options.eq(proposal.chain_vote_options.as_csv_string()),
+            proposals::chain_vote_options.eq(proposal.chain_vote_options.to_vec_string()),
             proposals::challenge_id.eq(proposal.challenge_id),
             proposals::extra.eq(proposal
                 .extra

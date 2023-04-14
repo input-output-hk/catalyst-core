@@ -7,9 +7,9 @@
 from datetime import datetime
 from pathlib import Path
 
+from loguru import logger
 from pydantic import BaseModel
 
-from .logs import getLogger
 from .models import (
     Block0,
     Committee,
@@ -24,9 +24,6 @@ from .models import (
     Proposal,
     VotePlanCertificate,
 )
-
-# gets voting node logger
-logger = getLogger()
 
 
 class BaseNode(BaseModel):

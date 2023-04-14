@@ -2,18 +2,15 @@
 import os
 from asyncpg import Connection, Record
 
+from loguru import logger
 from pydantic import BaseModel
 
 from voting_node.committee import ElectionKey
 
 from .db import EventDb
 from .envvar import SECRET_SECRET
-from .logs import getLogger
 from .models import Committee
 from .utils import decrypt_secret, encrypt_secret
-
-# gets voting node logger
-logger = getLogger()
 
 
 class SecretDBStorage(BaseModel):
@@ -55,7 +52,6 @@ class SecretDBStorage(BaseModel):
         except:
             raise Exception("expected to get tally committee in DB")
 
-
         # fetch secret from envvar, fail if not present
         decrypt_pass = os.environ[SECRET_SECRET]
 
@@ -86,7 +82,7 @@ class SecretDBStorage(BaseModel):
         def get_committee_member(row):
             pass
 
-        #TODO: parse rows
+        # TODO: parse rows
         return committee
 
     async def save_committee(self, event_id: int, committee: Committee):

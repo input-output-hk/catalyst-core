@@ -7,13 +7,10 @@ from typing import Any, Self
 
 import yaml
 from aiofile import async_open
+from loguru import logger
 from pydantic import BaseModel
 
 from .committee import CommitteeMember, CommunicationKeys, ElectionKey, MemberKeys
-from .logs import getLogger
-
-# gets voting node logger
-logger = getLogger()
 
 
 ### Base types

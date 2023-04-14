@@ -29,6 +29,7 @@ aiofile = "^3.8.5"
 pydantic = "~1.10.7"
 cryptography = "^40.0.1"
 ideascale-importer = {path = "../../utilities/ideascale-importer"}
+loguru = "^0.6.0"
 
 [tool.poetry.group.dev.dependencies]
 # formatting

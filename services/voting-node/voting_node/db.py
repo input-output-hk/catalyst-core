@@ -4,15 +4,12 @@ import os
 
 import asyncpg
 from asyncpg import Connection
+from loguru import logger
 from pydantic import BaseModel
 
 from .envvar import SECRET_SECRET
-from .logs import getLogger
 from .models import Event, HostInfo, LeaderHostInfo, Proposal, Snapshot, VotePlan
 from .utils import LEADER_REGEX, decrypt_secret, encrypt_secret, get_hostname
-
-# gets voting node logger
-logger = getLogger()
 
 
 class EventDb(BaseModel):

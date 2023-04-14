@@ -2,10 +2,7 @@
 import asyncio
 from pathlib import Path
 
-from .logs import getLogger
-
-# gets voting node logger
-logger = getLogger()
+from loguru import logger
 
 
 class Jormungandr:

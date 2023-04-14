@@ -7,12 +7,13 @@ import os
 import secrets
 from typing import Final, NoReturn
 
+from loguru import logger
+
 from . import utils
 from .db import EventDb
 from .envvar import COMMITTEE_CRS
 from .jcli import JCli
 from .jormungandr import Jormungandr
-from .logs import getLogger
 from .models import (
     BftSigningKey,
     Block0,
@@ -31,9 +32,6 @@ from .node import (
     LeaderNode,
 )
 from .storage import SecretDBStorage
-
-# gets voting node logger
-logger = getLogger()
 
 RESET_DATA = True
 KEEP_DATA = False

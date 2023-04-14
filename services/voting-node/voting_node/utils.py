@@ -11,10 +11,10 @@ import yaml
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from loguru import logger
 
 from .committee import CommitteeMember, CommunicationKeys, MemberKeys, WalletKeys
 from .jcli import JCli
-from .logs import getLogger
 from .models import Committee, Event, Genesis, LeaderHostInfo, NodeConfig
 from .templates import (
     GENESIS_YAML,
@@ -22,9 +22,6 @@ from .templates import (
     NODE_CONFIG_LEADER,
     NODE_CONFIG_LEADER0,
 )
-
-# gets voting node logger
-logger = getLogger()
 
 LEADER_REGEX: Final = r"^leader[0-9]+$"
 """Regex expression to determine a node is a leader"""

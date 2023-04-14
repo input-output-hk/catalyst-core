@@ -20,6 +20,18 @@
 <a href="#20" id="20">20</a>
 <a href="#21" id="21">21</a>
 <a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
 </pre><pre class="rust"><code><span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>std::collections::HashMap;
@@ -40,6 +52,18 @@
             .sorted_by_key(|(<span class="kw">_</span>, <span class="kw-2">&amp;</span>i)| i)
             .map(|(v, <span class="kw">_</span>)| v)
             .join(<span class="string">&quot;,&quot;</span>)
+    }
+
+    <span class="kw">pub fn </span>from_vec_string(values: Vec&lt;String&gt;) -&gt; VoteOptions {
+        VoteOptions(values.into_iter().zip(<span class="number">0</span>..).collect())
+    }
+
+    <span class="kw">pub fn </span>to_vec_string(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;String&gt; {
+        <span class="self">self</span>.<span class="number">0
+            </span>.iter()
+            .sorted_by_key(|(<span class="kw">_</span>, <span class="kw-2">&amp;</span>i)| i)
+            .map(|(v, <span class="kw">_</span>)| v.clone())
+            .collect()
     }
 }
 </code></pre></div>

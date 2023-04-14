@@ -362,7 +362,7 @@ digraph erd {
             
             <tr>
                 <td port="bb_vote_options"  align='text'><font>bb_vote_options</font><br align='left'/></td>
-                <td   ><font>integer+</font></td>
+                <td   ><font><i>ARRAY</i></font></td>
                 <td port="bb_vote_options_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The selectable options by the voter.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
             </tr>
             
@@ -703,7 +703,7 @@ digraph erd {
     
     "proposal":"objective_out" -> "objective":"row_id"
     
-    "proposal":"bb_vote_options_out" -> "vote_options":"id"
+    "proposal":"bb_vote_options_out" -> "vote_options":"objective"
     
     "proposal_review":"proposal_id_out" -> "proposal":"row_id"
     

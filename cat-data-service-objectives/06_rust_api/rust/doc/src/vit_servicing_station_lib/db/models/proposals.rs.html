@@ -744,9 +744,9 @@
 
 <span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>ChallengeType {
-    <span class="attr">#[serde(rename = <span class="string">&quot;catalyst-simple&quot;</span>)]
+    <span class="attr">#[serde(rename = <span class="string">&quot;simple&quot;</span>, alias = <span class="string">&quot;catalyst-simple&quot;</span>)]
     </span>Simple,
-    <span class="attr">#[serde(rename = <span class="string">&quot;catalyst-community-choice&quot;</span>)]
+    <span class="attr">#[serde(rename = <span class="string">&quot;community-choice&quot;</span>, alias = <span class="string">&quot;catalyst-community-choice&quot;</span>)]
     </span>CommunityChoice,
 }
 
@@ -755,12 +755,12 @@
 
     <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
         <span class="kw">match </span>s {
-            <span class="string">&quot;catalyst-simple&quot; </span>=&gt; <span class="prelude-val">Ok</span>(ChallengeType::Simple),
-            <span class="string">&quot;catalyst-community-choice&quot; </span>=&gt; <span class="prelude-val">Ok</span>(ChallengeType::CommunityChoice),
+            <span class="string">&quot;catalyst-simple&quot; </span>| <span class="string">&quot;simple&quot; </span>=&gt; <span class="prelude-val">Ok</span>(ChallengeType::Simple),
+            <span class="string">&quot;catalyst-community-choice&quot; </span>| <span class="string">&quot;community-choice&quot; </span>=&gt; <span class="prelude-val">Ok</span>(ChallengeType::CommunityChoice),
             s =&gt; <span class="prelude-val">Err</span>(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
                 <span class="macro">format!</span>(
-                    <span class="string">&quot;Expected any of [catalyst-simple | catalyst-community-choice], found: {}&quot;</span>,
+                    <span class="string">&quot;Expected any of [simple | catalyst-simple | community-choice | catalyst-community-choice], found: {}&quot;</span>,
                     s
                 ),
             )),

@@ -36,9 +36,10 @@ pub struct Proposer {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(rename_all = "kebab-case")]
 pub enum ChallengeType {
+    #[serde(rename = "catalyst-simple", alias = "simple")]
     Simple,
+    #[serde(rename = "catalyst-community-choice", alias = "community-choice")]
     CommunityChoice,
 }
 
@@ -47,11 +48,14 @@ impl std::str::FromStr for ChallengeType {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "simple" => Ok(ChallengeType::Simple),
-            "community-choice" => Ok(ChallengeType::CommunityChoice),
+            "catalyst-simple" | "simple" => Ok(ChallengeType::Simple),
+            "catalyst-community-choice" | "community-choice" => Ok(ChallengeType::CommunityChoice),
             s => Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
-                format!("Expected any of [simple | community-choice], found: {}", s),
+                format!(
+                    "Expected any of [simple | catalyst-simple | community-choice | catalyst-community-choice], found: {}",
+                    s
+                ),
             )),
         }
     }

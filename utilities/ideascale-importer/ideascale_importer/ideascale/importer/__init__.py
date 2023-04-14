@@ -56,7 +56,7 @@ class Importer:
 
                         # Multiply the scores by 100 so we have 3.14 -> 314 which is
                         # the format app expects.
-                        score = int(float(row[self.config.proposals_scores_csv.score_field])*100)
+                        score = int(float(row[self.config.proposals_scores_csv.score_field]) * 100)
 
                         self.proposals_impact_scores[proposal_id] = score
             except Exception as e:
@@ -109,13 +109,8 @@ class Importer:
         async with self.conn.transaction():
             await ideascale_importer.db.upsert_many(self.conn, challenges, conflict_cols=["id"])
 
-            proposals = [
-                mapper.map_proposal(a, self.proposals_impact_scores)
-                for a in ideas
-            ]
+            proposals = [mapper.map_proposal(a, self.proposals_impact_scores) for a in ideas]
             proposal_count = len(proposals)
             await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id"])
 
-        logger.info(
-            "Imported challenges and proposals",
-            challenge_count=challenge_count, proposal_count=proposal_count)
+        logger.info("Imported challenges and proposals", challenge_count=challenge_count, proposal_count=proposal_count)

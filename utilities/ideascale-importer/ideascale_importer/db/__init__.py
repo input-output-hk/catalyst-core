@@ -1,3 +1,8 @@
+"""Database module.
+
+This module contains functions for interacting with the database.
+"""
+
 import json
 import asyncpg
 import dataclasses
@@ -10,10 +15,7 @@ M = TypeVar("M", bound=Model)
 
 
 async def insert_many(conn: asyncpg.Connection, models: List[M], returning: Optional[str] = None) -> List[Any]:
-    """
-    Batch inserts all models.
-    """
-
+    """Batch inserts all models."""
     if len(models) == 0:
         return []
 
@@ -45,6 +47,10 @@ async def insert_many(conn: asyncpg.Connection, models: List[M], returning: Opti
 
 
 async def insert(conn: asyncpg.Connection, model: Model, returning: Optional[str] = None) -> Any:
+    """Insert a single model.
+
+    If returning is not None, returns the value of that column.
+    """
     ret = await insert_many(conn, [model], returning)
     if len(ret) > 0:
         return ret[0]
@@ -54,6 +60,11 @@ async def insert(conn: asyncpg.Connection, model: Model, returning: Optional[str
 async def upsert_many(
     conn: asyncpg.Connection, models: List[M], conflict_cols: List[str], returning: Optional[str] = None
 ) -> List[Any]:
+    """Batch upserts models of the same type.
+
+    conflict_cols is a list of columns that are used to determine whether a row should be updated or inserted.
+    If returning is not None, returns the values of that column.
+    """
     if len(models) == 0:
         return []
 
@@ -93,6 +104,11 @@ async def upsert_many(
 
 
 async def upsert(conn: asyncpg.Connection, model: Model, conflict_cols: List[str], returning: Optional[str] = None):
+    """Upsert a single model.
+
+    conflict_cols is a list of columns that are used to determine whether a row should be updated or inserted.
+    If returning is not None, returns the value of that column.
+    """
     ret = await upsert_many(conn, [model], conflict_cols, returning)
     if len(ret) > 0:
         return ret[0]
@@ -100,28 +116,25 @@ async def upsert(conn: asyncpg.Connection, model: Model, conflict_cols: List[str
 
 
 async def delete_snapshot_data(conn, snapshot_id: int):
+    """Delete all data associated with the given snapshot."""
     await conn.execute(f"DELETE FROM {Contribution.table()} WHERE snapshot_id = $1", snapshot_id)
     await conn.execute(f"DELETE FROM {Voter.table()} WHERE snapshot_id = $1", snapshot_id)
 
 
 async def event_exists(conn: asyncpg.Connection, id: int) -> bool:
-    """
-    Checks whether a event exists with the given id.
-    """
-
+    """Check whether a event exists with the given id."""
     row = await conn.fetchrow("SELECT row_id FROM event WHERE row_id = $1", id)
     return row is not None
 
 
 class VoteOptionsNotFound(Exception):
+    """Raised when a vote option is not found."""
+
     ...
 
 
 async def get_vote_options_id(conn: asyncpg.Connection, challenge: str) -> int:
-    """
-    Gets the id of the vote option matching the given challenge.
-    """
-
+    """Get the id of the vote option matching the given challenge."""
     row = await conn.fetchrow("SELECT id FROM vote_options WHERE challenge = $1", challenge)
     if row is None:
         raise VoteOptionsNotFound()
@@ -129,6 +142,10 @@ async def get_vote_options_id(conn: asyncpg.Connection, challenge: str) -> int:
 
 
 async def connect(url: str) -> asyncpg.Connection:
+    """Return a connection to the database.
+
+    This also sets the jsonb codec to use the json module.
+    """
     conn = await asyncpg.connect(url)
     await conn.set_type_codec("jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
     return conn

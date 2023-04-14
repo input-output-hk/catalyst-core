@@ -701,6 +701,10 @@
 <a href="#701" id="701">701</a>
 <a href="#702" id="702">702</a>
 <a href="#703" id="703">703</a>
+<a href="#704" id="704">704</a>
+<a href="#705" id="705">705</a>
+<a href="#706" id="706">706</a>
+<a href="#707" id="707">707</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::vote_options;
 <span class="kw">use </span><span class="kw">crate</span>::db::models::vote_options::VoteOptions;
 <span class="kw">use </span><span class="kw">crate</span>::db::schema::proposals_voteplans;
@@ -739,10 +743,11 @@
 }
 
 <span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
-#[serde(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>ChallengeType {
-    Simple,
-    CommunityChoice,
+    <span class="attr">#[serde(rename = <span class="string">&quot;catalyst-simple&quot;</span>)]
+    </span>Simple,
+    <span class="attr">#[serde(rename = <span class="string">&quot;catalyst-community-choice&quot;</span>)]
+    </span>CommunityChoice,
 }
 
 <span class="kw">impl </span>std::str::FromStr <span class="kw">for </span>ChallengeType {
@@ -750,11 +755,14 @@
 
     <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
         <span class="kw">match </span>s {
-            <span class="string">&quot;simple&quot; </span>=&gt; <span class="prelude-val">Ok</span>(ChallengeType::Simple),
-            <span class="string">&quot;community-choice&quot; </span>=&gt; <span class="prelude-val">Ok</span>(ChallengeType::CommunityChoice),
+            <span class="string">&quot;catalyst-simple&quot; </span>=&gt; <span class="prelude-val">Ok</span>(ChallengeType::Simple),
+            <span class="string">&quot;catalyst-community-choice&quot; </span>=&gt; <span class="prelude-val">Ok</span>(ChallengeType::CommunityChoice),
             s =&gt; <span class="prelude-val">Err</span>(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
-                <span class="macro">format!</span>(<span class="string">&quot;Expected any of [simple | community-choice], found: {}&quot;</span>, s),
+                <span class="macro">format!</span>(
+                    <span class="string">&quot;Expected any of [catalyst-simple | catalyst-community-choice], found: {}&quot;</span>,
+                    s
+                ),
             )),
         }
     }

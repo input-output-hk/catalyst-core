@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DryRunCommand","VotingPowerSource"],"fn":["show_error_warning","voting_power"],"mod":["cli","data","data_provider","db","error","exports","logic","test_api","testing","validation","vectors"],"struct":["Args","Db","DbConfig","Sig","Signature","SlotNo","SnapshotEntry","VotingPowerArgs","VotingPurpose"],"trait":["DataProvider"],"type":["Conn"]};

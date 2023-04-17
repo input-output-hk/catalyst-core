@@ -1,7 +1,9 @@
+"""Snapshot importer CLI commands."""
+
 import asyncio
 import typer
 
-from ideascale_importer.snapshot_importer.importer import Importer
+from ideascale_importer.snapshot_importer import Importer
 from ideascale_importer.utils import configure_logger
 
 app = typer.Typer(add_completion=False)
@@ -36,10 +38,7 @@ def import_snapshot(
         help="Log format",
     ),
 ):
-    """
-    Import snapshot data into the database
-    """
-
+    """Import snapshot data into the database."""
     configure_logger(log_level, log_format)
 
     async def inner():
@@ -51,6 +50,6 @@ def import_snapshot(
             raw_snapshot_file=raw_snapshot_file,
             dreps_file=dreps_file,
         )
-        await importer.import_all()
+        await importer.run()
 
     asyncio.run(inner())

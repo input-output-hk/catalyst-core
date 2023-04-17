@@ -161,7 +161,7 @@ class Leader0Node(LeaderNode):
     def get_committee(self) -> Committee:
         """Return the Committee data, raises exception if it is None."""
         match self.committee:
-            case Committee(_):
+            case Committee():
                 return self.committee
             case _:
                 raise Exception("node has no committee")

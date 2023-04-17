@@ -509,7 +509,7 @@ class Leader0Schedule(LeaderSchedule):
         event = self.node.get_event()
         # TODO: fetch tally committee data from secret storage
         try:
-            committee = await SecretDBStorage(db=self.db).get_committee(event.row_id)
+            committee = await SecretDBStorage(conn=self.db.conn()).get_committee(event.row_id)
             logger.debug(f"fetched committee from storage: {committee.as_yaml()}")
             self.node.committee = committee
         except Exception as e:
@@ -532,7 +532,7 @@ class Leader0Schedule(LeaderSchedule):
             )
             logger.debug(f"created committee: {committee.as_yaml()}")
             self.node.committee = committee
-            await SecretDBStorage(db=self.db).save_committee(event_id=event.row_id, committee=committee)
+            await SecretDBStorage(conn=self.db.conn()).save_committee(event_id=event.row_id, committee=committee)
             logger.debug("saved committee to storage")
 
     async def setup_block0(self):

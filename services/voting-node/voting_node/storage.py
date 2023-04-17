@@ -1,13 +1,11 @@
 """Storage types for the voting node."""
 import os
-from asyncpg import Connection, Record
 
+from asyncpg import Connection, Record
 from loguru import logger
 from pydantic import BaseModel
 
-from voting_node.committee import ElectionKey
-
-from .db import EventDb
+from .committee import ElectionKey
 from .envvar import SECRET_SECRET
 from .models import Committee
 from .utils import decrypt_secret, encrypt_secret
@@ -16,8 +14,13 @@ from .utils import decrypt_secret, encrypt_secret
 class SecretDBStorage(BaseModel):
     """DB secret storage for secrets."""
 
-    db: EventDb
-    """Connected EventDb instance."""
+    conn: Connection
+    """Connection to DB storage."""
+
+    class Config:
+        """Pydantic model configuration parameters."""
+
+        arbitrary_types_allowed = True
 
     async def get_committee(self, event_id: int) -> Committee:
         """Fetch the tally committee for the event_id.
@@ -28,7 +31,6 @@ class SecretDBStorage(BaseModel):
 
         Raise exception if the tally committee is not found.
         """
-        conn: Connection = self.db.conn()
         query = """
         SELECT
             tc.row_id as row_id,
@@ -45,7 +47,7 @@ class SecretDBStorage(BaseModel):
         WHERE tc.event = $1"""
 
         try:
-            record: Record | None = await self.db.conn().fetchrow(query, int(event_id))
+            record: Record | None = await self.conn.fetchrow(query, int(event_id))
             if record is None:
                 raise Exception("expected to get tally committee in DB")
             logger.debug(f"fetched committee {record}")
@@ -73,7 +75,7 @@ class SecretDBStorage(BaseModel):
         FROM
             committee_member
         WHERE committee = $1"""
-        rows = await self.db.conn().fetch(query, committee.row_id)
+        rows = await self.conn.fetch(query, committee.row_id)
         if rows is None:
             raise Exception("expected committee members in DB")
 
@@ -104,7 +106,7 @@ class SecretDBStorage(BaseModel):
         encrypt_pass = os.environ[SECRET_SECRET]
         # encrypt the CRS before adding to DB
         enc_crs = encrypt_secret(committee.crs, encrypt_pass)
-        result = await self.db.conn().execute(
+        result = await self.conn.execute(
             query,
             event_id,
             committee.committee_id,
@@ -128,4 +130,4 @@ class SecretDBStorage(BaseModel):
             $1, $2, $3, $4, $5, $6, $7
         ) RETURNING row_id
         """
-        stmt = await self.db.conn().prepare(query)
+        _stmt = await self.conn.prepare(query)

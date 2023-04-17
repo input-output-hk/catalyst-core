@@ -6,7 +6,7 @@ Main entrypoint for executing the voting node service from the shell command-lin
 import click
 import uvicorn
 
-from . import api, logs, service
+from . import api, service
 from .envvar import (
     EVENTDB_URL,
     IS_NODE_RELOADABLE,
@@ -137,7 +137,6 @@ def start(
     jorm_port_p2p,
 ):
     """Start the Voting Service."""
-    logs.configLogger(log_level)
     click.echo(f"reloadable={reloadable}")
 
     api_config = uvicorn.Config(api.app, host=api_host, port=api_port, log_level=log_level)

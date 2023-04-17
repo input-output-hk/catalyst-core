@@ -17,7 +17,7 @@ class Model:
 
 @dataclasses.dataclass
 class Event(Model):
-    """Represents a database challenge."""
+    """Represents a database objective."""
 
     name: str
     description: str
@@ -46,7 +46,7 @@ class Event(Model):
 
 @dataclasses.dataclass
 class Challenge(Model):
-    """Represents a database challenge."""
+    """Represents a database objective."""
 
     id: int
     event: int
@@ -62,7 +62,7 @@ class Challenge(Model):
     @staticmethod
     def table() -> str:
         """Return the name of the table that this model is stored in."""
-        return "challenge"
+        return "objective"
 
 
 @dataclasses.dataclass
@@ -70,7 +70,7 @@ class Proposal(Model):
     """Represents a database proposal."""
 
     id: int
-    challenge: int
+    objective: int
     title: str
     summary: str
     category: str

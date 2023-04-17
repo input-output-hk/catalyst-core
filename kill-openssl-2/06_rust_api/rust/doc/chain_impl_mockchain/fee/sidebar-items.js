@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["test"],"struct":["LinearFee","PerCertificateFee","PerVoteCertificateFee"],"trait":["FeeAlgorithm"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["decode","encode","hash"],"struct":["GenesisCommand"]};

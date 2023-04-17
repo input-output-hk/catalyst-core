@@ -37,11 +37,7 @@ ed25519-bip32 = "0.4.1"
 thiserror = "1.0"
 bytes = "1.1"
 rpassword = "6.0"
-
-[dependencies.reqwest]
-version = "0.11"
-default-features = false
-features = ["blocking", "rustls-tls", "json"]
+reqwest = { workspace = true }
 
 [dev-dependencies]
 assert_fs = "1.0"

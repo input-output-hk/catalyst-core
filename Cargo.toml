@@ -46,7 +46,6 @@ members = [
   "src/vit-testing/integration-tests",
   "src/vit-testing/mainnet-tools",
   "src/vit-testing/mainnet-lib",
-  "src/vit-testing/db-sync-explorer",
   "src/vit-testing/snapshot-trigger-service",
   "src/vit-testing/signals-handler",
   "src/vit-testing/scheduler-service-lib",
@@ -105,6 +104,9 @@ clap_complete = "4"  # shell autocomplete for CLIs
 
 # async traits
 async-trait = "0.1.64"
+
+reqwest = { version = "0.11", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+warp-reverse-proxy = { version = "0.3", default-features = false, features = ["rustls-tls"] }
 
 [patch.crates-io]
 cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }

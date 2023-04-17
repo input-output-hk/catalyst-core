@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Db","MockError"],"fn":["connect"],"mod":["cli","config","db","mock","rest"],"struct":["Args","BehindDuration","Config","DbConfig","MockConfig","MockProvider","Provider","TransactionConfirmation"]};

@@ -5,7 +5,7 @@ use serde::Serialize;
 use serde_json::Value;
 use thiserror::Error;
 
-use crate::data::{NetworkId, SignedRegistration, VotingPurpose};
+use crate::data::{NetworkId, SignedRegistration, TxId, VotingPurpose};
 
 /// An error encountered during parsing and validation of a Catalyst registration
 #[derive(Debug, Error, PartialEq, Eq, Serialize)]
@@ -90,5 +90,13 @@ pub struct InvalidRegistration {
     pub spec_61284: Option<String>,
     pub spec_61285: Option<String>,
     pub registration: Option<SignedRegistration>,
+    pub registration_bad_bin: Option<RegistrationCorruptedBin>,
     pub errors: NonEmpty<RegistrationError>,
+}
+
+/// Registrations with a corrupted raw cbor binary require extra metadata for context
+#[derive(Debug, Serialize)]
+pub struct RegistrationCorruptedBin {
+    pub tx_id: TxId,
+    pub slot: u64,
 }

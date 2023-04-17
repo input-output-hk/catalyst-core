@@ -10,8 +10,9 @@ use color_eyre::Result;
 use tracing::{debug, info, Level};
 
 use voting_tools_rs::{
-    verify::Unregistered, voting_power, Args, DbConfig, DryRunCommand, InvalidRegistration,
-    SnapshotEntry, VotingPowerArgs,
+    verify::{prefix_hex, Unregistered},
+    voting_power, Args, DbConfig, DryRunCommand, InvalidRegistration, SnapshotEntry,
+    VotingPowerArgs,
 };
 
 fn main() -> Result<()> {
@@ -157,7 +158,7 @@ fn handle_unregistered(path: &Path, unregistered: Unregistered) -> Result<()> {
 
     let unregistered = unregistered
         .into_iter()
-        .map(|(key, value)| (hex::encode(key), value))
+        .map(|(key, value)| (prefix_hex(&key), value))
         .collect::<HashMap<String, u128>>();
 
     let path = path.with_extension("unregistered.json");

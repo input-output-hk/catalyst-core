@@ -5,7 +5,7 @@ use postgres::fallible_iterator::FallibleIterator;
 use postgres::Client;
 
 use crate::data::{NetworkId, RawRegistration, SignedRegistration, StakeKeyHex, TxId};
-use crate::{InvalidRegistration, RegistrationError, SlotNo};
+use crate::{InvalidRegistration, RegistrationCorruptedBin, RegistrationError, SlotNo};
 use cryptoxide::{blake2b::Blake2b, digest::Digest};
 
 use nonempty::nonempty;
@@ -102,12 +102,16 @@ pub fn filter_registrations(
         let reg = match rawreg.to_signed(&cddl, network_id) {
             Err(err) => {
                 invalids.push(InvalidRegistration {
-                    spec_61284: Some(hex::encode(rawreg.bin_reg)),
-                    spec_61285: Some(hex::encode(rawreg.bin_sig)),
+                    spec_61284: Some(prefix_hex(&rawreg.bin_reg)),
+                    spec_61285: Some(prefix_hex(&rawreg.bin_sig)),
                     registration: None,
                     errors: nonempty![RegistrationError::CborDeserializationFailed {
                         err: format!("Failed to deserialize Registration CBOR: {}", err),
                     }],
+                    registration_bad_bin: Some(RegistrationCorruptedBin {
+                        tx_id: TxId(tx_id as u64),
+                        slot: slot as u64,
+                    }),
                 });
                 continue;
             }
@@ -118,12 +122,13 @@ pub fn filter_registrations(
             Ok(_) => valids.push(reg),
             Err(err) => {
                 invalids.push(InvalidRegistration {
-                    spec_61284: Some(hex::encode(rawreg.bin_reg)),
-                    spec_61285: Some(hex::encode(rawreg.bin_sig)),
+                    spec_61284: Some(prefix_hex(&rawreg.bin_reg)),
+                    spec_61285: Some(prefix_hex(&rawreg.bin_sig)),
                     registration: Some(reg),
                     errors: nonempty![RegistrationError::SignatureError {
                         err: format!("Signature validation failure: {}", err),
                     }],
+                    registration_bad_bin: None,
                 });
                 continue;
             }
@@ -145,6 +150,7 @@ pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids 
                     spec_61285: None,
                     registration: Some(current.clone()),
                     errors: nonempty![RegistrationError::ObsoleteRegistration {}],
+                    registration_bad_bin: None,
                 });
                 latest.insert(valid.registration.stake_key.clone(), valid.clone());
             } else {
@@ -153,6 +159,7 @@ pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids 
                     spec_61285: None,
                     registration: Some(valid.clone()),
                     errors: nonempty![RegistrationError::ObsoleteRegistration {}],
+                    registration_bad_bin: None,
                 });
             }
         } else {
@@ -300,6 +307,11 @@ impl Default for CddlConfig {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// encoding of hex strings with a 0x prefix.
+pub fn prefix_hex(b: &[u8]) -> String {
+    format!("0x{}", hex::encode(b))
 }
 
 #[cfg(test)]

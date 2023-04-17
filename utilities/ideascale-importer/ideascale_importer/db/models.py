@@ -197,10 +197,10 @@ class Snapshot(Model):
     last_updated: datetime
     final: bool
     dbsync_snapshot_cmd: Optional[str]
-    dbsync_snapshot_data: Optional[str]
-    drep_data: Optional[str]
+    dbsync_snapshot_data: Optional[bytes]
+    drep_data: Optional[bytes]
     catalyst_snapshot_cmd: Optional[str]
-    catalyst_snapshot_data: Optional[str]
+    catalyst_snapshot_data: Optional[bytes]
 
     @staticmethod
     def table() -> str:

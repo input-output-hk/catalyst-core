@@ -301,10 +301,10 @@ class Importer:
             last_updated=datetime.utcnow(),
             final=False,
             dbsync_snapshot_cmd=os.path.basename(self.config.snapshot_tool.path),
-            dbsync_snapshot_data=snapshot_tool_data_raw_json,
-            drep_data=json.dumps(self.dreps),
+            dbsync_snapshot_data=snapshot_tool_data_raw_json.encode(),
+            drep_data=json.dumps(self.dreps).encode(),
             catalyst_snapshot_cmd=os.path.basename(self.config.catalyst_toolbox.path),
-            catalyst_snapshot_data=catalyst_toolbox_data_raw_json,
+            catalyst_snapshot_data=catalyst_toolbox_data_raw_json.encode(),
         )
 
         voters: Dict[str, models.Voter] = {}

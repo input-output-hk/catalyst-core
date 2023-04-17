@@ -590,6 +590,19 @@
 <a href="#590" id="590">590</a>
 <a href="#591" id="591">591</a>
 <a href="#592" id="592">592</a>
+<a href="#593" id="593">593</a>
+<a href="#594" id="594">594</a>
+<a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
+<a href="#597" id="597">597</a>
+<a href="#598" id="598">598</a>
+<a href="#599" id="599">599</a>
+<a href="#600" id="600">600</a>
+<a href="#601" id="601">601</a>
+<a href="#602" id="602">602</a>
+<a href="#603" id="603">603</a>
+<a href="#604" id="604">604</a>
+<a href="#605" id="605">605</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
 <span class="kw">use </span>dashmap::DashMap;
@@ -597,7 +610,7 @@
 <span class="kw">use </span>postgres::Client;
 
 <span class="kw">use </span><span class="kw">crate</span>::data::{NetworkId, RawRegistration, SignedRegistration, StakeKeyHex, TxId};
-<span class="kw">use crate</span>::{InvalidRegistration, RegistrationError, SlotNo};
+<span class="kw">use crate</span>::{InvalidRegistration, RegistrationCorruptedBin, RegistrationError, SlotNo};
 <span class="kw">use </span>cryptoxide::{blake2b::Blake2b, digest::Digest};
 
 <span class="kw">use </span>nonempty::nonempty;
@@ -694,12 +707,16 @@
         </span><span class="kw">let </span>reg = <span class="kw">match </span>rawreg.to_signed(<span class="kw-2">&amp;</span>cddl, network_id) {
             <span class="prelude-val">Err</span>(err) =&gt; {
                 invalids.push(InvalidRegistration {
-                    spec_61284: <span class="prelude-val">Some</span>(hex::encode(rawreg.bin_reg)),
-                    spec_61285: <span class="prelude-val">Some</span>(hex::encode(rawreg.bin_sig)),
+                    spec_61284: <span class="prelude-val">Some</span>(prefix_hex(<span class="kw-2">&amp;</span>rawreg.bin_reg)),
+                    spec_61285: <span class="prelude-val">Some</span>(prefix_hex(<span class="kw-2">&amp;</span>rawreg.bin_sig)),
                     registration: <span class="prelude-val">None</span>,
                     errors: <span class="macro">nonempty!</span>[RegistrationError::CborDeserializationFailed {
                         err: <span class="macro">format!</span>(<span class="string">&quot;Failed to deserialize Registration CBOR: {}&quot;</span>, err),
                     }],
+                    registration_bad_bin: <span class="prelude-val">Some</span>(RegistrationCorruptedBin {
+                        tx_id: TxId(tx_id <span class="kw">as </span>u64),
+                        slot: slot <span class="kw">as </span>u64,
+                    }),
                 });
                 <span class="kw">continue</span>;
             }
@@ -710,12 +727,13 @@
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; valids.push(reg),
             <span class="prelude-val">Err</span>(err) =&gt; {
                 invalids.push(InvalidRegistration {
-                    spec_61284: <span class="prelude-val">Some</span>(hex::encode(rawreg.bin_reg)),
-                    spec_61285: <span class="prelude-val">Some</span>(hex::encode(rawreg.bin_sig)),
+                    spec_61284: <span class="prelude-val">Some</span>(prefix_hex(<span class="kw-2">&amp;</span>rawreg.bin_reg)),
+                    spec_61285: <span class="prelude-val">Some</span>(prefix_hex(<span class="kw-2">&amp;</span>rawreg.bin_sig)),
                     registration: <span class="prelude-val">Some</span>(reg),
                     errors: <span class="macro">nonempty!</span>[RegistrationError::SignatureError {
                         err: <span class="macro">format!</span>(<span class="string">&quot;Signature validation failure: {}&quot;</span>, err),
                     }],
+                    registration_bad_bin: <span class="prelude-val">None</span>,
                 });
                 <span class="kw">continue</span>;
             }
@@ -737,6 +755,7 @@
                     spec_61285: <span class="prelude-val">None</span>,
                     registration: <span class="prelude-val">Some</span>(current.clone()),
                     errors: <span class="macro">nonempty!</span>[RegistrationError::ObsoleteRegistration {}],
+                    registration_bad_bin: <span class="prelude-val">None</span>,
                 });
                 latest.insert(valid.registration.stake_key.clone(), valid.clone());
             } <span class="kw">else </span>{
@@ -745,6 +764,7 @@
                     spec_61285: <span class="prelude-val">None</span>,
                     registration: <span class="prelude-val">Some</span>(valid.clone()),
                     errors: <span class="macro">nonempty!</span>[RegistrationError::ObsoleteRegistration {}],
+                    registration_bad_bin: <span class="prelude-val">None</span>,
                 });
             }
         } <span class="kw">else </span>{
@@ -892,6 +912,12 @@
     <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::new()
     }
+}
+
+<span class="doccomment">/// encoding of hex strings with a 0x prefix.
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>prefix_hex(b: <span class="kw-2">&amp;</span>[u8]) -&gt; String {
+    <span class="macro">format!</span>(<span class="string">&quot;0x{}&quot;</span>, hex::encode(b))
 }
 
 <span class="attr">#[cfg(test)]

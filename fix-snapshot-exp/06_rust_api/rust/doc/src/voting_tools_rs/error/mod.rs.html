@@ -92,6 +92,14 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
 </pre><pre class="rust"><code><span class="attr">#![allow(missing_docs)]
 
 </span><span class="kw">use </span>nonempty::NonEmpty;
@@ -99,7 +107,7 @@
 <span class="kw">use </span>serde_json::Value;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="kw">use </span><span class="kw">crate</span>::data::{NetworkId, SignedRegistration, VotingPurpose};
+<span class="kw">use </span><span class="kw">crate</span>::data::{NetworkId, SignedRegistration, TxId, VotingPurpose};
 
 <span class="doccomment">/// An error encountered during parsing and validation of a Catalyst registration
 </span><span class="attr">#[derive(Debug, Error, PartialEq, Eq, Serialize)]
@@ -184,7 +192,15 @@
     <span class="kw">pub </span>spec_61284: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub </span>spec_61285: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub </span>registration: <span class="prelude-ty">Option</span>&lt;SignedRegistration&gt;,
+    <span class="kw">pub </span>registration_bad_bin: <span class="prelude-ty">Option</span>&lt;RegistrationCorruptedBin&gt;,
     <span class="kw">pub </span>errors: NonEmpty&lt;RegistrationError&gt;,
+}
+
+<span class="doccomment">/// Registrations with a corrupted raw cbor binary require extra metadata for context
+</span><span class="attr">#[derive(Debug, Serialize)]
+</span><span class="kw">pub struct </span>RegistrationCorruptedBin {
+    <span class="kw">pub </span>tx_id: TxId,
+    <span class="kw">pub </span>slot: u64,
 }
 </code></pre></div>
 </section></main></body></html>

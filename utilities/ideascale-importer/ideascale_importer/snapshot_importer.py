@@ -1,21 +1,72 @@
+"""Snapshot importer."""
+
 import asyncio
 from datetime import datetime
 import json
+import os
+from typing import Dict, List, Tuple, Optional
 from loguru import logger
 from pydantic.dataclasses import dataclass
 import pydantic.tools
-import os
-from typing import Dict, List, Optional, Tuple
 
-from . import config
+from ideascale_importer.gvc import Drep, Client as GvcClient
 import ideascale_importer.db
 from ideascale_importer.db import models
-from ideascale_importer.gvc.client import Client as GvcClient, Drep
 from ideascale_importer.utils import run_cmd
 
 
 @dataclass
+class DbSyncDatabaseConfig:
+    """Configuration for the database containing data from dbsync."""
+
+    host: str
+    user: str
+    password: str
+    db: str
+
+
+@dataclass
+class SnapshotToolConfig:
+    """Configuration for snapshot_tool."""
+
+    path: str
+    max_time: datetime
+
+
+@dataclass
+class CatalystToolboxConfig:
+    """Configuration for catalyst-toolbox."""
+
+    path: str
+
+
+@dataclass
+class GvcConfig:
+    """Configuration for GVC API."""
+
+    api_url: str
+
+
+@dataclass
+class Config:
+    """Configuration for the snapshot importer."""
+
+    dbsync_database: DbSyncDatabaseConfig
+    snapshot_tool: SnapshotToolConfig
+    catalyst_toolbox: CatalystToolboxConfig
+    gvc: GvcConfig
+
+    @staticmethod
+    def from_json_file(path: str) -> "Config":
+        """Load configuration from a JSON file."""
+        with open(path) as f:
+            return pydantic.tools.parse_obj_as(Config, json.load(f))
+
+
+@dataclass
 class Contribution:
+    """Represents a voting power contribution."""
+
     reward_address: str
     stake_public_key: str
     value: int
@@ -23,6 +74,8 @@ class Contribution:
 
 @dataclass
 class HIR:
+    """Represents a HIR."""
+
     voting_group: str
     voting_key: str
     voting_power: int
@@ -30,12 +83,16 @@ class HIR:
 
 @dataclass
 class SnapshotProcessedEntry:
+    """Represents a processed entry from snapshot_tool."""
+
     contributions: List[Contribution]
     hir: HIR
 
 
 @dataclass
 class Registration:
+    """Represents a voter registration."""
+
     delegations: List[Tuple[str, int]] | str
     reward_address: str
     stake_public_key: str
@@ -44,26 +101,38 @@ class Registration:
 
 
 class OutputDirectoryDoesNotExist(Exception):
+    """Raised when the importer's output directory does not exist."""
+
     def __init__(self, output_dir: str):
+        """Initialize the exception."""
         self.output_dir = output_dir
 
     def __str__(self):
+        """Return a string representation of the exception."""
         return f"Output directory does not exist: {self.output_dir}"
 
 
 class FetchParametersFailed(Exception):
+    """Raised when fetching parameters from the database fails."""
+
     ...
 
 
 class RunCatalystToolboxSnapshotFailed(Exception):
+    """Raised when running catalyst-toolbox snapshot fails."""
+
     ...
 
 
 class WriteDbDataFailed(Exception):
+    """Raised when writing data to the database fails."""
+
     ...
 
 
 class Importer:
+    """Snapshot importer."""
+
     def __init__(
         self,
         config_path: str,
@@ -73,7 +142,8 @@ class Importer:
         raw_snapshot_file: Optional[str] = None,
         dreps_file: Optional[str] = None,
     ):
-        self.config = config.from_json_file(config_path)
+        """Initialize the importer."""
+        self.config = Config.from_json_file(config_path)
         self.database_url = database_url
         self.event_id = event_id
         self.dreps: List[Drep] = []
@@ -307,7 +377,8 @@ class Importer:
             voters_count=len(voters.values()),
         )
 
-    async def import_all(self):
+    async def run(self):
+        """Take a snapshot and write the data to the database."""
         await self._fetch_parameters()
 
         if self.dreps_file is None:

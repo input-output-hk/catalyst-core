@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["AUTH_NONCE_LEN"],"enum":["Error"],"fn":["block0"],"struct":["MockServerData"]};

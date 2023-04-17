@@ -49,7 +49,6 @@ digraph {
     47 [ label = "snapshot-trigger-service" shape = box]
     48 [ label = "voting_tools_rs" shape = box]
     49 [ label = "integration-tests" shape = box]
-    50 [ label = "db-sync-explorer" shape = box]
     0 -> 17 [ ]
     0 -> 23 [ ]
     0 -> 24 [ ]
@@ -120,7 +119,5 @@ digraph {
     48 -> 43 [ ]
     49 -> 40 [ ]
     49 -> 42 [ ]
-    50 -> 24 [ ]
-    50 -> 48 [ ]
 }
 

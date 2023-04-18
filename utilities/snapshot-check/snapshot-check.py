@@ -17,7 +17,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-
 def is_dir(dirpath: str | Path):
     """Check if the directory is a directory."""
     real_dir = Path(dirpath)
@@ -35,29 +34,42 @@ def is_file(filename: str):
     return real_filename
 
 
+def compare_reg_error(reg:dict, error:dict) -> bool:
+    """Compare a registration, with an error record."""
+    try:
+        delegations_match = str(reg["delegations"]) == str(error["registration"]["61284"]["1"])
+        rewards_match = reg["rewards_address"] == error["registration"]["61284"]["3"]
+        return delegations_match and rewards_match
+    except:
+        return False
+
 def analyze_snapshot(args: argparse.Namespace):
     """Convert a snapshot into a format supported by SVE1."""
 
-    # make output filename
-    output = args.snapshot.with_suffix(".sve" + args.snapshot.suffix)
-    print(output)
+    # make errors output filename
+    snapshot_errors_fname = args.snapshot.with_suffix(".errors" + args.snapshot.suffix)
+    snapshot_unregistered_fname = args.snapshot.with_suffix(".unregistered" + args.snapshot.suffix)
 
     # Load json file
     snapshot = json.loads(args.snapshot.read_text())
     snapshot_index: dict[str, Any] = {}
 
+    snapshot_errors = json.loads(snapshot_errors_fname.read_text())
+    snapshot_unregistered = json.loads(snapshot_unregistered_fname.read_text())
+
     cip_15_snapshot: list[dict[str, Any]] = []
     cip_36_single: list[dict[str, Any]] = []
     cip_36_multi: list[dict[str, Any]] = []
 
-    stake_types: dict[str, Any] = {}
-
     total_rejects = 0
+    total_registered_value = 0
 
     for registration in snapshot:
         # Index the registrations
         stake_pub_key = registration["stake_public_key"]
         snapshot_index[stake_pub_key] = registration
+
+        total_registered_value += registration["voting_power"]
 
         # Check if the delegation is a simple string.
         # If so, assume its a CIP-15 registration.
@@ -77,41 +89,36 @@ def analyze_snapshot(args: argparse.Namespace):
             )
             total_rejects += 1
 
-        stake_type = registration["stake_public_key"][2]
-        if stake_type in stake_types:
-            stake_types[stake_type] += 1
-        else:
-            stake_types[stake_type] = 1
+    # Index Errors
+    registration_obsolete: dict[str, Any] = {}
+    decode_errors: list[Any] = []
+    other_errors: dict[str, Any] = {}
 
-    # Load Errors if we can.
-    registration_errors: dict[str, Any] = {}
-    no_stake_key = 0
-    unknown_errors = 0
-    missing_registration_metadata = 0
-
-    if args.errors is not None:
-        raw_registration_errors = json.loads(args.errors.read_text())
-        # Index the registration errors by their stake key.
-        for error in raw_registration_errors:
-            if "registration" not in error:
-                unknown_errors += 1
-            elif "registration" not in error["registration"]:
-                missing_registration_metadata += 1
-            elif "2" not in error["registration"]["registration"]:
-                no_stake_key += 1
+    # Index the registration errors by their stake key.
+    for error in snapshot_errors:
+        errors = error["errors"]
+        if errors == ["ObsoleteRegistration"]:
+            stake = error["registration"]["61284"]["2"]
+            if stake in registration_obsolete:
+                registration_obsolete[stake].append(error)
             else:
-                registration_errors[error["registration"]
-                                    ["registration"]["2"]] = error
+                registration_obsolete[stake] = [error]
+        else:
+            try:
+                stake = error["registration"]["61284"]["2"]
+                if stake in other_errors:
+                    other_errors[stake].append(error)
+                else:
+                    other_errors[stake] = [error]
+            except:
+                decode_errors.append(error)
 
     # Compare for differences
     compare: dict[str, Any] = {}
     unknown_registrations: list[str] = []
-    error_registrations: list[str] = []
     missing_registrations: list[str] = []
 
-    mismatched_voting_power: list[str] = []
-    mismatched_delegation: list[str] = []
-    mismatched_reward: list[str] = []
+    mismatched: dict[str, Any] = {}
     equal_snapshots = 0
 
     if args.compare is not None:
@@ -126,22 +133,14 @@ def analyze_snapshot(args: argparse.Namespace):
                 snapshot_equal = 1
 
                 # Check voting power is the same between records.
-                if comp["voting_power"] != snapshot_index[stake_pub_key]["voting_power"]:
-                    mismatched_voting_power.append(stake_pub_key)
-                    snapshot_equal = 0
-
-                if str(comp["delegations"]) != str(snapshot_index[stake_pub_key]["delegations"]):
-                    mismatched_delegation.append(stake_pub_key)
-                    snapshot_equal = 0
-
-                if comp["rewards_address"] != snapshot_index[stake_pub_key]["rewards_address"]:
-                    mismatched_reward.append(stake_pub_key)
+                if (comp["voting_power"] != snapshot_index[stake_pub_key]["voting_power"]) or  (
+                    str(comp["delegations"]) != str(snapshot_index[stake_pub_key]["delegations"])) or (
+                    comp["rewards_address"] != snapshot_index[stake_pub_key]["rewards_address"]):
+                    mismatched[stake_pub_key] = comp
                     snapshot_equal = 0
 
                 equal_snapshots += snapshot_equal
 
-            elif stake_pub_key in registration_errors:
-                error_registrations.append(stake_pub_key)
             else:
                 unknown_registrations.append(stake_pub_key)
 
@@ -160,19 +159,16 @@ def analyze_snapshot(args: argparse.Namespace):
     print()
     print("Stake Address Types:")
 
-    for stake_type, rec in stake_types.items():
-        print(f"    {stake_type} : {rec}")
-
-    if len(registration_errors) > 0:
-        print()
-        print("Registration Errors:")
-        print(f"  Total Errors             : {len(registration_errors)}")
-        if no_stake_key > 0:
-            print(f"  No Stake Key     : {no_stake_key}")
-        if unknown_errors > 0:
-            print(f"  Unknown Errors   : {unknown_errors}")
-        if missing_registration_metadata > 0:
-            print(f"  Missing Metadata : {missing_registration_metadata}")
+    #if len(registration_errors) > 0:
+    #    print()
+    #    print("Registration Errors:")
+    #    print(f"  Total Errors             : {len(registration_errors)}")
+    #    if no_stake_key > 0:
+    #        print(f"  No Stake Key     : {no_stake_key}")
+    #    if unknown_errors > 0:
+    #        print(f"  Unknown Errors   : {unknown_errors}")
+    #    if missing_registration_metadata > 0:
+    #        print(f"  Missing Metadata : {missing_registration_metadata}")
 
     if len(compare) > 0:
         print()
@@ -180,32 +176,44 @@ def analyze_snapshot(args: argparse.Namespace):
         print(f"  Total Comparisons       : {len(compare)}")
         print(f"  Equal Snapshots         : {equal_snapshots}")
 
-        print(f"  Mismatched Voting Powers: {len(mismatched_voting_power)}")
-        for reg in mismatched_voting_power:
-            print(
-                f"        {reg} - snapshot = {snapshot_index[reg]['voting_power']:>15}, compare = {compare[reg]['voting_power']:>15}")
+        for mismatched_stake, mismatched_data in mismatched.items():
+            if mismatched_stake in registration_obsolete:
+                for obs in registration_obsolete[mismatched_stake]:
+                    if compare_reg_error(mismatched_data, obs):
+                        reg_nonce = snapshot_index[mismatched_stake]['nonce']
+                        reg_txid = snapshot_index[mismatched_stake]['tx_id']
+                        obs_nonce = obs['registration']['61284']['4']
+                        obs_txid  = obs['registration']['tx_id']
+                        print(f"        {mismatched_stake} was obsoleted (nonce:tx_id) .  Reg = {reg_nonce}:{reg_txid}, Compare = {obs_nonce}:{obs_txid}")
+            else:
+                print(f"        {mismatched_stake} was different.")
 
-        print(f"  Mismatched Delegations: {len(mismatched_delegation)}")
-        for reg in mismatched_delegation:
-            print(
-                f"        {reg} - snapshot = {snapshot_index[reg]['delegations']}, compare = {compare[reg]['delegations']}")
 
-        print(f"  Mismatched Rewards Address: {len(mismatched_reward)}")
-        for reg in mismatched_delegation:
-            print(
-                f"        {reg} - snapshot = {snapshot_index[reg]['rewards_address']}, compare = {compare[reg]['rewards_address']}")
 
         print(f"  Unknown Registrations : {len(unknown_registrations)}")
         for reg in unknown_registrations:
             print(f"        {reg}")
 
-        print(f"  Error Registrations   : {len(error_registrations)}")
-        for reg in error_registrations:
-            print(f"        {reg}")
-
         print(f"  Extra Registrations   : {len(missing_registrations)}")
         for reg in missing_registrations:
             print(f"        {reg}")
+
+        total_unregistered = len(snapshot_unregistered)
+        value_unregistered = 0
+        for value in snapshot_unregistered.values():
+            value_unregistered += value
+
+        print(f"  Total Registrations = Total Voting Power  : {len(snapshot):>10}  = {total_registered_value/1000000:>25} ADA")
+        print(f"  Total Unregistered  = Total Voting Power  : {total_unregistered:>10}  = {value_unregistered/1000000:>25} ADA")
+
+        staked_total = len(snapshot) + total_unregistered
+        staked_total_value = total_registered_value + value_unregistered
+
+        reg_pct = 100.0 / staked_total * len(snapshot)
+        val_pct = 100.0 / staked_total_value * total_registered_value
+
+        print(f"  Registered%         = VotingPower %       : {reg_pct:>10.4}% = {val_pct:>23.4}%")
+
 
 
 def main() -> int:
@@ -215,21 +223,14 @@ def main() -> int:
     )
     parser.add_argument(
         "--snapshot",
-        help="Snapshot file to read.",
+        help="Rust Snapshot file to read.",
         required=True,
         type=is_file,
     )
 
     parser.add_argument(
-        "--errors",
-        help="Snapshot errors file to read.",
-        required=False,
-        type=is_file,
-    )
-
-    parser.add_argument(
         "--compare",
-        help="Snapshot file to compare with.",
+        help="Haskell Snapshot file to compare with.",
         required=False,
         type=is_file,
     )

@@ -2,7 +2,8 @@ use crate::{
     error::Error,
     types::event::{
         objective::{
-            Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveType, RewardDefintion,
+            Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveSupplementalData,
+            ObjectiveType, RewardDefintion,
         },
         EventId,
     },
@@ -22,7 +23,7 @@ pub trait ObjectiveQueries: Sync + Send + 'static {
 
 impl EventDB {
     const OBJECTIVES_QUERY: &'static str =
-        "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total,
+        "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
         objective_category.name, objective_category.description as objective_category_description,
         vote_options.objective as choices
         FROM objective
@@ -59,13 +60,40 @@ impl ObjectiveQueries for EventDB {
                 (Some(currency), Some(value)) => Some(RewardDefintion { currency, value }),
                 _ => None,
             };
+            let extra = row.try_get::<_, Option<serde_json::Value>>("extra")?;
+            let url = extra
+                .as_ref()
+                .and_then(|extra| {
+                    extra
+                        .get("url")
+                        .map(|url| url.as_str().map(|str| str.to_string()))
+                })
+                .flatten();
+            let sponsor = extra
+                .as_ref()
+                .and_then(|extra| {
+                    extra
+                        .get("sponsor")
+                        .map(|url| url.as_str().map(|str| str.to_string()))
+                })
+                .flatten();
+            let video = extra
+                .and_then(|val| {
+                    val.get("video")
+                        .map(|url| url.as_str().map(|str| str.to_string()))
+                })
+                .flatten();
+            let supplemental = match (sponsor, video) {
+                (Some(sponsor), Some(video)) => Some(ObjectiveSupplementalData { sponsor, video }),
+                _ => None,
+            };
             let details = ObjectiveDetails {
                 reward,
+                url,
+                supplemental,
                 description: row.try_get("description")?,
                 choices: row.try_get("choices")?,
                 ballot: None,
-                url: None,
-                supplemental: None,
             };
             objectives.push(Objective { summary, details });
         }
@@ -114,8 +142,11 @@ mod tests {
                         }),
                         choices: Some(vec!["yes".to_string(), "no".to_string()]),
                         ballot: None,
-                        url: None,
-                        supplemental: None,
+                        url: Some("objective 1 url".to_string()),
+                        supplemental: Some(ObjectiveSupplementalData {
+                            sponsor: "objective 1 sponsor".to_string(),
+                            video: "objective 1 video".to_string()
+                        }),
                     }
                 },
                 Objective {

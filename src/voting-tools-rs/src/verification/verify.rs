@@ -301,7 +301,7 @@ mod tests {
     pub fn test_rewards_addr_permuations() {
         // Valid addrs: 0x0?, 0x1?, 0x2?, 0x3?, 0x4?, 0x5?, 0x6?, 0x7?, 0xE?, 0xF?.
 
-        let valid_addr_types = vec![0, 1, 2, 3, 4 ,5, 6, 7, 14,15];
+        let valid_addr_types = vec![0, 1, 2, 3, 4, 5, 6, 7, 14, 15];
 
         for addr_type in valid_addr_types {
             let test_addr = addr_type << 4;

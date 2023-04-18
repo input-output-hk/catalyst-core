@@ -327,6 +327,7 @@ pub mod tests {
                 reward_address: String::new(),
                 delegations,
                 voting_purpose: 0,
+                nonce: 0,
             });
         }
 

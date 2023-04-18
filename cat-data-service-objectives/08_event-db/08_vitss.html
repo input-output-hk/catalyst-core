@@ -1229,7 +1229,7 @@ CREATE VIEW proposal_simple_challenge AS SELECT
 FROM
     proposal
     INNER JOIN objective ON proposal.objective = objective.row_id
-WHERE objective.category = 'simple';
+WHERE objective.category = 'catalyst-simple';
 
 COMMENT ON VIEW proposal_simple_challenge IS
     'This view maps the original VIT-SS proposal_simple_challenge table to the new proposal table.
@@ -1247,7 +1247,7 @@ CREATE VIEW proposal_community_choice_challenge AS SELECT
 FROM
     proposal
     INNER JOIN objective ON proposal.objective = objective.row_id
-WHERE objective.category = 'community-choice';
+WHERE objective.category = 'catalyst-community-choice';
 
 COMMENT ON VIEW proposal_community_choice_challenge IS
     'This view maps the original VIT-SS proposal_community_choice_challenge table to the new proposal table.
@@ -1378,10 +1378,10 @@ INNER JOIN challenges ch ON ch.id = p.challenge_id
 INNER JOIN groups gr ON vp.token_identifier = gr.token_identifier
 LEFT JOIN proposal_simple_challenge psc
     ON p.proposal_id = psc.proposal_id
-    AND ch.challenge_type = 'simple'
+    AND ch.challenge_type = 'catalyst-simple'
 LEFT JOIN proposal_community_choice_challenge pccc
     ON p.proposal_id = pccc.proposal_id
-    AND ch.challenge_type = 'community-choice'
+    AND ch.challenge_type = 'catalyst-community-choice'
 LEFT JOIN (
         SELECT
             proposal_id::VARCHAR AS review_proposal_id,

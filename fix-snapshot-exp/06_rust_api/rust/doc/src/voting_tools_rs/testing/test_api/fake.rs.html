@@ -151,7 +151,6 @@
 <a href="#151" id="151">151</a>
 <a href="#152" id="152">152</a>
 <a href="#153" id="153">153</a>
-<a href="#154" id="154">154</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::PubKey;
 <span class="kw">use </span><span class="kw">crate</span>::data::{
     Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
@@ -169,7 +168,6 @@
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };
-<span class="kw">use </span>std::collections::BTreeMap;
 <span class="kw">use </span>std::str::FromStr;
 
 <span class="doccomment">/// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
@@ -211,7 +209,7 @@
                             <span class="kw">if let </span><span class="prelude-val">Ok</span>(data) = metadata.as_bytes() {
                                 VotingKey::Direct(PubKey(data).into())
                             } <span class="kw">else </span>{
-                                <span class="kw">let </span><span class="kw-2">mut </span>delegations = BTreeMap::new();
+                                <span class="kw">let </span><span class="kw-2">mut </span>delegations = Vec::new();
                                 <span class="kw">let </span>delgation_list = metadata.as_list().unwrap();
                                 <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..delgation_list.len() {
                                     <span class="kw">let </span>inner_list = delgation_list.get(i).as_list().unwrap();
@@ -221,7 +219,7 @@
                                     <span class="kw">let </span>weight = inner_list.get(<span class="number">1</span>).as_int().unwrap();
                                     <span class="kw">let </span>weight =
                                         u32::from_i32(weight.as_i32_or_fail().unwrap()).unwrap();
-                                    delegations.insert(VotingKeyHex(delegation), weight.into());
+                                    delegations.push((VotingKeyHex(delegation), weight.into()));
                                 }
 
                                 VotingKey::Delegated(delegations)

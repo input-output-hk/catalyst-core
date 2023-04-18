@@ -26,11 +26,16 @@ class Jormungandr:
                 stdout=asyncio.subprocess.PIPE,
             )
 
-            if proc.stdout is not None:
+            # checks that there is stdout
+            while proc.stdout is not None:
                 line = await proc.stdout.readline()
-                logger.debug(f"[jorm stdout] {line}")
+                if line:
+                    print(line.decode())
+                else:
+                    break
 
-            if proc.returncode != 0:
+            returncode = await proc.wait()
+            if returncode != 0:
                 raise Exception(f"jormungandr exited with non-zero status: {proc.returncode}")
         except Exception as e:
             logger.warning(f"jorm node error: {e}")

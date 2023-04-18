@@ -1,5 +1,6 @@
 """Utitilies for managing voting node data."""
 import base64
+import calendar
 import re
 import secrets
 import socket
@@ -302,7 +303,7 @@ def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_id
     genesis = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
     # modify the template with the proper settings
-    genesis["blockchain_configuration"]["block0_date"] = int(voting_start.timestamp())
+    genesis["blockchain_configuration"]["block0_date"] = int(calendar.timegm(voting_start.utctimetuple()))
     genesis["blockchain_configuration"]["consensus_leader_ids"] = consensus_leader_ids
     genesis["blockchain_configuration"]["committees"] = committee_ids
 

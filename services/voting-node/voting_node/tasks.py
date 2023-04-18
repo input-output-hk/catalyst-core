@@ -3,6 +3,7 @@
 Scheduled tasks are defined for Leader and Follower Nodes, with Leader0 being a special case,
 as it is the only one responsible for initializing block0 for a voting event.
 """
+import json
 import os
 import secrets
 from typing import Final, NoReturn
@@ -12,6 +13,7 @@ from loguru import logger
 from . import utils
 from .db import EventDb
 from .envvar import COMMITTEE_CRS
+from .importer import ExternalDataImporter
 from .jcli import JCli
 from .jormungandr import Jormungandr
 from .models import (
@@ -62,7 +64,9 @@ LEADER0_NODE_SCHEDULE: Final = [
     "set_node_secret",
     "set_node_topology_key",
     "set_node_config",
+    "wait_for_registration_snapshot_time",
     "wait_for_snapshot",
+    "import_snapshot_data",
     "collect_snapshot_data",
     "setup_tally_committee",
     "setup_block0",
@@ -451,6 +455,17 @@ class Leader0Schedule(LeaderSchedule):
     # Leader0 Node tasks
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
+    async def wait_for_registration_snapshot_time(self):
+        """Wait for the event registration_snapshot_time."""
+        # get the snapshot start timestamp
+        # raises an exception otherwise
+        snapshot_time = self.node.get_registration_snapshot_time()
+        # check if now is after the snapshot start time
+        if not self.node.has_registration_ended():
+            raise Exception(f"registration snapshot time will be stable on {snapshot_time} UTC")
+
+        logger.debug("registration snapshot time reached.")
+
     async def wait_for_snapshot(self):
         """Wait for the event snapshot_start time."""
         # get the snapshot start timestamp
@@ -461,6 +476,13 @@ class Leader0Schedule(LeaderSchedule):
             raise Exception(f"snapshot will be stable on {snapshot_start} UTC")
 
         logger.debug("snapshot is stable")
+
+    async def import_snapshot_data(self):
+        """Collect the snapshot data from EventDB."""
+        event = self.node.get_event()
+        importer = ExternalDataImporter()
+        await importer.ideascale_import_all(event.row_id)
+        await importer.snapshot_import(event.row_id)
 
     async def collect_snapshot_data(self):
         """Collect the snapshot data from EventDB."""
@@ -473,11 +495,12 @@ class Leader0Schedule(LeaderSchedule):
         # check for this field before getting the data
         is_final = await self.db.check_if_snapshot_is_final(event.row_id)
         if not is_final:
-            raise Exception("snapshot is not yet final")
+            logger.warning("snapshot is not final")
 
         try:
             # fetch the stable snapshot data
             snapshot = await self.db.fetch_snapshot(event.row_id)
+            json.loads(snapshot.dbsync_snapshot_data)
             logger.debug(f"snapshot:\n{snapshot}")
         except Exception as e:
             logger.error(f"expected snapshot:\n{e}")

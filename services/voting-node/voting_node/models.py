@@ -287,6 +287,15 @@ class Event:
         now = datetime.utcnow()
         return now >= start_time
 
+    def get_registration_snapshot_time(self) -> datetime:
+        """Get the timestamp for when the event registration has ended on the Cardano main net.
+
+        This method raises exception if the timestamp is None.
+        """
+        if self.registration_snapshot_time is None:
+            raise Exception("event has no registration snapshot time")
+        return self.registration_snapshot_time
+
     def get_snapshot_start(self) -> datetime:
         """Get the timestamp for when the event snapshot becomes stable.
 

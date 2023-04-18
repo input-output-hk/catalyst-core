@@ -140,11 +140,43 @@
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
 <a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
         objective::{
-            Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveType, RewardDefintion,
+            Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveSupplementalData,
+            ObjectiveType, RewardDefintion,
         },
         EventId,
     },
@@ -164,7 +196,7 @@
 
 <span class="kw">impl </span>EventDB {
     <span class="kw">const </span>OBJECTIVES_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total,
+        <span class="string">&quot;SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
         objective_category.name, objective_category.description as objective_category_description,
         vote_options.objective as choices
         FROM objective
@@ -201,13 +233,40 @@
                 (<span class="prelude-val">Some</span>(currency), <span class="prelude-val">Some</span>(value)) =&gt; <span class="prelude-val">Some</span>(RewardDefintion { currency, value }),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
             };
+            <span class="kw">let </span>extra = row.try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;&gt;(<span class="string">&quot;extra&quot;</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>url = extra
+                .as_ref()
+                .and_then(|extra| {
+                    extra
+                        .get(<span class="string">&quot;url&quot;</span>)
+                        .map(|url| url.as_str().map(|str| str.to_string()))
+                })
+                .flatten();
+            <span class="kw">let </span>sponsor = extra
+                .as_ref()
+                .and_then(|extra| {
+                    extra
+                        .get(<span class="string">&quot;sponsor&quot;</span>)
+                        .map(|url| url.as_str().map(|str| str.to_string()))
+                })
+                .flatten();
+            <span class="kw">let </span>video = extra
+                .and_then(|val| {
+                    val.get(<span class="string">&quot;video&quot;</span>)
+                        .map(|url| url.as_str().map(|str| str.to_string()))
+                })
+                .flatten();
+            <span class="kw">let </span>supplemental = <span class="kw">match </span>(sponsor, video) {
+                (<span class="prelude-val">Some</span>(sponsor), <span class="prelude-val">Some</span>(video)) =&gt; <span class="prelude-val">Some</span>(ObjectiveSupplementalData { sponsor, video }),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+            };
             <span class="kw">let </span>details = ObjectiveDetails {
                 reward,
+                url,
+                supplemental,
                 description: row.try_get(<span class="string">&quot;description&quot;</span>)<span class="question-mark">?</span>,
                 choices: row.try_get(<span class="string">&quot;choices&quot;</span>)<span class="question-mark">?</span>,
                 ballot: <span class="prelude-val">None</span>,
-                url: <span class="prelude-val">None</span>,
-                supplemental: <span class="prelude-val">None</span>,
             };
             objectives.push(Objective { summary, details });
         }
@@ -256,8 +315,11 @@
                         </span>}),
                         choices: <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
                         ballot: <span class="prelude-val">None</span>,
-                        url: <span class="prelude-val">None</span>,
-                        supplemental: <span class="prelude-val">None</span>,
+                        url: <span class="prelude-val">Some</span>(<span class="string">&quot;objective 1 url&quot;</span>.to_string()),
+                        supplemental: <span class="prelude-val">Some</span>(ObjectiveSupplementalData {
+                            sponsor: <span class="string">&quot;objective 1 sponsor&quot;</span>.to_string(),
+                            video: <span class="string">&quot;objective 1 video&quot;</span>.to_string()
+                        }),
                     }
                 },
                 Objective {

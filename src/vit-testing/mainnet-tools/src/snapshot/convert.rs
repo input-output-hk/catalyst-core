@@ -127,6 +127,8 @@ impl OutputExtension for SnapshotEntry {
                 }
             },
             voting_purpose: *self.voting_purpose.unwrap_or(VotingPurpose::CATALYST),
+
+            nonce: self.nonce,
         })
     }
 }

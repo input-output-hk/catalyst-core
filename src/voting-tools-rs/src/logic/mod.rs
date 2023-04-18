@@ -102,8 +102,8 @@ fn convert_to_snapshot_entry(
                 voting_key,
                 stake_key,
                 rewards_address,
+                nonce,
                 voting_purpose,
-                ..
             },
         tx_id,
         stake_key_hash,
@@ -128,5 +128,6 @@ fn convert_to_snapshot_entry(
         voting_power,
         voting_purpose,
         tx_id,
+        nonce: nonce.0,
     })
 }

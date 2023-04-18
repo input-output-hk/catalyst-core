@@ -24,6 +24,9 @@ pub struct VotingRegistration {
     /// 0 = Catalyst, assumed 0 for old legacy registrations
     #[serde(default)]
     pub voting_purpose: u64,
+
+    #[serde(default)]
+    pub nonce: u64,
 }
 
 impl VotingRegistration {
@@ -252,6 +255,7 @@ mod tests {
                         reward_address,
                         delegations,
                         voting_purpose: 0,
+                        nonce: 0,
                     }
                 })
                 .boxed()

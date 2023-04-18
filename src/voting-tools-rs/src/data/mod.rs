@@ -584,6 +584,9 @@ pub struct SnapshotEntry {
 
     /// Registration transaction id
     pub tx_id: TxId,
+
+    /// Registration Nonce
+    pub nonce: u64,
 }
 
 fn ox_hex_<T, S>(v: &T, serializer: S) -> Result<S::Ok, S::Error>

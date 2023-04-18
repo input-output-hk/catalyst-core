@@ -15,7 +15,6 @@ use mainnet_lib::{
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };
-use std::collections::BTreeMap;
 use std::str::FromStr;
 
 /// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
@@ -57,7 +56,7 @@ impl DataProvider for MockDbProvider {
                             if let Ok(data) = metadata.as_bytes() {
                                 VotingKey::Direct(PubKey(data).into())
                             } else {
-                                let mut delegations = BTreeMap::new();
+                                let mut delegations = Vec::new();
                                 let delgation_list = metadata.as_list().unwrap();
                                 for i in 0..delgation_list.len() {
                                     let inner_list = delgation_list.get(i).as_list().unwrap();
@@ -67,7 +66,7 @@ impl DataProvider for MockDbProvider {
                                     let weight = inner_list.get(1).as_int().unwrap();
                                     let weight =
                                         u32::from_i32(weight.as_i32_or_fail().unwrap()).unwrap();
-                                    delegations.insert(VotingKeyHex(delegation), weight.into());
+                                    delegations.push((VotingKeyHex(delegation), weight.into()));
                                 }
 
                                 VotingKey::Delegated(delegations)

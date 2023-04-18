@@ -1,5 +1,5 @@
 #[allow(clippy::all)]
-use std::{collections::BTreeMap, error::Error, ffi::OsString, io::Cursor};
+use std::{error::Error, ffi::OsString, io::Cursor};
 
 use crate::{
     validation::hash,
@@ -12,7 +12,7 @@ use hex::FromHexError;
 
 use microtype::microtype;
 
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize, Serializer};
 
 pub(crate) mod arbitrary;
 mod cbor;
@@ -71,24 +71,10 @@ pub enum VotingKey {
     /// Delegated voting
     ///
     /// Voting power is based on the staked ada of the delegated keys
-    #[serde(serialize_with = "serialize_btree_as_vec_tuple")]
-    #[serde(deserialize_with = "deserialize_btree_as_vec_tuple")]
-    Delegated(BTreeMap<VotingKeyHex, u64>),
+    /// order of elements is important and must be preserved.
+    Delegated(Vec<(VotingKeyHex, u64)>),
 }
 
-fn deserialize_btree_as_vec_tuple<'de, D: Deserializer<'de>>(
-    d: D,
-) -> Result<BTreeMap<VotingKeyHex, u64>, D::Error> {
-    <Vec<(VotingKeyHex, u64)>>::deserialize(d).map(|vec| vec.into_iter().collect())
-}
-
-fn serialize_btree_as_vec_tuple<S: Serializer>(
-    map: &BTreeMap<VotingKeyHex, u64>,
-    s: S,
-) -> Result<S::Ok, S::Error> {
-    let vec: Vec<_> = map.iter().collect();
-    vec.serialize(s)
-}
 
 impl VotingKey {
     /// Create a direct voting power source from a hex string representing a voting key
@@ -474,7 +460,7 @@ fn inspect_voting_key(
             VotingKey::Direct(PubKey(direct.clone()).into())
         }
         (Value::Integer(_one), Value::Array(delegations)) => {
-            let mut delegations_map: BTreeMap<VotingKeyHex, u64> = BTreeMap::new();
+            let mut delegations_map: Vec<(VotingKeyHex, u64)> = Vec::new();
             for d in delegations {
                 match d {
                     Value::Array(delegations) => {
@@ -514,7 +500,7 @@ fn inspect_voting_key(
                             }
                         };
 
-                        delegations_map.insert(VotingKeyHex(PubKey(voting_key.clone())), weight);
+                        delegations_map.push((VotingKeyHex(PubKey(voting_key.clone())), weight));
                     }
 
                     _ => {

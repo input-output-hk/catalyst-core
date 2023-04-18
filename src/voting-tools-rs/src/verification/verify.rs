@@ -144,7 +144,10 @@ pub fn latest_registrations(valids: &Valids, invalids: &mut Invalids) -> Valids 
 
     for valid in valids {
         if let Some((_stake_key, current)) = latest.get_key_value(&valid.registration.stake_key) {
-            if valid.registration.nonce > current.registration.nonce {
+            if valid.registration.nonce > current.registration.nonce
+                || ((valid.registration.nonce == current.registration.nonce)
+                    && (valid.tx_id > current.tx_id))
+            {
                 invalids.push(InvalidRegistration {
                     spec_61284: None,
                     spec_61285: None,
@@ -198,53 +201,28 @@ pub fn stake_key_hash(key: &StakeKeyHex, network: NetworkId) -> StakeKeyHash {
 /// Validates second nibble matches network id: 0/1
 #[must_use]
 pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId) -> bool {
-    let prefix_hex = format!("{:x}", rewards_address_prefix);
+    let addr_type = rewards_address_prefix >> 4 & 0xf;
+    let addr_net = rewards_address_prefix & 0xf;
 
     // 0 or 1 are valid addrs in the following cases:
     // type = 0x0 -  network = 0
     // type = 0x0 -  network = 1
     match network {
-        NetworkId::Mainnet => (),
+        NetworkId::Mainnet => {
+            if addr_net != 1 {
+                return false;
+            }
+        }
         NetworkId::Testnet => {
-            if prefix_hex == *"0" || prefix_hex == *"1" {
-                return true;
+            if addr_net != 0 {
+                return false;
             }
         }
     }
-
-    // All other cases should have type and network id present
-    if prefix_hex.len() != 2 {
-        return false;
-    }
-
-    // First nibble identifies type
-    let address_type = prefix_hex.chars().nth(0).unwrap();
-    // second nibble identifies network id
-    let network_id = prefix_hex.chars().nth(1).unwrap();
 
     // Valid addrs: 0x0?, 0x1?, 0x2?, 0x3?, 0x4?, 0x5?, 0x6?, 0x7?, 0xE?, 0xF?.
-    let valid_addrs = 0..8;
-    let addr = address_type.to_digit(16).unwrap();
-    if !valid_addrs.contains(&addr) && addr != 14 && addr != 15 {
-        error!("invalid rewards addr prefix {:?} {:?}", prefix_hex, addr);
-        return false;
-    }
-
-    let net_id = network_id.to_digit(16).unwrap();
-
-    match network {
-        NetworkId::Mainnet => {
-            if net_id != 1 {
-                return false;
-            }
-        }
-        NetworkId::Testnet => {
-            if net_id != 0 {
-                return false;
-            }
-        }
-    }
-    true
+    let valid_addrs = [0, 1, 2, 3, 4, 5, 6, 7, 14, 15];
+    valid_addrs.contains(&addr_type)
 }
 
 /// Validate raw registration binary against 61284 CDDL spec

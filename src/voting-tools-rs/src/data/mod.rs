@@ -75,7 +75,6 @@ pub enum VotingKey {
     Delegated(Vec<(VotingKeyHex, u64)>),
 }
 
-
 impl VotingKey {
     /// Create a direct voting power source from a hex string representing a voting key
     ///

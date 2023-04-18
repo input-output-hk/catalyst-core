@@ -296,7 +296,6 @@ pub fn prefix_hex(b: &[u8]) -> String {
 #[cfg(test)]
 mod tests {
     use crate::{data::NetworkId, verify::is_valid_rewards_address};
-    use bitvec::prelude::*;
 
     #[test]
     pub fn test_rewards_addr_permuations() {
@@ -308,276 +307,54 @@ mod tests {
         // prod - network id: 1
         let network_1 = NetworkId::Mainnet;
 
-        // 0xE - 0
-        let mut e0 = bitvec![u8, Msb0;];
-        e0.push(true);
-        e0.push(true);
-        e0.push(true);
-        e0.push(false);
-        e0.push(false);
-        e0.push(false);
-        e0.push(false);
-        e0.push(false);
-        assert!(is_valid_rewards_address(&e0.as_raw_slice()[0], network_0));
+        let addr_type: u8 = 0x10;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), true);
+        let addr_type: u8 = 0x11;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), true);
 
-        // 0xE - 1
-        let mut e1 = bitvec![u8, Msb0;];
-        e1.push(true);
-        e1.push(true);
-        e1.push(true);
-        e1.push(false);
-        e1.push(false);
-        e1.push(false);
-        e1.push(false);
-        e1.push(true);
-        assert!(is_valid_rewards_address(&e1.as_raw_slice()[0], network_1));
+        let addr_type: u8 = 0x20;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), true);
+        let addr_type: u8 = 0x21;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), true);
 
-        // 0xF - 0
-        let mut f0 = bitvec![u8, Msb0;];
-        f0.push(true);
-        f0.push(true);
-        f0.push(true);
-        f0.push(true);
-        f0.push(false);
-        f0.push(false);
-        f0.push(false);
-        f0.push(false);
-        assert!(is_valid_rewards_address(&f0.as_raw_slice()[0], network_0));
+        let addr_type: u8 = 0x30;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), true);
+        let addr_type: u8 = 0x31;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), true);
 
-        // 0xF - 1
-        let mut f1 = bitvec![u8, Msb0;];
-        f1.push(true);
-        f1.push(true);
-        f1.push(true);
-        f1.push(false);
-        f1.push(false);
-        f1.push(false);
-        f1.push(false);
-        f1.push(true);
-        assert!(is_valid_rewards_address(&f1.as_raw_slice()[0], network_1));
+        let addr_type: u8 = 0x40;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), true);
+        let addr_type: u8 = 0x41;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), true);
 
-        // 0x0 - 0
-        let mut o00 = bitvec![u8, Msb0;];
-        o00.push(false);
-        o00.push(false);
-        o00.push(false);
-        o00.push(false);
-        o00.push(false);
-        o00.push(false);
-        o00.push(false);
-        o00.push(false);
-        assert!(is_valid_rewards_address(&o00.as_raw_slice()[0], network_0));
+        let addr_type: u8 = 0x50;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), true);
+        let addr_type: u8 = 0x51;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), true);
 
-        // 0x0 - 1
-        let mut o01 = bitvec![u8, Msb0;];
-        o01.push(false);
-        o01.push(false);
-        o01.push(false);
-        o01.push(false);
-        o01.push(false);
-        o01.push(false);
-        o01.push(false);
-        o01.push(true);
+        let addr_type: u8 = 0x60;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), true);
+        let addr_type: u8 = 0x61;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), true);
 
-        // 0x1 - 0
-        let mut o10 = bitvec![u8, Msb0;];
-        o10.push(false);
-        o10.push(false);
-        o10.push(false);
-        o10.push(true);
-        o10.push(false);
-        o10.push(false);
-        o10.push(false);
-        o10.push(false);
-        assert!(is_valid_rewards_address(&o10.as_raw_slice()[0], network_0));
+        let addr_type: u8 = 0x70;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), true);
+        let addr_type: u8 = 0x71;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), true);
 
-        // 0x1 - 1
-        let mut o11 = bitvec![u8, Msb0;];
-        o11.push(false);
-        o11.push(false);
-        o11.push(false);
-        o11.push(true);
-        o11.push(false);
-        o11.push(false);
-        o11.push(false);
-        o11.push(true);
-        assert!(is_valid_rewards_address(&o11.as_raw_slice()[0], network_1));
+        let addr_type: u8 = 0xe0;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), true);
+        let addr_type: u8 = 0xe1;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), true);
 
-        // 0x2 - 0
-        let mut o20 = bitvec![u8, Msb0;];
-        o20.push(false);
-        o20.push(false);
-        o20.push(true);
-        o20.push(false);
-        o20.push(false);
-        o20.push(false);
-        o20.push(false);
-        o20.push(false);
-        assert!(is_valid_rewards_address(&o20.as_raw_slice()[0], network_0));
+        let addr_type: u8 = 0xf0;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), true);
+        let addr_type: u8 = 0xf1;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), true);
 
-        // 0x2 - 1
-        let mut o21 = bitvec![u8, Msb0;];
-        o21.push(false);
-        o21.push(false);
-        o21.push(true);
-        o21.push(false);
-        o21.push(false);
-        o21.push(false);
-        o21.push(false);
-        o21.push(true);
-        assert!(is_valid_rewards_address(&o21.as_raw_slice()[0], network_1));
-
-        // 0x3 - 0
-        let mut o30 = bitvec![u8, Msb0;];
-        o30.push(false);
-        o30.push(false);
-        o30.push(true);
-        o30.push(true);
-        o30.push(false);
-        o30.push(false);
-        o30.push(false);
-        o30.push(false);
-        assert!(is_valid_rewards_address(&o30.as_raw_slice()[0], network_0));
-
-        // 0x3 - 1
-        let mut o31 = bitvec![u8, Msb0;];
-        o31.push(false);
-        o31.push(false);
-        o31.push(true);
-        o31.push(true);
-        o31.push(false);
-        o31.push(false);
-        o31.push(false);
-        o31.push(true);
-        assert!(is_valid_rewards_address(&o21.as_raw_slice()[0], network_1));
-
-        // 0x4 - 0
-        let mut o40 = bitvec![u8, Msb0;];
-        o40.push(false);
-        o40.push(true);
-        o40.push(false);
-        o40.push(false);
-        o40.push(false);
-        o40.push(false);
-        o40.push(false);
-        o40.push(false);
-        assert!(is_valid_rewards_address(&o40.as_raw_slice()[0], network_0));
-
-        // 0x4 - 1
-        let mut o41 = bitvec![u8, Msb0;];
-        o41.push(false);
-        o41.push(true);
-        o41.push(false);
-        o41.push(false);
-        o41.push(false);
-        o41.push(false);
-        o41.push(false);
-        o41.push(true);
-        assert!(is_valid_rewards_address(&o41.as_raw_slice()[0], network_1));
-
-        // 0x5 - 0
-        let mut o50 = bitvec![u8, Msb0;];
-        o50.push(false);
-        o50.push(true);
-        o50.push(false);
-        o50.push(true);
-        o50.push(false);
-        o50.push(false);
-        o50.push(false);
-        o50.push(false);
-        assert!(is_valid_rewards_address(&o50.as_raw_slice()[0], network_0));
-
-        // 0x5 - 1
-        let mut o51 = bitvec![u8, Msb0;];
-        o51.push(false);
-        o51.push(true);
-        o51.push(false);
-        o51.push(true);
-        o51.push(false);
-        o51.push(false);
-        o51.push(false);
-        o51.push(true);
-        assert!(is_valid_rewards_address(&o51.as_raw_slice()[0], network_1));
-
-        // 0x6 - 0
-        let mut o60 = bitvec![u8, Msb0;];
-        o60.push(false);
-        o60.push(true);
-        o60.push(true);
-        o60.push(false);
-        o60.push(false);
-        o60.push(false);
-        o60.push(false);
-        o60.push(false);
-        assert!(is_valid_rewards_address(&o60.as_raw_slice()[0], network_0));
-
-        // 0x6 - 1
-        let mut o61 = bitvec![u8, Msb0;];
-        o61.push(false);
-        o61.push(true);
-        o61.push(true);
-        o61.push(false);
-        o61.push(false);
-        o61.push(false);
-        o61.push(false);
-        o61.push(true);
-        assert!(is_valid_rewards_address(&o61.as_raw_slice()[0], network_1));
-
-        // 0x7 - 0
-        let mut o70 = bitvec![u8, Msb0;];
-        o70.push(false);
-        o70.push(true);
-        o70.push(true);
-        o70.push(true);
-        o70.push(false);
-        o70.push(false);
-        o70.push(false);
-        o70.push(false);
-        assert!(is_valid_rewards_address(&o70.as_raw_slice()[0], network_0));
-
-        // 0x7 - 1
-        let mut o71 = bitvec![u8, Msb0;];
-        o71.push(false);
-        o71.push(true);
-        o71.push(true);
-        o71.push(true);
-        o71.push(false);
-        o71.push(false);
-        o71.push(false);
-        o71.push(true);
-
-        assert!(is_valid_rewards_address(&o71.as_raw_slice()[0], network_1));
-
-        // should fail
-
-        // 0x9 - 0
-        let mut o90 = bitvec![u8, Msb0;];
-        o90.push(true);
-        o90.push(false);
-        o90.push(false);
-        o90.push(true);
-        o90.push(false);
-        o90.push(false);
-        o90.push(false);
-        o90.push(false);
-        assert_eq!(
-            is_valid_rewards_address(&o90.as_raw_slice()[0], network_0),
-            false
-        );
-
-        // 0x9 - 1
-        let mut o91 = bitvec![u8, Msb0;];
-        o91.push(true);
-        o91.push(false);
-        o91.push(false);
-        o91.push(true);
-        o91.push(false);
-        o91.push(false);
-        o91.push(false);
-        o91.push(true);
-        assert_eq!(
-            is_valid_rewards_address(&o91.as_raw_slice()[0], network_1),
-            false
-        );
+        let addr_type: u8 = 0x90;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_0), false);
+        let addr_type: u8 = 0x91;
+        assert_eq!(is_valid_rewards_address(&addr_type, network_1), false);
     }
 }

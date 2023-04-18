@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use cardano_serialization_lib::chain_crypto::{AsymmetricKey, SigningAlgorithm};
 use ciborium::cbor;
 use test_strategy::proptest;
@@ -48,7 +46,7 @@ fn fails_if_empty_delegations() {
     let ctx = test_ctx();
 
     let mut reg = cip15::vector();
-    reg.registration.voting_key = VotingKey::Delegated(BTreeMap::new());
+    reg.registration.voting_key = VotingKey::Delegated(Vec::new());
 
     let Failure { error, .. } = reg.validate_with(ctx).unwrap_err();
     assert_eq!(error, RegistrationError::EmptyDelegations);

@@ -326,38 +326,6 @@
 <a href="#326" id="326">326</a>
 <a href="#327" id="327">327</a>
 <a href="#328" id="328">328</a>
-<a href="#329" id="329">329</a>
-<a href="#330" id="330">330</a>
-<a href="#331" id="331">331</a>
-<a href="#332" id="332">332</a>
-<a href="#333" id="333">333</a>
-<a href="#334" id="334">334</a>
-<a href="#335" id="335">335</a>
-<a href="#336" id="336">336</a>
-<a href="#337" id="337">337</a>
-<a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a>
-<a href="#340" id="340">340</a>
-<a href="#341" id="341">341</a>
-<a href="#342" id="342">342</a>
-<a href="#343" id="343">343</a>
-<a href="#344" id="344">344</a>
-<a href="#345" id="345">345</a>
-<a href="#346" id="346">346</a>
-<a href="#347" id="347">347</a>
-<a href="#348" id="348">348</a>
-<a href="#349" id="349">349</a>
-<a href="#350" id="350">350</a>
-<a href="#351" id="351">351</a>
-<a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
-<a href="#357" id="357">357</a>
-<a href="#358" id="358">358</a>
-<a href="#359" id="359">359</a>
-<a href="#360" id="360">360</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
 <span class="kw">use </span>dashmap::DashMap;
@@ -661,61 +629,29 @@
     </span><span class="kw">pub fn </span>test_rewards_addr_permuations() {
         <span class="comment">// Valid addrs: 0x0?, 0x1?, 0x2?, 0x3?, 0x4?, 0x5?, 0x6?, 0x7?, 0xE?, 0xF?.
 
-        // preprod - network id: 0
-        </span><span class="kw">let </span>network_0 = NetworkId::Testnet;
+        </span><span class="kw">let </span>valid_addr_types = <span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4 </span>,<span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">14</span>,<span class="number">15</span>];
 
-        <span class="comment">// prod - network id: 1
-        </span><span class="kw">let </span>network_1 = NetworkId::Mainnet;
+        <span class="kw">for </span>addr_type <span class="kw">in </span>valid_addr_types {
+            <span class="kw">let </span>test_addr = addr_type &lt;&lt; <span class="number">4</span>;
+            <span class="macro">assert!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>test_addr, NetworkId::Testnet));
+            <span class="macro">assert!</span>(!is_valid_rewards_address(<span class="kw-2">&amp;</span>test_addr, NetworkId::Mainnet));
 
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x10</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">true</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x11</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">true</span>);
+            <span class="kw">let </span>test_addr = addr_type &lt;&lt; <span class="number">4 </span>| <span class="number">1</span>;
+            <span class="macro">assert!</span>(!is_valid_rewards_address(<span class="kw-2">&amp;</span>test_addr, NetworkId::Testnet));
+            <span class="macro">assert!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>test_addr, NetworkId::Mainnet));
+        }
 
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x20</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">true</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x21</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">true</span>);
+        <span class="kw">let </span>invalid_addr_types = <span class="macro">vec!</span>[<span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>, <span class="number">11</span>, <span class="number">12</span>, <span class="number">13</span>];
 
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x30</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">true</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x31</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">true</span>);
+        <span class="kw">for </span>addr_type <span class="kw">in </span>invalid_addr_types {
+            <span class="kw">let </span>test_addr = addr_type &lt;&lt; <span class="number">4</span>;
+            <span class="macro">assert!</span>(!is_valid_rewards_address(<span class="kw-2">&amp;</span>test_addr, NetworkId::Testnet));
+            <span class="macro">assert!</span>(!is_valid_rewards_address(<span class="kw-2">&amp;</span>test_addr, NetworkId::Mainnet));
 
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x40</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">true</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x41</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">true</span>);
-
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x50</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">true</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x51</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">true</span>);
-
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x60</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">true</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x61</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">true</span>);
-
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x70</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">true</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x71</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">true</span>);
-
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0xe0</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">true</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0xe1</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">true</span>);
-
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0xf0</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">true</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0xf1</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">true</span>);
-
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x90</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_0), <span class="bool-val">false</span>);
-        <span class="kw">let </span>addr_type: u8 = <span class="number">0x91</span>;
-        <span class="macro">assert_eq!</span>(is_valid_rewards_address(<span class="kw-2">&amp;</span>addr_type, network_1), <span class="bool-val">false</span>);
+            <span class="kw">let </span>test_addr = addr_type &lt;&lt; <span class="number">4 </span>| <span class="number">1</span>;
+            <span class="macro">assert!</span>(!is_valid_rewards_address(<span class="kw-2">&amp;</span>test_addr, NetworkId::Testnet));
+            <span class="macro">assert!</span>(!is_valid_rewards_address(<span class="kw-2">&amp;</span>test_addr, NetworkId::Mainnet));
+        }
     }
 }
 </code></pre></div>

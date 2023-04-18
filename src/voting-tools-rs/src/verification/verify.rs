@@ -309,7 +309,7 @@ impl Default for CddlConfig {
     }
 }
 
-/// encoding of hex strings with a 0x prefix.
+/// encoding of hex strings with a 0x prefix
 #[must_use]
 pub fn prefix_hex(b: &[u8]) -> String {
     format!("0x{}", hex::encode(b))

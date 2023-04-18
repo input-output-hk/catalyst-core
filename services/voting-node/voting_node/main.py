@@ -1,4 +1,4 @@
-"""Command-line Interface for the Voting Node Servie.
+"""Command-line Interface for the Voting Node Service.
 
 Main entrypoint for executing the voting node service from the shell command-line.
 """

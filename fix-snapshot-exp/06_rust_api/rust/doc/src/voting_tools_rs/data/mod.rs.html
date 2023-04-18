@@ -718,6 +718,9 @@
 <a href="#718" id="718">718</a>
 <a href="#719" id="719">719</a>
 <a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
 </pre><pre class="rust"><code><span class="attr">#[allow(clippy::all)]
 </span><span class="kw">use </span>std::{error::Error, ffi::OsString, io::Cursor};
 
@@ -1304,6 +1307,9 @@
 
     <span class="doccomment">/// Registration transaction id
     </span><span class="kw">pub </span>tx_id: TxId,
+
+    <span class="doccomment">/// Registration Nonce
+    </span><span class="kw">pub </span>nonce: u64,
 }
 
 <span class="kw">fn </span>ox_hex_&lt;T, S&gt;(v: <span class="kw-2">&amp;</span>T, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;

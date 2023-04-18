@@ -342,6 +342,10 @@
 <a href="#342" id="342">342</a>
 <a href="#343" id="343">343</a>
 <a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
 </pre><pre class="rust"><code><span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 <span class="kw">use </span>jormungandr_lib::interfaces::Value;
 <span class="kw">use </span>serde::{de::Error, Deserialize, Serialize};
@@ -368,6 +372,9 @@
     <span class="doccomment">/// 0 = Catalyst, assumed 0 for old legacy registrations
     </span><span class="attr">#[serde(default)]
     </span><span class="kw">pub </span>voting_purpose: u64,
+
+    <span class="attr">#[serde(default)]
+    </span><span class="kw">pub </span>nonce: u64,
 }
 
 <span class="kw">impl </span>VotingRegistration {
@@ -596,6 +603,7 @@
                         reward_address,
                         delegations,
                         voting_purpose: <span class="number">0</span>,
+                        nonce: <span class="number">0</span>,
                     }
                 })
                 .boxed()

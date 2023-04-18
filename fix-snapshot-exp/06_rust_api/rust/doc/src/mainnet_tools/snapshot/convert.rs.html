@@ -147,6 +147,8 @@
 <a href="#147" id="147">147</a>
 <a href="#148" id="148">148</a>
 <a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 <span class="kw">use </span>vit_servicing_station_tests::common::raw_snapshot::RawSnapshot <span class="kw">as </span>RawSnapshotRequest;
 
@@ -276,6 +278,8 @@
                 }
             },
             voting_purpose: <span class="kw-2">*</span><span class="self">self</span>.voting_purpose.unwrap_or(VotingPurpose::CATALYST),
+
+            nonce: <span class="self">self</span>.nonce,
         })
     }
 }

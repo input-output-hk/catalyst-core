@@ -130,6 +130,7 @@
 <a href="#130" id="130">130</a>
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
 </pre><pre class="rust"><code><span class="attr">#![allow(missing_docs)]
 
 </span><span class="kw">use </span>std::thread;
@@ -234,8 +235,8 @@
                 voting_key,
                 stake_key,
                 rewards_address,
+                nonce,
                 voting_purpose,
-                ..
             },
         tx_id,
         stake_key_hash,
@@ -260,6 +261,7 @@
         voting_power,
         voting_purpose,
         tx_id,
+        nonce: nonce.<span class="number">0</span>,
     })
 }
 </code></pre></div>

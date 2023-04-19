@@ -1,7 +1,9 @@
-use crate::{error::Error, types::utils::serialize_option_datetime_as_rfc3339};
+use crate::types::utils::serialize_option_datetime_as_rfc3339;
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+
+pub mod objective;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EventId(pub i32);
@@ -119,32 +121,8 @@ pub struct EventSchedule {
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
-pub enum VoterGroupId {
-    #[serde(rename = "rep")]
-    Rep,
-    #[serde(rename = "direct")]
-    Direct,
-}
-
-impl TryFrom<String> for VoterGroupId {
-    type Error = Error;
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        if &value == "rep" {
-            Ok(Self::Rep)
-        } else if &value == "direct" {
-            Ok(Self::Direct)
-        } else {
-            Err(Error::Unknown(format!(
-                "Could be only one of the following options: [rep, direct], provided: {}",
-                value
-            )))
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct VoterGroup {
-    pub id: VoterGroupId,
+    pub id: String,
     pub voting_token: String,
 }
 
@@ -160,9 +138,9 @@ pub struct EventDetails {
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Event {
     #[serde(flatten)]
-    pub event_summary: EventSummary,
+    pub summary: EventSummary,
     #[serde(flatten)]
-    pub event_details: EventDetails,
+    pub details: EventDetails,
 }
 
 #[cfg(test)]
@@ -440,7 +418,7 @@ mod tests {
     #[test]
     fn voter_group_json_test() {
         let voter_group = VoterGroup {
-            id: VoterGroupId::Rep,
+            id: "rep".to_string(),
             voting_token: "voting token 1".to_string(),
         };
 
@@ -518,7 +496,7 @@ mod tests {
                 )),
             },
             groups: vec![VoterGroup {
-                id: VoterGroupId::Rep,
+                id: "rep".to_string(),
                 voting_token: "voting token 1".to_string(),
             }],
         };
@@ -569,7 +547,7 @@ mod tests {
     #[test]
     fn event_json_test() {
         let event_summary = Event {
-            event_summary: EventSummary {
+            summary: EventSummary {
                 id: EventId(1),
                 name: "Fund 10".to_string(),
                 starts: Some(DateTime::from_utc(
@@ -586,7 +564,7 @@ mod tests {
                 )),
                 is_final: true,
             },
-            event_details: EventDetails {
+            details: EventDetails {
                 voting_power: VotingPowerSettings {
                     alg: VotingPowerAlgorithm::ThresholdStakedADA,
                     min_ada: Some(500),
@@ -646,7 +624,7 @@ mod tests {
                     )),
                 },
                 groups: vec![VoterGroup {
-                    id: VoterGroupId::Rep,
+                    id: "rep".to_string(),
                     voting_token: "voting token 1".to_string(),
                 }],
             },

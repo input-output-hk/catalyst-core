@@ -126,8 +126,8 @@ impl<'a> DbInserter<'a> {
                 &proposal.proposal.proposer.proposer_relevant_experience,
             )
             .bind::<diesel::sql_types::Binary, _>(&proposal.proposal.chain_proposal_id)
-            .bind::<diesel::sql_types::Text, _>(
-                proposal.proposal.chain_vote_options.as_csv_string(),
+            .bind::<diesel::sql_types::Array<diesel::sql_types::Text>, _>(
+                proposal.proposal.chain_vote_options.to_vec_string(),
             )
             .bind::<diesel::sql_types::Integer, _>(&proposal.proposal.challenge_id)
             .bind::<diesel::sql_types::Jsonb, _>(serde_json::to_value(extra).unwrap())

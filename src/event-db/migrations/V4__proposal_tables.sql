@@ -24,7 +24,7 @@ CREATE TABLE proposal
     proposer_relevant_experience TEXT NOT NULL,
     bb_proposal_id BYTEA,
 
-    bb_vote_options TEXT,
+    bb_vote_options TEXT[],
 
     FOREIGN KEY(objective) REFERENCES objective(row_id),
     FOREIGN KEY(bb_vote_options) REFERENCES vote_options(objective)

@@ -9,6 +9,8 @@ use crate::{
 use async_trait::async_trait;
 use chrono::{NaiveDateTime, Utc};
 
+pub mod objective;
+
 #[async_trait]
 pub trait EventQueries: Sync + Send + 'static {
     async fn get_events(
@@ -166,15 +168,13 @@ impl EventQueries for EventDB {
         let mut groups = Vec::new();
         for row in rows {
             groups.push(VoterGroup {
-                id: row
-                    .try_get::<&'static str, String>("group_id")?
-                    .try_into()?,
+                id: row.try_get("group_id")?,
                 voting_token: row.try_get("token_id")?,
             })
         }
 
         Ok(Event {
-            event_summary: EventSummary {
+            summary: EventSummary {
                 id: EventId(row.try_get("row_id")?),
                 name: row.try_get("name")?,
                 starts: row
@@ -186,7 +186,7 @@ impl EventQueries for EventDB {
                 ends,
                 is_final,
             },
-            event_details: EventDetails {
+            details: EventDetails {
                 voting_power,
                 schedule,
                 goals,
@@ -207,7 +207,7 @@ impl EventQueries for EventDB {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{establish_connection, types::event::VoterGroupId};
+    use crate::establish_connection;
     use chrono::{DateTime, NaiveDate, NaiveTime};
     use rust_decimal::Decimal;
 
@@ -412,7 +412,7 @@ mod tests {
         assert_eq!(
             event,
             Event {
-                event_summary: EventSummary {
+                summary: EventSummary {
                     id: EventId(1),
                     name: "Test Fund 1".to_string(),
                     starts: Some(DateTime::<Utc>::from_utc(
@@ -438,7 +438,7 @@ mod tests {
                     )),
                     is_final: true,
                 },
-                event_details: EventDetails {
+                details: EventDetails {
                     voting_power: VotingPowerSettings {
                         alg: VotingPowerAlgorithm::ThresholdStakedADA,
                         min_ada: Some(1),
@@ -546,11 +546,11 @@ mod tests {
                     ],
                     groups: vec![
                         VoterGroup {
-                            id: VoterGroupId::Rep,
+                            id: "rep".to_string(),
                             voting_token: "rep token".to_string()
                         },
                         VoterGroup {
-                            id: VoterGroupId::Direct,
+                            id: "direct".to_string(),
                             voting_token: "direct token".to_string()
                         }
                     ]

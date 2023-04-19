@@ -14,9 +14,10 @@ COMMENT ON COLUMN objective_category.description IS 'A Description of this kind 
 -- Define known objective categories
 INSERT INTO objective_category (name,  description)
 VALUES
-    ('simple','A Simple choice'),
-    ('native','??'),
-    ('community-choice','Community collective decision');
+    ('catalyst-simple','A Simple choice'),
+    ('catalyst-native','??'),
+    ('catalyst-community-choice','Community collective decision'),
+    ('sve-decision','Special voting event decision');
 
 -- known currencies - Defines all currently known currencies.
 CREATE TABLE currency
@@ -42,8 +43,8 @@ VALUES
 CREATE TABLE vote_options
 (
     id SERIAL PRIMARY KEY,
-    idea_scale TEXT UNIQUE,
-    objective TEXT UNIQUE
+    idea_scale TEXT ARRAY UNIQUE,
+    objective TEXT ARRAY UNIQUE
 );
 
 COMMENT ON TABLE vote_options IS 'Defines all known vote plan option types.';
@@ -54,7 +55,7 @@ COMMENT ON COLUMN vote_options.objective IS 'How the vote options is represented
 -- Define known vote_options
 INSERT INTO vote_options (idea_scale,  objective)
 VALUES
-    ('blank,yes,no','yes,no');
+    ('{"blank", "yes", "no"}','{"yes", "no"}');
 
 
 

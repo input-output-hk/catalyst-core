@@ -52,7 +52,7 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/graphql-setup.sql
+psql -e -U postgres -f setup/graphql-setup.sql ${@}
 '''
 
 
@@ -85,7 +85,7 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/docs-db.sql
+psql -e -U postgres -f setup/docs-db.sql ${@}
 '''
 
 # Setup the local database ready to run the migrations.

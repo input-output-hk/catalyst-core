@@ -1269,6 +1269,7 @@ FROM
     INNER JOIN objective ON proposal.objective = objective.row_id
 WHERE objective.category = 'catalyst-community-choice';
 
+
 COMMENT ON VIEW proposal_community_choice_challenge IS
     '@omit
 This view maps the original VIT-SS proposal_community_choice_challenge table to the new proposal table.

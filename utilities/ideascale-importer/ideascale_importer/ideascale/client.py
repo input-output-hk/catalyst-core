@@ -1,3 +1,5 @@
+"""IdeaScale API client."""
+
 import asyncio
 from pydantic.dataclasses import dataclass
 import pydantic.tools
@@ -6,14 +8,10 @@ from typing import Any, Iterable, List, Mapping
 from ideascale_importer import utils
 
 
-class ExcludeUnknownFields:
-    ...
-
-
 @dataclass
-class Campaign(ExcludeUnknownFields):
-    """
-    Represents a campaign from IdeaScale.
+class Campaign:
+    """Represents a campaign from IdeaScale.
+
     (Contains only the fields that are used by the importer).
     """
 
@@ -26,9 +24,9 @@ class Campaign(ExcludeUnknownFields):
 
 
 @dataclass
-class CampaignGroup(ExcludeUnknownFields):
-    """
-    Represents a campaign group from IdeaScale.
+class CampaignGroup:
+    """Represents a campaign group from IdeaScale.
+
     (Contains only the fields that are used by the importer).
     """
 
@@ -38,9 +36,9 @@ class CampaignGroup(ExcludeUnknownFields):
 
 
 @dataclass
-class IdeaAuthorInfo(ExcludeUnknownFields):
-    """
-    Represents an author info from IdeaScale.
+class IdeaAuthorInfo:
+    """Represents an author info from IdeaScale.
+
     (Contains only the fields that are used by the importer).
     """
 
@@ -48,9 +46,9 @@ class IdeaAuthorInfo(ExcludeUnknownFields):
 
 
 @dataclass
-class Idea(ExcludeUnknownFields):
-    """
-    Represents an idea from IdeaScale.
+class Idea:
+    """Represents an idea from IdeaScale.
+
     (Contains only the fields that are used by the importer).
     """
 
@@ -64,13 +62,14 @@ class Idea(ExcludeUnknownFields):
     url: str
 
     def contributors_name(self) -> List[str]:
+        """Get the names of all contributors."""
         return list(map(lambda c: c.name, self.contributors))
 
 
 @dataclass
-class Stage(ExcludeUnknownFields):
-    """
-    Represents a stage from IdeaScale.
+class Stage:
+    """Represents a stage from IdeaScale.
+
     (Contains only the fields that are used by the importer).
     """
 
@@ -81,9 +80,9 @@ class Stage(ExcludeUnknownFields):
 
 
 @dataclass
-class Funnel(ExcludeUnknownFields):
-    """
-    Represents a funnel from IdeaScale.
+class Funnel:
+    """Represents a funnel from IdeaScale.
+
     (Contains only the fields that are used by the importer).
     """
 
@@ -93,21 +92,17 @@ class Funnel(ExcludeUnknownFields):
 
 
 class Client:
-    """
-    IdeaScale API client.
-    """
+    """IdeaScale API client."""
 
     DEFAULT_API_URL = "https://cardano.ideascale.com"
 
     def __init__(self, api_token: str, api_url: str = DEFAULT_API_URL):
+        """Create an IdeaScale API client which connects to the given API URL."""
         self.api_token = api_token
         self.inner = utils.JsonHttpClient(api_url)
 
     async def campaigns(self, group_id: int) -> List[Campaign]:
-        """
-        Gets all campaigns from the campaign group with the given id.
-        """
-
+        """Get all campaigns from the campaign group with the given id."""
         res = await self._get(f"/a/rest/v1/campaigns/groups/{group_id}")
 
         campaigns: List[Campaign] = []
@@ -125,10 +120,7 @@ class Client:
         return campaigns
 
     async def campaign_groups(self) -> List[CampaignGroup]:
-        """
-        Gets all campaign groups.
-        """
-
+        """Get all campaign groups."""
         res = await self._get("/a/rest/v1/campaigns/groups")
 
         campaign_groups: List[CampaignGroup] = []
@@ -139,10 +131,7 @@ class Client:
         return campaign_groups
 
     async def campaign_ideas(self, campaign_id: int) -> List[Idea]:
-        """
-        Gets all ideas from the campaign with the given id.
-        """
-
+        """Get all ideas from the campaign with the given id."""
         res = await self._get(f"/a/rest/v1/campaigns/{campaign_id}/ideas")
 
         ideas = []
@@ -153,8 +142,7 @@ class Client:
         return ideas
 
     async def stage_ideas(self, stage_id: int, page_size: int = 50, request_workers_count: int = 10) -> List[Idea]:
-        """
-        Gets all ideas from the stage with the given id.
+        """Get all ideas from the stage with the given id.
 
         Pages are requested concurrently until the latest one fails
         which signals that that are no more pages left.
@@ -192,26 +180,17 @@ class Client:
         return d.ideas
 
     async def campaign_group_ideas(self, group_id: int) -> List[Idea]:
-        """
-        Gets all ideas from the campaigns that belong to the campaign group with the given id.
-        """
-
+        """Get all ideas from the campaigns that belong to the campaign group with the given id."""
         campaigns = await self.campaigns(group_id)
         ideas = await asyncio.gather(*[self.campaign_ideas(c.id) for c in campaigns])
         return [i for campaign_ideas in ideas for i in campaign_ideas]
 
     async def funnel(self, funnel_id: int) -> Funnel:
-        """
-        Gets the funnel with the given id.
-        """
-
+        """Get the funnel with the given id."""
         res = await self._get(f"/v1/funnels/{funnel_id}")
         return pydantic.tools.parse_obj_as(Funnel, res)
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
-        """
-        Executes a GET request on IdeaScale API.
-        """
-
+        """Execute a GET request on IdeaScale API."""
         headers = {"api_token": self.api_token}
         return await self.inner.get(path, headers)

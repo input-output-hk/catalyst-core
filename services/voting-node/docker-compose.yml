@@ -22,15 +22,9 @@ services:
         condition: service_started
     ports:
       - "5057:5057"
+    env_file: .env
     environment:
-      - VOTING_HOST=0.0.0.0
-      - VOTING_PORT=5057
-      - VOTING_LOG_LEVEL=debug
-      - VOTING_NODE_STORAGE=/node_storage
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JORM_REST_PORT=5067
-      - JORM_JRPC_PORT=5068
-      - JORM_P2P_PORT=5069
+      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
     volumes:
       - leader0_store:/node_storage
     command: voting-node start
@@ -43,15 +37,9 @@ services:
         condition: service_started
     ports:
       - "6057:5057"
+    env_file: .env
     environment:
-      - VOTING_HOST=0.0.0.0
-      - VOTING_PORT=5057
-      - VOTING_LOG_LEVEL=info
-      - VOTING_NODE_STORAGE=/node_storage
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JORM_REST_PORT=5067
-      - JORM_JRPC_PORT=5068
-      - JORM_P2P_PORT=5069
+      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
     volumes:
       - leader1_store:/node_storage
     command: voting-node start
@@ -64,15 +52,9 @@ services:
         condition: service_started
     ports:
       - "7057:5057"
+    env_file: .env
     environment:
-      - VOTING_HOST=0.0.0.0
-      - VOTING_PORT=5057
-      - VOTING_LOG_LEVEL=debug
-      - VOTING_NODE_STORAGE=/node_storage
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JORM_REST_PORT=5067
-      - JORM_JRPC_PORT=5068
-      - JORM_P2P_PORT=5069
+      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
     volumes:
       - leader2_store:/node_storage
     command: voting-node start

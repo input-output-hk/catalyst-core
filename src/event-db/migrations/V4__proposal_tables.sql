@@ -26,8 +26,8 @@ CREATE TABLE proposal
 
     bb_vote_options TEXT[],
 
-    FOREIGN KEY(objective) REFERENCES objective(row_id),
-    FOREIGN KEY(bb_vote_options) REFERENCES vote_options(objective)
+    FOREIGN KEY(objective) REFERENCES objective(row_id) ON DELETE CASCADE,
+    FOREIGN KEY(bb_vote_options) REFERENCES vote_options(objective) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX proposal_index ON proposal(row_id, objective);
@@ -194,8 +194,8 @@ CREATE TABLE review_rating (
 
   UNIQUE ( review_id, metric ),
 
-  FOREIGN KEY (review_id) REFERENCES proposal_review(row_id),
-  FOREIGN KEY (metric) REFERENCES review_metric(row_id)
+  FOREIGN KEY (review_id) REFERENCES proposal_review(row_id) ON DELETE CASCADE,
+  FOREIGN KEY (metric) REFERENCES review_metric(row_id) ON DELETE CASCADE
 );
 
 

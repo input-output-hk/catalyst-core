@@ -69,7 +69,7 @@ CREATE TABLE goal
     idx INTEGER NOT NULL,
     name VARCHAR NOT NULL,
 
-    FOREIGN KEY(event_id) REFERENCES event(row_id)
+    FOREIGN KEY(event_id) REFERENCES event(row_id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX goal_index ON goal(event_id, idx);
@@ -103,10 +103,10 @@ CREATE TABLE objective
 
     extra JSONB,
 
-    FOREIGN KEY(event) REFERENCES event(row_id),
-    FOREIGN KEY(category) REFERENCES objective_category(name),
-    FOREIGN KEY(rewards_currency) REFERENCES currency(name),
-    FOREIGN KEY(vote_options) REFERENCES vote_options(id)
+    FOREIGN KEY(event) REFERENCES event(row_id) ON DELETE CASCADE,
+    FOREIGN KEY(category) REFERENCES objective_category(name) ON DELETE CASCADE,
+    FOREIGN KEY(rewards_currency) REFERENCES currency(name) ON DELETE CASCADE,
+    FOREIGN KEY(vote_options) REFERENCES vote_options(id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX objective_idx ON objective (id, event);

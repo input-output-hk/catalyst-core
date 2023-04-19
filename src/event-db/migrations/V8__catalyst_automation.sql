@@ -11,7 +11,7 @@ CREATE TABLE voting_node (
     netkey TEXT NOT NULL,
 
     PRIMARY KEY (hostname, event),
-    FOREIGN KEY(event) REFERENCES event(row_id)
+    FOREIGN KEY(event) REFERENCES event(row_id)  ON DELETE CASCADE
 );
 
 COMMENT ON TABLE voting_node IS
@@ -37,7 +37,7 @@ CREATE TABLE tally_committee (
 
     -- Other data goes here.
 
-    FOREIGN KEY(event) REFERENCES event(row_id)
+    FOREIGN KEY(event) REFERENCES event(row_id)  ON DELETE CASCADE
 );
 
 COMMENT ON TABLE tally_committee IS 'Table for storing data about the tally committee per voting event.';

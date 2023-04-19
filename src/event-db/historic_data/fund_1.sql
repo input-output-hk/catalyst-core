@@ -4,6 +4,7 @@
 -- https://input-output.atlassian.net/wiki/spaces/VIT/pages/2892759058/Catalyst+Fund+Cycle+Releases
 -- https://input-output.atlassian.net/wiki/spaces/VIT/pages/1550057521/Fund-1
 -- https://docs.google.com/spreadsheets/d/10x7T2nbjFECkngmDY04cnpUPpdiu1X-QjoxAtqKYTMs/edit#gid=1302724491
+-- https://drive.google.com/file/d/1UmAGBRxWbQtpWjrNnvGuybgLiWs2zFMS/view
 
 -- Purge all Fund 1 data before re-inserting it.
 DELETE FROM event WHERE row_id = 1;
@@ -51,7 +52,7 @@ VALUES
  '2020-09-22 23:59:00', -- Tallying Ends - Date Accurate, time not known.
  NULL,                  -- Block 0 Data - Not Known
  NULL,                  -- Block 0 Hash - Not Known
- 1,                     -- Committee Size - Not Known
- 1                      -- Committee Threshold - Not Known
+ 0,                     -- Committee Size - Not Known
+ 0                      -- Committee Threshold - Not Known
  );
 

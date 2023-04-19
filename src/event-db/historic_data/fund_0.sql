@@ -53,7 +53,7 @@ VALUES
  '2020-06-19 12:00:00', -- Tallying Ends - Date Accurate, time not known.
  NULL,                  -- Block 0 Data - Not Known
  NULL,                  -- Block 0 Hash - Not Known
- 1,                     -- Committee Size - Not Known
- 1                      -- Committee Threshold - Not Known
+ 0,                     -- Committee Size - Not Known
+ 0                      -- Committee Threshold - Not Known
  );
 

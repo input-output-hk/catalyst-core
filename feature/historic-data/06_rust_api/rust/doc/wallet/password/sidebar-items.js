@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["ScrubbedBytes"],"type":["Password"]};
+window.SIDEBAR_ITEMS = {"constant":["_DERIVE_Drop_FOR_ScrubbedBytes"],"struct":["ScrubbedBytes"],"type":["Password"]};

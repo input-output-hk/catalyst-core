@@ -60,128 +60,46 @@
 <a href="#60" id="60">60</a>
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
-<a href="#63" id="63">63</a>
-<a href="#64" id="64">64</a>
-<a href="#65" id="65">65</a>
-<a href="#66" id="66">66</a>
-<a href="#67" id="67">67</a>
-<a href="#68" id="68">68</a>
-<a href="#69" id="69">69</a>
-<a href="#70" id="70">70</a>
-<a href="#71" id="71">71</a>
-<a href="#72" id="72">72</a>
-<a href="#73" id="73">73</a>
-<a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
-<a href="#79" id="79">79</a>
-<a href="#80" id="80">80</a>
-<a href="#81" id="81">81</a>
-<a href="#82" id="82">82</a>
-<a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-</pre><pre class="rust"><code><span class="attr">#![allow(missing_docs)]
-
-</span><span class="kw">use </span>std::sync::atomic::{AtomicU64, Ordering};
+</pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
 <span class="kw">use </span>bigdecimal::BigDecimal;
-<span class="kw">use </span>color_eyre::Report;
-<span class="kw">use </span>dashmap::DashMap;
+<span class="kw">use </span>color_eyre::{Report, <span class="prelude-ty">Result</span>};
 <span class="kw">use </span>diesel::{BoolExpressionMethods, JoinOnDsl, NullableExpressionMethods, QueryDsl, RunQueryDsl};
 
+<span class="kw">use </span><span class="kw">crate</span>::data::StakeKeyHex;
 <span class="kw">use </span><span class="kw">crate</span>::db::inner::DbQuery;
 <span class="kw">use </span><span class="kw">crate</span>::db::Db;
-<span class="kw">use </span><span class="kw">crate</span>::verify::StakeKeyHash;
 <span class="kw">use </span>diesel::sql_types::Text;
 <span class="kw">use </span>diesel::ExpressionMethods;
-
-<span class="kw">use </span>rayon::prelude::<span class="kw-2">*</span>;
 
 <span class="macro">sql_function! </span>(<span class="kw">fn </span>decode(string: Text, format: Text) -&gt; Bytea);
 
 <span class="kw">impl </span>Db {
     <span class="doccomment">/// Query the stake values
     ///
-    /// This query is detailed in &lt;../`design/stake_value_processing.md`&gt;
-    ///
-    /// # Errors
-    ///
-    /// Will return an error not at all.  TODO, don&#39;t return Result.
-    </span><span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHash]) -&gt; DashMap&lt;StakeKeyHash, BigDecimal&gt; {
-        <span class="kw">let </span>rows = stake_addrs.par_iter().map(|addr| {
-            <span class="kw">let </span>hex = hex::encode(addr);
-
-            <span class="comment">// dbg!(&quot;stake key hash for query {:?}&quot;, hex.clone());
-            </span><span class="kw">let </span>result = <span class="self">self</span>.exec(|conn| query(hex).load(conn))<span class="question-mark">?</span>;
-            <span class="comment">// dbg!(&quot;result {:?}&quot;, result.clone());
-            </span><span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, Report&gt;((addr.clone(), result))
+    /// This query is detailed in &lt;../design/stake_value_processing.md&gt;
+    </span><span class="attr">#[instrument]
+    </span><span class="kw">pub fn </span>stake_values(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;HashMap&lt;StakeKeyHex, BigDecimal&gt;&gt; {
+        <span class="kw">let </span>rows = stake_addrs.iter().map(|addr| {
+            <span class="kw">let </span>hex = hex::encode(addr.<span class="number">0</span>);
+            <span class="kw">let </span>result = <span class="self">self</span>.exec(|conn| query(hex).load(conn))<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>::&lt;<span class="kw">_</span>, Report&gt;((<span class="kw-2">*</span>addr, result))
         });
-
-        <span class="kw">let </span>max_rows = rows.len();
 
         <span class="comment">// If performance becomes an issue, we can replace this with `dashmap` and parallelize the
         // loop with `rayon`
-        // Sadly this is still chronically slow.
-        // The DB code probably needs re-writing to use tokio_postgres and exploit its pipelining capabilities.
-        // A 64 Thread machine is only getting 100 results every 4 seconds.
-        // We need at least 86391 results from main net.
-        // Total time to fetch = ~57 minutes.
-        // For comparison the haskell voting tool does it in
-        // This will slow down proportional to the number of cores, because rayon is not good for IO bound tasks.
-        </span><span class="kw">let </span>result = DashMap::with_capacity(max_rows);
+        </span><span class="kw">let </span><span class="kw-2">mut </span>result = HashMap::with_capacity(rows.len());
 
-        <span class="kw">let </span>row_count = AtomicU64::new(<span class="number">0</span>);
+        <span class="kw">for </span>row <span class="kw">in </span>rows {
+            <span class="kw">let </span>(addr, values) = row<span class="question-mark">?</span>;
+            <span class="kw">let </span>sum: BigDecimal = values.iter().sum();
+            <span class="kw-2">*</span>result.entry(addr).or_insert_with(|| BigDecimal::from(<span class="number">0</span>)) += sum;
+        }
 
-        rows.into_par_iter().for_each(|row| <span class="kw">match </span>row {
-            <span class="prelude-val">Ok</span>(row) =&gt; {
-                <span class="kw">let </span>current_row = row_count.fetch_add(<span class="number">1</span>, Ordering::SeqCst).saturating_add(<span class="number">1</span>);
-                <span class="kw">let </span>row_pct = current_row
-                    .saturating_mul(<span class="number">100</span>)
-                    .saturating_div(max_rows <span class="kw">as </span>u64);
-
-                <span class="kw">if </span>current_row % <span class="number">100 </span>== <span class="number">0 </span>{
-                    <span class="macro">info!</span>(<span class="string">&quot;Stake Keys Processed: {current_row}/{max_rows} ({row_pct}%)&quot;</span>);
-                }
-                <span class="kw">let </span>(addr, values) = row;
-                <span class="kw">let </span>sum: BigDecimal = values.iter().sum();
-
-                <span class="kw-2">*</span>result.entry(addr).or_insert_with(|| BigDecimal::from(<span class="number">0</span>)) += sum;
-            }
-            <span class="prelude-val">Err</span>(row) =&gt; {
-                <span class="kw">let </span>current_row = row_count.fetch_add(<span class="number">1</span>, Ordering::SeqCst).saturating_add(<span class="number">1</span>);
-                <span class="kw">let </span>row_pct = current_row
-                    .saturating_mul(<span class="number">100</span>)
-                    .saturating_div(max_rows <span class="kw">as </span>u64);
-                <span class="macro">error!</span>(<span class="string">&quot;Error on row: {current_row}/{max_rows} ({row_pct}%) :- {row}&quot;</span>);
-            }
-        });
-
-        <span class="kw">let </span>current_row = row_count.into_inner();
-        <span class="macro">info!</span>(<span class="string">&quot;Stake Keys Processed: {current_row}/{max_rows} (100%)&quot;</span>);
-
-        result
+        <span class="prelude-val">Ok</span>(result)
     }
 }
 

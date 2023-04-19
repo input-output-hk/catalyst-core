@@ -63,65 +63,25 @@
 <a href="#63" id="63">63</a>
 <a href="#64" id="64">64</a>
 <a href="#65" id="65">65</a>
-<a href="#66" id="66">66</a>
-<a href="#67" id="67">67</a>
-<a href="#68" id="68">68</a>
-<a href="#69" id="69">69</a>
-<a href="#70" id="70">70</a>
-<a href="#71" id="71">71</a>
-<a href="#72" id="72">72</a>
-<a href="#73" id="73">73</a>
-<a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
-<a href="#79" id="79">79</a>
-<a href="#80" id="80">80</a>
-<a href="#81" id="81">81</a>
-<a href="#82" id="82">82</a>
-<a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-</pre><pre class="rust"><code><span class="attr">#![allow(missing_docs)]
-
-</span><span class="kw">use </span>nonempty::NonEmpty;
-<span class="kw">use </span>serde::Serialize;
+</pre><pre class="rust"><code><span class="kw">use </span>nonempty::NonEmpty;
 <span class="kw">use </span>serde_json::Value;
 <span class="kw">use </span>thiserror::Error;
 
-<span class="kw">use </span><span class="kw">crate</span>::data::{NetworkId, SignedRegistration, TxId, VotingPurpose};
+<span class="kw">use </span><span class="kw">crate</span>::data::{NetworkId, SignedRegistration, VotingPurpose};
 
 <span class="doccomment">/// An error encountered during parsing and validation of a Catalyst registration
-</span><span class="attr">#[derive(Debug, Error, PartialEq, Eq, Serialize)]
+</span><span class="attr">#[derive(Debug, Error, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>RegistrationError {
     <span class="doccomment">/// The registration couldn&#39;t be parsed from json -&gt; struct
     </span><span class="attr">#[error(
-        <span class="string">&quot;the registration metadata couldn&#39;t be parsed from JSON into the registration format, json = {}&quot;</span>,
+        <span class="string">&quot;the registration metadata couldn&#39;t be parsed from JSON into the registration format, json = {}&quot;</span>, 
         serde_json::to_string_pretty(<span class="kw-2">&amp;</span><span class="number">0</span>).unwrap(),
     )]
     </span>RegistrationFormat(Value),
 
     <span class="doccomment">/// The signature couldn&#39;t be parsed from json -&gt; struct
     </span><span class="attr">#[error(
-        <span class="string">&quot;the registration metadata couldn&#39;t be parsed from JSON into the signature format, json = {}&quot;</span>,
+        <span class="string">&quot;the registration metadata couldn&#39;t be parsed from JSON into the signature format, json = {}&quot;</span>, 
         serde_json::to_string_pretty(<span class="kw-2">&amp;</span><span class="number">0</span>).unwrap(),
     )]
     </span>SignatureFormat(Value),
@@ -135,7 +95,7 @@
     },
 
     <span class="attr">#[error(
-        <span class="string">&quot;the signature, public key, and payload were well-formed, but the signature was not valid for this payload, cbor hash bytes: {}&quot;</span>,
+        <span class="string">&quot;the signature, public key, and payload were well-formed, but the signature was not valid for this payload, cbor hash bytes: {}&quot;</span>, 
         hex::encode(hash_bytes),
     )]
     </span>MismatchedSignature { hash_bytes: [u8; <span class="number">32</span>] },
@@ -144,7 +104,7 @@
     </span>EmptyDelegations,
 
     <span class="attr">#[error(
-        <span class="string">&quot;stake key has wrong network id, expected {expected}, actual {}&quot;</span>,
+        <span class="string">&quot;stake key has wrong network id, expected {expected}, actual {}&quot;</span>, 
         actual.map(|id| id.to_string()).unwrap_or_else(|| <span class="string">&quot;None&quot;</span>.to_string()),
     )]
     </span>StakeKeyWrongNetwork {
@@ -154,30 +114,6 @@
 
     <span class="attr">#[error(<span class="string">&quot;stake key has wrong type: {0}, expected 14 or 15&quot;</span>)]
     </span>StakeKeyWrongType(u8),
-
-    <span class="attr">#[error(<span class="string">&quot;stake public key error {err}&quot;</span>)]
-    </span>StakePublicKeyError { err: String },
-
-    <span class="attr">#[error(<span class="string">&quot;signature error {err}&quot;</span>)]
-    </span>SignatureError { err: String },
-
-    <span class="attr">#[error(<span class="string">&quot;Obsolete registration&quot;</span>)]
-    </span>ObsoleteRegistration,
-
-    <span class="attr">#[error(<span class="string">&quot;Cddl parsing failed {err}&quot;</span>)]
-    </span>CddlParsingFailed { err: String },
-
-    <span class="attr">#[error(<span class="string">&quot;Cbor deserialization failed {err}&quot;</span>)]
-    </span>CborDeserializationFailed { err: String },
-
-    <span class="attr">#[error(<span class="string">&quot;Raw binary conversion of cbor to Registration failure {err}&quot;</span>)]
-    </span>RawBinCborRegistrationFailure { err: String },
-
-    <span class="attr">#[error(<span class="string">&quot;Raw binary conversion of cbor to Signature failure {err}&quot;</span>)]
-    </span>RawBinCborSignatureFailure { err: String },
-
-    <span class="attr">#[error(<span class="string">&quot;Invalid address prefix {err}&quot;</span>)]
-    </span>InvalidAddressPrefix { err: String },
 }
 
 <span class="doccomment">/// A registration that failed validation, along with the error
@@ -187,20 +123,10 @@
 ///
 /// `registration` is an `Option` because some errors prevent us from even generating a
 /// [`SignedRegistration`] struct
-</span><span class="attr">#[derive(Debug, Serialize)]
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>InvalidRegistration {
-    <span class="kw">pub </span>spec_61284: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="kw">pub </span>spec_61285: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub </span>registration: <span class="prelude-ty">Option</span>&lt;SignedRegistration&gt;,
-    <span class="kw">pub </span>registration_bad_bin: <span class="prelude-ty">Option</span>&lt;RegistrationCorruptedBin&gt;,
     <span class="kw">pub </span>errors: NonEmpty&lt;RegistrationError&gt;,
-}
-
-<span class="doccomment">/// Registrations with a corrupted raw cbor binary require extra metadata for context
-</span><span class="attr">#[derive(Debug, Serialize)]
-</span><span class="kw">pub struct </span>RegistrationCorruptedBin {
-    <span class="kw">pub </span>tx_id: TxId,
-    <span class="kw">pub </span>slot: u64,
 }
 </code></pre></div>
 </section></main></body></html>

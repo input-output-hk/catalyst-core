@@ -108,33 +108,9 @@
 <a href="#108" id="108">108</a>
 <a href="#109" id="109">109</a>
 <a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{DbHost, DbName, DbPass, DbUser};
 
-<span class="kw">pub mod </span>queries;
+<span class="kw">mod </span>queries;
 <span class="kw">pub mod </span>types;
 
 <span class="comment">// We need to allow this because custom type imports aren&#39;t always used in all tables
@@ -163,21 +139,10 @@
     </span><span class="kw">pub </span>host: DbHost,
     <span class="doccomment">/// The corresponding password for this user
     </span><span class="kw">pub </span>password: <span class="prelude-ty">Option</span>&lt;DbPass&gt;,
-    <span class="doccomment">/// The time limit in seconds applied to each socket-level connection attempt.
-    </span><span class="kw">pub </span>connect_timeout: u32,
-    <span class="doccomment">/// The number of seconds of inactivity after which a keepalive message is sent to the server
-    </span><span class="kw">pub </span>keepalives_idle: u32,
-    <span class="doccomment">/// The time interval between TCP keepalive probes
-    </span><span class="kw">pub </span>keepalives_interval: u32,
-    <span class="doccomment">/// The maximum number of TCP keepalive probes that will be sent before dropping a connection.
-    </span><span class="kw">pub </span>keepalives_retries: u32,
 }
 
 <span class="doccomment">/// Inner module to hide database internals from database code
 </span><span class="kw">mod </span>inner {
-    <span class="kw">use </span>scheduled_thread_pool::ScheduledThreadPool;
-    <span class="kw">use </span>std::sync::Arc;
-
     <span class="kw">use </span><span class="kw">super</span>::DbConfig;
     <span class="kw">use </span>color_eyre::Result;
     <span class="kw">use </span>diesel::{
@@ -208,10 +173,6 @@
                 user,
                 host,
                 password,
-                connect_timeout: <span class="kw">_</span>,
-                keepalives_idle: <span class="kw">_</span>,
-                keepalives_interval: <span class="kw">_</span>,
-                keepalives_retries: <span class="kw">_</span>,
             }: DbConfig,
         ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
             <span class="kw">use </span>microtype::secrecy::ExposeSecret;
@@ -221,16 +182,7 @@
 
             <span class="kw">let </span>url = <span class="macro">format!</span>(<span class="string">&quot;postgres://{user}{password}@{host}/{name}&quot;</span>,);
             <span class="kw">let </span>manager = ConnectionManager::new(url);
-            <span class="kw">let </span>pool = Pool::builder()
-                .max_size(<span class="number">50</span>)
-                .min_idle(<span class="prelude-val">Some</span>(<span class="number">25</span>))
-                .thread_pool(Arc::new(
-                    ScheduledThreadPool::builder()
-                        .num_threads(<span class="number">16</span>)
-                        .thread_name_pattern(<span class="string">&quot;r2d2-worker-{}&quot;</span>)
-                        .build(),
-                ))
-                .build(manager)<span class="question-mark">?</span>;
+            <span class="kw">let </span>pool = Pool::new(manager)<span class="question-mark">?</span>;
 
             password.zeroize();
             <span class="prelude-val">Ok</span>(Db(pool))

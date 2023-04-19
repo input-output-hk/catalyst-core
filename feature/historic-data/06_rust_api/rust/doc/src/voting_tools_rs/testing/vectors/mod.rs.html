@@ -80,7 +80,7 @@
 
     <span class="kw">let </span><span class="kw-2">mut </span>voting_key = [<span class="number">0</span>; <span class="number">32</span>];
     rng.fill_bytes(<span class="kw-2">&amp;mut </span>voting_key);
-    <span class="kw">let </span>voting_key = VotingKeyHex(PubKey(voting_key.to_vec()));
+    <span class="kw">let </span>voting_key = VotingKeyHex(PubKey(voting_key));
 
     <span class="kw">let </span><span class="kw-2">mut </span>stake_secret = [<span class="number">0</span>; <span class="number">32</span>];
     rng.fill_bytes(<span class="kw-2">&amp;mut </span>stake_secret);

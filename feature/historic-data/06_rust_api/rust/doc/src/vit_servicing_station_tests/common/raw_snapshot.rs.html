@@ -212,16 +212,6 @@
 <a href="#212" id="212">212</a>
 <a href="#213" id="213">213</a>
 <a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
-<a href="#220" id="220">220</a>
-<a href="#221" id="221">221</a>
-<a href="#222" id="222">222</a>
-<a href="#223" id="223">223</a>
-<a href="#224" id="224">224</a>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_impl_mockchain::testing::TestGen;
 <span class="kw">use </span>jormungandr_lib::interfaces::Value;
 <span class="kw">use </span>rand::Rng;
@@ -338,20 +328,17 @@
 }
 
 <span class="kw">impl </span>RawSnapshotBuilder {
-    <span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>with_tag&lt;S: Into&lt;String&gt;&gt;(<span class="kw-2">mut </span><span class="self">self</span>, tag: S) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>with_tag&lt;S: Into&lt;String&gt;&gt;(<span class="kw-2">mut </span><span class="self">self</span>, tag: S) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.tag = tag.into();
         <span class="self">self
     </span>}
 
-    <span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>with_voting_registrations_count(<span class="kw-2">mut </span><span class="self">self</span>, voting_registrations_count: usize) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>with_voting_registrations_count(<span class="kw-2">mut </span><span class="self">self</span>, voting_registrations_count: usize) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.voting_registrations_count = voting_registrations_count;
         <span class="self">self
     </span>}
 
-    <span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>with_voting_registrations(
+    <span class="kw">pub fn </span>with_voting_registrations(
         <span class="kw-2">mut </span><span class="self">self</span>,
         voting_registrations: Vec&lt;VotingRegistration&gt;,
     ) -&gt; <span class="self">Self </span>{
@@ -359,26 +346,22 @@
         <span class="self">self
     </span>}
 
-    <span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>with_timestamp(<span class="kw-2">mut </span><span class="self">self</span>, timestamp: i64) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>with_timestamp(<span class="kw-2">mut </span><span class="self">self</span>, timestamp: i64) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.update_timestamp = timestamp;
         <span class="self">self
     </span>}
 
-    <span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>with_voting_power_cap(<span class="kw-2">mut </span><span class="self">self</span>, voting_power_cap: Fraction) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>with_voting_power_cap(<span class="kw-2">mut </span><span class="self">self</span>, voting_power_cap: Fraction) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.voting_power_cap = voting_power_cap;
         <span class="self">self
     </span>}
 
-    <span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>with_min_stake_threshold(<span class="kw-2">mut </span><span class="self">self</span>, min_stake_threshold: Value) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>with_min_stake_threshold(<span class="kw-2">mut </span><span class="self">self</span>, min_stake_threshold: Value) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.min_stake_threshold = min_stake_threshold;
         <span class="self">self
     </span>}
 
-    <span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>build(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; RawSnapshot {
+    <span class="kw">pub fn </span>build(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; RawSnapshot {
         <span class="kw">let </span><span class="kw-2">mut </span>rng = rand::rngs::OsRng;
         <span class="kw">let </span><span class="kw-2">mut </span>delegation_type_count = <span class="number">0</span>;
 
@@ -401,12 +384,11 @@
                             Delegations::Legacy(TestGen::identifier().into())
                         },
                         voting_purpose: CATALYST_VOTING_PURPOSE_TAG,
-                        nonce: <span class="number">0</span>,
                     })
                 })
                 .take(<span class="self">self</span>.voting_registrations_count)
                 .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
-            );
+            )
         }
 
         RawSnapshot {
@@ -435,14 +417,12 @@
 }
 
 <span class="kw">impl </span>RawSnapshotUpdater {
-    <span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>with_tag&lt;S: Into&lt;String&gt;&gt;(<span class="kw-2">mut </span><span class="self">self</span>, tag: S) -&gt; <span class="self">Self </span>{
+    <span class="kw">pub fn </span>with_tag&lt;S: Into&lt;String&gt;&gt;(<span class="kw-2">mut </span><span class="self">self</span>, tag: S) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.raw_snapshot.tag = tag.into();
         <span class="self">self
     </span>}
 
-    <span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; RawSnapshot {
+    <span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; RawSnapshot {
         <span class="self">self</span>.raw_snapshot
     }
 }

@@ -77,10 +77,13 @@
 <a href="#77" id="77">77</a>
 <a href="#78" id="78">78</a>
 <a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
 </pre><pre class="rust"><code><span class="attr">#![allow(dead_code)]
 
 </span><span class="kw">use </span><span class="kw">crate</span>::data::SnapshotEntry;
-<span class="kw">use </span><span class="kw">crate</span>::VotingKey;
+<span class="kw">use </span><span class="kw">crate</span>::VotingPowerSource;
 <span class="kw">use </span>bigdecimal::ToPrimitive;
 <span class="kw">use </span>cardano_serialization_lib::address::RewardAddress;
 <span class="kw">use </span>cardano_serialization_lib::crypto::PublicKey;
@@ -128,8 +131,11 @@
     /// # Panics
     ///
     /// Panics on assertion failed
-    </span><span class="kw">pub fn </span>voting_key(<span class="kw-2">&amp;</span><span class="self">self</span>, voting_key: <span class="kw-2">&amp;</span>VotingKey) {
-        <span class="macro">assert_eq!</span>(voting_key, <span class="kw-2">&amp;</span><span class="self">self</span>.output.voting_key, <span class="string">&quot;delegation target&quot;</span>);
+    </span><span class="kw">pub fn </span>voting_power_source(<span class="kw-2">&amp;</span><span class="self">self</span>, voting_power_source: <span class="kw-2">&amp;</span>VotingPowerSource) {
+        <span class="macro">assert_eq!</span>(
+            voting_power_source, <span class="kw-2">&amp;</span><span class="self">self</span>.output.voting_power_source,
+            <span class="string">&quot;delegation target&quot;
+        </span>);
     }
 
     <span class="doccomment">/// Asserts reward address field from [`SnapshotEntry`]
@@ -151,7 +157,7 @@
     </span><span class="kw">pub fn </span>stake_key(<span class="kw-2">&amp;</span><span class="self">self</span>, public_key: <span class="kw-2">&amp;</span>PublicKey) {
         <span class="macro">assert_eq!</span>(
             <span class="kw-2">&amp;</span>public_key.to_hex(),
-            <span class="kw-2">&amp;</span>hex::encode(<span class="self">self</span>.output.stake_key.clone()),
+            <span class="kw-2">&amp;</span>hex::encode(<span class="self">self</span>.output.stake_key),
             <span class="string">&quot;different stake public key&quot;
         </span>);
     }

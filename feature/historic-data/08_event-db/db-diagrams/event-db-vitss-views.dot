@@ -55,7 +55,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS api_tokens table to the new config table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.<br align='left'/>This table uses unencrypted values, so is not compatible with api tokens that are<br align='left'/>encrypted.  It should be obsoleted at the earliest opportunity.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS api_tokens table to the new config table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.<br align='left'/>This table uses unencrypted values, so is not compatible with api tokens that are<br align='left'/>encrypted.  It should be obsoleted at the earliest opportunity.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -141,7 +141,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS challenges table to the new challenge table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS challenges table to the new challenge table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -227,7 +227,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS community_advisors_reviews table to the new proposal_review table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS community_advisors_reviews table to the new proposal_review table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -456,10 +456,6 @@ digraph erd {
             
 
             
-            <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS full proposals view.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
-            </tr>
-            
 
         </table>
     >];
@@ -609,7 +605,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS funds table to the new event table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS funds table to the new event table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -653,7 +649,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS goals table to the new goal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS goals table to the new goal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -697,7 +693,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS groups table to the new voting_groups table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS groups table to the new voting_groups table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -759,7 +755,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS proposal_community_choice_challenge table to the new proposal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS proposal_community_choice_challenge table to the new proposal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -797,7 +793,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS proposal_simple_challenge table to the new proposal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS proposal_simple_challenge table to the new proposal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -931,7 +927,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS proposals table to the new proposal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS proposals table to the new proposal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -981,7 +977,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS proposals table to the new proposal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS proposals table to the new proposal table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -1061,7 +1057,7 @@ digraph erd {
 
             
             <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>@omit<br align='left'/>This view maps the original VIT-SS voteplans table to the new voteplan table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This view maps the original VIT-SS voteplans table to the new voteplan table.<br align='left'/>Do not use this VIEW for new queries, its ONLY for backward compatibility.</i><br align="left"/></font></td>
             </tr>
             
 

@@ -131,23 +131,21 @@
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
 <a href="#133" id="133">133</a>
-</pre><pre class="rust"><code><span class="attr">#![allow(missing_docs)]
-
-</span><span class="kw">use </span>std::thread;
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
 <span class="kw">use crate</span>::{
-    data::{Registration, SignedRegistration, SlotNo},
-    db::queries::staked_utxo_ada::staked_utxo_ada,
+    data::{Registration, SignedRegistration, SlotNo, StakeKeyHex},
     error::InvalidRegistration,
-    verify::{filter_registrations, StakeKeyHash},
-    SnapshotEntry,
+    validation::ValidationCtx,
+    DataProvider, SnapshotEntry,
 };
-
-<span class="kw">use </span><span class="kw">crate</span>::verify::Unregistered;
-<span class="kw">use </span>color_eyre::eyre::Result;
-<span class="kw">use </span>dashmap::DashMap;
-
-<span class="kw">use </span>postgres::Client;
+<span class="kw">use </span>bigdecimal::BigDecimal;
+<span class="kw">use </span>color_eyre::eyre::{eyre, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>itertools::Itertools;
+<span class="kw">use </span>nonempty::nonempty;
+<span class="kw">use </span>validity::{Failure, Valid, Validate};
 
 <span class="kw">mod </span>args;
 <span class="kw">pub use </span>args::VotingPowerArgs;
@@ -185,83 +183,89 @@
 ///
 /// Returns an error if either of `lower` or `upper` doesn&#39;t fit in an `i64`
 </span><span class="kw">pub fn </span>voting_power(
-    <span class="kw-2">mut </span>db_client_stakes: Client,
-    db_client_registrations: Client,
+    db: <span class="kw">impl </span>DataProvider,
     VotingPowerArgs {
         min_slot,
         max_slot,
         network_id,
-        expected_voting_purpose: <span class="kw">_</span>,
+        expected_voting_purpose,
     }: VotingPowerArgs,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(Vec&lt;SnapshotEntry&gt;, Vec&lt;InvalidRegistration&gt;, Unregistered)&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;(Vec&lt;SnapshotEntry&gt;, Vec&lt;InvalidRegistration&gt;)&gt; {
     <span class="kw">const </span>ABS_MIN_SLOT: SlotNo = SlotNo(<span class="number">0</span>);
     <span class="kw">const </span>ABS_MAX_SLOT: SlotNo = SlotNo(i64::MAX <span class="kw">as </span>u64);
 
     <span class="kw">let </span>min_slot = min_slot.unwrap_or(ABS_MIN_SLOT);
     <span class="kw">let </span>max_slot = max_slot.unwrap_or(ABS_MAX_SLOT);
 
-    <span class="macro">info!</span>(<span class="string">&quot;starting stakes job&quot;</span>);
-    <span class="kw">let </span>stakes = thread::spawn(<span class="kw">move </span>|| {
-        staked_utxo_ada(i64::try_from(max_slot.<span class="number">0</span>).unwrap(), <span class="kw-2">&amp;mut </span>db_client_stakes).unwrap()
-    });
+    <span class="kw">let </span>ctx = ValidationCtx::default();
 
-    <span class="macro">info!</span>(<span class="string">&quot;starting registrations job&quot;</span>);
-    <span class="kw">let </span>registrations = thread::spawn(<span class="kw">move </span>|| {
-        filter_registrations(min_slot, max_slot, db_client_registrations, network_id).unwrap()
-    });
+    <span class="kw">let </span>ctx = ValidationCtx {
+        network_id,
+        expected_voting_purpose,
+        ..ctx
+    };
 
-    <span class="kw">let </span>(valids, invalids) = registrations.join().unwrap();
-    <span class="macro">info!</span>(<span class="string">&quot;finished processing registrations&quot;</span>);
+    <span class="kw">let </span>validate = |reg: SignedRegistration| {
+        reg.validate_with(ctx)
+            .map_err(|Failure { value, error }| InvalidRegistration {
+                registration: <span class="prelude-val">Some</span>(value),
+                errors: <span class="macro">nonempty!</span>[error],
+            })
+    };
 
-    <span class="comment">// UTXOs for all possible Stake Addresses
-    </span><span class="kw">let </span>staked_ada_records = stakes.join().unwrap();
-    <span class="macro">info!</span>(<span class="string">&quot;finished processing stakes&quot;</span>);
+    <span class="kw">let </span>registrations = db.vote_registrations(min_slot, max_slot)<span class="question-mark">?</span>;
 
-    <span class="kw">let </span>snapshot = valids
+    <span class="kw">let </span>(valid_registrations, validation_errors): (Vec&lt;<span class="kw">_</span>&gt;, Vec&lt;<span class="kw">_</span>&gt;) =
+        registrations.into_iter().map(validate).partition_result();
+
+    <span class="kw">let </span>addrs = stake_addrs(<span class="kw-2">&amp;</span>valid_registrations);
+    <span class="kw">let </span>voting_powers = db.stake_values(<span class="kw-2">&amp;</span>addrs)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>snapshot = valid_registrations
         .into_iter()
-        .map(|reg| convert_to_snapshot_entry(reg, <span class="kw-2">&amp;</span>staked_ada_records))
+        .map(|reg| convert_to_snapshot_entry(reg, <span class="kw-2">&amp;</span>voting_powers))
         .collect::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Ok</span>((snapshot, invalids, staked_ada_records))
+    <span class="prelude-val">Ok</span>((snapshot, validation_errors))
+}
+
+<span class="kw">fn </span>stake_addrs(registrations: <span class="kw-2">&amp;</span>[Valid&lt;SignedRegistration&gt;]) -&gt; Vec&lt;StakeKeyHex&gt; {
+    registrations
+        .iter()
+        .map(|reg| reg.registration.stake_key)
+        .collect()
 }
 
 <span class="kw">fn </span>convert_to_snapshot_entry(
-    registration: SignedRegistration,
-    stakes: <span class="kw-2">&amp;</span>DashMap&lt;StakeKeyHash, u128&gt;,
+    registration: Valid&lt;SignedRegistration&gt;,
+    voting_powers: <span class="kw-2">&amp;</span>HashMap&lt;StakeKeyHex, BigDecimal&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SnapshotEntry&gt; {
     <span class="kw">let </span>SignedRegistration {
         registration:
             Registration {
-                voting_key,
+                voting_power_source,
                 stake_key,
                 rewards_address,
-                nonce,
                 voting_purpose,
+                ..
             },
         tx_id,
-        stake_key_hash,
         ..
-    } = registration;
+    } = registration.into_inner();
 
-    <span class="comment">// look up stake key hash of valid registration in stakes map to obtain staked ada associated with the key
-    </span><span class="kw">let </span>voting_power = <span class="kw">if let </span><span class="prelude-val">Some</span>(voting_power) = stakes.get(<span class="kw-2">&amp;</span>stake_key_hash) {
-        <span class="kw-2">*</span>voting_power
-    } <span class="kw">else </span>{
-        <span class="comment">// Registrations with no staked ada. No UTXO&#39;s.
-        </span><span class="number">0
-    </span>};
+    <span class="kw">let </span>voting_power = voting_powers
+        .get(<span class="kw-2">&amp;</span>stake_key)
+        .ok_or_else(|| <span class="macro">eyre!</span>(<span class="string">&quot;no voting power available for stake key: {}&quot;</span>, stake_key))<span class="question-mark">?</span>;
 
-    <span class="comment">// remove registered, what is left (difference) are stake addresses that are not registered
-    </span>stakes.remove(<span class="kw-2">&amp;</span>stake_key_hash);
+    <span class="kw">let </span>voting_power = voting_power.clone();
 
     <span class="prelude-val">Ok</span>(SnapshotEntry {
-        voting_key,
+        voting_power_source,
         rewards_address,
         stake_key,
         voting_power,
         voting_purpose,
         tx_id,
-        nonce: nonce.<span class="number">0</span>,
     })
 }
 </code></pre></div>

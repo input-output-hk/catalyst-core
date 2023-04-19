@@ -118,13 +118,16 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/ObjectiveSummary'
-                    x-stoplight:
-                      id: bsz8o5nnhtu9e
-                  - $ref: '#/components/schemas/ObjectiveDetails'
-                    x-stoplight:
-                      id: mdciat4uo1xu8
+                description: List of Objectives.
+                type: array
+                item:
+                  allOf:
+                    - $ref: '#/components/schemas/ObjectiveSummary'
+                      x-stoplight:
+                        id: bsz8o5nnhtu9e
+                    - $ref: '#/components/schemas/ObjectiveDetails'
+                      x-stoplight:
+                        id: mdciat4uo1xu8
         '404':
           description: The requested challenge was not found
       parameters:
@@ -685,7 +688,7 @@ components:
       x-stoplight:
         id: ym16khzb1abc4
       examples:
-        - - Abstain
+          - 'Abstain'
           - 'No'
           - 'Yes'
       minItems: 1
@@ -706,17 +709,11 @@ components:
       enum:
         - public
         - private
-        - temp-private
+        - cast-private
       examples:
         - private
         - public
         - cast-private
-      minItems: 1
-      maxItems: 16
-      uniqueItems: true
-      items:
-        type: string
-        minLength: 1
     GroupBallotType:
       title: Group Ballot Type
       type: array
@@ -748,7 +745,7 @@ components:
         All Information here is optional.
         If there is no supplemental information for the Objective this field is omitted.
       properties:
-        sponser:
+        sponsor:
           type: string
           description: Who is sponsoring this Objective.
         video:
@@ -818,6 +815,8 @@ components:
           format: uri
         supplemental:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
+      required:
+        - description
     VotePlan:
       title: Vote Plan
       type: object

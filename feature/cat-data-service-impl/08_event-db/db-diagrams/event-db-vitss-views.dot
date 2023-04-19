@@ -342,7 +342,7 @@ digraph erd {
             
             <tr>
                 <td port="chain_vote_options"  align='text'><font>chain_vote_options</font><br align='left'/></td>
-                <td   ><font><i>text</i></font></td>
+                <td   ><font><i>ARRAY</i></font></td>
                 <td port="chain_vote_options_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             
@@ -908,7 +908,7 @@ digraph erd {
             
             <tr>
                 <td port="chain_vote_options"  align='text'><font>chain_vote_options</font><br align='left'/></td>
-                <td   ><font><i>text</i></font></td>
+                <td   ><font><i>ARRAY</i></font></td>
                 <td port="chain_vote_options_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             

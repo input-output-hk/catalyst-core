@@ -357,14 +357,14 @@
 <polygon fill="none" stroke="black" points="2564,-367.5 2564,-401.5 2656,-401.5 2656,-367.5 2564,-367.5"/>
 <text text-anchor="start" x="2567" y="-380.7" font-family="Times,serif" font-size="16.00">idea_scale</text>
 <polygon fill="none" stroke="black" points="2656,-367.5 2656,-401.5 2736,-401.5 2736,-367.5 2656,-367.5"/>
-<text text-anchor="start" x="2679.5" y="-381.7" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<text text-anchor="start" x="2667" y="-381.7" font-family="Times,serif" font-style="italic" font-size="16.00">ARRAY</text>
 <polygon fill="none" stroke="black" points="2736,-367.5 2736,-401.5 3064,-401.5 3064,-367.5 2736,-367.5"/>
 <text text-anchor="start" x="2739" y="-388.3" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">How this vote option is represented in</text>
 <text text-anchor="start" x="2739" y="-374.3" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">idea scale.</text>
 <polygon fill="none" stroke="black" points="2564,-333.5 2564,-367.5 2656,-367.5 2656,-333.5 2564,-333.5"/>
 <text text-anchor="start" x="2567" y="-346.7" font-family="Times,serif" font-size="16.00">objective</text>
 <polygon fill="none" stroke="black" points="2656,-333.5 2656,-367.5 2736,-367.5 2736,-333.5 2656,-333.5"/>
-<text text-anchor="start" x="2679.5" y="-347.7" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<text text-anchor="start" x="2667" y="-347.7" font-family="Times,serif" font-style="italic" font-size="16.00">ARRAY</text>
 <polygon fill="none" stroke="black" points="2736,-333.5 2736,-367.5 3064,-367.5 3064,-333.5 2736,-333.5"/>
 <text text-anchor="start" x="2739" y="-354.3" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">How the vote options is represented in</text>
 <text text-anchor="start" x="2739" y="-340.3" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the objective.</text>
@@ -613,7 +613,7 @@
 <polygon fill="none" stroke="black" points="1239.5,-121.5 1239.5,-169.5 1495.5,-169.5 1495.5,-121.5 1239.5,-121.5"/>
 <text text-anchor="start" x="1242.5" y="-141.7" font-family="Times,serif" font-size="16.00">bb_vote_options</text>
 <polygon fill="none" stroke="black" points="1495.5,-121.5 1495.5,-169.5 1575.5,-169.5 1575.5,-121.5 1495.5,-121.5"/>
-<text text-anchor="start" x="1519" y="-142.7" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<text text-anchor="start" x="1506.5" y="-142.7" font-family="Times,serif" font-style="italic" font-size="16.00">ARRAY</text>
 <polygon fill="none" stroke="black" points="1575.5,-121.5 1575.5,-169.5 1912.5,-169.5 1912.5,-121.5 1575.5,-121.5"/>
 <text text-anchor="start" x="1578.5" y="-156.3" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The selectable options by the voter.</text>
 <text text-anchor="start" x="1578.5" y="-142.3" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">DEPRECATED: Only used for Vit&#45;SS</text>
@@ -927,9 +927,10 @@ COMMENT ON COLUMN objective_category.description IS 'A Description of this kind 
 -- Define known objective categories
 INSERT INTO objective_category (name,  description)
 VALUES
-    ('simple','A Simple choice'),
-    ('native','??'),
-    ('community-choice','Community collective decision');
+    ('catalyst-simple','A Simple choice'),
+    ('catalyst-native','??'),
+    ('catalyst-community-choice','Community collective decision'),
+    ('sve-decision','Special voting event decision');
 
 -- known currencies - Defines all currently known currencies.
 CREATE TABLE currency
@@ -955,8 +956,8 @@ VALUES
 CREATE TABLE vote_options
 (
     id SERIAL PRIMARY KEY,
-    idea_scale TEXT UNIQUE,
-    objective TEXT UNIQUE
+    idea_scale TEXT ARRAY UNIQUE,
+    objective TEXT ARRAY UNIQUE
 );
 
 COMMENT ON TABLE vote_options IS 'Defines all known vote plan option types.';
@@ -967,7 +968,7 @@ COMMENT ON COLUMN vote_options.objective IS 'How the vote options is represented
 -- Define known vote_options
 INSERT INTO vote_options (idea_scale,  objective)
 VALUES
-    ('blank,yes,no','yes,no');
+    ('{&quot;blank&quot;, &quot;yes&quot;, &quot;no&quot;}','{&quot;yes&quot;, &quot;no&quot;}');
 
 
 
@@ -1075,7 +1076,7 @@ CREATE TABLE proposal
     proposer_relevant_experience TEXT NOT NULL,
     bb_proposal_id BYTEA,
 
-    bb_vote_options TEXT,
+    bb_vote_options TEXT[],
 
     FOREIGN KEY(objective) REFERENCES objective(row_id),
     FOREIGN KEY(bb_vote_options) REFERENCES vote_options(objective)

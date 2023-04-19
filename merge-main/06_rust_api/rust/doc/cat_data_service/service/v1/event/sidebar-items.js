@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["event","event_exec","events_exec"],"opaque":[""],"static":["CALLSITE","META"],"struct":["EventsQuery","__FieldVisitor","__Visitor"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ConsistencyFailure","Error"],"mod":["block_info","block_store","error","iterator","permanent_store","test_utils","value"],"struct":["BlockInfo","BlockStore","StorageIterator","Value"]};

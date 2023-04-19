@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["WitnessType"],"fn":["make_witness"],"struct":["MkWitness"]};

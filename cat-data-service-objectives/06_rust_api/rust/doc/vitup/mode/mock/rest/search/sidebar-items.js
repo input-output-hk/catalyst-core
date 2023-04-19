@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["filter_challenges","filter_proposals","limit_and_offset","make_error","mock_order_by_error","search","search_count","search_impl","sort_challenges","sort_proposals"],"opaque":[""],"static":["CALLSITE","META"]};

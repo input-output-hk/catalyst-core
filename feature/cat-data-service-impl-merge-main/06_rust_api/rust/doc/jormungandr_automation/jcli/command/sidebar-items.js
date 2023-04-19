@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["address","certificate","genesis","key","rest","transaction","votes"],"struct":["JCliCommand"]};

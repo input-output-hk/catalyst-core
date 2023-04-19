@@ -18,11 +18,13 @@ poetry env use python
 ```
 
 Initialize poetry's virtual environment.
+
 ```sh
 poetry shell
 ```
 
 Install the package.
+
 ```sh
 poetry install
 ```
@@ -57,15 +59,21 @@ For documentation about the available commands see the [docs](docs) folder.
 
 ## Development
 
+### Formatting
+
+```sh
+poetry run black ideascale_importer
+```
+
 ### Linting
 
 ```sh
 # If you haven't already:
-poetry run python -m flake8 ideascale_importer
+poetry run ruff check ideascale_importer
 ```
 
 ### Type checking
 
 ```sh
-poetry run python -m mypy ideascale_importer --check-untyped-defs
+poetry run mypy ideascale_importer --check-untyped-defs
 ```

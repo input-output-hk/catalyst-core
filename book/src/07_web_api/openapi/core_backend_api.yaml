@@ -935,7 +935,7 @@ components:
           type: integer
           format: int64
           description: |-
-            The amount of funds requested by this proposal.  
+            The amount of funds requested by this proposal.
             In the denomination of the Objectives Reward.
             If not present, then this proposal is not requesting any funds.
         url:

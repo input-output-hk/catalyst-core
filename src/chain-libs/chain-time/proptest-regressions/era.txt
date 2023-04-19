@@ -6,3 +6,6 @@
 # everyone who runs the test benefits from these saved cases.
 xx 1d4d7e9268028181214f22f9ed3ed75e0269a3d7dfdb9ce1ea46b3941bc031d7 # shrinks to input = _TimeEraSlotEraBijectionArgs { slot: Slot(10600410088859833681), era: TimeEra { epoch_start: Epoch(1), slot_start: Slot(0), slots_per_epoch: 0 } }
 xx 6bbb9b59d1ea3387b40414ec3e322c8342888e73d1f46e2ac7bd981f46713196 # shrinks to input = _TimeEraFromEraToSlotArgs { epoch_pos: EpochPosition { epoch: Epoch(0), slot: EpochSlotOffset(1) } }
+cc 00768caf36ac92c668aab9c4b8399f387490fae4320073d5c64f6e51ce2642e2 # shrinks to input = _TimeEraSlotToEraArgs { slot: Slot(4294967296) }
+cc 89ebdf9d22af0c0904b0b28772a194523da824344862659ab37d178dafb0be6c # shrinks to input = _TimeEraSlotEraBijectionArgs { slot: Slot(15388262161774344169), era: TimeEra { epoch_start: Epoch(1), slot_start: Slot(0), slots_per_epoch: 0 } }
+cc 0c07e70ecc76b9508548e9451b92564b76666f356abe28ab149acd57fc033b39 # shrinks to input = _TimeEraFromEraToSlotArgs { epoch_pos: EpochPosition { epoch: Epoch(0), slot: EpochSlotOffset(1) } }

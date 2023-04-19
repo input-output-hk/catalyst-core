@@ -33,13 +33,15 @@
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
 <a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
 </pre><pre class="rust"><code><span class="kw">use </span>core::fmt::Display;
 <span class="kw">use </span>core::str::FromStr;
 
+<span class="kw">use </span>serde::Serialize;
 <span class="kw">use </span>thiserror::Error;
 
 <span class="doccomment">/// An identifier for a cardano network
-</span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+</span><span class="attr">#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 </span><span class="kw">pub enum </span>NetworkId {
     Mainnet,
     Testnet,

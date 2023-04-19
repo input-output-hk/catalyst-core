@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["persist_dir_on_panic"]};

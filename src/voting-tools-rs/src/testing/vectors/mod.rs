@@ -20,7 +20,7 @@ pub fn generate_signed_registration(mut rng: impl Rng) -> SignedRegistration {
 
     let mut voting_key = [0; 32];
     rng.fill_bytes(&mut voting_key);
-    let voting_key = VotingKeyHex(PubKey(voting_key));
+    let voting_key = VotingKeyHex(PubKey(voting_key.to_vec()));
 
     let mut stake_secret = [0; 32];
     rng.fill_bytes(&mut stake_secret);

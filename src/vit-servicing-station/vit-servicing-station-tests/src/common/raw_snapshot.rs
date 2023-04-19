@@ -114,16 +114,19 @@ impl Default for RawSnapshotBuilder {
 }
 
 impl RawSnapshotBuilder {
+    #[must_use]
     pub fn with_tag<S: Into<String>>(mut self, tag: S) -> Self {
         self.tag = tag.into();
         self
     }
 
+    #[must_use]
     pub fn with_voting_registrations_count(mut self, voting_registrations_count: usize) -> Self {
         self.voting_registrations_count = voting_registrations_count;
         self
     }
 
+    #[must_use]
     pub fn with_voting_registrations(
         mut self,
         voting_registrations: Vec<VotingRegistration>,
@@ -132,21 +135,25 @@ impl RawSnapshotBuilder {
         self
     }
 
+    #[must_use]
     pub fn with_timestamp(mut self, timestamp: i64) -> Self {
         self.update_timestamp = timestamp;
         self
     }
 
+    #[must_use]
     pub fn with_voting_power_cap(mut self, voting_power_cap: Fraction) -> Self {
         self.voting_power_cap = voting_power_cap;
         self
     }
 
+    #[must_use]
     pub fn with_min_stake_threshold(mut self, min_stake_threshold: Value) -> Self {
         self.min_stake_threshold = min_stake_threshold;
         self
     }
 
+    #[must_use]
     pub fn build(mut self) -> RawSnapshot {
         let mut rng = rand::rngs::OsRng;
         let mut delegation_type_count = 0;
@@ -170,11 +177,12 @@ impl RawSnapshotBuilder {
                             Delegations::Legacy(TestGen::identifier().into())
                         },
                         voting_purpose: CATALYST_VOTING_PURPOSE_TAG,
+                        nonce: 0,
                     })
                 })
                 .take(self.voting_registrations_count)
                 .collect::<Vec<_>>(),
-            )
+            );
         }
 
         RawSnapshot {
@@ -203,11 +211,13 @@ impl From<RawSnapshot> for RawSnapshotUpdater {
 }
 
 impl RawSnapshotUpdater {
+    #[must_use]
     pub fn with_tag<S: Into<String>>(mut self, tag: S) -> Self {
         self.raw_snapshot.tag = tag.into();
         self
     }
 
+    #[must_use]
     pub fn build(self) -> RawSnapshot {
         self.raw_snapshot
     }

@@ -1,5 +1,5 @@
 # stage 1
-FROM python:3.10-slim-bullseye as python
+FROM python:3.11-slim-bullseye as python
 ENV PYTHONUNBUFFERED=true
 WORKDIR /voting
 
@@ -12,7 +12,7 @@ RUN pip install poetry
 
 # Add python codebase
 COPY . /voting
-RUN poetry shell; poetry install
+RUN poetry env use 3.11 && poetry install
 
 # final stage
 FROM python

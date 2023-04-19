@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use crate::data::SnapshotEntry;
-use crate::VotingPowerSource;
+use crate::VotingKey;
 use bigdecimal::ToPrimitive;
 use cardano_serialization_lib::address::RewardAddress;
 use cardano_serialization_lib::crypto::PublicKey;
@@ -49,11 +49,8 @@ impl<'a> SnapshotOutputAssert<'a> {
     /// # Panics
     ///
     /// Panics on assertion failed
-    pub fn voting_power_source(&self, voting_power_source: &VotingPowerSource) {
-        assert_eq!(
-            voting_power_source, &self.output.voting_power_source,
-            "delegation target"
-        );
+    pub fn voting_key(&self, voting_key: &VotingKey) {
+        assert_eq!(voting_key, &self.output.voting_key, "delegation target");
     }
 
     /// Asserts reward address field from [`SnapshotEntry`]
@@ -75,7 +72,7 @@ impl<'a> SnapshotOutputAssert<'a> {
     pub fn stake_key(&self, public_key: &PublicKey) {
         assert_eq!(
             &public_key.to_hex(),
-            &hex::encode(self.output.stake_key),
+            &hex::encode(self.output.stake_key.clone()),
             "different stake public key"
         );
     }

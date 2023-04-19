@@ -1,3 +1,5 @@
+"""IdeaScale CLI commands."""
+
 import asyncio
 from typing import Optional
 import typer
@@ -42,9 +44,8 @@ def import_all(
         help="IdeaScale API URL",
     ),
 ):
-    """
-    Import all event data from IdeaScale for a given event
-    """
+    """Import all event data from IdeaScale for a given event."""
+    configure_logger(log_level, log_format)
 
     configure_logger(log_level, log_format)
 
@@ -67,7 +68,7 @@ def import_all(
         )
 
         await importer.connect()
-        await importer.import_all()
+        await importer.run()
         await importer.close()
 
     asyncio.run(inner(event_id, campaign_group_id, stage_id, proposals_scores_csv, ideascale_api_url))

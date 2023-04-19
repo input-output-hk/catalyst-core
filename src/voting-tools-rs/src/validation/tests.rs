@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use cardano_serialization_lib::chain_crypto::{AsymmetricKey, SigningAlgorithm};
 use ciborium::cbor;
 use test_strategy::proptest;
@@ -48,7 +46,7 @@ fn fails_if_empty_delegations() {
     let ctx = test_ctx();
 
     let mut reg = cip15::vector();
-    reg.registration.voting_power_source = VotingPowerSource::Delegated(BTreeMap::new());
+    reg.registration.voting_key = VotingKey::Delegated(Vec::new());
 
     let Failure { error, .. } = reg.validate_with(ctx).unwrap_err();
     assert_eq!(error, RegistrationError::EmptyDelegations);
@@ -59,7 +57,7 @@ fn fails_if_stake_key_invalid_type() {
     let ctx = test_ctx();
 
     let mut reg = cip15::vector();
-    let stake_key_bytes = [0; 32];
+    let stake_key_bytes = vec![0; 32];
     reg.registration.stake_key = StakeKeyHex(PubKey(stake_key_bytes));
 
     let Failure { error, .. } = reg.validate_with(ctx).unwrap_err();
@@ -73,7 +71,7 @@ fn fails_if_stake_key_wrong_network_id() {
 
     let mut reg = cip15::vector();
     let leading_byte = 0b1111_0000; // type 15, testnet
-    let mut bytes = [0; 32];
+    let mut bytes = vec![0; 32];
     bytes[0] = leading_byte;
 
     reg.registration.stake_key = StakeKeyHex(PubKey(bytes));

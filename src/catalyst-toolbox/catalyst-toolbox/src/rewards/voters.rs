@@ -309,6 +309,7 @@ mod tests {
                 reward_address,
                 delegations,
                 voting_purpose: 0,
+                nonce: 0,
             });
             total_stake += i;
         }
@@ -356,6 +357,7 @@ mod tests {
                 reward_address,
                 delegations,
                 voting_purpose: 0,
+                nonce: 0,
             });
         }
 

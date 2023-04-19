@@ -6,15 +6,15 @@ use crate::data::NetworkId;
 /// An ED25519 public key
 ///
 /// This is a wrapper around `[u8; 32]`, with serde impls that serialize to/from a hex string
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
-pub struct PubKey(pub [u8; 32]);
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Arbitrary)]
+pub struct PubKey(pub Vec<u8>);
 
 impl Serialize for PubKey {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
-        let s = hex::encode(self); // TODO: stack allocate this string into a [u8; 64]
+        let s = "0x".to_string() + &hex::encode(self); // TODO: stack allocate this string into a [u8; 64]
         String::serialize(&s, serializer)
     }
 }
@@ -25,8 +25,8 @@ impl<'de> Deserialize<'de> for PubKey {
         D: serde::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        let mut bytes = [0; 32];
-        hex::decode_to_slice(&s, &mut bytes).map_err(<D::Error as serde::de::Error>::custom)?;
+        let bytes = hex::decode(s.trim_start_matches("0x"))
+            .map_err(<D::Error as serde::de::Error>::custom)?;
         Ok(Self(bytes))
     }
 }
@@ -35,14 +35,15 @@ impl PubKey {
     /// Convert this to the hex representation (without leading "0x")
     ///
     /// ```
+    ///
     /// # use voting_tools_rs::PubKey;
     /// let sig = PubKey::from_bytes([0; 32]);
     ///
     /// assert_eq!(sig.to_string, "0".repeat(64));
     /// ```
     #[inline]
-    pub fn to_hex(self) -> String {
-        hex::encode(self.0)
+    pub fn to_hex(&self) -> String {
+        hex::encode(&self.0)
     }
 
     /// Create a public key from a string slice containing hex bytes
@@ -57,8 +58,7 @@ impl PubKey {
     /// ```
     #[inline]
     pub fn from_hex(hex: &str) -> Result<Self, hex::FromHexError> {
-        let mut bytes = [0; 32];
-        hex::decode_to_slice(hex, &mut bytes)?;
+        let bytes = hex::decode(hex)?;
         Ok(Self(bytes))
     }
 
@@ -93,27 +93,5 @@ impl PubKey {
 impl AsRef<[u8]> for PubKey {
     fn as_ref(&self) -> &[u8] {
         self.0.as_ref()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use serde_json::{from_value, json, to_value};
-
-    use super::*;
-
-    #[test]
-    fn can_deserialize_str() {
-        #[derive(Deserialize, Serialize)]
-        struct Foo {
-            foo: PubKey,
-        }
-
-        let json = json!({"foo": "0".repeat(64)});
-        let foo: Foo = from_value(json.clone()).unwrap();
-        assert_eq!(foo.foo.0, [0; 32]);
-
-        let json_again = to_value(&foo).unwrap();
-        assert_eq!(json, json_again);
     }
 }

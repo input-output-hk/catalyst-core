@@ -1,3 +1,5 @@
+"""Utility functions and classes."""
+
 from dataclasses import dataclass
 from datetime import datetime
 import sys
@@ -13,10 +15,7 @@ DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
 
 
 def snake_case_keys(x: DictOrList):
-    """
-    Recursively transforms all dict keys to snake_case.
-    """
-
+    """Recursively transforms all dict keys to snake_case."""
     if isinstance(x, dict):
         keys = list(x.keys())
         for k in keys:
@@ -29,21 +28,22 @@ def snake_case_keys(x: DictOrList):
 
 
 def snake_case(s: str) -> str:
-    """
-    Transforms a string to snake_case.
-    """
-
+    """Transform a string to snake_case."""
     return re.sub(r"([a-z])([A-Z])", r"\1_\2", s).lower()
 
 
 class RunCmdFailed(Exception):
+    """Raised when a command fails to run."""
+
     def __init__(self, cmd_name: str, exit_code: int, stdout: bytes, stderr: bytes):
+        """Initialize a new instance of RunCmdFailed."""
         self.cmd_name = cmd_name
         self.exit_code = exit_code
         self.stdout = stdout
         self.stderr = stderr
 
     def __str__(self):
+        """Return a string representation of the exception."""
         stdout_str = ""
         if len(self.stdout) > 0:
             stdout_str = f"STDOUT:\n{self.stdout.decode()}\n"
@@ -57,6 +57,7 @@ class RunCmdFailed(Exception):
 
 
 async def run_cmd(name: str, cmd: str):
+    """Run a command."""
     with logger.contextualize(name=name):
         logger.info("Executing command", command_line=cmd)
         p = await asyncio.create_subprocess_shell(
@@ -75,9 +76,7 @@ async def run_cmd(name: str, cmd: str):
 
 @dataclass
 class RequestProgressInfo:
-    """
-    Information about a request's progress.
-    """
+    """Information about a request's progress."""
 
     method: str
     url: str
@@ -86,18 +85,19 @@ class RequestProgressInfo:
 
 
 class RequestProgressObserver:
-    """
-    Observer used for displaying IdeaScale client's requests progresses.
-    """
+    """Observer used for displaying IdeaScale client's requests progresses."""
 
     def __init__(self):
+        """Initialize a new instance of RequestProgressObserver."""
         self.inflight_requests: Dict[int, RequestProgressInfo] = {}
 
     def request_start(self, req_id: int, method: str, url: str):
+        """Register the start of a request."""
         logger.info("Request started", req_id=req_id, method=method, url=url)
         self.inflight_requests[req_id] = RequestProgressInfo(method, url, 0, datetime.now())
 
     def request_progress(self, req_id: int, bytes_received: int):
+        """Register the progress of a request."""
         info = self.inflight_requests[req_id]
         info.bytes_received += bytes_received
 
@@ -113,6 +113,7 @@ class RequestProgressObserver:
         info.last_update = now
 
     def request_end(self, req_id):
+        """Register the end of a request."""
         info = self.inflight_requests[req_id]
         logger.info(
             "Request finished",
@@ -125,26 +126,32 @@ class RequestProgressObserver:
 
 
 class BadResponse(Exception):
+    """Raised when a request returns a bad response."""
+
     def __init__(self):
+        """Initialize a new instance of BadResponse."""
         super().__init__("Bad response")
 
 
 class GetFailed(Exception):
+    """Raised when a GET request fails."""
+
     def __init__(self, status, reason, content):
+        """Initialize a new instance of GetFailed."""
         super().__init__(f"{status} {reason}\n{content})")
 
 
 class JsonHttpClient:
+    """HTTP Client for JSON APIs."""
+
     def __init__(self, api_url: str):
+        """Initialize a new instance of JsonHttpClient."""
         self.api_url = api_url
         self.request_progress_observer = RequestProgressObserver()
         self.request_counter = 0
 
     async def get(self, path: str, headers: Mapping[str, str] = {}) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
-        """
-        Executes a GET request on IdeaScale API.
-        """
-
+        """Execute a GET request on IdeaScale API."""
         api_url = self.api_url
         if api_url.endswith("/"):
             api_url = api_url[:-1]
@@ -161,7 +168,7 @@ class JsonHttpClient:
         async with aiohttp.ClientSession() as session:
             self.request_progress_observer.request_start(req_id, "GET", url)
             async with session.get(url, headers=headers) as r:
-                content = b''
+                content = b""
 
                 async for c, _ in r.content.iter_chunks():
                     content += c
@@ -192,10 +199,7 @@ if TYPE_CHECKING:
 
 
 def logger_formatter(record: "Record") -> str:
-    """
-    Formatter for Loguru logger.
-    """
-
+    """Formatter for Loguru logger."""
     s = ""
     for k, v in record["extra"].items():
         s += f"<yellow>{k}</yellow>=<cyan>{json.dumps(v)}</cyan> "
@@ -206,26 +210,22 @@ def logger_formatter(record: "Record") -> str:
 
 
 def json_logger_formatter(record: "Record") -> str:
-    """
-    JSON Formatter for Loguru logger.
-    """
-
-    record["extra"]["__json_serialized"] = json.dumps({
-        "timestamp": record["time"].timestamp(),
-        "level": record["level"].name,
-        "message": record["message"],
-        "source": f"{record['file'].path}:{record['line']}",
-        "extra": record["extra"],
-    })
+    """JSON Formatter for Loguru logger."""
+    record["extra"]["__json_serialized"] = json.dumps(
+        {
+            "timestamp": record["time"].timestamp(),
+            "level": record["level"].name,
+            "message": record["message"],
+            "source": f"{record['file'].path}:{record['line']}",
+            "extra": record["extra"],
+        }
+    )
 
     return "{extra[__json_serialized]}\n"
 
 
 def configure_logger(log_level: str, log_format: str):
-    """
-    Configures Loguru logger.
-    """
-
+    """Configure Loguru logger."""
     formatter = logger_formatter
     if log_format == "json":
         formatter = json_logger_formatter

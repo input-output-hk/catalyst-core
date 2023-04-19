@@ -29,7 +29,18 @@ impl EventDB {
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
         LEFT JOIN vote_options on objective.vote_options = vote_options.id
-        WHERE objective.event = $1;";
+        WHERE objective.event = $1
+        OFFSET $2;";
+
+    const OBJECTIVES_WITH_LIMIT_QUERY: &'static str =
+        "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
+        objective_category.name, objective_category.description as objective_category_description,
+        vote_options.objective as choices
+        FROM objective
+        INNER JOIN objective_category on objective.category = objective_category.name
+        LEFT JOIN vote_options on objective.vote_options = vote_options.id
+        WHERE objective.event = $1
+        LIMIT $2 OFFSET $3;";
 }
 
 #[async_trait]
@@ -37,12 +48,21 @@ impl ObjectiveQueries for EventDB {
     async fn get_objectives(
         &self,
         event: EventId,
-        _limit: Option<i64>,
-        _offset: Option<i64>,
+        limit: Option<i64>,
+        offset: Option<i64>,
     ) -> Result<Vec<Objective>, Error> {
         let conn = self.pool.get().await?;
 
-        let rows = conn.query(Self::OBJECTIVES_QUERY, &[&event.0]).await?;
+        let rows = if let Some(limit) = limit {
+            conn.query(
+                Self::OBJECTIVES_WITH_LIMIT_QUERY,
+                &[&event.0, &limit, &offset.unwrap_or(0)],
+            )
+            .await?
+        } else {
+            conn.query(Self::OBJECTIVES_QUERY, &[&event.0, &offset.unwrap_or(0)])
+                .await?
+        };
 
         let mut objectives = Vec::new();
         for row in rows {
@@ -103,7 +123,7 @@ impl ObjectiveQueries for EventDB {
 }
 
 /// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-setup`
+/// To do it you can use `cargo make local-event-db-test`
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
@@ -169,5 +189,69 @@ mod tests {
                 }
             ]
         );
+
+        let objectives = event_db
+            .get_objectives(EventId(1), Some(1), None)
+            .await
+            .unwrap();
+        assert_eq!(
+            objectives,
+            vec![Objective {
+                summary: ObjectiveSummary {
+                    id: 1,
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 1".to_string(),
+                },
+                details: ObjectiveDetails {
+                    description: "description 1".to_string(),
+                    reward: Some(RewardDefintion {
+                        currency: "ADA".to_string(),
+                        value: 100
+                    }),
+                    choices: Some(vec!["yes".to_string(), "no".to_string()]),
+                    ballot: None,
+                    url: Some("objective 1 url".to_string()),
+                    supplemental: Some(ObjectiveSupplementalData {
+                        sponsor: "objective 1 sponsor".to_string(),
+                        video: "objective 1 video".to_string()
+                    }),
+                }
+            },]
+        );
+
+        let objectives = event_db
+            .get_objectives(EventId(1), None, Some(1))
+            .await
+            .unwrap();
+        assert_eq!(
+            objectives,
+            vec![Objective {
+                summary: ObjectiveSummary {
+                    id: 2,
+                    objective_type: ObjectiveType {
+                        id: "catalyst-native".to_string(),
+                        description: "??".to_string()
+                    },
+                    title: "title 2".to_string(),
+                },
+                details: ObjectiveDetails {
+                    description: "description 2".to_string(),
+                    reward: None,
+                    choices: None,
+                    ballot: None,
+                    url: None,
+                    supplemental: None,
+                }
+            }]
+        );
+
+        let objectives = event_db
+            .get_objectives(EventId(1), Some(1), Some(2))
+            .await
+            .unwrap();
+        assert_eq!(objectives, vec![]);
     }
 }

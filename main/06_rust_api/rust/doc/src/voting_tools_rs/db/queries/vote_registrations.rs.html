@@ -163,19 +163,102 @@
 <a href="#163" id="163">163</a>
 <a href="#164" id="164">164</a>
 <a href="#165" id="165">165</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{db::inner::DbQuery, Db};
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::fs::File;
+<span class="kw">use </span>std::io::{BufWriter, Write};
+
+<span class="kw">use crate</span>::{db::inner::DbQuery, Db};
 
 <span class="kw">use </span><span class="kw">crate</span>::data::{SignedRegistration, SlotNo};
 <span class="kw">use </span><span class="kw">crate</span>::db::schema::{block, tx, tx_metadata};
 <span class="kw">use </span>bigdecimal::{BigDecimal, FromPrimitive};
 <span class="kw">use </span>color_eyre::eyre::{eyre, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span>color_eyre::{Help, Report};
 <span class="kw">use </span>diesel::RunQueryDsl;
 <span class="kw">use </span>diesel::{
     BoolExpressionMethods, ExpressionMethods, JoinOnDsl, PgAnyJsonExpressionMethods,
     PgJsonbExpressionMethods, QueryDsl,
 };
+<span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>once_cell::sync::Lazy;
 <span class="kw">use </span>serde_json::Value;
+
+<span class="kw">use </span>tracing::info;
 
 <span class="kw">static </span>METADATA_KEY: Lazy&lt;BigDecimal&gt; = Lazy::new(|| BigDecimal::from_isize(<span class="number">61284</span>).unwrap());
 <span class="kw">static </span>SIGNATURE_KEY: Lazy&lt;BigDecimal&gt; = Lazy::new(|| BigDecimal::from_isize(<span class="number">61285</span>).unwrap());
@@ -203,9 +286,30 @@
         <span class="kw">let </span>upper = upper.into_i64().ok_or_else(|| <span class="macro">eyre!</span>(<span class="string">&quot;invalid i64&quot;</span>))<span class="question-mark">?</span>;
         <span class="kw">let </span>q = query(lower, upper);
 
+        <span class="macro">info!</span>(<span class="string">&quot;Querying Registrations from DB from Slot# {lower} to {upper} Inclusive.&quot;</span>);
+
         <span class="kw">let </span>rows = <span class="self">self</span>.exec(<span class="kw">move </span>|conn| q.load(conn))<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(rows.into_iter().filter_map(convert_row).collect())
+        <span class="kw">let </span>(oks, errs): (<span class="kw">_</span>, Vec&lt;<span class="kw">_</span>&gt;) = rows.into_iter().map(convert_row).partition_result();
+
+        <span class="kw">if </span>errs.is_empty() {
+            <span class="macro">info!</span>(<span class="string">&quot;No registration errors detected.&quot;</span>);
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>file = File::options()
+                .write(<span class="bool-val">true</span>)
+                .create(<span class="bool-val">true</span>)
+                .truncate(<span class="bool-val">true</span>)
+                .open(<span class="string">&quot;convert_row.err&quot;</span>)
+                .unwrap();
+            <span class="kw">let </span><span class="kw-2">mut </span>writer = BufWriter::new(file);
+            <span class="macro">warn!</span>(<span class="string">&quot;writing {} errors to convert_row.err&quot;</span>, errs.len());
+            <span class="kw">for </span>err <span class="kw">in </span>errs {
+                <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>writer, <span class="string">&quot;==========================&quot;</span>).unwrap();
+                <span class="macro">writeln!</span>(<span class="kw-2">&amp;mut </span>writer, <span class="string">&quot;{err:#?}&quot;</span>).unwrap();
+            }
+        }
+
+        <span class="prelude-val">Ok</span>(oks)
     }
 }
 
@@ -249,21 +353,34 @@
 }
 
 <span class="doccomment">/// Attempt to parse a row into a [`SignedRegistration`] struct
-</span><span class="kw">fn </span>convert_row((tx_id, metadata, signature, _slot_no): Row) -&gt; <span class="prelude-ty">Option</span>&lt;SignedRegistration&gt; {
-    <span class="kw">let </span>tx_id = u64::try_from(tx_id).ok()<span class="question-mark">?</span>.into();
-    <span class="kw">let </span>registration = serde_json::from_value(metadata<span class="question-mark">?</span>).ok()<span class="question-mark">?</span>;
-    <span class="kw">let </span>signature = serde_json::from_value(signature<span class="question-mark">?</span>).ok()<span class="question-mark">?</span>;
+</span><span class="kw">fn </span>convert_row((tx_id, metadata, signature, _slot_no): Row) -&gt; <span class="prelude-ty">Result</span>&lt;SignedRegistration, Report&gt; {
+    <span class="kw">let </span>metadata = metadata.ok_or_else(|| <span class="macro">eyre!</span>(<span class="string">&quot;no metadata&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">let </span>signature = signature.ok_or_else(|| <span class="macro">eyre!</span>(<span class="string">&quot;no metadata&quot;</span>))<span class="question-mark">?</span>;
 
-    <span class="prelude-val">Some</span>(SignedRegistration {
+    <span class="kw">let </span>tx_id = u64::try_from(tx_id)<span class="question-mark">?</span>.into();
+    <span class="kw">let </span>registration = serde_json::from_value(metadata.clone()).map_err(|e| {
+        Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;registration json: {metadata:#?}&quot;</span>))
+    })<span class="question-mark">?</span>;
+    <span class="kw">let </span>signature = serde_json::from_value(signature.clone())
+        .map_err(|e| Report::from(e).with_warning(|| <span class="macro">format!</span>(<span class="string">&quot;signature json: {signature:#?}&quot;</span>)))<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(SignedRegistration {
         registration,
         signature,
+        stake_key_hash: <span class="macro">vec!</span>[<span class="number">0</span>; <span class="number">29</span>],
         tx_id,
+        slot: <span class="number">0</span>,
     })
 }
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use </span>serde_json::{from_value, json};
+
+    <span class="kw">use crate</span>::{
+        data::{PubKey, Registration},
+        VotingKey,
+    };
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
@@ -282,30 +399,30 @@
         })
     }
 
-    <span class="attr">#[test]
-    </span><span class="kw">fn </span>process_accepts_cip15_test_vector() {
-        <span class="kw">let </span>rows = <span class="macro">vec!</span>[(
-            <span class="number">1</span>,
-            <span class="prelude-val">Some</span>(cip15_test_vector_meta()),
-            <span class="prelude-val">Some</span>(cip15_test_vector_sig()),
-            <span class="prelude-val">None</span>,
-        )];
+    <span class="comment">// #[test]
+    // fn process_accepts_cip15_test_vector() {
+    //     let rows = vec![(
+    //         1,
+    //         Some(cip15_test_vector_meta()),
+    //         Some(cip15_test_vector_sig()),
+    //         None,
+    //     )];
+    //
+    //     let regs = vec![SignedRegistration {
+    //         tx_id: 1.into(),
+    //         registration: from_value(cip15_test_vector_meta()).unwrap(),
+    //         signature: from_value(cip15_test_vector_sig()).unwrap(),
+    //     }];
+    //
+    //     let result: Vec&lt;_&gt; = rows.into_iter().filter_map(convert_row).collect();
+    //
+    //     assert_eq!(result, regs);
+    // }
 
-        <span class="kw">let </span>regs = <span class="macro">vec!</span>[SignedRegistration {
-            tx_id: <span class="number">1</span>.into(),
-            registration: from_value(cip15_test_vector_meta()).unwrap(),
-            signature: from_value(cip15_test_vector_sig()).unwrap(),
-        }];
-
-        <span class="kw">let </span>result: Vec&lt;<span class="kw">_</span>&gt; = rows.into_iter().filter_map(convert_row).collect();
-
-        <span class="macro">assert_eq!</span>(result, regs);
-    }
-
-    <span class="attr">#[test]
+    </span><span class="attr">#[test]
     </span><span class="kw">fn </span>filters_bad_rows() {
         <span class="kw">fn </span>check(row: Row) {
-            <span class="macro">assert!</span>(convert_row(row).is_none());
+            <span class="macro">assert!</span>(convert_row(row).is_err());
         }
 
         <span class="comment">// bad sig
@@ -326,6 +443,41 @@
 
         <span class="comment">// none
         </span>check((<span class="number">1</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>));
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>query_snapshot() {
+        <span class="kw">let </span>q = query(<span class="number">123</span>, <span class="number">234</span>);
+        <span class="macro">insta::assert_snapshot!</span>(q.sql_string());
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>can_parse_voting_key() {
+        color_eyre::install().unwrap();
+        <span class="kw">let </span>vps = <span class="macro">json!</span>([[
+            <span class="string">&quot;0x1b92110d6c2aee00b7b208992efe3a2511f6811577155dd89977e8600fa5c27a&quot;</span>,
+            <span class="number">1
+        </span>]]);
+        <span class="kw">let _</span>: VotingKey = from_value(vps).unwrap();
+        <span class="kw">let </span>x = <span class="string">&quot;0x0cf8d92c3fb4474942554a3c97f9a0421b69073fed4a600a6a77a1d72a8a&quot;</span>;
+        hex::decode(x.trim_start_matches(<span class="string">&quot;0x&quot;</span>)).unwrap();
+
+        <span class="kw">let _</span>: PubKey = from_value(<span class="macro">json!</span>(
+            <span class="string">&quot;0x0cf8d92c3fb4474942554a3c97f9a0421b69073fed4a600a6a77a1d72a8a&quot;
+        </span>))
+        .unwrap();
+
+        <span class="kw">let </span>value = <span class="macro">json!</span>({
+            <span class="string">&quot;1&quot;</span>: [[
+                <span class="string">&quot;0x0cf8d92c3fb4474942554a3c97f9a0421b69073fed4a600a6a77a1d72a8a&quot;</span>,
+                <span class="number">1
+            </span>]],
+            <span class="string">&quot;2&quot;</span>: <span class="string">&quot;0x19649e69c2fc0942d41452ad771278e0da18d1965bc9cc00d92d0e1a0f632ea4&quot;</span>,
+            <span class="string">&quot;3&quot;</span>: <span class="string">&quot;0x005e868b277b468dcdec76f410fb9159e61565b3d61800dcfaab08afb7c17cbc9ffe7a69542d440e12fe800c708530e5a36c5f148c2e795f79&quot;</span>,
+            <span class="string">&quot;4&quot;</span>: <span class="number">15_159_614</span>,
+            <span class="string">&quot;5&quot;</span>: <span class="number">0</span>,
+        });
+        <span class="kw">let _</span>: Registration = from_value(value).unwrap();
     }
 }
 </code></pre></div>

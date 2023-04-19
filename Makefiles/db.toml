@@ -17,7 +17,7 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e postgres -f setup/dev-db.sql ${@}
+psql -e -U postgres -f setup/dev-db.sql ${@}
 '''
 
 # Run Diesel Migrations, constructing the full up-to-date DB in a local database.
@@ -45,6 +45,18 @@ psql -U catalyst-event-dev -d CatalystEventDev -f test_data/voting_group_table.s
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/objective_table.sql ${@}
 '''
 
+[tasks.local-db-historic-data-setup]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_0.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_1.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_2.sql ${@}
+'''
+
+
 # Setup the local database ready to run the migrations.
 [tasks.local-event-db-setup]
 workspace = false
@@ -52,7 +64,8 @@ category = "db"
 dependencies = [
     "local-event-db-init",
     "run-event-db-migration",
-    "local-db-test-data-setup"
+    "local-db-test-data-setup",
+    "local-db-historic-data-setup"
 ]
 
 

@@ -77,21 +77,21 @@ class Mapper:
         self.config = config
         self.vote_options_id = vote_options_id
 
-    def map_challenge(self, a: Campaign, event_id: int) -> ideascale_importer.db.models.Challenge:
-        """Map a IdeaScale campaign into a challenge."""
+    def map_objective(self, a: Campaign, event_id: int) -> ideascale_importer.db.models.Challenge:
+        """Map a IdeaScale campaign into a objective."""
         reward = parse_reward(a.tagline)
 
         return ideascale_importer.db.models.Challenge(
             id=a.id,
             event=event_id,
-            category=get_challenge_category(a),
+            category=get_objective_category(a),
             title=a.name,
             description=html_to_md(a.description),
             rewards_currency=reward.currency,
             rewards_total=reward.amount,
             proposers_rewards=reward.amount,
             vote_options=self.vote_options_id,
-            extra={"url": {"challenge": a.campaign_url}},
+            extra={"url": {"objective": a.campaign_url}},
         )
 
     def map_proposal(
@@ -120,7 +120,7 @@ class Mapper:
 
         return ideascale_importer.db.models.Proposal(
             id=a.id,
-            challenge=a.campaign_id,
+            objective=a.campaign_id,
             title=html_to_md(a.title),
             summary=html_to_md(a.text),
             category="",
@@ -187,13 +187,13 @@ def parse_reward(s: str) -> Reward:
     return Reward(amount=int(amount, base=10), currency=currency.upper())
 
 
-def get_challenge_category(c: Campaign) -> str:
-    """Compute the challenge category of a given campaign."""
+def get_objective_category(c: Campaign) -> str:
+    """Compute the objective category of a given campaign."""
     r = c.name.lower()
 
     if "catalyst natives" in r:
         return "native"
-    elif "challenge setting" in r:
+    elif "objective setting" in r:
         return "community-choice"
     else:
         return "simple"
@@ -290,15 +290,15 @@ class Importer:
         vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, "yes,no")
         mapper = Mapper(vote_options_id, self.config)
 
-        challenges = [mapper.map_challenge(a, self.event_id) for a in group.campaigns]
-        challenge_count = len(challenges)
+        objectives = [mapper.map_objective(a, self.event_id) for a in group.campaigns]
+        objective_count = len(objectives)
         proposal_count = 0
 
         async with self.conn.transaction():
-            await ideascale_importer.db.upsert_many(self.conn, challenges, conflict_cols=["id"])
+            await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id"])
 
             proposals = [mapper.map_proposal(a, self.proposals_impact_scores) for a in ideas]
             proposal_count = len(proposals)
             await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id"])
 
-        logger.info("Imported challenges and proposals", challenge_count=challenge_count, proposal_count=proposal_count)
+        logger.info("Imported objectives and proposals", objective_count=objective_count, proposal_count=proposal_count)

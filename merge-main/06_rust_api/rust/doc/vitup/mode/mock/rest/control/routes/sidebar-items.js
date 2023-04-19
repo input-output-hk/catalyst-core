@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["control_filter"],"opaque":[""],"static":["S"],"struct":["__StaticPath"]};

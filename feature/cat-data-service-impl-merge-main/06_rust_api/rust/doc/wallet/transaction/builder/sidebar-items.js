@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AddInputStatus","Error","WitnessInput"],"struct":["TransactionBuilder"]};

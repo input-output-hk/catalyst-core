@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Payload","PayloadType","TryFromIntError"],"mod":["tests"],"struct":["EncryptedVote","ProofOfCorrectVote"]};

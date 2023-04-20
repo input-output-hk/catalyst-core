@@ -58,7 +58,7 @@ VALUES
  '2021-01-10 20:00:00', -- Tallying Ends - Date/time Accurate.
  decode(:'block0contents','base64'),
                         -- Block 0 Data - From File
- NULL,                  -- Block 0 Hash -
+ NULL,                  -- Block 0 Hash - TODO
  0,                     -- Committee Size - No Encrypted Votes
  0                      -- Committee Threshold - No Encrypted Votes
  );

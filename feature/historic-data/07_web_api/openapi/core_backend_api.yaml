@@ -547,6 +547,9 @@ components:
           description: |-
             The time after which Final Registration/Voting Power will be calculated.
             This is usually after the deadline, to allow for potential instability in the head of the blockchain to stabilize.
+      required:
+        - deadline
+        - taken
       examples:
         - deadline: '2023-08-24T14:15:22Z'
           taken: '2023-08-24T14:15:22Z'
@@ -591,6 +594,10 @@ components:
         tallying_end:
           $ref: '#/components/schemas/DateTime'
           description: Date-Time when Tallying Ends.
+      required:
+        - voting
+        - tallying
+        - tallying_end
       x-stoplight:
         id: c1q1b5jtfd4ue
     ObjectiveId:
@@ -714,6 +721,12 @@ components:
         - private
         - public
         - cast-private
+      minItems: 1
+      maxItems: 16
+      uniqueItems: true
+      items:
+        type: string
+        minLength: 1
     GroupBallotType:
       title: Group Ballot Type
       type: array
@@ -935,7 +948,7 @@ components:
           type: integer
           format: int64
           description: |-
-            The amount of funds requested by this proposal.  
+            The amount of funds requested by this proposal.
             In the denomination of the Objectives Reward.
             If not present, then this proposal is not requesting any funds.
         url:

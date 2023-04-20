@@ -77,9 +77,11 @@
 <a href="#77" id="77">77</a>
 <a href="#78" id="78">78</a>
 <a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     validation::{cbor::cbor_to_bytes, hash::hash},
-    Sig, Signature, VotingPowerSource, VotingPurpose,
+    Sig, Signature, VotingKey, VotingPurpose,
 };
 
 <span class="kw">use super</span>::{
@@ -123,8 +125,8 @@
     <span class="kw">let </span>stake_key: [u8; <span class="number">32</span>] = public.as_ref().try_into().unwrap();
 
     <span class="kw">let </span>registration = Registration {
-        voting_power_source: VotingPowerSource::Direct(voting_key),
-        stake_key: StakeKeyHex(PubKey(stake_key)),
+        voting_key: VotingKey::Direct(voting_key),
+        stake_key: StakeKeyHex(PubKey(stake_key.to_vec())),
         rewards_address,
         nonce,
         voting_purpose: <span class="prelude-val">Some</span>(VotingPurpose::CATALYST),
@@ -144,7 +146,9 @@
     SignedRegistration {
         registration,
         signature,
+        stake_key_hash: <span class="macro">vec!</span>[<span class="number">0</span>; <span class="number">29</span>],
         tx_id,
+        slot: <span class="number">12345</span>,
     }
 }
 

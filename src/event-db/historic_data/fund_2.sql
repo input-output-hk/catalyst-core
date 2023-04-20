@@ -40,7 +40,7 @@ INSERT INTO event
  committee_threshold)
 VALUES
 
-(2, 'Catalyst Fund 2', 'First Public Test Fund',
+(2, 'Catalyst Fund 2', 'First Funded Catalyst Event',
  '2020-09-23 00:00:00', -- Start Time - Date accurate, time not known.
  '2021-01-10 20:00:00', -- End Time   - Date/Time accurate.
  '2020-12-15 17:00:04', -- Registration Snapshot Time - Date/time Accurate. Slot 16485313

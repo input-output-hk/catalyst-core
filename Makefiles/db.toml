@@ -55,6 +55,7 @@ cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_0.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_1.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_2.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_3.sql ${@}
 '''
 
 

@@ -64,7 +64,9 @@ dependencies = [
     "local-event-db-init",
     "local-event-db-graphql-init",
     "run-event-db-migration",
-    "local-db-test-data-setup"
+    "local-db-test-data-setup",
+    "run-event-db-migration",
+    "local-event-db-graphql-init"
 ]
 
 

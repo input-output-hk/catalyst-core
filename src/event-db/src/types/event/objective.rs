@@ -187,10 +187,10 @@ mod tests {
                         "value": 100,
                     },
                     "choices": ["Abstain", "Yes", "No"],
-                    "ballot": {
+                    "ballot": [{
                         "group": "rep",
                         "ballot": "public",
-                    },
+                    }],
                     "url": "objective url 1",
                     "supplemental": {
                         "sponsor": "sponsor 1",

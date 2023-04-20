@@ -36,8 +36,8 @@ pub struct ObjectiveSupplementalData {
 pub struct ObjectiveDetails {
     pub description: String,
     pub reward: Option<RewardDefintion>,
-    pub choices: Option<Vec<String>>,
-    pub ballot: Option<GroupBallotType>,
+    pub choices: Vec<String>,
+    pub ballot: Vec<GroupBallotType>,
     pub url: Option<String>,
     pub supplemental: Option<ObjectiveSupplementalData>,
 }
@@ -164,15 +164,11 @@ mod tests {
                 currency: "ADA".to_string(),
                 value: 100,
             }),
-            choices: Some(vec![
-                "Abstain".to_string(),
-                "Yes".to_string(),
-                "No".to_string(),
-            ]),
-            ballot: Some(GroupBallotType {
+            choices: vec!["Abstain".to_string(), "Yes".to_string(), "No".to_string()],
+            ballot: vec![GroupBallotType {
                 group: "rep".to_string(),
                 ballot: "public".to_string(),
-            }),
+            }],
             url: Some("objective url 1".to_string()),
             supplemental: Some(ObjectiveSupplementalData {
                 sponsor: "sponsor 1".to_string(),

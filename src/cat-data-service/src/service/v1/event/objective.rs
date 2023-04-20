@@ -59,8 +59,8 @@ mod tests {
         http::{Request, StatusCode},
     };
     use event_db::types::event::objective::{
-        ObjectiveDetails, ObjectiveSummary, ObjectiveSupplementalData, ObjectiveType,
-        RewardDefintion,
+        GroupBallotType, ObjectiveDetails, ObjectiveSummary, ObjectiveSupplementalData,
+        ObjectiveType, RewardDefintion,
     };
     use tower::ServiceExt;
 
@@ -94,8 +94,17 @@ mod tests {
                             currency: "ADA".to_string(),
                             value: 100
                         }),
-                        choices: Some(vec!["yes".to_string(), "no".to_string()]),
-                        ballot: None,
+                        choices: vec!["yes".to_string(), "no".to_string()],
+                        ballot: vec![
+                            GroupBallotType {
+                                group: "rep".to_string(),
+                                ballot: "private".to_string(),
+                            },
+                            GroupBallotType {
+                                group: "direct".to_string(),
+                                ballot: "private".to_string(),
+                            },
+                        ],
                         url: Some("objective 1 url".to_string()),
                         supplemental: Some(ObjectiveSupplementalData {
                             sponsor: "objective 1 sponsor".to_string(),
@@ -115,8 +124,17 @@ mod tests {
                     details: ObjectiveDetails {
                         description: "description 2".to_string(),
                         reward: None,
-                        choices: None,
-                        ballot: None,
+                        choices: vec![],
+                        ballot: vec![
+                            GroupBallotType {
+                                group: "rep".to_string(),
+                                ballot: "private".to_string(),
+                            },
+                            GroupBallotType {
+                                group: "direct".to_string(),
+                                ballot: "private".to_string(),
+                            },
+                        ],
                         url: None,
                         supplemental: None,
                     }
@@ -149,8 +167,17 @@ mod tests {
                         currency: "ADA".to_string(),
                         value: 100
                     }),
-                    choices: Some(vec!["yes".to_string(), "no".to_string()]),
-                    ballot: None,
+                    choices: vec!["yes".to_string(), "no".to_string()],
+                    ballot: vec![
+                        GroupBallotType {
+                            group: "rep".to_string(),
+                            ballot: "private".to_string(),
+                        },
+                        GroupBallotType {
+                            group: "direct".to_string(),
+                            ballot: "private".to_string(),
+                        },
+                    ],
                     url: Some("objective 1 url".to_string()),
                     supplemental: Some(ObjectiveSupplementalData {
                         sponsor: "objective 1 sponsor".to_string(),
@@ -182,8 +209,17 @@ mod tests {
                 details: ObjectiveDetails {
                     description: "description 2".to_string(),
                     reward: None,
-                    choices: None,
-                    ballot: None,
+                    choices: vec![],
+                    ballot: vec![
+                        GroupBallotType {
+                            group: "rep".to_string(),
+                            ballot: "private".to_string(),
+                        },
+                        GroupBallotType {
+                            group: "direct".to_string(),
+                            ballot: "private".to_string(),
+                        },
+                    ],
                     url: None,
                     supplemental: None,
                 }

@@ -2,8 +2,8 @@ use crate::{
     error::Error,
     types::event::{
         objective::{
-            Objective, ObjectiveDetails, ObjectiveSummary, ObjectiveSupplementalData,
-            ObjectiveType, RewardDefintion,
+            GroupBallotType, Objective, ObjectiveDetails, ObjectiveSummary,
+            ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
         },
         EventId,
     },
@@ -112,8 +112,20 @@ impl ObjectiveQueries for EventDB {
                 url,
                 supplemental,
                 description: row.try_get("description")?,
-                choices: row.try_get("choices")?,
-                ballot: None,
+                choices: row
+                    .try_get::<_, Option<Vec<_>>>("choices")?
+                    .unwrap_or_default(),
+                // TODO fix this, need to fill with the real data
+                ballot: vec![
+                    GroupBallotType {
+                        group: "rep".to_string(),
+                        ballot: "private".to_string(),
+                    },
+                    GroupBallotType {
+                        group: "direct".to_string(),
+                        ballot: "private".to_string(),
+                    },
+                ],
             };
             objectives.push(Objective { summary, details });
         }
@@ -131,8 +143,10 @@ impl ObjectiveQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
+    use std::vec;
+
     use super::*;
-    use crate::establish_connection;
+    use crate::{establish_connection, types::event::objective::GroupBallotType};
 
     #[tokio::test]
     async fn get_objectives_test() {
@@ -160,8 +174,17 @@ mod tests {
                             currency: "ADA".to_string(),
                             value: 100
                         }),
-                        choices: Some(vec!["yes".to_string(), "no".to_string()]),
-                        ballot: None,
+                        choices: vec!["yes".to_string(), "no".to_string()],
+                        ballot: vec![
+                            GroupBallotType {
+                                group: "rep".to_string(),
+                                ballot: "private".to_string(),
+                            },
+                            GroupBallotType {
+                                group: "direct".to_string(),
+                                ballot: "private".to_string(),
+                            },
+                        ],
                         url: Some("objective 1 url".to_string()),
                         supplemental: Some(ObjectiveSupplementalData {
                             sponsor: "objective 1 sponsor".to_string(),
@@ -181,8 +204,17 @@ mod tests {
                     details: ObjectiveDetails {
                         description: "description 2".to_string(),
                         reward: None,
-                        choices: None,
-                        ballot: None,
+                        choices: vec![],
+                        ballot: vec![
+                            GroupBallotType {
+                                group: "rep".to_string(),
+                                ballot: "private".to_string(),
+                            },
+                            GroupBallotType {
+                                group: "direct".to_string(),
+                                ballot: "private".to_string(),
+                            },
+                        ],
                         url: None,
                         supplemental: None,
                     }
@@ -211,8 +243,17 @@ mod tests {
                         currency: "ADA".to_string(),
                         value: 100
                     }),
-                    choices: Some(vec!["yes".to_string(), "no".to_string()]),
-                    ballot: None,
+                    choices: vec!["yes".to_string(), "no".to_string()],
+                    ballot: vec![
+                        GroupBallotType {
+                            group: "rep".to_string(),
+                            ballot: "private".to_string(),
+                        },
+                        GroupBallotType {
+                            group: "direct".to_string(),
+                            ballot: "private".to_string(),
+                        },
+                    ],
                     url: Some("objective 1 url".to_string()),
                     supplemental: Some(ObjectiveSupplementalData {
                         sponsor: "objective 1 sponsor".to_string(),
@@ -240,8 +281,17 @@ mod tests {
                 details: ObjectiveDetails {
                     description: "description 2".to_string(),
                     reward: None,
-                    choices: None,
-                    ballot: None,
+                    choices: vec![],
+                    ballot: vec![
+                        GroupBallotType {
+                            group: "rep".to_string(),
+                            ballot: "private".to_string(),
+                        },
+                        GroupBallotType {
+                            group: "direct".to_string(),
+                            ballot: "private".to_string(),
+                        },
+                    ],
                     url: None,
                     supplemental: None,
                 }

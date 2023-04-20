@@ -18,11 +18,13 @@ poetry env use python
 ```
 
 Initialize poetry's virtual environment.
+
 ```sh
 poetry shell
 ```
 
 Install the package.
+
 ```sh
 poetry install
 ```

@@ -62,8 +62,8 @@ workspace = false
 category = "db"
 dependencies = [
     "local-event-db-init",
-    "local-event-db-graphql-init",
     "run-event-db-migration",
+    "local-event-db-graphql-init"
 ]
 
 # Setup the local database with the test data.

@@ -43,6 +43,7 @@ VALUES
 CREATE TABLE vote_options
 (
     id SERIAL PRIMARY KEY,
+
     idea_scale TEXT ARRAY UNIQUE,
     objective TEXT ARRAY UNIQUE
 );

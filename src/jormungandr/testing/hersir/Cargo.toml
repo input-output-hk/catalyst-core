@@ -33,8 +33,4 @@ rand = "0.8"
 rand_core = "0.6"
 rand_chacha = "0.3"
 multiaddr = { package = "parity-multiaddr", version = "0.11" }
-
-[dependencies.reqwest]
-version = "0.11"
-default-features = false
-features = ["blocking", "rustls-tls"]
+reqwest = { workspace = true }

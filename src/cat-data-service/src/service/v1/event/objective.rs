@@ -14,11 +14,8 @@ use std::sync::Arc;
 pub fn objective(state: Arc<State>) -> Router {
     Router::new().route(
         "/:event/objectives",
-        get({
-            let state = state.clone();
-            move |path, query| async {
-                handle_result(objectives_exec(path, query, state).await).await
-            }
+        get(move |path, query| async {
+            handle_result(objectives_exec(path, query, state).await).await
         }),
     )
 }

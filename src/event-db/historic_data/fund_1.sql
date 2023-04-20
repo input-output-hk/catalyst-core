@@ -1,4 +1,4 @@
--- Data from Catalyst Fund 1 - Internal Test Fund
+-- Data from Catalyst Fund 1 - Public Pilot Run
 
 -- Data Sources see:
 -- https://input-output.atlassian.net/wiki/spaces/VIT/pages/2892759058/Catalyst+Fund+Cycle+Releases

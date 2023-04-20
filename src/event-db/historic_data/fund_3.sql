@@ -1,4 +1,4 @@
--- Data from Catalyst Fund 2 - First Public Test
+-- Data from Catalyst Fund 3
 
 -- Data Sources see:
 -- https://input-output.atlassian.net/wiki/spaces/VIT/pages/2892759058/Catalyst+Fund+Cycle+Releases

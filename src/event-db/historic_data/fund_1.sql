@@ -5,6 +5,7 @@
 -- https://input-output.atlassian.net/wiki/spaces/VIT/pages/1550057521/Fund-1
 -- https://docs.google.com/spreadsheets/d/10x7T2nbjFECkngmDY04cnpUPpdiu1X-QjoxAtqKYTMs/edit#gid=1302724491
 -- https://drive.google.com/file/d/1UmAGBRxWbQtpWjrNnvGuybgLiWs2zFMS/view
+-- https://github.com/input-output-hk/catalyst-resources/blob/master/snapshots/snapshots.json
 
 -- Purge all Fund 1 data before re-inserting it.
 DELETE FROM event WHERE row_id = 1;
@@ -37,8 +38,8 @@ VALUES
 (1, 'Catalyst Fund 1', 'Catalyst 2nd Internal Test Fund',
  '2020-08-08 00:00:00', -- Start Time - Date accurate, time not known.
  '2020-09-22 00:00:00', -- End Time   - Date accurate, time not known.
- '2020-09-14 00:00:00', -- Registration Snapshot Time - Date/time not known.
- '2020-09-14 00:00:00', -- Snapshot Start - Date/time not known.
+ '2020-09-14 12:00:05', -- Registration Snapshot Time - Slot 8518514
+ '2020-09-15 00:00:00', -- Snapshot Start - Date/time not known.
  1,                     -- Voting Power Threshold - Unknown, assume 1
  100,                   -- Max Voting Power PCT - No max% threshold used in this fund.
  NULL,                  -- Insight Sharing Start - None

@@ -30,6 +30,7 @@
 <a href="#30" id="30">30</a>
 <a href="#31" id="31">31</a>
 <a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::serialize_option_datetime_as_rfc3339;
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -44,6 +45,7 @@
 </span><span class="kw">pub struct </span>ProposalSummary {
     <span class="kw">pub </span>id: EventId,
     <span class="kw">pub </span>name: String,
+    <span class="kw">pub </span>summary: String,
     <span class="attr">#[serde(
         skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>,
         serialize_with = <span class="string">&quot;serialize_option_datetime_as_rfc3339&quot;

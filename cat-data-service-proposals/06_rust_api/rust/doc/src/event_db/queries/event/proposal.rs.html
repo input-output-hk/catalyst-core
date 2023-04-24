@@ -93,6 +93,7 @@
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
 <a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::proposal::{EventId, ObjectId, ProposalSummary},
@@ -144,6 +145,7 @@
             <span class="kw">let </span>summary = ProposalSummary {
                 id: EventId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
                 name: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
+                summary: String::from(<span class="string">&quot;summary&quot;</span>),
                 starts: <span class="prelude-val">None</span>,
                 ends: <span class="prelude-val">None</span>,
                 reg_checked: <span class="prelude-val">None</span>,

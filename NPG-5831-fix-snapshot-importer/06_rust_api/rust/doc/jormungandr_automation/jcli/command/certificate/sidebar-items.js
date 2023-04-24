@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["payload_type_to_string"],"struct":["CertificateCommand"]};

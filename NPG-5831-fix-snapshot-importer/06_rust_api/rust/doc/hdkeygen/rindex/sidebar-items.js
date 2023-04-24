@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["decode_derivation_path"],"mod":["hdpayload"],"struct":["HdKey"]};

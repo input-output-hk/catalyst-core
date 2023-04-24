@@ -194,7 +194,9 @@ class Snapshot(Model):
 
     event: int
     as_at: datetime
+    as_at_slotno: int
     last_updated: datetime
+    last_updated_slotno: int
     final: bool
     dbsync_snapshot_cmd: Optional[str]
     dbsync_snapshot_data: Optional[bytes]

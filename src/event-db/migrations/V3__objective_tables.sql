@@ -99,6 +99,7 @@ CREATE TABLE objective
 
     rewards_currency TEXT,
     rewards_total BIGINT,
+    rewards_total_lovelace BIGINT,
     proposers_rewards BIGINT,
     vote_options INTEGER,
 
@@ -127,7 +128,8 @@ See the objective_category table for allowed values.';
 COMMENT ON COLUMN objective.title IS 'The  title of the objective.';
 COMMENT ON COLUMN objective.description IS 'Long form description of the objective.';
 COMMENT ON COLUMN objective.rewards_currency IS 'The currency rewards values are represented as.';
-COMMENT ON COLUMN objective.rewards_total IS 'The total reward pool to pay on this objective to winning proposals.';
+COMMENT ON COLUMN objective.rewards_total IS 'The total reward pool to pay on this objective to winning proposals. In the Objective Currency.';
+COMMENT ON COLUMN objective.rewards_total_lovelace IS 'The total reward pool to pay on this objective to winning proposals. In Lovelace.';
 COMMENT ON COLUMN objective.proposers_rewards IS 'Not sure how this is different from rewards_total???';
 COMMENT ON COLUMN objective.vote_options IS 'The Vote Options applicable to all proposals in this objective.';
 COMMENT ON COLUMN objective.extra IS

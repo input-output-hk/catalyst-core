@@ -39,6 +39,7 @@ COMMENT ON COLUMN proposal.id IS 'Actual Proposal Unique ID';
 COMMENT ON COLUMN proposal.objective IS 'The Objective this proposal falls under.';
 COMMENT ON COLUMN proposal.title IS 'Brief title of the proposal.';
 COMMENT ON COLUMN proposal.summary IS 'A Summary of the proposal to be implemented.';
+COMMENT ON COLUMN proposal.category IS 'Objective Category Repeated. DEPRECATED: Only used for Vit-SS compatibility.';
 COMMENT ON COLUMN proposal.public_key IS 'Proposals Reward Address (CIP-19 Payment Key)';
 COMMENT ON COLUMN proposal.funds IS 'How much funds (in the currency of the fund)';
 COMMENT ON COLUMN proposal.url IS 'A URL with supporting information for the proposal.';
@@ -57,6 +58,7 @@ COMMENT ON COLUMN proposal.extra IS
     NONE.
 
  Extra Fields for `simple` challenges:
+    "problem"  : <text> - Statement of the problem the proposal tries to address.
     "solution" : <text> - The Solution to the challenge.
 
  Extra Fields for `community choice` challenge:

@@ -10,6 +10,7 @@ use async_trait::async_trait;
 use chrono::{NaiveDateTime, Utc};
 
 pub mod objective;
+pub mod proposal;
 
 #[async_trait]
 pub trait EventQueries: Sync + Send + 'static {

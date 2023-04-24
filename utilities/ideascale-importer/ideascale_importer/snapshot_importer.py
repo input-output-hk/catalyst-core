@@ -401,6 +401,7 @@ class Importer:
             raise WriteDbDataFailed("latest_block_slot_no not set")
 
         snapshot = models.Snapshot(
+            row_id=0,
             event=self.event_id,
             as_at=self.registration_snapshot_time,
             as_at_slotno=self.registration_snapshot_slot,
@@ -470,22 +471,21 @@ class Importer:
             if should_update_final:
                 snapshot_update_excluded_cols = []
 
-            snapshot_row_id = await ideascale_importer.db.upsert(
+            inserted_snapshot = await ideascale_importer.db.upsert(
                 conn,
                 snapshot,
                 ["event"],
                 exclude_update_cols=snapshot_update_excluded_cols,
-                returning="row_id",
             )
-            if snapshot_row_id is None:
+            if inserted_snapshot is None:
                 raise WriteDbDataFailed("Failed to upsert snapshot")
 
             for c in contributions:
-                c.snapshot_id = snapshot_row_id
+                c.snapshot_id = inserted_snapshot.row_id
             for v in voters.values():
-                v.snapshot_id = snapshot_row_id
+                v.snapshot_id = inserted_snapshot.row_id
 
-            await ideascale_importer.db.delete_snapshot_data(conn, snapshot_row_id)
+            await ideascale_importer.db.delete_snapshot_data(conn, inserted_snapshot.row_id)
             await ideascale_importer.db.insert_many(conn, contributions)
             await ideascale_importer.db.insert_many(conn, list(voters.values()))
 

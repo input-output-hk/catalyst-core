@@ -14,44 +14,41 @@ from .models import Model, Contribution, Voter
 M = TypeVar("M", bound=Model)
 
 
-async def insert_many(conn: asyncpg.Connection, models: List[M], returning: Optional[str] = None) -> List[Any]:
+async def insert_many(conn: asyncpg.Connection, models: List[M]) -> List[M]:
     """Batch inserts all models."""
     if len(models) == 0:
         return []
 
     # Extract field names and values for each field in each model
     cols = [field.name for field in dataclasses.fields(models[0])]
+    insert_cols = [col for col in cols if col not in models[0].exclude_from_insert]
     vals = [[getattr(m, f) for f in cols] for m in models]
 
     # Creates a list for the placeholders for value params, e.g. ["($1, $2, $3)", "($4, $5, $6)"]
     val_nums = []
     for i in range(0, len(vals)):
-        nums = range(i * len(cols) + 1, (i + 1) * len(cols) + 1)
+        nums = range(i * len(insert_cols) + 1, (i + 1) * len(insert_cols) + 1)
         nums_str = ",".join(map(lambda x: f"${x}", nums))
         val_nums.append(f"({nums_str})")
 
     val_nums_str = ",".join(val_nums)
     cols_str = ",".join(cols)
+    insert_cols_str = ",".join(insert_cols)
 
     flat_vals = [v for vs in vals for v in vs]
 
-    stmt_template = f"INSERT INTO {models[0].table()} ({cols_str}) VALUES {val_nums_str}"
+    stmt_template = f"INSERT INTO {models[0].table()} ({insert_cols_str}) VALUES {val_nums_str} RETURNING {cols_str}"
 
-    if returning is None:
-        await conn.execute(stmt_template, *flat_vals)
-        return []
-    else:
-        stmt_template += f" RETURNING {returning}"
-        ret = await conn.fetch(stmt_template, *flat_vals)
-        return [record[returning] for record in ret]
+    result = await conn.fetch(stmt_template, *flat_vals)
 
+    return [models[0].__class__(**record) for record in result]
 
-async def insert(conn: asyncpg.Connection, model: Model, returning: Optional[str] = None) -> Any:
+async def insert(conn: asyncpg.Connection, model: Model) -> Any:
     """Insert a single model.
 
     If returning is not None, returns the value of that column.
     """
-    ret = await insert_many(conn, [model], returning)
+    ret = await insert_many(conn, [model])
     if len(ret) > 0:
         return ret[0]
     return None
@@ -62,7 +59,6 @@ async def upsert_many(
     models: List[M],
     conflict_cols: List[str],
     exclude_update_cols: List[str] = [],
-    returning: Optional[str] = None,
 ) -> List[Any]:
     """Batch upserts models of the same type.
 
@@ -74,37 +70,36 @@ async def upsert_many(
 
     # Extract field names and values for each field in each model
     cols = [field.name for field in dataclasses.fields(models[0])]
-    vals = [[getattr(m, f) for f in cols] for m in models]
+    insert_cols = [col for col in cols if col not in models[0].exclude_from_insert]
+    vals = [[getattr(m, f) for f in insert_cols] for m in models]
 
     # Creates a list for the placeholders for value params, e.g. ["($1, $2, $3)", "($4, $5, $6)"]
     val_nums = []
     for i in range(0, len(vals)):
-        nums = range(i * len(cols) + 1, (i + 1) * len(cols) + 1)
+        nums = range(i * len(insert_cols) + 1, (i + 1) * len(insert_cols) + 1)
         nums_str = ",".join(map(lambda x: f"${x}", nums))
         val_nums.append(f"({nums_str})")
 
     val_nums_str = ",".join(val_nums)
     cols_str = ",".join(cols)
+    insert_cols_str = ",".join(insert_cols)
 
     flat_vals = [v for vs in vals for v in vs]
 
     conflict_cols_str = ",".join(conflict_cols)
-    do_update_set_str = ",".join([f"{col} = EXCLUDED.{col}" for col in cols if col not in exclude_update_cols])
+    do_update_set_str = ",".join([f"{col} = EXCLUDED.{col}" for col in insert_cols if col not in exclude_update_cols])
 
     stmt_template = f"""
-        INSERT INTO {models[0].table()} ({cols_str}) VALUES {val_nums_str}
+        INSERT INTO {models[0].table()} ({insert_cols_str}) VALUES {val_nums_str}
         ON CONFLICT ({conflict_cols_str})
         DO UPDATE
         SET {do_update_set_str}
+        RETURNING {cols_str}
     """.strip()
 
-    if returning is None:
-        await conn.execute(stmt_template, *flat_vals)
-        return []
-    else:
-        stmt_template += f" RETURNING {returning}"
-        ret = await conn.fetch(stmt_template, *flat_vals)
-        return [record[returning] for record in ret]
+    result = await conn.fetch(stmt_template, *flat_vals)
+
+    return [models[0].__class__(**record) for record in result]
 
 
 async def upsert(
@@ -112,14 +107,13 @@ async def upsert(
     model: Model,
     conflict_cols: List[str],
     exclude_update_cols: List[str] = [],
-    returning: Optional[str] = None,
 ):
     """Upsert a single model.
 
     conflict_cols is a list of columns that are used to determine whether a row should be updated or inserted.
     If returning is not None, returns the value of that column.
     """
-    ret = await upsert_many(conn, [model], conflict_cols, exclude_update_cols, returning)
+    ret = await upsert_many(conn, [model], conflict_cols, exclude_update_cols)
     if len(ret) > 0:
         return ret[0]
     return None

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["SignatureError","SignatureFromStrError","Verification"],"struct":["Signature"],"trait":["SafeSignatureCoerce","SigningAlgorithm","VerificationAlgorithm"]};

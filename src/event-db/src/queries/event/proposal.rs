@@ -1,8 +1,4 @@
-use crate::{
-    error::Error,
-    types::event::proposal::{EventId, ObjectId, ProposalSummary},
-    EventDB,
-};
+use crate::{error::Error, types::event::proposal::ProposalSummary, EventDB};
 use async_trait::async_trait;
 
 pub enum VoterGroup {
@@ -14,46 +10,37 @@ pub enum VoterGroup {
 pub trait ProposalQueries: Sync + Send + 'static {
     async fn get_proposals(
         &self,
-        event: EventId,
-        obj: ObjectId,
         limit: Option<i64>,
         offset: Option<i64>,
-        voter_group: VoterGroup,
+        voter_group: Option<VoterGroup>,
     ) -> Result<Vec<ProposalSummary>, Error>;
 }
 
 impl EventDB {
     const PROPOSALS_QUERY: &'static str =
-    "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
-    objective_category.name, objective_category.description as objective_category_description,
-    vote_options.objective as choices
-    FROM objective";
+        "SELECT id, title, summary FROM proposal LIMIT $1 OFFSET $2;";
 }
 
 #[async_trait]
 impl ProposalQueries for EventDB {
     async fn get_proposals(
         &self,
-        event: EventId,
-        _obj: ObjectId,
-        _limit: Option<i64>,
-        _offset: Option<i64>,
-        _voter_group: VoterGroup,
+        limit: Option<i64>,
+        offset: Option<i64>,
+        _voter_group: Option<VoterGroup>,
     ) -> Result<Vec<ProposalSummary>, Error> {
         let conn = self.pool.get().await?;
 
-        let rows = conn.query(Self::PROPOSALS_QUERY, &[&event.0]).await?;
+        let rows = conn
+            .query(Self::PROPOSALS_QUERY, &[&limit, &offset.unwrap_or(0)])
+            .await?;
 
         let mut proposals = Vec::new();
         for row in rows {
             let summary = ProposalSummary {
-                id: EventId(row.try_get("id")?),
-                name: row.try_get("name")?,
-                summary: String::from("summary"),
-                starts: None,
-                ends: None,
-                reg_checked: None,
-                is_final: false,
+                id: row.try_get("id")?,
+                title: row.try_get("title")?,
+                summary: row.try_get("summary")?,
             };
 
             proposals.push(summary);
@@ -73,18 +60,39 @@ impl ProposalQueries for EventDB {
 #[cfg(test)]
 mod tests {
 
+    use std::env;
+
     use super::*;
     use crate::establish_connection;
 
     #[tokio::test]
     async fn get_proposals_test() {
+        env::set_var(
+            "EVENT_DB_URL",
+            "postgres://catalyst-event-dev:CHANGE_MEy@localhost/CatalystEventDev",
+        );
+
         let event_db = establish_connection(None).await.unwrap();
 
-        let proposals = event_db
-            .get_proposals(EventId(1), ObjectId(1), None, None, VoterGroup::Direct)
+        let proposal_summary = event_db
+            .get_proposals(None, None, Some(VoterGroup::Direct))
             .await
             .unwrap();
 
-        println!("{:?}", proposals);
+        assert_eq!(
+            vec![
+                ProposalSummary {
+                    id: 1,
+                    title: String::from("title 1"),
+                    summary: String::from("summary 1")
+                },
+                ProposalSummary {
+                    id: 2,
+                    title: String::from("title 2"),
+                    summary: String::from("summary 2")
+                }
+            ],
+            proposal_summary
+        )
     }
 }

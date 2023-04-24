@@ -1,3 +1,6 @@
+-----------------------------------------------------
+-- Please notify SRE if you make changes to this file
+-----------------------------------------------------
 
 \connect CatalystEventDev;
 
@@ -10,7 +13,7 @@ create extension if not exists "pgcrypto";
 
 -- Defined Roles
 drop role if exists "cat_admin";
-create role "cat_admin" login password 'CHANGE_ME';
+create role "cat_admin" login password 'CAT_ADMIN_PASSWORD';
 comment on role "cat_admin" IS 'Full Administrator Access to the Database.';
 GRANT "cat_admin" TO "catalyst-event-dev"; -- Make this role available to our default DB user.
 
@@ -18,7 +21,7 @@ alter default privileges in schema public revoke EXECUTE ON FUNCTIONS FROM cat_a
 alter default privileges in schema private revoke EXECUTE ON FUNCTIONS FROM cat_admin;
 
 drop role if exists "cat_anon";
-create role "cat_anon" login password 'CHANGE_ME';
+create role "cat_anon" login password 'CAT_ANON_PASSWORD';
 comment on role "cat_anon" IS 'Unauthenticated Read Only Access to the Database.';
 GRANT "cat_anon" TO "catalyst-event-dev"; -- Make this role available to our default DB user.
 
@@ -53,7 +56,7 @@ create table private.admin_account (
 -- Create default ADMIN user.
 
 insert into private.admin_account (first_name, last_name, role, about, email, password_hash) values
-  ('Admin', 'Default', 'cat_admin', 'Default Admin User', 'admin.default@nowhere.io', crypt('CHANGE_ME', gen_salt('bf')));
+  ('Admin', 'Default', 'cat_admin', 'Default Admin User', 'admin.default@nowhere.io', crypt('ADMIN_PASSWORD', gen_salt('bf')));
 SELECT * from private.admin_account;
 
 -- Function to get details about the current authenticated account.
@@ -131,7 +134,7 @@ comment on function private.register_admin(text, text, text, text, text) is 'Reg
 grant execute on function private.register_admin(text, text, text, text, text) to "catalyst-event-dev", "cat_admin";
 
 -- Create a default Admin User.  CHANGE_ME...
-select private.register_admin('Default','Admin','nothing@nowhere.com','CHANGE_ME');
+select private.register_admin('Default','Admin','nothing@nowhere.com','ADMIN_PASSWORD');
 
 -- Define special type for JWT Authentication logic in server
 
@@ -169,5 +172,5 @@ comment on function private.authenticate(text, text) is 'Creates a JWT token tha
 grant execute on function private.authenticate(text, text) to "catalyst-event-dev", "cat_anon", "cat_admin";
 
 -- Test it works with the default user.  CHANGE_ME...
-select private.authenticate('admin.default@nowhere.io','CHANGE_ME');
+select private.authenticate('admin.default@nowhere.io','ADMIN_PASSWORD');
 

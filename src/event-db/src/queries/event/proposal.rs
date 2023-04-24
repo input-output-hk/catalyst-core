@@ -72,18 +72,12 @@ impl ProposalQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use std::env;
 
     use super::*;
     use crate::establish_connection;
 
     #[tokio::test]
     async fn get_proposals_test() {
-        env::set_var(
-            "EVENT_DB_URL",
-            "postgres://catalyst-event-dev:magnify@localhost/CatalystEventDev",
-        );
-
         let event_db = establish_connection(None).await.unwrap();
 
         let proposals = event_db

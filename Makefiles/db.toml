@@ -52,7 +52,7 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/graphql-setup.sql ${@}
+psql -e -f setup/graphql-setup.sql ${@}
 '''
 
 
@@ -62,12 +62,20 @@ workspace = false
 category = "db"
 dependencies = [
     "local-event-db-init",
-    "local-event-db-graphql-init",
-    "run-event-db-migration",
-    "local-db-test-data-setup",
     "run-event-db-migration",
     "local-event-db-graphql-init"
 ]
+
+# Setup the local database with the test data.
+[tasks.local-event-db-test]
+workspace = false
+category = "db"
+dependencies = [
+    "local-event-db-init",
+    "run-event-db-migration",
+    "local-db-test-data-setup"
+]
+
 
 
 # Run Diesel Migrations, for documentation purposes.

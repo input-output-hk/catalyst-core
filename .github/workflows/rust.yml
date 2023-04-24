@@ -222,7 +222,7 @@ jobs:
       - name: Setup Event DB
         env:
           PGPASSWORD: 123456
-        run: cargo make local-event-db-setup -h 127.0.0.1 -U postgres
+        run: cargo make local-event-db-test -h 127.0.0.1 -U postgres
 
       - name: Build and archive tests
         if: steps.archive-cache.outputs.cache-hit != 'true'

@@ -75,7 +75,7 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
 }
 
 /// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-setup`
+/// To do it you can use `cargo make local-event-db-test`
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"

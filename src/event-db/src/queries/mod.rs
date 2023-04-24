@@ -1,10 +1,12 @@
+use self::{
+    event::{objective::ObjectiveQueries, EventQueries},
+    registration::RegistrationQueries,
+};
 use crate::EventDB;
-
-use self::{event::EventQueries, registration::RegistrationQueries};
 
 pub mod event;
 pub mod registration;
 
-pub trait EventDbQueries: RegistrationQueries + EventQueries {}
+pub trait EventDbQueries: RegistrationQueries + EventQueries + ObjectiveQueries {}
 
 impl EventDbQueries for EventDB {}

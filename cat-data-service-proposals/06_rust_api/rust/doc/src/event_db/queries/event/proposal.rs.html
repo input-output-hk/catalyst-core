@@ -88,11 +88,15 @@
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
 <a href="#90" id="90">90</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    error::Error,
-    types::event::proposal::{EventId, ObjectId, ProposalSummary},
-    EventDB,
-};
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{error::Error, types::event::proposal::ProposalSummary, EventDB};
 <span class="kw">use </span>async_trait::async_trait;
 
 <span class="kw">pub enum </span>VoterGroup {
@@ -104,46 +108,37 @@
 </span><span class="kw">pub trait </span>ProposalQueries: Sync + Send + <span class="lifetime">&#39;static </span>{
     <span class="kw">async fn </span>get_proposals(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        event: EventId,
-        obj: ObjectId,
         limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-        voter_group: VoterGroup,
+        voter_group: <span class="prelude-ty">Option</span>&lt;VoterGroup&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt;;
 }
 
 <span class="kw">impl </span>EventDB {
     <span class="kw">const </span>PROPOSALS_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-    <span class="string">&quot;SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
-    objective_category.name, objective_category.description as objective_category_description,
-    vote_options.objective as choices
-    FROM objective&quot;</span>;
+        <span class="string">&quot;SELECT id, title, summary FROM proposal LIMIT $1 OFFSET $2;&quot;</span>;
 }
 
 <span class="attr">#[async_trait]
 </span><span class="kw">impl </span>ProposalQueries <span class="kw">for </span>EventDB {
     <span class="kw">async fn </span>get_proposals(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        event: EventId,
-        _obj: ObjectId,
-        _limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-        _offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-        _voter_group: VoterGroup,
+        limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
+        offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
+        _voter_group: <span class="prelude-ty">Option</span>&lt;VoterGroup&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt; {
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="kw">let </span>rows = conn.query(<span class="self">Self</span>::PROPOSALS_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>]).<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>rows = conn
+            .query(<span class="self">Self</span>::PROPOSALS_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)])
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>proposals = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {
             <span class="kw">let </span>summary = ProposalSummary {
-                id: EventId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
-                name: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
-                summary: String::from(<span class="string">&quot;summary&quot;</span>),
-                starts: <span class="prelude-val">None</span>,
-                ends: <span class="prelude-val">None</span>,
-                reg_checked: <span class="prelude-val">None</span>,
-                is_final: <span class="bool-val">false</span>,
+                id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
+                title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
+                summary: row.try_get(<span class="string">&quot;summary&quot;</span>)<span class="question-mark">?</span>,
             };
 
             proposals.push(summary);
@@ -163,19 +158,40 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
 
+    <span class="kw">use </span>std::env;
+
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>get_proposals_test() {
+        env::set_var(
+            <span class="string">&quot;EVENT_DB_URL&quot;</span>,
+            <span class="string">&quot;postgres://catalyst-event-dev:CHANGE_MEy@localhost/CatalystEventDev&quot;</span>,
+        );
+
         <span class="kw">let </span>event_db = establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
 
-        <span class="kw">let </span>proposals = event_db
-            .get_proposals(EventId(<span class="number">1</span>), ObjectId(<span class="number">1</span>), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>, VoterGroup::Direct)
+        <span class="kw">let </span>proposal_summary = event_db
+            .get_proposals(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(VoterGroup::Direct))
             .<span class="kw">await
             </span>.unwrap();
 
-        <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, proposals);
+        <span class="macro">assert_eq!</span>(
+            <span class="macro">vec!</span>[
+                ProposalSummary {
+                    id: <span class="number">1</span>,
+                    title: String::from(<span class="string">&quot;title 1&quot;</span>),
+                    summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
+                },
+                ProposalSummary {
+                    id: <span class="number">2</span>,
+                    title: String::from(<span class="string">&quot;title 2&quot;</span>),
+                    summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
+                }
+            ],
+            proposal_summary
+        )
     }
 }
 </code></pre></div>

@@ -136,28 +136,7 @@
 <a href="#136" id="136">136</a>
 <a href="#137" id="137">137</a>
 <a href="#138" id="138">138</a>
-<a href="#139" id="139">139</a>
-<a href="#140" id="140">140</a>
-<a href="#141" id="141">141</a>
-<a href="#142" id="142">142</a>
-<a href="#143" id="143">143</a>
-<a href="#144" id="144">144</a>
-<a href="#145" id="145">145</a>
-<a href="#146" id="146">146</a>
-<a href="#147" id="147">147</a>
-<a href="#148" id="148">148</a>
-<a href="#149" id="149">149</a>
-<a href="#150" id="150">150</a>
-<a href="#151" id="151">151</a>
-<a href="#152" id="152">152</a>
-<a href="#153" id="153">153</a>
-<a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::serialize_option_datetime_as_rfc3339;
-<span class="kw">use </span>chrono::{DateTime, Utc};
-<span class="kw">use </span>serde::{Deserialize, Serialize};
+</pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ProposerDetails {
@@ -212,26 +191,9 @@
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ProposalSummary {
-    <span class="kw">pub </span>id: EventId,
-    <span class="kw">pub </span>name: String,
+    <span class="kw">pub </span>id: i32,
+    <span class="kw">pub </span>title: String,
     <span class="kw">pub </span>summary: String,
-    <span class="attr">#[serde(
-        skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>,
-        serialize_with = <span class="string">&quot;serialize_option_datetime_as_rfc3339&quot;
-    </span>)]
-    </span><span class="kw">pub </span>starts: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
-    <span class="attr">#[serde(
-        skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>,
-        serialize_with = <span class="string">&quot;serialize_option_datetime_as_rfc3339&quot;
-    </span>)]
-    </span><span class="kw">pub </span>ends: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
-    <span class="attr">#[serde(
-        skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>,
-        serialize_with = <span class="string">&quot;serialize_option_datetime_as_rfc3339&quot;
-    </span>)]
-    </span><span class="kw">pub </span>reg_checked: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
-    <span class="attr">#[serde(rename = <span class="string">&quot;final&quot;</span>)]
-    </span><span class="kw">pub </span>is_final: bool,
 }
 
 <span class="attr">#[cfg(test)]

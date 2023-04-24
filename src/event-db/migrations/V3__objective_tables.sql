@@ -112,7 +112,6 @@ CREATE TABLE objective
 );
 
 CREATE UNIQUE INDEX objective_idx ON objective (id, event);
-CREATE UNIQUE INDEX objective_id ON objective (id);
 
 COMMENT ON TABLE objective IS
 'All objectives for all events.

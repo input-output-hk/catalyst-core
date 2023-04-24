@@ -5,7 +5,7 @@
 CREATE TABLE proposal
 (
     row_id SERIAL PRIMARY KEY,
-    id INTEGER NOT NULL UNIQUE,
+    id INTEGER NOT NULL,
     objective INTEGER NOT NULL,
     title TEXT NOT NULL,
     summary TEXT NOT NULL,

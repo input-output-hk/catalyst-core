@@ -57,6 +57,11 @@ psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_1.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_2.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_3.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_4.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_5.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_6.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_7.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_8.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_9.sql ${@}
 '''
 
 

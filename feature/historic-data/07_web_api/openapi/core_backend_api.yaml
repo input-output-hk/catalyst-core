@@ -830,6 +830,8 @@ components:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
       required:
         - description
+        - choices
+        - ballot
     VotePlan:
       title: Vote Plan
       type: object

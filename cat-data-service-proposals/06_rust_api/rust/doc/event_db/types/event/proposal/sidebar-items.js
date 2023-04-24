@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["EventId","ObjectId","ProposalSummary","__SerializeWith","__Visitor"]};

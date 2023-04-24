@@ -88,12 +88,6 @@
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
 <a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::proposal::{EventId, ObjectId, ProposalSummary},
@@ -131,7 +125,7 @@
     <span class="kw">async fn </span>get_proposals(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         event: EventId,
-        obj: ObjectId,
+        _obj: ObjectId,
         _limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         _offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         _voter_group: VoterGroup,
@@ -168,18 +162,12 @@
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span>std::env;
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>get_proposals_test() {
-        env::set_var(
-            <span class="string">&quot;EVENT_DB_URL&quot;</span>,
-            <span class="string">&quot;postgres://catalyst-event-dev:magnify@localhost/CatalystEventDev&quot;</span>,
-        );
-
         <span class="kw">let </span>event_db = establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
 
         <span class="kw">let </span>proposals = event_db

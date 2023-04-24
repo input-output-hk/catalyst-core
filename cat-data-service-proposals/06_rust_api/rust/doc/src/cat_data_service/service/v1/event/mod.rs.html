@@ -540,13 +540,12 @@
 <span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
 
-<span class="kw">use </span><span class="self">self</span>::objective::objective;
-
 <span class="kw">mod </span>objective;
+<span class="kw">mod </span>proposal;
 
 <span class="kw">pub fn </span>event(state: Arc&lt;State&gt;) -&gt; Router {
-    <span class="kw">let </span>objective = objective(state.clone());
-
+    <span class="kw">let </span>objective = objective::objective(state.clone());
+    <span class="kw">let </span>proposal = proposal::proposal(state.clone());
     Router::new()
         .nest(
             <span class="string">&quot;/event&quot;</span>,
@@ -558,7 +557,8 @@
                         <span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(event_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}
                     }),
                 )
-                .merge(objective),
+                .merge(objective)
+                .merge(proposal),
         )
         .route(
             <span class="string">&quot;/events&quot;</span>,

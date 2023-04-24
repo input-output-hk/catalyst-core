@@ -82,6 +82,7 @@ class Mapper:
         reward = parse_reward(a.tagline)
 
         return ideascale_importer.db.models.Challenge(
+            row_id=0,
             id=a.id,
             event=event_id,
             category=get_objective_category(a),
@@ -120,7 +121,7 @@ class Mapper:
 
         return ideascale_importer.db.models.Proposal(
             id=a.id,
-            objective=a.campaign_id,
+            objective=0, # should be set later
             title=html_to_md(a.title),
             summary=html_to_md(a.text),
             category="",
@@ -295,9 +296,14 @@ class Importer:
         proposal_count = 0
 
         async with self.conn.transaction():
-            await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id"])
+            inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id"])
+            inserted_objectives_ix = {o.id: o for o in inserted_objectives}
 
-            proposals = [mapper.map_proposal(a, self.proposals_impact_scores) for a in ideas]
+            proposals_with_campaign_id = [(a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)) for a in ideas]
+            for (objective_id, p) in proposals_with_campaign_id:
+                p.objective = inserted_objectives_ix[objective_id].row_id
+
+            proposals = [p for (_, p) in proposals_with_campaign_id]
             proposal_count = len(proposals)
             await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id"])
 

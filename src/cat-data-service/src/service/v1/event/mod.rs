@@ -11,13 +11,12 @@ use event_db::types::event::{Event, EventId, EventSummary};
 use serde::Deserialize;
 use std::sync::Arc;
 
-use self::objective::objective;
-
 mod objective;
+mod proposal;
 
 pub fn event(state: Arc<State>) -> Router {
-    let objective = objective(state.clone());
-
+    let objective = objective::objective(state.clone());
+    let proposal = proposal::proposal(state.clone());
     Router::new()
         .nest(
             "/event",
@@ -29,7 +28,8 @@ pub fn event(state: Arc<State>) -> Router {
                         move |path| async { handle_result(event_exec(path, state).await).await }
                     }),
                 )
-                .merge(objective),
+                .merge(objective)
+                .merge(proposal),
         )
         .route(
             "/events",

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["BehindDuration","Meta","Progress","TransactionConfirmation","__FieldVisitor","__Visitor"],"type":["TransactionConfirmationRow"]};

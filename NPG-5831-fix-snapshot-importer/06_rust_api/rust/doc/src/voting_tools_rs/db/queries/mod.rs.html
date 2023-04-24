@@ -22,14 +22,15 @@
 <a href="#22" id="22">22</a>
 <a href="#23" id="23">23</a>
 <a href="#24" id="24">24</a>
-<a href="#25" id="25">25</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{SignedRegistration, SlotNo, StakeKeyHex};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::{SignedRegistration, SlotNo};
 <span class="kw">use </span><span class="kw">crate</span>::data_provider::DataProvider;
+<span class="kw">use </span><span class="kw">crate</span>::verify::StakeKeyHash;
 <span class="kw">use </span><span class="kw">crate</span>::Db;
 <span class="kw">use </span>bigdecimal::BigDecimal;
-<span class="kw">use </span>std::collections::HashMap;
+<span class="kw">use </span>dashmap::DashMap;
 
 <span class="kw">mod </span>stake_value;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>staked_utxo_ada;
 <span class="kw">mod </span>vote_registrations;
 
 <span class="kw">impl </span>DataProvider <span class="kw">for </span>Db {
@@ -41,10 +42,7 @@
         <span class="self">self</span>.vote_registrations(lower, upper)
     }
 
-    <span class="kw">fn </span>stake_values(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHex],
-    ) -&gt; color_eyre::Result&lt;HashMap&lt;StakeKeyHex, BigDecimal&gt;&gt; {
+    <span class="kw">fn </span>stake_values(<span class="kw-2">&amp;</span><span class="self">self</span>, stake_addrs: <span class="kw-2">&amp;</span>[StakeKeyHash]) -&gt; DashMap&lt;StakeKeyHash, BigDecimal&gt; {
         <span class="self">self</span>.stake_values(stake_addrs)
     }
 }

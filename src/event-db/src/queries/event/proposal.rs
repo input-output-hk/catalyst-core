@@ -35,7 +35,7 @@ impl ProposalQueries for EventDB {
     async fn get_proposals(
         &self,
         event: EventId,
-        obj: ObjectId,
+        _obj: ObjectId,
         _limit: Option<i64>,
         _offset: Option<i64>,
         _voter_group: VoterGroup,

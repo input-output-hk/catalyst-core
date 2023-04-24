@@ -7,14 +7,11 @@ import socket
 from typing import Final
 
 import uvicorn
+from loguru import logger
 
 from voting_node.models import ServiceSettings
 
 from . import tasks, utils
-from .logs import getLogger
-
-# gets voting node logger
-logger = getLogger()
 
 # time in seconds to wait before retrying to run a schedule
 SLEEP_TO_SCHEDULE_RETRY: Final = 6

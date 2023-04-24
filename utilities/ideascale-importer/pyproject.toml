@@ -25,7 +25,7 @@ mccabe = "0.7.0"
 multidict = "6.0.3"
 packaging = "22.0"
 pycodestyle = "2.10.0"
-pydantic = "1.10.6"
+pydantic = "~1.10.7"
 pyflakes = "3.0.1"
 pygments = "2.13.0"
 six = "1.16.0"
@@ -55,8 +55,9 @@ target-version = ['py311']
 [tool.ruff]
 line-length = 132
 target-version = 'py311'
-# add pydoc lints
+exclude = ["tests"]
 extend-select = ["D"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

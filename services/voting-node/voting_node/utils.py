@@ -1,5 +1,6 @@
 """Utitilies for managing voting node data."""
 import base64
+import calendar
 import re
 import secrets
 import socket
@@ -11,10 +12,10 @@ import yaml
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from loguru import logger
 
 from .committee import CommitteeMember, CommunicationKeys, MemberKeys, WalletKeys
 from .jcli import JCli
-from .logs import getLogger
 from .models import Committee, Event, Genesis, LeaderHostInfo, NodeConfig
 from .templates import (
     GENESIS_YAML,
@@ -23,18 +24,16 @@ from .templates import (
     NODE_CONFIG_LEADER0,
 )
 
-# gets voting node logger
-logger = getLogger()
-
-
-"""Regex expression to determine a node is a leader"""
 LEADER_REGEX: Final = r"^leader[0-9]+$"
-
-"""Regex expression to determine a node's leadership and number"""
+"""Regex expression to determine a node is a leader"""
 LEADERSHIP_REGEX: Final = r"^(leader|follower)([0-9]+)$"
-
-"""Hash iterations performed when encrypting secrets."""
+"""Regex expression to determine a node's leadership and number"""
 HASH_ITERATIONS: Final = 480000
+"""Hash iterations performed in key derivation."""
+SALT_BYTES: Final = 16
+"""Size in bytes of encryption salt."""
+KDF_LENGTH: Final = 32
+"""Length in bytes uses in key derivation."""
 
 
 def get_hostname() -> str:
@@ -259,7 +258,7 @@ async def create_committee_member_keys(
     return MemberKeys(seckey=member_sk, pubkey=member_sk)
 
 
-async def create_committee(jcli: JCli, committee_id: str, size: int, threshold: int, crs: str) -> Committee:
+async def create_committee(jcli: JCli, committee_id: str, event_id: int, size: int, threshold: int, crs: str) -> Committee:
     """Return a Committee.
 
     `committee_id` is the hex-encoded public key of the Committee wallet.
@@ -287,7 +286,15 @@ async def create_committee(jcli: JCli, committee_id: str, size: int, threshold: 
         CommitteeMember(index=idx, communication_keys=communication_keys[idx], member_keys=member_keys[idx]) for idx in range(size)
     ]
     election_key = await jcli.votes_election_key(member_pks)
-    return Committee(size=size, threshold=threshold, crs=crs, committee_id=committee_id, members=members, election_key=election_key)
+    return Committee(
+        event_id=event_id,
+        size=size,
+        threshold=threshold,
+        crs=crs,
+        committee_id=committee_id,
+        members=members,
+        election_key=election_key,
+    )
 
 
 def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_ids: list[str]) -> Genesis:
@@ -296,7 +303,7 @@ def make_genesis_content(event: Event, peers: list[LeaderHostInfo], committee_id
     genesis = yaml.safe_load(GENESIS_YAML)
     consensus_leader_ids = [peer.consensus_leader_id for peer in peers]
     # modify the template with the proper settings
-    genesis["blockchain_configuration"]["block0_date"] = int(voting_start.timestamp())
+    genesis["blockchain_configuration"]["block0_date"] = int(calendar.timegm(voting_start.utctimetuple()))
     genesis["blockchain_configuration"]["consensus_leader_ids"] = consensus_leader_ids
     genesis["blockchain_configuration"]["committees"] = committee_ids
 
@@ -318,12 +325,12 @@ async def make_block0_hash(jcli_path: str, block0_path: Path) -> str:
     return await jcli_exec.genesis_hash(block0_path)
 
 
-def encrypt_key(secret: str, password: str) -> str:
+def encrypt_secret(secret: str, password: str) -> str:
     """Encrypt secret with with Fernet."""
-    salt = secrets.token_bytes(16)
+    salt = secrets.token_bytes(SALT_BYTES)
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
-        length=32,
+        length=KDF_LENGTH,
         salt=salt,
         iterations=HASH_ITERATIONS,
     )
@@ -334,14 +341,14 @@ def encrypt_key(secret: str, password: str) -> str:
     return b64.decode()
 
 
-def decrypt_key(encrypted: str, password: str) -> str:
+def decrypt_secret(encrypted: str, password: str) -> str:
     """Decrypt secret with with Fernet."""
     b64 = base64.urlsafe_b64decode(encrypted)
-    salt = b64[:16]
-    encrypted_secret = b64[16:]
+    salt = b64[:SALT_BYTES]
+    encrypted_secret = b64[SALT_BYTES:]
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
-        length=32,
+        length=KDF_LENGTH,
         salt=salt,
         iterations=HASH_ITERATIONS,
     )

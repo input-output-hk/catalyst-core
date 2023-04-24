@@ -2,6 +2,14 @@
 
 This crate defines the structure and RUST access methods for the Catalyst Event Database.
 
+- [Catalyst Event Database](#catalyst-event-database)
+  - [Starting a Local Test DB with Docker](#starting-a-local-test-db-with-docker)
+  - [Creating A Local Test Database](#creating-a-local-test-database)
+    - [Setup a clean new dev DB with a single command](#setup-a-clean-new-dev-db-with-a-single-command)
+  - [GraphQL](#graphql)
+    - [GraphQL Users](#graphql-users)
+      - [Authentication API](#authentication-api)
+
 ## Starting a Local Test DB with Docker
 
 If you are not running postgresql-14 locally.

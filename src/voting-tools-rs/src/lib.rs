@@ -8,14 +8,22 @@
 #![warn(clippy::pedantic)]
 #![deny(missing_docs)]
 #![deny(unsafe_code)]
-#![deny(clippy::integer_arithmetic)]
+// #![deny(clippy::integer_arithmetic)]
 #![allow(
     clippy::module_name_repetitions,
     clippy::match_bool,
     clippy::bool_assert_comparison,
     clippy::derive_partial_eq_without_eq,
-    clippy::missing_panics_doc
+    clippy::missing_panics_doc,
+    clippy::match_on_vec_items,
+    clippy::unnecessary_wraps,
+    clippy::cast_sign_loss,
+    clippy::iter_nth_zero,
+    clippy::type_complexity,
+    clippy::match_same_arms,
+    clippy::useless_conversion
 )]
+#![cfg_attr(test, allow(clippy::let_underscore_drop))] // useful in tests, often a bug otherwise
 
 #[macro_use]
 extern crate tracing;
@@ -30,16 +38,17 @@ mod error;
 mod logic;
 mod testing;
 mod validation;
+pub mod verification;
 
 // this export style forces us to be explicit about what is in the public API
 pub use exports::*;
 mod exports {
     pub use crate::cli::{show_error_warning, Args, DryRunCommand};
-    pub use crate::data::{
-        Sig, Signature, SlotNo, SnapshotEntry, VotingPowerSource, VotingPurpose,
-    };
+    pub use crate::data::{Sig, Signature, SlotNo, SnapshotEntry, VotingKey, VotingPurpose};
     pub use crate::data_provider::DataProvider;
     pub use crate::db::{Conn, Db, DbConfig};
+    pub use crate::error::*;
     pub use crate::logic::{voting_power, VotingPowerArgs};
     pub use crate::testing::*;
+    pub use crate::verification::*;
 }

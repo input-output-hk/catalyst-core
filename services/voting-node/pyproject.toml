@@ -26,17 +26,20 @@ prometheus-fastapi-instrumentator = "^5.10.0"
 PyYAML = "^6.0"
 uvicorn = {extras = ["standard"], version = "^0.20.0"}
 aiofile = "^3.8.5"
-pydantic = "^1.10.7"
+pydantic = "~1.10.7"
 cryptography = "^40.0.1"
+loguru = "^0.6.0"
+ideascale-importer = {git = "https://github.com/input-output-hk/catalyst-core.git", rev = "automate-ideascale-importer-in-voting-node", subdirectory = "utilities/ideascale-importer"}
 
 [tool.poetry.group.dev.dependencies]
 # formatting
 black = "^23.1.0"
 # linting
 ruff = "^0.0.254"
+pdoc = "^13.1.0"
 
 [tool.poetry.scripts]
-voting-node = "voting_node.main:cli"
+voting-node = "voting_node.main:voting_node_cli"
 
 [tool.black]
 line-length = 132

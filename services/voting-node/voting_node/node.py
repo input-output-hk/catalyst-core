@@ -7,9 +7,9 @@
 from datetime import datetime
 from pathlib import Path
 
+from loguru import logger
 from pydantic import BaseModel
 
-from .logs import getLogger
 from .models import (
     Block0,
     Committee,
@@ -24,10 +24,6 @@ from .models import (
     Proposal,
     VotePlanCertificate,
 )
-from .storage import SecretFileStorage
-
-# gets voting node logger
-logger = getLogger()
 
 
 class BaseNode(BaseModel):
@@ -89,6 +85,14 @@ class BaseNode(BaseModel):
         event = self.get_event()
         return event.get_start_time()
 
+    def get_registration_snapshot_time(self) -> datetime:
+        """Get the timestamp for when the event registration has ended on the Cardano main net.
+
+        This method raises exception if the event or the timestamp are None.
+        """
+        event = self.get_event()
+        return event.get_registration_snapshot_time()
+
     def get_snapshot_start(self) -> datetime:
         """Get the timestamp for when the event snapshot becomes stable.
 
@@ -126,8 +130,19 @@ class BaseNode(BaseModel):
         event = self.get_event()
         return event.has_started()
 
+    def has_registration_ended(self) -> bool:
+        """Return true when the current time is greater or equal to the event's registration_snapshot_time timestamp.
+
+        This is the time when voter registration is closed.
+        """
+        registration_end = self.get_registration_snapshot_time()
+        return datetime.utcnow() > registration_end
+
     def has_snapshot_started(self) -> bool:
-        """Return true when the current time is greater or equal to the event's snapshot_start timestamp."""
+        """Return true when the current time is greater or equal to the event's snapshot_start timestamp.
+
+        This is the time when the snapshot is considered to be stable.
+        """
         snapshot_start = self.get_snapshot_start()
         return datetime.utcnow() > snapshot_start
 
@@ -157,24 +172,15 @@ class LeaderNode(BaseNode):
 class Leader0Node(LeaderNode):
     """A leader0 node."""
 
-    # Path to the node's storage
-    secret_storage: SecretFileStorage = SecretFileStorage(path=Path("node_secret"))
     genesis: Genesis | None = None
     committee: Committee | None = None
     initial_fragments: list[FundsForToken | VotePlanCertificate] | None = None
     proposals: list[Proposal] | None = None
 
-    def set_secret_file_storage(self, path_str: str):
-        """Initialize the path directory in case it doesn't exist."""
-        storage = Path(path_str)
-        storage.mkdir(parents=True, exist_ok=True)
-        self.secret_storage = SecretFileStorage(path=storage)
-        logger.debug(f"Node Storage set to {path_str}")
-
     def get_committee(self) -> Committee:
         """Return the Committee data, raises exception if it is None."""
         match self.committee:
-            case Committee(_):
+            case Committee():
                 return self.committee
             case _:
                 raise Exception("node has no committee")

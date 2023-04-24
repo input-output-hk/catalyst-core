@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["VIT_CONFIG","VIT_STATION_LOG"],"struct":["VitStationController"],"type":["VitStationSettings"]};

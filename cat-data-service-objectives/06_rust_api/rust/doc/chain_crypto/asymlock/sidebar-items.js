@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SCHEME_OVERHEAD"],"enum":["DecryptionError"],"fn":["decrypt","encrypt","shared_key_to_symmetric_key"]};

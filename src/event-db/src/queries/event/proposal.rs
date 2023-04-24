@@ -49,6 +49,7 @@ impl ProposalQueries for EventDB {
             let summary = ProposalSummary {
                 id: EventId(row.try_get("id")?),
                 name: row.try_get("name")?,
+                summary: String::from("summary"),
                 starts: None,
                 ends: None,
                 reg_checked: None,

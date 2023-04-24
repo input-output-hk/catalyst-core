@@ -12,6 +12,7 @@ pub struct ObjectId(pub i32);
 pub struct ProposalSummary {
     pub id: EventId,
     pub name: String,
+    pub summary: String,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "serialize_option_datetime_as_rfc3339"

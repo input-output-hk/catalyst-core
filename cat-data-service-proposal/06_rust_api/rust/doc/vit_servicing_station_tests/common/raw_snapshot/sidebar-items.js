@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["RawSnapshot","RawSnapshotBuilder","RawSnapshotUpdater","__FieldVisitor","__Visitor"],"trait":["RawSnapshotExtension"]};

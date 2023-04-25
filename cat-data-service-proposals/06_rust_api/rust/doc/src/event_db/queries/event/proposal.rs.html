@@ -96,10 +96,14 @@
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{error::Error, types::event::proposal::ProposalSummary, EventDB};
 <span class="kw">use </span>async_trait::async_trait;
+<span class="kw">use </span>serde::Deserialize;
 
-<span class="kw">pub enum </span>VoterGroup {
+<span class="attr">#[derive(Deserialize)]
+</span><span class="kw">pub enum </span>VoterGroup {
     Direct,
     Rep,
 }

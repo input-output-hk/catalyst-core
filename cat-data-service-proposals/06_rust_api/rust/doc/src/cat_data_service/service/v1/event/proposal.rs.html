@@ -111,6 +111,10 @@
 <a href="#111" id="111">111</a>
 <a href="#112" id="112">112</a>
 <a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -152,7 +156,11 @@
     proposals_query: Query&lt;ProposalsQuery&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt; {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;proposals_query, event: {0}&quot;</span>, event.<span class="number">0</span>);
+    <span class="macro">tracing::debug!</span>(
+        <span class="string">&quot;proposals_query, event:{0} objective: {1}&quot;</span>,
+        event.<span class="number">0</span>,
+        objective.<span class="number">0
+    </span>);
 
     <span class="kw">let </span>event = state
         .event_db

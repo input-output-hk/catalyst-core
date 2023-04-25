@@ -1,4 +1,8 @@
-use crate::{error::Error, types::event::proposal::ProposalSummary, EventDB};
+use crate::{
+    error::Error,
+    types::event::{objective::ObjectiveId, proposal::ProposalSummary},
+    EventDB,
+};
 use async_trait::async_trait;
 use serde::Deserialize;
 
@@ -15,12 +19,13 @@ pub trait ProposalQueries: Sync + Send + 'static {
         limit: Option<i64>,
         offset: Option<i64>,
         voter_group: Option<VoterGroup>,
+        obj_id: ObjectiveId,
     ) -> Result<Vec<ProposalSummary>, Error>;
 }
 
 impl EventDB {
     const PROPOSALS_QUERY: &'static str =
-        "SELECT id, title, summary FROM proposal LIMIT $1 OFFSET $2;";
+        "SELECT id, title, summary FROM proposal WHERE objective = $1 LIMIT $2 OFFSET $3;";
 }
 
 #[async_trait]
@@ -30,11 +35,15 @@ impl ProposalQueries for EventDB {
         limit: Option<i64>,
         offset: Option<i64>,
         _voter_group: Option<VoterGroup>,
+        obj_id: ObjectiveId,
     ) -> Result<Vec<ProposalSummary>, Error> {
         let conn = self.pool.get().await?;
 
         let rows = conn
-            .query(Self::PROPOSALS_QUERY, &[&limit, &offset.unwrap_or(0)])
+            .query(
+                Self::PROPOSALS_QUERY,
+                &[&obj_id.0, &limit, &offset.unwrap_or(0)],
+            )
             .await?;
 
         let mut proposals = Vec::new();
@@ -77,7 +86,7 @@ mod tests {
         let event_db = establish_connection(None).await.unwrap();
 
         let proposal_summary = event_db
-            .get_proposals(None, None, Some(VoterGroup::Direct))
+            .get_proposals(None, None, Some(VoterGroup::Direct), ObjectiveId(1))
             .await
             .unwrap();
 
@@ -89,9 +98,9 @@ mod tests {
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
-                    id: 2,
-                    title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                    id: 3,
+                    title: String::from("title 3"),
+                    summary: String::from("summary 3")
                 }
             ],
             proposal_summary

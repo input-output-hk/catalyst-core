@@ -34,9 +34,8 @@ struct ProposalsQuery {
     _voter_group: Option<VoterGroup>,
 }
 
-// Path(objective): Option<Path<ObjectiveId>>,
 async fn proposals_exec(
-    Path(event): Path<EventId>,
+    Path((event, objective)): Path<(EventId, ObjectiveId)>,
     proposals_query: Query<ProposalsQuery>,
     state: Arc<State>,
 ) -> Result<Vec<ProposalSummary>, Error> {
@@ -44,7 +43,12 @@ async fn proposals_exec(
 
     let event = state
         .event_db
-        .get_proposals(proposals_query.limit, proposals_query.offset, None)
+        .get_proposals(
+            proposals_query.limit,
+            proposals_query.offset,
+            None,
+            objective,
+        )
         .await?;
     Ok(event)
 }
@@ -79,7 +83,7 @@ mod tests {
         let app = app(state);
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/proposals", 1))
+            .uri(format!("/api/v1/event/{0}/{1}/proposals", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -97,9 +101,9 @@ mod tests {
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
-                    id: 2,
-                    title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                    id: 4,
+                    title: String::from("title 3"),
+                    summary: String::from("summary 3")
                 }
             ])
             .unwrap(),

@@ -66,7 +66,6 @@ async fn proposals_exec(
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use std::env;
 
     use super::*;
     use crate::service::app;
@@ -79,10 +78,6 @@ mod tests {
 
     #[tokio::test]
     async fn proposals_test() {
-        env::set_var(
-            "EVENT_DB_URL",
-            "postgres://catalyst-event-dev:CHANGE_MEy@localhost/CatalystEventDev",
-        );
         let state = Arc::new(State::new(None).await.unwrap());
         let app = app(state);
 

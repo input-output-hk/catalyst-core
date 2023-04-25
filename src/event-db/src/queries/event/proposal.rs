@@ -71,18 +71,11 @@ impl ProposalQueries for EventDB {
 #[cfg(test)]
 mod tests {
 
-    use std::env;
-
     use super::*;
     use crate::establish_connection;
 
     #[tokio::test]
     async fn get_proposals_test() {
-        env::set_var(
-            "EVENT_DB_URL",
-            "postgres://catalyst-event-dev:CHANGE_MEy@localhost/CatalystEventDev",
-        );
-
         let event_db = establish_connection(None).await.unwrap();
 
         let proposal_summary = event_db

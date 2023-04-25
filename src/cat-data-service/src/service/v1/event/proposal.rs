@@ -9,7 +9,7 @@ use axum::{
 };
 use event_db::{
     queries::event::proposal::VoterGroup,
-    types::event::{proposal::ProposalSummary, EventId},
+    types::event::{objective::ObjectiveId, proposal::ProposalSummary, EventId},
 };
 use serde::Deserialize;
 use std::sync::Arc;
@@ -20,7 +20,7 @@ pub fn proposal(_state: Arc<State>) -> Router {
 
 pub fn proposals(state: Arc<State>) -> Router {
     Router::new().route(
-        "/:event/proposals",
+        "/:event/:objective/proposals",
         get(move |path, query| async {
             handle_result(proposals_exec(path, query, state).await).await
         }),
@@ -34,6 +34,7 @@ struct ProposalsQuery {
     _voter_group: Option<VoterGroup>,
 }
 
+// Path(objective): Option<Path<ObjectiveId>>,
 async fn proposals_exec(
     Path(event): Path<EventId>,
     proposals_query: Query<ProposalsQuery>,

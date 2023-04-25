@@ -1,5 +1,7 @@
 use serde::Serialize;
 
+pub struct ObjectiveId(pub i32);
+
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveType {
     pub id: String,

@@ -19,7 +19,6 @@ pub fn event(state: Arc<State>) -> Router {
     let proposal = proposal::proposal(state.clone());
     let proposals = proposal::proposals(state.clone());
 
-
     Router::new()
         .nest(
             "/event",
@@ -34,7 +33,6 @@ pub fn event(state: Arc<State>) -> Router {
                 .merge(objective)
                 .merge(proposal)
                 .merge(proposals),
-
         )
         .route(
             "/events",

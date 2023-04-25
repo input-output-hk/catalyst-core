@@ -106,6 +106,7 @@
 <a href="#106" id="106">106</a>
 <a href="#107" id="107">107</a>
 <a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -117,7 +118,7 @@
 };
 <span class="kw">use </span>event_db::{
     queries::event::proposal::VoterGroup,
-    types::event::{proposal::ProposalSummary, EventId},
+    types::event::{objective::ObjectiveId, proposal::ProposalSummary, EventId},
 };
 <span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
@@ -128,7 +129,7 @@
 
 <span class="kw">pub fn </span>proposals(state: Arc&lt;State&gt;) -&gt; Router {
     Router::new().route(
-        <span class="string">&quot;/:event/proposals&quot;</span>,
+        <span class="string">&quot;/:event/:objective/proposals&quot;</span>,
         get(<span class="kw">move </span>|path, query| <span class="kw">async </span>{
             handle_result(proposals_exec(path, query, state).<span class="kw">await</span>).<span class="kw">await
         </span>}),
@@ -142,7 +143,8 @@
     _voter_group: <span class="prelude-ty">Option</span>&lt;VoterGroup&gt;,
 }
 
-<span class="kw">async fn </span>proposals_exec(
+<span class="comment">// Path(objective): Option&lt;Path&lt;ObjectiveId&gt;&gt;,
+</span><span class="kw">async fn </span>proposals_exec(
     Path(event): Path&lt;EventId&gt;,
     proposals_query: Query&lt;ProposalsQuery&gt;,
     state: Arc&lt;State&gt;,

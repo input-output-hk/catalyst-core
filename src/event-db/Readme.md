@@ -11,17 +11,6 @@ This crate defines the structure and RUST access methods for the Catalyst Event 
     - [GraphQL Users](#graphql-users)
       - [Authentication API](#authentication-api)
 
-## Starting a Local Test DB with Docker
-
-If you are not running PostgreSQL-14 locally.
-A test server can be run using docker-compose.
-
-```sh
-docker-compose -f ./setup/dev-db.docker-compose.yml up --remove-orphans -d
-```
-
-This will run Postgres on port `5432`, and an `adminer` UI on `localhost:8080`.
-
 ## Creating A Local Test Database
 
 ### Dependencies
@@ -46,7 +35,7 @@ create database "CatalystEventDev"
 comment on database "CatalystEventDev" is 'Local Test Catalyst Event DB';
 ```
 
-Or
+Or (you need to run these scripts from the root folder)
 
 ```sh
 cargo make local-event-db-init
@@ -62,6 +51,23 @@ cargo make run-event-db-migration
 
 ```sh
 cargo make local-event-db-setup
+```
+
+## Starting a Local Test DB with Docker
+
+If you are not running PostgreSQL-14 locally.
+A test server can be run using docker-compose, in which case you will have to run the init, setup and migrations scripts manually, inside Docker container
+
+```sh
+docker-compose -f ./setup/dev-db.docker-compose.yml up --remove-orphans -d
+```
+
+This will run Postgres on port `5432`, and an `adminer` UI on `localhost:8080`.
+
+Then you can run init, setup or migrations scripts inside container, using docker exec command with -i (keep inputs open) and -t (pseudo-terminal) flags 
+
+```sh
+docker exec -it container_ID psql -e postgres -f setup/dev-db.sql
 ```
 
 ## GraphQL

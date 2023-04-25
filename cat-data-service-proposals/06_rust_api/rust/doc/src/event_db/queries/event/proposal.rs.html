@@ -98,7 +98,20 @@
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{error::Error, types::event::proposal::ProposalSummary, EventDB};
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+    error::Error,
+    types::event::{objective::ObjectiveId, proposal::ProposalSummary},
+    EventDB,
+};
 <span class="kw">use </span>async_trait::async_trait;
 <span class="kw">use </span>serde::Deserialize;
 
@@ -115,12 +128,13 @@
         limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         voter_group: <span class="prelude-ty">Option</span>&lt;VoterGroup&gt;,
+        obj_id: ObjectiveId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt;;
 }
 
 <span class="kw">impl </span>EventDB {
     <span class="kw">const </span>PROPOSALS_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT id, title, summary FROM proposal LIMIT $1 OFFSET $2;&quot;</span>;
+        <span class="string">&quot;SELECT id, title, summary FROM proposal WHERE objective = $1 LIMIT $2 OFFSET $3;&quot;</span>;
 }
 
 <span class="attr">#[async_trait]
@@ -130,11 +144,15 @@
         limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         _voter_group: <span class="prelude-ty">Option</span>&lt;VoterGroup&gt;,
+        obj_id: ObjectiveId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt; {
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span>rows = conn
-            .query(<span class="self">Self</span>::PROPOSALS_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)])
+            .query(
+                <span class="self">Self</span>::PROPOSALS_QUERY,
+                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>obj_id.<span class="number">0</span>, <span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
+            )
             .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>proposals = Vec::new();
@@ -177,7 +195,7 @@
         <span class="kw">let </span>event_db = establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
 
         <span class="kw">let </span>proposal_summary = event_db
-            .get_proposals(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(VoterGroup::Direct))
+            .get_proposals(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(VoterGroup::Direct), ObjectiveId(<span class="number">1</span>))
             .<span class="kw">await
             </span>.unwrap();
 
@@ -189,9 +207,9 @@
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">2</span>,
-                    title: String::from(<span class="string">&quot;title 2&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
+                    id: <span class="number">3</span>,
+                    title: String::from(<span class="string">&quot;title 3&quot;</span>),
+                    summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
                 }
             ],
             proposal_summary

@@ -107,6 +107,10 @@
 <a href="#107" id="107">107</a>
 <a href="#108" id="108">108</a>
 <a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -143,9 +147,8 @@
     _voter_group: <span class="prelude-ty">Option</span>&lt;VoterGroup&gt;,
 }
 
-<span class="comment">// Path(objective): Option&lt;Path&lt;ObjectiveId&gt;&gt;,
-</span><span class="kw">async fn </span>proposals_exec(
-    Path(event): Path&lt;EventId&gt;,
+<span class="kw">async fn </span>proposals_exec(
+    Path((event, objective)): Path&lt;(EventId, ObjectiveId)&gt;,
     proposals_query: Query&lt;ProposalsQuery&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt; {
@@ -153,7 +156,12 @@
 
     <span class="kw">let </span>event = state
         .event_db
-        .get_proposals(proposals_query.limit, proposals_query.offset, <span class="prelude-val">None</span>)
+        .get_proposals(
+            proposals_query.limit,
+            proposals_query.offset,
+            <span class="prelude-val">None</span>,
+            objective,
+        )
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(event)
 }
@@ -188,7 +196,7 @@
         <span class="kw">let </span>app = app(state);
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}/proposals&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}/{1}/proposals&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
@@ -206,9 +214,9 @@
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">2</span>,
-                    title: String::from(<span class="string">&quot;title 2&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
+                    id: <span class="number">3</span>,
+                    title: String::from(<span class="string">&quot;title 3&quot;</span>),
+                    summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
                 }
             ])
             .unwrap(),

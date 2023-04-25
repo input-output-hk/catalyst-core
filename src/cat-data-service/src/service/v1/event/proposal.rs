@@ -101,7 +101,7 @@ mod tests {
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
-                    id: 4,
+                    id: 3,
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 }

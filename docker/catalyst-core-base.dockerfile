@@ -4,4 +4,4 @@ COPY . .
 RUN apt-get update && \
     apt-get install -y build-essential pkg-config protobuf-compiler \
     libssl-dev libpq-dev libsqlite3-dev
-RUN cargo check --locked --release -p jormungandr -p jcli -p vit-servicing-station-server
+RUN cargo check --locked --release -p jormungandr -p jcli -p catalyst-toolbox -p voting_tools_rs -p cat-data-service

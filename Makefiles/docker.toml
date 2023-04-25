@@ -15,13 +15,13 @@ script = '''
 docker build --force-rm -t jormungandr:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/jormungandr.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 '''
 
-[tasks.build-vit]
+[tasks.build-cat-data-service]
 workspace = false
 category = "Voting"
-description = "Builds docker image with vit-servicing-station-server."
+description = "Builds docker image with cat-data-service."
 script_runner = "@shell"
 script = '''
-docker build --force-rm -t vit-servicing-station:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/vit-servicing-station.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+docker build --force-rm -t cat-data-service:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/cat-data-service.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 '''
 
 [tasks.build-voting-node]

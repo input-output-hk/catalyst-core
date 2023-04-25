@@ -39,7 +39,11 @@ async fn proposals_exec(
     proposals_query: Query<ProposalsQuery>,
     state: Arc<State>,
 ) -> Result<Vec<ProposalSummary>, Error> {
-    tracing::debug!("proposals_query, event: {0}", event.0);
+    tracing::debug!(
+        "proposals_query, event:{0} objective: {1}",
+        event.0,
+        objective.0
+    );
 
     let event = state
         .event_db

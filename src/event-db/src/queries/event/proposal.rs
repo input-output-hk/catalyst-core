@@ -1,6 +1,8 @@
 use crate::{error::Error, types::event::proposal::ProposalSummary, EventDB};
 use async_trait::async_trait;
+use serde::Deserialize;
 
+#[derive(Deserialize)]
 pub enum VoterGroup {
     Direct,
     Rep,

@@ -1098,6 +1098,26 @@
         "type": "github"
       }
     },
+    "nb": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1677562139,
+        "narHash": "sha256-J39FdMjECbWGSXVHmEdyGBD2aRYGhg9bWEPf1/ZR47k=",
+        "owner": "serokell",
+        "repo": "nix-npm-buildpackage",
+        "rev": "d45296118cae672982f192451dd3e19fa6c2d068",
+        "type": "github"
+      },
+      "original": {
+        "owner": "serokell",
+        "repo": "nix-npm-buildpackage",
+        "type": "github"
+      }
+    },
     "nix-nomad": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -1681,6 +1701,7 @@
       "inputs": {
         "cardano-node": "cardano-node",
         "naersk": "naersk",
+        "nb": "nb",
         "nixpkgs": "nixpkgs",
         "rust-overlay": "rust-overlay",
         "std": "std",

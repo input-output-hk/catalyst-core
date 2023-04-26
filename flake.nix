@@ -16,6 +16,10 @@
     naersk.url = "github:nix-community/naersk";
     naersk.inputs.nixpkgs.follows = "nixpkgs";
 
+    # npm-buildpackage
+    nb.url = "github:serokell/nix-npm-buildpackage";
+    nb.inputs.nixpkgs.follows = "nixpkgs";
+
     # Cardano
     cardano-node.url = "github:input-output-hk/cardano-node/1.33.0";
     cardano-node.inputs.nixpkgs.follows = "nixpkgs";

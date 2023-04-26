@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ProposerDetails {
@@ -44,12 +44,6 @@ pub struct Proposal {
     #[serde(flatten)]
     pub proposal_details: ProposalDetails,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct EventId(pub i32);
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-pub struct ObjectId(pub i32);
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct ProposalSummary {

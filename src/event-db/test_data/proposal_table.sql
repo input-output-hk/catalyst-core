@@ -36,29 +36,7 @@ VALUES (
         'alice.prop.xyz',
         'alice is an attorney',
         '70726f706f73616c'
-    );
-
-INSERT INTO
-    proposal (
-        row_id,
-        id,
-        objective,
-        title,
-        summary,
-        category,
-        public_key,
-        funds,
-        url,
-        files_url,
-        impact_score,
-        extra,
-        proposer_name,
-        proposer_contact,
-        proposer_url,
-        proposer_relevant_experience,
-        bb_proposal_id
-    )
-VALUES (
+    ), (
         2,
         2,
         2,
@@ -76,29 +54,7 @@ VALUES (
         'bob.prop.xyz',
         'bob is an accountant',
         '70726f706f73616c'
-    );
-
-INSERT INTO
-    proposal (
-        row_id,
-        id,
-        objective,
-        title,
-        summary,
-        category,
-        public_key,
-        funds,
-        url,
-        files_url,
-        impact_score,
-        extra,
-        proposer_name,
-        proposer_contact,
-        proposer_url,
-        proposer_relevant_experience,
-        bb_proposal_id
-    )
-VALUES (
+    ), (
         3,
         3,
         1,

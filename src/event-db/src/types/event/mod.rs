@@ -121,7 +121,7 @@ pub struct EventSchedule {
     pub tallying_end: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, Deserialize)]
 pub struct VoterGroup {
     pub id: String,
     pub voting_token: String,

@@ -4,13 +4,6 @@ use crate::{
     EventDB,
 };
 use async_trait::async_trait;
-use serde::Deserialize;
-
-#[derive(Deserialize)]
-pub enum VoterGroup {
-    Direct,
-    Rep,
-}
 
 #[async_trait]
 pub trait ProposalQueries: Sync + Send + 'static {
@@ -18,7 +11,7 @@ pub trait ProposalQueries: Sync + Send + 'static {
         &self,
         limit: Option<i64>,
         offset: Option<i64>,
-        voter_group: Option<VoterGroup>,
+        // TODO: Voter Group: future state may require dreps
         obj_id: ObjectiveId,
     ) -> Result<Vec<ProposalSummary>, Error>;
 }
@@ -34,7 +27,6 @@ impl ProposalQueries for EventDB {
         &self,
         limit: Option<i64>,
         offset: Option<i64>,
-        _voter_group: Option<VoterGroup>,
         obj_id: ObjectiveId,
     ) -> Result<Vec<ProposalSummary>, Error> {
         let conn = self.pool.get().await?;
@@ -79,7 +71,7 @@ mod tests {
         let event_db = establish_connection(None).await.unwrap();
 
         let proposal_summary = event_db
-            .get_proposals(None, None, Some(VoterGroup::Direct), ObjectiveId(1))
+            .get_proposals(None, None, ObjectiveId(1))
             .await
             .unwrap();
 

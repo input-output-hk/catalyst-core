@@ -7,10 +7,7 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::{
-    queries::event::proposal::VoterGroup,
-    types::event::{objective::ObjectiveId, proposal::ProposalSummary, EventId},
-};
+use event_db::types::event::{objective::ObjectiveId, proposal::ProposalSummary, EventId};
 use serde::Deserialize;
 use std::sync::Arc;
 
@@ -31,7 +28,6 @@ pub fn proposals(state: Arc<State>) -> Router {
 struct ProposalsQuery {
     limit: Option<i64>,
     offset: Option<i64>,
-    _voter_group: Option<VoterGroup>,
 }
 
 async fn proposals_exec(
@@ -47,12 +43,7 @@ async fn proposals_exec(
 
     let event = state
         .event_db
-        .get_proposals(
-            proposals_query.limit,
-            proposals_query.offset,
-            None,
-            objective,
-        )
+        .get_proposals(proposals_query.limit, proposals_query.offset, objective)
         .await?;
     Ok(event)
 }

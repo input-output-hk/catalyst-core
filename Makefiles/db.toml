@@ -17,7 +17,7 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e postgres -f setup/dev-db.sql ${@}
+psql -e -U postgres -f setup/dev-db.sql ${@}
 '''
 
 # Run Diesel Migrations, constructing the full up-to-date DB in a local database.
@@ -47,6 +47,26 @@ psql -U catalyst-event-dev -d CatalystEventDev -f test_data/proposal_table.sql $
 
 '''
 
+# Install historic data for past events
+[tasks.local-db-historic-data-setup]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_0.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_1.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_2.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_3.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_4.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_5.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_6.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_7.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_8.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_9.sql ${@}
+'''
+
+
 # Setup the local database graphql configuration.
 [tasks.local-event-db-graphql-init]
 workspace = false
@@ -57,15 +77,16 @@ cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
 psql -e -f setup/graphql-setup.sql ${@}
 '''
 
-
 # Setup the local database ready to run the migrations.
 [tasks.local-event-db-setup]
 workspace = false
 category = "db"
 dependencies = [
     "local-event-db-init",
+    "local-event-db-graphql-init",
     "run-event-db-migration",
-    "local-event-db-graphql-init"
+    "local-db-test-data-setup",
+    "local-db-historic-data-setup"
 ]
 
 # Setup the local database with the test data.

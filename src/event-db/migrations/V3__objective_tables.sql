@@ -70,7 +70,7 @@ CREATE TABLE goal
     idx INTEGER NOT NULL,
     name VARCHAR NOT NULL,
 
-    FOREIGN KEY(event_id) REFERENCES event(row_id)
+    FOREIGN KEY(event_id) REFERENCES event(row_id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX goal_index ON goal(event_id, idx);
@@ -99,19 +99,19 @@ CREATE TABLE objective
 
     rewards_currency TEXT,
     rewards_total BIGINT,
+    rewards_total_lovelace BIGINT,
     proposers_rewards BIGINT,
     vote_options INTEGER,
 
     extra JSONB,
 
-    FOREIGN KEY(event) REFERENCES event(row_id),
-    FOREIGN KEY(category) REFERENCES objective_category(name),
-    FOREIGN KEY(rewards_currency) REFERENCES currency(name),
-    FOREIGN KEY(vote_options) REFERENCES vote_options(id)
+    FOREIGN KEY(event) REFERENCES event(row_id) ON DELETE CASCADE,
+    FOREIGN KEY(category) REFERENCES objective_category(name) ON DELETE CASCADE,
+    FOREIGN KEY(rewards_currency) REFERENCES currency(name) ON DELETE CASCADE,
+    FOREIGN KEY(vote_options) REFERENCES vote_options(id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX objective_idx ON objective (id, event);
-CREATE UNIQUE INDEX objective_id ON objective (id);
 
 COMMENT ON TABLE objective IS
 'All objectives for all events.
@@ -127,7 +127,8 @@ See the objective_category table for allowed values.';
 COMMENT ON COLUMN objective.title IS 'The  title of the objective.';
 COMMENT ON COLUMN objective.description IS 'Long form description of the objective.';
 COMMENT ON COLUMN objective.rewards_currency IS 'The currency rewards values are represented as.';
-COMMENT ON COLUMN objective.rewards_total IS 'The total reward pool to pay on this objective to winning proposals.';
+COMMENT ON COLUMN objective.rewards_total IS 'The total reward pool to pay on this objective to winning proposals. In the Objective Currency.';
+COMMENT ON COLUMN objective.rewards_total_lovelace IS 'The total reward pool to pay on this objective to winning proposals. In Lovelace.';
 COMMENT ON COLUMN objective.proposers_rewards IS 'Not sure how this is different from rewards_total???';
 COMMENT ON COLUMN objective.vote_options IS 'The Vote Options applicable to all proposals in this objective.';
 COMMENT ON COLUMN objective.extra IS

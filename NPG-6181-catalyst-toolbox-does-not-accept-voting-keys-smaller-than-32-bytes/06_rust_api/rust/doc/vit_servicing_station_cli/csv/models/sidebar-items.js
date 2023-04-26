@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["default_challenge_id","default_fund_id"],"struct":["AdvisorReview","Challenge","Fund","FundStageDates","Proposal","Voteplan","__DeserializeWith","__FieldVisitor","__Visitor"]};

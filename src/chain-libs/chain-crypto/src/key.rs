@@ -111,7 +111,17 @@ impl<A: AsymmetricPublicKey> FromStr for PublicKey<A> {
     type Err = PublicKeyFromStrError;
 
     fn from_str(hex: &str) -> Result<Self, Self::Err> {
-        let bytes = hex::decode(hex).map_err(PublicKeyFromStrError::HexMalformed)?;
+        let mut bytes = hex::decode(hex).map_err(PublicKeyFromStrError::HexMalformed)?;
+
+        // Pad with zeros if the bytes are smaller than they expected public key size.
+        if bytes.len() < A::PUBLIC_KEY_SIZE {
+            let mut v = vec![0; A::PUBLIC_KEY_SIZE];
+            v[A::PUBLIC_KEY_SIZE - bytes.len()..].copy_from_slice(&bytes);
+
+            bytes = v;
+        }
+
+
         Self::from_binary(&bytes).map_err(PublicKeyFromStrError::KeyInvalid)
     }
 }

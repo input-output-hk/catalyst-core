@@ -21,7 +21,7 @@ CREATE TABLE snapshot (
     catalyst_snapshot_params     JSONB NULL,
     catalyst_snapshot_data       BYTEA NULL,
 
-    FOREIGN KEY(event) REFERENCES event(row_id)
+    FOREIGN KEY(event) REFERENCES event(row_id)  ON DELETE CASCADE
 );
 
 COMMENT ON TABLE snapshot IS

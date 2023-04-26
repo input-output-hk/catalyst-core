@@ -5,7 +5,7 @@
 CREATE TABLE proposal
 (
     row_id SERIAL PRIMARY KEY,
-    id INTEGER NOT NULL UNIQUE,
+    id INTEGER NOT NULL,
     objective INTEGER NOT NULL,
     title TEXT NOT NULL,
     summary TEXT NOT NULL,
@@ -26,8 +26,8 @@ CREATE TABLE proposal
 
     bb_vote_options TEXT[],
 
-    FOREIGN KEY(objective) REFERENCES objective(row_id),
-    FOREIGN KEY(bb_vote_options) REFERENCES vote_options(objective)
+    FOREIGN KEY(objective) REFERENCES objective(row_id) ON DELETE CASCADE,
+    FOREIGN KEY(bb_vote_options) REFERENCES vote_options(objective) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX proposal_index ON proposal(row_id, objective);
@@ -39,6 +39,7 @@ COMMENT ON COLUMN proposal.id IS 'Actual Proposal Unique ID';
 COMMENT ON COLUMN proposal.objective IS 'The Objective this proposal falls under.';
 COMMENT ON COLUMN proposal.title IS 'Brief title of the proposal.';
 COMMENT ON COLUMN proposal.summary IS 'A Summary of the proposal to be implemented.';
+COMMENT ON COLUMN proposal.category IS 'Objective Category Repeated. DEPRECATED: Only used for Vit-SS compatibility.';
 COMMENT ON COLUMN proposal.public_key IS 'Proposals Reward Address (CIP-19 Payment Key)';
 COMMENT ON COLUMN proposal.funds IS 'How much funds (in the currency of the fund)';
 COMMENT ON COLUMN proposal.url IS 'A URL with supporting information for the proposal.';
@@ -57,6 +58,7 @@ COMMENT ON COLUMN proposal.extra IS
     NONE.
 
  Extra Fields for `simple` challenges:
+    "problem"  : <text> - Statement of the problem the proposal tries to address.
     "solution" : <text> - The Solution to the challenge.
 
  Extra Fields for `community choice` challenge:
@@ -194,8 +196,8 @@ CREATE TABLE review_rating (
 
   UNIQUE ( review_id, metric ),
 
-  FOREIGN KEY (review_id) REFERENCES proposal_review(row_id),
-  FOREIGN KEY (metric) REFERENCES review_metric(row_id)
+  FOREIGN KEY (review_id) REFERENCES proposal_review(row_id) ON DELETE CASCADE,
+  FOREIGN KEY (metric) REFERENCES review_metric(row_id) ON DELETE CASCADE
 );
 
 

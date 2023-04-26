@@ -48,6 +48,13 @@ pub struct Proposal {
     pub proposal_details: ProposalDetails,
 }
 
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+pub struct ProposalSummary {
+    pub id: i32,
+    pub title: String,
+    pub summary: String,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

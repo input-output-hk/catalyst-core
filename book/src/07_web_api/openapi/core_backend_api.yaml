@@ -1410,7 +1410,8 @@ components:
       in: path
       required: true
       schema:
-        type: string
+        type: integer
+        format: int32
       description: The ID Number of the Proposal within a Objective of a Voting Event
     limit:
       name: lim

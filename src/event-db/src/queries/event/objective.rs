@@ -2,7 +2,7 @@ use crate::{
     error::Error,
     types::event::{
         objective::{
-            GroupBallotType, Objective, ObjectiveDetails, ObjectiveSummary,
+            GroupBallotType, Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
             ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
         },
         EventId,
@@ -67,7 +67,7 @@ impl ObjectiveQueries for EventDB {
         let mut objectives = Vec::new();
         for row in rows {
             let summary = ObjectiveSummary {
-                id: row.try_get("id")?,
+                id: ObjectiveId(row.try_get("id")?),
                 objective_type: ObjectiveType {
                     id: row.try_get("name")?,
                     description: row.try_get("objective_category_description")?,
@@ -143,8 +143,6 @@ impl ObjectiveQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use std::vec;
-
     use super::*;
     use crate::{establish_connection, types::event::objective::GroupBallotType};
 
@@ -161,7 +159,7 @@ mod tests {
             vec![
                 Objective {
                     summary: ObjectiveSummary {
-                        id: 1,
+                        id: ObjectiveId(1),
                         objective_type: ObjectiveType {
                             id: "catalyst-simple".to_string(),
                             description: "A Simple choice".to_string()
@@ -194,7 +192,7 @@ mod tests {
                 },
                 Objective {
                     summary: ObjectiveSummary {
-                        id: 2,
+                        id: ObjectiveId(2),
                         objective_type: ObjectiveType {
                             id: "catalyst-native".to_string(),
                             description: "??".to_string()
@@ -230,7 +228,7 @@ mod tests {
             objectives,
             vec![Objective {
                 summary: ObjectiveSummary {
-                    id: 1,
+                    id: ObjectiveId(1),
                     objective_type: ObjectiveType {
                         id: "catalyst-simple".to_string(),
                         description: "A Simple choice".to_string()
@@ -271,7 +269,7 @@ mod tests {
             objectives,
             vec![Objective {
                 summary: ObjectiveSummary {
-                    id: 2,
+                    id: ObjectiveId(2),
                     objective_type: ObjectiveType {
                         id: "catalyst-native".to_string(),
                         description: "??".to_string()

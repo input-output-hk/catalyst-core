@@ -1,6 +1,9 @@
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct ProposalId(pub i32);
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ProposerDetails {
     pub name: String,
     pub email: String,

@@ -1,4 +1,7 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ObjectiveId(pub i32);
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveType {

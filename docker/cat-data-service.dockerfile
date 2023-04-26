@@ -10,7 +10,7 @@ ARG APP_PATH=/app
 ## Update container and copy executables
 RUN apt-get update && \
     apt-get install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev
-COPY --from=0 /usr/local/cargo/bin/cat-data-service
+COPY --from=0 /usr/local/cargo/bin/cat-data-service /usr/local/bin/cat-data-service
 
 ## cleanup
 RUN apt-get install -y --no-install-recommends && \

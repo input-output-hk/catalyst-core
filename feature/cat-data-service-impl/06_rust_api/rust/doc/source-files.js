@@ -14,7 +14,7 @@ var sourcesIndex = JSON.parse('{\
 "chain_storage":["",[],["block_info.rs","block_store.rs","error.rs","iterator.rs","lib.rs","permanent_store.rs","test_utils.rs","value.rs"]],\
 "chain_time":["",[],["era.rs","lib.rs","testing.rs","timeframe.rs","timeline.rs","units.rs"]],\
 "chain_vote":["",[["cryptography",[["zkps",[["correct_decryption",[],["mod.rs","zkp.rs"]],["correct_hybrid_decryption_key",[],["mod.rs","zkp.rs"]],["correct_share_generation",[],["mod.rs","zkp.rs"]],["dl_equality",[],["challenge_context.rs","mod.rs","zkp.rs"]],["unit_vector",[],["challenge_context.rs","messages.rs","mod.rs","zkp.rs"]]],["mod.rs"]]],["commitment.rs","elgamal.rs","mod.rs"]],["math",[],["babystep.rs","mod.rs","polynomial.rs"]]],["committee.rs","encrypted_vote.rs","lib.rs","macros.rs","tally.rs"]],\
-"event_db":["",[["queries",[["event",[],["mod.rs","objective.rs"]]],["mod.rs","registration.rs"]],["types",[["event",[],["mod.rs","objective.rs","proposal.rs"]]],["mod.rs","registration.rs","utils.rs"]]],["config_table.rs","error.rs","lib.rs","schema_check.rs"]],\
+"event_db":["",[["queries",[["event",[],["mod.rs","objective.rs","proposal.rs"]]],["mod.rs","registration.rs"]],["types",[["event",[],["mod.rs","objective.rs","proposal.rs"]]],["mod.rs","registration.rs","utils.rs"]]],["config_table.rs","error.rs","lib.rs","schema_check.rs"]],\
 "explorer":["",[["api",[["graphql",[],["certificates.rs","config_param.rs","connections.rs","error.rs","mod.rs","scalars.rs"]]],["mod.rs"]],["db",[],["error.rs","indexing.rs","mod.rs","multiverse.rs","persistent_sequence.rs","tally.rs"]]],["indexer.rs","logging.rs","main.rs","settings.rs"]],\
 "explorer_client":["",[],["explorer-client.rs"]],\
 "grpc_client_app":["",[],["grpc_client_app.rs"]],\

@@ -123,6 +123,13 @@
 <a href="#123" id="123">123</a>
 <a href="#124" id="124">124</a>
 <a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -168,6 +175,13 @@
 </span><span class="kw">pub struct </span>Proposal {
     <span class="attr">#[serde(flatten)]
     </span><span class="kw">pub </span>proposal_details: ProposalDetails,
+}
+
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>ProposalSummary {
+    <span class="kw">pub </span>id: i32,
+    <span class="kw">pub </span>title: String,
+    <span class="kw">pub </span>summary: String,
 }
 
 <span class="attr">#[cfg(test)]

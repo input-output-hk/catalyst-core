@@ -121,7 +121,6 @@ impl<A: AsymmetricPublicKey> FromStr for PublicKey<A> {
             bytes = v;
         }
 
-
         Self::from_binary(&bytes).map_err(PublicKeyFromStrError::KeyInvalid)
     }
 }

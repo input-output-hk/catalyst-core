@@ -548,20 +548,6 @@
 <a href="#548" id="548">548</a>
 <a href="#549" id="549">549</a>
 <a href="#550" id="550">550</a>
-<a href="#551" id="551">551</a>
-<a href="#552" id="552">552</a>
-<a href="#553" id="553">553</a>
-<a href="#554" id="554">554</a>
-<a href="#555" id="555">555</a>
-<a href="#556" id="556">556</a>
-<a href="#557" id="557">557</a>
-<a href="#558" id="558">558</a>
-<a href="#559" id="559">559</a>
-<a href="#560" id="560">560</a>
-<a href="#561" id="561">561</a>
-<a href="#562" id="562">562</a>
-<a href="#563" id="563">563</a>
-<a href="#564" id="564">564</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
@@ -592,14 +578,7 @@
         FROM event
         LEFT JOIN snapshot ON event.row_id = snapshot.event
         ORDER BY event.row_id ASC
-        OFFSET $1;&quot;</span>;
-
-    <span class="kw">const </span>EVENTS_WITH_LIMIT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
-        FROM event
-        LEFT JOIN snapshot ON event.row_id = snapshot.event
-        ORDER BY event.row_id ASC
-        LIMIT $1 OFFSET $2&quot;</span>;
+        LIMIT $1 OFFSET $2;&quot;</span>;
 
     <span class="kw">const </span>EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
         <span class="string">&quot;SELECT event.row_id, event.name, event.start_time, event.end_time,
@@ -629,16 +608,9 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="kw">let </span>rows = <span class="kw">if let </span><span class="prelude-val">Some</span>(limit) = limit {
-            conn.query(
-                <span class="self">Self</span>::EVENTS_WITH_LIMIT_QUERY,
-                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
-            )
-            .<span class="kw">await</span><span class="question-mark">?
-        </span>} <span class="kw">else </span>{
-            conn.query(<span class="self">Self</span>::EVENTS_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)])
-                .<span class="kw">await</span><span class="question-mark">?
-        </span>};
+        <span class="kw">let </span>rows = conn
+            .query(<span class="self">Self</span>::EVENTS_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)])
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>events = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {

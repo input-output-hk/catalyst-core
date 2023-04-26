@@ -289,20 +289,6 @@
 <a href="#289" id="289">289</a>
 <a href="#290" id="290">290</a>
 <a href="#291" id="291">291</a>
-<a href="#292" id="292">292</a>
-<a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
@@ -335,16 +321,6 @@
         INNER JOIN objective_category on objective.category = objective_category.name
         LEFT JOIN vote_options on objective.vote_options = vote_options.id
         WHERE objective.event = $1
-        OFFSET $2;&quot;</span>;
-
-    <span class="kw">const </span>OBJECTIVES_WITH_LIMIT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
-        objective_category.name, objective_category.description as objective_category_description,
-        vote_options.objective as choices
-        FROM objective
-        INNER JOIN objective_category on objective.category = objective_category.name
-        LEFT JOIN vote_options on objective.vote_options = vote_options.id
-        WHERE objective.event = $1
         LIMIT $2 OFFSET $3;&quot;</span>;
 }
 
@@ -358,16 +334,12 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Objective&gt;, Error&gt; {
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="kw">let </span>rows = <span class="kw">if let </span><span class="prelude-val">Some</span>(limit) = limit {
-            conn.query(
-                <span class="self">Self</span>::OBJECTIVES_WITH_LIMIT_QUERY,
+        <span class="kw">let </span>rows = conn
+            .query(
+                <span class="self">Self</span>::OBJECTIVES_QUERY,
                 <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
             )
-            .<span class="kw">await</span><span class="question-mark">?
-        </span>} <span class="kw">else </span>{
-            conn.query(<span class="self">Self</span>::OBJECTIVES_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)])
-                .<span class="kw">await</span><span class="question-mark">?
-        </span>};
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>objectives = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {

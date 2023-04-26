@@ -758,7 +758,7 @@ CREATE TABLE snapshot (
     catalyst_snapshot_params     JSONB NULL,
     catalyst_snapshot_data       BYTEA NULL,
 
-    FOREIGN KEY(event) REFERENCES event(row_id)
+    FOREIGN KEY(event) REFERENCES event(row_id)  ON DELETE CASCADE
 );
 
 COMMENT ON TABLE snapshot IS
@@ -874,9 +874,9 @@ CREATE TABLE ballot (
     choice         SMALLINT NULL,
     raw_fragment   BYTEA    NOT NULL,
 
-    FOREIGN KEY(voter)               REFERENCES voter(row_id),
-    FOREIGN KEY(objective)           REFERENCES objective(row_id),
-    FOREIGN KEY(proposal)            REFERENCES proposal(row_id)
+    FOREIGN KEY(voter)               REFERENCES voter(row_id)  ON DELETE CASCADE,
+    FOREIGN KEY(objective)           REFERENCES objective(row_id)  ON DELETE CASCADE,
+    FOREIGN KEY(proposal)            REFERENCES proposal(row_id)  ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX ballot_proposal_idx  ON ballot(proposal,fragment_id);

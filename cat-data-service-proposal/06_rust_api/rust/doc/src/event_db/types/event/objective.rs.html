@@ -204,9 +204,9 @@
 <a href="#204" id="204">204</a>
 <a href="#205" id="205">205</a>
 <a href="#206" id="206">206</a>
-</pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
+</pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
 
-<span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+<span class="attr">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ObjectiveId(<span class="kw">pub </span>i32);
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]

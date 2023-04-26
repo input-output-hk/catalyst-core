@@ -803,7 +803,7 @@
     </span><span class="kw">pub </span>tallying_end: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq, Deserialize)]
 </span><span class="kw">pub struct </span>VoterGroup {
     <span class="kw">pub </span>id: String,
     <span class="kw">pub </span>voting_token: String,

@@ -1,12 +1,10 @@
 version: "3"
 
 services:
-  postgres:
-    image: postgres:latest
+  eventdb:
+    image: eventdb:latest
     environment:
       - POSTGRES_PASSWORD=CHANGE_ME
-      - POSTGRES_USER=catalyst-event-dev
-      - POSTGRES_DB=CatalystEventDev
     # it is useful to restart when developing, change according to your needs
     restart: unless-stopped
     ports:
@@ -14,17 +12,30 @@ services:
     volumes:
       - eventdb:/var/lib/postgresql/data
 
+  cat-data-service:
+    image: cat-data-service:latest
+    depends_on:
+      eventdb:
+        condition: service_started
+    environment:
+      - ADDRESS=0.0.0.0:3000
+      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@eventdb/CatalystEventDev
+      - LOG_LEVEL=debug
+    ports:
+      - "3030:3030"
+    command: cat-data-service run --database-url postgres://catalyst-event-dev:CHANGE_ME@eventdb/CatalystEventDev --log-level debug --address 0.0.0.0:3030
+
   leader0:
     image: voting-node:latest
     hostname: leader0
     depends_on:
-      postgres:
+      eventdb:
         condition: service_started
     ports:
       - "5057:5057"
     env_file: .env
     environment:
-      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
+      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@eventdb/CatalystEventDev
     volumes:
       - leader0_store:/node_storage
     command: voting-node start
@@ -33,13 +44,13 @@ services:
     image: voting-node:latest
     hostname: leader1
     depends_on:
-      postgres:
+      eventdb:
         condition: service_started
     ports:
       - "6057:5057"
     env_file: .env
     environment:
-      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
+      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@eventdb/CatalystEventDev
     volumes:
       - leader1_store:/node_storage
     command: voting-node start
@@ -48,13 +59,13 @@ services:
     image: voting-node:latest
     hostname: leader2
     depends_on:
-      postgres:
+      eventdb:
         condition: service_started
     ports:
       - "7057:5057"
     env_file: .env
     environment:
-      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
+      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@eventdb/CatalystEventDev
     volumes:
       - leader2_store:/node_storage
     command: voting-node start

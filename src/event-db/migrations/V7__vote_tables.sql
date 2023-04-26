@@ -13,9 +13,9 @@ CREATE TABLE ballot (
     choice         SMALLINT NULL,
     raw_fragment   BYTEA    NOT NULL,
 
-    FOREIGN KEY(voter)               REFERENCES voter(row_id),
-    FOREIGN KEY(objective)           REFERENCES objective(row_id),
-    FOREIGN KEY(proposal)            REFERENCES proposal(row_id)
+    FOREIGN KEY(voter)               REFERENCES voter(row_id)  ON DELETE CASCADE,
+    FOREIGN KEY(objective)           REFERENCES objective(row_id)  ON DELETE CASCADE,
+    FOREIGN KEY(proposal)            REFERENCES proposal(row_id)  ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX ballot_proposal_idx  ON ballot(proposal,fragment_id);

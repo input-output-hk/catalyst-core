@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAIN_TAG"],"enum":["Error"],"fn":["generate_archive_files"],"struct":["Vote"]};

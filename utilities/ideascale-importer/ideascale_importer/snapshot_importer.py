@@ -340,7 +340,7 @@ class Importer:
             total_registered_voting_power += r.voting_power
 
             if isinstance(r.delegations, str):  # CIP15 registration
-                voting_key = r.delegations
+                voting_key = pad_voting_key(r.delegations)
                 voting_key_idx = 0
                 voting_weight = 1
 
@@ -350,7 +350,7 @@ class Importer:
                 }
             elif isinstance(r.delegations, list):  # CIP36 registration
                 for idx, d in enumerate(r.delegations):
-                    voting_key = d[0]
+                    voting_key = pad_voting_key(d[0])
                     voting_key_idx = idx
                     voting_weight = d[1]
 
@@ -513,3 +513,11 @@ class Importer:
 
         await self._run_catalyst_toolbox_snapshot()
         await self._write_db_data()
+
+
+def pad_voting_key(k: str) -> str:
+    """Pad a voting key with 0s if it's smaller than the expected size.
+    This is needed because some voting keys in the snapshot_tool output """
+    if k.startswith("0x"):
+        k = k[2:]
+    return "0x" + k.zfill(64)

@@ -73,7 +73,23 @@
 
 \connect :dbName;
 -- This is NOT part of our schema proper.  It exists to support GraphQL Admin authorization ONLY.
+
+-- Purge old data incase we are running this again.
+DROP FUNCTION IF EXISTS private.current_acct;
+DROP FUNCTION IF EXISTS private.current_role;
+DROP FUNCTION IF EXISTS private.register_admin;
+DROP FUNCTION IF EXISTS private.authenticate;
+
+DROP TYPE IF EXISTS private.jwt_token;
+
+DROP TABLE IF EXISTS private.admin_account;
+
 DROP SCHEMA IF EXISTS private CASCADE;
+
+REVOKE ALL PRIVILEGES ON SCHEMA public FROM cat_admin, cat_anon CASCADE;
+REVOKE ALL PRIVILEGES ON DATABASE :"dbName" FROM cat_admin, cat_anon CASCADE;
+DROP ROLE IF EXISTS "cat_admin";
+DROP ROLE IF EXISTS "cat_anon";
 
 CREATE SCHEMA private;
 
@@ -82,8 +98,6 @@ ALTER DEFAULT privileges IN SCHEMA private REVOKE EXECUTE ON functions FROM publ
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Defined Roles
-DROP ROLE IF EXISTS "cat_admin";
-
 CREATE ROLE "cat_admin" LOGIN PASSWORD :'adminRolePw';
 
 COMMENT ON ROLE "cat_admin" IS 'Full Administrator Access to the Database.';
@@ -94,8 +108,6 @@ GRANT "cat_admin" TO :"dbUser";
 ALTER DEFAULT privileges IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM cat_admin;
 
 ALTER DEFAULT privileges IN SCHEMA private REVOKE EXECUTE ON FUNCTIONS FROM cat_admin;
-
-DROP ROLE IF EXISTS "cat_anon";
 
 CREATE ROLE "cat_anon" LOGIN PASSWORD :'anonRolePw';
 
@@ -121,8 +133,6 @@ GRANT INSERT, UPDATE, DELETE ON ALL tables IN SCHEMA public TO :"dbUser", "cat_a
 
 -- Table where we store our authenticated users information.
 -- No user has direct access to this table.
-DROP TABLE IF EXISTS private.admin_account;
-
 CREATE TABLE private.admin_account(
   id serial PRIMARY KEY,
   first_name text NOT NULL CHECK (char_length(first_name) < 80),
@@ -152,8 +162,6 @@ FROM
 
 -- Function to get details about the current authenticated account.
 -- Anyone can call this.
-DROP FUNCTION IF EXISTS private.current_acct;
-
 CREATE FUNCTION private.current_acct()
   RETURNS private.admin_account
   AS $$
@@ -188,8 +196,6 @@ SELECT
   private.current_acct();
 
 -- Get users current role.
-DROP FUNCTION IF EXISTS private.current_role;
-
 CREATE FUNCTION private.current_role()
   RETURNS text
   AS $$
@@ -200,8 +206,6 @@ LANGUAGE sql STABLE;
 
 -- Function to register an admin.
 -- Should ONLY be executable by admin level accounts.
-DROP FUNCTION IF EXISTS private.register_admin;
-
 CREATE FUNCTION private.register_admin(first_name text, last_name text, email text, PASSWORD text, ROLE text DEFAULT 'cat_admin')
   RETURNS private.admin_account
   AS $$
@@ -234,8 +238,6 @@ GRANT EXECUTE ON FUNCTION private.register_admin(text, text, text, text, text) T
 
 
 -- Define special type for JWT Authentication logic in server
-DROP TYPE IF EXISTS private.jwt_token;
-
 CREATE TYPE private.jwt_token AS (
   ROLE text,
   admin_id integer,
@@ -243,8 +245,6 @@ CREATE TYPE private.jwt_token AS (
 );
 
 -- Function to authenticate, GraphQL server uses this to generate the JWT.
-DROP FUNCTION IF EXISTS private.authenticate;
-
 CREATE FUNCTION private.authenticate(email text, PASSWORD text)
   RETURNS private.jwt_token
   AS $$

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["VARIANTS"],"enum":["VoterGroup","__Field"],"struct":["__FieldVisitor","__Visitor"],"trait":["ProposalQueries"]};
+window.SIDEBAR_ITEMS = {"trait":["ProposalQueries"]};

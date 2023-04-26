@@ -92,27 +92,12 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
-<a href="#97" id="97">97</a>
-<a href="#98" id="98">98</a>
-<a href="#99" id="99">99</a>
-<a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{objective::ObjectiveId, proposal::ProposalSummary},
     EventDB,
 };
 <span class="kw">use </span>async_trait::async_trait;
-<span class="kw">use </span>serde::Deserialize;
-
-<span class="attr">#[derive(Deserialize)]
-</span><span class="kw">pub enum </span>VoterGroup {
-    Direct,
-    Rep,
-}
 
 <span class="attr">#[async_trait]
 </span><span class="kw">pub trait </span>ProposalQueries: Sync + Send + <span class="lifetime">&#39;static </span>{
@@ -120,8 +105,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-        voter_group: <span class="prelude-ty">Option</span>&lt;VoterGroup&gt;,
-        obj_id: ObjectiveId,
+        <span class="comment">// TODO: Voter Group: future state may require dreps
+        </span>obj_id: ObjectiveId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt;;
 }
 
@@ -136,7 +121,6 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-        _voter_group: <span class="prelude-ty">Option</span>&lt;VoterGroup&gt;,
         obj_id: ObjectiveId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt; {
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
@@ -181,7 +165,7 @@
         <span class="kw">let </span>event_db = establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
 
         <span class="kw">let </span>proposal_summary = event_db
-            .get_proposals(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(VoterGroup::Direct), ObjectiveId(<span class="number">1</span>))
+            .get_proposals(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>, ObjectiveId(<span class="number">1</span>))
             .<span class="kw">await
             </span>.unwrap();
 

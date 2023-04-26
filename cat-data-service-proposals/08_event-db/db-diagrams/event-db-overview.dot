@@ -507,6 +507,11 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="rewards_total_lovelace"  align='text'><font>rewards_total_lovelace</font><br align='left'/></td>
+                <td port="rewards_total_lovelace_out"  ><font><i>bigint</i></font></td>
+            </tr>
+            
+            <tr>
                 <td port="proposers_rewards"  align='text'><font>proposers_rewards</font><br align='left'/></td>
                 <td port="proposers_rewards_out"  ><font><i>bigint</i></font></td>
             </tr>

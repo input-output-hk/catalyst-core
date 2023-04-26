@@ -130,13 +130,7 @@
 <a href="#130" id="130">130</a>
 <a href="#131" id="131">131</a>
 <a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
-<a href="#136" id="136">136</a>
-<a href="#137" id="137">137</a>
-<a href="#138" id="138">138</a>
-</pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
+</pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ProposerDetails {
@@ -182,12 +176,6 @@
     <span class="attr">#[serde(flatten)]
     </span><span class="kw">pub </span>proposal_details: ProposalDetails,
 }
-
-<span class="attr">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-</span><span class="kw">pub struct </span>EventId(<span class="kw">pub </span>i32);
-
-<span class="attr">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-</span><span class="kw">pub struct </span>ObjectId(<span class="kw">pub </span>i32);
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ProposalSummary {

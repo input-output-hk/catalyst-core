@@ -101,15 +101,6 @@
 <a href="#101" id="101">101</a>
 <a href="#102" id="102">102</a>
 <a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
-<a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -119,10 +110,7 @@
     routing::get,
     Router,
 };
-<span class="kw">use </span>event_db::{
-    queries::event::proposal::VoterGroup,
-    types::event::{objective::ObjectiveId, proposal::ProposalSummary, EventId},
-};
+<span class="kw">use </span>event_db::types::event::{objective::ObjectiveId, proposal::ProposalSummary, EventId};
 <span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
 
@@ -143,7 +131,6 @@
 </span><span class="kw">struct </span>ProposalsQuery {
     limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
     offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-    _voter_group: <span class="prelude-ty">Option</span>&lt;VoterGroup&gt;,
 }
 
 <span class="kw">async fn </span>proposals_exec(
@@ -159,12 +146,7 @@
 
     <span class="kw">let </span>event = state
         .event_db
-        .get_proposals(
-            proposals_query.limit,
-            proposals_query.offset,
-            <span class="prelude-val">None</span>,
-            objective,
-        )
+        .get_proposals(proposals_query.limit, proposals_query.offset, objective)
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(event)
 }

@@ -15,6 +15,24 @@ script = '''
 docker build --force-rm -t jormungandr:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/jormungandr.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 '''
 
+[tasks.build-eventdb]
+workspace = false
+category = "Voting"
+description = "Builds docker image with PostgreSQL setup with EventDB configuration."
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t eventdb:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/eventdb-postgres.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''
+
+[tasks.build-eventdb-graphql]
+workspace = false
+category = "Voting"
+description = "Builds docker image with PostGraphile for EventDB."
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t eventdb-graphql:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/eventdb-graphql.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''
+
 [tasks.build-cat-data-service]
 workspace = false
 category = "Voting"
@@ -22,6 +40,24 @@ description = "Builds docker image with cat-data-service."
 script_runner = "@shell"
 script = '''
 docker build --force-rm -t cat-data-service:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/cat-data-service.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''
+
+[tasks.build-catalyst-toolbox]
+workspace = false
+category = "Voting"
+description = "Builds docker image with catalyst-toolbox."
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t catalyst-toolbox:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/catalyst-toolbox.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
+'''
+
+[tasks.build-snapshot-tool]
+workspace = false
+category = "Voting"
+description = "Builds docker image with snapshot-tool."
+script_runner = "@shell"
+script = '''
+docker build --force-rm -t snapshot-tool:latest -f ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/docker/snapshot-tool.dockerfile ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/services/voting-node
 '''
 
 [tasks.build-voting-node]

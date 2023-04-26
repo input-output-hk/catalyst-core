@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","SUCCESFULLY_CREATED_BLOCK_MSG","VARIANTS"],"enum":["Level","__Field"],"fn":["flatten_fields","stringify_map"],"macro":["insert_if_some"],"opaque":[""],"struct":["JormungandrLogger","LogEntry","LogEntryLegacy","__FieldVisitor","__Visitor"],"type":["RawFields"]};

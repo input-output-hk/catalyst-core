@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["JORMUNGANDR_APP"],"enum":["Error"],"mod":["explorer"],"struct":["CheckNode"]};

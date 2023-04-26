@@ -30,16 +30,6 @@ impl EventDB {
         INNER JOIN objective_category on objective.category = objective_category.name
         LEFT JOIN vote_options on objective.vote_options = vote_options.id
         WHERE objective.event = $1
-        OFFSET $2;";
-
-    const OBJECTIVES_WITH_LIMIT_QUERY: &'static str =
-        "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
-        objective_category.name, objective_category.description as objective_category_description,
-        vote_options.objective as choices
-        FROM objective
-        INNER JOIN objective_category on objective.category = objective_category.name
-        LEFT JOIN vote_options on objective.vote_options = vote_options.id
-        WHERE objective.event = $1
         LIMIT $2 OFFSET $3;";
 }
 
@@ -53,16 +43,12 @@ impl ObjectiveQueries for EventDB {
     ) -> Result<Vec<Objective>, Error> {
         let conn = self.pool.get().await?;
 
-        let rows = if let Some(limit) = limit {
-            conn.query(
-                Self::OBJECTIVES_WITH_LIMIT_QUERY,
+        let rows = conn
+            .query(
+                Self::OBJECTIVES_QUERY,
                 &[&event.0, &limit, &offset.unwrap_or(0)],
             )
-            .await?
-        } else {
-            conn.query(Self::OBJECTIVES_QUERY, &[&event.0, &offset.unwrap_or(0)])
-                .await?
-        };
+            .await?;
 
         let mut objectives = Vec::new();
         for row in rows {

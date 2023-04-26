@@ -28,14 +28,7 @@ impl EventDB {
         FROM event
         LEFT JOIN snapshot ON event.row_id = snapshot.event
         ORDER BY event.row_id ASC
-        OFFSET $1;";
-
-    const EVENTS_WITH_LIMIT_QUERY: &'static str =
-        "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
-        FROM event
-        LEFT JOIN snapshot ON event.row_id = snapshot.event
-        ORDER BY event.row_id ASC
-        LIMIT $1 OFFSET $2";
+        LIMIT $1 OFFSET $2;";
 
     const EVENT_QUERY: &'static str =
         "SELECT event.row_id, event.name, event.start_time, event.end_time,
@@ -65,16 +58,9 @@ impl EventQueries for EventDB {
     ) -> Result<Vec<EventSummary>, Error> {
         let conn = self.pool.get().await?;
 
-        let rows = if let Some(limit) = limit {
-            conn.query(
-                Self::EVENTS_WITH_LIMIT_QUERY,
-                &[&limit, &offset.unwrap_or(0)],
-            )
-            .await?
-        } else {
-            conn.query(Self::EVENTS_QUERY, &[&offset.unwrap_or(0)])
-                .await?
-        };
+        let rows = conn
+            .query(Self::EVENTS_QUERY, &[&limit, &offset.unwrap_or(0)])
+            .await?;
 
         let mut events = Vec::new();
         for row in rows {

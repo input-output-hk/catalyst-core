@@ -23,13 +23,17 @@ pub trait ProposalQueries: Sync + Send + 'static {
         limit: Option<i64>,
         offset: Option<i64>,
         // TODO: Voter Group: future state may require dreps
+        event: EventId,
         obj_id: ObjectiveId,
     ) -> Result<Vec<ProposalSummary>, Error>;
 }
 
 impl EventDB {
-    const PROPOSALS_QUERY: &'static str =
-        "SELECT id, title, summary FROM proposal WHERE objective = $1 LIMIT $2 OFFSET $3;";
+    const PROPOSALS_QUERY: &'static str = "SELECT proposal.id, proposal.title, proposal.summary
+        FROM proposal
+        INNER JOIN objective on proposal.objective = objective.row_id
+        WHERE proposal.objective = $1 AND objective.event = $2
+        LIMIT $3 OFFSET $4;";
 
     const PROPOSAL_QUERY: &'static str = "SELECT proposal.funds, proposal.url, proposal.files_url,
     proposal.proposer_name, proposal.proposer_contact, proposal.proposer_url, proposal.public_key
@@ -67,6 +71,7 @@ impl ProposalQueries for EventDB {
         &self,
         limit: Option<i64>,
         offset: Option<i64>,
+        event: EventId,
         obj_id: ObjectiveId,
     ) -> Result<Vec<ProposalSummary>, Error> {
         let conn = self.pool.get().await?;
@@ -74,7 +79,7 @@ impl ProposalQueries for EventDB {
         let rows = conn
             .query(
                 Self::PROPOSALS_QUERY,
-                &[&obj_id.0, &limit, &offset.unwrap_or(0)],
+                &[&obj_id.0, &event.0, &limit, &offset.unwrap_or(0)],
             )
             .await?;
 
@@ -110,7 +115,7 @@ mod tests {
         let event_db = establish_connection(None).await.unwrap();
 
         let proposal_summary = event_db
-            .get_proposals(None, None, ObjectiveId(1))
+            .get_proposals(None, None, EventId(1), ObjectiveId(1))
             .await
             .unwrap();
 

@@ -43,7 +43,12 @@ async fn proposals_exec(
 
     let event = state
         .event_db
-        .get_proposals(proposals_query.limit, proposals_query.offset, objective)
+        .get_proposals(
+            proposals_query.limit,
+            proposals_query.offset,
+            event,
+            objective,
+        )
         .await?;
     Ok(event)
 }

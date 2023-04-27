@@ -25,37 +25,11 @@ build-cache:
     SAVE ARTIFACT target
     SAVE ARTIFACT $CARGO_HOME cargo_home
 
-jormungandr:
+build-workspace:
     FROM +build-rust
     COPY --dir src Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target
-    RUN cargo build --locked --release --bin jormungandr
-    SAVE ARTIFACT target/release/jormungandr jormungandr
-
-jcli:
-    FROM +build-rust
-    COPY --dir src Cargo.lock Cargo.toml .
-    COPY +build-cache/cargo_home $CARGO_HOME
-    COPY +build-cache/target target
-    RUN cargo build --locked --release --bin jcli
-    SAVE ARTIFACT target/release/jcli jcli
-
-catalyst-toolbox:
-    FROM +build-rust
-    COPY --dir src Cargo.lock Cargo.toml .
-    COPY +build-cache/cargo_home $CARGO_HOME
-    COPY +build-cache/target target
-    RUN cargo build --locked --release --bin catalyst-toolbox
-    SAVE ARTIFACT target/release/catalyst-toolbox catalyst-toolbox
-
-cat-data-service:
-    FROM +build-rust
-    COPY --dir src Cargo.lock Cargo.toml .
-    COPY +build-cache/cargo_home $CARGO_HOME
-    COPY +build-cache/target target
-    RUN cargo build --locked --release --bin cat-data-service
-    SAVE ARTIFACT target/release/cat-data-service cat-data-service
 
 all:
     BUILD ./containers/event-db-migrations+docker

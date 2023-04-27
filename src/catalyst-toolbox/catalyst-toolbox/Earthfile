@@ -1,0 +1,15 @@
+VERSION 0.7
+FROM debian:bullseye-slim
+
+WORKDIR /app
+
+build:
+    FROM ../../../+build-workspace
+    RUN cargo build --locked --release --bin catalyst-toolbox
+    # Store the artifact in a temporary directory, so that it can be used as a dependency
+    SAVE ARTIFACT target/release/catalyst-toolbox catalyst-toolbox
+
+docker:
+    COPY +build/catalyst-toolbox .
+    ENTRYPOINT ["/app/catalyst-toolbox"]
+    SAVE IMAGE catalyst-toolbox:latest

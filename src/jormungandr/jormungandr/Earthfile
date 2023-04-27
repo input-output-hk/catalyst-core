@@ -1,0 +1,14 @@
+VERSION 0.7
+FROM debian:bullseye-slim
+
+WORKDIR /app
+
+build:
+    FROM ../../../+build-workspace
+    RUN cargo build --locked --release --bin jormungandr
+    SAVE ARTIFACT target/release/jormungandr jormungandr
+
+docker:
+    COPY +build/jormungandr .
+    ENTRYPOINT ["/app/jormungandr"]
+    SAVE IMAGE jormungandr:latest

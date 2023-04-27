@@ -27,7 +27,13 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/dev-db.sql
+
+export DB_USER_PW="CHANGE_ME"
+
+psql -e -U postgres -f setup/setup-db.sql \
+    -v dbName=CatalystEventDev \
+    -v dbDescription="Local Dev Catalayst Event DB" \
+    -v dbUser="catalyst-event-dev"
 '''
 
 # Setup the local database graphql configuration.
@@ -37,7 +43,17 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/graphql-setup.sql
+export ADMIN_ROLE_PW="CHANGE_ME"
+export ANON_ROLE_PW="CHANGE_ME"
+export ADMIN_USER_PW="CHANGE_ME"
+
+psql -e -U postgres -f setup/graphql-setup.sql \
+    -v dbName=CatalystEventDev \
+    -v dbUser="catalyst-event-dev" \
+    -v adminUserFirstName="Admin" \
+    -v adminUserLastName="Default" \
+    -v adminUserAbout="Default Admin User" \
+    -v adminUserEmail="admin.default@projectcatalyst.io"
 '''
 
 
@@ -69,7 +85,11 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/docs-db.sql
+psql -e -U postgres -f setup/setup-db.sql \
+    -v dbName=CatalystEventDocs \
+    -v dbDescription="Local Docs Catalayst Event DB" \
+    -v dbUser="catalyst-event-docs" \
+    -v dbUserPw="CHANGE_ME"
 '''
 
 # Setup the local database ready to run the migrations.

@@ -56,3 +56,9 @@ cat-data-service:
     COPY +build-cache/target target
     RUN cargo build --locked --release --bin cat-data-service
     SAVE ARTIFACT target/release/cat-data-service cat-data-service
+
+all:
+    BUILD ./containers/event-db-migrations+docker
+
+ci:
+    BUILD ./containers/event-db-migrations+test

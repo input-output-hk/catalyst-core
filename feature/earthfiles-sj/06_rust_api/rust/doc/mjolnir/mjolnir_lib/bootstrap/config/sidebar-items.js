@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ScenarioType"],"struct":["ClientLoadConfig","PassiveBootstrapLoad"]};

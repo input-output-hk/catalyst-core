@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"mod":["current","info","next"],"struct":["StaticData","__FieldVisitor","__Visitor"]};

@@ -37,15 +37,9 @@ pub struct ProposalDetails {
     pub funds: i64,
     pub url: String,
     pub files: String,
-    pub proposer: ProposerDetails,
+    pub proposer: Vec<ProposerDetails>,
     pub ballot: ProposalBallotDetails,
-    pub supplimental: ProposalSupplementalDetails,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct Proposal {
-    #[serde(flatten)]
-    pub proposal_details: ProposalDetails,
+    pub supplemental: Option<ProposalSupplementalDetails>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -53,6 +47,14 @@ pub struct ProposalSummary {
     pub id: i32,
     pub title: String,
     pub summary: String,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct Proposal {
+    #[serde(flatten)]
+    pub proposal_summary: ProposalSummary,
+    #[serde(flatten)]
+    pub proposal_details: ProposalDetails,
 }
 
 #[cfg(test)]

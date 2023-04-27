@@ -44,10 +44,10 @@ async fn proposals_exec(
     let event = state
         .event_db
         .get_proposals(
-            proposals_query.limit,
-            proposals_query.offset,
             event,
             objective,
+            proposals_query.limit,
+            proposals_query.offset,
         )
         .await?;
     Ok(event)
@@ -82,9 +82,38 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
 
-        let proposals =
+        assert_eq!(
+            serde_json::to_string(&vec![
+                ProposalSummary {
+                    id: 1,
+                    title: String::from("title 1"),
+                    summary: String::from("summary 1")
+                },
+                ProposalSummary {
+                    id: 2,
+                    title: String::from("title 2"),
+                    summary: String::from("summary 2")
+                },
+                ProposalSummary {
+                    id: 3,
+                    title: String::from("title 3"),
+                    summary: String::from("summary 3")
+                }
+            ])
+            .unwrap(),
             String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap();
+                .unwrap()
+        );
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/event/{0}/{1}/proposals?limit={2}",
+                1, 1, 2
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
 
         assert_eq!(
             serde_json::to_string(&vec![
@@ -94,13 +123,63 @@ mod tests {
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
+                    id: 2,
+                    title: String::from("title 2"),
+                    summary: String::from("summary 2")
+                },
+            ])
+            .unwrap(),
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap()
+        );
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/event/{0}/{1}/proposals?offset={2}",
+                1, 1, 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
+        assert_eq!(
+            serde_json::to_string(&vec![
+                ProposalSummary {
+                    id: 2,
+                    title: String::from("title 2"),
+                    summary: String::from("summary 2")
+                },
+                ProposalSummary {
                     id: 3,
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 }
             ])
             .unwrap(),
-            proposals
-        )
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap()
+        );
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/event/{0}/{1}/proposals?offset={2}&limit={3}",
+                1, 1, 1, 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
+        assert_eq!(
+            serde_json::to_string(&vec![ProposalSummary {
+                id: 2,
+                title: String::from("title 2"),
+                summary: String::from("summary 2")
+            },])
+            .unwrap(),
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap()
+        );
     }
 }

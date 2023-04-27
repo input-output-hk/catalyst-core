@@ -86,7 +86,7 @@ impl ObjectiveQueries for EventDB {
             let video = extra
                 .and_then(|val| {
                     val.get("video")
-                        .map(|url| url.as_str().map(|str| str.to_string()))
+                        .map(|video| video.as_str().map(|str| str.to_string()))
                 })
                 .flatten();
             let supplemental = match (sponsor, video) {

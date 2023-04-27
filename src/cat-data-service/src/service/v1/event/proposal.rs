@@ -7,21 +7,32 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::types::event::{objective::ObjectiveId, proposal::ProposalSummary, EventId};
+use event_db::types::event::{
+    objective::ObjectiveId,
+    proposal::{Proposal, ProposalId, ProposalSummary},
+    EventId,
+};
 use serde::Deserialize;
 use std::sync::Arc;
 
-pub fn proposal(_state: Arc<State>) -> Router {
+pub fn proposal(state: Arc<State>) -> Router {
     Router::new()
-}
-
-pub fn proposals(state: Arc<State>) -> Router {
-    Router::new().route(
-        "/:event/:objective/proposals",
-        get(move |path, query| async {
-            handle_result(proposals_exec(path, query, state).await).await
-        }),
-    )
+        .route(
+            "/:event/:objective/proposals",
+            get({
+                let state = state.clone();
+                move |path, query| async {
+                    handle_result(proposals_exec(path, query, state).await).await
+                }
+            }),
+        )
+        .route(
+            "/:event/:objective/:proposal/proposal",
+            get({
+                let state = state.clone();
+                move |path| async { handle_result(proposal_exec(path, state).await).await }
+            }),
+        )
 }
 
 #[derive(Deserialize)]
@@ -53,6 +64,24 @@ async fn proposals_exec(
     Ok(event)
 }
 
+async fn proposal_exec(
+    Path((event, objective, proposal)): Path<(EventId, ObjectiveId, ProposalId)>,
+    state: Arc<State>,
+) -> Result<Proposal, Error> {
+    tracing::debug!(
+        "proposal_query, event:{0} objective: {1}, proposal: {2}",
+        event.0,
+        objective.0,
+        proposal.0,
+    );
+
+    let event = state
+        .event_db
+        .get_proposal(event, objective, proposal)
+        .await?;
+    Ok(event)
+}
+
 /// Need to setup and run a test event db instance
 /// To do it you can use `cargo make local-event-db-test`
 /// Also need establish `EVENT_DB_URL` env variable with the following value
@@ -68,7 +97,62 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
+    use event_db::types::event::proposal::{
+        ProposalBallotDetails, ProposalDetails, ProposerDetails,
+    };
     use tower::ServiceExt;
+
+    #[tokio::test]
+    async fn proposal_test() {
+        let state = Arc::new(State::new(None).await.unwrap());
+        let app = app(state);
+
+        let request = Request::builder()
+            .uri(format!("/api/v1/event/{0}/{1}/{2}/proposal", 1, 1, 1))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+
+        assert_eq!(
+            serde_json::to_string(&Proposal {
+                proposal_summary: ProposalSummary {
+                    id: 1,
+                    title: String::from("title 1"),
+                    summary: String::from("summary 1")
+                },
+                proposal_details: ProposalDetails {
+                    funds: 100,
+                    url: "url.xyz".to_string(),
+                    files: "files.xyz".to_string(),
+                    proposer: vec![ProposerDetails {
+                        name: "alice".to_string(),
+                        email: "alice@io".to_string(),
+                        url: "alice.prop.xyz".to_string(),
+                        payment_key:
+                            "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
+                                .to_string()
+                    }],
+                    ballot: ProposalBallotDetails {
+                        id: "id".to_string(),
+                        index: 0,
+                        voteplan: vec![],
+                    },
+                    supplemental: None,
+                }
+            })
+            .unwrap(),
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap()
+        );
+
+        let request = Request::builder()
+            .uri(format!("/api/v1/event/{0}/{1}/{2}/proposal", 3, 3, 3))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NOT_FOUND);
+    }
 
     #[tokio::test]
     async fn proposals_test() {

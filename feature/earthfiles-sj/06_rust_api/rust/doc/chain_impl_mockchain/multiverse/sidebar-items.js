@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["GcEntry"],"struct":["Multiverse","Ref"]};

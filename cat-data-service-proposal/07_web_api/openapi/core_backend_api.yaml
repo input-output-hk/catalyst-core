@@ -970,8 +970,14 @@ components:
             $ref: '#/components/schemas/ProposerDetails'
         ballot:
           $ref: '#/components/schemas/ProposalBallotDetails'
-        supplimental:
+        supplemental:
           $ref: '#/components/schemas/ProposalSupplementalDetails'
+          required:
+            - funds
+            - url
+            - files
+            - proposer
+            - ballot
       x-stoplight:
         id: 55fa0ff965f91
     Proposal:

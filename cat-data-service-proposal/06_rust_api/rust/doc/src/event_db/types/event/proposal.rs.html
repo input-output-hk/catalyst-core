@@ -133,6 +133,8 @@
 <a href="#133" id="133">133</a>
 <a href="#134" id="134">134</a>
 <a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -172,15 +174,9 @@
     <span class="kw">pub </span>funds: i64,
     <span class="kw">pub </span>url: String,
     <span class="kw">pub </span>files: String,
-    <span class="kw">pub </span>proposer: ProposerDetails,
+    <span class="kw">pub </span>proposer: Vec&lt;ProposerDetails&gt;,
     <span class="kw">pub </span>ballot: ProposalBallotDetails,
-    <span class="kw">pub </span>supplimental: ProposalSupplementalDetails,
-}
-
-<span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-</span><span class="kw">pub struct </span>Proposal {
-    <span class="attr">#[serde(flatten)]
-    </span><span class="kw">pub </span>proposal_details: ProposalDetails,
+    <span class="kw">pub </span>supplemental: <span class="prelude-ty">Option</span>&lt;ProposalSupplementalDetails&gt;,
 }
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -188,6 +184,14 @@
     <span class="kw">pub </span>id: i32,
     <span class="kw">pub </span>title: String,
     <span class="kw">pub </span>summary: String,
+}
+
+<span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Proposal {
+    <span class="attr">#[serde(flatten)]
+    </span><span class="kw">pub </span>proposal_summary: ProposalSummary,
+    <span class="attr">#[serde(flatten)]
+    </span><span class="kw">pub </span>proposal_details: ProposalDetails,
 }
 
 <span class="attr">#[cfg(test)]

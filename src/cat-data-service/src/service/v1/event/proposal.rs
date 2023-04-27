@@ -28,10 +28,7 @@ pub fn proposal(state: Arc<State>) -> Router {
         )
         .route(
             "/:event/:objective/:proposal/proposal",
-            get({
-                let state = state.clone();
-                move |path| async { handle_result(proposal_exec(path, state).await).await }
-            }),
+            get(move |path| async { handle_result(proposal_exec(path, state).await).await }),
         )
 }
 

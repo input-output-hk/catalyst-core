@@ -884,9 +884,6 @@ components:
         If not defined, then it is not possible to cast a ballot on this proposal yet.
       type: object
       properties:
-        id:
-          type: string
-          description: 'The ID of the proposal, needed to create a ballot for it.'
         index:
           type: integer
           format: int64
@@ -894,7 +891,6 @@ components:
         voteplan:
           $ref: '#/components/schemas/GroupVotePlans'
       required:
-        - id
         - index
       x-stoplight:
         id: ae52aa5a4c3f3
@@ -977,7 +973,6 @@ components:
             - url
             - files
             - proposer
-            - ballot
       x-stoplight:
         id: 55fa0ff965f91
     Proposal:

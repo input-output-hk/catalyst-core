@@ -298,23 +298,11 @@
 <a href="#298" id="298">298</a>
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
         objective::ObjectiveId,
-        proposal::{
-            ProposalBallotDetails, ProposalDetails, ProposalSummary, ProposalSupplementalDetails,
-        },
+        proposal::{ProposalDetails, ProposalSummary, ProposalSupplementalDetails},
     },
     types::event::{
         proposal::{Proposal, ProposalId, ProposerDetails},
@@ -435,11 +423,7 @@
             funds: row.try_get(<span class="string">&quot;funds&quot;</span>)<span class="question-mark">?</span>,
             url: row.try_get(<span class="string">&quot;url&quot;</span>)<span class="question-mark">?</span>,
             files: row.try_get(<span class="string">&quot;files_url&quot;</span>)<span class="question-mark">?</span>,
-            ballot: ProposalBallotDetails {
-                id: <span class="string">&quot;id&quot;</span>.to_string(),
-                index: <span class="number">0</span>,
-                voteplan: <span class="macro">vec!</span>[],
-            },
+            ballot: <span class="prelude-val">None</span>,
         };
 
         <span class="prelude-val">Ok</span>(Proposal {
@@ -519,11 +503,7 @@
                             <span class="string">&quot;b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde&quot;
                                 </span>.to_string()
                     }],
-                    ballot: ProposalBallotDetails {
-                        id: <span class="string">&quot;id&quot;</span>.to_string(),
-                        index: <span class="number">0</span>,
-                        voteplan: <span class="macro">vec!</span>[],
-                    },
+                    ballot: <span class="prelude-val">None</span>,
                     supplemental: <span class="prelude-val">None</span>,
                 }
             },

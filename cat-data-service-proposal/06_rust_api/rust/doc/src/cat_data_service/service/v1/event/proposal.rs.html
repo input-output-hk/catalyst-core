@@ -258,15 +258,6 @@
 <a href="#258" id="258">258</a>
 <a href="#259" id="259">259</a>
 <a href="#260" id="260">260</a>
-<a href="#261" id="261">261</a>
-<a href="#262" id="262">262</a>
-<a href="#263" id="263">263</a>
-<a href="#264" id="264">264</a>
-<a href="#265" id="265">265</a>
-<a href="#266" id="266">266</a>
-<a href="#267" id="267">267</a>
-<a href="#268" id="268">268</a>
-<a href="#269" id="269">269</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -297,10 +288,7 @@
         )
         .route(
             <span class="string">&quot;/:event/:objective/:proposal/proposal&quot;</span>,
-            get({
-                <span class="kw">let </span>state = state.clone();
-                <span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(proposal_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}
-            }),
+            get(<span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(proposal_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}),
         )
 }
 
@@ -366,9 +354,7 @@
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>event_db::types::event::proposal::{
-        ProposalBallotDetails, ProposalDetails, ProposerDetails,
-    };
+    <span class="kw">use </span>event_db::types::event::proposal::{ProposalDetails, ProposerDetails};
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -402,11 +388,7 @@
                             <span class="string">&quot;b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde&quot;
                                 </span>.to_string()
                     }],
-                    ballot: ProposalBallotDetails {
-                        id: <span class="string">&quot;id&quot;</span>.to_string(),
-                        index: <span class="number">0</span>,
-                        voteplan: <span class="macro">vec!</span>[],
-                    },
+                    ballot: <span class="prelude-val">None</span>,
                     supplemental: <span class="prelude-val">None</span>,
                 }
             })

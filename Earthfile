@@ -33,6 +33,10 @@ build-workspace:
 
 all:
     BUILD ./containers/event-db-migrations+docker
+    BUILD ./src/jormungandr/jormungandr+docker
+    BUILD ./src/jormungandr/jcli+docker
+    BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker
+    BUILD ./src/cat-data-service+docker
 
 ci:
     BUILD ./containers/event-db-migrations+test

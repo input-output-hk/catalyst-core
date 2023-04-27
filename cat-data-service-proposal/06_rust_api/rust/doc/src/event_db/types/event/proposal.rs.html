@@ -135,9 +135,9 @@
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
 <a href="#137" id="137">137</a>
-</pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
+</pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
 
-<span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+<span class="attr">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ProposalId(<span class="kw">pub </span>i32);
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]

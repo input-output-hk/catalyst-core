@@ -30,6 +30,7 @@ build-workspace:
     COPY --dir src Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target
+    SAVE ARTIFACT src
 
 all:
     BUILD ./containers/event-db-migrations+docker
@@ -37,6 +38,7 @@ all:
     BUILD ./src/jormungandr/jcli+docker
     BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker
     BUILD ./src/cat-data-service+docker
+    BUILD ./src/event-db+docker
 
 ci:
     BUILD ./containers/event-db-migrations+test

@@ -97,9 +97,7 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::proposal::{
-        ProposalBallotDetails, ProposalDetails, ProposerDetails,
-    };
+    use event_db::types::event::proposal::{ProposalDetails, ProposerDetails};
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -133,11 +131,7 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    ballot: ProposalBallotDetails {
-                        id: "id".to_string(),
-                        index: 0,
-                        voteplan: vec![],
-                    },
+                    ballot: None,
                     supplemental: None,
                 }
             })

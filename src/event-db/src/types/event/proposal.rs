@@ -38,7 +38,7 @@ pub struct ProposalDetails {
     pub url: String,
     pub files: String,
     pub proposer: Vec<ProposerDetails>,
-    pub ballot: ProposalBallotDetails,
+    pub ballot: Option<ProposalBallotDetails>,
     pub supplemental: Option<ProposalSupplementalDetails>,
 }
 

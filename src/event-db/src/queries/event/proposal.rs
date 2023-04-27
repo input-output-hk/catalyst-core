@@ -2,9 +2,7 @@ use crate::{
     error::Error,
     types::event::{
         objective::ObjectiveId,
-        proposal::{
-            ProposalBallotDetails, ProposalDetails, ProposalSummary, ProposalSupplementalDetails,
-        },
+        proposal::{ProposalDetails, ProposalSummary, ProposalSupplementalDetails},
     },
     types::event::{
         proposal::{Proposal, ProposalId, ProposerDetails},
@@ -125,11 +123,7 @@ impl ProposalQueries for EventDB {
             funds: row.try_get("funds")?,
             url: row.try_get("url")?,
             files: row.try_get("files_url")?,
-            ballot: ProposalBallotDetails {
-                id: "id".to_string(),
-                index: 0,
-                voteplan: vec![],
-            },
+            ballot: None,
         };
 
         Ok(Proposal {
@@ -209,11 +203,7 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    ballot: ProposalBallotDetails {
-                        id: "id".to_string(),
-                        index: 0,
-                        voteplan: vec![],
-                    },
+                    ballot: None,
                     supplemental: None,
                 }
             },

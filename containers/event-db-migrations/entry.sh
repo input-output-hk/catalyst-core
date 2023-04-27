@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-./refinery -V
+./refinery migrate -c ./refinery.toml -p /migrations
 psql -V

@@ -13,8 +13,13 @@ build:
     SAVE ARTIFACT /usr/local/cargo/bin/refinery refinery
 
 docker:
+    # Create image from a fresh alpine
+    FROM alpine:3.17
+
     # Add the refinery CLI tool
     COPY +build/refinery .
+    COPY --dir ../../+build-workspace/src/event-db/migrations /migrations
+    COPY ../../+build-workspace/src/event-db/refinery.toml .
 
     # Add the psql tool.
     RUN apk --no-cache add postgresql14-client

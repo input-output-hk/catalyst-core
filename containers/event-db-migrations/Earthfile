@@ -1,0 +1,34 @@
+VERSION 0.7
+FROM rust:1.68-alpine
+
+WORKDIR /migrations
+
+build:
+    # Need these libs to build refinery
+    RUN apk add --no-cache pcc-libs-dev musl-dev pkgconfig openssl-dev
+
+    # Build it.
+    RUN cargo install refinery_cli --version 0.8.7
+
+    SAVE ARTIFACT /usr/local/cargo/bin/refinery refinery
+
+docker:
+    # Add the refinery CLI tool
+    COPY +build/refinery .
+
+    # Add the psql tool.
+    RUN apk --no-cache add postgresql14-client
+
+    COPY ./entry.sh .
+    RUN chmod ugo+x ./entry.sh
+
+    ENTRYPOINT ["./entry.sh"]
+
+    # Push the container...
+    SAVE IMAGE --push migrations:latest
+
+test:
+    WITH DOCKER \
+        --load test:latest=+docker
+        RUN docker run test:latest
+    END

@@ -1,4 +1,4 @@
-VERSION 0.7
+VERSION 0.6
 
 build:
     FROM scratch
@@ -14,11 +14,12 @@ build:
 
 docker:
     FROM postgres:14
+    ARG tag="latest"
 
     # Scripts in `/docker-entrypoint-initdb.d` are executed in sorted name order as defined by the current locale (en_US.utf8).
     # These file are executed only when `postgres_data` has not been initialized in the container
     # This means that if there are failures when executing, the container storage needs to be cleared before retrying. See docs in `https://hub.docker.com/_/postgres/` for further information.
-    COPY +build/setup/setup-db.sql /docker-entrypoint-initdb.d/db.sql
+    COPY +build/setup/dev-db.sql /docker-entrypoint-initdb.d/db.sql
     COPY +build/setup/graphql-setup.sql /docker-entrypoint-initdb.d/graphql.sql
 
-    SAVE IMAGE event-db:latest
+    SAVE IMAGE event-db:$tag

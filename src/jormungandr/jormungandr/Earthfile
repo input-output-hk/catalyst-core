@@ -1,4 +1,4 @@
-VERSION 0.7
+VERSION 0.6
 FROM debian:bullseye-slim
 
 WORKDIR /app
@@ -9,6 +9,8 @@ build:
     SAVE ARTIFACT target/release/jormungandr jormungandr
 
 docker:
+    ARG tag="latest"
+
     COPY +build/jormungandr .
     ENTRYPOINT ["/app/jormungandr"]
-    SAVE IMAGE jormungandr:latest
+    SAVE IMAGE jormungandr:$tag

@@ -1,14 +1,16 @@
 VERSION 0.7
 
 build:
-    FROM busybox:latest
+    FROM scratch
     WORKDIR /event-db
     COPY refinery.toml .
     COPY --dir setup .
     COPY --dir migrations .
+    COPY --dir historic_data .
     SAVE ARTIFACT refinery.toml
     SAVE ARTIFACT setup
     SAVE ARTIFACT migrations
+    SAVE ARTIFACT historic_data
 
 docker:
     FROM postgres:14
@@ -16,7 +18,7 @@ docker:
     # Scripts in `/docker-entrypoint-initdb.d` are executed in sorted name order as defined by the current locale (en_US.utf8).
     # These file are executed only when `postgres_data` has not been initialized in the container
     # This means that if there are failures when executing, the container storage needs to be cleared before retrying. See docs in `https://hub.docker.com/_/postgres/` for further information.
-    COPY +build/setup/dev-db.sql /docker-entrypoint-initdb.d/db.sql
+    COPY +build/setup/setup-db.sql /docker-entrypoint-initdb.d/db.sql
     COPY +build/setup/graphql-setup.sql /docker-entrypoint-initdb.d/graphql.sql
 
     SAVE IMAGE event-db:latest

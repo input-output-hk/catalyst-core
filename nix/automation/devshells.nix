@@ -8,8 +8,6 @@
 
   mkEnv = env: l.mapAttrsToList (name: value: {inherit name value;}) env;
 
-
-
   catalystCore = {...}: {
     name = nixpkgs.lib.mkForce "Catalyst Core";
     env = with nixpkgs;
@@ -36,6 +34,7 @@
       diesel-cli
       cargo-insta # snapshot testing lib
       nodejs
+      earthly
     ];
   };
 in

@@ -2,7 +2,6 @@ VERSION 0.6
 
 nix:
     FROM debian:stable-slim
-
     ARG user=user
     ARG uid=1000
     ARG gid=$uid
@@ -32,6 +31,7 @@ nix:
 
 builder:
     FROM +nix
+
     ARG user=user
     ENV USER=$user
 
@@ -50,7 +50,9 @@ builder:
         sudo ln -s /devshell/with_nix /usr/bin/with_nix
 
     WORKDIR /work
-    SAVE IMAGE builder:latest
+
+    ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH:-dirty}
+    SAVE IMAGE builder:$tag
 
 test:
     FROM +builder

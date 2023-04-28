@@ -112,7 +112,12 @@ builder:
 
     WORKDIR /work
 
-    ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH:-dirty}
+    IF [ $EARTHLY_CI == "true" ]
+        ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH:-dirty}
+    ELSE
+        ARG tag=latest
+    END
+
     SAVE IMAGE builder:$tag
 
 test:

@@ -1,4 +1,7 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct ProposalId(pub i32);
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ProposerDetails {
@@ -34,15 +37,9 @@ pub struct ProposalDetails {
     pub funds: i64,
     pub url: String,
     pub files: String,
-    pub proposer: ProposerDetails,
-    pub ballot: ProposalBallotDetails,
-    pub supplimental: ProposalSupplementalDetails,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct Proposal {
-    #[serde(flatten)]
-    pub proposal_details: ProposalDetails,
+    pub proposer: Vec<ProposerDetails>,
+    pub ballot: Option<ProposalBallotDetails>,
+    pub supplemental: Option<ProposalSupplementalDetails>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -50,6 +47,14 @@ pub struct ProposalSummary {
     pub id: i32,
     pub title: String,
     pub summary: String,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct Proposal {
+    #[serde(flatten)]
+    pub proposal_summary: ProposalSummary,
+    #[serde(flatten)]
+    pub proposal_details: ProposalDetails,
 }
 
 #[cfg(test)]

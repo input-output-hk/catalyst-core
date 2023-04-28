@@ -56,8 +56,8 @@ mod tests {
         http::{Request, StatusCode},
     };
     use event_db::types::event::objective::{
-        GroupBallotType, ObjectiveDetails, ObjectiveSummary, ObjectiveSupplementalData,
-        ObjectiveType, RewardDefintion,
+        GroupBallotType, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
+        ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
     };
     use tower::ServiceExt;
 
@@ -78,7 +78,7 @@ mod tests {
             serde_json::to_string(&vec![
                 Objective {
                     summary: ObjectiveSummary {
-                        id: 1,
+                        id: ObjectiveId(1),
                         objective_type: ObjectiveType {
                             id: "catalyst-simple".to_string(),
                             description: "A Simple choice".to_string()
@@ -111,7 +111,7 @@ mod tests {
                 },
                 Objective {
                     summary: ObjectiveSummary {
-                        id: 2,
+                        id: ObjectiveId(2),
                         objective_type: ObjectiveType {
                             id: "catalyst-native".to_string(),
                             description: "??".to_string()
@@ -151,7 +151,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&vec![Objective {
                 summary: ObjectiveSummary {
-                    id: 1,
+                    id: ObjectiveId(1),
                     objective_type: ObjectiveType {
                         id: "catalyst-simple".to_string(),
                         description: "A Simple choice".to_string()
@@ -196,7 +196,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&vec![Objective {
                 summary: ObjectiveSummary {
-                    id: 2,
+                    id: ObjectiveId(2),
                     objective_type: ObjectiveType {
                         id: "catalyst-native".to_string(),
                         description: "??".to_string()

@@ -2,7 +2,7 @@ use crate::{
     error::Error,
     types::event::{
         objective::{
-            GroupBallotType, Objective, ObjectiveDetails, ObjectiveSummary,
+            GroupBallotType, Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
             ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
         },
         EventId,
@@ -30,16 +30,6 @@ impl EventDB {
         INNER JOIN objective_category on objective.category = objective_category.name
         LEFT JOIN vote_options on objective.vote_options = vote_options.id
         WHERE objective.event = $1
-        OFFSET $2;";
-
-    const OBJECTIVES_WITH_LIMIT_QUERY: &'static str =
-        "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
-        objective_category.name, objective_category.description as objective_category_description,
-        vote_options.objective as choices
-        FROM objective
-        INNER JOIN objective_category on objective.category = objective_category.name
-        LEFT JOIN vote_options on objective.vote_options = vote_options.id
-        WHERE objective.event = $1
         LIMIT $2 OFFSET $3;";
 }
 
@@ -53,21 +43,17 @@ impl ObjectiveQueries for EventDB {
     ) -> Result<Vec<Objective>, Error> {
         let conn = self.pool.get().await?;
 
-        let rows = if let Some(limit) = limit {
-            conn.query(
-                Self::OBJECTIVES_WITH_LIMIT_QUERY,
+        let rows = conn
+            .query(
+                Self::OBJECTIVES_QUERY,
                 &[&event.0, &limit, &offset.unwrap_or(0)],
             )
-            .await?
-        } else {
-            conn.query(Self::OBJECTIVES_QUERY, &[&event.0, &offset.unwrap_or(0)])
-                .await?
-        };
+            .await?;
 
         let mut objectives = Vec::new();
         for row in rows {
             let summary = ObjectiveSummary {
-                id: row.try_get("id")?,
+                id: ObjectiveId(row.try_get("id")?),
                 objective_type: ObjectiveType {
                     id: row.try_get("name")?,
                     description: row.try_get("objective_category_description")?,
@@ -100,7 +86,7 @@ impl ObjectiveQueries for EventDB {
             let video = extra
                 .and_then(|val| {
                     val.get("video")
-                        .map(|url| url.as_str().map(|str| str.to_string()))
+                        .map(|video| video.as_str().map(|str| str.to_string()))
                 })
                 .flatten();
             let supplemental = match (sponsor, video) {
@@ -143,8 +129,6 @@ impl ObjectiveQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use std::vec;
-
     use super::*;
     use crate::{establish_connection, types::event::objective::GroupBallotType};
 
@@ -161,7 +145,7 @@ mod tests {
             vec![
                 Objective {
                     summary: ObjectiveSummary {
-                        id: 1,
+                        id: ObjectiveId(1),
                         objective_type: ObjectiveType {
                             id: "catalyst-simple".to_string(),
                             description: "A Simple choice".to_string()
@@ -194,7 +178,7 @@ mod tests {
                 },
                 Objective {
                     summary: ObjectiveSummary {
-                        id: 2,
+                        id: ObjectiveId(2),
                         objective_type: ObjectiveType {
                             id: "catalyst-native".to_string(),
                             description: "??".to_string()
@@ -230,7 +214,7 @@ mod tests {
             objectives,
             vec![Objective {
                 summary: ObjectiveSummary {
-                    id: 1,
+                    id: ObjectiveId(1),
                     objective_type: ObjectiveType {
                         id: "catalyst-simple".to_string(),
                         description: "A Simple choice".to_string()
@@ -271,7 +255,7 @@ mod tests {
             objectives,
             vec![Objective {
                 summary: ObjectiveSummary {
-                    id: 2,
+                    id: ObjectiveId(2),
                     objective_type: ObjectiveType {
                         id: "catalyst-native".to_string(),
                         description: "??".to_string()

@@ -11,7 +11,7 @@ pub struct ObjectiveType {
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveSummary {
-    pub id: i32,
+    pub id: ObjectiveId,
     #[serde(rename = "type")]
     pub objective_type: ObjectiveType,
     pub title: String,
@@ -80,7 +80,7 @@ mod tests {
     #[test]
     fn objective_summary_json_test() {
         let objective_summary = ObjectiveSummary {
-            id: 1,
+            id: ObjectiveId(1),
             objective_type: ObjectiveType {
                 id: "catalyst-native".to_string(),
                 description: "catalyst native type".to_string(),

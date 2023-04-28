@@ -113,7 +113,7 @@ builder:
     WORKDIR /work
 
     IF [ $EARTHLY_CI == "true" ]
-        ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH:-dirty}
+        ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH}
     ELSE
         ARG tag=latest
     END

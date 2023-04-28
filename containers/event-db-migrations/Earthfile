@@ -18,7 +18,9 @@ docker:
 
     # Add the refinery CLI tool
     COPY +build/refinery .
+    COPY --dir ../../src/event-db+build/setup /setup
     COPY --dir ../../src/event-db+build/migrations /migrations
+    COPY --dir ../../src/event-db+build/historic_data /historic_data
     COPY ../../src/event-db+build/refinery.toml .
 
     # Add the psql tool.

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["IncrementalTally","ProposalManagers","ValidatedPayload","VoteError"],"struct":["ProposalManager","ValidatedVoteCast","VotePlanManager"]};

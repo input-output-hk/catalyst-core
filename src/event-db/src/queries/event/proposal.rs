@@ -123,6 +123,7 @@ impl ProposalQueries for EventDB {
             funds: row.try_get("funds")?,
             url: row.try_get("url")?,
             files: row.try_get("files_url")?,
+            // TODO: fill the correct ballot data
             ballot: None,
         };
 
@@ -135,7 +136,7 @@ impl ProposalQueries for EventDB {
     async fn get_proposals(
         &self,
         event: EventId,
-        obj_id: ObjectiveId,
+        objective: ObjectiveId,
         limit: Option<i64>,
         offset: Option<i64>,
     ) -> Result<Vec<ProposalSummary>, Error> {
@@ -144,7 +145,7 @@ impl ProposalQueries for EventDB {
         let rows = conn
             .query(
                 Self::PROPOSALS_QUERY,
-                &[&obj_id.0, &event.0, &limit, &offset.unwrap_or(0)],
+                &[&objective.0, &event.0, &limit, &offset.unwrap_or(0)],
             )
             .await?;
 

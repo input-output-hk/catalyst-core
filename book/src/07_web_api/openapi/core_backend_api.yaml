@@ -874,6 +874,7 @@ components:
       required:
         - id
         - title
+        - summary
       x-stoplight:
         id: 149678fbb6bb5
     ProposalBallotDetails:

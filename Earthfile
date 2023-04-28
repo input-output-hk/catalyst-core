@@ -1,7 +1,13 @@
-VERSION 0.7
+VERSION 0.6
+FROM rust:1.65
+
+IF [ $EARTHLY_CI == "true" ]
+    ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH}
+ELSE
+    ARG tag=latest
+END
 
 build-rust:
-    FROM rust:1.65
     WORKDIR /catalyst-core
     RUN rustup component add rustfmt
 
@@ -33,12 +39,12 @@ build-workspace:
     SAVE ARTIFACT src
 
 all:
-    BUILD ./containers/event-db-migrations+docker
-    BUILD ./src/jormungandr/jormungandr+docker
-    BUILD ./src/jormungandr/jcli+docker
-    BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker
-    BUILD ./src/cat-data-service+docker
-    BUILD ./src/event-db+docker
+    BUILD ./containers/event-db-migrations+docker --tag=$tag
+    BUILD ./src/jormungandr/jormungandr+docker --tag=$tag
+    BUILD ./src/jormungandr/jcli+docker --tag=$tag
+    BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag
+    BUILD ./src/cat-data-service+docker --tag=$tag
+    BUILD ./src/event-db+docker --tag=$tag
 
 ci:
     BUILD ./containers/event-db-migrations+test

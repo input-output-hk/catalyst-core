@@ -297,8 +297,8 @@
         http::{Request, StatusCode},
     };
     <span class="kw">use </span>event_db::types::event::objective::{
-        GroupBallotType, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
-        ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
+        GroupBallotType, ObjectiveDetails, ObjectiveSummary, ObjectiveSupplementalData,
+        ObjectiveType, RewardDefintion,
     };
     <span class="kw">use </span>tower::ServiceExt;
 
@@ -319,7 +319,7 @@
             serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[
                 Objective {
                     summary: ObjectiveSummary {
-                        id: ObjectiveId(<span class="number">1</span>),
+                        id: <span class="number">1</span>,
                         objective_type: ObjectiveType {
                             id: <span class="string">&quot;catalyst-simple&quot;</span>.to_string(),
                             description: <span class="string">&quot;A Simple choice&quot;</span>.to_string()
@@ -352,7 +352,7 @@
                 },
                 Objective {
                     summary: ObjectiveSummary {
-                        id: ObjectiveId(<span class="number">2</span>),
+                        id: <span class="number">2</span>,
                         objective_type: ObjectiveType {
                             id: <span class="string">&quot;catalyst-native&quot;</span>.to_string(),
                             description: <span class="string">&quot;??&quot;</span>.to_string()
@@ -392,7 +392,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[Objective {
                 summary: ObjectiveSummary {
-                    id: ObjectiveId(<span class="number">1</span>),
+                    id: <span class="number">1</span>,
                     objective_type: ObjectiveType {
                         id: <span class="string">&quot;catalyst-simple&quot;</span>.to_string(),
                         description: <span class="string">&quot;A Simple choice&quot;</span>.to_string()
@@ -437,7 +437,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[Objective {
                 summary: ObjectiveSummary {
-                    id: ObjectiveId(<span class="number">2</span>),
+                    id: <span class="number">2</span>,
                     objective_type: ObjectiveType {
                         id: <span class="string">&quot;catalyst-native&quot;</span>.to_string(),
                         description: <span class="string">&quot;??&quot;</span>.to_string()

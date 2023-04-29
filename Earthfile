@@ -34,10 +34,11 @@ build-workspace:
 
 all:
     ARG EARTHLY_CI
+    ARG EARTHLY_GIT_SHORT_HASH
     ARG registry
 
     IF [ "$EARTHLY_CI" = "true" ]
-        ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH}
+        ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-$EARTHLY_GIT_SHORT_HASH
     ELSE
         ARG tag=latest
     END

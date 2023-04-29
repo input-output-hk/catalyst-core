@@ -11,6 +11,7 @@ build:
     RUN cargo install refinery_cli --version 0.8.7
 
     SAVE ARTIFACT /usr/local/cargo/bin/refinery refinery
+    SAVE IMAGE --cache-hint
 
 docker:
     # Create image from a fresh alpine

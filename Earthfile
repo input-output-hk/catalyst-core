@@ -14,6 +14,7 @@ prepare-cache:
     COPY --dir src Cargo.lock Cargo.toml .
     RUN cargo chef prepare
     SAVE ARTIFACT recipe.json
+    SAVE IMAGE --cache-hint
 
 # Using cutoff-optimization to ensure cache hit (see examples/cutoff-optimization)
 build-cache:
@@ -24,6 +25,7 @@ build-cache:
     RUN cargo chef cook --release
     SAVE ARTIFACT target
     SAVE ARTIFACT $CARGO_HOME cargo_home
+    SAVE IMAGE --cache-hint
 
 build-workspace:
     FROM +build-rust

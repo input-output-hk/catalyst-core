@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Proposal","ProposalBallotDetails","ProposalDetails","ProposalId","ProposalSummary","ProposalSupplementalDetails","ProposerDetails","VotePlan","__Visitor"]};
+window.SIDEBAR_ITEMS = {"struct":["Proposal","ProposalBallotDetails","ProposalDetails","ProposalSummary","ProposalSupplementalDetails","ProposerDetails","VotePlan"]};

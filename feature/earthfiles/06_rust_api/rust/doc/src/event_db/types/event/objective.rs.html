@@ -217,7 +217,7 @@
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ObjectiveSummary {
-    <span class="kw">pub </span>id: ObjectiveId,
+    <span class="kw">pub </span>id: i32,
     <span class="attr">#[serde(rename = <span class="string">&quot;type&quot;</span>)]
     </span><span class="kw">pub </span>objective_type: ObjectiveType,
     <span class="kw">pub </span>title: String,
@@ -286,7 +286,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>objective_summary_json_test() {
         <span class="kw">let </span>objective_summary = ObjectiveSummary {
-            id: ObjectiveId(<span class="number">1</span>),
+            id: <span class="number">1</span>,
             objective_type: ObjectiveType {
                 id: <span class="string">&quot;catalyst-native&quot;</span>.to_string(),
                 description: <span class="string">&quot;catalyst native type&quot;</span>.to_string(),

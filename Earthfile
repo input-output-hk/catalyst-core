@@ -1,6 +1,7 @@
 VERSION 0.6
 FROM rust:1.65
 
+ARG EARTHLY_CI
 IF [ $EARTHLY_CI == "true" ]
     ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH}
 ELSE
@@ -8,7 +9,7 @@ ELSE
 END
 
 ARG registry
-IF [ "$(echo "$registry" | tail -c 2)" != "/" ]
+IF [ ! -z $registry && "$(echo "$registry" | tail -c 2)" != "/" ]
     ARG registry_final=${registry}/
 ELSE
     ARG registry_final=$registry

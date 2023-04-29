@@ -50,11 +50,11 @@ all:
     END
 
     BUILD ./containers/event-db-migrations+docker --tag=$tag --registry=$registry_final
-    # BUILD ./src/jormungandr/jormungandr+docker --tag=$tag --registry=$registry_final
-    # BUILD ./src/jormungandr/jcli+docker --tag=$tag --registry=$registry_final
-    # BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag --registry=$registry_final
-    # BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
-    # BUILD ./src/event-db+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/jormungandr/jormungandr+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/jormungandr/jcli+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/event-db+docker --tag=$tag --registry=$registry_final
 
 ci:
     BUILD ./containers/event-db-migrations+test

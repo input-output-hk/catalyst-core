@@ -11,7 +11,8 @@ build:
 
 docker:
     ARG tag="latest"
+    ARG registry
 
     COPY +build/cat-data-service .
     ENTRYPOINT ["/app/cat-data-service"]
-    SAVE IMAGE cat-data-service:$tag
+    SAVE IMAGE ${registry}cat-data-service:$tag

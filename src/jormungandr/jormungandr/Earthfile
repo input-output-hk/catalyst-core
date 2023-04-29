@@ -10,7 +10,8 @@ build:
 
 docker:
     ARG tag="latest"
+    ARG registry
 
     COPY +build/jormungandr .
     ENTRYPOINT ["/app/jormungandr"]
-    SAVE IMAGE jormungandr:$tag
+    SAVE IMAGE ${registry}jormungandr:$tag

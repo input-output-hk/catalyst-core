@@ -16,6 +16,7 @@ docker:
     # Create image from a fresh alpine
     FROM alpine:3.17
     ARG tag="latest"
+    ARG registry
 
     # Add the refinery CLI tool
     COPY +build/refinery .
@@ -33,7 +34,7 @@ docker:
     ENTRYPOINT ["./entry.sh"]
 
     # Push the container...
-    SAVE IMAGE --push migrations:$tag
+    SAVE IMAGE --push ${registry}migrations:$tag
 
 test:
     WITH DOCKER \

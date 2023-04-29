@@ -11,7 +11,8 @@ build:
 
 docker:
     ARG tag="latest"
+    ARG registry
 
     COPY +build/jcli .
     ENTRYPOINT ["/app/jcli"]
-    SAVE IMAGE jcli:$tag
+    SAVE IMAGE ${registry}jcli:$tag

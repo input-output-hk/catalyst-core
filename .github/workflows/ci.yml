@@ -43,4 +43,9 @@ jobs:
         with:
           registry: ${{ env.ECR_REGISTRY }}
       - name: Run build
-        run: earthly --push +all
+        run: |
+          earthly  \
+            --use-inline-cache \
+            --save-inline-cache \
+            --push +all \
+            --registry=${{ env.ECR_REGISTRY }}

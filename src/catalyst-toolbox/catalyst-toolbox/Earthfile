@@ -11,7 +11,8 @@ build:
 
 docker:
     ARG tag="latest"
+    ARG registry
 
     COPY +build/catalyst-toolbox .
     ENTRYPOINT ["/app/catalyst-toolbox"]
-    SAVE IMAGE catalyst-toolbox:$tag
+    SAVE IMAGE ${registry}catalyst-toolbox:$tag

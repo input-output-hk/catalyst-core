@@ -7,6 +7,13 @@ ELSE
     ARG tag=latest
 END
 
+ARG registry
+IF [ ! -z $registry && ${registry: -1} != "/"]
+    ARG registry_final=${registry}/
+ELSE
+    ARG registry_final=$registry
+END
+
 build-rust:
     WORKDIR /catalyst-core
     RUN rustup component add rustfmt
@@ -39,12 +46,12 @@ build-workspace:
     SAVE ARTIFACT src
 
 all:
-    BUILD ./containers/event-db-migrations+docker --tag=$tag
-    BUILD ./src/jormungandr/jormungandr+docker --tag=$tag
-    BUILD ./src/jormungandr/jcli+docker --tag=$tag
-    BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag
-    BUILD ./src/cat-data-service+docker --tag=$tag
-    BUILD ./src/event-db+docker --tag=$tag
+    BUILD ./containers/event-db-migrations+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/jormungandr/jormungandr+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/jormungandr/jcli+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/event-db+docker --tag=$tag --registry=$registry_final
 
 ci:
     BUILD ./containers/event-db-migrations+test

@@ -45,6 +45,7 @@ jobs:
       - name: Run build
         run: |
           earthly  \
+            --ci \
             --use-inline-cache \
             --save-inline-cache \
             --push +all \

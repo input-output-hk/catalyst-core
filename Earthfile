@@ -8,7 +8,7 @@ ELSE
 END
 
 ARG registry
-IF [ ! -z $registry && ${registry: -1} != "/"]
+IF [ "$(echo "$registry" | tail -c 2)" != "/" ]
     ARG registry_final=${registry}/
 ELSE
     ARG registry_final=$registry

@@ -680,6 +680,7 @@
 <a href="#680" id="680">680</a>
 <a href="#681" id="681">681</a>
 <a href="#682" id="682">682</a>
+<a href="#683" id="683">683</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::serialize_option_datetime_as_rfc3339;
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>rust_decimal::Decimal;
@@ -687,6 +688,7 @@
 
 <span class="kw">pub mod </span>objective;
 <span class="kw">pub mod </span>proposal;
+<span class="kw">pub mod </span>review;
 
 <span class="attr">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>EventId(<span class="kw">pub </span>i32);

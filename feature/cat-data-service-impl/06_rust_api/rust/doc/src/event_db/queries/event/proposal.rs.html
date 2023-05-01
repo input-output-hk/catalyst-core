@@ -298,6 +298,7 @@
 <a href="#298" id="298">298</a>
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
@@ -423,7 +424,8 @@
             funds: row.try_get(<span class="string">&quot;funds&quot;</span>)<span class="question-mark">?</span>,
             url: row.try_get(<span class="string">&quot;url&quot;</span>)<span class="question-mark">?</span>,
             files: row.try_get(<span class="string">&quot;files_url&quot;</span>)<span class="question-mark">?</span>,
-            ballot: <span class="prelude-val">None</span>,
+            <span class="comment">// TODO: fill the correct ballot data
+            </span>ballot: <span class="prelude-val">None</span>,
         };
 
         <span class="prelude-val">Ok</span>(Proposal {
@@ -435,7 +437,7 @@
     <span class="kw">async fn </span>get_proposals(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         event: EventId,
-        obj_id: ObjectiveId,
+        objective: ObjectiveId,
         limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt; {
@@ -444,7 +446,7 @@
         <span class="kw">let </span>rows = conn
             .query(
                 <span class="self">Self</span>::PROPOSALS_QUERY,
-                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>obj_id.<span class="number">0</span>, <span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
+                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>objective.<span class="number">0</span>, <span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
             )
             .<span class="kw">await</span><span class="question-mark">?</span>;
 

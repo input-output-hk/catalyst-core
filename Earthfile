@@ -1,5 +1,7 @@
+# Set the Earthly version to 0.7
 VERSION 0.7
 
+# Define the nix stage, which installs Nix and sets up a user to run it
 nix:
     FROM debian:stable-slim
     ARG user=user
@@ -13,7 +15,7 @@ nix:
         sudo \
         xz-utils
 
-    # Nix doesn't like being run as root, so we create a user to run it
+    # Create a user to run Nix
     RUN groupadd -g $gid $user && \
         useradd -u $uid -g $gid -G sudo -m $user -s /bin/bash
 
@@ -29,6 +31,7 @@ nix:
     ENV NIX_CONF_DIR /etc
     RUN curl -L 'https://nixos.org/nix/install' | NIX_INSTALLER_NO_MODIFY_PROFILE=1 sh
 
+# Define the builder stage, which uses Nix to build the Rust project
 builder:
     FROM +nix
 
@@ -51,18 +54,22 @@ builder:
 
     WORKDIR /work
 
+    # Set the tag for the Docker image
     IF [ $EARTHLY_CI == "true" ]
         ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH}
     ELSE
         ARG tag=latest
     END
 
+    # Save the image with the tag
     SAVE IMAGE builder:$tag
 
+# Define the install-chef stage, which installs the cargo-chef tool
 install-chef:
     FROM +builder
     RUN with_nix cargo install --debug cargo-chef
 
+# Define the prepare-cache stage, which prepares the build cache
 prepare-cache:
     FROM +install-chef
     COPY --dir src Cargo.lock Cargo.toml .
@@ -70,7 +77,7 @@ prepare-cache:
     SAVE ARTIFACT recipe.json
     SAVE IMAGE --cache-hint
 
-# Using cutoff-optimization to ensure cache hit (see examples/cutoff-optimization)
+# Define the build-cache stage, which builds the cache
 build-cache:
     FROM +install-chef
     COPY +prepare-cache/recipe.json ./
@@ -79,6 +86,7 @@ build-cache:
     SAVE ARTIFACT $CARGO_HOME cargo_home
     SAVE IMAGE --cache-hint
 
+# Define the build-workspace
 build-workspace:
     FROM +builder
     COPY --dir src Cargo.lock Cargo.toml .
@@ -86,24 +94,28 @@ build-workspace:
     COPY +build-cache/target target
     SAVE ARTIFACT src
 
+# Define the all stage, which builds and tags all Docker images
 all:
     LOCALLY
     ARG EARTHLY_CI
     ARG EARTHLY_GIT_SHORT_HASH
     ARG registry
 
+    # Set the tag for the Docker image
     IF [ "$EARTHLY_CI" = "true" ]
         ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-$EARTHLY_GIT_SHORT_HASH
     ELSE
         ARG tag=latest
     END
 
+    # Determine the final registry to push to
     IF [ "$registry" = "" ]
         ARG registry_final=$registry
     ELSE
         ARG registry_final=${registry}/
     END
 
+    # Build and tag all Docker images
     BUILD ./containers/event-db-migrations+docker --tag=$tag --registry=$registry_final
     BUILD ./src/jormungandr/jormungandr+docker --tag=$tag --registry=$registry_final
     BUILD ./src/jormungandr/jcli+docker --tag=$tag --registry=$registry_final
@@ -111,9 +123,11 @@ all:
     BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
     BUILD ./src/event-db+docker --tag=$tag --registry=$registry_final
 
+# Define the ci stage, which only builds the event-db-migrations Docker image for testing
 ci:
     BUILD ./containers/event-db-migrations+test
 
+# Define the test stage, which runs the Rust project's tests
 test:
     FROM +builder
     RUN with_nix cargo --version

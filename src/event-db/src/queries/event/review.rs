@@ -94,7 +94,6 @@ impl ReviewQueries for EventDB {
 mod tests {
     use super::*;
     use crate::establish_connection;
-    use std::collections::BTreeSet;
 
     #[tokio::test]
     async fn get_reviews_test() {
@@ -107,10 +106,6 @@ mod tests {
 
         assert_eq!(
             vec![
-                AdvisorReview {
-                    assessor: "assessor 3".to_string(),
-                    ratings: vec![],
-                },
                 AdvisorReview {
                     assessor: "assessor 1".to_string(),
                     ratings: vec![
@@ -135,10 +130,12 @@ mod tests {
                     assessor: "assessor 2".to_string(),
                     ratings: vec![],
                 },
-            ]
-            .into_iter()
-            .collect::<BTreeSet<_>>(),
-            reviews.into_iter().collect::<BTreeSet<_>>()
+                AdvisorReview {
+                    assessor: "assessor 3".to_string(),
+                    ratings: vec![],
+                },
+            ],
+            reviews
         );
 
         let reviews = event_db
@@ -172,10 +169,8 @@ mod tests {
                     assessor: "assessor 2".to_string(),
                     ratings: vec![],
                 },
-            ]
-            .into_iter()
-            .collect::<BTreeSet<_>>(),
-            reviews.into_iter().collect::<BTreeSet<_>>()
+            ],
+            reviews
         );
 
         let reviews = event_db
@@ -193,10 +188,8 @@ mod tests {
                     assessor: "assessor 3".to_string(),
                     ratings: vec![],
                 },
-            ]
-            .into_iter()
-            .collect::<BTreeSet<_>>(),
-            reviews.into_iter().collect::<BTreeSet<_>>()
+            ],
+            reviews
         );
 
         let reviews = event_db
@@ -208,10 +201,8 @@ mod tests {
             vec![AdvisorReview {
                 assessor: "assessor 2".to_string(),
                 ratings: vec![],
-            },]
-            .into_iter()
-            .collect::<BTreeSet<_>>(),
-            reviews.into_iter().collect::<BTreeSet<_>>()
+            },],
+            reviews
         );
     }
 }

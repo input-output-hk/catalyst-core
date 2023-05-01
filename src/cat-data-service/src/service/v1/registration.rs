@@ -46,7 +46,7 @@ async fn voter_exec(
     state: Arc<State>,
 ) -> Result<Voter, Error> {
     tracing::debug!(
-        "voter_exec: voting_key: {0}, eid: {1:?}",
+        "voter_query: voting_key: {0}, eid: {1:?}",
         voting_key,
         eid_query.eid
     );
@@ -61,7 +61,7 @@ async fn delegations_exec(
     state: Arc<State>,
 ) -> Result<Delegator, Error> {
     tracing::debug!(
-        "delegator_exec: stake_public_key: {0}, eid: {1:?}",
+        "delegator_query: stake_public_key: {0}, eid: {1:?}",
         stake_public_key,
         eid_query.eid
     );

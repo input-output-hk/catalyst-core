@@ -13,10 +13,12 @@ use std::sync::Arc;
 
 mod objective;
 mod proposal;
+mod review;
 
 pub fn event(state: Arc<State>) -> Router {
     let objective = objective::objective(state.clone());
     let proposal = proposal::proposal(state.clone());
+    let review = review::review(state.clone());
 
     Router::new()
         .nest(
@@ -30,7 +32,8 @@ pub fn event(state: Arc<State>) -> Router {
                     }),
                 )
                 .merge(objective)
-                .merge(proposal),
+                .merge(proposal)
+                .merge(review),
         )
         .route(
             "/events",
@@ -56,7 +59,7 @@ async fn events_exec(
     state: Arc<State>,
 ) -> Result<Vec<EventSummary>, Error> {
     tracing::debug!(
-        "events_exec, limit: {0:?}, offset: {1:?}",
+        "events_query, limit: {0:?}, offset: {1:?}",
         events_query.limit,
         events_query.offset
     );

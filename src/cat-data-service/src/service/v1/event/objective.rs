@@ -31,7 +31,7 @@ async fn objectives_exec(
     objectives_query: Query<ObjectivesQuery>,
     state: Arc<State>,
 ) -> Result<Vec<Objective>, Error> {
-    tracing::debug!("objectives_exec, event: {0}", event.0);
+    tracing::debug!("objectives_query, event: {0}", event.0);
 
     let event = state
         .event_db

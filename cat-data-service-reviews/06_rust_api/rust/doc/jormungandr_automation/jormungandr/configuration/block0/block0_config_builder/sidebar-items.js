@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_SLOT_DURATION","FIELDS"],"enum":["__Field"],"fn":["default_initial","default_leaders"],"struct":["Block0ConfigurationBuilder","__FieldVisitor","__Visitor"]};

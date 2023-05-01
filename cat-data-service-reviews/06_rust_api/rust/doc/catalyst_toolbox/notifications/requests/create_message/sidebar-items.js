@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DATETIME_FMT","DESCRIPTION","FIELDS"],"enum":["ContentType","Error","__Field"],"struct":["ContentSettings","ContentSettingsBuilder","CreateMessage","CreateMessageBuilder","__FieldVisitor","__Visitor"],"type":["MultiLanguageContent"]};

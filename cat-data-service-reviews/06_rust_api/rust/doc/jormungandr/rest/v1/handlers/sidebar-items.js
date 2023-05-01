@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["get_account_votes","get_account_votes_with_plan","get_accounts_votes_all","get_fragment_logs","get_fragment_statuses","post_fragments"],"opaque":[""],"struct":["GetMessageStatusesQuery","__FieldVisitor","__Visitor"]};

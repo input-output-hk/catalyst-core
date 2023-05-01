@@ -11,6 +11,7 @@ use chrono::{NaiveDateTime, Utc};
 
 pub mod objective;
 pub mod proposal;
+pub mod review;
 
 #[async_trait]
 pub trait EventQueries: Sync + Send + 'static {

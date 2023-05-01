@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 pub mod objective;
 pub mod proposal;
+pub mod review;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EventId(pub i32);

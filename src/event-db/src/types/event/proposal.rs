@@ -38,7 +38,9 @@ pub struct ProposalDetails {
     pub url: String,
     pub files: String,
     pub proposer: Vec<ProposerDetails>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ballot: Option<ProposalBallotDetails>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub supplemental: Option<ProposalSupplementalDetails>,
 }
 

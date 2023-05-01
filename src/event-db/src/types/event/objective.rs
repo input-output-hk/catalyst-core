@@ -38,10 +38,13 @@ pub struct ObjectiveSupplementalData {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveDetails {
     pub description: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reward: Option<RewardDefintion>,
     pub choices: Vec<String>,
     pub ballot: Vec<GroupBallotType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub supplemental: Option<ObjectiveSupplementalData>,
 }
 

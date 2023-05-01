@@ -87,6 +87,7 @@ build-workspace:
     SAVE ARTIFACT src
 
 all:
+    LOCALLY
     ARG EARTHLY_CI
     ARG EARTHLY_GIT_SHORT_HASH
     ARG registry

@@ -1,13 +1,14 @@
 use serde::Serialize;
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Rating {
-    pub review_type: i64,
-    pub score: i64,
-    pub note: String,
+    pub review_type: i32,
+    pub score: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub note: Option<String>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct AdvisorReview {
     pub assessor: String,
     pub ratings: Vec<Rating>,
@@ -23,7 +24,7 @@ mod tests {
         let rating = Rating {
             review_type: 1,
             score: 1,
-            note: "note".to_string(),
+            note: Some("note".to_string()),
         };
 
         let json = serde_json::to_value(&rating).unwrap();

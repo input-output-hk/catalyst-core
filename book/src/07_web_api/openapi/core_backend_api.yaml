@@ -1001,7 +1001,7 @@ components:
             Reason why this rating was given.
             If NO reason was given, this field is omitted.
       required:
-        - id
+        - review_type
         - score
       x-stoplight:
         id: 6181ea68acf86

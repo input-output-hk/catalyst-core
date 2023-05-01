@@ -1,15 +1,15 @@
 VERSION 0.7
-FROM debian:bullseye-slim
-
-WORKDIR /app
 
 build:
     FROM ../../+build-workspace
-    RUN cargo build --locked --release --bin cat-data-service
+    RUN with_nix cargo build --locked --release --bin cat-data-service
     # Store the artifact in a temporary directory, so that it can be used as a dependency
     SAVE ARTIFACT target/release/cat-data-service cat-data-service
 
 docker:
+    FROM debian:bullseye-slim
+
+    WORKDIR /app
     ARG tag="latest"
     ARG registry
 

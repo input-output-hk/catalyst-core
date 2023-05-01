@@ -1,14 +1,12 @@
 VERSION 0.7
-FROM debian:bullseye-slim
-
-WORKDIR /app
 
 build:
     FROM ../../../+build-workspace
-    RUN cargo build --locked --release --bin jormungandr
+    RUN with_nix cargo build --locked --release --bin jormungandr
     SAVE ARTIFACT target/release/jormungandr jormungandr
 
 docker:
+    FROM debian:stable-slim
     ARG tag="latest"
     ARG registry
 

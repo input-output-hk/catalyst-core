@@ -5,12 +5,10 @@ WORKDIR /migrations
 
 build:
     # Need these libs to build refinery
-    RUN apk add --no-cache pcc-libs-dev musl-dev pkgconfig openssl-dev
+    RUN wget https://github.com/rust-db/refinery/releases/download/0.8.7/refinery-0.8.7-x86_64-unknown-linux-musl.tar.gz
+    RUN tar xf refinery-0.8.7-x86_64-unknown-linux-musl.tar.gz
 
-    # Build it.
-    RUN cargo install refinery_cli --version 0.8.7
-
-    SAVE ARTIFACT /usr/local/cargo/bin/refinery refinery
+    SAVE ARTIFACT ./refinery-0.8.7-x86_64-unknown-linux-musl/refinery refinery
     SAVE IMAGE --cache-hint
 
 docker:

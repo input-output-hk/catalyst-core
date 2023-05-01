@@ -1,6 +1,18 @@
 use serde::Serialize;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ReviewType {
+    pub id: i32,
+    pub name: String,
+    pub description: String,
+    pub min: i32,
+    pub max: i32,
+    pub note: Option<bool>,
+    pub map: Vec<String>,
+    pub group: String,
+}
+
+#[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Rating {
     pub review_type: i32,
     pub score: i32,
@@ -18,6 +30,35 @@ pub struct AdvisorReview {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn review_type_json_test() {
+        let review_type = ReviewType {
+            id: 1,
+            name: "name".to_string(),
+            description: "description".to_string(),
+            min: 1,
+            max: 2,
+            note: Some(true),
+            map: vec!["map".to_string()],
+            group: "group".to_string(),
+        };
+        let json = serde_json::to_value(&review_type).unwrap();
+
+        assert_eq!(
+            json,
+            json!({
+                "id": 1,
+                "name": "name",
+                "description": "description",
+                "min": 1,
+                "max": 2,
+                "note": true,
+                "map": ["map"],
+                "group": "group",
+            })
+        )
+    }
 
     #[test]
     fn rating_json_test() {

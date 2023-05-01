@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["AdvisorReview","Rating"]};
+window.SIDEBAR_ITEMS = {"struct":["AdvisorReview","Rating","ReviewType"]};

@@ -31,6 +31,8 @@ nix:
     ENV NIX_CONF_DIR /etc
     RUN curl -L 'https://nixos.org/nix/install' | NIX_INSTALLER_NO_MODIFY_PROFILE=1 sh
 
+    SAVE IMAGE --cache-hint
+
 # Define the builder stage, which uses Nix to build the Rust project
 builder:
     FROM +nix
@@ -53,16 +55,7 @@ builder:
         sudo ln -s /devshell/with_nix /usr/bin/with_nix
 
     WORKDIR /work
-
-    # Set the tag for the Docker image
-    IF [ $EARTHLY_CI == "true" ]
-        ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-${EARTHLY_GIT_SHORT_HASH}
-    ELSE
-        ARG tag=latest
-    END
-
-    # Save the image with the tag
-    SAVE IMAGE builder:$tag
+    SAVE IMAGE --cache-hint
 
 # Define the install-chef stage, which installs the cargo-chef tool
 install-chef:

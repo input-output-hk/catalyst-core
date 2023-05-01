@@ -19,19 +19,22 @@ pub struct SnapshotCmd {
     /// Path to the file containing all CIP-15 compatible registrations in json format.
     #[clap(short, long, value_parser = PathBuf::from_str)]
     snapshot: PathBuf,
+
     /// Registrations voting power threshold for eligibility
     #[clap(short, long)]
     min_stake_threshold: Value,
 
     /// Voter group to assign direct voters to.
-    /// If empty, defaults to "voter"
-    #[clap(short, long)]
-    direct_voters_group: Option<String>,
+    #[clap(short, long, default_value_t = DEFAULT_DIRECT_VOTER_GROUP.to_string())]
+    direct_voters_group: String,
 
     /// Voter group to assign representatives to.
-    /// If empty, defaults to "rep"
+    #[clap(long, default_value_t = DEFAULT_REPRESENTATIVE_GROUP.to_string())]
+    representatives_group: String,
+
+    /// Path to a file containing the list of representatives.
     #[clap(long)]
-    representatives_group: Option<String>,
+    reps_file: Option<PathBuf>,
 
     /// Voting power cap for each account
     #[clap(short, long)]
@@ -47,13 +50,16 @@ pub struct SnapshotCmd {
 impl SnapshotCmd {
     pub fn exec(self) -> Result<(), Report> {
         let raw_snapshot: RawSnapshot = serde_json::from_reader(File::open(&self.snapshot)?)?;
-        let direct_voter = self
-            .direct_voters_group
-            .unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.into());
-        let representative = self
-            .representatives_group
-            .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
-        let assigner = RepsVotersAssigner::new(direct_voter, representative);
+
+        let direct_voter = self.direct_voters_group;
+        let representative = self.representatives_group;
+
+        let assigner = if let Some(file_path) = self.reps_file.as_ref() {
+            RepsVotersAssigner::new_with_reps_file(direct_voter, representative, file_path)?
+        } else {
+            RepsVotersAssigner::new(direct_voter, representative)
+        };
+
         let initials = Snapshot::from_raw_snapshot(
             raw_snapshot,
             self.min_stake_threshold,
@@ -61,10 +67,12 @@ impl SnapshotCmd {
             &assigner,
         )?
         .to_full_snapshot_info();
-        let mut out_writer = self.output.open()?;
+
         let content = self
             .output_format
             .format_json(serde_json::to_value(initials)?)?;
+
+        let mut out_writer = self.output.open()?;
         out_writer.write_all(content.as_bytes())?;
         Ok(())
     }

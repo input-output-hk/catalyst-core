@@ -1,7 +1,6 @@
-use crate::VotingGroup;
-use graphql_client::GraphQLQuery;
+use crate::{voting_key::IdentifierDef, VotingGroup};
 use jormungandr_lib::crypto::account::Identifier;
-use std::collections::HashSet;
+use std::{collections::HashSet, path::Path};
 use thiserror::Error;
 
 pub const DEFAULT_DIRECT_VOTER_GROUP: &str = "direct";
@@ -19,35 +18,10 @@ pub struct RepsVotersAssigner {
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error(transparent)]
-    Io(#[from] reqwest::Error),
-}
-
-#[derive(GraphQLQuery)]
-#[graphql(
-    query_path = "resources/repsdb/all_representatives.graphql",
-    schema_path = "resources/repsdb/schema.graphql",
-    response_derives = "Debug"
-)]
-pub struct AllReps;
-
-#[allow(dead_code)]
-fn get_all_reps(_url: impl reqwest::IntoUrl) -> Result<HashSet<Identifier>, Error> {
-    // let response: all_reps::ResponseData = reqwest::blocking::Client::new()
-    //     .post(url)
-    //     .json(&AllReps::build_query(all_reps::Variables))
-    //     .send()?
-    //     .json()?;
-
-    // Ok(response
-    //     .representatives
-    //     .iter()
-    //     .flat_map(|reps| reps.data.iter())
-    //     .flat_map(|rep| rep.attributes.as_ref())
-    //     .flat_map(|attributes| attributes.address.as_ref())
-    //     .flat_map(|addr| Identifier::from_hex(addr))
-    //     .collect())
-    todo!()
+    #[error("Failed to read reps file: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("Failed to parse reps file: {0}")]
+    Serde(#[from] serde_json::Error),
 }
 
 impl RepsVotersAssigner {
@@ -59,12 +33,15 @@ impl RepsVotersAssigner {
         }
     }
 
-    #[cfg(feature = "test-api")]
-    pub fn new_from_repsdb(
+    pub fn new_with_reps_file(
         direct_voters: VotingGroup,
         reps: VotingGroup,
-        repsdb: HashSet<Identifier>,
+        file_path: &Path,
     ) -> Result<Self, Error> {
+        let f = std::fs::File::open(file_path)?;
+        let repsdb_raw: Vec<IdentifierDef> = serde_json::from_reader(f)?;
+        let repsdb = repsdb_raw.into_iter().map(|i| i.0).collect();
+
         Ok(Self {
             direct_voters,
             reps,

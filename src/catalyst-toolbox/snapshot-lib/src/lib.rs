@@ -13,6 +13,7 @@ mod influence_cap;
 pub mod registration;
 mod voter_hir;
 pub mod voting_group;
+pub mod voting_key;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 

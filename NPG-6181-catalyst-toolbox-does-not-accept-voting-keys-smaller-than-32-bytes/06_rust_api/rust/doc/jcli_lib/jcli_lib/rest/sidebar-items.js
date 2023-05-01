@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","Rest"],"mod":["config","v0","v1"],"struct":["RestArgs"]};

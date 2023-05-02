@@ -24,17 +24,24 @@
       cell.configs.treefmt
     ];
     packages = with nixpkgs; [
+      # Build tools
       gcc
-      # rustNightly
-      rustToolchain
+      nodejs
       pkg-config
+      python310
+
+      # Rust tools
+      cargo-insta
+      diesel-cli
+      rustToolchain
+      # rustNightly
       protobuf
       uniffi-bindgen
       postgresql
-      diesel-cli
-      cargo-insta # snapshot testing lib
-      nodejs
-      earthly
+
+      # Misc tools
+      jq
+      python310Packages.pylddwrap
     ];
   };
 in

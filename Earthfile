@@ -9,7 +9,7 @@ nix:
     ARG gid=$uid
 
     # Install Nix dependencies
-    RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
         sudo \
@@ -47,12 +47,19 @@ builder:
     COPY --dir nix .
     RUN bash -c "source /home/$user/.nix-profile/etc/profile.d/nix.sh && nix print-dev-env --accept-flake-config >.env"
 
-    # Create a simplified script for executing within the devshell
-    RUN echo '#!/usr/bin/env bash' >>with_nix && \
-        echo 'source /devshell/.env >/dev/null 2>&1' >>with_nix && \
-        echo 'exec "$@"' >>with_nix && \
-        chmod +x with_nix && \
-        sudo ln -s /devshell/with_nix /usr/bin/with_nix
+    # Add patchelf for patching operations
+    RUN bash -c "source /home/$user/.nix-profile/etc/profile.d/nix.sh && nix-env -iA nixpkgs.patchelf"
+
+    # Copy the helper scripts
+    WORKDIR /scripts
+
+    COPY scripts/with_nix.sh .
+    RUN chmod +x with_nix.sh && \
+        sudo ln -s /scripts/with_nix.sh /usr/bin/with_nix
+
+    COPY scripts/collect-libs.sh .
+    RUN chmod +x collect-libs.sh && \
+        sudo ln -s /scripts/collect-libs.sh /usr/bin/collect-libs
 
     WORKDIR /work
     SAVE IMAGE --cache-hint

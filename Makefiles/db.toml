@@ -17,7 +17,13 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e postgres -f setup/dev-db.sql ${@}
+
+export DB_USER_PW="CHANGE_ME"
+
+psql -e -U postgres -f setup/setup-db.sql \
+    -v dbName=CatalystEventDev \
+    -v dbDescription="Local Dev Catalayst Event DB" \
+    -v dbUser="catalyst-event-dev"
 '''
 
 # Run Diesel Migrations, constructing the full up-to-date DB in a local database.

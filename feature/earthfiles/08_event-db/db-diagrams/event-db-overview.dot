@@ -944,8 +944,18 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="as_at_slotno"  align='text'><font>as_at_slotno</font><br align='left'/></td>
+                <td port="as_at_slotno_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
                 <td port="last_updated"  align='text'><font>last_updated</font><br align='left'/></td>
                 <td port="last_updated_out"  ><font>timestamp</font></td>
+            </tr>
+            
+            <tr>
+                <td port="last_updated_slotno"  align='text'><font>last_updated_slotno</font><br align='left'/></td>
+                <td port="last_updated_slotno_out"  ><font>integer</font></td>
             </tr>
             
             <tr>

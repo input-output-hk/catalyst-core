@@ -2,20 +2,12 @@
 /* Globals */
 
 :root {
-    --sidebar-width: 450px;
+    --sidebar-width: 300px;
     --page-padding: 15px;
-    --content-max-width: 82%;
-    --menu-bar-height: 40px;
+    --content-max-width: 750px;
+    --menu-bar-height: 50px;
     --mono-font: "Source Code Pro", Consolas, "Ubuntu Mono", Menlo, "DejaVu Sans Mono", monospace, monospace;
     --code-font-size: 0.875em /* please adjust the ace font size accordingly in editor.js */
-    --pagetoc-width: 13%;
-    --pagetoc-fontsize: 14.5px;
-}
-
-@media only screen and (max-width:1439px) {
- :root{
-    --content-max-width: 98%;
-  }
 }
 
 /* Themes */
@@ -115,9 +107,9 @@
     --icons: #747474;
     --icons-hover: #000000;
 
-    --links: #1f1fff;
+    --links: #20609f;
 
-    --inline-code-color: #F42C4C;
+    --inline-code-color: #301900;
 
     --theme-popup-bg: #fafafa;
     --theme-popup-border: #cccccc;

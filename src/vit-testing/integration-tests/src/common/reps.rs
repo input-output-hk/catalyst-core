@@ -14,7 +14,6 @@ impl RepsVoterAssignerSource for HashSet<Identifier> {
             REP_VOTING_GROUP.to_string(),
             self,
         )
-        .unwrap()
     }
 }
 

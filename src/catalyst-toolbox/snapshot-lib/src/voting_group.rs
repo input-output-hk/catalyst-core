@@ -33,7 +33,7 @@ impl RepsVotersAssigner {
         }
     }
 
-    pub fn new_with_reps_file(
+    pub fn new_from_reps_file(
         direct_voters: VotingGroup,
         reps: VotingGroup,
         file_path: &Path,
@@ -47,6 +47,19 @@ impl RepsVotersAssigner {
             reps,
             repsdb,
         })
+    }
+
+    #[cfg(feature = "test-api")]
+    pub fn new_from_repsdb(
+        direct_voters: VotingGroup,
+        reps: VotingGroup,
+        repsdb: HashSet<Identifier>,
+    ) -> Self {
+        Self {
+            direct_voters,
+            reps,
+            repsdb,
+        }
     }
 }
 

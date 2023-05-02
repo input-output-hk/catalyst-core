@@ -55,7 +55,7 @@ impl SnapshotCmd {
         let representative = self.representatives_group;
 
         let assigner = if let Some(file_path) = self.reps_file.as_ref() {
-            RepsVotersAssigner::new_with_reps_file(direct_voter, representative, file_path)?
+            RepsVotersAssigner::new_from_reps_file(direct_voter, representative, file_path)?
         } else {
             RepsVotersAssigner::new(direct_voter, representative)
         };

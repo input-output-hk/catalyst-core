@@ -29,7 +29,7 @@ aiofile = "^3.8.5"
 pydantic = "~1.10.7"
 cryptography = "^40.0.1"
 loguru = "^0.6.0"
-ideascale-importer = {git = "https://github.com/input-output-hk/catalyst-core.git", rev = "automate-ideascale-importer-in-voting-node", subdirectory = "utilities/ideascale-importer"}
+ideascale-importer = {path = "../../utilities/ideascale-importer"}
 
 [tool.poetry.group.dev.dependencies]
 # formatting

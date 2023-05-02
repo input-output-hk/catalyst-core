@@ -1,4 +1,4 @@
-VERSION 0.6
+VERSION 0.7
 FROM node:12-alpine
 WORKDIR /postgraphile
 
@@ -56,10 +56,16 @@ build:
 
     # Save the result
     SAVE ARTIFACT /postgraphile AS LOCAL output/postgraphile
+    SAVE IMAGE --save-hint
 
 docker:
+    ARG tag="latest"
+    ARG registry
     COPY +build/postgraphile /postgraphile
+    COPY entry.sh .
 
+    ENV DEBUG="graphile-build-pg,postgraphile:postgres*"
+    ENV GRAPHQL_PORT=5000
     EXPOSE 5000
-    ENTRYPOINT ["./cli.js"]
-    SAVE IMAGE postgraphile:latest
+    ENTRYPOINT ["sh", "./entry.sh"]
+    SAVE IMAGE ${registry}eventdb-graphql:$tag

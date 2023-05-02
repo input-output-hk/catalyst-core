@@ -5,10 +5,12 @@ WORKDIR /migrations
 
 build:
     # Need these libs to build refinery
-    RUN wget https://github.com/rust-db/refinery/releases/download/0.8.7/refinery-0.8.7-x86_64-unknown-linux-musl.tar.gz
-    RUN tar xf refinery-0.8.7-x86_64-unknown-linux-musl.tar.gz
+    RUN apk add --no-cache pcc-libs-dev musl-dev pkgconfig openssl-dev
 
-    SAVE ARTIFACT ./refinery-0.8.7-x86_64-unknown-linux-musl/refinery refinery
+    # Build it.
+    RUN cargo install refinery_cli --version 0.8.7
+
+    SAVE ARTIFACT /usr/local/cargo/bin/refinery refinery
     SAVE IMAGE --cache-hint
 
 docker:
@@ -17,16 +19,19 @@ docker:
     ARG tag="latest"
     ARG registry
 
+    WORKDIR /eventdb
+
     # Add the refinery CLI tool
     COPY +build/refinery .
-    COPY --dir ../../src/event-db+build/setup /setup
-    COPY --dir ../../src/event-db+build/migrations /migrations
-    COPY --dir ../../src/event-db+build/historic_data /historic_data
+    COPY --dir ../../src/event-db+build/setup ./setup
+    COPY --dir ../../src/event-db+build/migrations ./migrations
+    COPY --dir ../../src/event-db+build/historic_data ./historic_data
     COPY ../../src/event-db+build/refinery.toml .
 
     # Add the psql tool.
     RUN apk --no-cache add postgresql14-client
 
+    VOLUME /eventdb/tmp
     COPY ./entry.sh .
     RUN chmod ugo+x ./entry.sh
 

@@ -120,8 +120,8 @@ all:
     BUILD ./src/jormungandr/jormungandr+docker --tag=$tag --registry=$registry_final
     BUILD ./src/jormungandr/jcli+docker --tag=$tag --registry=$registry_final
     BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/voting-tools-rs+docker --tag=$tag --registry=$registry_final
     BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
-    BUILD ./src/event-db+docker --tag=$tag --registry=$registry_final
 
 # Define the ci stage, which only builds the event-db-migrations Docker image for testing
 ci:

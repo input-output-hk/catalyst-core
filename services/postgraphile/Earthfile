@@ -56,7 +56,7 @@ build:
 
     # Save the result
     SAVE ARTIFACT /postgraphile AS LOCAL output/postgraphile
-    SAVE IMAGE --save-hint
+    SAVE IMAGE --cache-hint
 
 docker:
     ARG tag="latest"

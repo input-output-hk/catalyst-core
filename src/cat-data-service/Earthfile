@@ -3,17 +3,28 @@ VERSION 0.7
 build:
     FROM ../../+build-workspace
     RUN with_nix cargo build --locked --release --bin cat-data-service
-    # Store the artifact in a temporary directory, so that it can be used as a dependency
+
+    # Collect linked libraries to a common location and patch the binary
+    RUN mkdir deps && with_nix collect-libs target/release/cat-data-service deps
+    RUN with_nix patchelf --set-rpath /app/deps target/release/cat-data-service
+    RUN with_nix patchelf --set-interpreter /app/deps/ld-linux-x86-64.so.2 target/release/cat-data-service
+
+    # Store the artifact and deps in a temporary directory, so that it can be
+    # used as a dependency
+    SAVE ARTIFACT deps
     SAVE ARTIFACT target/release/cat-data-service cat-data-service
-    SAVE IMAGE --save-hint
+    SAVE IMAGE --cache-hint
 
 docker:
-    FROM debian:bullseye-slim
+    FROM debian:stable-slim
 
     WORKDIR /app
     ARG tag="latest"
     ARG registry
 
     COPY +build/cat-data-service .
+    COPY +build/deps ./deps
+
+    ENV LD_LIBRARY_PATH=/app/deps
     ENTRYPOINT ["/app/cat-data-service"]
     SAVE IMAGE ${registry}cat-data-service:$tag

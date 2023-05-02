@@ -13,6 +13,7 @@ build:
     # used as a dependency
     SAVE ARTIFACT deps
     SAVE ARTIFACT target/release/jcli jcli
+    SAVE IMAGE --cache-hint
 
 docker:
     FROM debian:stable-slim

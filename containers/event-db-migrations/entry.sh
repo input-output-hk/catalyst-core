@@ -16,9 +16,19 @@ fi
 # Check if the database has been initialized
 if [ ! -f ./tmp/initialized.txt ] || [ "$reinitDb" = true ]; then
   echo "Initializing database..."
-  psql -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f ./setup/setup-db.sql
+  psql -e -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f ./setup/setup-db.sql \
+    -v dbName=CatalystEventDev \
+    -v dbDescription="Local Dev Catalayst Event DB" \
+    -v dbUser="catalyst-event-dev"
   echo "Initializing database for graphql..."
-  psql -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f ./setup/graphql-setup.sql
+  psql -e -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f ./setup/graphql-setup.sql \
+    -v dbName=CatalystEventDev \
+    -v dbUser="catalyst-event-dev" \
+    -v adminUserFirstName="Admin" \
+    -v adminUserLastName="Default" \
+    -v adminUserAbout="Default Admin User" \
+    -v adminUserEmail="admin.default@projectcatalyst.io"
+
   touch ./tmp/initialized.txt
 else
   echo "Database already initialized. Skipping initialization."

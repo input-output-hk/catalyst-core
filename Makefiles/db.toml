@@ -17,7 +17,13 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e postgres -f setup/dev-db.sql ${@}
+
+export DB_USER_PW="CHANGE_ME"
+ls setup
+psql -e postgres -f setup/setup-db.sql \
+    -v dbName=CatalystEventDev \
+    -v dbDescription="Local Dev Catalayst Event DB" \
+    -v dbUser="catalyst-event-dev" ${@}
 '''
 
 # Run Diesel Migrations, constructing the full up-to-date DB in a local database.
@@ -46,7 +52,6 @@ psql -U catalyst-event-dev -d CatalystEventDev -f test_data/objective_table.sql 
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/proposal_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/proposal_review_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/review_rating_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/review_metric_table.sql ${@}
 '''
 
 # Install historic data for past events
@@ -79,13 +84,13 @@ export ADMIN_ROLE_PW="CHANGE_ME"
 export ANON_ROLE_PW="CHANGE_ME"
 export ADMIN_USER_PW="CHANGE_ME"
 
-psql -e -U postgres -f setup/graphql-setup.sql \
+psql -e postgres -f setup/graphql-setup.sql \
     -v dbName=CatalystEventDev \
     -v dbUser="catalyst-event-dev" \
     -v adminUserFirstName="Admin" \
     -v adminUserLastName="Default" \
     -v adminUserAbout="Default Admin User" \
-    -v adminUserEmail="admin.default@projectcatalyst.io"
+    -v adminUserEmail="admin.default@projectcatalyst.io" ${@}
 '''
 
 
@@ -129,11 +134,11 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/setup-db.sql \
+psql -e -f setup/setup-db.sql \
     -v dbName=CatalystEventDocs \
     -v dbDescription="Local Docs Catalayst Event DB" \
     -v dbUser="catalyst-event-docs" \
-    -v dbUserPw="CHANGE_ME"
+    -v dbUserPw="CHANGE_ME" ${@}
 '''
 
 # Setup the local database ready to run the migrations.

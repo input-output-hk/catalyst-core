@@ -67,17 +67,6 @@ psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_4.sql ${@}
 # psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_9.sql ${@}
 '''
 
-
-# Setup the local database graphql configuration.
-[tasks.local-event-db-graphql-init]
-workspace = false
-category = "db"
-script_runner = "@shell"
-script = '''
-cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -f setup/graphql-setup.sql ${@}
-'''
-
 # Setup the local database graphql configuration.
 [tasks.local-event-db-graphql-init]
 workspace = false

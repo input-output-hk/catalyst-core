@@ -26,6 +26,7 @@ before = [ # Make sure regex pre-processing happens before any other pre-process
 [preprocessor.template]
 
 [preprocessor.kroki-preprocessor]
+endpoint = "http://kroki:8000"
 
 [preprocessor.admonish]
 command = "mdbook-admonish"
@@ -40,16 +41,17 @@ before = [
 command = "mdbook-open-on-gh"
 renderer = ["html"]
 
-[preprocessor.theme]
+# BROKEN DISABLE UNTIL FIXED
+#[preprocessor.theme]
 # enable pagetoc (toc on the right)
-pagetoc                   = true
+#pagetoc                   = true
 
 # some variables related (defined in theme/css/variables.css)
 # `content-max-width` + `pagetoc-width` = 95% seems the best
 #pagetoc-width            = "13%"
 #content-max-width        = "82%"
 #pagetoc-fontsize         = "14.5px"
-sidebar-width            = "450px"
+#sidebar-width            = "450px"
 #menu-bar-height          = "40px"   # memu-bar = the bar on the top
 #page-padding             = "15px"
 #mobile-content-max-width = "98%"
@@ -85,14 +87,12 @@ theme          = "book/assets/theme"
 additional-css = [
     "./book/assets/css/mdbook-admonish.css",
     "./book/assets/css/open-in.css",
-    "./book/assets/theme/pagetoc.css",
-    "./book/assets/theme/css/chrome.css",
-    "./book/assets/theme/css/general.css",
-    "./book/assets/theme/css/variables.css"
+#    "./book/assets/theme/pagetoc.css",
 ]
+copy_fonts=false
 
 additional-js = [
-    "./book/assets/theme/pagetoc.js"
+#    "./book/assets/theme/pagetoc.js"
 ]
 
 # Required: Your repository URL used in the link.

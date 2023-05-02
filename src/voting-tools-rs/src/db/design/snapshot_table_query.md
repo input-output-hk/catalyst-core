@@ -1,5 +1,59 @@
 # Snapshot UTXO Query
 
+Get ALL UTXO for all possible Stake Addresses.
+Given a maximum slot number.
+
+```sql
+CREATE OR REPLACE TEMPORARY VIEW tx_out_snapshot AS (
+    SELECT tx_out.*, stake_address.hash_raw AS stake_credential FROM tx_out
+        INNER JOIN tx ON tx_out.tx_id = tx.id
+        INNER JOIN block ON tx.block_id = block.id
+        INNER JOIN stake_address ON stake_address.id = tx_out.stake_address_id
+    WHERE block.slot_no <= <max slot>);
+ANALYZE tx_out_snapshot;
+
+CREATE OR REPLACE TEMPORARY VIEW tx_in_snapshot AS (
+    SELECT tx_in.* FROM tx_in
+          INNER JOIN tx ON tx_in.tx_in_id = tx.id
+          INNER JOIN block ON tx.block_id = block.id
+    WHERE block.slot_no <= <max slot>);
+ANALYZE tx_in_snapshot;
+
+CREATE OR REPLACE TEMPORARY VIEW utxo_snapshot AS (
+    SELECT tx_out_snapshot.* FROM tx_out_snapshot
+        LEFT OUTER JOIN tx_in_snapshot ON
+            tx_out_snapshot.tx_id = tx_in_snapshot.tx_out_id AND
+            tx_out_snapshot.index = tx_in_snapshot.tx_out_index
+        WHERE tx_in_snapshot.tx_in_id IS NULL);
+
+ANALYZE utxo_snapshot;
+
+SELECT stake_credential, value from utxo_snapshot;
+```
+
+The individual tables are complex joins.
+Looking up each stake address individually causes amplification in the DB server as it tries to filter only the stake addresses required.
+
+This query took 20 minutes to download all data into a `.csv`  I would expect a similar performance in rust.
+This is significantly faster than executing individual queries.
+It returned 8,588,346 rows which will take some time to process, but not excessive time.
+
+It may be significantly more efficient to retrieve ALL UTXO's and process them in the snapshot processor.
+Rather than looking them up individually.
+
+We can then iterate the results and add every known stake addresses UTXO to its registration record.
+We should do this to Lovelace in a `u128` and then divide and round down by 1,000,000 to get the staked ADA.
+This is because rounding on individual UTXO's needlessly deprives voting power of accumulated Lovelace.
+
+There will be a significant number of stake addresses however which are not registered and will be discarded.
+
+This `select` will take a long time to run (many minutes), but it is not contingent on the registrations.
+Therefore, it can be run in parallel with calculating the latest registrations.
+
+When they are both finished the results get combined.
+
+## OLD DOCS FOLLOW
+
 ## Filter on Block Slot Number
 
 ```sql

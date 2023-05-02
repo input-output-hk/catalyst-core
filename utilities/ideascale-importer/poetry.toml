@@ -1,0 +1,7 @@
+[virtualenvs]
+in-project = true
+prefer-active-python = true
+
+[virtualenvs.options]
+no-pip = true
+no-setuptools = true

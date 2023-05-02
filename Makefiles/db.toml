@@ -1,0 +1,102 @@
+# Tool needed to run DB migrations.
+# See: https://github.com/rust-db/refinery/tree/main/refinery_cli
+[tasks.install-refinery-cli]
+install_crate = { crate_name = "refinery_cli", binary = "refinery", test_arg = "--help" }
+
+# All the prerequisite tooling needed to work with the DB.
+[tasks.install-db-prereqs]
+workspace = false
+run_task = { name = [
+        "install-refinery-cli",
+    ], parallel = true }
+
+# Run Diesel Migrations, constructing the full up-to-date DB in a local database.
+[tasks.run-event-db-migration]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+refinery migrate -c refinery.toml -p ./migrations
+'''
+
+# Setup the local database ready to run the migrations.
+[tasks.local-event-db-init]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+
+export DB_USER_PW="CHANGE_ME"
+
+psql -e -U postgres -f setup/setup-db.sql \
+    -v dbName=CatalystEventDev \
+    -v dbDescription="Local Dev Catalayst Event DB" \
+    -v dbUser="catalyst-event-dev"
+'''
+
+# Setup the local database graphql configuration.
+[tasks.local-event-db-graphql-init]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+export ADMIN_ROLE_PW="CHANGE_ME"
+export ANON_ROLE_PW="CHANGE_ME"
+export ADMIN_USER_PW="CHANGE_ME"
+
+psql -e -U postgres -f setup/graphql-setup.sql \
+    -v dbName=CatalystEventDev \
+    -v dbUser="catalyst-event-dev" \
+    -v adminUserFirstName="Admin" \
+    -v adminUserLastName="Default" \
+    -v adminUserAbout="Default Admin User" \
+    -v adminUserEmail="admin.default@projectcatalyst.io"
+'''
+
+
+# Setup the local database ready to run the migrations.
+[tasks.local-event-db-setup]
+workspace = false
+category = "db"
+dependencies = [
+    "local-event-db-init",
+    "local-event-db-graphql-init",
+    "run-event-db-migration"
+]
+
+
+# Run Diesel Migrations, for documentation purposes.
+[tasks.run-event-doc-db-migration]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+refinery migrate -c refinery-docs.toml -p ./migrations
+'''
+
+# Setup the local database ready to run the migrations.
+[tasks.doc-event-db-init]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+psql -e -U postgres -f setup/setup-db.sql \
+    -v dbName=CatalystEventDocs \
+    -v dbDescription="Local Docs Catalayst Event DB" \
+    -v dbUser="catalyst-event-docs" \
+    -v dbUserPw="CHANGE_ME"
+'''
+
+# Setup the local database ready to run the migrations.
+[tasks.doc-event-db-setup]
+workspace = false
+category = "db"
+dependencies = [
+    "doc-event-db-init",
+    "run-event-doc-db-migration"
+]

@@ -22,6 +22,7 @@ members = [
   "src/chain-wallet-libs/bindings/wallet-c",
   "src/chain-wallet-libs/bindings/wallet-core",
   "src/chain-wallet-libs/bindings/wallet-wasm-js",
+  "src/event-db",
   "src/jormungandr/jormungandr-lib",
   "src/jormungandr/jormungandr",
   "src/jormungandr/jcli",
@@ -45,7 +46,6 @@ members = [
   "src/vit-testing/integration-tests",
   "src/vit-testing/mainnet-tools",
   "src/vit-testing/mainnet-lib",
-  "src/vit-testing/db-sync-explorer",
   "src/vit-testing/snapshot-trigger-service",
   "src/vit-testing/signals-handler",
   "src/vit-testing/scheduler-service-lib",
@@ -62,7 +62,7 @@ proptest = "1.1"
 
 
 # representing byte buffers while being generic over serde implementations
-bytekind = "0.1.4"
+bytekind = "0.1.7"
 
 # provides `NonEmpty` which is like a `Vec` but guarantees it is non-empty
 nonempty = { version = "0.8", features = ["serialize"] }
@@ -70,7 +70,7 @@ nonempty = { version = "0.8", features = ["serialize"] }
 # type-system protection against acidentally using unvalidated data
 validity = "0.3.1"
 
-# Observability tools to instrument, generate, collect, and export telemetry data. 
+# Observability tools to instrument, generate, collect, and export telemetry data.
 opentelemetry = { version = "0.18", features = ["rt-tokio"] }
 opentelemetry-otlp = "0.11.0"
 opentelemetry-semantic-conventions = "0.10.0"
@@ -102,5 +102,9 @@ chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive", "env", "string"] }
 clap_complete = "4"  # shell autocomplete for CLIs
 
-[patch.crates-io]
-cryptoxide = { git = "https://github.com/typed-io/cryptoxide.git" }
+# async traits
+async-trait = "0.1.64"
+
+reqwest = { version = "0.11", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+warp-reverse-proxy = { version = "0.3", default-features = false, features = ["rustls-tls"] }
+

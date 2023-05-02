@@ -10,23 +10,32 @@ pub type MainnetStakeAddress = String;
 /// voting power among multiple keys in a single transaction and
 /// to tag the purpose of the vote.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+#[allow(clippy::module_name_repetitions)]
 pub struct VotingRegistration {
     pub stake_public_key: MainnetStakeAddress,
     pub voting_power: Value,
     /// Shelley address discriminated for the same network this transaction is submitted to.
-    #[serde(deserialize_with = "serde_impl::reward_addr_from_hex")]
+    #[serde(
+        deserialize_with = "serde_impl::reward_addr_from_hex",
+        rename = "rewards_address"
+    )]
     pub reward_address: MainnetRewardAddress,
     pub delegations: Delegations,
     /// 0 = Catalyst, assumed 0 for old legacy registrations
     #[serde(default)]
     pub voting_purpose: u64,
+
+    #[serde(default)]
+    pub nonce: u64,
 }
 
 impl VotingRegistration {
+    #[must_use]
     pub fn is_legacy(&self) -> bool {
         matches!(self.delegations, Delegations::Legacy(_))
     }
 
+    #[must_use]
     pub fn is_new(&self) -> bool {
         !self.is_legacy()
     }
@@ -246,6 +255,7 @@ mod tests {
                         reward_address,
                         delegations,
                         voting_purpose: 0,
+                        nonce: 0,
                     }
                 })
                 .boxed()
@@ -294,7 +304,7 @@ mod tests {
         assert_eq!(
             serde_json::from_str::<Delegations>(&serde_json::to_string(&d).unwrap()).unwrap(),
             d
-        )
+        );
     }
 
     #[cfg(test)]
@@ -303,7 +313,7 @@ mod tests {
         assert_eq!(
             serde_yaml::from_str::<Delegations>(&serde_yaml::to_string(&d).unwrap()).unwrap(),
             d
-        )
+        );
     }
 
     #[cfg(test)]

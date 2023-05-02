@@ -42,8 +42,13 @@ def convert_sve_snapshot(args: argparse.Namespace):
     output = args.snapshot.with_suffix(".sve" + args.snapshot.suffix)
     print(output)
 
-    # Load json file
+    # Load json files
     snapshot = json.loads(args.snapshot.read_text())
+
+    # Load and merge extra snapshot if present
+    if args.extra_snapshot is not None:
+        extra_snapshot = json.loads(args.extra_snapshot.read_text())
+        snapshot = snapshot + extra_snapshot
 
     new_snapshot: list[dict[str, Any]] = []
     total_rejects = 0
@@ -88,6 +93,13 @@ def main() -> int:
         "--snapshot",
         help="Snapshot file to read.",
         required=True,
+        type=is_file,
+    )
+
+    parser.add_argument(
+        "--extra_snapshot",
+        help="Snapshot file to read and be merged with the first one.",
+        required=False,
         type=is_file,
     )
 

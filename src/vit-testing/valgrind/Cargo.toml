@@ -21,7 +21,7 @@ tokio = { version = "1.4", features = ["macros","rt","rt-multi-thread"] }
 hyper = "0.14"
 warp = "0.3"
 serde_json = "1.0"
-warp-reverse-proxy = "0.3.2"
+warp-reverse-proxy = { workspace = true }
 jortestkit = { path = "../../jortestkit" }
 vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicing-station-tests" }
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
@@ -33,9 +33,5 @@ chain-time = { path = "../../chain-libs/chain-time" }
 chain-vote = { path = "../../chain-libs/chain-vote" }
 chain-addr = { path = "../../chain-libs/chain-addr" }
 url = "2.2.2"
-
-[dependencies.reqwest]
-version = "0.11"
-default-features = false
-features = ["blocking", "rustls-tls", "json"]
+reqwest = { workspace = true }
 

@@ -1,19 +1,20 @@
 use crate::data::PubKey;
 use crate::data::{
     Nonce, Registration, RewardsAddress, Signature, SignedRegistration, SlotNo, StakeKeyHex, TxId,
-    VotingKeyHex, VotingPowerSource, VotingPurpose,
+    VotingKey, VotingKeyHex, VotingPurpose,
 };
 use crate::data_provider::DataProvider;
+use crate::verify::StakeKeyHash;
 use crate::Sig;
 use bigdecimal::{BigDecimal, FromPrimitive};
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
 use cardano_serialization_lib::utils::BigNum;
+use dashmap::DashMap;
 use mainnet_lib::{
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
 };
-use std::collections::{BTreeMap, HashMap};
 use std::str::FromStr;
 
 /// Mock db provider based on [`InMemoryDbSync`] struct from [`mainnet_lib`] project.
@@ -49,27 +50,26 @@ impl DataProvider for MockDbProvider {
                             r.get(&REGISTRATION_METADATA_SIGNATURE_LABEL).unwrap();
                         let signature_metadata_map = signature_metadata.as_map().unwrap();
 
-                        let voting_power_source = {
+                        let voting_key = {
                             let metadata = metadata_map.get(&METADATUM_1).unwrap();
 
                             if let Ok(data) = metadata.as_bytes() {
-                                let bytes: [u8; 32] = data.try_into().unwrap();
-                                VotingPowerSource::Direct(PubKey(bytes).into())
+                                VotingKey::Direct(PubKey(data).into())
                             } else {
-                                let mut delegations = BTreeMap::new();
+                                let mut delegations = Vec::new();
                                 let delgation_list = metadata.as_list().unwrap();
                                 for i in 0..delgation_list.len() {
                                     let inner_list = delgation_list.get(i).as_list().unwrap();
 
                                     let delegation = inner_list.get(0).as_bytes().unwrap();
-                                    let delegation = PubKey(delegation.try_into().unwrap());
+                                    let delegation = PubKey(delegation);
                                     let weight = inner_list.get(1).as_int().unwrap();
                                     let weight =
                                         u32::from_i32(weight.as_i32_or_fail().unwrap()).unwrap();
-                                    delegations.insert(VotingKeyHex(delegation), weight.into());
+                                    delegations.push((VotingKeyHex(delegation), weight.into()));
                                 }
 
-                                VotingPowerSource::Delegated(delegations)
+                                VotingKey::Delegated(delegations)
                             }
                         };
 
@@ -96,8 +96,9 @@ impl DataProvider for MockDbProvider {
 
                         SignedRegistration {
                             tx_id: TxId::from(tx_id),
+                            slot: 0,
                             registration: Registration {
-                                voting_power_source,
+                                voting_key,
                                 stake_key,
                                 rewards_address: RewardsAddress(rewards_address.to_bytes().into()),
                                 nonce: Nonce(
@@ -116,6 +117,7 @@ impl DataProvider for MockDbProvider {
                             signature: Signature {
                                 inner: Sig(sig.to_bytes().try_into().unwrap()),
                             },
+                            stake_key_hash: vec![0; 29],
                         }
                     })
                     .collect()
@@ -126,11 +128,8 @@ impl DataProvider for MockDbProvider {
             }))
     }
 
-    fn stake_values(
-        &self,
-        stake_addrs: &[StakeKeyHex],
-    ) -> color_eyre::Result<HashMap<StakeKeyHex, BigDecimal>> {
-        Ok(stake_addrs
+    fn stake_values(&self, stake_addrs: &[StakeKeyHash]) -> DashMap<StakeKeyHash, BigDecimal> {
+        stake_addrs
             .iter()
             .map(|addr| {
                 let big_num = self
@@ -139,9 +138,9 @@ impl DataProvider for MockDbProvider {
                     .get(&hex::encode(addr))
                     .unwrap_or(&BigNum::zero())
                     .to_string();
-                (*addr, BigDecimal::from_str(&big_num).unwrap())
+                (addr.clone(), BigDecimal::from_str(&big_num).unwrap())
             })
-            .collect())
+            .collect()
     }
 }
 

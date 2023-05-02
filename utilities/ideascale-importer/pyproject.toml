@@ -37,6 +37,7 @@ typing-inspect = "0.8.0"
 typing-extensions = "4.4.0"
 yarl = "1.8.2"
 loguru = "^0.6.0"
+brotlipy = "^0.7.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "0.991"
@@ -56,9 +57,6 @@ line-length = 132
 target-version = 'py311'
 exclude = ["tests"]
 extend-select = ["D"]
-
-[tool.poetry.scripts]
-ideascale-importer = "ideascale_importer.app:app"
 
 [build-system]
 requires = ["poetry-core"]

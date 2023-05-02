@@ -79,6 +79,27 @@ cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
 psql -e -f setup/graphql-setup.sql ${@}
 '''
 
+# Setup the local database graphql configuration.
+[tasks.local-event-db-graphql-init]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+export ADMIN_ROLE_PW="CHANGE_ME"
+export ANON_ROLE_PW="CHANGE_ME"
+export ADMIN_USER_PW="CHANGE_ME"
+
+psql -e -U postgres -f setup/graphql-setup.sql \
+    -v dbName=CatalystEventDev \
+    -v dbUser="catalyst-event-dev" \
+    -v adminUserFirstName="Admin" \
+    -v adminUserLastName="Default" \
+    -v adminUserAbout="Default Admin User" \
+    -v adminUserEmail="admin.default@projectcatalyst.io"
+'''
+
+
 # Setup the local database ready to run the migrations.
 [tasks.local-event-db-setup]
 workspace = false
@@ -87,7 +108,6 @@ dependencies = [
     "local-event-db-init",
     "local-event-db-graphql-init",
     "run-event-db-migration",
-    "local-db-test-data-setup",
     "local-db-historic-data-setup"
 ]
 
@@ -120,7 +140,11 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/docs-db.sql ${@}
+psql -e -U postgres -f setup/setup-db.sql \
+    -v dbName=CatalystEventDocs \
+    -v dbDescription="Local Docs Catalayst Event DB" \
+    -v dbUser="catalyst-event-docs" \
+    -v dbUserPw="CHANGE_ME"
 '''
 
 # Setup the local database ready to run the migrations.

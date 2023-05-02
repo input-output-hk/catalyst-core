@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""],["LogFormat","Format of the logger."],["LogOutput","Output of the logger."]],"struct":[["LogGuard",""],["LogSettings",""]]};

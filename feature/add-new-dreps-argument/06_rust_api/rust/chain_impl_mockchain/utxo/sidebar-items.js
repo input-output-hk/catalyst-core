@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"struct":[["Entry","structure used by the iterator or the getter of the UTxO `Ledger`"],["EntryOwned","structure used by the iterator or the getter of the UTxO `Ledger`"],["Iter",""],["Ledger","Ledger of UTXO"],["Values",""]]};

@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"vit_servicing_station_lib":[["impl&lt;__ST, __DB&gt; FromSqlRow&lt;__ST, __DB&gt; for <a class=\"enum\" href=\"vit_servicing_station_lib/db/models/community_advisors_reviews/enum.ReviewRanking.html\" title=\"enum vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewRanking\">ReviewRanking</a><span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;__DB: Backend,<br>&nbsp;&nbsp;&nbsp;&nbsp;Self: FromSql&lt;__ST, __DB&gt;,</span>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

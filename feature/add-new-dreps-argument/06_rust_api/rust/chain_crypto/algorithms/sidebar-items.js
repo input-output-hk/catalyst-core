@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["vrf",""],["zkps",""]],"struct":[["Ed25519","ED25519 Signing Algorithm"],["Ed25519Bip32","Ed25519 BIP32 Signature algorithm"],["Ed25519Extended","ED25519 Signing Algorithm with extended secret key"],["SumEd25519_12",""]]};

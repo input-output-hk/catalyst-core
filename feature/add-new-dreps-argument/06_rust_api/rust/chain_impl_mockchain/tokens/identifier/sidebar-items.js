@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["ParseError","Error during parsing the identifier string."]],"struct":[["TokenIdentifier","The unique identifier of a token."]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["SharesError",""],["VotePlanError",""]],"fn":[["get_vote_plan_by_id",""],["read_vote_plan_shares_from_file",""]],"struct":[["MemberVotePlanShares",""],["TallyDecryptShare",""],["VotePlanDecryptShares",""]]};

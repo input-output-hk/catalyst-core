@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["EvmActionType","Variants of supported EVM action types"]],"struct":[["EvmTransaction","Variants of supported EVM transactions"]]};

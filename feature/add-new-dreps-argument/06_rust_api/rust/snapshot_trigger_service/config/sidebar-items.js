@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""],["NetworkType",""]],"fn":[["read_config",""],["write_config",""]],"struct":[["Configuration",""],["ConfigurationBuilder",""],["JobParameters",""],["VotingToolsParams",""]]};

@@ -1,0 +1,226 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Configuration - Catalyst Voting System - Core Technology</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../.././book/assets/css/mdbook-admonish.css">
+        <link rel="stylesheet" href="../.././book/assets/css/open-in.css">
+        <link rel="stylesheet" href="../.././book/assets/theme/pagetoc.css">
+        <link rel="stylesheet" href="../.././book/assets/theme/css/chrome.css">
+        <link rel="stylesheet" href="../.././book/assets/theme/css/general.css">
+        <link rel="stylesheet" href="../.././book/assets/theme/css/variables.css">
+
+    </head>
+    <body>
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = 'hidden';
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item affix "><a href="../../00_prologue.html">Prologue</a></li><li class="chapter-item "><a href="../../01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item "><a href="../../02_core_ledger/index.html"><strong aria-hidden="true">2.</strong> Core Ledger</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/index.html"><strong aria-hidden="true">2.1.</strong> General Concepts</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/blockchain.html"><strong aria-hidden="true">2.1.1.</strong> Blockchain concepts</a></li><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/network.html"><strong aria-hidden="true">2.1.2.</strong> Network overview</a></li><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/node.html"><strong aria-hidden="true">2.1.3.</strong> Node organization</a></li><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/stake.html"><strong aria-hidden="true">2.1.4.</strong> Stake</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/index.html"><strong aria-hidden="true">2.2.</strong> Quickstart</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/01_command_line.html"><strong aria-hidden="true">2.2.1.</strong> Command line tools</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/02_passive_node.html"><strong aria-hidden="true">2.2.2.</strong> Starting a passive node</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/03_rest_api.html"><strong aria-hidden="true">2.2.3.</strong> REST Api</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/04_explorer.html"><strong aria-hidden="true">2.2.4.</strong> Explorer mode</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/05_leader_candidate.html"><strong aria-hidden="true">2.2.5.</strong> How to start a node as a leader candidate</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/index.html"><strong aria-hidden="true">2.3.</strong> Configuration</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/leadership.html"><strong aria-hidden="true">2.3.1.</strong> Leadership</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/logging.html"><strong aria-hidden="true">2.3.2.</strong> Logging</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/mempool.html"><strong aria-hidden="true">2.3.3.</strong> Mempool</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/network.html"><strong aria-hidden="true">2.3.4.</strong> Node network</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/prometheus.html"><strong aria-hidden="true">2.3.5.</strong> Prometheus</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/index.html"><strong aria-hidden="true">2.4.</strong> jcli</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/address.html"><strong aria-hidden="true">2.4.1.</strong> Address</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/certificate.html"><strong aria-hidden="true">2.4.2.</strong> Certificate</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/genesis.html"><strong aria-hidden="true">2.4.3.</strong> Genesis</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/key.html"><strong aria-hidden="true">2.4.4.</strong> cryptographic keys</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/rest.html"><strong aria-hidden="true">2.4.5.</strong> REST</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/transaction.html"><strong aria-hidden="true">2.4.6.</strong> Transaction</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/vote.html"><strong aria-hidden="true">2.4.7.</strong> Voting</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/index.html"><strong aria-hidden="true">2.5.</strong> Staking with Jörmungandr</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/delegating_stake.html"><strong aria-hidden="true">2.5.1.</strong> Delegating your stake</a></li><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/registering_stake_pool.html"><strong aria-hidden="true">2.5.2.</strong> Registering a stake pool</a></li><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/retiring_stake_pool.html"><strong aria-hidden="true">2.5.3.</strong> Retiring a stake pool</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/index.html"><strong aria-hidden="true">2.6.</strong> Advanced</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/01_the_genesis_block.html"><strong aria-hidden="true">2.6.1.</strong> genesis file</a></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/02_starting_bft_blockchain.html"><strong aria-hidden="true">2.6.2.</strong> starting a bft node</a></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/03_starting_genesis_praos_blockchain.html"><strong aria-hidden="true">2.6.3.</strong> starting a genesis blockchain</a></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/04_vote_fragments_voteplan_blockchain_relationships.html"><strong aria-hidden="true">2.6.4.</strong> How Vote plans, Vote Fragments and the blockchain transaction work and inter-relate</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/07_specs/index.html"><strong aria-hidden="true">2.7.</strong> Jormungandr Specifications</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/07_specs/migration.html"><strong aria-hidden="true">2.7.1.</strong> MIGRATION</a></li><li class="chapter-item "><a href="../../02_core_ledger/07_specs/network.html"><strong aria-hidden="true">2.7.2.</strong> Network</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/index.html"><strong aria-hidden="true">2.8.</strong> testing</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/08_testing/automation.html"><strong aria-hidden="true">2.8.1.</strong> jormungandr-automation</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/hersir.html"><strong aria-hidden="true">2.8.2.</strong> Hersir</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/integration_tests.html"><strong aria-hidden="true">2.8.3.</strong> jormungandr-integration-tests</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/loki.html"><strong aria-hidden="true">2.8.4.</strong> Loki</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/mjolnir.html"><strong aria-hidden="true">2.8.5.</strong> Mjolnir</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/thor.html"><strong aria-hidden="true">2.8.6.</strong> Thor</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/09_internal_design/index.html"><strong aria-hidden="true">2.9.</strong> Internal Design</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/09_internal_design/01_auto-start.html"><strong aria-hidden="true">2.9.1.</strong> Automatic deployment of the voting blockchain</a></li><li class="chapter-item "><a href="../../02_core_ledger/09_internal_design/02_permissionless_auth.html"><strong aria-hidden="true">2.9.2.</strong> Permissionless Auth</a></li></ol></li></ol></li><li class="chapter-item expanded "><a href="../../03_core_testing/index.html"><strong aria-hidden="true">3.</strong> Catalyst testing User Guide</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/iapyx/index.html"><strong aria-hidden="true">3.1.</strong> Iapyx</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/iapyx/iapyx.html"><strong aria-hidden="true">3.1.1.</strong> Iapyx</a></li><li class="chapter-item "><a href="../../03_core_testing/iapyx/load.html"><strong aria-hidden="true">3.1.2.</strong> Iapyx Load</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/integration-tests/index.html"><strong aria-hidden="true">3.2.</strong> integration-tests</a></li><li class="chapter-item "><a href="../../03_core_testing/registration-service/index.html"><strong aria-hidden="true">3.3.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/registration-service/cli.html"><strong aria-hidden="true">3.3.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../../03_core_testing/registration-service/configuration.html"><strong aria-hidden="true">3.3.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/registration-verify-service/index.html"><strong aria-hidden="true">3.4.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/registration-verify-service/cli.html"><strong aria-hidden="true">3.4.1.</strong> Registration Verify CLI</a></li><li class="chapter-item "><a href="../../03_core_testing/registration-verify-service/configuration.html"><strong aria-hidden="true">3.4.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/snapshot-service/index.html"><strong aria-hidden="true">3.5.</strong> Snapshot trigger service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/snapshot-service/cli.html"><strong aria-hidden="true">3.5.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../../03_core_testing/snapshot-service/configuration.html"><strong aria-hidden="true">3.5.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/snapshot-wormhole/index.html"><strong aria-hidden="true">3.6.</strong> snapshot wormhole</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/snapshot-wormhole/configuration.html"><strong aria-hidden="true">3.6.1.</strong> Configuration</a></li></ol></li><li class="chapter-item expanded "><a href="../../03_core_testing/valgrind/index.html"><strong aria-hidden="true">3.7.</strong> valgrind</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../03_core_testing/valgrind/configuration.html" class="active"><strong aria-hidden="true">3.7.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/vitup/index.html"><strong aria-hidden="true">3.8.</strong> vitup</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/vitup/configuration.html"><strong aria-hidden="true">3.8.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation/index.html"><strong aria-hidden="true">3.8.2.</strong> Data Generation</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation/reset.html"><strong aria-hidden="true">3.8.2.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation/snapshot.html"><strong aria-hidden="true">3.8.2.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation.html"><strong aria-hidden="true">3.8.3.</strong> Data Generation</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/mock.html"><strong aria-hidden="true">3.8.4.</strong> Mock</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/mock_farm.html"><strong aria-hidden="true">3.8.5.</strong> Mock Farm</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/run_modes.html"><strong aria-hidden="true">3.8.6.</strong> Configuration modes</a></li></ol></li></ol></li><li class="chapter-item "><a href="../../04_core_vitss/index.html"><strong aria-hidden="true">4.</strong> Core VIT Servicing Station</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../04_core_vitss/testing.html"><strong aria-hidden="true">4.1.</strong> vit-servicing-station-tests</a></li></ol></li><li class="chapter-item "><a href="../../05_unified_platform/index.html"><strong aria-hidden="true">5.</strong> Unified Platform</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/index.html"><strong aria-hidden="true">5.1.</strong> Overview</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/01_cardano_nodes.html"><strong aria-hidden="true">5.1.1.</strong> Cardano Nodes</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/index.html"><strong aria-hidden="true">5.1.2.</strong> Bridge Pipeline</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/01_block_reader.html"><strong aria-hidden="true">5.1.2.1.</strong> Block Reader</a></li></ol></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/03_rest_http_service.html"><strong aria-hidden="true">5.1.3.</strong> REST HTTP Service</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/04_event_stream.html"><strong aria-hidden="true">5.1.4.</strong> Event Stream</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/index.html"><strong aria-hidden="true">5.1.5.</strong> Database</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/01_registration_db.html"><strong aria-hidden="true">5.1.5.1.</strong> Registrations Database</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/02_staked_ada_db.html"><strong aria-hidden="true">5.1.5.2.</strong> Staked ADA Database</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/03_transaction_state.html"><strong aria-hidden="true">5.1.5.3.</strong> Transaction State Database</a></li></ol></li></ol></li></ol></li><li class="chapter-item "><a href="../../06_rust_api/index.html"><strong aria-hidden="true">6.</strong> Rust API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../06_rust_api/rust_api.html"><strong aria-hidden="true">6.1.</strong> Rust API Documentation and Packages</a></li><li class="chapter-item "><a href="../../06_rust_api/rust_style_guide.html"><strong aria-hidden="true">6.2.</strong> 🦀 Rust Style Guide</a></li></ol></li><li class="chapter-item "><a href="../../07_web_api/index.html"><strong aria-hidden="true">7.</strong> Web API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../07_web_api/dbsync-explorer.html"><strong aria-hidden="true">7.1.</strong> dbSync Explorer HTTP/REST API V1</a></li><li class="chapter-item "><a href="../../07_web_api/vit-servicing-station-v0.html"><strong aria-hidden="true">7.2.</strong> VIT Servicing Station HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vit-testing-mock-farm-v0.html"><strong aria-hidden="true">7.3.</strong> VIT Testing Mock Farm HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vit-testing-mock-v0.html"><strong aria-hidden="true">7.4.</strong> VIT Testing Mock HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vote-ledger-v0.html"><strong aria-hidden="true">7.5.</strong> Vote Ledger HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vote-ledger-v1.html"><strong aria-hidden="true">7.6.</strong> Vote Ledger HTTP/REST API V1</a></li></ol></li><li class="chapter-item "><a href="../../97_CONTRIBUTING.html"><strong aria-hidden="true">8.</strong> Contributing to Catalyst Core</a></li><li class="chapter-item "><a href="../../98_CODE_OF_CONDUCT.html"><strong aria-hidden="true">9.</strong> Contributor Covenant Code of Conduct</a></li><li class="chapter-item "><a href="../../99_example_enhanced_markup.html"><strong aria-hidden="true">10.</strong> Example Enhanced Markup</a></li><li class="chapter-item affix "><a href="../../ZZ_suffix.html">Suffix</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Catalyst Voting System - Core Technology</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/input-output-hk/catalyst-core" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        <h1 id="configuration"><a class="header" href="#configuration">Configuration</a></h1>
+<p>This section describe configuration file which can be passed as argument when starting valgrind:</p>
+<ul>
+<li><code>address</code>: address on which valgrind will be exposed. By default: <code>127.0.0.1:8000</code>,</li>
+<li><code>vit-address</code>: vit servicing station address. By default: <code>127.0.0.1:3030</code>,</li>
+<li><code>node-address</code>: node address.  By default: <code>127.0.0.1:8080</code>,</li>
+<li><code>block0-path</code>: path to block0 executable,</li>
+<li><code>cert</code>: path to certificate (for enabling https). Optional,</li>
+<li><code>key</code>: path certificate key (for enabling https). Optional,</li>
+</ul>
+<p>Example:</p>
+<pre><code class="language-yaml">   &quot;address&quot;: &quot;127.0.0.1:8000&quot;,
+ &quot;vit-address&quot;: &quot;127.0.0.1:3030&quot;,
+ &quot;node-address&quot;: &quot;127.0.0.1:8080&quot;,
+ &quot;block0-path&quot;: &quot;./block0.bin&quot;,
+ &quot;cert&quot;: &quot;certificate.cert&quot;,
+ &quot;key&quot;: &quot;certificate.key&quot;,
+&quot;
+</code></pre>
+<footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/03_core_testing/valgrind/configuration.md">Edit this page on GitHub.</a></footer>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../03_core_testing/valgrind/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../../03_core_testing/vitup/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../03_core_testing/valgrind/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../../03_core_testing/vitup/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="../.././book/assets/theme/pagetoc.js"></script>
+
+
+    </body>
+</html>

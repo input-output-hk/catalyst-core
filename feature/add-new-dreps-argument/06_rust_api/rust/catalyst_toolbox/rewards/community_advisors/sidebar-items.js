@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["calculate_ca_rewards",""]],"struct":[["CaRewards",""],["FundSetting",""],["ProposalRewardSlots",""]],"type":[["ApprovedProposals",""],["CommunityAdvisor",""],["ProposalId",""],["ProposalsReviews",""],["Seed",""]]};

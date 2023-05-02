@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"snapshot_trigger_service":[["impl <a class=\"trait\" href=\"scheduler_service_lib/trait.RunContext.html\" title=\"trait scheduler_service_lib::RunContext\">RunContext</a>&lt;<a class=\"struct\" href=\"snapshot_trigger_service/config/struct.JobParameters.html\" title=\"struct snapshot_trigger_service::config::JobParameters\">JobParameters</a>, <a class=\"primitive\" href=\"https://doc.rust-lang.org/1.65.0/std/primitive.unit.html\">()</a>&gt; for <a class=\"struct\" href=\"snapshot_trigger_service/struct.Context.html\" title=\"struct snapshot_trigger_service::Context\">Context</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

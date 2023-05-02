@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"struct":[["SpendingCounter","Spending counter associated to an account."],["SpendingCounterIncreasing","Simple strategy to spend from multiple increasing counters"]]};

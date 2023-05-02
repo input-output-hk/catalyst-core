@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["new",""]],"struct":[["Account",""],["Address",""],["Rindex",""],["Root",""]]};

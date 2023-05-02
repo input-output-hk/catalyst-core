@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["POLICY_HASH_SIZE",""]],"struct":[["PolicyHash","blake2b_224 hash of a serialized minting policy"]]};

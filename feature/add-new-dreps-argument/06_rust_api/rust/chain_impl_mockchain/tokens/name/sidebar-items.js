@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["TOKEN_NAME_MAX_SIZE",""]],"struct":[["TokenName","A sequence of bytes serving as a token name. Tokens that share the same name but have different voting policies hashes are different tokens. A name can be empty. The maximum length of a token name is 32 bytes."],["TokenNameTooLong",""]]};

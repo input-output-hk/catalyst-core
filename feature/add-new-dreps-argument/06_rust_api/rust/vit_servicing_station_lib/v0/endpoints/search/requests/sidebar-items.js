@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Column",""],["Constraint",""],["OrderBy",""],["SearchResponse",""],["Table",""]],"struct":[["SearchCountQuery",""],["SearchQuery",""]]};

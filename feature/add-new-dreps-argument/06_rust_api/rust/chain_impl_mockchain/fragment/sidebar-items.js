@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Fragment","All possible messages recordable in the content"]],"mod":[["config",""],["test",""]],"struct":[["Contents","Block Contents"],["ContentsBuilder",""]],"type":[["BlockContentHash",""],["BlockContentSize",""],["FragmentId",""]]};

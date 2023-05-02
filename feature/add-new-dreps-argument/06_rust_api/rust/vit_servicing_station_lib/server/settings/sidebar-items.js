@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["LogLevel",""]],"fn":[["dump_settings_to_file",""],["load_settings_from_file",""]],"struct":[["Cors",""],["CorsOrigin",""],["ServiceSettings",""],["Tls",""]]};

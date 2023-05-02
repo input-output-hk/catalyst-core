@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["account","account based wallet, does not really have any Hierarchical element in it thought it is part of the `keygen` entity so adding it in"],["bip44",""],["rindex","random indexes wallet - 2 Level of randomly chosen hard derivation indexes Wallet"]],"struct":[["Key","convenient wrapper around the `Key`."],["KeyRange",""]]};

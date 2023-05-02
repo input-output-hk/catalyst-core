@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Code","Common error codes for network protocol requests."],["HandshakeError","An error that the future returned by the `handshake` method can resolve to."]],"struct":[["Error","Represents errors that can be returned by the node protocol implementation."]]};

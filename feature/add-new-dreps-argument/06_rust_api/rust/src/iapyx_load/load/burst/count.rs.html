@@ -1,0 +1,248 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vit-testing/iapyx/src/bin/load/burst/count.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>count.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../iapyx_load/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../iapyx_load/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../iapyx_load/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::load::{build_monitor, IapyxLoadCommandError};
+<span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>iapyx::{NodeLoad, NodeLoadConfig};
+<span class="kw">pub use </span>jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
+<span class="kw">use </span>jortestkit::load::ConfigurationBuilder;
+<span class="kw">use </span>std::path::PathBuf;
+<span class="kw">use </span>std::time::Duration;
+
+<span class="attribute">#[derive(Parser, Debug)]
+</span><span class="kw">pub struct </span>BurstCountIapyxLoadCommand {
+    <span class="doccomment">/// Prints nodes related data, like stats,fragments etc.
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;t&#39;</span>, long = <span class="string">&quot;threads&quot;</span>, default_value = <span class="string">&quot;3&quot;</span>)]
+    </span><span class="kw">pub </span>threads: usize,
+    <span class="doccomment">/// Address in format:
+    /// 127.0.0.1:8000
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;a&#39;</span>, long = <span class="string">&quot;address&quot;</span>, default_value = <span class="string">&quot;127.0.0.1:8000&quot;</span>)]
+    </span><span class="kw">pub </span>address: String,
+
+    <span class="doccomment">/// Amount of delay (in miliseconds) between requests
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;d&#39;</span>, long = <span class="string">&quot;delay&quot;</span>, default_value = <span class="string">&quot;10000&quot;</span>)]
+    </span><span class="kw">pub </span>delay: u64,
+
+    <span class="doccomment">/// Number of votes sent in single batch
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;b&#39;</span>, long = <span class="string">&quot;batch-size&quot;</span>, default_value = <span class="string">&quot;100&quot;</span>)]
+    </span><span class="kw">pub </span>batch_size: usize,
+
+    <span class="doccomment">/// How many requests per thread should be sent
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;n&#39;</span>, long = <span class="string">&quot;bursts-count&quot;</span>)]
+    </span><span class="kw">pub </span>count: u32,
+
+    <span class="doccomment">/// Qr codes source folder
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;q&#39;</span>, long = <span class="string">&quot;qr-codes-folder&quot;</span>)]
+    </span><span class="kw">pub </span>qr_codes_folder: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+
+    <span class="doccomment">/// Secrets source folder
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;s&#39;</span>, long = <span class="string">&quot;secrets-folder&quot;</span>)]
+    </span><span class="kw">pub </span>secrets_folder: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+
+    <span class="doccomment">/// Global pin for all qr codes
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;global-pin&quot;</span>, default_value = <span class="string">&quot;1234&quot;</span>)]
+    </span><span class="kw">pub </span>global_pin: String,
+
+    <span class="doccomment">/// Read pin from filename of each qr code
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;read-from-filename&quot;</span>)]
+    </span><span class="kw">pub </span>read_pin_from_filename: bool,
+
+    <span class="doccomment">/// Use https for sending fragments
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;h&#39;</span>, long = <span class="string">&quot;https&quot;</span>)]
+    </span><span class="kw">pub </span>use_https: bool,
+
+    <span class="doccomment">/// Print additional information
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;debug&quot;</span>)]
+    </span><span class="kw">pub </span>debug: bool,
+
+    <span class="doccomment">/// Update all accounts state before sending any vote
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;reuse-accounts-early&quot;</span>)]
+    </span><span class="kw">pub </span>reuse_accounts_early: bool,
+
+    <span class="doccomment">/// Update account state just before sending vote
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;reuse-accounts-lazy&quot;</span>)]
+    </span><span class="kw">pub </span>reuse_accounts_lazy: bool,
+
+    <span class="doccomment">/// How frequent (in seconds) to print status
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;status-pace&quot;</span>, default_value = <span class="string">&quot;1&quot;</span>)]
+    </span><span class="kw">pub </span>status_pace: u64,
+
+    <span class="doccomment">/// Pass criteria
+    </span><span class="attribute">#[clap(short = <span class="string">&#39;c&#39;</span>, long = <span class="string">&quot;criterion&quot;</span>)]
+    </span><span class="kw">pub </span>criterion: <span class="prelude-ty">Option</span>&lt;u8&gt;,
+
+    <span class="doccomment">/// Use v1 endpoint for sending votes
+    </span><span class="attribute">#[clap(long = <span class="string">&quot;v1&quot;</span>)]
+    </span><span class="kw">pub </span>use_v1: bool,
+
+    <span class="doccomment">/// Show progress. Available are (Monitor,Standard,None)
+    </span><span class="attribute">#[clap(
+        long = <span class="string">&quot;progress-bar-mode&quot;</span>,
+        default_value = <span class="string">&quot;Monitor&quot;</span>,
+        value_parser = parse_progress_bar_mode_from_str
+    )]
+    </span>progress_bar_mode: ProgressBarMode,
+
+    <span class="attribute">#[clap(default_value = <span class="string">&quot;direct&quot;</span>, long)]
+    </span><span class="kw">pub </span>voting_group: String,
+}
+
+<span class="kw">impl </span>BurstCountIapyxLoadCommand {
+    <span class="kw">pub fn </span>exec(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), IapyxLoadCommandError&gt; {
+        <span class="kw">let </span>config = <span class="self">self</span>.build_config();
+        <span class="kw">let </span>iapyx_load = NodeLoad::new(config);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(stats) = iapyx_load.start()<span class="question-mark">? </span>{
+            stats.print()
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
+
+    <span class="kw">fn </span>build_config(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; NodeLoadConfig {
+        <span class="kw">let </span>config = ConfigurationBuilder::requests_per_thread(<span class="self">self</span>.count)
+            .thread_no(<span class="self">self</span>.threads)
+            .step_delay(Duration::from_millis(<span class="self">self</span>.delay))
+            .fetch_limit(<span class="number">250</span>)
+            .monitor(build_monitor(<span class="kw-2">&amp;</span><span class="self">self</span>.progress_bar_mode))
+            .status_pace(Duration::from_secs(<span class="self">self</span>.status_pace))
+            .build();
+
+        NodeLoadConfig {
+            config,
+            use_v1: <span class="self">self</span>.use_v1,
+            batch_size: <span class="self">self</span>.batch_size,
+            criterion: <span class="self">self</span>.criterion,
+            address: <span class="self">self</span>.address.clone(),
+            qr_codes_folder: <span class="self">self</span>.qr_codes_folder.clone(),
+            reuse_accounts_early: <span class="self">self</span>.reuse_accounts_early,
+            reuse_accounts_lazy: <span class="self">self</span>.reuse_accounts_lazy,
+            secrets_folder: <span class="self">self</span>.secrets_folder.clone(),
+            global_pin: <span class="self">self</span>.global_pin.clone(),
+            read_pin_from_filename: <span class="self">self</span>.read_pin_from_filename,
+            use_https: <span class="self">self</span>.use_https,
+            debug: <span class="self">self</span>.debug,
+            voting_group: <span class="self">self</span>.voting_group.clone(),
+        }
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="iapyx_load" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0 (897e37553 2022-11-02)" ></div></body></html>

@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"chain_impl_mockchain":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.65.0/core/iter/traits/accum/trait.Sum.html\" title=\"trait core::iter::traits::accum::Sum\">Sum</a>&lt;<a class=\"struct\" href=\"chain_impl_mockchain/value/struct.Value.html\" title=\"struct chain_impl_mockchain::value::Value\">Value</a>&gt; for <a class=\"struct\" href=\"chain_impl_mockchain/value/struct.Value.html\" title=\"struct chain_impl_mockchain::value::Value\">Value</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Block0Error",""],["Error",""],["MatchingIdentifierWitness",""]],"struct":[["ApplyBlockLedger",""],["Ledger","Overall ledger structure."],["LedgerStaticParameters",""]],"type":[["OutputAddress",""],["OutputOldAddress",""]]};

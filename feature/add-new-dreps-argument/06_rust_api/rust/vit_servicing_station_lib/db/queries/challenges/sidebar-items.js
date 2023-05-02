@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["batch_insert_challenges",""],["query_all_challenges",""],["query_challenge_by_id",""],["query_challenge_proposals_by_id",""],["query_challenge_proposals_by_id_and_group_id",""],["query_challenges_by_fund_id",""]]};

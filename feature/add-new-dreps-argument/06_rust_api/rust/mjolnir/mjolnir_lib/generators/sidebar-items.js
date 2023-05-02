@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["AdversaryFragmentGenerator",""],["AdversaryVoteCastsGenerator",""],["BatchFragmentGenerator",""],["ExplorerRequestGen",""],["FragmentGenerator",""],["FragmentStatusProvider",""],["RestRequestGen",""],["TransactionGenerator",""],["VoteCastsGenerator",""]]};

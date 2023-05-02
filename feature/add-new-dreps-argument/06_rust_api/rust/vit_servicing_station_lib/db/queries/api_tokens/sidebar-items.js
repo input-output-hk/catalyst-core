@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":[["batch_insert_token_data",""],["insert_token","Insert a token asynchronously. This method is a wrapper over `insert_data_token` that uses the same approach synchronously for a complete formed APITokenData object related to the database model."],["insert_token_data",""],["query_token",""],["query_token_data_by_token",""]]};

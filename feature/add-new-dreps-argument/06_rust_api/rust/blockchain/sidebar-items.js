@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["EpochInfoError",""],["Error",""],["Event",""],["Selection",""]],"struct":[["Blockchain",""],["Checkpoints","different checkpoints in time of the blockchain"],["Configuration","configuration entries for the blockchain parameters"],["EpochInfo",""],["Reference",""]]};

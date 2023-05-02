@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["Certificate",""]],"struct":[["EvmMapping",""],["MintToken",""],["OwnerStakeDelegation",""],["PoolRegistration",""],["PoolRetirement","Retirement info for a pool"],["PoolUpdate",""],["StakeDelegation",""],["UpdateProposal",""],["UpdateVote",""],["VoteCast",""],["VotePlan",""],["VoteTally",""]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["API_TOKEN_HEADER","Header where token should be present in requests"]],"enum":[["State",""],["TokenError",""]],"fn":[["start_rest_server",""]],"mod":[["file_lister",""]],"struct":[["APIToken","API Token wrapper type"],["APITokenManager",""],["ControlContext",""],["ManagerService",""],["ServerStopper",""]],"type":[["ControlContextLock",""]]};

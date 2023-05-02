@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"db_sync_explorer":[["impl&lt;__DB:&nbsp;Backend&gt; QueryableByName&lt;__DB&gt; for <a class=\"struct\" href=\"db_sync_explorer/struct.BehindDuration.html\" title=\"struct db_sync_explorer::BehindDuration\">BehindDuration</a><span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;<a class=\"struct\" href=\"https://doc.rust-lang.org/1.65.0/std/time/struct.SystemTime.html\" title=\"struct std::time::SystemTime\">SystemTime</a>: FromSql&lt;Timestamp, __DB&gt;,</span>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,4 @@
+(function() {var implementors = {
+"hersir":[["impl <a class=\"trait\" href=\"jormungandr_automation/jormungandr/fragment_node/trait.FragmentNode.html\" title=\"trait jormungandr_automation::jormungandr::fragment_node::FragmentNode\">FragmentNode</a> for <a class=\"struct\" href=\"hersir/controller/struct.MonitorLegacyNode.html\" title=\"struct hersir::controller::MonitorLegacyNode\">LegacyNode</a>"],["impl <a class=\"trait\" href=\"jormungandr_automation/jormungandr/fragment_node/trait.FragmentNode.html\" title=\"trait jormungandr_automation::jormungandr::fragment_node::FragmentNode\">FragmentNode</a> for <a class=\"struct\" href=\"hersir/controller/struct.MonitorNode.html\" title=\"struct hersir::controller::MonitorNode\">Node</a>"]],
+"jormungandr_automation":[]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

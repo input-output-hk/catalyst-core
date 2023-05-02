@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":[["BranchCount",""],["StopCriteria",""]],"struct":[["StorageBuilder",""]]};

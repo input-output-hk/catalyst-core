@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Command","Main command"],["Config","Configuration. It contains 3 parts snapshot-service connection, servicing station configuration and parameters of single import (as we need to set e.g. tag under which our snapshot will be put)"]]};

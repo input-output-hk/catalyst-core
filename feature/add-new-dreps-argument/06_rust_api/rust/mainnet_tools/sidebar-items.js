@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":[["cardano_cli","Cardano CLI wrapper and mock"],["snapshot","Snapshot related tools or utils"],["voter_registration","Mock for voter registration. It can produce mocked catalyst registration. TODO: replace with mainnet wallet mock as it can produce real not mock catalyst registration"]]};

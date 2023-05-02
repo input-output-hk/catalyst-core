@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["ProposalDef",""],["ProposalDefBuilder",""],["StakePoolDef",""],["StakePoolDefBuilder",""],["StakePoolTemplate",""],["StakePoolTemplateBuilder",""],["VotePlanDef",""],["VotePlanDefBuilder",""],["WalletTemplate",""],["WalletTemplateBuilder",""]]};

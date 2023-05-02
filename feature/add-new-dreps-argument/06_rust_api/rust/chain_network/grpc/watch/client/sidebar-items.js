@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Client",""]],"type":[["BlockSubscription","The inbound subscription stream of block events."],["SyncMultiverseStream","The inbound stream of blocks sent in response to a [`Client::sync_multiverse`] request."],["TipSubscription","The inbound subscription stream of blockchain tip headers."]]};

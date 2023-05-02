@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":[["DELEGATION_RATIO_MAX_DECLS","The maximum number of pools"]],"enum":[["DelegationType","Set the choice of delegation:"]],"struct":[["AccountState",""],["DelegationRatio","Delegation Ratio type express a number of parts and a list of pools and their individual parts"],["Iter",""]]};

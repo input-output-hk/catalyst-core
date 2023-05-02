@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["NodeId","Represents a randomly generated node ID such as was present in subscription requests and responses in Jormungandr versions prior to 0.9 (as implemented in the old `network-grpc` crate)."],["TryFromBytesError",""]]};

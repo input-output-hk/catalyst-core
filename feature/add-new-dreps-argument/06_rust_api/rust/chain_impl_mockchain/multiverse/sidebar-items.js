@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Multiverse",""],["Ref","A RAII wrapper around a block identifier and the state pointer that keeps the state corresponding to the block pinned in memory."]]};

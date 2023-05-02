@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Hash","wrapper around the Blake2b256 hash"]]};

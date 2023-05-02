@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["AuthenticatedNodeId","A node ID accompanied with a signature."],["NodeId","Identifier of a network peer."],["NodeKeyPair","The key pair used to authenticate a network node, including the secret key."],["Peer",""]]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["Gossip",""],["Node","A gossip node in an opaque byte array representation."]],"type":[["Nodes",""]]};

@@ -20,7 +20,7 @@ pub struct SnapshotCmd {
     #[clap(short, long, value_parser = PathBuf::from_str)]
     snapshot: PathBuf,
     /// Path to the file containing all dreps information in json format.
-    #[clap(short, long, value_parser = PathBuf::from_str)]
+    #[clap(long, value_parser = PathBuf::from_str)]
     dreps: Option<PathBuf>,
     /// Registrations voting power threshold for eligibility
     #[clap(short, long)]

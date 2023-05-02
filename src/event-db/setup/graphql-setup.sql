@@ -1,173 +1,278 @@
+-- GraphQL Support and Security Schema
 
-\connect CatalystEventDev;
+-- This script requires a number of variables to be set.
+-- They will default if not set externally.
+-- These variables can be set on the "psql" command line.
+-- Passwords may optionally be set by ENV Vars.
+-- This script requires "psql" is run inside a POSIX compliant shell.
 
--- This is NOT part of our schema proper.  It exists to support GraphQL Admin authorization.
+-- VARIABLES:
 
-create schema private;
-alter default privileges in schema private revoke execute ON functions FROM public;
+-- The name of the Database to connect to.
+\if :{?dbName} \else
+  \set dbName CatalystEventDev
+\endif
 
-create extension if not exists "pgcrypto";
+-- The db user with full permissions on the DB.
+-- This is the user the GraphQL server will use by default.
+\if :{?dbUser} \else
+  \set dbUser 'catalyst-event-dev'
+\endif
+
+-- The `cat_admin` role password.
+\if :{?adminRolePw} \else
+  \set adminRolePw `echo ${ADMIN_ROLE_PW:-CHANGE_ME}`
+\endif
+
+-- The `cat_anon` role password.
+\if :{?anonRolePw} \else
+  \set anonRolePw `echo ${ANON_ROLE_PW:-CHANGE_ME}`
+\endif
+
+-- The default Admin User login we populate into the database.
+
+-- First Name
+\if :{?adminUserFirstName} \else
+  \set adminUserFirstName 'Admin'
+\endif
+
+-- Last Name
+\if :{?adminUserLastName} \else
+  \set adminUserLastName 'Default'
+\endif
+
+-- Description
+\if :{?adminUserAbout} \else
+  \set adminUserAbout 'Default Admin User'
+\endif
+
+-- Email Address (user login email).
+\if :{?adminUserEmail} \else
+  \set adminUserEmail 'admin.default@projectcatalyst.io'
+\endif
+
+-- Password.
+\if :{?adminUserPw} \else
+  \set adminUserPw `echo ${ADMIN_USER_PW:-CHANGE_ME}`
+\endif
+
+-- DISPLAY ALL VARIABLES
+\echo VARIABLES:
+\echo -> dbName ....................... = :dbName
+\echo -> dbUser ....................... = :dbUser
+\echo -> adminRolePw / $ADMIN_ROLE_PW . = :adminRolePw
+\echo -> anonRolePw / $ANON_ROLE_PW ... = :anonRolePw
+\echo -> adminUserFirstName ........... = :adminUserFirstName
+\echo -> adminUserLastName ............ = :adminUserLastName
+\echo -> adminUserAbout ............... = :adminUserAbout
+\echo -> adminUserEmail ............... = :adminUserEmail
+\echo -> adminUserPw / $ADMIN_USER_PW . = :adminUserPw
+
+
+-- SCHEMA STARTS HERE:
+
+\connect :dbName;
+-- This is NOT part of our schema proper.  It exists to support GraphQL Admin authorization ONLY.
+
+-- Purge old data incase we are running this again.
+DROP FUNCTION IF EXISTS private.current_acct;
+DROP FUNCTION IF EXISTS private.current_role;
+DROP FUNCTION IF EXISTS private.register_admin;
+DROP FUNCTION IF EXISTS private.authenticate;
+
+DROP TYPE IF EXISTS private.jwt_token;
+
+DROP TABLE IF EXISTS private.admin_account;
+
+DROP SCHEMA IF EXISTS private CASCADE;
+
+REVOKE ALL PRIVILEGES ON SCHEMA public FROM cat_admin, cat_anon CASCADE;
+REVOKE ALL PRIVILEGES ON DATABASE :"dbName" FROM cat_admin, cat_anon CASCADE;
+DROP ROLE IF EXISTS "cat_admin";
+DROP ROLE IF EXISTS "cat_anon";
+
+CREATE SCHEMA private;
+
+ALTER DEFAULT privileges IN SCHEMA private REVOKE EXECUTE ON functions FROM public;
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Defined Roles
-drop role if exists "cat_admin";
-create role "cat_admin" login password 'CHANGE_ME';
-comment on role "cat_admin" IS 'Full Administrator Access to the Database.';
-GRANT "cat_admin" TO "catalyst-event-dev"; -- Make this role available to our default DB user.
+CREATE ROLE "cat_admin" LOGIN PASSWORD :'adminRolePw';
 
-alter default privileges in schema public revoke EXECUTE ON FUNCTIONS FROM cat_admin;
-alter default privileges in schema private revoke EXECUTE ON FUNCTIONS FROM cat_admin;
+COMMENT ON ROLE "cat_admin" IS 'Full Administrator Access to the Database.';
 
-drop role if exists "cat_anon";
-create role "cat_anon" login password 'CHANGE_ME';
-comment on role "cat_anon" IS 'Unauthenticated Read Only Access to the Database.';
-GRANT "cat_anon" TO "catalyst-event-dev"; -- Make this role available to our default DB user.
+GRANT "cat_admin" TO :"dbUser";
 
-alter default privileges in schema public revoke EXECUTE ON FUNCTIONS FROM cat_anon;
-alter default privileges in schema private revoke EXECUTE ON FUNCTIONS FROM cat_anon;
+-- Make this role available to our default DB user.
+ALTER DEFAULT privileges IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM cat_admin;
+
+ALTER DEFAULT privileges IN SCHEMA private REVOKE EXECUTE ON FUNCTIONS FROM cat_admin;
+
+CREATE ROLE "cat_anon" LOGIN PASSWORD :'anonRolePw';
+
+COMMENT ON ROLE "cat_anon" IS 'Unauthenticated Read Only Access to the Database.';
+
+GRANT "cat_anon" TO :"dbUser";
+
+-- Make this role available to our default DB user.
+ALTER DEFAULT privileges IN SCHEMA public REVOKE EXECUTE ON FUNCTIONS FROM cat_anon;
+
+ALTER DEFAULT privileges IN SCHEMA private REVOKE EXECUTE ON FUNCTIONS FROM cat_anon;
 
 -- Allow all roles "usage" to private and public schemas
+GRANT usage ON SCHEMA public TO :"dbUser", "cat_admin", "cat_anon";
 
-grant usage on schema public  to "catalyst-event-dev", "cat_admin", "cat_anon";
-grant usage on schema private to "catalyst-event-dev", "cat_admin", "cat_anon";
+GRANT usage ON SCHEMA private TO :"dbUser", "cat_admin", "cat_anon";
 
 -- All roles can read the database
-grant select on all tables in schema public to "catalyst-event-dev", "cat_anon", "cat_admin";
+GRANT SELECT ON ALL tables IN SCHEMA public TO :"dbUser", "cat_anon", "cat_admin";
 
 -- Only admin level roles can change data.
-grant insert, update, delete on all tables in schema public to "catalyst-event-dev", "cat_admin";
+GRANT INSERT, UPDATE, DELETE ON ALL tables IN SCHEMA public TO :"dbUser", "cat_admin";
 
 -- Table where we store our authenticated users information.
 -- No user has direct access to this table.
-drop table if exists private.admin_account;
-create table private.admin_account (
-    id              serial primary key,
-    first_name      text not null check (char_length(first_name) < 80),
-    last_name       text check (char_length(last_name) < 80),
-    role            text,
-    about           text,
-    email           text not null unique check (email ~* '^.+@.+\..+$'),
-    password_hash   text not null,
-    created_at      timestamp default now()
+CREATE TABLE private.admin_account(
+  id serial PRIMARY KEY,
+  first_name text NOT NULL CHECK (char_length(first_name) < 80),
+  last_name text CHECK (char_length(last_name) < 80),
+  role text,
+  about text,
+  email text NOT NULL UNIQUE CHECK (email ~* '^.+@.+\..+$'),
+  password_hash text NOT NULL,
+  created_at timestamp DEFAULT now()
 );
 
 -- Create default ADMIN user.
+INSERT INTO private.admin_account(first_name, last_name, ROLE, about, email, password_hash)
+  VALUES (
+    :'adminUserFirstName',
+    :'adminUserLastName',
+    'cat_admin',
+    :'adminUserAbout',
+    :'adminUserEmail',
+    crypt(:'adminUserPw', gen_salt('bf')));
 
-insert into private.admin_account (first_name, last_name, role, about, email, password_hash) values
-  ('Admin', 'Default', 'cat_admin', 'Default Admin User', 'admin.default@nowhere.io', crypt('CHANGE_ME', gen_salt('bf')));
-SELECT * from private.admin_account;
+-- Test that we added the default account OK.
+SELECT
+  *
+FROM
+  private.admin_account;
 
 -- Function to get details about the current authenticated account.
 -- Anyone can call this.
-drop function if exists private.current_acct;
-create function private.current_acct() returns private.admin_account as $$
-declare
+CREATE FUNCTION private.current_acct()
+  RETURNS private.admin_account
+  AS $$
+DECLARE
   account private.admin_account;
-begin
-  select a.* into account
-  from private.admin_account as a
-  where id = nullif(current_setting('jwt.claims.admin_id', true), '')::integer;
-
-  if not FOUND then
-    account.id := -1;
-    account.first_name := ('');
-    account.role := ('cat_anon');
-    account.email := ('');
+BEGIN
+  SELECT
+    a.* INTO account
+  FROM
+    private.admin_account AS a
+  WHERE
+    id = nullif(current_setting('jwt.claims.admin_id', TRUE), '')::integer;
+  IF NOT FOUND THEN
+    account.id := - 1;
+    account.first_name :=('');
+    account.role :=('cat_anon');
+    account.email :=('');
     account.created_at := now();
-  end if;
+  END IF;
+  account.password_hash :=('xxx');
+  RETURN account;
+END;
+$$
+LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
-  account.password_hash := ('xxx');
+COMMENT ON FUNCTION private.current_acct() IS 'Gets the account identified by our JWT.';
 
-  return account;
-end;
-$$ language plpgsql stable security definer;
-
-comment on function private.current_acct() is 'Gets the account identified by our JWT.';
-
-grant execute on function private.current_acct() to "catalyst-event-dev", "cat_anon", "cat_admin";
+GRANT EXECUTE ON FUNCTION private.current_acct() TO :"dbUser", "cat_anon", "cat_admin";
 
 -- Test if we can get the current account.
-select private.current_acct();
+SELECT
+  private.current_acct();
 
 -- Get users current role.
-drop function if exists private.current_role;
-create function private.current_role() returns text as $$
-  select current_setting('jwt.claims.role', true);
-$$ language sql stable;
+CREATE FUNCTION private.current_role()
+  RETURNS text
+  AS $$
+  SELECT
+    current_setting('jwt.claims.role', TRUE);
+$$
+LANGUAGE sql STABLE;
 
 -- Function to register an admin.
 -- Should ONLY be executable by admin level accounts.
-drop function if exists private.register_admin;
-create function private.register_admin(
-  first_name text,
-  last_name text,
-  email text,
-  password text,
-  role text default 'cat_admin'
-) returns private.admin_account as $$
-declare
+CREATE FUNCTION private.register_admin(first_name text, last_name text, email text, PASSWORD text, ROLE text DEFAULT 'cat_admin')
+  RETURNS private.admin_account
+  AS $$
+DECLARE
   admin private.admin_account;
-  role TEXT;
-begin
+  ROLE TEXT;
+BEGIN
+  SELECT
+    *
+  FROM
+    private.current_role() INTO ROLE;
+  RAISE NOTICE 'role = %', ROLE;
+  IF ROLE IS NULL OR ROLE != 'cat_admin' THEN
+    RAISE EXCEPTION SQLSTATE '90001'
+      USING MESSAGE = 'Not Authorized';
+    END IF;
+    INSERT INTO private.admin_account(first_name, last_name, ROLE, email, password_hash)
+      VALUES (first_name, last_name, ROLE, email, crypt(PASSWORD, gen_salt('bf')))
+    RETURNING
+      * INTO admin;
+    admin.password_hash :=('xxx');
+    RETURN admin;
+END;
+$$
+LANGUAGE plpgsql STRICT SECURITY DEFINER;
 
-  SELECT * FROM private.current_role() into role;
-  RAISE NOTICE 'role = %', role;
+COMMENT ON FUNCTION private.register_admin(text, text, text, text, text) IS 'Registers a single admin user and creates an account.';
 
-  if role IS NULL or role != 'cat_admin' then
-    RAISE EXCEPTION SQLSTATE '90001' USING MESSAGE = 'Not Authorized';
-  end if;
+GRANT EXECUTE ON FUNCTION private.register_admin(text, text, text, text, text) TO :"dbUser", "cat_admin";
 
-  insert into private.admin_account (first_name, last_name, role, email, password_hash) values
-    (first_name, last_name, role, email, crypt(password, gen_salt('bf')))
-    returning * into admin;
-
-    admin.password_hash := ('xxx');
-
-  return admin;
-end;
-$$ language plpgsql strict security definer;
-
-comment on function private.register_admin(text, text, text, text, text) is 'Registers a single admin user and creates an account.';
-
-grant execute on function private.register_admin(text, text, text, text, text) to "catalyst-event-dev", "cat_admin";
-
--- Create a default Admin User.  CHANGE_ME...
-select private.register_admin('Default','Admin','nothing@nowhere.com','CHANGE_ME');
 
 -- Define special type for JWT Authentication logic in server
-
-drop type if exists private.jwt_token;
-create type private.jwt_token as (
-  role text,
+CREATE TYPE private.jwt_token AS (
+  ROLE text,
   admin_id integer,
   exp bigint
 );
 
 -- Function to authenticate, GraphQL server uses this to generate the JWT.
-
-drop function if exists private.authenticate;
-create function private.authenticate(
-  email text,
-  password text
-) returns private.jwt_token as $$
-declare
+CREATE FUNCTION private.authenticate(email text, PASSWORD text)
+  RETURNS private.jwt_token
+  AS $$
+DECLARE
   account private.admin_account;
-begin
-  select a.* into account
-  from private.admin_account as a
-  where a.email = $1;
+BEGIN
+  SELECT
+    a.* INTO account
+  FROM
+    private.admin_account AS a
+  WHERE
+    a.email = $1;
+  IF account.password_hash = crypt(PASSWORD, account.password_hash) THEN
+    RETURN (account.role,
+      account.id,
+      extract(epoch FROM (now() + interval '1:00:00')))::private.jwt_token;
+  ELSE
+    RETURN NULL;
+  END IF;
+END;
+$$
+LANGUAGE plpgsql STRICT SECURITY DEFINER;
 
-  if account.password_hash = crypt(password, account.password_hash) then
-    return (account.role, account.id, extract(epoch from (now() + interval '1:00:00')))::private.jwt_token;
-  else
-    return null;
-  end if;
-end;
-$$ language plpgsql strict security definer;
+COMMENT ON FUNCTION private.authenticate(text, text) IS 'Creates a JWT token that will securely identify a person and give them certain permissions. This token expires in 1 hours.';
 
-comment on function private.authenticate(text, text) is 'Creates a JWT token that will securely identify a person and give them certain permissions. This token expires in 1 hours.';
+GRANT EXECUTE ON FUNCTION private.authenticate(text, text) TO :"dbUser", "cat_anon", "cat_admin";
 
-grant execute on function private.authenticate(text, text) to "catalyst-event-dev", "cat_anon", "cat_admin";
-
--- Test it works with the default user.  CHANGE_ME...
-select private.authenticate('admin.default@nowhere.io','CHANGE_ME');
+-- Test it works with the default user.
+SELECT
+  private.authenticate(:'adminUserEmail', :'adminUserPw');
 

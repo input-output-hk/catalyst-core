@@ -1,6 +1,7 @@
 """Snapshot importer."""
 
 import asyncio
+import brotli
 from datetime import datetime
 import json
 import os
@@ -30,8 +31,6 @@ class SnapshotToolConfig:
     """Configuration for snapshot_tool."""
 
     path: str
-    max_time: datetime
-
 
 @dataclass
 class CatalystToolboxConfig:
@@ -94,10 +93,10 @@ class Registration:
     """Represents a voter registration."""
 
     delegations: List[Tuple[str, int]] | str
-    reward_address: str
+    rewards_address: str
     stake_public_key: str
     voting_power: int
-    voting_purpose: int
+    voting_purpose: Optional[int]
 
 
 class OutputDirectoryDoesNotExist(Exception):
@@ -130,6 +129,10 @@ class WriteDbDataFailed(Exception):
     ...
 
 
+class FinalSnapshotAlreadyPresent(Exception):
+    ...
+
+
 class Importer:
     """Snapshot importer."""
 
@@ -139,6 +142,7 @@ class Importer:
         database_url: str,
         event_id: int,
         output_dir: str,
+        network_id: str,
         raw_snapshot_file: Optional[str] = None,
         dreps_file: Optional[str] = None,
     ):
@@ -147,10 +151,16 @@ class Importer:
         self.database_url = database_url
         self.event_id = event_id
         self.dreps: List[Drep] = []
-        self.snapshot_tool_max_slot: Optional[int] = None
-        self.catalyst_toolbox_min_stake_threshold: Optional[int] = None
-        self.catalyst_toolbox_voting_power_cap: Optional[float] = None
+        self.lastest_block_time: Optional[datetime] = None
+        self.latest_block_slot_no: Optional[int] = None
+        self.registration_snapshot_slot: Optional[int] = None
+        self.registration_snapshot_block_time: Optional[datetime] = None
+        self.registration_snapshot_time: Optional[datetime] = None
+        self.snapshot_start_time: Optional[datetime] = None
+        self.min_stake_threshold: Optional[int] = None
+        self.voting_power_cap: Optional[float] = None
         self.catalyst_toolbox_out_file = os.path.join(output_dir, "voter_groups.json")
+        self.network_id = network_id
 
         if raw_snapshot_file is None:
             self.raw_snapshot_tool_file = os.path.join(output_dir, "snapshot_tool_out.json")
@@ -164,50 +174,96 @@ class Importer:
         if not os.path.exists(output_dir):
             raise OutputDirectoryDoesNotExist(output_dir)
 
+    async def _check_preconditions(self):
+        conn = await ideascale_importer.db.connect(self.database_url)
+
+        # Check if a final snapshot already exists
+        row = await conn.fetchrow("SELECT final FROM snapshot WHERE event = $1", self.event_id)
+        if row is not None and row["final"]:
+            raise FinalSnapshotAlreadyPresent()
+
+        await conn.close()
+
     async def _fetch_parameters(self):
+        # Fetch event parameters
+        conn = await ideascale_importer.db.connect(self.database_url)
+
+        row = await conn.fetchrow(
+            "SELECT registration_snapshot_time, snapshot_start, voting_power_threshold, max_voting_power_pct FROM event WHERE row_id = $1",
+            self.event_id,
+        )
+        if row is None:
+            raise FetchParametersFailed("Failed to get event parameters from the database: " f"event_id={self.event_id} not found")
+
+        self.voting_power_cap = row["max_voting_power_pct"]
+        self.min_stake_threshold = row["voting_power_threshold"]
+        self.snapshot_start_time = row["snapshot_start"]
+        self.registration_snapshot_time = row["registration_snapshot_time"]
+
+        if self.snapshot_start_time is None or self.registration_snapshot_time is None:
+            raise FetchParametersFailed(
+                "Missing snapshot timestamps for event in the database:"
+                f" snapshot_start={None if self.snapshot_start_time is None else self.snapshot_start_time.isoformat()}"
+                f" registration_snapshot_time={None if self.registration_snapshot_time is None else self.registration_snapshot_time.isoformat()}"
+            )
+
+        logger.info(
+            "Got event parameters",
+            min_stake_threshold=self.min_stake_threshold,
+            voting_power_cap=float(self.voting_power_cap),
+            snapshot_start=None if self.snapshot_start_time is None else self.snapshot_start_time.isoformat(),
+            registration_snapshot_time=None
+            if self.registration_snapshot_time is None
+            else self.registration_snapshot_time.isoformat(),
+        )
+
+        await conn.close()
+
         if not self.skip_snapshot_tool_execution:
             # Fetch max slot
-            logger.info("Querying max slot parameter")
             conn = await ideascale_importer.db.connect(
                 f"postgres://{self.config.dbsync_database.user}:"
                 + f"{self.config.dbsync_database.password}@{self.config.dbsync_database.host}"
                 f"/{self.config.dbsync_database.db}"
             )
 
+            # Fetch slot number and time from the block right before or equal the registration snapshot time
             row = await conn.fetchrow(
-                "SELECT slot_no FROM block WHERE time <= $1 ORDER BY time DESC LIMIT 1", self.config.snapshot_tool.max_time
+                "SELECT slot_no, time FROM block WHERE time <= $1 AND slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
+                self.registration_snapshot_time,
             )
-
             if row is None:
                 raise FetchParametersFailed(
-                    "Failed to get max_slot parameter from db_sync database: " "no data returned by the query"
+                    "Failed to get registration snapshot block data from db_sync database: " "no data returned by the query"
                 )
 
-            self.snapshot_tool_max_slot = row["slot_no"]
+            self.registration_snapshot_slot = row["slot_no"]
+            self.registration_snapshot_block_time = row["time"]
             logger.info(
-                "Got max_slot for max_time",
-                snapshot_tool_max_slot=self.snapshot_tool_max_slot,
-                max_time=self.config.snapshot_tool.max_time.isoformat(),
+                "Got registration snapshot block data",
+                slot_no=self.registration_snapshot_slot,
+                block_time=self.registration_snapshot_block_time.isoformat(),
+            )
+
+            row = await conn.fetchrow(
+                "SELECT slot_no, time FROM block WHERE slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
+            )
+            if row is None:
+                raise FetchParametersFailed(
+                    "Failed to get latest block time and slot number from db_sync database:" "no data returned by the query"
+                )
+
+            self.latest_block_slot_no = row["slot_no"]
+            self.lastest_block_time = row["time"]
+            logger.info(
+                "Got latest block data",
+                time=self.lastest_block_time.isoformat(),
+                slot_no=self.latest_block_slot_no,
             )
 
             await conn.close()
         else:
             logger.info("Skipping querying max slot parameter")
-
-        # Fetch min_stake_threshold and voting_power_cap
-        conn = await ideascale_importer.db.connect(self.database_url)
-
-        row = await conn.fetchrow("SELECT voting_power_threshold, max_voting_power_pct FROM event WHERE row_id = $1", self.event_id)
-        if row is None:
-            raise FetchParametersFailed(
-                "Failed to get min_stake_threshold and voting_power_cap parameters from the event database: "
-                + f"event_id={self.event_id} not found"
-            )
-
-        self.catalyst_toolbox_voting_power_cap = row["max_voting_power_pct"]
-        self.catalyst_toolbox_min_stake_threshold = row["voting_power_threshold"]
-
-        await conn.close()
 
     async def _fetch_gvc_dreps_list(self):
         logger.info("Fetching drep list from GVC")
@@ -223,19 +279,31 @@ class Importer:
     async def _run_snapshot_tool(self):
         snapshot_tool_cmd = (
             f"{self.config.snapshot_tool.path}"
-            f"--db-user {self.config.dbsync_database.user}"
+            f" --db-user {self.config.dbsync_database.user}"
             f" --db-pass {self.config.dbsync_database.password}"
             f" --db-host {self.config.dbsync_database.host}"
             f" --db {self.config.dbsync_database.db}"
-            f" --min-slot 0 - -max-slot {self.snapshot_tool_max_slot}"
+            f" --min-slot 0 --max-slot {self.registration_snapshot_slot}"
+            f" --network-id {self.network_id}"
             f" --out-file {self.raw_snapshot_tool_file}"
         )
 
         await run_cmd("snapshot_tool", snapshot_tool_cmd)
 
+        # Process snapshot_tool output file to handle the case when voting_purpose is null.
+        # We are setting it to 0 which is the value for Catalyst.
+        with open(self.raw_snapshot_tool_file, "r") as f:
+            snapshot_tool_out = json.load(f)
+            for r in snapshot_tool_out:
+                if r["voting_purpose"] is None:
+                    r["voting_purpose"] = 0
+
+        with open(self.raw_snapshot_tool_file, "w") as f:
+            json.dump(snapshot_tool_out, f)
+
     async def _run_catalyst_toolbox_snapshot(self):
         # Could happen when the event in the database does not have these set
-        if self.catalyst_toolbox_min_stake_threshold is None or self.catalyst_toolbox_voting_power_cap is None:
+        if self.min_stake_threshold is None or self.voting_power_cap is None:
             raise RunCatalystToolboxSnapshotFailed(
                 "min_stake_threshold and voting_power_cap must be set " "either as CLI arguments or in the database"
             )
@@ -243,8 +311,8 @@ class Importer:
         catalyst_toolbox_cmd = (
             f"{self.config.catalyst_toolbox.path} snapshot"
             f" -s {self.raw_snapshot_tool_file}"
-            f" -m {self.catalyst_toolbox_min_stake_threshold}"
-            f" -v {self.catalyst_toolbox_voting_power_cap}"
+            f" -m {self.min_stake_threshold}"
+            f" -v {self.voting_power_cap}"
             f" --output-format json {self.catalyst_toolbox_out_file}"
         )
 
@@ -295,16 +363,56 @@ class Importer:
 
             await asyncio.sleep(0)
 
+        is_snapshot_final = False
+        should_update_final = False
+
+        if self.lastest_block_time is not None and self.snapshot_start_time is not None:
+            is_snapshot_final = self.lastest_block_time >= self.snapshot_start_time
+            should_update_final = True
+            logger.info(
+                "Setting snapshot final flag",
+                final=is_snapshot_final,
+                snapshot_start=self.snapshot_start_time.isoformat(),
+                latest_block_time=self.lastest_block_time.isoformat(),
+            )
+
+        compressed_snapshot_tool_data = brotli.compress(bytes(snapshot_tool_data_raw_json, "utf-8"))
+        logger.debug(
+            "Compressed snapshot_tool data", size=len(compressed_snapshot_tool_data), original_size=len(snapshot_tool_data_raw_json)
+        )
+
+        compressed_catalyst_toolbox_data = brotli.compress(bytes(catalyst_toolbox_data_raw_json, "utf-8"))
+        logger.debug(
+            "Compressed catalyst_toolbox data",
+            size=len(compressed_catalyst_toolbox_data),
+            original_size=len(catalyst_toolbox_data_raw_json),
+        )
+
+        compressed_dreps_data = brotli.compress(bytes(json.dumps(self.dreps), "utf-8"))
+        logger.debug("Compressed DREPs data", size=len(compressed_dreps_data), original_size=len(json.dumps(self.dreps)))
+
+        if self.lastest_block_time is None:
+            raise WriteDbDataFailed("lastest_block_time not set")
+        if self.registration_snapshot_time is None:
+            raise WriteDbDataFailed("registration_snapshot_time not set")
+        if self.registration_snapshot_slot is None:
+            raise WriteDbDataFailed("registration_snapshot_slot not set")
+        if self.latest_block_slot_no is None:
+            raise WriteDbDataFailed("latest_block_slot_no not set")
+
         snapshot = models.Snapshot(
+            row_id=0,
             event=self.event_id,
-            as_at=datetime.utcnow(),
-            last_updated=datetime.utcnow(),
-            final=False,
+            as_at=self.registration_snapshot_time,
+            as_at_slotno=self.registration_snapshot_slot,
+            last_updated=self.lastest_block_time,
+            last_updated_slotno=self.latest_block_slot_no,
+            final=is_snapshot_final,
             dbsync_snapshot_cmd=os.path.basename(self.config.snapshot_tool.path),
-            dbsync_snapshot_data=snapshot_tool_data_raw_json.encode(),
-            drep_data=json.dumps(self.dreps).encode(),
+            dbsync_snapshot_data=compressed_snapshot_tool_data,
+            drep_data=compressed_dreps_data,
             catalyst_snapshot_cmd=os.path.basename(self.config.catalyst_toolbox.path),
-            catalyst_snapshot_data=catalyst_toolbox_data_raw_json.encode(),
+            catalyst_snapshot_data=compressed_catalyst_toolbox_data,
         )
 
         voters: Dict[str, models.Voter] = {}
@@ -358,16 +466,26 @@ class Importer:
         conn = await ideascale_importer.db.connect(self.database_url)
 
         async with conn.transaction():
-            snapshot_row_id = await ideascale_importer.db.upsert(conn, snapshot, ["event"], returning="row_id")
-            if snapshot_row_id is None:
+            # Do not update the final column if we are not sure about it.
+            snapshot_update_excluded_cols = ["final"]
+            if should_update_final:
+                snapshot_update_excluded_cols = []
+
+            inserted_snapshot = await ideascale_importer.db.upsert(
+                conn,
+                snapshot,
+                ["event"],
+                exclude_update_cols=snapshot_update_excluded_cols,
+            )
+            if inserted_snapshot is None:
                 raise WriteDbDataFailed("Failed to upsert snapshot")
 
             for c in contributions:
-                c.snapshot_id = snapshot_row_id
+                c.snapshot_id = inserted_snapshot.row_id
             for v in voters.values():
-                v.snapshot_id = snapshot_row_id
+                v.snapshot_id = inserted_snapshot.row_id
 
-            await ideascale_importer.db.delete_snapshot_data(conn, snapshot_row_id)
+            await ideascale_importer.db.delete_snapshot_data(conn, inserted_snapshot.row_id)
             await ideascale_importer.db.insert_many(conn, contributions)
             await ideascale_importer.db.insert_many(conn, list(voters.values()))
 

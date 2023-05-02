@@ -47,8 +47,6 @@ def import_all(
     """Import all event data from IdeaScale for a given event."""
     configure_logger(log_level, log_format)
 
-    configure_logger(log_level, log_format)
-
     async def inner(
         event_id: int,
         campaign_group_id: int,

@@ -2,12 +2,14 @@
 
 import dataclasses
 from datetime import datetime
-from typing import Any, Mapping, Optional
+from typing import Any, ClassVar, Mapping, Optional, Set
 
 
 @dataclasses.dataclass
 class Model:
     """Base class for all models."""
+
+    exclude_from_insert: ClassVar[Set[str]] = set()
 
     @staticmethod
     def table() -> str:
@@ -48,6 +50,9 @@ class Event(Model):
 class Challenge(Model):
     """Represents a database objective."""
 
+    exclude_from_insert: ClassVar[Set[str]] = {"row_id"}
+
+    row_id: int
     id: int
     event: int
     category: str
@@ -192,9 +197,14 @@ class Contribution(Model):
 class Snapshot(Model):
     """Represents a database snapshot."""
 
+    exclude_from_insert: ClassVar[Set[str]] = {"row_id"}
+
+    row_id: int
     event: int
     as_at: datetime
+    as_at_slotno: int
     last_updated: datetime
+    last_updated_slotno: int
     final: bool
     dbsync_snapshot_cmd: Optional[str]
     dbsync_snapshot_data: Optional[bytes]

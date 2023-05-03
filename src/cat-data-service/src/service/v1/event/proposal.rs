@@ -49,7 +49,7 @@ async fn proposals_exec(
         objective.0
     );
 
-    let event = state
+    let proposals = state
         .event_db
         .get_proposals(
             event,
@@ -58,7 +58,7 @@ async fn proposals_exec(
             proposals_query.offset,
         )
         .await?;
-    Ok(event)
+    Ok(proposals)
 }
 
 async fn proposal_exec(
@@ -72,11 +72,11 @@ async fn proposal_exec(
         proposal.0,
     );
 
-    let event = state
+    let proposal = state
         .event_db
         .get_proposal(event, objective, proposal)
         .await?;
-    Ok(event)
+    Ok(proposal)
 }
 
 /// Need to setup and run a test event db instance

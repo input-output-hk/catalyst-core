@@ -2,7 +2,7 @@ use crate::{
     error::Error,
     types::event::{
         objective::ObjectiveId,
-        review::{AdvisorReview, Rating},
+        review::{AdvisorReview, Rating, ReviewType},
     },
     types::event::{proposal::ProposalId, EventId},
     EventDB,
@@ -19,6 +19,15 @@ pub trait ReviewQueries: Sync + Send + 'static {
         limit: Option<i64>,
         offset: Option<i64>,
     ) -> Result<Vec<AdvisorReview>, Error>;
+
+    async fn get_review_types(
+        &self,
+        event: EventId,
+        objective: ObjectiveId,
+        proposal: ProposalId,
+        limit: Option<i64>,
+        offset: Option<i64>,
+    ) -> Result<Vec<ReviewType>, Error>;
 }
 
 impl EventDB {
@@ -28,10 +37,22 @@ impl EventDB {
         INNER JOIN objective on proposal.objective = objective.row_id
         WHERE objective.event = $1 AND proposal.objective = $2 AND proposal.id = $3
         LIMIT $4 OFFSET $5;";
+
     const RATINGS_PER_REVIEW_QUERY: &'static str =
         "SELECT review_rating.metric, review_rating.rating, review_rating.note
         FROM review_rating
         WHERE review_rating.review_id = $1;";
+
+    const REVIEW_TYPES_QUERY: &'static str =
+        "SELECT review_metric.row_id, review_metric.name, review_metric.description,
+        review_metric.min, review_metric.max, review_metric.map
+        FROM review_metric
+        INNER JOIN review_rating on review_metric.row_id = review_rating.metric
+        INNER JOIN proposal_review on review_rating.review_id = proposal_review.row_id
+        INNER JOIN proposal on proposal.row_id = proposal_review.proposal_id
+        INNER JOIN objective on proposal.objective = objective.row_id
+        WHERE objective.event = $1 AND proposal.objective = $2 AND proposal.id = $3
+        LIMIT $4 OFFSET $5;";
 }
 
 #[async_trait]
@@ -81,6 +102,45 @@ impl ReviewQueries for EventDB {
 
         Ok(reviews)
     }
+
+    async fn get_review_types(
+        &self,
+        event: EventId,
+        objective: ObjectiveId,
+        proposal: ProposalId,
+        limit: Option<i64>,
+        offset: Option<i64>,
+    ) -> Result<Vec<ReviewType>, Error> {
+        let conn = self.pool.get().await?;
+
+        let rows = conn
+            .query(
+                Self::REVIEW_TYPES_QUERY,
+                &[
+                    &event.0,
+                    &objective.0,
+                    &proposal.0,
+                    &limit,
+                    &offset.unwrap_or(0),
+                ],
+            )
+            .await?;
+        let mut review_types = Vec::new();
+        for row in rows {
+            review_types.push(ReviewType {
+                id: row.try_get("row_id")?,
+                name: row.try_get("name")?,
+                description: row.try_get("description")?,
+                min: row.try_get("min")?,
+                max: row.try_get("max")?,
+                note: None,
+                map: vec![],
+                group: "group".to_string(),
+            })
+        }
+
+        Ok(review_types)
+    }
 }
 
 /// Need to setup and run a test event db instance
@@ -94,7 +154,6 @@ impl ReviewQueries for EventDB {
 mod tests {
     use super::*;
     use crate::establish_connection;
-    use std::collections::BTreeSet;
 
     #[tokio::test]
     async fn get_reviews_test() {
@@ -107,10 +166,6 @@ mod tests {
 
         assert_eq!(
             vec![
-                AdvisorReview {
-                    assessor: "assessor 3".to_string(),
-                    ratings: vec![],
-                },
                 AdvisorReview {
                     assessor: "assessor 1".to_string(),
                     ratings: vec![
@@ -135,10 +190,12 @@ mod tests {
                     assessor: "assessor 2".to_string(),
                     ratings: vec![],
                 },
-            ]
-            .into_iter()
-            .collect::<BTreeSet<_>>(),
-            reviews.into_iter().collect::<BTreeSet<_>>()
+                AdvisorReview {
+                    assessor: "assessor 3".to_string(),
+                    ratings: vec![],
+                },
+            ],
+            reviews
         );
 
         let reviews = event_db
@@ -172,10 +229,8 @@ mod tests {
                     assessor: "assessor 2".to_string(),
                     ratings: vec![],
                 },
-            ]
-            .into_iter()
-            .collect::<BTreeSet<_>>(),
-            reviews.into_iter().collect::<BTreeSet<_>>()
+            ],
+            reviews
         );
 
         let reviews = event_db
@@ -193,10 +248,8 @@ mod tests {
                     assessor: "assessor 3".to_string(),
                     ratings: vec![],
                 },
-            ]
-            .into_iter()
-            .collect::<BTreeSet<_>>(),
-            reviews.into_iter().collect::<BTreeSet<_>>()
+            ],
+            reviews
         );
 
         let reviews = event_db
@@ -208,10 +261,54 @@ mod tests {
             vec![AdvisorReview {
                 assessor: "assessor 2".to_string(),
                 ratings: vec![],
-            },]
-            .into_iter()
-            .collect::<BTreeSet<_>>(),
-            reviews.into_iter().collect::<BTreeSet<_>>()
+            },],
+            reviews
+        );
+    }
+
+    #[tokio::test]
+    async fn get_review_types_test() {
+        let event_db = establish_connection(None).await.unwrap();
+
+        let review_types = event_db
+            .get_review_types(EventId(1), ObjectiveId(1), ProposalId(1), None, None)
+            .await
+            .unwrap();
+
+        assert_eq!(
+            vec![
+                ReviewType {
+                    id: 1,
+                    name: "impact".to_string(),
+                    description: "Impact Rating".to_string(),
+                    min: 0,
+                    max: 5,
+                    note: None,
+                    map: vec![],
+                    group: "group".to_string(),
+                },
+                ReviewType {
+                    id: 2,
+                    name: "feasibility".to_string(),
+                    description: "Feasibility Rating".to_string(),
+                    min: 0,
+                    max: 5,
+                    note: None,
+                    map: vec![],
+                    group: "group".to_string(),
+                },
+                ReviewType {
+                    id: 3,
+                    name: "auditability".to_string(),
+                    description: "Auditability Rating".to_string(),
+                    min: 0,
+                    max: 5,
+                    note: None,
+                    map: vec![],
+                    group: "group".to_string(),
+                }
+            ],
+            review_types
         );
     }
 }

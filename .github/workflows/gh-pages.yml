@@ -77,7 +77,7 @@ jobs:
         with:
           driver-opts: network=host
           entrypoint: cargo
-          args: make build-docs
+          args: make build-docs -U postgres
 
       # On PUSH or PR we deploy docs to a sub-directory named after the branch.
       # This lets us review the docs as rendered, and not just the markdown.

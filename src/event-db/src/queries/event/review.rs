@@ -51,9 +51,8 @@ impl EventDB {
         INNER JOIN objective_review_metric on review_metric.row_id = objective_review_metric.metric
         INNER JOIN review_rating on review_metric.row_id = review_rating.metric
         INNER JOIN proposal_review on review_rating.review_id = proposal_review.row_id
-        INNER JOIN proposal on proposal.row_id = proposal_review.proposal_id
-        INNER JOIN objective on proposal.objective = objective.row_id
-        WHERE objective.event = $1 AND proposal.objective = $2 AND proposal.id = $3
+        INNER JOIN objective on objective_review_metric.objective = objective.row_id
+        WHERE objective.event = $1 AND objective.row_id = $2 AND proposal_review.proposal_id = $3
         LIMIT $4 OFFSET $5;";
 }
 
@@ -295,9 +294,9 @@ mod tests {
                     description: Some("Impact Rating".to_string()),
                     min: 0,
                     max: 5,
-                    note: None,
                     map: vec![],
-                    group: Some("group".to_string()),
+                    note: None,
+                    group: Some("review_group 1".to_string()),
                 },
                 ReviewType {
                     id: 2,
@@ -305,9 +304,9 @@ mod tests {
                     description: Some("Feasibility Rating".to_string()),
                     min: 0,
                     max: 5,
-                    note: None,
                     map: vec![],
-                    group: Some("group".to_string()),
+                    note: Some(true),
+                    group: Some("review_group 2".to_string()),
                 },
                 ReviewType {
                     id: 5,
@@ -315,7 +314,6 @@ mod tests {
                     description: Some("VPA Ranking of the review".to_string()),
                     min: 0,
                     max: 3,
-                    note: None,
                     map: vec![
                         json!(
                             {"name":"Excellent","desc":"Excellent Review"}
@@ -325,7 +323,8 @@ mod tests {
                         json!({"name":"FilteredOut","desc":"Exclude this review"}).to_string(),
                         json!({"name":"NA", "desc":"Not Applicable"}).to_string()
                     ],
-                    group: Some("group".to_string()),
+                    note: Some(false),
+                    group: None,
                 }
             ],
             review_types

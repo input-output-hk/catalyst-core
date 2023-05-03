@@ -7,8 +7,8 @@ pub struct ReviewType {
     pub description: Option<String>,
     pub min: i32,
     pub max: i32,
-    pub note: Option<bool>,
     pub map: Vec<String>,
+    pub note: Option<bool>,
     pub group: Option<String>,
 }
 

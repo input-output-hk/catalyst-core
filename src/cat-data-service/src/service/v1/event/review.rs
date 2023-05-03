@@ -99,7 +99,7 @@ mod tests {
                             note: Some("note 2".to_string()),
                         },
                         Rating {
-                            review_type: 3,
+                            review_type: 5,
                             score: 20,
                             note: Some("note 3".to_string()),
                         }
@@ -145,7 +145,7 @@ mod tests {
                             note: Some("note 2".to_string()),
                         },
                         Rating {
-                            review_type: 3,
+                            review_type: 5,
                             score: 20,
                             note: Some("note 3".to_string()),
                         }

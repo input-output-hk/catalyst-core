@@ -45,8 +45,10 @@ impl EventDB {
 
     const REVIEW_TYPES_QUERY: &'static str =
         "SELECT review_metric.row_id, review_metric.name, review_metric.description,
-        review_metric.min, review_metric.max, review_metric.map
+        review_metric.min, review_metric.max, review_metric.map,
+        objective_review_metric.note, objective_review_metric.review_group
         FROM review_metric
+        INNER JOIN objective_review_metric on review_metric.row_id = objective_review_metric.metric
         INNER JOIN review_rating on review_metric.row_id = review_rating.metric
         INNER JOIN proposal_review on review_rating.review_id = proposal_review.row_id
         INNER JOIN proposal on proposal.row_id = proposal_review.proposal_id
@@ -127,15 +129,23 @@ impl ReviewQueries for EventDB {
             .await?;
         let mut review_types = Vec::new();
         for row in rows {
+            let map = row.try_get::<_, Option<serde_json::Value>>("map")?;
+            let map = map
+                .and_then(|map| {
+                    map.as_array()
+                        .map(|array| array.iter().map(|el| el.to_string()).collect())
+                })
+                .unwrap_or_default();
+
             review_types.push(ReviewType {
+                map,
                 id: row.try_get("row_id")?,
                 name: row.try_get("name")?,
                 description: row.try_get("description")?,
                 min: row.try_get("min")?,
                 max: row.try_get("max")?,
-                note: None,
-                map: vec![],
-                group: "group".to_string(),
+                note: row.try_get("note")?,
+                group: row.try_get("review_group")?,
             })
         }
 
@@ -152,6 +162,8 @@ impl ReviewQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
     use crate::establish_connection;
 
@@ -180,7 +192,7 @@ mod tests {
                             note: Some("note 2".to_string()),
                         },
                         Rating {
-                            review_type: 3,
+                            review_type: 5,
                             score: 20,
                             note: Some("note 3".to_string()),
                         }
@@ -219,7 +231,7 @@ mod tests {
                             note: Some("note 2".to_string()),
                         },
                         Rating {
-                            review_type: 3,
+                            review_type: 5,
                             score: 20,
                             note: Some("note 3".to_string()),
                         }
@@ -280,32 +292,40 @@ mod tests {
                 ReviewType {
                     id: 1,
                     name: "impact".to_string(),
-                    description: "Impact Rating".to_string(),
+                    description: Some("Impact Rating".to_string()),
                     min: 0,
                     max: 5,
                     note: None,
                     map: vec![],
-                    group: "group".to_string(),
+                    group: Some("group".to_string()),
                 },
                 ReviewType {
                     id: 2,
                     name: "feasibility".to_string(),
-                    description: "Feasibility Rating".to_string(),
+                    description: Some("Feasibility Rating".to_string()),
                     min: 0,
                     max: 5,
                     note: None,
                     map: vec![],
-                    group: "group".to_string(),
+                    group: Some("group".to_string()),
                 },
                 ReviewType {
-                    id: 3,
-                    name: "auditability".to_string(),
-                    description: "Auditability Rating".to_string(),
+                    id: 5,
+                    name: "vpa_ranking".to_string(),
+                    description: Some("VPA Ranking of the review".to_string()),
                     min: 0,
-                    max: 5,
+                    max: 3,
                     note: None,
-                    map: vec![],
-                    group: "group".to_string(),
+                    map: vec![
+                        json!(
+                            {"name":"Excellent","desc":"Excellent Review"}
+                        )
+                        .to_string(),
+                        json!({"name":"Good","desc":"Could be improved."}).to_string(),
+                        json!({"name":"FilteredOut","desc":"Exclude this review"}).to_string(),
+                        json!({"name":"NA", "desc":"Not Applicable"}).to_string()
+                    ],
+                    group: Some("group".to_string()),
                 }
             ],
             review_types

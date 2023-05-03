@@ -4,12 +4,12 @@ use serde::Serialize;
 pub struct ReviewType {
     pub id: i32,
     pub name: String,
-    pub description: String,
+    pub description: Option<String>,
     pub min: i32,
     pub max: i32,
     pub note: Option<bool>,
     pub map: Vec<String>,
-    pub group: String,
+    pub group: Option<String>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -36,12 +36,12 @@ mod tests {
         let review_type = ReviewType {
             id: 1,
             name: "name".to_string(),
-            description: "description".to_string(),
+            description: Some("description".to_string()),
             min: 1,
             max: 2,
             note: Some(true),
             map: vec!["map".to_string()],
-            group: "group".to_string(),
+            group: Some("group".to_string()),
         };
         let json = serde_json::to_value(&review_type).unwrap();
 

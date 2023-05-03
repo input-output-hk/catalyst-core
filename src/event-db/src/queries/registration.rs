@@ -129,11 +129,11 @@ impl RegistrationQueries for EventDB {
                 voting_group,
             },
             as_at: voter
-                .try_get::<&'static str, NaiveDateTime>("as_at")?
+                .try_get::<_, NaiveDateTime>("as_at")?
                 .and_local_timezone(Utc)
                 .unwrap(),
             last_updated: voter
-                .try_get::<&'static str, NaiveDateTime>("last_updated")?
+                .try_get::<_, NaiveDateTime>("last_updated")?
                 .and_local_timezone(Utc)
                 .unwrap(),
             is_final: voter.try_get("final")?,
@@ -194,11 +194,11 @@ impl RegistrationQueries for EventDB {
         Ok(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
             as_at: delegator
-                .try_get::<&'static str, NaiveDateTime>("as_at")?
+                .try_get::<_, NaiveDateTime>("as_at")?
                 .and_local_timezone(Utc)
                 .unwrap(),
             last_updated: delegator
-                .try_get::<&'static str, NaiveDateTime>("last_updated")?
+                .try_get::<_, NaiveDateTime>("last_updated")?
                 .and_local_timezone(Utc)
                 .unwrap(),
             is_final: delegator.try_get("final")?,

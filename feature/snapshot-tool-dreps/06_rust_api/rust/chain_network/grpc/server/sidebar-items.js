@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Builder","Builder to customize the gRPC server."],["NodeService",""]],"type":[["Server",""]]};

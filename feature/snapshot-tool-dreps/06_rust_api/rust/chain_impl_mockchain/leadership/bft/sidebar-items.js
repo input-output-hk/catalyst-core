@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["BftRoundRobinIndex",""],["LeadershipData","The BFT Leader selection is based on a round robin of the expected leaders"]]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Identifier","Account Identifier (also used as Public Key)"]],"type":[["AccountAlg",""],["Ledger","The public ledger of all accounts associated with their current state"],["Witness",""]]};

@@ -528,6 +528,9 @@
 <a href="#528" id="528">528</a>
 <a href="#529" id="529">529</a>
 <a href="#530" id="530">530</a>
+<a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -543,10 +546,12 @@
 
 <span class="kw">mod </span>objective;
 <span class="kw">mod </span>proposal;
+<span class="kw">mod </span>review;
 
 <span class="kw">pub fn </span>event(state: Arc&lt;State&gt;) -&gt; Router {
     <span class="kw">let </span>objective = objective::objective(state.clone());
     <span class="kw">let </span>proposal = proposal::proposal(state.clone());
+    <span class="kw">let </span>review = review::review(state.clone());
 
     Router::new()
         .nest(
@@ -560,7 +565,8 @@
                     }),
                 )
                 .merge(objective)
-                .merge(proposal),
+                .merge(proposal)
+                .merge(review),
         )
         .route(
             <span class="string">&quot;/events&quot;</span>,
@@ -586,7 +592,7 @@
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
-        <span class="string">&quot;events_exec, limit: {0:?}, offset: {1:?}&quot;</span>,
+        <span class="string">&quot;events_query, limit: {0:?}, offset: {1:?}&quot;</span>,
         events_query.limit,
         events_query.offset
     );

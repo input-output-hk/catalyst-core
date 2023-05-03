@@ -272,7 +272,7 @@
     objectives_query: Query&lt;ObjectivesQuery&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Objective&gt;, Error&gt; {
-    <span class="macro">tracing::debug!</span>(<span class="string">&quot;objectives_exec, event: {0}&quot;</span>, event.<span class="number">0</span>);
+    <span class="macro">tracing::debug!</span>(<span class="string">&quot;objectives_query, event: {0}&quot;</span>, event.<span class="number">0</span>);
 
     <span class="kw">let </span>event = state
         .event_db

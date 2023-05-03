@@ -360,7 +360,7 @@
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Voter, Error&gt; {
     <span class="macro">tracing::debug!</span>(
-        <span class="string">&quot;voter_exec: voting_key: {0}, eid: {1:?}&quot;</span>,
+        <span class="string">&quot;voter_query: voting_key: {0}, eid: {1:?}&quot;</span>,
         voting_key,
         eid_query.eid
     );
@@ -375,7 +375,7 @@
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Delegator, Error&gt; {
     <span class="macro">tracing::debug!</span>(
-        <span class="string">&quot;delegator_exec: stake_public_key: {0}, eid: {1:?}&quot;</span>,
+        <span class="string">&quot;delegator_query: stake_public_key: {0}, eid: {1:?}&quot;</span>,
         stake_public_key,
         eid_query.eid
     );

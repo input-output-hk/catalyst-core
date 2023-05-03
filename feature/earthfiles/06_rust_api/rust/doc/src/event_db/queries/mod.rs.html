@@ -13,8 +13,12 @@
 <a href="#13" id="13">13</a>
 <a href="#14" id="14">14</a>
 <a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="self">self</span>::{
-    event::{objective::ObjectiveQueries, proposal::ProposalQueries, EventQueries},
+    event::{
+        objective::ObjectiveQueries, proposal::ProposalQueries, review::ReviewQueries, EventQueries,
+    },
     registration::RegistrationQueries,
 };
 <span class="kw">use </span><span class="kw">crate</span>::EventDB;
@@ -23,7 +27,7 @@
 <span class="kw">pub mod </span>registration;
 
 <span class="kw">pub trait </span>EventDbQueries:
-    RegistrationQueries + EventQueries + ObjectiveQueries + ProposalQueries
+    RegistrationQueries + EventQueries + ObjectiveQueries + ProposalQueries + ReviewQueries
 {
 }
 

@@ -30,8 +30,10 @@ tags:
     description: Information about the objectives in which all the people in a defined group decide on an important question.
   - name: proposal
     description: Information on the proposals to be considered in context with their objective.
+  - name: review
+    description: Information on the proposal's reviews to be considered in context with their objective.
   - name: registration
-    description: 'Information relating to Voter Registration, Delegations and Calculated Voting Power.'
+    description: Information relating to Voter Registration, Delegations and Calculated Voting Power.
   - name: ballot
     description: Ballot and Voting operations.
   - name: search
@@ -182,6 +184,7 @@ paths:
       summary: Get summary all available review types for this objective.
       tags:
         - proposal
+        - review
       description: |
         Lists all available review types used on this events proposal.
       responses:
@@ -228,6 +231,7 @@ paths:
       summary: Get reviews related to a proposal
       tags:
         - proposal
+        - review
       description: |
         Retrieves advisor reviews information for the provided proposal id.
       responses:

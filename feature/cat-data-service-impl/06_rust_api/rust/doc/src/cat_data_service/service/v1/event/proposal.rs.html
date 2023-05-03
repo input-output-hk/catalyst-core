@@ -309,7 +309,7 @@
         objective.<span class="number">0
     </span>);
 
-    <span class="kw">let </span>event = state
+    <span class="kw">let </span>proposals = state
         .event_db
         .get_proposals(
             event,
@@ -318,7 +318,7 @@
             proposals_query.offset,
         )
         .<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(event)
+    <span class="prelude-val">Ok</span>(proposals)
 }
 
 <span class="kw">async fn </span>proposal_exec(
@@ -332,11 +332,11 @@
         proposal.<span class="number">0</span>,
     );
 
-    <span class="kw">let </span>event = state
+    <span class="kw">let </span>proposal = state
         .event_db
         .get_proposal(event, objective, proposal)
         .<span class="kw">await</span><span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(event)
+    <span class="prelude-val">Ok</span>(proposal)
 }
 
 <span class="doccomment">/// Need to setup and run a test event db instance

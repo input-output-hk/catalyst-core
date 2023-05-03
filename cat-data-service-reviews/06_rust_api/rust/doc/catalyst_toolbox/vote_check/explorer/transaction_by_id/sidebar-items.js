@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS","OPERATION_NAME","QUERY","__QUERY_WORKAROUND"],"enum":["__Field"],"struct":["ResponseData","TransactionByIdTransaction","TransactionByIdTransactionBlocks","TransactionByIdTransactionBlocksBranches","Variables","__FieldVisitor","__Visitor"],"type":["Boolean","Float","ID","Int"]};

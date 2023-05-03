@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["Delegations","__Field"],"mod":["serde_impl","tests"],"struct":["VotingRegistration","__DeserializeWith","__FieldVisitor","__Visitor"],"type":["MainnetRewardAddress","MainnetStakeAddress"]};

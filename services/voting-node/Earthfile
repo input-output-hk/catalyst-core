@@ -26,10 +26,12 @@ docker:
     COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
     COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
     COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
+    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
 
     COPY ../../src/jormungandr/jormungandr+build/deps/* /app/deps/
     COPY ../../src/jormungandr/jcli+build/deps/* /app/deps/
     COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/deps/* /app/deps/
+    COPY ../../src/voting-tools-rs+build/deps/* /app/deps/
 
     #ENV LD_LIBRARY_PATH=/app/deps
     ENV PATH=/app:$PATH

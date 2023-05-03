@@ -1,7 +1,7 @@
 # Set the Earthly version to 0.7
 VERSION 0.7
 
-# Define the nix stage, which installs Nix and sets up a user to run it
+# Installs and configures Nix
 nix:
     FROM debian:stable-slim
     ARG user=user
@@ -33,8 +33,8 @@ nix:
 
     SAVE IMAGE --cache-hint
 
-# Define the builder stage, which uses Nix to build the Rust project
-builder:
+# Configures the Nix devshell and adds with_nix script
+devshell:
     FROM +nix
 
     ARG user=user
@@ -64,35 +64,80 @@ builder:
     WORKDIR /work
     SAVE IMAGE --cache-hint
 
-# Define the install-chef stage, which installs the cargo-chef tool
-install-chef:
-    FROM +builder
-    RUN with_nix cargo install --debug cargo-chef
+# Installs and configures the Rust toolchain
+rust-toolchain:
+    FROM +devshell
 
-# Define the prepare-cache stage, which prepares the build cache
+    ARG rustup_url="https://static.rust-lang.org/rustup/archive/1.26.0/x86_64-unknown-linux-gnu/rustup-init"
+    ENV PATH="${HOME}/.cargo/bin:${PATH}"
+
+    # Install build dependencies
+    RUN sudo apt-get update && \
+        sudo apt-get install -y --no-install-recommends \
+        build-essential \
+        libssl-dev \
+        libpq-dev \
+        libsqlite3-dev \
+        protobuf-compiler
+
+    # Download and verify the Rustup installer
+    RUN curl \
+        --fail \
+        --remote-name \
+        --location \
+        $rustup_url
+    RUN curl \
+        --fail \
+        --remote-name \
+        --location \
+        $rustup_url.sha256
+    RUN sed -i 's| .*rustup-init| rustup-init|' rustup-init.sha256 && \
+        sha256sum --check rustup-init.sha256
+
+    # Install the Rust toolchain
+    RUN chmod +x rustup-init && \
+        ./rustup-init -y --default-toolchain none
+
+    # Cleanup
+    RUN rm rustup-init rustup-init.sha256
+
+    # Force rustup to initialize the toolchain from the rust-toolchain file
+    COPY rust-toolchain .
+    RUN rustup show
+
+# Installs Cargo chef
+install-chef:
+    FROM +rust-toolchain
+    RUN cargo install --debug cargo-chef
+
+# Prepares the local cache
 prepare-cache:
     FROM +install-chef
     COPY --dir src Cargo.lock Cargo.toml .
-    RUN with_nix cargo chef prepare
+    RUN cargo chef prepare
     SAVE ARTIFACT recipe.json
     SAVE IMAGE --cache-hint
 
-# Define the build-cache stage, which builds the cache
+# Builds the local cache
 build-cache:
     FROM +install-chef
     COPY +prepare-cache/recipe.json ./
-    RUN with_nix cargo chef cook --release
+    RUN cargo chef cook --release
     SAVE ARTIFACT target
     SAVE ARTIFACT $CARGO_HOME cargo_home
     SAVE IMAGE --cache-hint
 
-# Define the build-workspace
-build-workspace:
-    FROM +builder
+# This is the default builder that all other builders should inherit from
+builder:
+    FROM +rust-toolchain
     COPY --dir src Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target
     SAVE ARTIFACT src
+
+# This is the default deployment that all other deployments should inherit from
+deployment:
+    FROM debian:stable-slim
 
 # Define the all stage, which builds and tags all Docker images
 all:
@@ -129,5 +174,5 @@ ci:
 
 # Define the test stage, which runs the Rust project's tests
 test:
-    FROM +builder
-    RUN with_nix cargo --version
+    FROM +devshell
+    RUN cargo --version

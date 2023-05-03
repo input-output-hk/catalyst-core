@@ -1,30 +1,21 @@
 VERSION 0.7
 
 build:
-    FROM ../../../+build-workspace
-    RUN with_nix cargo build --locked --release --bin jcli
+    FROM ../../../+builder
+    RUN cargo build --locked --release --bin jcli
 
-    # Collect linked libraries to a common location and patch the binary
-    RUN mkdir deps && with_nix collect-libs target/release/jcli deps
-    RUN with_nix patchelf --set-rpath /app/deps target/release/jcli
-    RUN with_nix patchelf --set-interpreter /app/deps/ld-linux-x86-64.so.2 target/release/jcli
-
-    # Store the artifact and deps in a temporary directory, so that it can be
-    # used as a dependency
-    SAVE ARTIFACT deps
+    # Store the artifact
     SAVE ARTIFACT target/release/jcli jcli
     SAVE IMAGE --cache-hint
 
 docker:
-    FROM debian:stable-slim
+    FROM ../../../+deployment
 
     WORKDIR /app
     ARG tag="latest"
     ARG registry
 
     COPY +build/jcli .
-    COPY +build/deps ./deps
 
-    ENV LD_LIBRARY_PATH=/app/deps
     ENTRYPOINT ["/app/jcli"]
     SAVE IMAGE ${registry}jcli:$tag

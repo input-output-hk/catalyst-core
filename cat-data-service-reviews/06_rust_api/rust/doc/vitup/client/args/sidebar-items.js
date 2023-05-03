@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Command","ControlCommand","DisruptionCommand","FilesCommand","FragmentsCommand","LogsCommand","MockCommand","MockFilesCommand","MockStartCommand","PersistentLogCommand","UtilsCommand"],"struct":["CountPersistentLogCommand","MockStartCustomCommand","SetErrorCodeCommand","SetFundIdCommand","VitupClientCommand"]};

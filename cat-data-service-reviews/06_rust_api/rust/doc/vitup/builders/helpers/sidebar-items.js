@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["archive","qr","static_data","time","vote_plan"]};

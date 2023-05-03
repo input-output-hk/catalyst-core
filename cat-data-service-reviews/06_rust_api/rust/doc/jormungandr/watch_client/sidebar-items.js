@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["RequestMsg"],"fn":["handle_sync_multiverse"],"opaque":[""],"static":["CALLSITE","META"],"struct":["MessageProcessor","WatchClient"],"type":["SubscriptionStream","SubscriptionTryStream"]};

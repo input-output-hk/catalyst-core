@@ -1,30 +1,21 @@
 VERSION 0.7
 
 build:
-    FROM ../../../+build-workspace
-    RUN with_nix cargo build --locked --release --bin catalyst-toolbox
+    FROM ../../../+builder
+    RUN cargo build --locked --release --bin catalyst-toolbox
 
-    # Collect linked libraries to a common location and patch the binary
-    RUN mkdir deps && with_nix collect-libs target/release/catalyst-toolbox deps
-    RUN with_nix patchelf --set-rpath /app/deps target/release/catalyst-toolbox
-    RUN with_nix patchelf --set-interpreter /app/deps/ld-linux-x86-64.so.2 target/release/catalyst-toolbox
-
-    # Store the artifact and deps in a temporary directory, so that it can be
-    # used as a dependency
-    SAVE ARTIFACT deps
+    # Store the artifact
     SAVE ARTIFACT target/release/catalyst-toolbox catalyst-toolbox
     SAVE IMAGE --cache-hint
 
 docker:
-    FROM debian:stable-slim
+    FROM ../../../+deployment
 
     WORKDIR /app
     ARG tag="latest"
     ARG registry
 
     COPY +build/catalyst-toolbox .
-    COPY +build/deps ./deps
 
-    ENV LD_LIBRARY_PATH=/app/deps
     ENTRYPOINT ["/app/catalyst-toolbox"]
     SAVE IMAGE ${registry}catalyst-toolbox:$tag

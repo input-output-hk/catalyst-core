@@ -1,0 +1,40 @@
+# Set the Earthly version to 0.7
+VERSION 0.7
+
+FROM python:3.11-slim
+ENV PYTHONUNBUFFERED=true
+
+# Install Poetry
+RUN pip install poetry==1.4.2
+
+# Set the working directory
+WORKDIR /services/voting-node
+
+
+docker:
+    ARG tag="latest"
+    ARG registry
+    COPY . ./
+    # Install build dependencies
+    COPY ../../utilities/ideascale-importer+build/ideascale-importer /utilities/ideascale-importer
+
+    RUN poetry env use 3.11
+    RUN poetry config installer.max-workers 10
+    RUN poetry install
+
+    # Copy the rest of the application code to the container
+    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
+    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
+    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
+
+    COPY ../../src/jormungandr/jormungandr+build/deps/* /app/deps/
+    COPY ../../src/jormungandr/jcli+build/deps/* /app/deps/
+    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/deps/* /app/deps/
+
+    #ENV LD_LIBRARY_PATH=/app/deps
+    ENV PATH=/app:$PATH
+    # Set the entrypoint to use the Poetry virtual environment
+    ENTRYPOINT ["poetry", "run"]
+    CMD ["voting-node", "start"]
+
+    SAVE IMAGE --push ${registry}voting-node:$tag

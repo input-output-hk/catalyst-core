@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"mod":["arbitrary","external"],"struct":["ChallengeTemplate","FundTemplate","ProposalChallengeInfoTemplate","ProposalTemplate","ReviewTemplate","__DeserializeWith","__FieldVisitor","__Visitor"],"trait":["ValidVotingTemplateGenerator"]};

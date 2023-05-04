@@ -1157,7 +1157,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchConstraint'
-        order-by:
+        order_by:
           type: array
           items:
             $ref: '#/components/schemas/SearchOrderBy'

@@ -5,7 +5,7 @@ version: '3.1'
 services:
 
   db:
-    image: postgres:latest
+    image: postgres:14
     restart: always
     environment:
       - POSTGRES_PASSWORD=CHANGE_ME

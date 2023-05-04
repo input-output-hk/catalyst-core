@@ -1,0 +1,26 @@
+# Set the Earthly version to 0.7
+VERSION 0.7
+
+FROM python:3.11-slim-bullseye
+ENV PYTHONUNBUFFERED=true
+
+# Install Poetry
+RUN pip install poetry==1.4.2
+
+# Set the working directory
+WORKDIR /utilities/ideascale-importer
+
+build:
+    COPY . ./
+    SAVE ARTIFACT /utilities/ideascale-importer ideascale-importer
+
+docker:
+    COPY . ./
+
+    # Set the entrypoint to use the Poetry virtual environment
+    ENTRYPOINT ["poetry", "run"]
+
+    # Set the default command to run the main script
+    CMD ["ideascale-importer", "--help"]
+
+    SAVE IMAGE ideascale-importer:latest

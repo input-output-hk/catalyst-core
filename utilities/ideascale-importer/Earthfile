@@ -11,12 +11,23 @@ RUN pip install poetry==1.4.2
 WORKDIR /utilities/ideascale-importer
 
 build:
-    COPY . ./
+    FROM scratch
+    COPY --dir ideascale_importer pyproject.toml poetry.lock README.md ./
     SAVE ARTIFACT /utilities/ideascale-importer ideascale-importer
 
 docker:
-    COPY . ./
+    ARG tag="latest"
+    ARG registry
 
+    # install system dependencies
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends libpq5
+    ## apt cleanup
+    RUN apt-get install -y --no-install-recommends && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
+
+    COPY +build/ideascale-importer /utilities/ideascale-importer
     # Set the entrypoint to use the Poetry virtual environment
     ENTRYPOINT ["poetry", "run"]
 

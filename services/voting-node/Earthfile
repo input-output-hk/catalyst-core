@@ -10,19 +10,24 @@ RUN pip install poetry==1.4.2
 # Set the working directory
 WORKDIR /services/voting-node
 
+build:
+    FROM scratch
+    COPY --dir voting_node pyproject.toml poetry.lock development.md ./
+    SAVE ARTIFACT /services/voting-node voting-node
 
 docker:
     ARG tag="latest"
     ARG registry
-    COPY . ./
 
-    # install dependencies
+    # install system dependencies
     RUN apt-get update && \
         apt-get install -y --no-install-recommends libpq5
     ## apt cleanup
     RUN apt-get install -y --no-install-recommends && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*
+
+    COPY +build/voting-node /services/voting-node
 
     # Install local python dependencies in the expected relative path
     COPY ../../utilities/ideascale-importer+build/ideascale-importer /utilities/ideascale-importer

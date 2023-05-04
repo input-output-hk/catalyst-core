@@ -1,26 +1,17 @@
+# This is a Dockerfile for building a container image for the Catalyst Event Database.
+# The container image is built from scratch and includes the necessary files for running
+# the database and its associated software.
+
 VERSION 0.7
 
 build:
-    FROM scratch
-    WORKDIR /event-db
-    COPY refinery.toml .
-    COPY --dir setup .
-    COPY --dir migrations .
-    COPY --dir historic_data .
-    SAVE ARTIFACT refinery.toml
-    SAVE ARTIFACT setup
-    SAVE ARTIFACT migrations
-    SAVE ARTIFACT historic_data
-
-docker:
-    FROM postgres:14
-    ARG tag="latest"
-    ARG registry
-
-    # Scripts in `/docker-entrypoint-initdb.d` are executed in sorted name order as defined by the current locale (en_US.utf8).
-    # These file are executed only when `postgres_data` has not been initialized in the container
-    # This means that if there are failures when executing, the container storage needs to be cleared before retrying. See docs in `https://hub.docker.com/_/postgres/` for further information.
-    COPY +build/setup/dev-db.sql /docker-entrypoint-initdb.d/db.sql
-    COPY +build/setup/graphql-setup.sql /docker-entrypoint-initdb.d/graphql.sql
-
-    SAVE IMAGE ${registry}event-db:$tag
+    FROM scratch # Use a scratch image as the base image
+    WORKDIR /event-db # Set the working directory to /event-db
+    COPY refinery.toml . # Copy the refinery.toml file to the working directory
+    COPY --dir setup . # Copy the setup directory to the working directory
+    COPY --dir migrations . # Copy the migrations directory to the working directory
+    COPY --dir historic_data . # Copy the historic_data directory to the working directory
+    SAVE ARTIFACT refinery.toml # Save the refinery.toml file as an artifact
+    SAVE ARTIFACT setup # Save the setup directory as an artifact
+    SAVE ARTIFACT migrations # Save the migrations directory as an artifact
+    SAVE ARTIFACT historic_data # Save the historic_data directory as an artifact

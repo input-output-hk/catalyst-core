@@ -42,7 +42,7 @@ services:
         condition: service_healthy
 
   graphql:
-    image: eventdb-graphql:latest
+    image: event-db-graphql:latest
     environment:
       - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@db/CatalystEventDev
       - JWT_SECRET=CHANGE_ME

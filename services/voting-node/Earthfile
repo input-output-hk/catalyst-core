@@ -12,21 +12,19 @@ WORKDIR /services/voting-node
 
 
 docker:
+    ARG tag="latest"
+    ARG registry
+    COPY . ./
+
     # install dependencies
     RUN apt-get update && \
-        apt-get install -y --no-install-recommends \
-        libpq-dev \
-        libssl-dev \
-        libsqlite3-dev \
-        protobuf-compiler
+        apt-get install -y --no-install-recommends libpq5
     ## apt cleanup
     RUN apt-get install -y --no-install-recommends && \
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*
-    ARG tag="latest"
-    ARG registry
-    COPY . ./
-    # Install build dependencies
+
+    # Install local python dependencies in the expected relative path
     COPY ../../utilities/ideascale-importer+build/ideascale-importer /utilities/ideascale-importer
 
     RUN poetry env use 3.11

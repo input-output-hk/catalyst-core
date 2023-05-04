@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["review","reviews_exec"],"opaque":[""],"static":["CALLSITE","META"],"struct":["ReviewsQuery","__FieldVisitor","__Visitor"]};

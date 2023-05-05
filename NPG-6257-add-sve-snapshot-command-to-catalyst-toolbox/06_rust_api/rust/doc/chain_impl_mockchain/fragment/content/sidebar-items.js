@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"opaque":[""],"struct":["Contents","ContentsBuilder"],"type":["BlockContentHash","BlockContentSize"]};

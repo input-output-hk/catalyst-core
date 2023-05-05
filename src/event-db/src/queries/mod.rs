@@ -3,6 +3,7 @@ use self::{
         objective::ObjectiveQueries, proposal::ProposalQueries, review::ReviewQueries, EventQueries,
     },
     registration::RegistrationQueries,
+    search::SearchQueries,
 };
 use crate::EventDB;
 
@@ -11,7 +12,12 @@ pub mod registration;
 pub mod search;
 
 pub trait EventDbQueries:
-    RegistrationQueries + EventQueries + ObjectiveQueries + ProposalQueries + ReviewQueries
+    RegistrationQueries
+    + EventQueries
+    + ObjectiveQueries
+    + ProposalQueries
+    + ReviewQueries
+    + SearchQueries
 {
 }
 

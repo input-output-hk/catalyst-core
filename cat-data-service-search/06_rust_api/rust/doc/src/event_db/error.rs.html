@@ -35,8 +35,8 @@
 </span><span class="kw">pub enum </span>Error {
     <span class="attr">#[error(<span class="string">&quot; Schema in database does not match schema supported by the Crate. The current schema version: {was}, the schema version we expected: {expected}&quot;</span>)]
     </span>MismatchedSchema { was: i32, expected: i32 },
-    <span class="attr">#[error(<span class="string">&quot;Cannot find this item&quot;</span>)]
-    </span>NotFound,
+    <span class="attr">#[error(<span class="string">&quot;Cannot find this item, error: {0}&quot;</span>)]
+    </span>NotFound(String),
     <span class="attr">#[error(<span class="string">&quot;error: {0}&quot;</span>)]
     </span>Unknown(String),
     <span class="attr">#[error(transparent)]

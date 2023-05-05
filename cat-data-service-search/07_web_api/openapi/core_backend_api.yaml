@@ -265,8 +265,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    $ref: '#/components/schemas/SearchTable'
                   total:
                     type: integer
                     format: int32
@@ -281,7 +279,7 @@ paths:
                           $ref: '#/components/schemas/ObjectiveSummary'
                       - type: array
                         items:
-                          $ref: '#/components/schemas/Proposal'
+                          $ref: '#/components/schemas/ProposalSummary'
         '400':
           description: Invalid combination of table/column (e.g. using funds column on challenges table)
       parameters:

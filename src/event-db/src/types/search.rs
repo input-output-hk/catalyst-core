@@ -173,7 +173,7 @@ mod tests {
                             "title": "objective 1"
                         }
                     ]
-                
+
             })
         )
     }

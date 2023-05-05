@@ -2,6 +2,7 @@ use crate::{
     types::{
         event::{
             objective::{ObjectiveId, ObjectiveSummary, ObjectiveType},
+            proposal::ProposalSummary,
             EventId, EventSummary,
         },
         search::{SearchQuery, SearchResult, SearchTable, ValueResults},
@@ -26,6 +27,10 @@ impl EventDB {
         "SELECT objective.id, objective.title, objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name";
+
+    const SEARCH_PROPOSALS_QUERY: &'static str =
+        "SELECT DISTINCT proposal.id, proposal.title, proposal.summary
+        FROM proposal";
 }
 
 #[async_trait]
@@ -131,12 +136,6 @@ impl SearchQueries for EventDB {
                 })
             }
             SearchTable::Objectives => {
-                println!(
-                    "{0} {1} {2};",
-                    Self::SEARCH_OBJECTIVES_QUERY,
-                    where_clause_fn("objective"),
-                    order_by_clause_fn("objective"),
-                );
                 let rows: Vec<tokio_postgres::Row> = conn
                     .query(
                         &format!(
@@ -168,10 +167,36 @@ impl SearchQueries for EventDB {
                     results: ValueResults::Objectives(objectives),
                 })
             }
-            SearchTable::Proposals => Ok(SearchResult {
-                total: 0,
-                results: ValueResults::Proposals(vec![]),
-            }),
+            SearchTable::Proposals => {
+                let rows: Vec<tokio_postgres::Row> = conn
+                    .query(
+                        &format!(
+                            "{0} {1} {2};",
+                            Self::SEARCH_PROPOSALS_QUERY,
+                            where_clause_fn("proposal"),
+                            order_by_clause_fn("proposal"),
+                        ),
+                        &[],
+                    )
+                    .await
+                    .map_err(|e| Error::NotFound(e.to_string()))?;
+
+                let mut proposals = Vec::new();
+                for row in rows {
+                    let summary = ProposalSummary {
+                        id: row.try_get("id")?,
+                        title: row.try_get("title")?,
+                        summary: row.try_get("summary")?,
+                    };
+
+                    proposals.push(summary);
+                }
+
+                Ok(SearchResult {
+                    total: proposals.len() as u32,
+                    results: ValueResults::Proposals(proposals),
+                })
+            }
         }
     }
 }
@@ -277,6 +302,48 @@ mod tests {
             event_db.search(search_query).await,
             Err(Error::NotFound(
                 "db error: ERROR: column objective.funds does not exist".to_string()
+            ))
+        )
+    }
+
+    #[tokio::test]
+    async fn search_proposals_test() {
+        let event_db = establish_connection(None).await.unwrap();
+
+        let search_query: SearchQuery = SearchQuery {
+            table: SearchTable::Proposals,
+            filter: vec![SearchConstraint {
+                column: SearchColumn::Title,
+                search: "title 1".to_string(),
+            }],
+            order_by: vec![SearchOrderBy {
+                column: SearchColumn::Title,
+                descending: true,
+            }],
+        };
+        let query_result = event_db.search(search_query).await.unwrap();
+        assert_eq!(query_result.total, 1);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Proposals(vec![ProposalSummary {
+                id: 1,
+                title: String::from("title 1"),
+                summary: String::from("summary 1")
+            },])
+        );
+
+        let search_query = SearchQuery {
+            table: SearchTable::Proposals,
+            filter: vec![SearchConstraint {
+                column: SearchColumn::Desc,
+                search: "description 1".to_string(),
+            }],
+            order_by: vec![],
+        };
+        assert_eq!(
+            event_db.search(search_query).await,
+            Err(Error::NotFound(
+                "db error: ERROR: column proposal.description does not exist".to_string()
             ))
         )
     }

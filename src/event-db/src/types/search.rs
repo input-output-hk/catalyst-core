@@ -10,16 +10,6 @@ pub enum SearchTable {
     Proposals,
 }
 
-impl ToString for SearchTable {
-    fn to_string(&self) -> String {
-        match self {
-            SearchTable::Events => "events".to_string(),
-            SearchTable::Objectives => "objectives".to_string(),
-            SearchTable::Proposals => "proposals".to_string(),
-        }
-    }
-}
-
 #[derive(Debug, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum SearchColumn {

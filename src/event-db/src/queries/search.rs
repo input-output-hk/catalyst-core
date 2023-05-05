@@ -1,6 +1,9 @@
 use crate::{
     types::{
-        event::{EventId, EventSummary},
+        event::{
+            objective::{ObjectiveId, ObjectiveSummary, ObjectiveType},
+            EventId, EventSummary,
+        },
         search::{SearchQuery, SearchResult, SearchTable, ValueResults},
     },
     Error, EventDB,
@@ -18,6 +21,11 @@ impl EventDB {
         "SELECT event.row_id, event.name, event.start_time, event.end_time, snapshot.last_updated
         FROM event
         LEFT JOIN snapshot ON event.row_id = snapshot.event";
+
+    const SEARCH_OBJECTIVES_QUERY: &'static str =
+        "SELECT objective.id, objective.title, objective_category.name, objective_category.description as objective_category_description
+        FROM objective
+        INNER JOIN objective_category on objective.category = objective_category.name";
 }
 
 #[async_trait]
@@ -25,63 +33,72 @@ impl SearchQueries for EventDB {
     async fn search(&self, search_query: SearchQuery) -> Result<SearchResult, Error> {
         let conn = self.pool.get().await?;
 
-        match search_query.table {
-            SearchTable::Events => {
-                let mut where_clause = String::new();
-                let mut filter_iter = search_query.filter.iter();
-                if let Some(filter) = filter_iter.next() {
+        let where_clause_fn = |table| {
+            let mut where_clause = String::new();
+            let mut filter_iter = search_query.filter.iter();
+            if let Some(filter) = filter_iter.next() {
+                where_clause.push_str(
+                    format!(
+                        "WHERE {0}.{1} LIKE '%{2}%'",
+                        table,
+                        filter.column.to_string(),
+                        filter.search
+                    )
+                    .as_str(),
+                );
+                for filter in filter_iter {
                     where_clause.push_str(
                         format!(
-                            "WHERE event.{0} LIKE '%{1}%'",
+                            "AND {0}.{1} LIKE '%{2}%'",
+                            table,
                             filter.column.to_string(),
                             filter.search
                         )
                         .as_str(),
                     );
-                    for filter in filter_iter {
-                        where_clause.push_str(
-                            format!(
-                                "AND event.{0} LIKE '%{1}%'",
-                                filter.column.to_string(),
-                                filter.search
-                            )
-                            .as_str(),
-                        );
-                    }
                 }
-
-                let mut order_by_clause = String::new();
-                let mut order_by_iter = search_query.order_by.iter();
-                if let Some(order_by) = order_by_iter.next() {
+            }
+            where_clause
+        };
+        let order_by_clause_fn = |table| {
+            let mut order_by_clause = String::new();
+            let mut order_by_iter = search_query.order_by.iter();
+            if let Some(order_by) = order_by_iter.next() {
+                let order_type = if order_by.descending { "DESC" } else { "ASC" };
+                order_by_clause.push_str(
+                    format!(
+                        "ORDER BY {0}.{1} {2}",
+                        table,
+                        order_by.column.to_string(),
+                        order_type
+                    )
+                    .as_str(),
+                );
+                for order_by in order_by_iter {
                     let order_type = if order_by.descending { "DESC" } else { "ASC" };
                     order_by_clause.push_str(
                         format!(
-                            "ORDER BY event.{0} {1}",
+                            ", {0}.{1} LIKE '%{2}%'",
+                            table,
                             order_by.column.to_string(),
                             order_type
                         )
                         .as_str(),
                     );
-                    for order_by in order_by_iter {
-                        let order_type = if order_by.descending { "DESC" } else { "ASC" };
-                        order_by_clause.push_str(
-                            format!(
-                                ", event.{0} LIKE '%{1}%'",
-                                order_by.column.to_string(),
-                                order_type
-                            )
-                            .as_str(),
-                        );
-                    }
                 }
+            }
+            order_by_clause
+        };
 
+        match search_query.table {
+            SearchTable::Events => {
                 let rows: Vec<tokio_postgres::Row> = conn
                     .query(
                         &format!(
                             "{0} {1} {2};",
                             Self::SEARCH_EVENTS_QUERY,
-                            where_clause,
-                            order_by_clause
+                            where_clause_fn("event"),
+                            order_by_clause_fn("event"),
                         ),
                         &[],
                     )
@@ -110,16 +127,50 @@ impl SearchQueries for EventDB {
 
                 Ok(SearchResult {
                     total: events.len() as u32,
-                    results: ValueResults::Event(events),
+                    results: ValueResults::Events(events),
                 })
             }
-            SearchTable::Objectives => Ok(SearchResult {
-                total: 0,
-                results: ValueResults::Objective(vec![]),
-            }),
+            SearchTable::Objectives => {
+                println!(
+                    "{0} {1} {2};",
+                    Self::SEARCH_OBJECTIVES_QUERY,
+                    where_clause_fn("objective"),
+                    order_by_clause_fn("objective"),
+                );
+                let rows: Vec<tokio_postgres::Row> = conn
+                    .query(
+                        &format!(
+                            "{0} {1} {2};",
+                            Self::SEARCH_OBJECTIVES_QUERY,
+                            where_clause_fn("objective"),
+                            order_by_clause_fn("objective"),
+                        ),
+                        &[],
+                    )
+                    .await
+                    .map_err(|e| Error::NotFound(e.to_string()))?;
+
+                let mut objectives = Vec::new();
+                for row in rows {
+                    let objective = ObjectiveSummary {
+                        id: ObjectiveId(row.try_get("id")?),
+                        objective_type: ObjectiveType {
+                            id: row.try_get("name")?,
+                            description: row.try_get("objective_category_description")?,
+                        },
+                        title: row.try_get("title")?,
+                    };
+                    objectives.push(objective);
+                }
+
+                Ok(SearchResult {
+                    total: objectives.len() as u32,
+                    results: ValueResults::Objectives(objectives),
+                })
+            }
             SearchTable::Proposals => Ok(SearchResult {
                 total: 0,
-                results: ValueResults::Proposal(vec![]),
+                results: ValueResults::Proposals(vec![]),
             }),
         }
     }
@@ -159,7 +210,7 @@ mod tests {
         assert_eq!(query_result.total, 1);
         assert_eq!(
             query_result.results,
-            ValueResults::Event(vec![EventSummary {
+            ValueResults::Events(vec![EventSummary {
                 id: EventId(4),
                 name: "Test Fund 4".to_string(),
                 starts: None,
@@ -181,6 +232,51 @@ mod tests {
             event_db.search(search_query).await,
             Err(Error::NotFound(
                 "db error: ERROR: column event.funds does not exist".to_string()
+            ))
+        )
+    }
+
+    #[tokio::test]
+    async fn search_objectives_test() {
+        let event_db = establish_connection(None).await.unwrap();
+
+        let search_query: SearchQuery = SearchQuery {
+            table: SearchTable::Objectives,
+            filter: vec![SearchConstraint {
+                column: SearchColumn::Desc,
+                search: "description 1".to_string(),
+            }],
+            order_by: vec![SearchOrderBy {
+                column: SearchColumn::Desc,
+                descending: true,
+            }],
+        };
+        let query_result = event_db.search(search_query).await.unwrap();
+        assert_eq!(query_result.total, 1);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Objectives(vec![ObjectiveSummary {
+                id: ObjectiveId(1),
+                objective_type: ObjectiveType {
+                    id: "catalyst-simple".to_string(),
+                    description: "A Simple choice".to_string()
+                },
+                title: "title 1".to_string(),
+            }])
+        );
+
+        let search_query = SearchQuery {
+            table: SearchTable::Objectives,
+            filter: vec![SearchConstraint {
+                column: SearchColumn::Funds,
+                search: "description 1".to_string(),
+            }],
+            order_by: vec![],
+        };
+        assert_eq!(
+            event_db.search(search_query).await,
+            Err(Error::NotFound(
+                "db error: ERROR: column objective.funds does not exist".to_string()
             ))
         )
     }

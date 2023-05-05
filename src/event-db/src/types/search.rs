@@ -68,9 +68,9 @@ pub struct SearchQuery {
 #[derive(Debug, Serialize, Clone, PartialEq)]
 #[serde(untagged)]
 pub enum ValueResults {
-    Event(Vec<EventSummary>),
-    Objective(Vec<ObjectiveSummary>),
-    Proposal(Vec<ProposalSummary>),
+    Events(Vec<EventSummary>),
+    Objectives(Vec<ObjectiveSummary>),
+    Proposals(Vec<ProposalSummary>),
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq)]
@@ -157,7 +157,7 @@ mod tests {
     fn search_results_json_test() {
         let search_result = SearchResult {
             total: 1,
-            results: ValueResults::Objective(vec![ObjectiveSummary {
+            results: ValueResults::Objectives(vec![ObjectiveSummary {
                 id: ObjectiveId(1),
                 objective_type: ObjectiveType {
                     id: "catalyst-native".to_string(),

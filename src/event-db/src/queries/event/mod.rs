@@ -90,7 +90,9 @@ impl EventQueries for EventDB {
         let conn = self.pool.get().await?;
 
         let rows = conn.query(Self::EVENT_QUERY, &[&event.0]).await?;
-        let row = rows.get(0).ok_or(Error::NotFound)?;
+        let row = rows
+            .get(0)
+            .ok_or(Error::NotFound("can not find event value".to_string()))?;
 
         let ends = row
             .try_get::<&'static str, Option<NaiveDateTime>>("end_time")?
@@ -546,6 +548,9 @@ mod tests {
             },
         );
 
-        assert_eq!(event_db.get_event(EventId(10)).await, Err(Error::NotFound));
+        assert_eq!(
+            event_db.get_event(EventId(10)).await,
+            Err(Error::NotFound("can not find event value".to_string()))
+        );
     }
 }

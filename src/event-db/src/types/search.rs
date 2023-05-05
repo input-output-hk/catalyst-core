@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use super::event::{objective::ObjectiveSummary, proposal::ProposalSummary, EventSummary};
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum SearchTable {
@@ -18,7 +20,7 @@ impl ToString for SearchTable {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Clone, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum SearchColumn {
     Title,
@@ -33,7 +35,7 @@ impl ToString for SearchColumn {
         match self {
             SearchColumn::Title => "title".to_string(),
             SearchColumn::Type => "type".to_string(),
-            SearchColumn::Desc => "desc".to_string(),
+            SearchColumn::Desc => "description".to_string(),
             SearchColumn::Author => "author".to_string(),
             SearchColumn::Funds => "funds".to_string(),
         }
@@ -63,8 +65,24 @@ pub struct SearchQuery {
     pub order_by: Vec<SearchOrderBy>,
 }
 
+#[derive(Debug, Serialize, Clone, PartialEq)]
+#[serde(untagged)]
+pub enum ValueResults {
+    Event(Vec<EventSummary>),
+    Objective(Vec<ObjectiveSummary>),
+    Proposal(Vec<ProposalSummary>),
+}
+
+#[derive(Debug, Serialize, Clone, PartialEq)]
+pub struct SearchResult {
+    pub total: u32,
+    pub results: ValueResults,
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::types::event::objective::{ObjectiveId, ObjectiveType};
+
     use super::*;
     use serde_json::json;
 
@@ -133,5 +151,40 @@ mod tests {
             ))
             .unwrap()
         );
+    }
+
+    #[test]
+    fn search_results_json_test() {
+        let search_result = SearchResult {
+            total: 1,
+            results: ValueResults::Objective(vec![ObjectiveSummary {
+                id: ObjectiveId(1),
+                objective_type: ObjectiveType {
+                    id: "catalyst-native".to_string(),
+                    description: "catalyst native type".to_string(),
+                },
+                title: "objective 1".to_string(),
+            }]),
+        };
+
+        let json = serde_json::to_value(search_result).unwrap();
+        assert_eq!(
+            json,
+            json!({
+                "total": 1,
+                "results": [
+                        {
+                            "id": 1,
+                            "type": {
+                                "id": "catalyst-native",
+                                "description": "catalyst native type"
+
+                            },
+                            "title": "objective 1"
+                        }
+                    ]
+                
+            })
+        )
     }
 }

@@ -258,9 +258,9 @@
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
 #[serde(untagged)]
 </span><span class="kw">pub enum </span>ValueResults {
-    Event(Vec&lt;EventSummary&gt;),
-    Objective(Vec&lt;ObjectiveSummary&gt;),
-    Proposal(Vec&lt;ProposalSummary&gt;),
+    Events(Vec&lt;EventSummary&gt;),
+    Objectives(Vec&lt;ObjectiveSummary&gt;),
+    Proposals(Vec&lt;ProposalSummary&gt;),
 }
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
@@ -347,7 +347,7 @@
     </span><span class="kw">fn </span>search_results_json_test() {
         <span class="kw">let </span>search_result = SearchResult {
             total: <span class="number">1</span>,
-            results: ValueResults::Objective(<span class="macro">vec!</span>[ObjectiveSummary {
+            results: ValueResults::Objectives(<span class="macro">vec!</span>[ObjectiveSummary {
                 id: ObjectiveId(<span class="number">1</span>),
                 objective_type: ObjectiveType {
                     id: <span class="string">&quot;catalyst-native&quot;</span>.to_string(),

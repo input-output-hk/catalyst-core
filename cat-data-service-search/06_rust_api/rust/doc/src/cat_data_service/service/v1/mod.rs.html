@@ -11,18 +11,22 @@
 <a href="#11" id="11">11</a>
 <a href="#12" id="12">12</a>
 <a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::Router;
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">mod </span>event;
 <span class="kw">mod </span>registration;
+<span class="kw">mod </span>search;
 
 <span class="kw">pub fn </span>v1(state: Arc&lt;State&gt;) -&gt; Router {
     <span class="kw">let </span>registration = registration::registration(state.clone());
-    <span class="kw">let </span>event = event::event(state);
+    <span class="kw">let </span>event = event::event(state.clone());
+    <span class="kw">let </span>search = search::search(state);
 
-    Router::new().nest(<span class="string">&quot;/v1&quot;</span>, registration.merge(event))
+    Router::new().nest(<span class="string">&quot;/v1&quot;</span>, registration.merge(event).merge(search))
 }
 </code></pre></div>
 </section></main></body></html>

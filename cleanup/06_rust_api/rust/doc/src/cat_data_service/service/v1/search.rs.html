@@ -972,7 +972,7 @@
 }
 
 <span class="kw">async fn </span>search_exec(
-    limit_offset: Query&lt;LimitOffset&gt;,
+    lim_ofs: Query&lt;LimitOffset&gt;,
     Json(search_query): Json&lt;SearchQuery&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SearchResult, Error&gt; {
@@ -980,7 +980,7 @@
 
     <span class="kw">let </span>res = state
         .event_db
-        .search(search_query, limit_offset.limit, limit_offset.offset)
+        .search(search_query, lim_ofs.limit, lim_ofs.offset)
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(res)
 }
@@ -1254,7 +1254,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&quot;</span>, <span class="number">2</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&quot;</span>, <span class="number">2</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1320,7 +1320,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?offset={0}&quot;</span>, <span class="number">2</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?ofs={0}&quot;</span>, <span class="number">2</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1404,7 +1404,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&amp;offset={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&amp;ofs={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1579,7 +1579,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&quot;</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1617,7 +1617,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?offset={0}&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?ofs={0}&quot;</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1772,7 +1772,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&quot;</span>, <span class="number">2</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&quot;</span>, <span class="number">2</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1814,7 +1814,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?offset={0}&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?ofs={0}&quot;</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1856,7 +1856,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&amp;offset={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&amp;ofs={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({

@@ -428,7 +428,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?limit={2}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?lim={2}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">2
             </span>))
             .body(Body::empty())
@@ -456,7 +456,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?offset={2}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?ofs={2}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())
@@ -484,7 +484,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?offset={2}&amp;limit={3}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?ofs={2}&amp;lim={3}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())

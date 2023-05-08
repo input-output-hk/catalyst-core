@@ -549,6 +549,11 @@
 <a href="#549" id="549">549</a>
 <a href="#550" id="550">550</a>
 <a href="#551" id="551">551</a>
+<a href="#552" id="552">552</a>
+<a href="#553" id="553">553</a>
+<a href="#554" id="554">554</a>
+<a href="#555" id="555">555</a>
+<a href="#556" id="556">556</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
@@ -641,7 +646,9 @@
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span>rows = conn.query(<span class="self">Self</span>::EVENT_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>]).<span class="kw">await</span><span class="question-mark">?</span>;
-        <span class="kw">let </span>row = rows.get(<span class="number">0</span>).ok_or(Error::NotFound)<span class="question-mark">?</span>;
+        <span class="kw">let </span>row = rows
+            .get(<span class="number">0</span>)
+            .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find event value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>ends = row
             .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
@@ -1097,7 +1104,10 @@
             },
         );
 
-        <span class="macro">assert_eq!</span>(event_db.get_event(EventId(<span class="number">10</span>)).<span class="kw">await</span>, <span class="prelude-val">Err</span>(Error::NotFound));
+        <span class="macro">assert_eq!</span>(
+            event_db.get_event(EventId(<span class="number">10</span>)).<span class="kw">await</span>,
+            <span class="prelude-val">Err</span>(Error::NotFound(<span class="string">&quot;can not find event value&quot;</span>.to_string()))
+        );
     }
 }
 </code></pre></div>

@@ -232,15 +232,8 @@
 <a href="#232" id="232">232</a>
 <a href="#233" id="233">233</a>
 <a href="#234" id="234">234</a>
-<a href="#235" id="235">235</a>
-<a href="#236" id="236">236</a>
-<a href="#237" id="237">237</a>
-<a href="#238" id="238">238</a>
-<a href="#239" id="239">239</a>
-<a href="#240" id="240">240</a>
-<a href="#241" id="241">241</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    service::{handle_result, Error},
+    service::{handle_result, v1::LimitOffset, Error},
     state::State,
 };
 <span class="kw">use </span>axum::{
@@ -249,7 +242,6 @@
     Router,
 };
 <span class="kw">use </span>event_db::types::event::{objective::Objective, EventId};
-<span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub fn </span>objective(state: Arc&lt;State&gt;) -&gt; Router {
@@ -261,15 +253,9 @@
     )
 }
 
-<span class="attr">#[derive(Deserialize)]
-</span><span class="kw">struct </span>ObjectivesQuery {
-    limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-    offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-}
-
 <span class="kw">async fn </span>objectives_exec(
     Path(event): Path&lt;EventId&gt;,
-    objectives_query: Query&lt;ObjectivesQuery&gt;,
+    objectives_query: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Objective&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;objectives_query, event: {0}&quot;</span>, event.<span class="number">0</span>);

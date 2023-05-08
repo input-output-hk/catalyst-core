@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["event","registration"],"trait":["EventDbQueries"]};
+window.SIDEBAR_ITEMS = {"mod":["event","registration","search"],"trait":["EventDbQueries"]};

@@ -402,15 +402,8 @@
 <a href="#402" id="402">402</a>
 <a href="#403" id="403">403</a>
 <a href="#404" id="404">404</a>
-<a href="#405" id="405">405</a>
-<a href="#406" id="406">406</a>
-<a href="#407" id="407">407</a>
-<a href="#408" id="408">408</a>
-<a href="#409" id="409">409</a>
-<a href="#410" id="410">410</a>
-<a href="#411" id="411">411</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    service::{handle_result, Error},
+    service::{handle_result, v1::LimitOffset, Error},
     state::State,
 };
 <span class="kw">use </span>axum::{
@@ -424,7 +417,6 @@
     review::{AdvisorReview, ReviewType},
     EventId,
 };
-<span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub fn </span>review(state: Arc&lt;State&gt;) -&gt; Router {
@@ -446,15 +438,9 @@
         )
 }
 
-<span class="attr">#[derive(Deserialize)]
-</span><span class="kw">struct </span>ReviewsQuery {
-    limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-    offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-}
-
 <span class="kw">async fn </span>reviews_exec(
     Path((event, objective, proposal)): Path&lt;(EventId, ObjectiveId, ProposalId)&gt;,
-    reviews_query: Query&lt;ReviewsQuery&gt;,
+    reviews_query: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;AdvisorReview&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
@@ -479,7 +465,7 @@
 
 <span class="kw">async fn </span>review_types_exec(
     Path((event, objective)): Path&lt;(EventId, ObjectiveId)&gt;,
-    reviews_query: Query&lt;ReviewsQuery&gt;,
+    reviews_query: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ReviewType&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(

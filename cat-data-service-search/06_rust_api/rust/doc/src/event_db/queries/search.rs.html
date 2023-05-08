@@ -1208,7 +1208,7 @@
             table: SearchTable::Objectives,
             filter: <span class="macro">vec!</span>[SearchConstraint {
                 column: SearchColumn::Desc,
-                search: <span class="string">&quot;description 1&quot;</span>.to_string(),
+                search: <span class="string">&quot;description&quot;</span>.to_string(),
             }],
             order_by: <span class="macro">vec!</span>[SearchOrderBy {
                 column: SearchColumn::Desc,
@@ -1219,7 +1219,7 @@
             .search(search_query.clone(), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
-        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
             ValueResults::Objectives(<span class="macro">vec!</span>[

@@ -526,11 +526,6 @@
 <a href="#526" id="526">526</a>
 <a href="#527" id="527">527</a>
 <a href="#528" id="528">528</a>
-<a href="#529" id="529">529</a>
-<a href="#530" id="530">530</a>
-<a href="#531" id="531">531</a>
-<a href="#532" id="532">532</a>
-<a href="#533" id="533">533</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -541,8 +536,9 @@
     Router,
 };
 <span class="kw">use </span>event_db::types::event::{Event, EventId, EventSummary};
-<span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
+
+<span class="kw">use </span><span class="kw">super</span>::LimitOffset;
 
 <span class="kw">mod </span>objective;
 <span class="kw">mod </span>proposal;
@@ -581,14 +577,8 @@
     <span class="prelude-val">Ok</span>(event)
 }
 
-<span class="attr">#[derive(Deserialize)]
-</span><span class="kw">struct </span>EventsQuery {
-    limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-    offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-}
-
 <span class="kw">async fn </span>events_exec(
-    events_query: Query&lt;EventsQuery&gt;,
+    events_query: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(

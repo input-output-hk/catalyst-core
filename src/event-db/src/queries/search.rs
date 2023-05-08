@@ -506,7 +506,7 @@ mod tests {
             table: SearchTable::Objectives,
             filter: vec![SearchConstraint {
                 column: SearchColumn::Desc,
-                search: "description 1".to_string(),
+                search: "description".to_string(),
             }],
             order_by: vec![SearchOrderBy {
                 column: SearchColumn::Desc,
@@ -517,7 +517,7 @@ mod tests {
             .search(search_query.clone(), None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 1);
+        assert_eq!(query_result.total, 2);
         assert_eq!(
             query_result.results,
             ValueResults::Objectives(vec![

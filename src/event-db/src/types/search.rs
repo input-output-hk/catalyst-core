@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use super::event::{objective::ObjectiveSummary, proposal::ProposalSummary, EventSummary};
 
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum SearchTable {
     Events,
@@ -10,7 +10,7 @@ pub enum SearchTable {
     Proposals,
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum SearchColumn {
     Title,
@@ -32,21 +32,21 @@ impl ToString for SearchColumn {
     }
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 
 pub struct SearchConstraint {
     pub column: SearchColumn,
     pub search: String,
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 pub struct SearchOrderBy {
     pub column: SearchColumn,
     #[serde(default)]
     pub descending: bool,
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 pub struct SearchQuery {
     pub table: SearchTable,
     #[serde(default)]
@@ -55,7 +55,7 @@ pub struct SearchQuery {
     pub order_by: Vec<SearchOrderBy>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum ValueResults {
     Events(Vec<EventSummary>),
@@ -63,7 +63,7 @@ pub enum ValueResults {
     Proposals(Vec<ProposalSummary>),
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct SearchResult {
     pub total: u32,
     pub results: ValueResults,

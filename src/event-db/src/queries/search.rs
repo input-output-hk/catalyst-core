@@ -14,7 +14,12 @@ use chrono::{NaiveDateTime, Utc};
 
 #[async_trait]
 pub trait SearchQueries: Sync + Send + 'static {
-    async fn search(&self, search_query: SearchQuery) -> Result<SearchResult, Error>;
+    async fn search(
+        &self,
+        search_query: SearchQuery,
+        limit: Option<i64>,
+        offset: Option<i64>,
+    ) -> Result<SearchResult, Error>;
 }
 
 impl EventDB {
@@ -35,7 +40,12 @@ impl EventDB {
 
 #[async_trait]
 impl SearchQueries for EventDB {
-    async fn search(&self, search_query: SearchQuery) -> Result<SearchResult, Error> {
+    async fn search(
+        &self,
+        search_query: SearchQuery,
+        limit: Option<i64>,
+        offset: Option<i64>,
+    ) -> Result<SearchResult, Error> {
         let conn = self.pool.get().await?;
 
         let where_clause_fn = |table| {
@@ -100,12 +110,12 @@ impl SearchQueries for EventDB {
                 let rows: Vec<tokio_postgres::Row> = conn
                     .query(
                         &format!(
-                            "{0} {1} {2};",
+                            "{0} {1} {2} LIMIT $1 OFFSET $2;",
                             Self::SEARCH_EVENTS_QUERY,
                             where_clause_fn("event"),
                             order_by_clause_fn("event"),
                         ),
-                        &[],
+                        &[&limit, &offset.unwrap_or(0)],
                     )
                     .await
                     .map_err(|e| Error::NotFound(e.to_string()))?;
@@ -139,12 +149,12 @@ impl SearchQueries for EventDB {
                 let rows: Vec<tokio_postgres::Row> = conn
                     .query(
                         &format!(
-                            "{0} {1} {2};",
+                            "{0} {1} {2} LIMIT $1 OFFSET $2;",
                             Self::SEARCH_OBJECTIVES_QUERY,
                             where_clause_fn("objective"),
                             order_by_clause_fn("objective"),
                         ),
-                        &[],
+                        &[&limit, &offset.unwrap_or(0)],
                     )
                     .await
                     .map_err(|e| Error::NotFound(e.to_string()))?;
@@ -171,12 +181,12 @@ impl SearchQueries for EventDB {
                 let rows: Vec<tokio_postgres::Row> = conn
                     .query(
                         &format!(
-                            "{0} {1} {2};",
+                            "{0} {1} {2} LIMIT $1 OFFSET $2;",
                             Self::SEARCH_PROPOSALS_QUERY,
                             where_clause_fn("proposal"),
                             order_by_clause_fn("proposal"),
                         ),
-                        &[],
+                        &[&limit, &offset.unwrap_or(0)],
                     )
                     .await
                     .map_err(|e| Error::NotFound(e.to_string()))?;
@@ -215,6 +225,7 @@ mod tests {
         establish_connection,
         types::search::{SearchColumn, SearchConstraint, SearchOrderBy},
     };
+    use chrono::{DateTime, NaiveDate, NaiveTime};
 
     #[tokio::test]
     async fn search_events_test() {
@@ -224,25 +235,251 @@ mod tests {
             table: SearchTable::Events,
             filter: vec![SearchConstraint {
                 column: SearchColumn::Desc,
-                search: "Fund 4".to_string(),
+                search: "Fund".to_string(),
             }],
             order_by: vec![SearchOrderBy {
                 column: SearchColumn::Desc,
                 descending: true,
             }],
         };
-        let query_result = event_db.search(search_query).await.unwrap();
+        let query_result = event_db
+            .search(search_query.clone(), None, None)
+            .await
+            .unwrap();
+        assert_eq!(query_result.total, 4);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Events(vec![
+                EventSummary {
+                    id: EventId(4),
+                    name: "Test Fund 4".to_string(),
+                    starts: None,
+                    ends: None,
+                    reg_checked: None,
+                    is_final: false,
+                },
+                EventSummary {
+                    id: EventId(3),
+                    name: "Test Fund 3".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    is_final: true,
+                },
+                EventSummary {
+                    id: EventId(2),
+                    name: "Test Fund 2".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    is_final: true,
+                },
+                EventSummary {
+                    id: EventId(1),
+                    name: "Test Fund 1".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    is_final: true,
+                },
+            ])
+        );
+
+        let query_result = event_db
+            .search(search_query.clone(), Some(2), None)
+            .await
+            .unwrap();
+        assert_eq!(query_result.total, 2);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Events(vec![
+                EventSummary {
+                    id: EventId(4),
+                    name: "Test Fund 4".to_string(),
+                    starts: None,
+                    ends: None,
+                    reg_checked: None,
+                    is_final: false,
+                },
+                EventSummary {
+                    id: EventId(3),
+                    name: "Test Fund 3".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    is_final: true,
+                },
+            ])
+        );
+
+        let query_result = event_db
+            .search(search_query.clone(), None, Some(2))
+            .await
+            .unwrap();
+        assert_eq!(query_result.total, 2);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Events(vec![
+                EventSummary {
+                    id: EventId(2),
+                    name: "Test Fund 2".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    is_final: true,
+                },
+                EventSummary {
+                    id: EventId(1),
+                    name: "Test Fund 1".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    is_final: true,
+                },
+            ])
+        );
+
+        let query_result = event_db
+            .search(search_query, Some(1), Some(1))
+            .await
+            .unwrap();
         assert_eq!(query_result.total, 1);
         assert_eq!(
             query_result.results,
             ValueResults::Events(vec![EventSummary {
-                id: EventId(4),
-                name: "Test Fund 4".to_string(),
-                starts: None,
-                ends: None,
-                reg_checked: None,
-                is_final: false,
-            }])
+                id: EventId(3),
+                name: "Test Fund 3".to_string(),
+                starts: Some(DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                )),
+                ends: Some(DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                )),
+                reg_checked: Some(DateTime::<Utc>::from_utc(
+                    NaiveDateTime::new(
+                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                    ),
+                    Utc
+                )),
+                is_final: true,
+            },])
         );
 
         let search_query = SearchQuery {
@@ -254,7 +491,7 @@ mod tests {
             order_by: vec![],
         };
         assert_eq!(
-            event_db.search(search_query).await,
+            event_db.search(search_query, None, None).await,
             Err(Error::NotFound(
                 "db error: ERROR: column event.funds does not exist".to_string()
             ))
@@ -276,7 +513,51 @@ mod tests {
                 descending: true,
             }],
         };
-        let query_result = event_db.search(search_query).await.unwrap();
+        let query_result = event_db
+            .search(search_query.clone(), None, None)
+            .await
+            .unwrap();
+        assert_eq!(query_result.total, 1);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Objectives(vec![
+                ObjectiveSummary {
+                    id: ObjectiveId(2),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-native".to_string(),
+                        description: "??".to_string()
+                    },
+                    title: "title 2".to_string(),
+                },
+                ObjectiveSummary {
+                    id: ObjectiveId(1),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 1".to_string(),
+                },
+            ])
+        );
+
+        let query_result = event_db
+            .search(search_query.clone(), Some(1), None)
+            .await
+            .unwrap();
+        assert_eq!(query_result.total, 1);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Objectives(vec![ObjectiveSummary {
+                id: ObjectiveId(2),
+                objective_type: ObjectiveType {
+                    id: "catalyst-native".to_string(),
+                    description: "??".to_string()
+                },
+                title: "title 2".to_string(),
+            },])
+        );
+
+        let query_result = event_db.search(search_query, None, Some(1)).await.unwrap();
         assert_eq!(query_result.total, 1);
         assert_eq!(
             query_result.results,
@@ -287,7 +568,7 @@ mod tests {
                     description: "A Simple choice".to_string()
                 },
                 title: "title 1".to_string(),
-            }])
+            },])
         );
 
         let search_query = SearchQuery {
@@ -299,7 +580,7 @@ mod tests {
             order_by: vec![],
         };
         assert_eq!(
-            event_db.search(search_query).await,
+            event_db.search(search_query, None, None).await,
             Err(Error::NotFound(
                 "db error: ERROR: column objective.funds does not exist".to_string()
             ))
@@ -314,21 +595,92 @@ mod tests {
             table: SearchTable::Proposals,
             filter: vec![SearchConstraint {
                 column: SearchColumn::Title,
-                search: "title 1".to_string(),
+                search: "title".to_string(),
             }],
             order_by: vec![SearchOrderBy {
                 column: SearchColumn::Title,
                 descending: true,
             }],
         };
-        let query_result = event_db.search(search_query).await.unwrap();
+        let query_result = event_db
+            .search(search_query.clone(), None, None)
+            .await
+            .unwrap();
+        assert_eq!(query_result.total, 3);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Proposals(vec![
+                ProposalSummary {
+                    id: 3,
+                    title: String::from("title 3"),
+                    summary: String::from("summary 3")
+                },
+                ProposalSummary {
+                    id: 2,
+                    title: String::from("title 2"),
+                    summary: String::from("summary 2")
+                },
+                ProposalSummary {
+                    id: 1,
+                    title: String::from("title 1"),
+                    summary: String::from("summary 1")
+                },
+            ])
+        );
+
+        let query_result = event_db
+            .search(search_query.clone(), Some(2), None)
+            .await
+            .unwrap();
+        assert_eq!(query_result.total, 2);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Proposals(vec![
+                ProposalSummary {
+                    id: 3,
+                    title: String::from("title 3"),
+                    summary: String::from("summary 3")
+                },
+                ProposalSummary {
+                    id: 2,
+                    title: String::from("title 2"),
+                    summary: String::from("summary 2")
+                },
+            ])
+        );
+
+        let query_result = event_db
+            .search(search_query.clone(), None, Some(1))
+            .await
+            .unwrap();
+        assert_eq!(query_result.total, 2);
+        assert_eq!(
+            query_result.results,
+            ValueResults::Proposals(vec![
+                ProposalSummary {
+                    id: 2,
+                    title: String::from("title 2"),
+                    summary: String::from("summary 2")
+                },
+                ProposalSummary {
+                    id: 1,
+                    title: String::from("title 1"),
+                    summary: String::from("summary 1")
+                },
+            ])
+        );
+
+        let query_result = event_db
+            .search(search_query, Some(1), Some(1))
+            .await
+            .unwrap();
         assert_eq!(query_result.total, 1);
         assert_eq!(
             query_result.results,
             ValueResults::Proposals(vec![ProposalSummary {
-                id: 1,
-                title: String::from("title 1"),
-                summary: String::from("summary 1")
+                id: 2,
+                title: String::from("title 2"),
+                summary: String::from("summary 2")
             },])
         );
 
@@ -341,7 +693,7 @@ mod tests {
             order_by: vec![],
         };
         assert_eq!(
-            event_db.search(search_query).await,
+            event_db.search(search_query, None, None).await,
             Err(Error::NotFound(
                 "db error: ERROR: column proposal.description does not exist".to_string()
             ))

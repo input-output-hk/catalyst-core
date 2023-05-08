@@ -19,7 +19,7 @@ async fn search_exec(
 ) -> Result<SearchResult, Error> {
     tracing::debug!("search_query",);
 
-    let res = state.event_db.search(search_query).await?;
+    let res = state.event_db.search(search_query, None, None).await?;
     Ok(res)
 }
 

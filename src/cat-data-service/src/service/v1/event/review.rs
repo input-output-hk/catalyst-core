@@ -146,7 +146,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/{2}/reviews?limit={3}",
+                "/api/v1/event/{0}/{1}/{2}/reviews?lim={3}",
                 1, 1, 1, 2
             ))
             .body(Body::empty())
@@ -188,7 +188,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/{2}/reviews?offset={3}",
+                "/api/v1/event/{0}/{1}/{2}/reviews?ofs={3}",
                 1, 1, 1, 1
             ))
             .body(Body::empty())
@@ -214,7 +214,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/{2}/reviews?limit={3}&offset={4}",
+                "/api/v1/event/{0}/{1}/{2}/reviews?lim={3}&ofs={4}",
                 1, 1, 1, 1, 1
             ))
             .body(Body::empty())
@@ -293,7 +293,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/review_types?limit={2}",
+                "/api/v1/event/{0}/{1}/review_types?lim={2}",
                 1, 1, 2
             ))
             .body(Body::empty())
@@ -331,7 +331,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/review_types?offset={2}",
+                "/api/v1/event/{0}/{1}/review_types?ofs={2}",
                 1, 1, 1
             ))
             .body(Body::empty())
@@ -377,7 +377,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/review_types?limit={2}&offset={3}",
+                "/api/v1/event/{0}/{1}/review_types?lim={2}&ofs={3}",
                 1, 1, 1, 1
             ))
             .body(Body::empty())

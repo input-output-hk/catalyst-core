@@ -17,7 +17,7 @@ pub fn search(state: Arc<State>) -> Router {
 }
 
 async fn search_exec(
-    limit_offset: Query<LimitOffset>,
+    lim_ofs: Query<LimitOffset>,
     Json(search_query): Json<SearchQuery>,
     state: Arc<State>,
 ) -> Result<SearchResult, Error> {
@@ -25,7 +25,7 @@ async fn search_exec(
 
     let res = state
         .event_db
-        .search(search_query, limit_offset.limit, limit_offset.offset)
+        .search(search_query, lim_ofs.limit, lim_ofs.offset)
         .await?;
     Ok(res)
 }
@@ -299,7 +299,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}", 2))
+            .uri(format!("/api/v1/search?lim={0}", 2))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -365,7 +365,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?offset={0}", 2))
+            .uri(format!("/api/v1/search?ofs={0}", 2))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -449,7 +449,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}&offset={1}", 1, 1))
+            .uri(format!("/api/v1/search?lim={0}&ofs={1}", 1, 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -624,7 +624,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}", 1))
+            .uri(format!("/api/v1/search?lim={0}", 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -662,7 +662,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?offset={0}", 1))
+            .uri(format!("/api/v1/search?ofs={0}", 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -817,7 +817,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}", 2))
+            .uri(format!("/api/v1/search?lim={0}", 2))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -859,7 +859,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?offset={0}", 1))
+            .uri(format!("/api/v1/search?ofs={0}", 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -901,7 +901,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}&offset={1}", 1, 1))
+            .uri(format!("/api/v1/search?lim={0}&ofs={1}", 1, 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({

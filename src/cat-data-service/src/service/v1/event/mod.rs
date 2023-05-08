@@ -365,7 +365,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/events?offset={0}", 1))
+            .uri(format!("/api/v1/events?ofs={0}", 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -439,7 +439,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/events?limit={0}", 1))
+            .uri(format!("/api/v1/events?lim={0}", 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -477,7 +477,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/events?limit={0}&offset={1}", 1, 1))
+            .uri(format!("/api/v1/events?lim={0}&ofs={1}", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -515,7 +515,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/events?offset={0}", 10))
+            .uri(format!("/api/v1/events?ofs={0}", 10))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();

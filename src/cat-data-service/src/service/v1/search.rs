@@ -64,7 +64,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search"))
+            .uri("/api/v1/search".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -388,7 +388,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search"))
+            .uri("/api/v1/search".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -412,7 +412,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search"))
+            .uri("/api/v1/search".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -536,7 +536,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search"))
+            .uri("/api/v1/search".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -560,7 +560,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search"))
+            .uri("/api/v1/search".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -726,7 +726,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search"))
+            .uri("/api/v1/search".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({

@@ -1072,8 +1072,9 @@ components:
       required:
         - id
         - name
+        - min
         - max
-        - group
+        - map
     AdvisorReview:
       title: Advisor Review
       description: Review of a Proposal by a Community Advisor

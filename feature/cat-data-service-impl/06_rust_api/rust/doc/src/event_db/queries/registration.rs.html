@@ -534,11 +534,11 @@
                 voting_group,
             },
             as_at: voter
-                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;as_at&quot;</span>)<span class="question-mark">?
+                .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;as_at&quot;</span>)<span class="question-mark">?
                 </span>.and_local_timezone(Utc)
                 .unwrap(),
             last_updated: voter
-                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;last_updated&quot;</span>)<span class="question-mark">?
+                .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;last_updated&quot;</span>)<span class="question-mark">?
                 </span>.and_local_timezone(Utc)
                 .unwrap(),
             is_final: voter.try_get(<span class="string">&quot;final&quot;</span>)<span class="question-mark">?</span>,
@@ -601,11 +601,11 @@
         <span class="prelude-val">Ok</span>(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
             as_at: delegator
-                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;as_at&quot;</span>)<span class="question-mark">?
+                .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;as_at&quot;</span>)<span class="question-mark">?
                 </span>.and_local_timezone(Utc)
                 .unwrap(),
             last_updated: delegator
-                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, NaiveDateTime&gt;(<span class="string">&quot;last_updated&quot;</span>)<span class="question-mark">?
+                .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;last_updated&quot;</span>)<span class="question-mark">?
                 </span>.and_local_timezone(Utc)
                 .unwrap(),
             is_final: delegator.try_get(<span class="string">&quot;final&quot;</span>)<span class="question-mark">?</span>,

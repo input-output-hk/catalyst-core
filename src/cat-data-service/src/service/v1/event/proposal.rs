@@ -33,7 +33,7 @@ pub fn proposal(state: Arc<State>) -> Router {
 
 async fn proposals_exec(
     Path((event, objective)): Path<(EventId, ObjectiveId)>,
-    proposals_query: Query<LimitOffset>,
+    lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<ProposalSummary>, Error> {
     tracing::debug!(
@@ -44,12 +44,7 @@ async fn proposals_exec(
 
     let proposals = state
         .event_db
-        .get_proposals(
-            event,
-            objective,
-            proposals_query.limit,
-            proposals_query.offset,
-        )
+        .get_proposals(event, objective, lim_ofs.limit, lim_ofs.offset)
         .await?;
     Ok(proposals)
 }
@@ -174,10 +169,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!(
-                "/api/v1/event/{0}/{1}/proposals?lim={2}",
-                1, 1, 2
-            ))
+            .uri(format!("/api/v1/event/{0}/{1}/proposals?lim={2}", 1, 1, 2))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -202,10 +194,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!(
-                "/api/v1/event/{0}/{1}/proposals?ofs={2}",
-                1, 1, 1
-            ))
+            .uri(format!("/api/v1/event/{0}/{1}/proposals?ofs={2}", 1, 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();

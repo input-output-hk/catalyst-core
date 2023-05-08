@@ -5,6 +5,7 @@ use crate::{
 };
 use axum::{extract::Query, routing::post, Json, Router};
 use event_db::types::search::{SearchQuery, SearchResult};
+use serde::Deserialize;
 use std::sync::Arc;
 
 pub fn search(state: Arc<State>) -> Router {
@@ -16,8 +17,16 @@ pub fn search(state: Arc<State>) -> Router {
     )
 }
 
+#[derive(Deserialize)]
+struct SearchParam {
+    #[serde(default)]
+    total: bool,
+    #[serde(flatten)]
+    lim_ofs: LimitOffset,
+}
+
 async fn search_exec(
-    lim_ofs: Query<LimitOffset>,
+    search_param: Query<SearchParam>,
     Json(search_query): Json<SearchQuery>,
     state: Arc<State>,
 ) -> Result<SearchResult, Error> {
@@ -25,7 +34,12 @@ async fn search_exec(
 
     let res = state
         .event_db
-        .search(search_query, lim_ofs.limit, lim_ofs.offset)
+        .search(
+            search_query,
+            search_param.total,
+            search_param.lim_ofs.limit,
+            search_param.lim_ofs.offset,
+        )
         .await?;
     Ok(res)
 }
@@ -87,7 +101,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 4,
-                results: ValueResults::Events(vec![
+                results: Some(ValueResults::Events(vec![
                     EventSummary {
                         id: EventId(1),
                         name: "Test Fund 1".to_string(),
@@ -174,7 +188,7 @@ mod tests {
                         reg_checked: None,
                         is_final: false,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -205,7 +219,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 4,
-                results: ValueResults::Events(vec![
+                results: Some(ValueResults::Events(vec![
                     EventSummary {
                         id: EventId(4),
                         name: "Test Fund 4".to_string(),
@@ -292,7 +306,7 @@ mod tests {
                         )),
                         is_final: true,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -323,7 +337,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Events(vec![
+                results: Some(ValueResults::Events(vec![
                     EventSummary {
                         id: EventId(4),
                         name: "Test Fund 4".to_string(),
@@ -358,7 +372,7 @@ mod tests {
                         )),
                         is_final: true,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -389,7 +403,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Events(vec![
+                results: Some(ValueResults::Events(vec![
                     EventSummary {
                         id: EventId(2),
                         name: "Test Fund 2".to_string(),
@@ -442,7 +456,7 @@ mod tests {
                         )),
                         is_final: true,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -473,7 +487,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 1,
-                results: ValueResults::Events(vec![EventSummary {
+                results: Some(ValueResults::Events(vec![EventSummary {
                     id: EventId(3),
                     name: "Test Fund 3".to_string(),
                     starts: Some(DateTime::<Utc>::from_utc(
@@ -498,7 +512,7 @@ mod tests {
                         Utc
                     )),
                     is_final: true,
-                },])
+                },]))
             })
             .unwrap()
         );
@@ -552,7 +566,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Objectives(vec![
+                results: Some(ValueResults::Objectives(vec![
                     ObjectiveSummary {
                         id: ObjectiveId(1),
                         objective_type: ObjectiveType {
@@ -569,7 +583,7 @@ mod tests {
                         },
                         title: "title 2".to_string(),
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -600,7 +614,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Objectives(vec![
+                results: Some(ValueResults::Objectives(vec![
                     ObjectiveSummary {
                         id: ObjectiveId(2),
                         objective_type: ObjectiveType {
@@ -617,7 +631,7 @@ mod tests {
                         },
                         title: "title 1".to_string(),
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -648,14 +662,14 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 1,
-                results: ValueResults::Objectives(vec![ObjectiveSummary {
+                results: Some(ValueResults::Objectives(vec![ObjectiveSummary {
                     id: ObjectiveId(2),
                     objective_type: ObjectiveType {
                         id: "catalyst-native".to_string(),
                         description: "??".to_string()
                     },
                     title: "title 2".to_string(),
-                },])
+                },]))
             })
             .unwrap()
         );
@@ -686,14 +700,14 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 1,
-                results: ValueResults::Objectives(vec![ObjectiveSummary {
+                results: Some(ValueResults::Objectives(vec![ObjectiveSummary {
                     id: ObjectiveId(1),
                     objective_type: ObjectiveType {
                         id: "catalyst-simple".to_string(),
                         description: "A Simple choice".to_string()
                     },
                     title: "title 1".to_string(),
-                },])
+                },]))
             })
             .unwrap()
         );
@@ -747,7 +761,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 3,
-                results: ValueResults::Proposals(vec![
+                results: Some(ValueResults::Proposals(vec![
                     ProposalSummary {
                         id: 1,
                         title: String::from("title 1"),
@@ -763,7 +777,7 @@ mod tests {
                         title: String::from("title 3"),
                         summary: String::from("summary 3")
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -794,7 +808,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 3,
-                results: ValueResults::Proposals(vec![
+                results: Some(ValueResults::Proposals(vec![
                     ProposalSummary {
                         id: 3,
                         title: String::from("title 3"),
@@ -810,7 +824,7 @@ mod tests {
                         title: String::from("title 1"),
                         summary: String::from("summary 1")
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -841,7 +855,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Proposals(vec![
+                results: Some(ValueResults::Proposals(vec![
                     ProposalSummary {
                         id: 3,
                         title: String::from("title 3"),
@@ -852,7 +866,7 @@ mod tests {
                         title: String::from("title 2"),
                         summary: String::from("summary 2")
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -883,7 +897,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Proposals(vec![
+                results: Some(ValueResults::Proposals(vec![
                     ProposalSummary {
                         id: 2,
                         title: String::from("title 2"),
@@ -894,7 +908,7 @@ mod tests {
                         title: String::from("title 1"),
                         summary: String::from("summary 1")
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -925,11 +939,11 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 1,
-                results: ValueResults::Proposals(vec![ProposalSummary {
+                results: Some(ValueResults::Proposals(vec![ProposalSummary {
                     id: 2,
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
-                },])
+                },]))
             })
             .unwrap()
         );

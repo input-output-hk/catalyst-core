@@ -36,7 +36,7 @@ pub fn review(state: Arc<State>) -> Router {
 
 async fn reviews_exec(
     Path((event, objective, proposal)): Path<(EventId, ObjectiveId, ProposalId)>,
-    reviews_query: Query<LimitOffset>,
+    lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<AdvisorReview>, Error> {
     tracing::debug!(
@@ -48,20 +48,14 @@ async fn reviews_exec(
 
     let reviews = state
         .event_db
-        .get_reviews(
-            event,
-            objective,
-            proposal,
-            reviews_query.limit,
-            reviews_query.offset,
-        )
+        .get_reviews(event, objective, proposal, lim_ofs.limit, lim_ofs.offset)
         .await?;
     Ok(reviews)
 }
 
 async fn review_types_exec(
     Path((event, objective)): Path<(EventId, ObjectiveId)>,
-    reviews_query: Query<LimitOffset>,
+    lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<ReviewType>, Error> {
     tracing::debug!(
@@ -72,7 +66,7 @@ async fn review_types_exec(
 
     let reviews = state
         .event_db
-        .get_review_types(event, objective, reviews_query.limit, reviews_query.offset)
+        .get_review_types(event, objective, lim_ofs.limit, lim_ofs.offset)
         .await?;
     Ok(reviews)
 }

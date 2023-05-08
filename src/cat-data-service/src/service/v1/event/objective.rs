@@ -21,14 +21,14 @@ pub fn objective(state: Arc<State>) -> Router {
 
 async fn objectives_exec(
     Path(event): Path<EventId>,
-    objectives_query: Query<LimitOffset>,
+    lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<Objective>, Error> {
     tracing::debug!("objectives_query, event: {0}", event.0);
 
     let event = state
         .event_db
-        .get_objectives(event, objectives_query.limit, objectives_query.offset)
+        .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
         .await?;
     Ok(event)
 }

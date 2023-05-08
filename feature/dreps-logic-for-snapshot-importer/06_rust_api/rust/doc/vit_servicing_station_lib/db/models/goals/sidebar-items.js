@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["_impl_insertable_for_insertgoal","_impl_queryable_for_goal"],"struct":["Goal","InsertGoal","__FieldVisitor","__Visitor"]};

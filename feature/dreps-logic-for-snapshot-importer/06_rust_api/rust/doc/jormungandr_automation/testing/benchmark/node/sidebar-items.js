@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["speed_benchmark_from_log","storage_loading_benchmark_from_log"]};

@@ -6,7 +6,7 @@ This module contains functions for interacting with the database.
 import json
 import asyncpg
 import dataclasses
-from typing import Any, List, Optional, TypeVar
+from typing import Any, List, TypeVar
 
 from .models import Model, Contribution, Voter
 
@@ -42,6 +42,7 @@ async def insert_many(conn: asyncpg.Connection, models: List[M]) -> List[M]:
     result = await conn.fetch(stmt_template, *flat_vals)
 
     return [models[0].__class__(**record) for record in result]
+
 
 async def insert(conn: asyncpg.Connection, model: Model) -> Any:
     """Insert a single model.

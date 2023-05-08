@@ -121,7 +121,7 @@ class Mapper:
 
         return ideascale_importer.db.models.Proposal(
             id=a.id,
-            objective=0, # should be set later
+            objective=0,  # should be set later
             title=html_to_md(a.title),
             summary=html_to_md(a.text),
             category="",
@@ -300,7 +300,7 @@ class Importer:
             inserted_objectives_ix = {o.id: o for o in inserted_objectives}
 
             proposals_with_campaign_id = [(a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)) for a in ideas]
-            for (objective_id, p) in proposals_with_campaign_id:
+            for objective_id, p in proposals_with_campaign_id:
                 p.objective = inserted_objectives_ix[objective_id].row_id
 
             proposals = [p for (_, p) in proposals_with_campaign_id]

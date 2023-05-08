@@ -11,7 +11,7 @@ from ideascale_importer import utils
 class DrepAttributes:
     """Represents DREP attributes from the GVC API."""
 
-    ...
+    voting_key: str
 
 
 @dataclass
@@ -31,5 +31,8 @@ class Client:
 
     async def dreps(self) -> List[Drep]:
         """Get all DREPs."""
-        res = await self.inner.get("/api/dreps")
-        return [pydantic.tools.parse_obj_as(Drep, e) for e in res]
+        res = await self.inner.get("/dreps")
+        if not isinstance(res, dict):
+            raise utils.BadResponse()
+
+        return [pydantic.tools.parse_obj_as(Drep, e) for e in res["data"]]

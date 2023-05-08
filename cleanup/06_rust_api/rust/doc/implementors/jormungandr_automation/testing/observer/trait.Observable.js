@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"hersir":[["impl <a class=\"trait\" href=\"jormungandr_automation/testing/observer/trait.Observable.html\" title=\"trait jormungandr_automation::testing::observer::Observable\">Observable</a> for <a class=\"struct\" href=\"hersir/builder/struct.NetworkBuilder.html\" title=\"struct hersir::builder::NetworkBuilder\">NetworkBuilder</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

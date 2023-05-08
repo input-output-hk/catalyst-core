@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["VARIANTS"],"enum":["ConfigParam","FromConfigParamError","__Field"],"fn":["config_params_documented_example"],"struct":["ConfigParams","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"]};

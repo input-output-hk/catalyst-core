@@ -61,7 +61,7 @@ async fn reviews_exec(
 
 async fn review_types_exec(
     Path((event, objective)): Path<(EventId, ObjectiveId)>,
-    reviews_query: Query<ReviewsQuery>,
+    reviews_query: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<ReviewType>, Error> {
     tracing::debug!(

@@ -182,7 +182,7 @@
 
 <span class="kw">use </span><span class="kw">super</span>::event::{objective::ObjectiveSummary, proposal::ProposalSummary, EventSummary};
 
-<span class="attr">#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>SearchTable {
     Events,
@@ -190,7 +190,7 @@
     Proposals,
 }
 
-<span class="attr">#[derive(Debug, Deserialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
 </span><span class="kw">pub enum </span>SearchColumn {
     Title,
@@ -212,21 +212,21 @@
     }
 }
 
-<span class="attr">#[derive(Debug, Deserialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 
 </span><span class="kw">pub struct </span>SearchConstraint {
     <span class="kw">pub </span>column: SearchColumn,
     <span class="kw">pub </span>search: String,
 }
 
-<span class="attr">#[derive(Debug, Deserialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>SearchOrderBy {
     <span class="kw">pub </span>column: SearchColumn,
     <span class="attr">#[serde(default)]
     </span><span class="kw">pub </span>descending: bool,
 }
 
-<span class="attr">#[derive(Debug, Deserialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>SearchQuery {
     <span class="kw">pub </span>table: SearchTable,
     <span class="attr">#[serde(default)]
@@ -235,7 +235,7 @@
     </span><span class="kw">pub </span>order_by: Vec&lt;SearchOrderBy&gt;,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 #[serde(untagged)]
 </span><span class="kw">pub enum </span>ValueResults {
     Events(Vec&lt;EventSummary&gt;),
@@ -243,7 +243,7 @@
     Proposals(Vec&lt;ProposalSummary&gt;),
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>SearchResult {
     <span class="kw">pub </span>total: u32,
     <span class="kw">pub </span>results: ValueResults,

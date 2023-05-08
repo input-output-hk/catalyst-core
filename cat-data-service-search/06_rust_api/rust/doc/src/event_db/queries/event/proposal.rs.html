@@ -365,7 +365,7 @@
             .<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>row = rows
             .get(<span class="number">0</span>)
-            .ok_or(Error::NotFound(<span class="string">&quot;cat not find proposal value&quot;</span>.to_string()))<span class="question-mark">?</span>;
+            .ok_or_else(|| Error::NotFound(<span class="string">&quot;cat not find proposal value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>proposer = <span class="macro">vec!</span>[ProposerDetails {
             name: row.try_get(<span class="string">&quot;proposer_name&quot;</span>)<span class="question-mark">?</span>,

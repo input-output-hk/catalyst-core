@@ -399,8 +399,6 @@
 <a href="#399" id="399">399</a>
 <a href="#400" id="400">400</a>
 <a href="#401" id="401">401</a>
-<a href="#402" id="402">402</a>
-<a href="#403" id="403">403</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     types::{
         event::EventId,
@@ -499,7 +497,7 @@
         </span>};
         <span class="kw">let </span>voter = rows
             .get(<span class="number">0</span>)
-            .ok_or(Error::NotFound(<span class="string">&quot;can not find voter value&quot;</span>.to_string()))<span class="question-mark">?</span>;
+            .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find voter value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>voting_group = voter.try_get(<span class="string">&quot;voting_group&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span>voting_power = voter.try_get(<span class="string">&quot;voting_power&quot;</span>)<span class="question-mark">?</span>;
@@ -517,9 +515,9 @@
 
         <span class="kw">let </span>total_voting_power_per_group: i64 = rows
             .get(<span class="number">0</span>)
-            .ok_or(Error::NotFound(
-                <span class="string">&quot;can not find total voting power per group value&quot;</span>.to_string(),
-            ))<span class="question-mark">?
+            .ok_or_else(|| {
+                Error::NotFound(<span class="string">&quot;can not find total voting power per group value&quot;</span>.to_string())
+            })<span class="question-mark">?
             </span>.try_get(<span class="string">&quot;total_voting_power&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>voting_power_saturation = <span class="kw">if </span>total_voting_power_per_group <span class="kw">as </span>f64 != <span class="number">0_f64 </span>{
@@ -565,7 +563,7 @@
         </span>};
         <span class="kw">let </span>delegator = rows
             .get(<span class="number">0</span>)
-            .ok_or(Error::NotFound(<span class="string">&quot;can not find delegator value&quot;</span>.to_string()))<span class="question-mark">?</span>;
+            .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find delegator value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>delegation_rows = <span class="kw">if let </span><span class="prelude-val">Some</span>(event) = event {
             conn.query(
@@ -597,9 +595,7 @@
         </span>};
         <span class="kw">let </span>total_power: i64 = rows
             .get(<span class="number">0</span>)
-            .ok_or(Error::NotFound(
-                <span class="string">&quot;can not find total power value&quot;</span>.to_string(),
-            ))<span class="question-mark">?
+            .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find total power value&quot;</span>.to_string()))<span class="question-mark">?
             </span>.try_get(<span class="string">&quot;total_voting_power&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(Delegator {

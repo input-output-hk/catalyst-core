@@ -648,7 +648,7 @@
         <span class="kw">let </span>rows = conn.query(<span class="self">Self</span>::EVENT_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>]).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>row = rows
             .get(<span class="number">0</span>)
-            .ok_or(Error::NotFound(<span class="string">&quot;can not find event value&quot;</span>.to_string()))<span class="question-mark">?</span>;
+            .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find event value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>ends = row
             .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?

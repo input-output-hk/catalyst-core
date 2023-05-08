@@ -253,7 +253,7 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SearchResult, Error&gt; {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;search_query&quot;</span>,);
 
-    <span class="kw">let </span>res = state.event_db.search(search_query).<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="kw">let </span>res = state.event_db.search(search_query, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(res)
 }
 

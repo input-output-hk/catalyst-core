@@ -87,7 +87,7 @@
     <span class="kw">match </span>res {
         <span class="prelude-val">Ok</span>(res) =&gt; (StatusCode::OK, Json(res)).into_response(),
         <span class="prelude-val">Err</span>(Error::EventDbError(event_db::error::Error::NotFound(err))) =&gt; {
-            (StatusCode::NOT_FOUND, err.to_string()).into_response()
+            (StatusCode::NOT_FOUND, err).into_response()
         }
         <span class="prelude-val">Err</span>(err) =&gt; (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response(),
     }

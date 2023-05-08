@@ -578,18 +578,18 @@
 }
 
 <span class="kw">async fn </span>events_exec(
-    events_query: Query&lt;LimitOffset&gt;,
+    lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;events_query, limit: {0:?}, offset: {1:?}&quot;</span>,
-        events_query.limit,
-        events_query.offset
+        lim_ofs.limit,
+        lim_ofs.offset
     );
 
     <span class="kw">let </span>events = state
         .event_db
-        .get_events(events_query.limit, events_query.offset)
+        .get_events(lim_ofs.limit, lim_ofs.offset)
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(events)
 }

@@ -255,14 +255,14 @@
 
 <span class="kw">async fn </span>objectives_exec(
     Path(event): Path&lt;EventId&gt;,
-    objectives_query: Query&lt;LimitOffset&gt;,
+    lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;Objective&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;objectives_query, event: {0}&quot;</span>, event.<span class="number">0</span>);
 
     <span class="kw">let </span>event = state
         .event_db
-        .get_objectives(event, objectives_query.limit, objectives_query.offset)
+        .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(event)
 }

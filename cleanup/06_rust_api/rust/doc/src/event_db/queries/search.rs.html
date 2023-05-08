@@ -874,6 +874,72 @@
 <a href="#874" id="874">874</a>
 <a href="#875" id="875">875</a>
 <a href="#876" id="876">876</a>
+<a href="#877" id="877">877</a>
+<a href="#878" id="878">878</a>
+<a href="#879" id="879">879</a>
+<a href="#880" id="880">880</a>
+<a href="#881" id="881">881</a>
+<a href="#882" id="882">882</a>
+<a href="#883" id="883">883</a>
+<a href="#884" id="884">884</a>
+<a href="#885" id="885">885</a>
+<a href="#886" id="886">886</a>
+<a href="#887" id="887">887</a>
+<a href="#888" id="888">888</a>
+<a href="#889" id="889">889</a>
+<a href="#890" id="890">890</a>
+<a href="#891" id="891">891</a>
+<a href="#892" id="892">892</a>
+<a href="#893" id="893">893</a>
+<a href="#894" id="894">894</a>
+<a href="#895" id="895">895</a>
+<a href="#896" id="896">896</a>
+<a href="#897" id="897">897</a>
+<a href="#898" id="898">898</a>
+<a href="#899" id="899">899</a>
+<a href="#900" id="900">900</a>
+<a href="#901" id="901">901</a>
+<a href="#902" id="902">902</a>
+<a href="#903" id="903">903</a>
+<a href="#904" id="904">904</a>
+<a href="#905" id="905">905</a>
+<a href="#906" id="906">906</a>
+<a href="#907" id="907">907</a>
+<a href="#908" id="908">908</a>
+<a href="#909" id="909">909</a>
+<a href="#910" id="910">910</a>
+<a href="#911" id="911">911</a>
+<a href="#912" id="912">912</a>
+<a href="#913" id="913">913</a>
+<a href="#914" id="914">914</a>
+<a href="#915" id="915">915</a>
+<a href="#916" id="916">916</a>
+<a href="#917" id="917">917</a>
+<a href="#918" id="918">918</a>
+<a href="#919" id="919">919</a>
+<a href="#920" id="920">920</a>
+<a href="#921" id="921">921</a>
+<a href="#922" id="922">922</a>
+<a href="#923" id="923">923</a>
+<a href="#924" id="924">924</a>
+<a href="#925" id="925">925</a>
+<a href="#926" id="926">926</a>
+<a href="#927" id="927">927</a>
+<a href="#928" id="928">928</a>
+<a href="#929" id="929">929</a>
+<a href="#930" id="930">930</a>
+<a href="#931" id="931">931</a>
+<a href="#932" id="932">932</a>
+<a href="#933" id="933">933</a>
+<a href="#934" id="934">934</a>
+<a href="#935" id="935">935</a>
+<a href="#936" id="936">936</a>
+<a href="#937" id="937">937</a>
+<a href="#938" id="938">938</a>
+<a href="#939" id="939">939</a>
+<a href="#940" id="940">940</a>
+<a href="#941" id="941">941</a>
+<a href="#942" id="942">942</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     types::{
         event::{
@@ -881,7 +947,9 @@
             proposal::ProposalSummary,
             EventId, EventSummary,
         },
-        search::{SearchQuery, SearchResult, SearchTable, ValueResults},
+        search::{
+            SearchConstraint, SearchOrderBy, SearchQuery, SearchResult, SearchTable, ValueResults,
+        },
     },
     Error, EventDB,
 };
@@ -893,6 +961,7 @@
     <span class="kw">async fn </span>search(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         search_query: SearchQuery,
+        total: bool,
         limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;SearchResult, Error&gt;;
@@ -912,6 +981,91 @@
     <span class="kw">const </span>SEARCH_PROPOSALS_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
         <span class="string">&quot;SELECT DISTINCT proposal.id, proposal.title, proposal.summary
         FROM proposal&quot;</span>;
+
+    <span class="kw">fn </span>build_where_clause(table: <span class="kw-2">&amp;</span>str, filter: <span class="kw-2">&amp;</span>[SearchConstraint]) -&gt; String {
+        <span class="kw">let </span><span class="kw-2">mut </span>where_clause = String::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>filter_iter = filter.iter();
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(filter) = filter_iter.next() {
+            where_clause.push_str(
+                <span class="macro">format!</span>(
+                    <span class="string">&quot;WHERE {0}.{1} LIKE &#39;%{2}%&#39;&quot;</span>,
+                    table,
+                    filter.column.to_string(),
+                    filter.search
+                )
+                .as_str(),
+            );
+            <span class="kw">for </span>filter <span class="kw">in </span>filter_iter {
+                where_clause.push_str(
+                    <span class="macro">format!</span>(
+                        <span class="string">&quot;AND {0}.{1} LIKE &#39;%{2}%&#39;&quot;</span>,
+                        table,
+                        filter.column.to_string(),
+                        filter.search
+                    )
+                    .as_str(),
+                );
+            }
+        }
+        where_clause
+    }
+
+    <span class="kw">fn </span>build_order_by_clause(table: <span class="kw-2">&amp;</span>str, order_by: <span class="kw-2">&amp;</span>[SearchOrderBy]) -&gt; String {
+        <span class="kw">let </span><span class="kw-2">mut </span>order_by_clause = String::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>order_by_iter = order_by.iter();
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(order_by) = order_by_iter.next() {
+            <span class="kw">let </span>order_type = <span class="kw">if </span>order_by.descending { <span class="string">&quot;DESC&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;ASC&quot; </span>};
+            order_by_clause.push_str(
+                <span class="macro">format!</span>(
+                    <span class="string">&quot;ORDER BY {0}.{1} {2}&quot;</span>,
+                    table,
+                    order_by.column.to_string(),
+                    order_type
+                )
+                .as_str(),
+            );
+            <span class="kw">for </span>order_by <span class="kw">in </span>order_by_iter {
+                <span class="kw">let </span>order_type = <span class="kw">if </span>order_by.descending { <span class="string">&quot;DESC&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;ASC&quot; </span>};
+                order_by_clause.push_str(
+                    <span class="macro">format!</span>(
+                        <span class="string">&quot;, {0}.{1} LIKE &#39;%{2}%&#39;&quot;</span>,
+                        table,
+                        order_by.column.to_string(),
+                        order_type
+                    )
+                    .as_str(),
+                );
+            }
+        }
+        order_by_clause
+    }
+
+    <span class="kw">fn </span>contruct_query(search_query: <span class="kw-2">&amp;</span>SearchQuery) -&gt; String {
+        <span class="kw">let </span>(query, table) = <span class="kw">match </span>search_query.table {
+            SearchTable::Events =&gt; (<span class="self">Self</span>::SEARCH_EVENTS_QUERY, <span class="string">&quot;event&quot;</span>),
+            SearchTable::Objectives =&gt; (<span class="self">Self</span>::SEARCH_OBJECTIVES_QUERY, <span class="string">&quot;objective&quot;</span>),
+            SearchTable::Proposals =&gt; (<span class="self">Self</span>::SEARCH_PROPOSALS_QUERY, <span class="string">&quot;proposal&quot;</span>),
+        };
+        <span class="macro">format!</span>(
+            <span class="string">&quot;{0} {1} {2} LIMIT $1 OFFSET $2;&quot;</span>,
+            query,
+            <span class="self">Self</span>::build_where_clause(table, <span class="kw-2">&amp;</span>search_query.filter),
+            <span class="self">Self</span>::build_order_by_clause(table, <span class="kw-2">&amp;</span>search_query.order_by),
+        )
+    }
+
+    <span class="kw">fn </span>contruct_count_query(search_query: <span class="kw-2">&amp;</span>SearchQuery) -&gt; String {
+        <span class="kw">let </span>(query, table) = <span class="kw">match </span>search_query.table {
+            SearchTable::Events =&gt; (<span class="self">Self</span>::SEARCH_EVENTS_QUERY, <span class="string">&quot;event&quot;</span>),
+            SearchTable::Objectives =&gt; (<span class="self">Self</span>::SEARCH_OBJECTIVES_QUERY, <span class="string">&quot;objective&quot;</span>),
+            SearchTable::Proposals =&gt; (<span class="self">Self</span>::SEARCH_PROPOSALS_QUERY, <span class="string">&quot;proposal&quot;</span>),
+        };
+        <span class="macro">format!</span>(
+            <span class="string">&quot;SELECT COUNT(*) as total FROM ({0} {1} LIMIT $1 OFFSET $2) as result;&quot;</span>,
+            query,
+            <span class="self">Self</span>::build_where_clause(table, <span class="kw-2">&amp;</span>search_query.filter),
+        )
+    }
 }
 
 <span class="attr">#[async_trait]
@@ -919,169 +1073,114 @@
     <span class="kw">async fn </span>search(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         search_query: SearchQuery,
+        total: bool,
         limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
         offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;SearchResult, Error&gt; {
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
-        <span class="kw">let </span>where_clause_fn = |table| {
-            <span class="kw">let </span><span class="kw-2">mut </span>where_clause = String::new();
-            <span class="kw">let </span><span class="kw-2">mut </span>filter_iter = search_query.filter.iter();
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(filter) = filter_iter.next() {
-                where_clause.push_str(
-                    <span class="macro">format!</span>(
-                        <span class="string">&quot;WHERE {0}.{1} LIKE &#39;%{2}%&#39;&quot;</span>,
-                        table,
-                        filter.column.to_string(),
-                        filter.search
-                    )
-                    .as_str(),
-                );
-                <span class="kw">for </span>filter <span class="kw">in </span>filter_iter {
-                    where_clause.push_str(
-                        <span class="macro">format!</span>(
-                            <span class="string">&quot;AND {0}.{1} LIKE &#39;%{2}%&#39;&quot;</span>,
-                            table,
-                            filter.column.to_string(),
-                            filter.search
-                        )
-                        .as_str(),
-                    );
-                }
-            }
-            where_clause
-        };
-        <span class="kw">let </span>order_by_clause_fn = |table| {
-            <span class="kw">let </span><span class="kw-2">mut </span>order_by_clause = String::new();
-            <span class="kw">let </span><span class="kw-2">mut </span>order_by_iter = search_query.order_by.iter();
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(order_by) = order_by_iter.next() {
-                <span class="kw">let </span>order_type = <span class="kw">if </span>order_by.descending { <span class="string">&quot;DESC&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;ASC&quot; </span>};
-                order_by_clause.push_str(
-                    <span class="macro">format!</span>(
-                        <span class="string">&quot;ORDER BY {0}.{1} {2}&quot;</span>,
-                        table,
-                        order_by.column.to_string(),
-                        order_type
-                    )
-                    .as_str(),
-                );
-                <span class="kw">for </span>order_by <span class="kw">in </span>order_by_iter {
-                    <span class="kw">let </span>order_type = <span class="kw">if </span>order_by.descending { <span class="string">&quot;DESC&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;ASC&quot; </span>};
-                    order_by_clause.push_str(
-                        <span class="macro">format!</span>(
-                            <span class="string">&quot;, {0}.{1} LIKE &#39;%{2}%&#39;&quot;</span>,
-                            table,
-                            order_by.column.to_string(),
-                            order_type
-                        )
-                        .as_str(),
-                    );
-                }
-            }
-            order_by_clause
-        };
+        <span class="kw">if </span>total {
+            <span class="kw">let </span>rows: Vec&lt;tokio_postgres::Row&gt; = conn
+                .query(
+                    <span class="kw-2">&amp;</span><span class="self">Self</span>::contruct_count_query(<span class="kw-2">&amp;</span>search_query),
+                    <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
+                )
+                .<span class="kw">await
+                </span>.map_err(|e| Error::NotFound(e.to_string()))<span class="question-mark">?</span>;
+            <span class="kw">let </span>row = rows.get(<span class="number">0</span>).unwrap();
 
-        <span class="kw">match </span>search_query.table {
-            SearchTable::Events =&gt; {
-                <span class="kw">let </span>rows: Vec&lt;tokio_postgres::Row&gt; = conn
-                    .query(
-                        <span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                            <span class="string">&quot;{0} {1} {2} LIMIT $1 OFFSET $2;&quot;</span>,
-                            <span class="self">Self</span>::SEARCH_EVENTS_QUERY,
-                            where_clause_fn(<span class="string">&quot;event&quot;</span>),
-                            order_by_clause_fn(<span class="string">&quot;event&quot;</span>),
-                        ),
-                        <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
-                    )
-                    .<span class="kw">await
-                    </span>.map_err(|e| Error::NotFound(e.to_string()))<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(SearchResult {
+                total: row.try_get(<span class="string">&quot;total&quot;</span>)<span class="question-mark">?</span>,
+                results: <span class="prelude-val">None</span>,
+            })
+        } <span class="kw">else </span>{
+            <span class="kw">match </span>search_query.table {
+                SearchTable::Events =&gt; {
+                    <span class="kw">let </span>rows: Vec&lt;tokio_postgres::Row&gt; = conn
+                        .query(
+                            <span class="kw-2">&amp;</span><span class="self">Self</span>::contruct_query(<span class="kw-2">&amp;</span>search_query),
+                            <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
+                        )
+                        .<span class="kw">await
+                        </span>.map_err(|e| Error::NotFound(e.to_string()))<span class="question-mark">?</span>;
 
-                <span class="kw">let </span><span class="kw-2">mut </span>events = Vec::new();
-                <span class="kw">for </span>row <span class="kw">in </span>rows {
-                    <span class="kw">let </span>ends = row
-                        .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
-                        </span>.map(|val| val.and_local_timezone(Utc).unwrap());
-                    <span class="kw">let </span>is_final = ends.map(|ends| Utc::now() &gt; ends).unwrap_or(<span class="bool-val">false</span>);
-                    events.push(EventSummary {
-                        id: EventId(row.try_get(<span class="string">&quot;row_id&quot;</span>)<span class="question-mark">?</span>),
-                        name: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
-                        starts: row
-                            .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
-                            </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
-                        reg_checked: row
-                            .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;last_updated&quot;</span>)<span class="question-mark">?
-                            </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
-                        ends,
-                        is_final,
+                    <span class="kw">let </span><span class="kw-2">mut </span>events = Vec::new();
+                    <span class="kw">for </span>row <span class="kw">in </span>rows {
+                        <span class="kw">let </span>ends = row
+                            .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;end_time&quot;</span>)<span class="question-mark">?
+                            </span>.map(|val| val.and_local_timezone(Utc).unwrap());
+                        <span class="kw">let </span>is_final = ends.map(|ends| Utc::now() &gt; ends).unwrap_or(<span class="bool-val">false</span>);
+                        events.push(EventSummary {
+                            id: EventId(row.try_get(<span class="string">&quot;row_id&quot;</span>)<span class="question-mark">?</span>),
+                            name: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
+                            starts: row
+                                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;start_time&quot;</span>)<span class="question-mark">?
+                                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+                            reg_checked: row
+                                .try_get::&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;last_updated&quot;</span>)<span class="question-mark">?
+                                </span>.map(|val| val.and_local_timezone(Utc).unwrap()),
+                            ends,
+                            is_final,
+                        })
+                    }
+
+                    <span class="prelude-val">Ok</span>(SearchResult {
+                        total: events.len() <span class="kw">as </span>i64,
+                        results: <span class="prelude-val">Some</span>(ValueResults::Events(events)),
                     })
                 }
+                SearchTable::Objectives =&gt; {
+                    <span class="kw">let </span>rows: Vec&lt;tokio_postgres::Row&gt; = conn
+                        .query(
+                            <span class="kw-2">&amp;</span><span class="self">Self</span>::contruct_query(<span class="kw-2">&amp;</span>search_query),
+                            <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
+                        )
+                        .<span class="kw">await
+                        </span>.map_err(|e| Error::NotFound(e.to_string()))<span class="question-mark">?</span>;
 
-                <span class="prelude-val">Ok</span>(SearchResult {
-                    total: events.len() <span class="kw">as </span>u32,
-                    results: ValueResults::Events(events),
-                })
-            }
-            SearchTable::Objectives =&gt; {
-                <span class="kw">let </span>rows: Vec&lt;tokio_postgres::Row&gt; = conn
-                    .query(
-                        <span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                            <span class="string">&quot;{0} {1} {2} LIMIT $1 OFFSET $2;&quot;</span>,
-                            <span class="self">Self</span>::SEARCH_OBJECTIVES_QUERY,
-                            where_clause_fn(<span class="string">&quot;objective&quot;</span>),
-                            order_by_clause_fn(<span class="string">&quot;objective&quot;</span>),
-                        ),
-                        <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
-                    )
-                    .<span class="kw">await
-                    </span>.map_err(|e| Error::NotFound(e.to_string()))<span class="question-mark">?</span>;
+                    <span class="kw">let </span><span class="kw-2">mut </span>objectives = Vec::new();
+                    <span class="kw">for </span>row <span class="kw">in </span>rows {
+                        <span class="kw">let </span>objective = ObjectiveSummary {
+                            id: ObjectiveId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
+                            objective_type: ObjectiveType {
+                                id: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
+                                description: row.try_get(<span class="string">&quot;objective_category_description&quot;</span>)<span class="question-mark">?</span>,
+                            },
+                            title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
+                        };
+                        objectives.push(objective);
+                    }
 
-                <span class="kw">let </span><span class="kw-2">mut </span>objectives = Vec::new();
-                <span class="kw">for </span>row <span class="kw">in </span>rows {
-                    <span class="kw">let </span>objective = ObjectiveSummary {
-                        id: ObjectiveId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
-                        objective_type: ObjectiveType {
-                            id: row.try_get(<span class="string">&quot;name&quot;</span>)<span class="question-mark">?</span>,
-                            description: row.try_get(<span class="string">&quot;objective_category_description&quot;</span>)<span class="question-mark">?</span>,
-                        },
-                        title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
-                    };
-                    objectives.push(objective);
+                    <span class="prelude-val">Ok</span>(SearchResult {
+                        total: objectives.len() <span class="kw">as </span>i64,
+                        results: <span class="prelude-val">Some</span>(ValueResults::Objectives(objectives)),
+                    })
                 }
+                SearchTable::Proposals =&gt; {
+                    <span class="kw">let </span>rows: Vec&lt;tokio_postgres::Row&gt; = conn
+                        .query(
+                            <span class="kw-2">&amp;</span><span class="self">Self</span>::contruct_query(<span class="kw-2">&amp;</span>search_query),
+                            <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
+                        )
+                        .<span class="kw">await
+                        </span>.map_err(|e| Error::NotFound(e.to_string()))<span class="question-mark">?</span>;
 
-                <span class="prelude-val">Ok</span>(SearchResult {
-                    total: objectives.len() <span class="kw">as </span>u32,
-                    results: ValueResults::Objectives(objectives),
-                })
-            }
-            SearchTable::Proposals =&gt; {
-                <span class="kw">let </span>rows: Vec&lt;tokio_postgres::Row&gt; = conn
-                    .query(
-                        <span class="kw-2">&amp;</span><span class="macro">format!</span>(
-                            <span class="string">&quot;{0} {1} {2} LIMIT $1 OFFSET $2;&quot;</span>,
-                            <span class="self">Self</span>::SEARCH_PROPOSALS_QUERY,
-                            where_clause_fn(<span class="string">&quot;proposal&quot;</span>),
-                            order_by_clause_fn(<span class="string">&quot;proposal&quot;</span>),
-                        ),
-                        <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
-                    )
-                    .<span class="kw">await
-                    </span>.map_err(|e| Error::NotFound(e.to_string()))<span class="question-mark">?</span>;
+                    <span class="kw">let </span><span class="kw-2">mut </span>proposals = Vec::new();
+                    <span class="kw">for </span>row <span class="kw">in </span>rows {
+                        <span class="kw">let </span>summary = ProposalSummary {
+                            id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
+                            title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
+                            summary: row.try_get(<span class="string">&quot;summary&quot;</span>)<span class="question-mark">?</span>,
+                        };
 
-                <span class="kw">let </span><span class="kw-2">mut </span>proposals = Vec::new();
-                <span class="kw">for </span>row <span class="kw">in </span>rows {
-                    <span class="kw">let </span>summary = ProposalSummary {
-                        id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
-                        title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
-                        summary: row.try_get(<span class="string">&quot;summary&quot;</span>)<span class="question-mark">?</span>,
-                    };
+                        proposals.push(summary);
+                    }
 
-                    proposals.push(summary);
+                    <span class="prelude-val">Ok</span>(SearchResult {
+                        total: proposals.len() <span class="kw">as </span>i64,
+                        results: <span class="prelude-val">Some</span>(ValueResults::Proposals(proposals)),
+                    })
                 }
-
-                <span class="prelude-val">Ok</span>(SearchResult {
-                    total: proposals.len() <span class="kw">as </span>u32,
-                    results: ValueResults::Proposals(proposals),
-                })
             }
         }
     }
@@ -1118,11 +1217,14 @@
                 descending: <span class="bool-val">false</span>,
             }],
         };
-        <span class="kw">let </span>query_result = event_db.search(search_query, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
+        <span class="kw">let </span>query_result = event_db
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .<span class="kw">await
+            </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">4</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Events(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
                 EventSummary {
                     id: EventId(<span class="number">1</span>),
                     name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
@@ -1209,8 +1311,15 @@
                     reg_checked: <span class="prelude-val">None</span>,
                     is_final: <span class="bool-val">false</span>,
                 },
-            ])
+            ]))
         );
+
+        <span class="kw">let </span>query_result = event_db
+            .search(search_query, <span class="bool-val">true</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .<span class="kw">await
+            </span>.unwrap();
+        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">4</span>);
+        <span class="macro">assert_eq!</span>(query_result.results, <span class="prelude-val">None</span>);
 
         <span class="kw">let </span>search_query = SearchQuery {
             table: SearchTable::Events,
@@ -1224,13 +1333,13 @@
             }],
         };
         <span class="kw">let </span>query_result = event_db
-            .search(search_query.clone(), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">4</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Events(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
                 EventSummary {
                     id: EventId(<span class="number">4</span>),
                     name: <span class="string">&quot;Test Fund 4&quot;</span>.to_string(),
@@ -1317,17 +1426,17 @@
                     )),
                     is_final: <span class="bool-val">true</span>,
                 },
-            ])
+            ]))
         );
 
         <span class="kw">let </span>query_result = event_db
-            .search(search_query.clone(), <span class="prelude-val">Some</span>(<span class="number">2</span>), <span class="prelude-val">None</span>)
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">Some</span>(<span class="number">2</span>), <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Events(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
                 EventSummary {
                     id: EventId(<span class="number">4</span>),
                     name: <span class="string">&quot;Test Fund 4&quot;</span>.to_string(),
@@ -1362,17 +1471,17 @@
                     )),
                     is_final: <span class="bool-val">true</span>,
                 },
-            ])
+            ]))
         );
 
         <span class="kw">let </span>query_result = event_db
-            .search(search_query.clone(), <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">2</span>))
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">2</span>))
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Events(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
                 EventSummary {
                     id: EventId(<span class="number">2</span>),
                     name: <span class="string">&quot;Test Fund 2&quot;</span>.to_string(),
@@ -1425,17 +1534,17 @@
                     )),
                     is_final: <span class="bool-val">true</span>,
                 },
-            ])
+            ]))
         );
 
         <span class="kw">let </span>query_result = event_db
-            .search(search_query, <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>))
+            .search(search_query, <span class="bool-val">false</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>))
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Events(<span class="macro">vec!</span>[EventSummary {
+            <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[EventSummary {
                 id: EventId(<span class="number">3</span>),
                 name: <span class="string">&quot;Test Fund 3&quot;</span>.to_string(),
                 starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
@@ -1460,7 +1569,7 @@
                     Utc
                 )),
                 is_final: <span class="bool-val">true</span>,
-            },])
+            },]))
         );
 
         <span class="kw">let </span>search_query = SearchQuery {
@@ -1472,7 +1581,7 @@
             order_by: <span class="macro">vec!</span>[],
         };
         <span class="macro">assert_eq!</span>(
-            event_db.search(search_query, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>,
+            event_db.search(search_query, <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>,
             <span class="prelude-val">Err</span>(Error::NotFound(
                 <span class="string">&quot;db error: ERROR: column event.funds does not exist&quot;</span>.to_string()
             ))
@@ -1494,11 +1603,14 @@
                 descending: <span class="bool-val">false</span>,
             }],
         };
-        <span class="kw">let </span>query_result = event_db.search(search_query, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
+        <span class="kw">let </span>query_result = event_db
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .<span class="kw">await
+            </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Objectives(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Objectives(<span class="macro">vec!</span>[
                 ObjectiveSummary {
                     id: ObjectiveId(<span class="number">1</span>),
                     objective_type: ObjectiveType {
@@ -1515,8 +1627,15 @@
                     },
                     title: <span class="string">&quot;title 2&quot;</span>.to_string(),
                 },
-            ])
+            ]))
         );
+
+        <span class="kw">let </span>query_result = event_db
+            .search(search_query, <span class="bool-val">true</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .<span class="kw">await
+            </span>.unwrap();
+        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">2</span>);
+        <span class="macro">assert_eq!</span>(query_result.results, <span class="prelude-val">None</span>);
 
         <span class="kw">let </span>search_query: SearchQuery = SearchQuery {
             table: SearchTable::Objectives,
@@ -1530,13 +1649,13 @@
             }],
         };
         <span class="kw">let </span>query_result = event_db
-            .search(search_query.clone(), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Objectives(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Objectives(<span class="macro">vec!</span>[
                 ObjectiveSummary {
                     id: ObjectiveId(<span class="number">2</span>),
                     objective_type: ObjectiveType {
@@ -1553,38 +1672,41 @@
                     },
                     title: <span class="string">&quot;title 1&quot;</span>.to_string(),
                 },
-            ])
+            ]))
         );
 
         <span class="kw">let </span>query_result = event_db
-            .search(search_query.clone(), <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">None</span>)
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Objectives(<span class="macro">vec!</span>[ObjectiveSummary {
+            <span class="prelude-val">Some</span>(ValueResults::Objectives(<span class="macro">vec!</span>[ObjectiveSummary {
                 id: ObjectiveId(<span class="number">2</span>),
                 objective_type: ObjectiveType {
                     id: <span class="string">&quot;catalyst-native&quot;</span>.to_string(),
                     description: <span class="string">&quot;??&quot;</span>.to_string()
                 },
                 title: <span class="string">&quot;title 2&quot;</span>.to_string(),
-            },])
+            },]))
         );
 
-        <span class="kw">let </span>query_result = event_db.search(search_query, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>)).<span class="kw">await</span>.unwrap();
+        <span class="kw">let </span>query_result = event_db
+            .search(search_query, <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>))
+            .<span class="kw">await
+            </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Objectives(<span class="macro">vec!</span>[ObjectiveSummary {
+            <span class="prelude-val">Some</span>(ValueResults::Objectives(<span class="macro">vec!</span>[ObjectiveSummary {
                 id: ObjectiveId(<span class="number">1</span>),
                 objective_type: ObjectiveType {
                     id: <span class="string">&quot;catalyst-simple&quot;</span>.to_string(),
                     description: <span class="string">&quot;A Simple choice&quot;</span>.to_string()
                 },
                 title: <span class="string">&quot;title 1&quot;</span>.to_string(),
-            },])
+            },]))
         );
 
         <span class="kw">let </span>search_query = SearchQuery {
@@ -1596,7 +1718,7 @@
             order_by: <span class="macro">vec!</span>[],
         };
         <span class="macro">assert_eq!</span>(
-            event_db.search(search_query, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>,
+            event_db.search(search_query, <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>,
             <span class="prelude-val">Err</span>(Error::NotFound(
                 <span class="string">&quot;db error: ERROR: column objective.funds does not exist&quot;</span>.to_string()
             ))
@@ -1618,11 +1740,14 @@
                 descending: <span class="bool-val">false</span>,
             }],
         };
-        <span class="kw">let </span>query_result = event_db.search(search_query, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
+        <span class="kw">let </span>query_result = event_db
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .<span class="kw">await
+            </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">3</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Proposals(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                 ProposalSummary {
                     id: <span class="number">1</span>,
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
@@ -1638,8 +1763,15 @@
                     title: String::from(<span class="string">&quot;title 3&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
                 },
-            ])
+            ]))
         );
+
+        <span class="kw">let </span>query_result = event_db
+            .search(search_query, <span class="bool-val">true</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .<span class="kw">await
+            </span>.unwrap();
+        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(query_result.results, <span class="prelude-val">None</span>);
 
         <span class="kw">let </span>search_query: SearchQuery = SearchQuery {
             table: SearchTable::Proposals,
@@ -1653,13 +1785,13 @@
             }],
         };
         <span class="kw">let </span>query_result = event_db
-            .search(search_query.clone(), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">3</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Proposals(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                 ProposalSummary {
                     id: <span class="number">3</span>,
                     title: String::from(<span class="string">&quot;title 3&quot;</span>),
@@ -1675,17 +1807,17 @@
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
-            ])
+            ]))
         );
 
         <span class="kw">let </span>query_result = event_db
-            .search(search_query.clone(), <span class="prelude-val">Some</span>(<span class="number">2</span>), <span class="prelude-val">None</span>)
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">Some</span>(<span class="number">2</span>), <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Proposals(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                 ProposalSummary {
                     id: <span class="number">3</span>,
                     title: String::from(<span class="string">&quot;title 3&quot;</span>),
@@ -1696,17 +1828,17 @@
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
                 },
-            ])
+            ]))
         );
 
         <span class="kw">let </span>query_result = event_db
-            .search(search_query.clone(), <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>))
+            .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>))
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">2</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Proposals(<span class="macro">vec!</span>[
+            <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                 ProposalSummary {
                     id: <span class="number">2</span>,
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
@@ -1717,21 +1849,21 @@
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
-            ])
+            ]))
         );
 
         <span class="kw">let </span>query_result = event_db
-            .search(search_query, <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>))
+            .search(search_query, <span class="bool-val">false</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>))
             .<span class="kw">await
             </span>.unwrap();
         <span class="macro">assert_eq!</span>(query_result.total, <span class="number">1</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
-            ValueResults::Proposals(<span class="macro">vec!</span>[ProposalSummary {
+            <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[ProposalSummary {
                 id: <span class="number">2</span>,
                 title: String::from(<span class="string">&quot;title 2&quot;</span>),
                 summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
-            },])
+            },]))
         );
 
         <span class="kw">let </span>search_query = SearchQuery {
@@ -1743,7 +1875,7 @@
             order_by: <span class="macro">vec!</span>[],
         };
         <span class="macro">assert_eq!</span>(
-            event_db.search(search_query, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>,
+            event_db.search(search_query, <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>,
             <span class="prelude-val">Err</span>(Error::NotFound(
                 <span class="string">&quot;db error: ERROR: column proposal.description does not exist&quot;</span>.to_string()
             ))

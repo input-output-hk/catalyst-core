@@ -953,6 +953,20 @@
 <a href="#953" id="953">953</a>
 <a href="#954" id="954">954</a>
 <a href="#955" id="955">955</a>
+<a href="#956" id="956">956</a>
+<a href="#957" id="957">957</a>
+<a href="#958" id="958">958</a>
+<a href="#959" id="959">959</a>
+<a href="#960" id="960">960</a>
+<a href="#961" id="961">961</a>
+<a href="#962" id="962">962</a>
+<a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
+<a href="#968" id="968">968</a>
+<a href="#969" id="969">969</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::LimitOffset;
 <span class="kw">use crate</span>::{
     service::{handle_result, Error},
@@ -960,6 +974,7 @@
 };
 <span class="kw">use </span>axum::{extract::Query, routing::post, Json, Router};
 <span class="kw">use </span>event_db::types::search::{SearchQuery, SearchResult};
+<span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub fn </span>search(state: Arc&lt;State&gt;) -&gt; Router {
@@ -971,8 +986,16 @@
     )
 }
 
+<span class="attr">#[derive(Deserialize)]
+</span><span class="kw">struct </span>SearchParam {
+    <span class="attr">#[serde(default)]
+    </span>total: bool,
+    <span class="attr">#[serde(flatten)]
+    </span>lim_ofs: LimitOffset,
+}
+
 <span class="kw">async fn </span>search_exec(
-    lim_ofs: Query&lt;LimitOffset&gt;,
+    search_param: Query&lt;SearchParam&gt;,
     Json(search_query): Json&lt;SearchQuery&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SearchResult, Error&gt; {
@@ -980,7 +1003,12 @@
 
     <span class="kw">let </span>res = state
         .event_db
-        .search(search_query, lim_ofs.limit, lim_ofs.offset)
+        .search(
+            search_query,
+            search_param.total,
+            search_param.lim_ofs.limit,
+            search_param.lim_ofs.offset,
+        )
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(res)
 }
@@ -1042,7 +1070,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">4</span>,
-                results: ValueResults::Events(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
                     EventSummary {
                         id: EventId(<span class="number">1</span>),
                         name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
@@ -1129,7 +1157,7 @@
                         reg_checked: <span class="prelude-val">None</span>,
                         is_final: <span class="bool-val">false</span>,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1160,7 +1188,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">4</span>,
-                results: ValueResults::Events(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
                     EventSummary {
                         id: EventId(<span class="number">4</span>),
                         name: <span class="string">&quot;Test Fund 4&quot;</span>.to_string(),
@@ -1247,7 +1275,7 @@
                         )),
                         is_final: <span class="bool-val">true</span>,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1278,7 +1306,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">2</span>,
-                results: ValueResults::Events(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
                     EventSummary {
                         id: EventId(<span class="number">4</span>),
                         name: <span class="string">&quot;Test Fund 4&quot;</span>.to_string(),
@@ -1313,7 +1341,7 @@
                         )),
                         is_final: <span class="bool-val">true</span>,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1344,7 +1372,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">2</span>,
-                results: ValueResults::Events(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
                     EventSummary {
                         id: EventId(<span class="number">2</span>),
                         name: <span class="string">&quot;Test Fund 2&quot;</span>.to_string(),
@@ -1397,7 +1425,7 @@
                         )),
                         is_final: <span class="bool-val">true</span>,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1428,7 +1456,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">1</span>,
-                results: ValueResults::Events(<span class="macro">vec!</span>[EventSummary {
+                results: <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[EventSummary {
                     id: EventId(<span class="number">3</span>),
                     name: <span class="string">&quot;Test Fund 3&quot;</span>.to_string(),
                     starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(
@@ -1453,7 +1481,7 @@
                         Utc
                     )),
                     is_final: <span class="bool-val">true</span>,
-                },])
+                },]))
             })
             .unwrap()
         );
@@ -1507,7 +1535,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">2</span>,
-                results: ValueResults::Objectives(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Objectives(<span class="macro">vec!</span>[
                     ObjectiveSummary {
                         id: ObjectiveId(<span class="number">1</span>),
                         objective_type: ObjectiveType {
@@ -1524,7 +1552,7 @@
                         },
                         title: <span class="string">&quot;title 2&quot;</span>.to_string(),
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1555,7 +1583,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">2</span>,
-                results: ValueResults::Objectives(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Objectives(<span class="macro">vec!</span>[
                     ObjectiveSummary {
                         id: ObjectiveId(<span class="number">2</span>),
                         objective_type: ObjectiveType {
@@ -1572,7 +1600,7 @@
                         },
                         title: <span class="string">&quot;title 1&quot;</span>.to_string(),
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1603,14 +1631,14 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">1</span>,
-                results: ValueResults::Objectives(<span class="macro">vec!</span>[ObjectiveSummary {
+                results: <span class="prelude-val">Some</span>(ValueResults::Objectives(<span class="macro">vec!</span>[ObjectiveSummary {
                     id: ObjectiveId(<span class="number">2</span>),
                     objective_type: ObjectiveType {
                         id: <span class="string">&quot;catalyst-native&quot;</span>.to_string(),
                         description: <span class="string">&quot;??&quot;</span>.to_string()
                     },
                     title: <span class="string">&quot;title 2&quot;</span>.to_string(),
-                },])
+                },]))
             })
             .unwrap()
         );
@@ -1641,14 +1669,14 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">1</span>,
-                results: ValueResults::Objectives(<span class="macro">vec!</span>[ObjectiveSummary {
+                results: <span class="prelude-val">Some</span>(ValueResults::Objectives(<span class="macro">vec!</span>[ObjectiveSummary {
                     id: ObjectiveId(<span class="number">1</span>),
                     objective_type: ObjectiveType {
                         id: <span class="string">&quot;catalyst-simple&quot;</span>.to_string(),
                         description: <span class="string">&quot;A Simple choice&quot;</span>.to_string()
                     },
                     title: <span class="string">&quot;title 1&quot;</span>.to_string(),
-                },])
+                },]))
             })
             .unwrap()
         );
@@ -1702,7 +1730,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">3</span>,
-                results: ValueResults::Proposals(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                     ProposalSummary {
                         id: <span class="number">1</span>,
                         title: String::from(<span class="string">&quot;title 1&quot;</span>),
@@ -1718,7 +1746,7 @@
                         title: String::from(<span class="string">&quot;title 3&quot;</span>),
                         summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1749,7 +1777,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">3</span>,
-                results: ValueResults::Proposals(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                     ProposalSummary {
                         id: <span class="number">3</span>,
                         title: String::from(<span class="string">&quot;title 3&quot;</span>),
@@ -1765,7 +1793,7 @@
                         title: String::from(<span class="string">&quot;title 1&quot;</span>),
                         summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1796,7 +1824,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">2</span>,
-                results: ValueResults::Proposals(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                     ProposalSummary {
                         id: <span class="number">3</span>,
                         title: String::from(<span class="string">&quot;title 3&quot;</span>),
@@ -1807,7 +1835,7 @@
                         title: String::from(<span class="string">&quot;title 2&quot;</span>),
                         summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1838,7 +1866,7 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">2</span>,
-                results: ValueResults::Proposals(<span class="macro">vec!</span>[
+                results: <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                     ProposalSummary {
                         id: <span class="number">2</span>,
                         title: String::from(<span class="string">&quot;title 2&quot;</span>),
@@ -1849,7 +1877,7 @@
                         title: String::from(<span class="string">&quot;title 1&quot;</span>),
                         summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
@@ -1880,11 +1908,11 @@
                 .unwrap(),
             serde_json::to_string(<span class="kw-2">&amp;</span>SearchResult {
                 total: <span class="number">1</span>,
-                results: ValueResults::Proposals(<span class="macro">vec!</span>[ProposalSummary {
+                results: <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[ProposalSummary {
                     id: <span class="number">2</span>,
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
-                },])
+                },]))
             })
             .unwrap()
         );

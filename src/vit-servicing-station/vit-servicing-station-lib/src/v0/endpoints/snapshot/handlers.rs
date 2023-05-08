@@ -2,7 +2,7 @@ use crate::v0::context::SharedContext;
 use crate::v0::result::HandlerResult;
 use jormungandr_lib::interfaces::Value;
 use serde::{Deserialize, Serialize};
-use snapshot_lib::{Fraction, RawSnapshot, SnapshotInfo};
+use snapshot_lib::{Dreps, Fraction, RawSnapshot, SnapshotInfo};
 use warp::{Rejection, Reply};
 
 #[tracing::instrument(skip(context))]
@@ -49,4 +49,5 @@ pub struct RawSnapshotInput {
     pub voting_power_cap: Fraction,
     pub direct_voters_group: Option<String>,
     pub representatives_group: Option<String>,
+    pub dreps: Option<Dreps>,
 }

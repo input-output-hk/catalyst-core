@@ -7,8 +7,8 @@ use bb8::RunError;
 pub enum Error {
     #[error(" Schema in database does not match schema supported by the Crate. The current schema version: {was}, the schema version we expected: {expected}")]
     MismatchedSchema { was: i32, expected: i32 },
-    #[error("Cannot find this item")]
-    NotFound,
+    #[error("Cannot find this item, error: {0}")]
+    NotFound(String),
     #[error("error: {0}")]
     Unknown(String),
     #[error(transparent)]

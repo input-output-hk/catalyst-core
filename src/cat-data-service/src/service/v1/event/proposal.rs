@@ -1,5 +1,5 @@
 use crate::{
-    service::{handle_result, Error},
+    service::{handle_result, v1::LimitOffset, Error},
     state::State,
 };
 use axum::{
@@ -12,7 +12,6 @@ use event_db::types::event::{
     proposal::{Proposal, ProposalId, ProposalSummary},
     EventId,
 };
-use serde::Deserialize;
 use std::sync::Arc;
 
 pub fn proposal(state: Arc<State>) -> Router {
@@ -32,15 +31,9 @@ pub fn proposal(state: Arc<State>) -> Router {
         )
 }
 
-#[derive(Deserialize)]
-struct ProposalsQuery {
-    limit: Option<i64>,
-    offset: Option<i64>,
-}
-
 async fn proposals_exec(
     Path((event, objective)): Path<(EventId, ObjectiveId)>,
-    proposals_query: Query<ProposalsQuery>,
+    proposals_query: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<ProposalSummary>, Error> {
     tracing::debug!(

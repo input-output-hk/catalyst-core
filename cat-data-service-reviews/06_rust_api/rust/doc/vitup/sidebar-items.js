@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["builders","cli","client","config","error","mode","testing"],"type":["Result"]};

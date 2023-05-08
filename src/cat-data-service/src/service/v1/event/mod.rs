@@ -8,8 +8,9 @@ use axum::{
     Router,
 };
 use event_db::types::event::{Event, EventId, EventSummary};
-use serde::Deserialize;
 use std::sync::Arc;
+
+use super::LimitOffset;
 
 mod objective;
 mod proposal;
@@ -48,14 +49,8 @@ async fn event_exec(Path(event): Path<EventId>, state: Arc<State>) -> Result<Eve
     Ok(event)
 }
 
-#[derive(Deserialize)]
-struct EventsQuery {
-    limit: Option<i64>,
-    offset: Option<i64>,
-}
-
 async fn events_exec(
-    events_query: Query<EventsQuery>,
+    events_query: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<EventSummary>, Error> {
     tracing::debug!(

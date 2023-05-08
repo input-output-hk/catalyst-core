@@ -1,5 +1,5 @@
 use crate::{
-    service::{handle_result, Error},
+    service::{handle_result, v1::LimitOffset, Error},
     state::State,
 };
 use axum::{
@@ -8,7 +8,6 @@ use axum::{
     Router,
 };
 use event_db::types::event::{objective::Objective, EventId};
-use serde::Deserialize;
 use std::sync::Arc;
 
 pub fn objective(state: Arc<State>) -> Router {
@@ -20,15 +19,9 @@ pub fn objective(state: Arc<State>) -> Router {
     )
 }
 
-#[derive(Deserialize)]
-struct ObjectivesQuery {
-    limit: Option<i64>,
-    offset: Option<i64>,
-}
-
 async fn objectives_exec(
     Path(event): Path<EventId>,
-    objectives_query: Query<ObjectivesQuery>,
+    objectives_query: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<Objective>, Error> {
     tracing::debug!("objectives_query, event: {0}", event.0);

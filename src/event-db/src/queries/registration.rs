@@ -94,7 +94,9 @@ impl RegistrationQueries for EventDB {
             conn.query(Self::VOTER_BY_LAST_EVENT_QUERY, &[&voting_key])
                 .await?
         };
-        let voter = rows.get(0).ok_or(Error::NotFound)?;
+        let voter = rows
+            .get(0)
+            .ok_or_else(|| Error::NotFound("can not find voter value".to_string()))?;
 
         let voting_group = voter.try_get("voting_group")?;
         let voting_power = voter.try_get("voting_power")?;
@@ -112,7 +114,9 @@ impl RegistrationQueries for EventDB {
 
         let total_voting_power_per_group: i64 = rows
             .get(0)
-            .ok_or(Error::NotFound)?
+            .ok_or_else(|| {
+                Error::NotFound("can not find total voting power per group value".to_string())
+            })?
             .try_get("total_voting_power")?;
 
         let voting_power_saturation = if total_voting_power_per_group as f64 != 0_f64 {
@@ -156,7 +160,9 @@ impl RegistrationQueries for EventDB {
             conn.query(Self::DELEGATOR_BY_LAST_EVENT_QUERY, &[&stake_public_key])
                 .await?
         };
-        let delegator = rows.get(0).ok_or(Error::NotFound)?;
+        let delegator = rows
+            .get(0)
+            .ok_or_else(|| Error::NotFound("can not find delegator value".to_string()))?;
 
         let delegation_rows = if let Some(event) = event {
             conn.query(
@@ -188,7 +194,7 @@ impl RegistrationQueries for EventDB {
         };
         let total_power: i64 = rows
             .get(0)
-            .ok_or(Error::NotFound)?
+            .ok_or_else(|| Error::NotFound("can not find total power value".to_string()))?
             .try_get("total_voting_power")?;
 
         Ok(Delegator {
@@ -293,7 +299,7 @@ mod tests {
 
         assert_eq!(
             event_db.get_voter(&None, "voting_key".to_string()).await,
-            Err(Error::NotFound)
+            Err(Error::NotFound("can not find voter value".to_string()))
         );
     }
 
@@ -389,7 +395,7 @@ mod tests {
             event_db
                 .get_delegator(&None, "stake_public_key".to_string())
                 .await,
-            Err(Error::NotFound)
+            Err(Error::NotFound("can not find delegator value".to_string()))
         );
     }
 }

@@ -39,8 +39,8 @@ pub async fn run_service(addr: &SocketAddr, state: Arc<State>) -> Result<(), Err
 async fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
     match res {
         Ok(res) => (StatusCode::OK, Json(res)).into_response(),
-        Err(Error::EventDbError(event_db::error::Error::NotFound)) => {
-            StatusCode::NOT_FOUND.into_response()
+        Err(Error::EventDbError(event_db::error::Error::NotFound(err))) => {
+            (StatusCode::NOT_FOUND, err).into_response()
         }
         Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response(),
     }

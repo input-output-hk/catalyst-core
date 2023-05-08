@@ -75,6 +75,123 @@ mod tests {
                     }],
                     "order_by": [{
                         "column": "desc",
+                    }]
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&SearchResult {
+                total: 4,
+                results: ValueResults::Events(vec![
+                    EventSummary {
+                        id: EventId(1),
+                        name: "Test Fund 1".to_string(),
+                        starts: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        ends: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        reg_checked: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        is_final: true,
+                    },
+                    EventSummary {
+                        id: EventId(2),
+                        name: "Test Fund 2".to_string(),
+                        starts: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        ends: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        reg_checked: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        is_final: true,
+                    },
+                    EventSummary {
+                        id: EventId(3),
+                        name: "Test Fund 3".to_string(),
+                        starts: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        ends: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        reg_checked: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        is_final: true,
+                    },
+                    EventSummary {
+                        id: EventId(4),
+                        name: "Test Fund 4".to_string(),
+                        starts: None,
+                        ends: None,
+                        reg_checked: None,
+                        is_final: false,
+                    },
+                ])
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/v1/search".to_string())
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                json!({
+                    "table": "events",
+                    "filter": [{
+                        "column": "desc",
+                        "search": "Fund"
+                    }],
+                    "order_by": [{
+                        "column": "desc",
                         "descending": true,
                     }]
                 })
@@ -423,6 +540,53 @@ mod tests {
                     }],
                     "order_by": [{
                         "column": "desc",
+                    }]
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&SearchResult {
+                total: 2,
+                results: ValueResults::Objectives(vec![
+                    ObjectiveSummary {
+                        id: ObjectiveId(1),
+                        objective_type: ObjectiveType {
+                            id: "catalyst-simple".to_string(),
+                            description: "A Simple choice".to_string()
+                        },
+                        title: "title 1".to_string(),
+                    },
+                    ObjectiveSummary {
+                        id: ObjectiveId(2),
+                        objective_type: ObjectiveType {
+                            id: "catalyst-native".to_string(),
+                            description: "??".to_string()
+                        },
+                        title: "title 2".to_string(),
+                    },
+                ])
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/v1/search".to_string())
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                json!({
+                    "table": "objectives",
+                    "filter": [{
+                        "column": "desc",
+                        "search": "description"
+                    }],
+                    "order_by": [{
+                        "column": "desc",
                         "descending": true,
                     }]
                 })
@@ -557,6 +721,52 @@ mod tests {
     async fn search_proposals_test() {
         let state = Arc::new(State::new(None).await.unwrap());
         let app = app(state);
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/v1/search".to_string())
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                json!({
+                    "table": "proposals",
+                    "filter": [{
+                        "column": "title",
+                        "search": "title"
+                    }],
+                    "order_by": [{
+                        "column": "title",
+                    }]
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&SearchResult {
+                total: 3,
+                results: ValueResults::Proposals(vec![
+                    ProposalSummary {
+                        id: 1,
+                        title: String::from("title 1"),
+                        summary: String::from("summary 1")
+                    },
+                    ProposalSummary {
+                        id: 2,
+                        title: String::from("title 2"),
+                        summary: String::from("summary 2")
+                    },
+                    ProposalSummary {
+                        id: 3,
+                        title: String::from("title 3"),
+                        summary: String::from("summary 3")
+                    },
+                ])
+            })
+            .unwrap()
+        );
 
         let request = Request::builder()
             .method(Method::POST)

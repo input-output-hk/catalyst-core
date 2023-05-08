@@ -149,6 +149,7 @@
 <a href="#149" id="149">149</a>
 <a href="#150" id="150">150</a>
 <a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 <span class="kw">use </span>vit_servicing_station_tests::common::raw_snapshot::RawSnapshot <span class="kw">as </span>RawSnapshotRequest;
 
@@ -222,6 +223,7 @@
                 voting_power_cap: parameters.voting_power_cap,
                 direct_voters_group: parameters.direct_voters_group.clone(),
                 representatives_group: parameters.representatives_group,
+                dreps: parameters.dreps,
             },
         })
     }

@@ -16,7 +16,7 @@ pub fn search(state: Arc<State>) -> Router {
     )
 }
 
-/// Cannot use serde flattening, look this issue https://github.com/nox/serde_urlencoded/issues/33
+/// Cannot use serde flattening, look this issue <https://github.com/nox/serde_urlencoded/issues/33>
 #[derive(Deserialize)]
 struct SearchParam {
     #[serde(default)]
@@ -363,7 +363,7 @@ mod tests {
             ))
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
-        // assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
             String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
                 .unwrap(),

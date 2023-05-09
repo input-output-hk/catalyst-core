@@ -1059,6 +1059,7 @@
 <a href="#1059" id="1059">1059</a>
 <a href="#1060" id="1060">1060</a>
 <a href="#1061" id="1061">1061</a>
+<a href="#1062" id="1062">1062</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -1080,7 +1081,8 @@
 <span class="doccomment">/// Cannot use serde flattening, look this issue &lt;https://github.com/nox/serde_urlencoded/issues/33&gt;
 </span><span class="attr">#[derive(Deserialize)]
 </span><span class="kw">struct </span>SearchParam {
-    <span class="attr">#[serde(default)]
+    <span class="attr">#[serde(rename = <span class="string">&quot;tot&quot;</span>)]
+    #[serde(default)]
     </span>total: bool,
     <span class="attr">#[serde(rename = <span class="string">&quot;lim&quot;</span>)]
     </span>limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
@@ -1258,7 +1260,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="string">&quot;/api/v1/search?total=true&quot;</span>.to_string())
+            .uri(<span class="string">&quot;/api/v1/search?tot=true&quot;</span>.to_string())
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1683,7 +1685,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="string">&quot;/api/v1/search?total=true&quot;</span>.to_string())
+            .uri(<span class="string">&quot;/api/v1/search?tot=true&quot;</span>.to_string())
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1907,7 +1909,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="string">&quot;/api/v1/search?total=true&quot;</span>.to_string())
+            .uri(<span class="string">&quot;/api/v1/search?tot=true&quot;</span>.to_string())
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({

@@ -58,6 +58,7 @@ docker:
     COPY +build/wheels /app
     COPY +build/requirements.txt /app
     COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
+    COPY entry.sh /app
 
     # Install the package
     RUN pip3 install --no-cache -r requirements.txt
@@ -70,7 +71,8 @@ docker:
     COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
 
     ENV PATH=/app:$PATH
-    # Set the entrypoint to use the Poetry virtual environment
-    CMD ["voting-node", "start"]
+
+    # Set the default command to run the main script
+    ENTRYPOINT ["/app/entry.sh"]
 
     SAVE IMAGE --push ${registry}voting-node:$tag

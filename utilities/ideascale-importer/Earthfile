@@ -57,6 +57,7 @@ docker:
     COPY +build/requirements.txt /app
     COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
     COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
+    COPY entry.sh /app
 
     # Install the package
     RUN pip3 install --no-cache -r requirements.txt
@@ -65,7 +66,7 @@ docker:
     ENV PATH=/app:$PATH
 
     # Set the default command to run the main script
-    CMD ["ideascale-importer", "--help"]
+    ENTRYPOINT ["/app/entry.sh"]
 
     # Build and tag the Docker image
     SAVE IMAGE --push ${registry}ideascale-importer:$tag

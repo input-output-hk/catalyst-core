@@ -1,0 +1,37 @@
+#!/bin/bash
+# This script is meant to be an entrypoint for a container image, but can also be used locally.
+
+# Enable strict mode
+set +x
+set -o errexit
+set -o pipefail
+set -o nounset
+set -o functrace
+set -o errtrace
+set -o monitor
+set -o posix
+shopt -s dotglob
+
+# Define the command to be executed
+CMD_TO_RUN="voting-node start"
+
+# Add $@ to the command so that additional flags can be passed
+CMD="$CMD_TO_RUN $@"
+
+# Wait for DEBUG_SLEEP seconds if the DEBUG_SLEEP environment variable is set
+if [ -n "${DEBUG_SLEEP:-}" ]; then
+  echo "DEBUG_SLEEP is set to ${DEBUG_SLEEP}. Sleeping..."
+  sleep $DEBUG_SLEEP
+fi
+
+# Expand the command with arguments and capture the exit code
+set +e
+eval "$CMD"
+EXIT_CODE=$?
+set -e
+
+# If the exit code is 0, the Python executable returned successfully and something is wrong
+if [ $EXIT_CODE -ne 0 ]; then
+  echo "Error: Python executable exited with exit code $EXIT_CODE"
+  exit 1
+fi

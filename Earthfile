@@ -172,6 +172,7 @@ all:
     BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
 
     BUILD ./services/voting-node+docker --tag=$tag --registry=$registry_final
+    BUILD ./utilities/ideascale-importer+docker --tag=$tag --registry=$registry_final
 
 # Define the ci stage, which only builds the event-db-migrations Docker image for testing
 ci:

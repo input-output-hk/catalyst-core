@@ -23,7 +23,7 @@ build:
     COPY pyproject.toml .
     COPY poetry.lock .
     # Install local python dependencies in the expected relative path
-    COPY ../../utilities/ideascale-importer+build/ideascale-importer /src/utilities/ideascale-importer
+    COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
     COPY --dir voting_node development.md ./
     # Install package dependencies
     RUN poetry env use python

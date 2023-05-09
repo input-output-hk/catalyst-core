@@ -396,12 +396,6 @@
 <a href="#396" id="396">396</a>
 <a href="#397" id="397">397</a>
 <a href="#398" id="398">398</a>
-<a href="#399" id="399">399</a>
-<a href="#400" id="400">400</a>
-<a href="#401" id="401">401</a>
-<a href="#402" id="402">402</a>
-<a href="#403" id="403">403</a>
-<a href="#404" id="404">404</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -440,7 +434,7 @@
 
 <span class="kw">async fn </span>reviews_exec(
     Path((event, objective, proposal)): Path&lt;(EventId, ObjectiveId, ProposalId)&gt;,
-    reviews_query: Query&lt;LimitOffset&gt;,
+    lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;AdvisorReview&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
@@ -452,20 +446,14 @@
 
     <span class="kw">let </span>reviews = state
         .event_db
-        .get_reviews(
-            event,
-            objective,
-            proposal,
-            reviews_query.limit,
-            reviews_query.offset,
-        )
+        .get_reviews(event, objective, proposal, lim_ofs.limit, lim_ofs.offset)
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(reviews)
 }
 
 <span class="kw">async fn </span>review_types_exec(
     Path((event, objective)): Path&lt;(EventId, ObjectiveId)&gt;,
-    reviews_query: Query&lt;LimitOffset&gt;,
+    lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ReviewType&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
@@ -476,7 +464,7 @@
 
     <span class="kw">let </span>reviews = state
         .event_db
-        .get_review_types(event, objective, reviews_query.limit, reviews_query.offset)
+        .get_review_types(event, objective, lim_ofs.limit, lim_ofs.offset)
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(reviews)
 }
@@ -550,7 +538,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/{2}/reviews?limit={3}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/{2}/reviews?lim={3}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">2
             </span>))
             .body(Body::empty())
@@ -592,7 +580,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/{2}/reviews?offset={3}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/{2}/reviews?ofs={3}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())
@@ -618,7 +606,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/{2}/reviews?limit={3}&amp;offset={4}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/{2}/reviews?lim={3}&amp;ofs={4}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())
@@ -697,7 +685,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/review_types?limit={2}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/review_types?lim={2}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">2
             </span>))
             .body(Body::empty())
@@ -735,7 +723,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/review_types?offset={2}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/review_types?ofs={2}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())
@@ -781,7 +769,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/review_types?limit={2}&amp;offset={3}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/review_types?lim={2}&amp;ofs={3}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())

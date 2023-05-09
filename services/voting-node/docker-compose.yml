@@ -55,8 +55,6 @@ services:
     depends_on:
       postgres:
         condition: service_started
-    ports:
-      - "5057:5057"
     env_file: .env
     environment:
       - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
@@ -70,8 +68,6 @@ services:
     depends_on:
       postgres:
         condition: service_started
-    ports:
-      - "6057:5057"
     env_file: .env
     environment:
       - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
@@ -85,8 +81,21 @@ services:
     depends_on:
       postgres:
         condition: service_started
+    env_file: .env
+    environment:
+      - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
+    volumes:
+      - leader2_store:/node_storage
+    command: voting-node start
+
+  follower3:
+    image: voting-node:latest
+    hostname: follower3
     ports:
-      - "7057:5057"
+      - 5057:5057
+    depends_on:
+      postgres:
+        condition: service_started
     env_file: .env
     environment:
       - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev

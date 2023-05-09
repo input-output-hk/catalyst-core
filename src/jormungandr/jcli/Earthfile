@@ -20,4 +20,4 @@ docker:
     RUN chmod +x entry.sh
 
     ENTRYPOINT ["/app/entry.sh"]
-    SAVE IMAGE ${registry}jcli:$tag
+    SAVE IMAGE --push ${registry}jcli:$tag

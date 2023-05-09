@@ -28,4 +28,4 @@ docker:
     RUN chmod +x entry.sh
 
     ENTRYPOINT ["/app/entry.sh"]
-    SAVE IMAGE ${registry}snapshot_tool:$tag
+    SAVE IMAGE --push ${registry}snapshot_tool:$tag

@@ -21,4 +21,4 @@ docker:
 
     ENV BIN_PATH=/app/jormungandr
     ENTRYPOINT ["/app/entry.sh"]
-    SAVE IMAGE ${registry}jormungandr:$tag
+    SAVE IMAGE --push ${registry}jormungandr:$tag

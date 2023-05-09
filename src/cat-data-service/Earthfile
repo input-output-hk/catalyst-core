@@ -20,4 +20,4 @@ docker:
     RUN chmod +x entry.sh
 
     ENTRYPOINT ["/app/entry.sh"]
-    SAVE IMAGE ${registry}cat-data-service:$tag
+    SAVE IMAGE --push ${registry}cat-data-service:$tag

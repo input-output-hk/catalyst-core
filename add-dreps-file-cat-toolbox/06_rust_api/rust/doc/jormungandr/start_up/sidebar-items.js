@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","ErrorKind"],"fn":["fetch_block0_http","fetch_one","load_blockchain","prepare_block_0","prepare_storage"],"mod":["error"],"opaque":[""],"static":["CALLSITE","META"]};

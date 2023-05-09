@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Subcommand"],"fn":["exec_get"]};

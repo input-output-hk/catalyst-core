@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["PRIVATE_FRAGMENT_SIZE","PUBLIC_FRAGMENT_SIZE"],"enum":["NetworkCongestionMode"],"fn":["shift_slot_back"],"struct":["NetworkCongestion","NetworkCongestionData"]};

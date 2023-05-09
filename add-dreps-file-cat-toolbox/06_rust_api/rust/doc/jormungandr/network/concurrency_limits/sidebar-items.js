@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CLIENT_REQUESTS","SERVER_REQUESTS"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["compute_private_tally","compute_public_tally"]};

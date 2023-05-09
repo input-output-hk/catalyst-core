@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["AccountVerifier","DelegationVerifier","DistributionVerifier","Info","LedgerStateVerifier","PotsVerifier","StakePoolVerifier","StakePoolsVerifier","VotesVerifier"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["_impl_queryable_for_voteplan"],"struct":["Voteplan","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"]};

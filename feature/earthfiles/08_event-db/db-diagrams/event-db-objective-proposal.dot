@@ -715,7 +715,7 @@ digraph erd {
     
     "objective_review_metric":"objective_out" -> "objective":"row_id"
     
-    "objective_review_metric":"metric_out" -> "objective_review_metric":"row_id"
+    "objective_review_metric":"metric_out" -> "review_metric":"row_id"
     
     "review_rating":"review_id_out" -> "proposal_review":"row_id"
     

@@ -265,8 +265,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    $ref: '#/components/schemas/SearchTable'
                   total:
                     type: integer
                     format: int32
@@ -281,9 +279,9 @@ paths:
                           $ref: '#/components/schemas/ObjectiveSummary'
                       - type: array
                         items:
-                          $ref: '#/components/schemas/Proposal'
+                          $ref: '#/components/schemas/ProposalSummary'
         '400':
-          description: Invalid combination of table/column (e.g. using funds column on challenges table)
+          description: Invalid combination of table/column (e.g. using funds column on event table)
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
@@ -1074,8 +1072,9 @@ components:
       required:
         - id
         - name
+        - min
         - max
-        - group
+        - map
     AdvisorReview:
       title: Advisor Review
       description: Review of a Proposal by a Community Advisor
@@ -1157,7 +1156,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchConstraint'
-        order-by:
+        order_by:
           type: array
           items:
             $ref: '#/components/schemas/SearchOrderBy'

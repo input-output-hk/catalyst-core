@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["objective","objectives_exec"],"opaque":[""],"static":["CALLSITE","META"],"struct":["ObjectivesQuery","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"fn":["objective","objectives_exec"],"opaque":[""],"static":["CALLSITE","META"]};

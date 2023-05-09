@@ -371,7 +371,7 @@
                 .and_then(|extra| {
                     extra
                         .get(<span class="string">&quot;sponsor&quot;</span>)
-                        .map(|url| url.as_str().map(|str| str.to_string()))
+                        .map(|sponsor| sponsor.as_str().map(|str| str.to_string()))
                 })
                 .flatten();
             <span class="kw">let </span>video = extra

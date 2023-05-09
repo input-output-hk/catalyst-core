@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_DIRECT_VOTER_GROUP","DEFAULT_REPRESENTATIVE_GROUP"],"enum":["Error"],"fn":["get_all_reps"],"mod":["all_reps"],"struct":["AllReps","RepsVotersAssigner"],"trait":["VotingGroupAssigner"]};
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_DIRECT_VOTER_GROUP","DEFAULT_REPRESENTATIVE_GROUP"],"struct":["RepsVotersAssigner"],"trait":["VotingGroupAssigner"]};

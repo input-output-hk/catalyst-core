@@ -1,5 +1,4 @@
 #!/bin/bash
-# This script is meant to be an entrypoint for a container image, but can also be used locally.
 
 # Enable strict mode
 set +x
@@ -12,16 +11,16 @@ set -o monitor
 set -o posix
 shopt -s dotglob
 
-# Define the command to be executed
-CMD_TO_RUN="voting-node start"
+echo ">>> Entering entrypoint script..."
 
-# Add $* to the command so that additional flags can be passed
+# Define the command to be executed
 ARGS=$*
-CMD="$CMD_TO_RUN $ARGS"
+CMD="snapshot_tool $ARGS"
+echo ">>> Executing command: $CMD"
 
 # Wait for DEBUG_SLEEP seconds if the DEBUG_SLEEP environment variable is set
 if [ -n "${DEBUG_SLEEP:-}" ]; then
-  echo "DEBUG_SLEEP is set to ${DEBUG_SLEEP}. Sleeping..."
+  echo "DEBUG_SLEEP is set to $DEBUG_SLEEP. Sleeping..."
   sleep "$DEBUG_SLEEP"
 fi
 
@@ -31,8 +30,8 @@ eval "$CMD"
 EXIT_CODE=$?
 set -e
 
-# If the exit code is 0, the Python executable returned successfully
+# If the exit code is 0, the executable returned successfully
 if [ $EXIT_CODE -ne 0 ]; then
-  echo "Error: Python executable returned with exit code $EXIT_CODE"
+  echo "Error: snapshot_tool returned with exit code $EXIT_CODE"
   exit 1
 fi

@@ -59,6 +59,7 @@ docker:
     COPY +build/requirements.txt /app
     COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
     COPY entry.sh /app
+    RUN chmod +x /app/entry.sh
 
     # Install the package
     RUN pip3 install --no-cache -r requirements.txt

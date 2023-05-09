@@ -16,6 +16,9 @@ docker:
     ARG registry
 
     COPY +build/jormungandr .
+    COPY entry.sh .
+    RUN chmod +x entry.sh
 
-    ENTRYPOINT ["/app/jormungandr"]
+    ENV BIN_PATH=/app/jormungandr
+    ENTRYPOINT ["/app/entry.sh"]
     SAVE IMAGE ${registry}jormungandr:$tag

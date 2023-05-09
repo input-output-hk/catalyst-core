@@ -24,6 +24,8 @@ docker:
         rm -rf /var/lib/apt/lists/*
 
     COPY +build/catalyst-toolbox .
+    COPY entry.sh .
+    RUN chmod +x entry.sh
 
-    ENTRYPOINT ["/app/catalyst-toolbox"]
+    ENTRYPOINT ["/app/entry.sh"]
     SAVE IMAGE ${registry}catalyst-toolbox:$tag

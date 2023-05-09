@@ -58,6 +58,7 @@ docker:
     COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
     COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
     COPY entry.sh /app
+    RUN chmod +x entry.sh
 
     # Install the package
     RUN pip3 install --no-cache -r requirements.txt

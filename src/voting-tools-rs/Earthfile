@@ -24,6 +24,8 @@ docker:
         rm -rf /var/lib/apt/lists/*
 
     COPY +build/snapshot_tool .
+    COPY entry.sh .
+    RUN chmod +x entry.sh
 
-    ENTRYPOINT ["/app/snapshot_tool"]
+    ENTRYPOINT ["/app/entry.sh"]
     SAVE IMAGE ${registry}snapshot_tool:$tag

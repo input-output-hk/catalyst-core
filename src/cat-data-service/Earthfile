@@ -16,6 +16,8 @@ docker:
     ARG registry
 
     COPY +build/cat-data-service .
+    COPY entry.sh .
+    RUN chmod +x entry.sh
 
-    ENTRYPOINT ["/app/cat-data-service"]
+    ENTRYPOINT ["/app/entry.sh"]
     SAVE IMAGE ${registry}cat-data-service:$tag

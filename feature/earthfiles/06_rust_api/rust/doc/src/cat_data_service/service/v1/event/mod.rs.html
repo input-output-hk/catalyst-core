@@ -578,18 +578,18 @@
 }
 
 <span class="kw">async fn </span>events_exec(
-    lim_ofs: Query&lt;LimitOffset&gt;,
+    events_query: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;events_query, limit: {0:?}, offset: {1:?}&quot;</span>,
-        lim_ofs.limit,
-        lim_ofs.offset
+        events_query.limit,
+        events_query.offset
     );
 
     <span class="kw">let </span>events = state
         .event_db
-        .get_events(lim_ofs.limit, lim_ofs.offset)
+        .get_events(events_query.limit, events_query.offset)
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(events)
 }
@@ -893,7 +893,7 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?ofs={0}&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?offset={0}&quot;</span>, <span class="number">1</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
@@ -967,7 +967,7 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?lim={0}&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?limit={0}&quot;</span>, <span class="number">1</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
@@ -1005,7 +1005,7 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?lim={0}&amp;ofs={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?limit={0}&amp;offset={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
@@ -1043,7 +1043,7 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?ofs={0}&quot;</span>, <span class="number">10</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?offset={0}&quot;</span>, <span class="number">10</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();

@@ -393,12 +393,80 @@
 <a href="#393" id="393">393</a>
 <a href="#394" id="394">394</a>
 <a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
 </pre><pre class="rust"><code><span class="kw">pub use </span>fraction::Fraction;
 <span class="kw">use </span>jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
-<span class="kw">use </span>registration::MainnetStakeAddress;
-<span class="kw">use </span>registration::{Delegations, MainnetRewardAddress, VotingRegistration};
-<span class="kw">use </span>serde::{Deserialize, Serialize};
-<span class="kw">use </span>std::{borrow::Borrow, collections::BTreeMap, iter::Iterator, num::NonZeroU64};
+<span class="kw">use </span>registration::{
+    serde_impl::IdentifierDef, Delegations, MainnetRewardAddress, MainnetStakeAddress,
+    VotingRegistration,
+};
+<span class="kw">use </span>serde::{Deserialize, Deserializer, Serialize, Serializer};
+<span class="kw">use </span>std::{
+    borrow::Borrow,
+    collections::{BTreeMap, HashSet},
+    iter::Iterator,
+    num::NonZeroU64,
+};
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">pub use </span>voter_hir::VoterHIR;
 <span class="kw">pub use </span>voter_hir::VotingGroup;
@@ -418,6 +486,41 @@
     <span class="kw">fn </span>from(from: Vec&lt;VotingRegistration&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>(from)
     }
+}
+
+<span class="attr">#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+</span><span class="kw">pub struct </span>Dreps {
+    <span class="attr">#[serde(
+        serialize_with = <span class="string">&quot;serialize_identifiers&quot;</span>,
+        deserialize_with = <span class="string">&quot;deserialize_identifiers&quot;
+    </span>)]
+    </span>reps: HashSet&lt;Identifier&gt;,
+}
+
+<span class="kw">impl </span>From&lt;HashSet&lt;Identifier&gt;&gt; <span class="kw">for </span>Dreps {
+    <span class="kw">fn </span>from(reps: HashSet&lt;Identifier&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ reps }
+    }
+}
+
+<span class="kw">fn </span>serialize_identifiers&lt;S: Serializer&gt;(
+    identifiers: <span class="kw-2">&amp;</span>HashSet&lt;Identifier&gt;,
+    serializer: S,
+) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt; {
+    <span class="kw">let </span>identifiers: Vec&lt;<span class="kw">_</span>&gt; = identifiers
+        .iter()
+        .map(|id| IdentifierDef(id.clone()))
+        .collect();
+    identifiers.serialize(serializer)
+}
+
+<span class="kw">fn </span>deserialize_identifiers&lt;<span class="lifetime">&#39;de</span>, D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;&gt;(
+    deserializer: D,
+) -&gt; <span class="prelude-ty">Result</span>&lt;HashSet&lt;Identifier&gt;, D::Error&gt; {
+    <span class="prelude-val">Ok</span>(Vec::&lt;IdentifierDef&gt;::deserialize(deserializer)<span class="question-mark">?
+        </span>.into_iter()
+        .map(|id| id.<span class="number">0</span>)
+        .collect())
 }
 
 <span class="attr">#[derive(Debug, Error)]
@@ -584,8 +687,7 @@
     <span class="kw">use </span>chain_addr::{Discrimination, Kind};
     <span class="kw">use </span>jormungandr_lib::interfaces::{Address, InitialUTxO};
     <span class="kw">use </span>proptest::prelude::<span class="kw-2">*</span>;
-    <span class="attr">#[cfg(test)]
-    </span><span class="kw">use </span>test_strategy::proptest;
+    <span class="kw">use </span>test_strategy::proptest;
 
     <span class="kw">struct </span>DummyAssigner;
 
@@ -619,27 +721,30 @@
         }
     }
 
-    <span class="attr">#[cfg(test)]
-    #[proptest]
-    </span><span class="kw">fn </span>test_threshold(raw: RawSnapshot, stake_threshold: u64, additional_reg: VotingRegistration) {
-        <span class="kw">let </span><span class="kw-2">mut </span>add = raw.clone();
-        add.<span class="number">0</span>.push(additional_reg.clone());
+    <span class="attr">#[proptest]
+    </span><span class="kw">fn </span>test_threshold(
+        _raw: RawSnapshot,
+        _stake_threshold: u64,
+        _additional_reg: VotingRegistration,
+    ) {
+        <span class="kw">let </span><span class="kw-2">mut </span>add = _raw.clone();
+        add.<span class="number">0</span>.push(_additional_reg.clone());
         <span class="macro">assert_eq!</span>(
             Snapshot::from_raw_snapshot(
-                raw,
-                stake_threshold.into(),
+                _raw,
+                _stake_threshold.into(),
                 Fraction::from(<span class="number">1u64</span>),
                 <span class="kw-2">&amp;</span>DummyAssigner
             )
             .unwrap()
                 == Snapshot::from_raw_snapshot(
                     add,
-                    stake_threshold.into(),
+                    _stake_threshold.into(),
                     Fraction::from(<span class="number">1u64</span>),
                     <span class="kw-2">&amp;</span>DummyAssigner
                 )
                 .unwrap(),
-            additional_reg.voting_power &lt; stake_threshold.into()
+            _additional_reg.voting_power &lt; _stake_threshold.into()
         );
     }
 
@@ -663,11 +768,10 @@
     }
 
     <span class="comment">// Test all voting power is distributed among delegated keys
-    </span><span class="attr">#[cfg(test)]
-    #[proptest]
-    </span><span class="kw">fn </span>test_voting_power_all_distributed(reg: VotingRegistration) {
+    </span><span class="attr">#[proptest]
+    </span><span class="kw">fn </span>test_voting_power_all_distributed(_reg: VotingRegistration) {
         <span class="kw">let </span>snapshot = Snapshot::from_raw_snapshot(
-            <span class="macro">vec!</span>[reg.clone()].into(),
+            <span class="macro">vec!</span>[_reg.clone()].into(),
             <span class="number">0</span>.into(),
             Fraction::from(<span class="number">1</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
@@ -678,16 +782,15 @@
             .into_iter()
             .map(|hir| u64::from(hir.voting_power))
             .sum::&lt;u64&gt;();
-        <span class="macro">assert_eq!</span>(total_stake, u64::from(reg.voting_power))
+        <span class="macro">assert_eq!</span>(total_stake, u64::from(_reg.voting_power))
     }
 
-    <span class="attr">#[cfg(test)]
-    #[proptest]
-    </span><span class="kw">fn </span>test_non_catalyst_regs_are_ignored(<span class="kw-2">mut </span>reg: VotingRegistration) {
-        reg.voting_purpose = <span class="number">1</span>;
+    <span class="attr">#[proptest]
+    </span><span class="kw">fn </span>test_non_catalyst_regs_are_ignored(<span class="kw-2">mut </span>_reg: VotingRegistration) {
+        _reg.voting_purpose = <span class="number">1</span>;
         <span class="macro">assert_eq!</span>(
             Snapshot::from_raw_snapshot(
-                <span class="macro">vec!</span>[reg].into(),
+                <span class="macro">vec!</span>[_reg].into(),
                 <span class="number">0</span>.into(),
                 Fraction::from(<span class="number">1u64</span>),
                 <span class="kw-2">&amp;</span>DummyAssigner
@@ -703,8 +806,7 @@
         )
     }
 
-    <span class="attr">#[cfg(test)]
-    #[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>test_distribution() {
         <span class="kw">let </span><span class="kw-2">mut </span>raw_snapshot = Vec::new();
         <span class="kw">let </span>voting_pub_key_1 = Identifier::from_hex(<span class="kw-2">&amp;</span>hex::encode([<span class="number">0</span>; <span class="number">32</span>])).unwrap();
@@ -747,9 +849,8 @@
         <span class="macro">assert_eq!</span>(vp_2 - vp_1, n / <span class="number">2</span>); <span class="comment">// last key get the remainder during distribution
     </span>}
 
-    <span class="attr">#[cfg(test)]
-    #[test]
-    </span><span class="kw">fn </span>test_parsing() {
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_raw_snapshot_parsing() {
         <span class="kw">let </span>raw: RawSnapshot = serde_json::from_str(
             <span class="string">r#&quot;[
             {
@@ -786,6 +887,27 @@
             .value,
             <span class="number">44422342528
         </span>);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>test_drep_info_parsing() {
+        <span class="kw">let </span>dreps: Dreps = serde_json::from_str(<span class="string">r#&quot;{
+            &quot;reps&quot;: [&quot;0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;] 
+        }&quot;#</span>).unwrap();
+
+        <span class="macro">assert_eq!</span>(dreps.reps.len(), <span class="number">2</span>);
+        <span class="macro">assert!</span>(dreps.reps.contains(
+            <span class="kw-2">&amp;</span>Identifier::from_hex(
+                <span class="string">&quot;00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee&quot;</span>,
+            )
+            .unwrap()
+        ));
+        <span class="macro">assert!</span>(dreps.reps.contains(
+            <span class="kw-2">&amp;</span>Identifier::from_hex(
+                <span class="string">&quot;a6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;</span>,
+            )
+            .unwrap()
+        ));
     }
 }
 </code></pre></div>

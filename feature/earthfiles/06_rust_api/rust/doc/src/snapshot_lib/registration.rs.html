@@ -399,7 +399,7 @@
     Legacy(Identifier),
 }
 
-<span class="kw">mod </span>serde_impl {
+<span class="kw">pub mod </span>serde_impl {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span>chain_crypto::{Ed25519, PublicKey};
     <span class="kw">use </span>serde::{
@@ -408,7 +408,7 @@
     };
     <span class="kw">use </span>std::fmt;
 
-    <span class="kw">struct </span>IdentifierDef(Identifier);
+    <span class="kw">pub struct </span>IdentifierDef(<span class="kw">pub</span>(<span class="kw">crate</span>) Identifier);
     <span class="kw">struct </span>VotingKeyVisitor;
 
     <span class="kw">impl </span>Serialize <span class="kw">for </span>IdentifierDef {

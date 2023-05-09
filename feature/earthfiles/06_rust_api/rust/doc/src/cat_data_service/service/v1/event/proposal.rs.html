@@ -240,6 +240,17 @@
 <a href="#240" id="240">240</a>
 <a href="#241" id="241">241</a>
 <a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -275,7 +286,7 @@
 
 <span class="kw">async fn </span>proposals_exec(
     Path((event, objective)): Path&lt;(EventId, ObjectiveId)&gt;,
-    lim_ofs: Query&lt;LimitOffset&gt;,
+    proposals_query: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
@@ -286,7 +297,12 @@
 
     <span class="kw">let </span>proposals = state
         .event_db
-        .get_proposals(event, objective, lim_ofs.limit, lim_ofs.offset)
+        .get_proposals(
+            event,
+            objective,
+            proposals_query.limit,
+            proposals_query.offset,
+        )
         .<span class="kw">await</span><span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(proposals)
 }
@@ -411,7 +427,10 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}/{1}/proposals?lim={2}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">2</span>))
+            .uri(<span class="macro">format!</span>(
+                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?limit={2}&quot;</span>,
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">2
+            </span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
@@ -436,7 +455,10 @@
         );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}/{1}/proposals?ofs={2}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(
+                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?offset={2}&quot;</span>,
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
+            </span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
@@ -462,7 +484,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?ofs={2}&amp;lim={3}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/{1}/proposals?offset={2}&amp;limit={3}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())

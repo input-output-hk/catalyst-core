@@ -19,6 +19,7 @@ pub fn search(state: Arc<State>) -> Router {
 /// Cannot use serde flattening, look this issue <https://github.com/nox/serde_urlencoded/issues/33>
 #[derive(Deserialize)]
 struct SearchParam {
+    #[serde(rename = "tot")]
     #[serde(default)]
     total: bool,
     #[serde(rename = "lim")]
@@ -197,7 +198,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri("/api/v1/search?total=true".to_string())
+            .uri("/api/v1/search?tot=true".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -622,7 +623,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri("/api/v1/search?total=true".to_string())
+            .uri("/api/v1/search?tot=true".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -846,7 +847,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri("/api/v1/search?total=true".to_string())
+            .uri("/api/v1/search?tot=true".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({

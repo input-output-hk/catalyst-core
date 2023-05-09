@@ -65,8 +65,9 @@ pub enum ValueResults {
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct SearchResult {
-    pub total: u32,
-    pub results: ValueResults,
+    pub total: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub results: Option<ValueResults>,
 }
 
 #[cfg(test)]
@@ -147,14 +148,14 @@ mod tests {
     fn search_results_json_test() {
         let search_result = SearchResult {
             total: 1,
-            results: ValueResults::Objectives(vec![ObjectiveSummary {
+            results: Some(ValueResults::Objectives(vec![ObjectiveSummary {
                 id: ObjectiveId(1),
                 objective_type: ObjectiveType {
                     id: "catalyst-native".to_string(),
                     description: "catalyst native type".to_string(),
                 },
                 title: "objective 1".to_string(),
-            }]),
+            }])),
         };
 
         let json = serde_json::to_value(search_result).unwrap();

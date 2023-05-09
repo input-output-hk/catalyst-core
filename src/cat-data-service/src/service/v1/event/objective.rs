@@ -21,14 +21,14 @@ pub fn objective(state: Arc<State>) -> Router {
 
 async fn objectives_exec(
     Path(event): Path<EventId>,
-    objectives_query: Query<LimitOffset>,
+    lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<Objective>, Error> {
     tracing::debug!("objectives_query, event: {0}", event.0);
 
     let event = state
         .event_db
-        .get_objectives(event, objectives_query.limit, objectives_query.offset)
+        .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
         .await?;
     Ok(event)
 }
@@ -134,7 +134,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/objectives?limit={1}", 1, 1))
+            .uri(format!("/api/v1/event/{0}/objectives?lim={1}", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -179,7 +179,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/objectives?offset={1}", 1, 1))
+            .uri(format!("/api/v1/event/{0}/objectives?ofs={1}", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -219,7 +219,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/objectives?limit={1}&offset={2}",
+                "/api/v1/event/{0}/objectives?lim={1}&ofs={2}",
                 1, 1, 2
             ))
             .body(Body::empty())

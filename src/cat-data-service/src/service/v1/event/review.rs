@@ -36,7 +36,7 @@ pub fn review(state: Arc<State>) -> Router {
 
 async fn reviews_exec(
     Path((event, objective, proposal)): Path<(EventId, ObjectiveId, ProposalId)>,
-    reviews_query: Query<LimitOffset>,
+    lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<AdvisorReview>, Error> {
     tracing::debug!(
@@ -48,20 +48,14 @@ async fn reviews_exec(
 
     let reviews = state
         .event_db
-        .get_reviews(
-            event,
-            objective,
-            proposal,
-            reviews_query.limit,
-            reviews_query.offset,
-        )
+        .get_reviews(event, objective, proposal, lim_ofs.limit, lim_ofs.offset)
         .await?;
     Ok(reviews)
 }
 
 async fn review_types_exec(
     Path((event, objective)): Path<(EventId, ObjectiveId)>,
-    reviews_query: Query<LimitOffset>,
+    lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<ReviewType>, Error> {
     tracing::debug!(
@@ -72,7 +66,7 @@ async fn review_types_exec(
 
     let reviews = state
         .event_db
-        .get_review_types(event, objective, reviews_query.limit, reviews_query.offset)
+        .get_review_types(event, objective, lim_ofs.limit, lim_ofs.offset)
         .await?;
     Ok(reviews)
 }
@@ -146,7 +140,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/{2}/reviews?limit={3}",
+                "/api/v1/event/{0}/{1}/{2}/reviews?lim={3}",
                 1, 1, 1, 2
             ))
             .body(Body::empty())
@@ -188,7 +182,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/{2}/reviews?offset={3}",
+                "/api/v1/event/{0}/{1}/{2}/reviews?ofs={3}",
                 1, 1, 1, 1
             ))
             .body(Body::empty())
@@ -214,7 +208,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/{2}/reviews?limit={3}&offset={4}",
+                "/api/v1/event/{0}/{1}/{2}/reviews?lim={3}&ofs={4}",
                 1, 1, 1, 1, 1
             ))
             .body(Body::empty())
@@ -293,7 +287,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/review_types?limit={2}",
+                "/api/v1/event/{0}/{1}/review_types?lim={2}",
                 1, 1, 2
             ))
             .body(Body::empty())
@@ -331,7 +325,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/review_types?offset={2}",
+                "/api/v1/event/{0}/{1}/review_types?ofs={2}",
                 1, 1, 1
             ))
             .body(Body::empty())
@@ -377,7 +371,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/review_types?limit={2}&offset={3}",
+                "/api/v1/event/{0}/{1}/review_types?lim={2}&ofs={3}",
                 1, 1, 1, 1
             ))
             .body(Body::empty())

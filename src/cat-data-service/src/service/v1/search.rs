@@ -1,10 +1,10 @@
-use super::LimitOffset;
 use crate::{
     service::{handle_result, Error},
     state::State,
 };
 use axum::{extract::Query, routing::post, Json, Router};
 use event_db::types::search::{SearchQuery, SearchResult};
+use serde::Deserialize;
 use std::sync::Arc;
 
 pub fn search(state: Arc<State>) -> Router {
@@ -16,8 +16,19 @@ pub fn search(state: Arc<State>) -> Router {
     )
 }
 
+/// Cannot use serde flattening, look this issue <https://github.com/nox/serde_urlencoded/issues/33>
+#[derive(Deserialize)]
+struct SearchParam {
+    #[serde(default)]
+    total: bool,
+    #[serde(rename = "lim")]
+    limit: Option<i64>,
+    #[serde(rename = "ofs")]
+    offset: Option<i64>,
+}
+
 async fn search_exec(
-    limit_offset: Query<LimitOffset>,
+    search_param: Query<SearchParam>,
     Json(search_query): Json<SearchQuery>,
     state: Arc<State>,
 ) -> Result<SearchResult, Error> {
@@ -25,7 +36,12 @@ async fn search_exec(
 
     let res = state
         .event_db
-        .search(search_query, limit_offset.limit, limit_offset.offset)
+        .search(
+            search_query,
+            search_param.total,
+            search_param.limit,
+            search_param.offset,
+        )
         .await?;
     Ok(res)
 }
@@ -75,6 +91,153 @@ mod tests {
                     }],
                     "order_by": [{
                         "column": "desc",
+                    }]
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&SearchResult {
+                total: 4,
+                results: Some(ValueResults::Events(vec![
+                    EventSummary {
+                        id: EventId(1),
+                        name: "Test Fund 1".to_string(),
+                        starts: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        ends: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        reg_checked: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        is_final: true,
+                    },
+                    EventSummary {
+                        id: EventId(2),
+                        name: "Test Fund 2".to_string(),
+                        starts: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        ends: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        reg_checked: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        is_final: true,
+                    },
+                    EventSummary {
+                        id: EventId(3),
+                        name: "Test Fund 3".to_string(),
+                        starts: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        ends: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        reg_checked: Some(DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        )),
+                        is_final: true,
+                    },
+                    EventSummary {
+                        id: EventId(4),
+                        name: "Test Fund 4".to_string(),
+                        starts: None,
+                        ends: None,
+                        reg_checked: None,
+                        is_final: false,
+                    },
+                ]))
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/v1/search?total=true".to_string())
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                json!({
+                    "table": "events",
+                    "filter": [{
+                        "column": "desc",
+                        "search": "Fund"
+                    }],
+                    "order_by": [{
+                        "column": "desc",
+                    }]
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&SearchResult {
+                total: 4,
+                results: None
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/v1/search".to_string())
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                json!({
+                    "table": "events",
+                    "filter": [{
+                        "column": "desc",
+                        "search": "Fund"
+                    }],
+                    "order_by": [{
+                        "column": "desc",
                         "descending": true,
                     }]
                 })
@@ -88,7 +251,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 4,
-                results: ValueResults::Events(vec![
+                results: Some(ValueResults::Events(vec![
                     EventSummary {
                         id: EventId(4),
                         name: "Test Fund 4".to_string(),
@@ -175,14 +338,14 @@ mod tests {
                         )),
                         is_final: true,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}", 2))
+            .uri(format!("/api/v1/search?lim={0}", 2))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -206,7 +369,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Events(vec![
+                results: Some(ValueResults::Events(vec![
                     EventSummary {
                         id: EventId(4),
                         name: "Test Fund 4".to_string(),
@@ -241,14 +404,14 @@ mod tests {
                         )),
                         is_final: true,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?offset={0}", 2))
+            .uri(format!("/api/v1/search?ofs={0}", 2))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -272,7 +435,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Events(vec![
+                results: Some(ValueResults::Events(vec![
                     EventSummary {
                         id: EventId(2),
                         name: "Test Fund 2".to_string(),
@@ -325,14 +488,14 @@ mod tests {
                         )),
                         is_final: true,
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}&offset={1}", 1, 1))
+            .uri(format!("/api/v1/search?lim={0}&ofs={1}", 1, 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -356,7 +519,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 1,
-                results: ValueResults::Events(vec![EventSummary {
+                results: Some(ValueResults::Events(vec![EventSummary {
                     id: EventId(3),
                     name: "Test Fund 3".to_string(),
                     starts: Some(DateTime::<Utc>::from_utc(
@@ -381,7 +544,7 @@ mod tests {
                         Utc
                     )),
                     is_final: true,
-                },])
+                },]))
             })
             .unwrap()
         );
@@ -423,6 +586,83 @@ mod tests {
                     }],
                     "order_by": [{
                         "column": "desc",
+                    }]
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&SearchResult {
+                total: 2,
+                results: Some(ValueResults::Objectives(vec![
+                    ObjectiveSummary {
+                        id: ObjectiveId(1),
+                        objective_type: ObjectiveType {
+                            id: "catalyst-simple".to_string(),
+                            description: "A Simple choice".to_string()
+                        },
+                        title: "title 1".to_string(),
+                    },
+                    ObjectiveSummary {
+                        id: ObjectiveId(2),
+                        objective_type: ObjectiveType {
+                            id: "catalyst-native".to_string(),
+                            description: "??".to_string()
+                        },
+                        title: "title 2".to_string(),
+                    },
+                ]))
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/v1/search?total=true".to_string())
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                json!({
+                    "table": "objectives",
+                    "filter": [{
+                        "column": "desc",
+                        "search": "description"
+                    }],
+                    "order_by": [{
+                        "column": "desc",
+                    }]
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&SearchResult {
+                total: 2,
+                results: None
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/v1/search".to_string())
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                json!({
+                    "table": "objectives",
+                    "filter": [{
+                        "column": "desc",
+                        "search": "description"
+                    }],
+                    "order_by": [{
+                        "column": "desc",
                         "descending": true,
                     }]
                 })
@@ -436,7 +676,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Objectives(vec![
+                results: Some(ValueResults::Objectives(vec![
                     ObjectiveSummary {
                         id: ObjectiveId(2),
                         objective_type: ObjectiveType {
@@ -453,14 +693,14 @@ mod tests {
                         },
                         title: "title 1".to_string(),
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}", 1))
+            .uri(format!("/api/v1/search?lim={0}", 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -484,21 +724,21 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 1,
-                results: ValueResults::Objectives(vec![ObjectiveSummary {
+                results: Some(ValueResults::Objectives(vec![ObjectiveSummary {
                     id: ObjectiveId(2),
                     objective_type: ObjectiveType {
                         id: "catalyst-native".to_string(),
                         description: "??".to_string()
                     },
                     title: "title 2".to_string(),
-                },])
+                },]))
             })
             .unwrap()
         );
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?offset={0}", 1))
+            .uri(format!("/api/v1/search?ofs={0}", 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -522,14 +762,14 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 1,
-                results: ValueResults::Objectives(vec![ObjectiveSummary {
+                results: Some(ValueResults::Objectives(vec![ObjectiveSummary {
                     id: ObjectiveId(1),
                     objective_type: ObjectiveType {
                         id: "catalyst-simple".to_string(),
                         description: "A Simple choice".to_string()
                     },
                     title: "title 1".to_string(),
-                },])
+                },]))
             })
             .unwrap()
         );
@@ -571,6 +811,82 @@ mod tests {
                     }],
                     "order_by": [{
                         "column": "title",
+                    }]
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&SearchResult {
+                total: 3,
+                results: Some(ValueResults::Proposals(vec![
+                    ProposalSummary {
+                        id: 1,
+                        title: String::from("title 1"),
+                        summary: String::from("summary 1")
+                    },
+                    ProposalSummary {
+                        id: 2,
+                        title: String::from("title 2"),
+                        summary: String::from("summary 2")
+                    },
+                    ProposalSummary {
+                        id: 3,
+                        title: String::from("title 3"),
+                        summary: String::from("summary 3")
+                    },
+                ]))
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/v1/search?total=true".to_string())
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                json!({
+                    "table": "proposals",
+                    "filter": [{
+                        "column": "title",
+                        "search": "title"
+                    }],
+                    "order_by": [{
+                        "column": "title",
+                    }]
+                })
+                .to_string(),
+            ))
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&SearchResult {
+                total: 3,
+                results: None
+            })
+            .unwrap()
+        );
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/v1/search".to_string())
+            .header(header::CONTENT_TYPE, "application/json")
+            .body(Body::from(
+                json!({
+                    "table": "proposals",
+                    "filter": [{
+                        "column": "title",
+                        "search": "title"
+                    }],
+                    "order_by": [{
+                        "column": "title",
                         "descending": true,
                     }]
                 })
@@ -584,7 +900,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 3,
-                results: ValueResults::Proposals(vec![
+                results: Some(ValueResults::Proposals(vec![
                     ProposalSummary {
                         id: 3,
                         title: String::from("title 3"),
@@ -600,14 +916,14 @@ mod tests {
                         title: String::from("title 1"),
                         summary: String::from("summary 1")
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}", 2))
+            .uri(format!("/api/v1/search?lim={0}", 2))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -631,7 +947,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Proposals(vec![
+                results: Some(ValueResults::Proposals(vec![
                     ProposalSummary {
                         id: 3,
                         title: String::from("title 3"),
@@ -642,14 +958,14 @@ mod tests {
                         title: String::from("title 2"),
                         summary: String::from("summary 2")
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?offset={0}", 1))
+            .uri(format!("/api/v1/search?ofs={0}", 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -673,7 +989,7 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 2,
-                results: ValueResults::Proposals(vec![
+                results: Some(ValueResults::Proposals(vec![
                     ProposalSummary {
                         id: 2,
                         title: String::from("title 2"),
@@ -684,14 +1000,14 @@ mod tests {
                         title: String::from("title 1"),
                         summary: String::from("summary 1")
                     },
-                ])
+                ]))
             })
             .unwrap()
         );
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?limit={0}&offset={1}", 1, 1))
+            .uri(format!("/api/v1/search?lim={0}&ofs={1}", 1, 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -715,11 +1031,11 @@ mod tests {
                 .unwrap(),
             serde_json::to_string(&SearchResult {
                 total: 1,
-                results: ValueResults::Proposals(vec![ProposalSummary {
+                results: Some(ValueResults::Proposals(vec![ProposalSummary {
                     id: 2,
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
-                },])
+                },]))
             })
             .unwrap()
         );

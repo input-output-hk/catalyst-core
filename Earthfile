@@ -160,4 +160,5 @@ tag-workspace:
     RUN dpkg -i svu_${SVU_VERSION}_linux_amd64.deb
 
     COPY .git .
+    RUN git tag -l
     SAVE IMAGE --cache-hint

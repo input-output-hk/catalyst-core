@@ -15,7 +15,7 @@ echo ">>> Entering entrypoint script..."
 
 # Define the command to be executed
 ARGS=$*
-CMD="cat-data-service $ARGS"
+CMD="/app/cat-data-service $ARGS"
 echo ">>> Executing command: $CMD"
 
 # Wait for DEBUG_SLEEP seconds if the DEBUG_SLEEP environment variable is set

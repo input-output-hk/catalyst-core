@@ -13,7 +13,7 @@ set -o posix
 shopt -s dotglob
 
 # Define the command to be executed
-CMD_TO_RUN="ideascale-importer"
+CMD_TO_RUN="/app/ideascale-importer"
 
 # Add $* to the command so that additional flags can be passed
 ARGS="$*"

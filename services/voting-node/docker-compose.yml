@@ -49,6 +49,14 @@ services:
       migrations:
         condition: service_completed_successfully
 
+  cat-data-service:
+    image: cat-data-service:latest
+    environment:
+      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
+    depends_on:
+      migrations:
+        condition: service_completed_successfully
+
   leader0:
     image: voting-node:latest
     hostname: leader0

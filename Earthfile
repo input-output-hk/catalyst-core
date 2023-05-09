@@ -1,10 +1,9 @@
 # Set the Earthly version to 0.7
 VERSION 0.7
+FROM debian:stable-slim
 
 # Installs and configures the Rust toolchain
 rust-toolchain:
-    FROM debian:stable-slim
-
     ARG user=user
     ARG uid=1000
     ARG gid=$uid
@@ -96,7 +95,6 @@ deployment:
 
 # Define the all stage, which builds and tags all Docker images
 all:
-    LOCALLY
     ARG EARTHLY_CI
     ARG EARTHLY_GIT_SHORT_HASH
     ARG registry
@@ -147,7 +145,6 @@ test:
     RUN cargo --version
 
 tag-workspace:
-    FROM debian:stable-slim
     ARG SVU_VERSION=1.10.2
     WORKDIR /work
 

@@ -26,6 +26,8 @@ jobs:
         with:
           version: v0.7.0
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Put back the git branch into git (Earthly uses it for tagging)
         run: |
           branch=""

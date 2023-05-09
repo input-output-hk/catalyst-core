@@ -1,7 +1,7 @@
 use crate::network::wallet_state::Actor;
 use jormungandr_lib::interfaces::Value;
 use serde::{Deserialize, Serialize};
-use snapshot_lib::Fraction;
+use snapshot_lib::{Dreps, Fraction};
 
 /// Root struct for defining snapshot template
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -27,6 +27,8 @@ pub struct Parameters {
     pub direct_voters_group: Option<String>,
     /// Name of delegated registrations holders (representatives)
     pub representatives_group: Option<String>,
+    /// dreps information
+    pub dreps: Option<Dreps>,
 }
 
 impl Default for Parameters {
@@ -37,6 +39,7 @@ impl Default for Parameters {
             voting_power_cap: Fraction::new(1u64, 2u64),
             direct_voters_group: None,
             representatives_group: None,
+            dreps: None,
         }
     }
 }

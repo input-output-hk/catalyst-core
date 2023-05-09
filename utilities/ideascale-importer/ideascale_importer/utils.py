@@ -8,7 +8,7 @@ import asyncio
 import json
 from loguru import logger
 import re
-from typing import Any, Dict, Iterable, List, Mapping, TypeVar, TYPE_CHECKING
+from typing import Any, Dict, Iterable, List, TypeVar, TYPE_CHECKING
 
 
 DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
@@ -150,7 +150,7 @@ class JsonHttpClient:
         self.request_progress_observer = RequestProgressObserver()
         self.request_counter = 0
 
-    async def get(self, path: str, headers: Mapping[str, str] = {}) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
+    async def get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
         """Execute a GET request on IdeaScale API."""
         api_url = self.api_url
         if api_url.endswith("/"):

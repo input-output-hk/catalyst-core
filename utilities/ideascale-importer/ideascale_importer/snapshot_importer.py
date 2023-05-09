@@ -2,15 +2,16 @@
 
 import asyncio
 import brotli
+import dataclasses
+from dataclasses import dataclass
 from datetime import datetime
 import json
 import os
 from typing import Dict, List, Tuple, Optional
 from loguru import logger
-from pydantic.dataclasses import dataclass
 import pydantic.tools
 
-from ideascale_importer.gvc import Drep, Client as GvcClient
+from ideascale_importer.gvc import Client as GvcClient
 import ideascale_importer.db
 from ideascale_importer.db import models
 from ideascale_importer.utils import run_cmd
@@ -31,6 +32,7 @@ class SnapshotToolConfig:
     """Configuration for snapshot_tool."""
 
     path: str
+
 
 @dataclass
 class CatalystToolboxConfig:
@@ -99,6 +101,13 @@ class Registration:
     voting_purpose: Optional[int]
 
 
+@dataclass
+class CatalystToolboxDreps:
+    """Represents the input format of the dreps file of catalyst-toolbox."""
+
+    reps: List[str]
+
+
 class OutputDirectoryDoesNotExist(Exception):
     """Raised when the importer's output directory does not exist."""
 
@@ -130,6 +139,8 @@ class WriteDbDataFailed(Exception):
 
 
 class FinalSnapshotAlreadyPresent(Exception):
+    """Raised when a final snapshot is already present in the database."""
+
     ...
 
 
@@ -150,7 +161,6 @@ class Importer:
         self.config = Config.from_json_file(config_path)
         self.database_url = database_url
         self.event_id = event_id
-        self.dreps: List[Drep] = []
         self.lastest_block_time: Optional[datetime] = None
         self.latest_block_slot_no: Optional[int] = None
         self.registration_snapshot_slot: Optional[int] = None
@@ -169,7 +179,9 @@ class Importer:
             self.raw_snapshot_tool_file = raw_snapshot_file
             self.skip_snapshot_tool_execution = True
 
+        self.dreps_json = "[]"
         self.dreps_file = dreps_file
+        self.dreps_out_file = os.path.join(output_dir, "dreps.json")
 
         if not os.path.exists(output_dir):
             raise OutputDirectoryDoesNotExist(output_dir)
@@ -189,28 +201,41 @@ class Importer:
         conn = await ideascale_importer.db.connect(self.database_url)
 
         row = await conn.fetchrow(
-            "SELECT registration_snapshot_time, snapshot_start, voting_power_threshold, max_voting_power_pct FROM event WHERE row_id = $1",
+            "SELECT "
+            "registration_snapshot_time, snapshot_start, voting_power_threshold, max_voting_power_pct "
+            "FROM event WHERE row_id = $1",
             self.event_id,
         )
         if row is None:
             raise FetchParametersFailed("Failed to get event parameters from the database: " f"event_id={self.event_id} not found")
 
         self.voting_power_cap = row["max_voting_power_pct"]
+        if self.voting_power_cap is not None:
+            self.voting_power_cap = float(self.voting_power_cap)
+
         self.min_stake_threshold = row["voting_power_threshold"]
         self.snapshot_start_time = row["snapshot_start"]
         self.registration_snapshot_time = row["registration_snapshot_time"]
 
         if self.snapshot_start_time is None or self.registration_snapshot_time is None:
+            snapshot_start_time = None
+            if self.snapshot_start_time is not None:
+                snapshot_start_time = self.snapshot_start_time.isoformat()
+
+            registration_snapshot_time = None
+            if self.registration_snapshot_time is not None:
+                registration_snapshot_time = self.registration_snapshot_time.isoformat()
+
             raise FetchParametersFailed(
                 "Missing snapshot timestamps for event in the database:"
-                f" snapshot_start={None if self.snapshot_start_time is None else self.snapshot_start_time.isoformat()}"
-                f" registration_snapshot_time={None if self.registration_snapshot_time is None else self.registration_snapshot_time.isoformat()}"
+                f" snapshot_start={snapshot_start_time}"
+                f" registration_snapshot_time={registration_snapshot_time}"
             )
 
         logger.info(
             "Got event parameters",
             min_stake_threshold=self.min_stake_threshold,
-            voting_power_cap=float(self.voting_power_cap),
+            voting_power_cap=self.voting_power_cap,
             snapshot_start=None if self.snapshot_start_time is None else self.snapshot_start_time.isoformat(),
             registration_snapshot_time=None
             if self.registration_snapshot_time is None
@@ -242,7 +267,9 @@ class Importer:
             logger.info(
                 "Got registration snapshot block data",
                 slot_no=self.registration_snapshot_slot,
-                block_time=self.registration_snapshot_block_time.isoformat(),
+                block_time=None
+                if self.registration_snapshot_block_time is None
+                else self.registration_snapshot_block_time.isoformat(),
             )
 
             row = await conn.fetchrow(
@@ -257,7 +284,7 @@ class Importer:
             self.lastest_block_time = row["time"]
             logger.info(
                 "Got latest block data",
-                time=self.lastest_block_time.isoformat(),
+                time=None if self.lastest_block_time is None else self.lastest_block_time.isoformat(),
                 slot_no=self.latest_block_slot_no,
             )
 
@@ -270,11 +297,17 @@ class Importer:
 
         gvc_client = GvcClient(self.config.gvc.api_url)
 
+        dreps = []
         try:
-            self.dreps = await gvc_client.dreps()
-        except Exception:
-            logger.error("Failed to get dreps, using drep cache")
-            self.dreps = []
+            dreps = await gvc_client.dreps()
+        except Exception as e:
+            logger.error("Failed to get dreps, using drep cache", error=str(e))
+
+        self.dreps_json = json.dumps([dataclasses.asdict(d) for d in dreps])
+
+        dreps_data = CatalystToolboxDreps(reps=[d.attributes.voting_key for d in dreps])
+        with open(self.dreps_out_file, "w") as f:
+            json.dump(dataclasses.asdict(dreps_data), f)
 
     async def _run_snapshot_tool(self):
         snapshot_tool_cmd = (
@@ -305,7 +338,7 @@ class Importer:
         # Could happen when the event in the database does not have these set
         if self.min_stake_threshold is None or self.voting_power_cap is None:
             raise RunCatalystToolboxSnapshotFailed(
-                "min_stake_threshold and voting_power_cap must be set " "either as CLI arguments or in the database"
+                "min_stake_threshold and voting_power_cap must be set either as CLI arguments or in the database"
             )
 
         catalyst_toolbox_cmd = (
@@ -313,6 +346,7 @@ class Importer:
             f" -s {self.raw_snapshot_tool_file}"
             f" -m {self.min_stake_threshold}"
             f" -v {self.voting_power_cap}"
+            f" --dreps {self.dreps_out_file}"
             f" --output-format json {self.catalyst_toolbox_out_file}"
         )
 
@@ -340,7 +374,7 @@ class Importer:
             total_registered_voting_power += r.voting_power
 
             if isinstance(r.delegations, str):  # CIP15 registration
-                voting_key = r.delegations
+                voting_key = pad_voting_key(r.delegations)
                 voting_key_idx = 0
                 voting_weight = 1
 
@@ -350,7 +384,7 @@ class Importer:
                 }
             elif isinstance(r.delegations, list):  # CIP36 registration
                 for idx, d in enumerate(r.delegations):
-                    voting_key = d[0]
+                    voting_key = pad_voting_key(d[0])
                     voting_key_idx = idx
                     voting_weight = d[1]
 
@@ -388,8 +422,8 @@ class Importer:
             original_size=len(catalyst_toolbox_data_raw_json),
         )
 
-        compressed_dreps_data = brotli.compress(bytes(json.dumps(self.dreps), "utf-8"))
-        logger.debug("Compressed DREPs data", size=len(compressed_dreps_data), original_size=len(json.dumps(self.dreps)))
+        compressed_dreps_data = brotli.compress(bytes(self.dreps_json, "utf-8"))
+        logger.debug("Compressed DREPs data", size=len(compressed_dreps_data), original_size=len(self.dreps_json))
 
         if self.lastest_block_time is None:
             raise WriteDbDataFailed("lastest_block_time not set")
@@ -513,3 +547,10 @@ class Importer:
 
         await self._run_catalyst_toolbox_snapshot()
         await self._write_db_data()
+
+
+def pad_voting_key(k: str) -> str:
+    """Pad a voting key with 0s if it's smaller than the expected size."""
+    if k.startswith("0x"):
+        k = k[2:]
+    return "0x" + k.zfill(64)

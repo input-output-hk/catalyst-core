@@ -6646,7 +6646,6 @@ dependencies = [
  "chain-addr",
  "chain-crypto",
  "fraction",
- "graphql_client",
  "hex",
  "jormungandr-lib",
  "proptest",

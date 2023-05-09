@@ -1,73 +1,28 @@
 # Set the Earthly version to 0.7
 VERSION 0.7
 
-# Installs and configures Nix
-nix:
+# Installs and configures the Rust toolchain
+rust-toolchain:
     FROM debian:stable-slim
+
     ARG user=user
     ARG uid=1000
     ARG gid=$uid
 
-    # Install Nix dependencies
+    # Install dependencies
     RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
-        sudo \
-        xz-utils
+        sudo
 
-    # Create a user to run Nix
+    # Create a user
     RUN groupadd -g $gid $user && \
         useradd -u $uid -g $gid -G sudo -m $user -s /bin/bash
 
-    # Setup sudo (used by the installer) and enable flakes
-    RUN sed -i 's/%sudo.*ALL/%sudo   ALL=(ALL:ALL) NOPASSWD:ALL/' /etc/sudoers && \
-        echo "sandbox = false" > /etc/nix.conf && \
-        echo "experimental-features = nix-command flakes" >> /etc/nix.conf
-
-    # Install Nix
-    USER $user
-    ENV USER=${USER}
-    ENV NIX_PATH=/home/${USER}/.nix-defexpr/channels:/nix/var/nix/profiles/per-user/root/channels
-    ENV NIX_CONF_DIR /etc
-    RUN curl -L 'https://nixos.org/nix/install' | NIX_INSTALLER_NO_MODIFY_PROFILE=1 sh
-
-    SAVE IMAGE --cache-hint
-
-# Configures the Nix devshell and adds with_nix script
-devshell:
-    FROM +nix
-
-    ARG user=user
-    ENV USER=$user
-
-    # Copy the devshell and dump the environment
-    WORKDIR /devshell
-
-    COPY flake.nix flake.lock rust-toolchain .
-    COPY --dir nix .
-    RUN bash -c "source /home/$user/.nix-profile/etc/profile.d/nix.sh && nix print-dev-env --accept-flake-config >.env"
-
-    # Add patchelf for patching operations
-    RUN bash -c "source /home/$user/.nix-profile/etc/profile.d/nix.sh && nix-env -iA nixpkgs.patchelf"
-
-    # Copy the helper scripts
-    WORKDIR /scripts
-
-    COPY scripts/with_nix.sh .
-    RUN chmod +x with_nix.sh && \
-        sudo ln -s /scripts/with_nix.sh /usr/bin/with_nix
-
-    COPY scripts/collect-libs.sh .
-    RUN chmod +x collect-libs.sh && \
-        sudo ln -s /scripts/collect-libs.sh /usr/bin/collect-libs
+    # Setup sudo
+    RUN sed -i 's/%sudo.*ALL/%sudo   ALL=(ALL:ALL) NOPASSWD:ALL/' /etc/sudoers
 
     WORKDIR /work
-    SAVE IMAGE --cache-hint
-
-# Installs and configures the Rust toolchain
-rust-toolchain:
-    FROM +devshell
-
     ARG rustup_url="https://static.rust-lang.org/rustup/archive/1.26.0/x86_64-unknown-linux-gnu/rustup-init"
     ENV PATH="${HOME}/.cargo/bin:${PATH}"
 
@@ -145,13 +100,7 @@ all:
     ARG EARTHLY_CI
     ARG EARTHLY_GIT_SHORT_HASH
     ARG registry
-
-    # Set the tag for the Docker image
-    IF [ "$EARTHLY_CI" = "true" ]
-        ARG tag=$(TZ=UTC date +"%Y%m%d%H%M%S")-$EARTHLY_GIT_SHORT_HASH
-    ELSE
-        ARG tag=latest
-    END
+    ARG tag=latest
 
     # Determine the final registry to push to
     IF [ "$registry" = "" ]
@@ -174,6 +123,20 @@ all:
     BUILD ./services/voting-node+docker --tag=$tag --registry=$registry_final
     BUILD ./utilities/ideascale-importer+docker --tag=$tag --registry=$registry_final
 
+all-with-tags:
+    FROM +tag-workspace
+
+    ARG registry
+
+    ARG VERSION=$(svu --pattern="v[0-9]*.[0-9]*" current)
+    ARG TIMESTAMP=$(TZ=UTC date +"%Y%m%d%H%M%S")
+
+    ARG TAG_VER=${VERSION}-${TIMESTAMP}
+    ARG TAG_HASH=$(git rev-parse HEAD)
+
+    BUILD +all --tag=${TAG_VER} --registry=${registry}
+    BUILD +all --tag=${TAG_HASH} --registry=${registry}
+
 # Define the ci stage, which only builds the event-db-migrations Docker image for testing
 ci:
     BUILD ./containers/event-db-migrations+test
@@ -182,3 +145,19 @@ ci:
 test:
     FROM +devshell
     RUN cargo --version
+
+tag-workspace:
+    FROM debian:stable-slim
+    ARG SVU_VERSION=1.10.2
+    WORKDIR /work
+
+    RUN apt-get update && apt-get install -y curl git
+    RUN curl \
+        --fail \
+        --remote-name \
+        --location \
+        "https://github.com/caarlos0/svu/releases/download/v${SVU_VERSION}/svu_${SVU_VERSION}_linux_amd64.deb"
+    RUN dpkg -i svu_${SVU_VERSION}_linux_amd64.deb
+
+    COPY .git .
+    SAVE IMAGE --cache-hint

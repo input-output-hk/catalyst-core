@@ -55,5 +55,6 @@ jobs:
           earthly  \
             --ci \
             --remote-cache=ghcr.io/${{ github.repository }}:cache \
-            --push +all \
+            --max-remote-cache \
+            --push +all-with-tags \
             --registry=${{ env.ECR_REGISTRY }}

@@ -14,20 +14,29 @@ use event_db::types::event::{
 };
 use std::sync::Arc;
 
+mod review;
+
 pub fn proposal(state: Arc<State>) -> Router {
+    let review = review::review(state.clone());
+
     Router::new()
-        .route(
-            "/:event/:objective/proposals",
-            get({
-                let state = state.clone();
-                move |path, query| async {
-                    handle_result(proposals_exec(path, query, state).await).await
-                }
-            }),
+        .nest(
+            "/proposal/:proposal",
+            Router::new()
+                .route(
+                    "/",
+                    get({
+                        let state = state.clone();
+                        move |path| async { handle_result(proposal_exec(path, state).await).await }
+                    }),
+                )
+                .merge(review),
         )
         .route(
-            "/:event/:objective/:proposal/proposal",
-            get(move |path| async { handle_result(proposal_exec(path, state).await).await }),
+            "/proposals",
+            get(move |path, query| async {
+                handle_result(proposals_exec(path, query, state).await).await
+            }),
         )
 }
 
@@ -91,7 +100,10 @@ mod tests {
         let app = app(state);
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/{1}/{2}/proposal", 1, 1, 1))
+            .uri(format!(
+                "/api/v1/event/{0}/objective/{1}/proposal/{2}",
+                1, 1, 1
+            ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -126,7 +138,10 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/{1}/{2}/proposal", 3, 3, 3))
+            .uri(format!(
+                "/api/v1/event/{0}/objective/{1}/proposal/{2}",
+                3, 3, 3
+            ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -139,7 +154,7 @@ mod tests {
         let app = app(state);
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/{1}/proposals", 1, 1))
+            .uri(format!("/api/v1/event/{0}/objective/{1}/proposals", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -169,7 +184,10 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/{1}/proposals?lim={2}", 1, 1, 2))
+            .uri(format!(
+                "/api/v1/event/{0}/objective/{1}/proposals?lim={2}",
+                1, 1, 2
+            ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -194,7 +212,10 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/{1}/proposals?ofs={2}", 1, 1, 1))
+            .uri(format!(
+                "/api/v1/event/{0}/objective/{1}/proposals?ofs={2}",
+                1, 1, 1
+            ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -220,7 +241,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/{1}/proposals?ofs={2}&lim={3}",
+                "/api/v1/event/{0}/objective/{1}/proposals?ofs={2}&lim={3}",
                 1, 1, 1, 1
             ))
             .body(Body::empty())

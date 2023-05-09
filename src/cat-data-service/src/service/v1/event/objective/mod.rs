@@ -10,13 +10,21 @@ use axum::{
 use event_db::types::event::{objective::Objective, EventId};
 use std::sync::Arc;
 
+mod proposal;
+mod review_type;
+
 pub fn objective(state: Arc<State>) -> Router {
-    Router::new().route(
-        "/:event/objectives",
-        get(move |path, query| async {
-            handle_result(objectives_exec(path, query, state).await).await
-        }),
-    )
+    let proposal = proposal::proposal(state.clone());
+    let review_type = review_type::review_type(state.clone());
+
+    Router::new()
+        .nest("/objective/:objective", proposal.merge(review_type))
+        .route(
+            "/objectives",
+            get(move |path, query| async {
+                handle_result(objectives_exec(path, query, state).await).await
+            }),
+        )
 }
 
 async fn objectives_exec(

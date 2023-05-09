@@ -136,7 +136,7 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/{obj_id}/proposals':
+  '/api/v1/event/{id}/objective/{obj_id}/proposals':
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -161,7 +161,7 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/{obj_id}/review_types':
+  '/api/v1/event/{id}/objective/{obj_id}/review_types':
     parameters:
       - name: id
         in: path
@@ -183,7 +183,6 @@ paths:
       operationId: getAllReviewTypes
       summary: Get summary all available review types for this objective.
       tags:
-        - proposal
         - review
       description: |
         Lists all available review types used on this events proposal.
@@ -221,7 +220,7 @@ paths:
                 $ref: '#/components/schemas/Proposal'
         '404':
           description: The requested proposal was not found
-  '/api/v1/event/{id}/{obj_id}/{prop_id}/reviews':
+  '/api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/reviews':
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -230,7 +229,6 @@ paths:
       operationId: getProposalReviews
       summary: Get reviews related to a proposal
       tags:
-        - proposal
         - review
       description: |
         Retrieves advisor reviews information for the provided proposal id.

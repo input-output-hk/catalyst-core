@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Header"],"struct":["HeaderBft","HeaderDesc","HeaderGenesisPraos","HeaderUnsigned"]};

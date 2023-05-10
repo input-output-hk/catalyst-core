@@ -1217,11 +1217,11 @@
         <span class="kw">let </span>search_query = SearchQuery {
             table: SearchTable::Events,
             filter: <span class="macro">vec!</span>[SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: <span class="string">&quot;Fund&quot;</span>.to_string(),
             }],
             order_by: <span class="macro">vec!</span>[SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: <span class="bool-val">false</span>,
             }],
         };
@@ -1332,11 +1332,11 @@
         <span class="kw">let </span>search_query = SearchQuery {
             table: SearchTable::Events,
             filter: <span class="macro">vec!</span>[SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: <span class="string">&quot;Fund&quot;</span>.to_string(),
             }],
             order_by: <span class="macro">vec!</span>[SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: <span class="bool-val">true</span>,
             }],
         };
@@ -1603,11 +1603,11 @@
         <span class="kw">let </span>search_query: SearchQuery = SearchQuery {
             table: SearchTable::Objectives,
             filter: <span class="macro">vec!</span>[SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: <span class="string">&quot;description&quot;</span>.to_string(),
             }],
             order_by: <span class="macro">vec!</span>[SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: <span class="bool-val">false</span>,
             }],
         };
@@ -1650,11 +1650,11 @@
         <span class="kw">let </span>search_query: SearchQuery = SearchQuery {
             table: SearchTable::Objectives,
             filter: <span class="macro">vec!</span>[SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: <span class="string">&quot;description&quot;</span>.to_string(),
             }],
             order_by: <span class="macro">vec!</span>[SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: <span class="bool-val">true</span>,
             }],
         };
@@ -1883,7 +1883,7 @@
         <span class="kw">let </span>search_query = SearchQuery {
             table: SearchTable::Proposals,
             filter: <span class="macro">vec!</span>[SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: <span class="string">&quot;description 1&quot;</span>.to_string(),
             }],
             order_by: <span class="macro">vec!</span>[],

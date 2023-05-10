@@ -197,7 +197,7 @@
 </span><span class="kw">pub enum </span>SearchColumn {
     Title,
     Type,
-    Desc,
+    Description,
     Author,
     Funds,
 }
@@ -207,7 +207,7 @@
         <span class="kw">match </span><span class="self">self </span>{
             SearchColumn::Title =&gt; <span class="string">&quot;title&quot;</span>.to_string(),
             SearchColumn::Type =&gt; <span class="string">&quot;type&quot;</span>.to_string(),
-            SearchColumn::Desc =&gt; <span class="string">&quot;description&quot;</span>.to_string(),
+            SearchColumn::Description =&gt; <span class="string">&quot;description&quot;</span>.to_string(),
             SearchColumn::Author =&gt; <span class="string">&quot;author&quot;</span>.to_string(),
             SearchColumn::Funds =&gt; <span class="string">&quot;funds&quot;</span>.to_string(),
         }

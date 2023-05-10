@@ -283,7 +283,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/totals'
+        - $ref: '#/components/parameters/total'
     parameters: []
   '/api/v1/registration/voter/{vkey}':
     parameters:
@@ -1111,7 +1111,7 @@ components:
       enum:
         - title
         - type
-        - desc
+        - description
         - author
         - funds
       x-stoplight:
@@ -1417,7 +1417,7 @@ components:
         format: int32
       description: The ID Number of the Proposal within a Objective of a Voting Event
     limit:
-      name: lim
+      name: limit
       in: query
       required: false
       schema:
@@ -1429,7 +1429,7 @@ components:
       description: Limit the results to this value
       style: form
     offset:
-      name: ofs
+      name: offset
       in: query
       required: false
       schema:
@@ -1456,8 +1456,8 @@ components:
       description: Filter Results to only these voter groups.
       explode: true
       style: form
-    totals:
-      name: tot
+    total:
+      name: total
       in: query
       required: false
       schema:

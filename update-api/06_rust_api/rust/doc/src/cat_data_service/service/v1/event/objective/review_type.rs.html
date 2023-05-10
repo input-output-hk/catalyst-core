@@ -347,7 +347,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/objective/{1}/review_types?lim={2}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/objective/{1}/review_types?limit={2}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">2
             </span>))
             .body(Body::empty())
@@ -385,7 +385,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/objective/{1}/review_types?ofs={2}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/objective/{1}/review_types?offset={2}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())
@@ -431,7 +431,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
-                <span class="string">&quot;/api/v1/event/{0}/objective/{1}/review_types?lim={2}&amp;ofs={3}&quot;</span>,
+                <span class="string">&quot;/api/v1/event/{0}/objective/{1}/review_types?limit={2}&amp;offset={3}&quot;</span>,
                 <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())

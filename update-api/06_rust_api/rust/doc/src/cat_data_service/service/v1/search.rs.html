@@ -1063,9 +1063,6 @@
 <a href="#1063" id="1063">1063</a>
 <a href="#1064" id="1064">1064</a>
 <a href="#1065" id="1065">1065</a>
-<a href="#1066" id="1066">1066</a>
-<a href="#1067" id="1067">1067</a>
-<a href="#1068" id="1068">1068</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -1087,13 +1084,10 @@
 <span class="doccomment">/// Cannot use serde flattening, look this issue &lt;https://github.com/nox/serde_urlencoded/issues/33&gt;
 </span><span class="attr">#[derive(Deserialize)]
 </span><span class="kw">struct </span>SearchParam {
-    <span class="attr">#[serde(rename = <span class="string">&quot;tot&quot;</span>)]
-    #[serde(default)]
+    <span class="attr">#[serde(default)]
     </span>total: bool,
-    <span class="attr">#[serde(rename = <span class="string">&quot;lim&quot;</span>)]
-    </span>limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-    <span class="attr">#[serde(rename = <span class="string">&quot;ofs&quot;</span>)]
-    </span>offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
+    limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
+    offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
 }
 
 <span class="kw">async fn </span>search_exec(
@@ -1155,11 +1149,11 @@
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;events&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;Fund&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                     }]
                 })
                 .to_string(),
@@ -1266,17 +1260,17 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="string">&quot;/api/v1/search?tot=true&quot;</span>.to_string())
+            .uri(<span class="string">&quot;/api/v1/search?total=true&quot;</span>.to_string())
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;events&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;Fund&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                     }]
                 })
                 .to_string(),
@@ -1302,11 +1296,11 @@
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;events&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;Fund&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;descending&quot;</span>: <span class="bool-val">true</span>,
                     }]
                 })
@@ -1414,17 +1408,17 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&quot;</span>, <span class="number">2</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&quot;</span>, <span class="number">2</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;events&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;Fund&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;descending&quot;</span>: <span class="bool-val">true</span>,
                     }]
                 })
@@ -1480,17 +1474,17 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?ofs={0}&quot;</span>, <span class="number">2</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?offset={0}&quot;</span>, <span class="number">2</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;events&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;Fund&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;descending&quot;</span>: <span class="bool-val">true</span>,
                     }]
                 })
@@ -1564,17 +1558,17 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&amp;ofs={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&amp;offset={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;events&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;Fund&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;descending&quot;</span>: <span class="bool-val">true</span>,
                     }]
                 })
@@ -1650,11 +1644,11 @@
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;objectives&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;description&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                     }]
                 })
                 .to_string(),
@@ -1693,17 +1687,17 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="string">&quot;/api/v1/search?tot=true&quot;</span>.to_string())
+            .uri(<span class="string">&quot;/api/v1/search?total=true&quot;</span>.to_string())
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;objectives&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;description&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                     }]
                 })
                 .to_string(),
@@ -1729,11 +1723,11 @@
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;objectives&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;description&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;descending&quot;</span>: <span class="bool-val">true</span>,
                     }]
                 })
@@ -1773,17 +1767,17 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&quot;</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;objectives&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;description&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;descending&quot;</span>: <span class="bool-val">true</span>,
                     }]
                 })
@@ -1812,17 +1806,17 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?ofs={0}&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?offset={0}&quot;</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;objectives&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;description&quot;
                     </span>}],
                     <span class="string">&quot;order_by&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;descending&quot;</span>: <span class="bool-val">true</span>,
                     }]
                 })
@@ -1921,7 +1915,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="string">&quot;/api/v1/search?tot=true&quot;</span>.to_string())
+            .uri(<span class="string">&quot;/api/v1/search?total=true&quot;</span>.to_string())
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -1998,7 +1992,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&quot;</span>, <span class="number">2</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&quot;</span>, <span class="number">2</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -2040,7 +2034,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?ofs={0}&quot;</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?offset={0}&quot;</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -2082,7 +2076,7 @@
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?lim={0}&amp;ofs={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/search?limit={0}&amp;offset={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
             .header(header::CONTENT_TYPE, <span class="string">&quot;application/json&quot;</span>)
             .body(Body::from(
                 <span class="macro">json!</span>({
@@ -2123,7 +2117,7 @@
                 <span class="macro">json!</span>({
                     <span class="string">&quot;table&quot;</span>: <span class="string">&quot;proposals&quot;</span>,
                     <span class="string">&quot;filter&quot;</span>: [{
-                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;desc&quot;</span>,
+                        <span class="string">&quot;column&quot;</span>: <span class="string">&quot;description&quot;</span>,
                         <span class="string">&quot;search&quot;</span>: <span class="string">&quot;description 1&quot;
                     </span>}],
                 })

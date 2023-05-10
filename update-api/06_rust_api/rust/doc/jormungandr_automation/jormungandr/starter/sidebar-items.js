@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["FromGenesis","LeadershipMode","NodeBlock0","OnFail","PersistenceMode","StartupError","StartupVerificationMode","__Field"],"fn":["finish_benchmark"],"mod":["commands","params","testing_directory"],"static":["CALLSITE","META"],"struct":["ConfiguredStarter","FaketimeConfig","Starter","__FieldVisitor","__Visitor"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["node"],"struct":["Gossip","Node"],"type":["Nodes"]};

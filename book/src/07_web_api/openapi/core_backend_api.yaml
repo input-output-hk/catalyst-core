@@ -49,7 +49,7 @@ servers:
   - url: 'https://qa.xxxxxxxxxxxxxx.io'
     description: QA Testing Environment
   - url: 'https://preprod.xxxxxxxxxxxxxx.io'
-    description: Preprod Stable Contiunous Testing Environment
+    description: Preprod Stable Continuous Testing Environment
   - url: 'https://prod.xxxxxxxxxxxxxx.io'
     description: Production Environment
 paths:
@@ -110,7 +110,7 @@ paths:
         An Objective here is defined as:\
         *"A vote in which all the people in a group decide on an important issue."*\
         Examples of objectives are:
-        * Catalsyt Funding Challenges
+        * Catalyst Funding Challenges
         * General Voting Events
         * Any other Decision to be determined by the Communities Collective will.
         * Non binding community collective opinion measurement.
@@ -333,7 +333,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DelegatorInfo'
         '400':
-          description: An error occured
+          description: An error occurred
         '404':
           description: Stake Address for the event was not found in the snapshot.
       parameters:
@@ -563,9 +563,9 @@ components:
       type: object
       description: |-
         The chronological sequence of stages of the voting event.\
-        Stages run chronolgically and only 1 stage can run at a time.\
+        Stages run chronologically and only 1 stage can run at a time.\
         Each new stage terminates the previous stage.\
-        Any ommitted entries are assumed to not exist as a stage in this event.
+        Any omitted entries are assumed to not exist as a stage in this event.
       properties:
         insight_sharing:
           $ref: '#/components/schemas/DateTime'
@@ -614,7 +614,7 @@ components:
       x-stoplight:
         id: lnivx8gtyvbcn
       type: object
-      description: Detaild information for an individual voting event.
+      description: Detailed information for an individual voting event.
       properties:
         voting_power:
           $ref: '#/components/schemas/VotingPowerSettings'
@@ -815,7 +815,7 @@ components:
           $ref: '#/components/schemas/RewardDefintion'
           description: |-
             The Total Reward being offered for this Objective.
-            Distribuition of the Reward is determined under the rules of this Objective.
+            Distribution of the Reward is determined under the rules of this Objective.
             If this field is not present there is no reward being offered for the Objective.
         choices:
           $ref: '#/components/schemas/ObjectiveChoices'
@@ -931,13 +931,13 @@ components:
           description: 'For `simple` challenges, the free-form description of the proposed solution.'
         brief:
           type: string
-          description: 'For `community-choice` challenges, the free-form brief explanation of the propsal.'
+          description: 'For `community-choice` challenges, the free-form brief explanation of the proposal.'
         importance:
           type: string
-          description: 'For `community-choice` challenges, the free-form explanation of the propsals importance, in the view of the proposers.'
+          description: 'For `community-choice` challenges, the free-form explanation of the proposals importance, in the view of the proposers.'
         metrics:
           type: string
-          description: 'For `community-choise` challenges, the free-form explanation of the metrics of success.  As proposed by the proposers.'
+          description: 'For `community-choice` challenges, the free-form explanation of the metrics of success.  As proposed by the proposers.'
     ProposalDetails:
       title: Proposal Details
       type: object
@@ -1028,7 +1028,7 @@ components:
           description: |-
             The inclusive Minimum value for the reviews rating.
             By definition, lower value ratings are considered lower ratings.
-            Therefore this field represents the lowest posssible rating.
+            Therefore this field represents the lowest possible rating.
           example: 0
           default: 0
         max:
@@ -1036,7 +1036,7 @@ components:
           description: |-
             The inclusive Maximum value for the reviews rating.
             By definition, higher value ratings are considered higher ratings.
-            Therefore this field represents the highest posssible rating.
+            Therefore this field represents the highest possible rating.
           example: 3
         note:
           type: boolean

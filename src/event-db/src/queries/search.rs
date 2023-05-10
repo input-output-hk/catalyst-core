@@ -32,7 +32,7 @@ impl EventDB {
         LEFT JOIN snapshot ON event.row_id = snapshot.event";
 
     const SEARCH_OBJECTIVES_QUERY: &'static str =
-        "SELECT objective.id, objective.title, objective_category.name, objective_category.description as objective_category_description
+        "SELECT objective.id, objective.title, objective.description, objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name";
 
@@ -205,6 +205,7 @@ impl SearchQueries for EventDB {
                                 description: row.try_get("objective_category_description")?,
                             },
                             title: row.try_get("title")?,
+                            description: row.try_get("description")?,
                         };
                         objectives.push(objective);
                     }
@@ -267,11 +268,11 @@ mod tests {
         let search_query = SearchQuery {
             table: SearchTable::Events,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "Fund".to_string(),
             }],
             order_by: vec![SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: false,
             }],
         };
@@ -382,11 +383,11 @@ mod tests {
         let search_query = SearchQuery {
             table: SearchTable::Events,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "Fund".to_string(),
             }],
             order_by: vec![SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: true,
             }],
         };
@@ -653,11 +654,11 @@ mod tests {
         let search_query: SearchQuery = SearchQuery {
             table: SearchTable::Objectives,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "description".to_string(),
             }],
             order_by: vec![SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: false,
             }],
         };
@@ -676,6 +677,7 @@ mod tests {
                         description: "A Simple choice".to_string()
                     },
                     title: "title 1".to_string(),
+                    description: "description 1".to_string(),
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(2),
@@ -684,6 +686,7 @@ mod tests {
                         description: "??".to_string()
                     },
                     title: "title 2".to_string(),
+                    description: "description 2".to_string(),
                 },
             ]))
         );
@@ -698,11 +701,11 @@ mod tests {
         let search_query: SearchQuery = SearchQuery {
             table: SearchTable::Objectives,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "description".to_string(),
             }],
             order_by: vec![SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: true,
             }],
         };
@@ -721,6 +724,7 @@ mod tests {
                         description: "??".to_string()
                     },
                     title: "title 2".to_string(),
+                    description: "description 2".to_string(),
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(1),
@@ -729,6 +733,7 @@ mod tests {
                         description: "A Simple choice".to_string()
                     },
                     title: "title 1".to_string(),
+                    description: "description 1".to_string(),
                 },
             ]))
         );
@@ -747,6 +752,7 @@ mod tests {
                     description: "??".to_string()
                 },
                 title: "title 2".to_string(),
+                description: "description 2".to_string(),
             },]))
         );
 
@@ -764,6 +770,7 @@ mod tests {
                     description: "A Simple choice".to_string()
                 },
                 title: "title 1".to_string(),
+                description: "description 1".to_string(),
             },]))
         );
 
@@ -927,7 +934,7 @@ mod tests {
         let search_query = SearchQuery {
             table: SearchTable::Proposals,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "description 1".to_string(),
             }],
             order_by: vec![],

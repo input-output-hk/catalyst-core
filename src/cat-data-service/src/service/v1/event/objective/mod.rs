@@ -10,13 +10,21 @@ use axum::{
 use event_db::types::event::{objective::Objective, EventId};
 use std::sync::Arc;
 
+mod proposal;
+mod review_type;
+
 pub fn objective(state: Arc<State>) -> Router {
-    Router::new().route(
-        "/:event/objectives",
-        get(move |path, query| async {
-            handle_result(objectives_exec(path, query, state).await).await
-        }),
-    )
+    let proposal = proposal::proposal(state.clone());
+    let review_type = review_type::review_type(state.clone());
+
+    Router::new()
+        .nest("/objective/:objective", proposal.merge(review_type))
+        .route(
+            "/objectives",
+            get(move |path, query| async {
+                handle_result(objectives_exec(path, query, state).await).await
+            }),
+        )
 }
 
 async fn objectives_exec(
@@ -77,9 +85,9 @@ mod tests {
                             description: "A Simple choice".to_string()
                         },
                         title: "title 1".to_string(),
+                        description: "description 1".to_string(),
                     },
                     details: ObjectiveDetails {
-                        description: "description 1".to_string(),
                         reward: Some(RewardDefintion {
                             currency: "ADA".to_string(),
                             value: 100
@@ -110,9 +118,9 @@ mod tests {
                             description: "??".to_string()
                         },
                         title: "title 2".to_string(),
+                        description: "description 2".to_string(),
                     },
                     details: ObjectiveDetails {
-                        description: "description 2".to_string(),
                         reward: None,
                         choices: vec![],
                         ballot: vec![
@@ -134,7 +142,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/objectives?lim={1}", 1, 1))
+            .uri(format!("/api/v1/event/{0}/objectives?limit={1}", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -150,9 +158,9 @@ mod tests {
                         description: "A Simple choice".to_string()
                     },
                     title: "title 1".to_string(),
+                    description: "description 1".to_string(),
                 },
                 details: ObjectiveDetails {
-                    description: "description 1".to_string(),
                     reward: Some(RewardDefintion {
                         currency: "ADA".to_string(),
                         value: 100
@@ -179,7 +187,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/objectives?ofs={1}", 1, 1))
+            .uri(format!("/api/v1/event/{0}/objectives?offset={1}", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -195,9 +203,9 @@ mod tests {
                         description: "??".to_string()
                     },
                     title: "title 2".to_string(),
+                    description: "description 2".to_string(),
                 },
                 details: ObjectiveDetails {
-                    description: "description 2".to_string(),
                     reward: None,
                     choices: vec![],
                     ballot: vec![
@@ -219,7 +227,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/objectives?lim={1}&ofs={2}",
+                "/api/v1/event/{0}/objectives?limit={1}&offset={2}",
                 1, 1, 2
             ))
             .body(Body::empty())

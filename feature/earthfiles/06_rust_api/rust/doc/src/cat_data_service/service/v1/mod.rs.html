@@ -20,8 +20,6 @@
 <a href="#20" id="20">20</a>
 <a href="#21" id="21">21</a>
 <a href="#22" id="22">22</a>
-<a href="#23" id="23">23</a>
-<a href="#24" id="24">24</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::Router;
 <span class="kw">use </span>serde::Deserialize;
@@ -33,10 +31,8 @@
 
 <span class="attr">#[derive(Deserialize)]
 </span><span class="kw">struct </span>LimitOffset {
-    <span class="attr">#[serde(rename = <span class="string">&quot;lim&quot;</span>)]
-    </span>limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
-    <span class="attr">#[serde(rename = <span class="string">&quot;ofs&quot;</span>)]
-    </span>offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
+    limit: <span class="prelude-ty">Option</span>&lt;i64&gt;,
+    offset: <span class="prelude-ty">Option</span>&lt;i64&gt;,
 }
 
 <span class="kw">pub fn </span>v1(state: Arc&lt;State&gt;) -&gt; Router {

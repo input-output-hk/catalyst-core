@@ -179,6 +179,7 @@
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="kw">use </span><span class="kw">super</span>::event::{objective::ObjectiveSummary, proposal::ProposalSummary, EventSummary};
@@ -196,7 +197,7 @@
 </span><span class="kw">pub enum </span>SearchColumn {
     Title,
     Type,
-    Desc,
+    Description,
     Author,
     Funds,
 }
@@ -206,7 +207,7 @@
         <span class="kw">match </span><span class="self">self </span>{
             SearchColumn::Title =&gt; <span class="string">&quot;title&quot;</span>.to_string(),
             SearchColumn::Type =&gt; <span class="string">&quot;type&quot;</span>.to_string(),
-            SearchColumn::Desc =&gt; <span class="string">&quot;description&quot;</span>.to_string(),
+            SearchColumn::Description =&gt; <span class="string">&quot;description&quot;</span>.to_string(),
             SearchColumn::Author =&gt; <span class="string">&quot;author&quot;</span>.to_string(),
             SearchColumn::Funds =&gt; <span class="string">&quot;funds&quot;</span>.to_string(),
         }
@@ -253,9 +254,8 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span><span class="kw">crate</span>::types::event::objective::{ObjectiveId, ObjectiveType};
-
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::types::event::objective::{ObjectiveId, ObjectiveType};
     <span class="kw">use </span>serde_json::json;
 
     <span class="attr">#[test]
@@ -336,6 +336,7 @@
                     description: <span class="string">&quot;catalyst native type&quot;</span>.to_string(),
                 },
                 title: <span class="string">&quot;objective 1&quot;</span>.to_string(),
+                description: <span class="string">&quot;description 1&quot;</span>.to_string(),
             }])),
         };
 
@@ -352,7 +353,8 @@
                                 <span class="string">&quot;description&quot;</span>: <span class="string">&quot;catalyst native type&quot;
 
                             </span>},
-                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;objective 1&quot;
+                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;objective 1&quot;</span>,
+                            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 1&quot;
                         </span>}
                     ]
 

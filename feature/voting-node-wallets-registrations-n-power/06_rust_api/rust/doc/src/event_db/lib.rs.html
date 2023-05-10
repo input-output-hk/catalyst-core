@@ -92,20 +92,19 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Catalyst Election Database crate
-
-</span><span class="kw">mod </span>config_table;
-<span class="kw">mod </span>schema_check;
-
-<span class="kw">use </span>bb8::Pool;
+</span><span class="kw">use </span>bb8::Pool;
 <span class="kw">use </span>bb8_postgres::PostgresConnectionManager;
+<span class="kw">use </span>dotenvy::dotenv;
+<span class="kw">use </span>error::Error;
 <span class="kw">use </span>schema_check::SchemaVersion;
+<span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>tokio_postgres::NoTls;
 
-<span class="kw">use </span>dotenvy::dotenv;
-
-<span class="kw">use </span>std::env;
-<span class="kw">use </span>std::error::Error;
-<span class="kw">use </span>std::str::FromStr;
+<span class="kw">mod </span>config_table;
+<span class="kw">pub mod </span>error;
+<span class="kw">pub mod </span>queries;
+<span class="kw">pub mod </span>schema_check;
+<span class="kw">pub mod </span>types;
 
 <span class="doccomment">/// Database URL Environment Variable name.
 /// eg: &quot;`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`&quot;
@@ -145,18 +144,14 @@
 ///
 /// The env var &quot;`DATABASE_URL`&quot; can be set directly as an anv var, or in a
 /// `.env` file.
-</span><span class="kw">pub async fn </span>establish_connection(
-    url: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;EventDB, Box&lt;<span class="kw">dyn </span>Error + Send + Sync + <span class="lifetime">&#39;static</span>&gt;&gt; {
+</span><span class="kw">pub async fn </span>establish_connection(url: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;EventDB, Error&gt; {
     <span class="comment">// Support env vars in a `.env` file,  doesn&#39;t need to exist.
     </span>dotenv().ok();
 
-    <span class="comment">// If the Database connection URL is not supplied, try and get from the env var.
-    </span><span class="kw">let </span>env_raw = env::var(DATABASE_URL_ENVVAR);
-
     <span class="kw">let </span>database_url = <span class="kw">match </span>url {
         <span class="prelude-val">Some</span>(url) =&gt; url.to_string(),
-        <span class="prelude-val">None </span>=&gt; env_raw<span class="question-mark">?</span>,
+        <span class="comment">// If the Database connection URL is not supplied, try and get from the env var.
+        </span><span class="prelude-val">None </span>=&gt; std::env::var(DATABASE_URL_ENVVAR)<span class="question-mark">?</span>,
     };
 
     <span class="kw">let </span>config = tokio_postgres::config::Config::from_str(<span class="kw-2">&amp;</span>database_url)<span class="question-mark">?</span>;
@@ -172,16 +167,21 @@
     <span class="prelude-val">Ok</span>(db)
 }
 
-<span class="attr">#[cfg(test)]
+<span class="doccomment">/// Need to setup and run a test event db instance
+/// To do it you can use `cargo make local-event-db-test`
+/// Also need establish `EVENT_DB_URL` env variable with the following value
+/// ```
+/// EVENT_DB_URL=&quot;postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev&quot;
+/// ```
+/// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
+</span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
     <span class="doccomment">/// Check if the schema version in the DB is up to date.
     </span><span class="attr">#[tokio::test]
-    #[ignore = <span class="string">&quot;not used&quot;</span>]
     </span><span class="kw">async fn </span>check_schema_version() {
-        <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
-
-        establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.expect(<span class="string">&quot;pass&quot;</span>);
+        establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
     }
 }
 </code></pre></div>

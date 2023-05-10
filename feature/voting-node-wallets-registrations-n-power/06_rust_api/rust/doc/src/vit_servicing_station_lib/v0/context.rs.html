@@ -138,7 +138,7 @@
         db_url: <span class="kw-2">&amp;</span>str,
         block0_path: Vec&lt;PathBuf&gt;,
     ) -&gt; SharedContext {
-        <span class="kw">let </span>pool = db::load_db_connection_pool(<span class="kw-2">&amp;</span>db_url).unwrap();
+        <span class="kw">let </span>pool = db::load_db_connection_pool(db_url).unwrap();
         new_shared_context(pool, block0_path, <span class="string">&quot;2.0&quot;</span>)
     }
 }

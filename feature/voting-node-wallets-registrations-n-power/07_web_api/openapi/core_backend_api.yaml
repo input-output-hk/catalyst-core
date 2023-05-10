@@ -30,8 +30,10 @@ tags:
     description: Information about the objectives in which all the people in a defined group decide on an important question.
   - name: proposal
     description: Information on the proposals to be considered in context with their objective.
+  - name: review
+    description: Information on the proposal's reviews to be considered in context with their objective.
   - name: registration
-    description: 'Information relating to Voter Registration, Delegations and Calculated Voting Power.'
+    description: Information relating to Voter Registration, Delegations and Calculated Voting Power.
   - name: ballot
     description: Ballot and Voting operations.
   - name: search
@@ -61,11 +63,14 @@ paths:
         Get list of all currently known past, present and future Voting Events.
       responses:
         '200':
-          description: List of all known Voting Events.
           content:
+            description: Valid response
             application/json:
               schema:
-                $ref: '#/components/schemas/EventSummary'
+                description: List of all known Voting Events.
+                type: array
+                items:
+                  $ref: '#/components/schemas/EventSummary'
         '500':
           $ref: '#/components/responses/500'
       parameters:
@@ -115,13 +120,16 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/ObjectiveSummary'
-                    x-stoplight:
-                      id: bsz8o5nnhtu9e
-                  - $ref: '#/components/schemas/ObjectiveDetails'
-                    x-stoplight:
-                      id: mdciat4uo1xu8
+                description: List of Objectives.
+                type: array
+                item:
+                  allOf:
+                    - $ref: '#/components/schemas/ObjectiveSummary'
+                      x-stoplight:
+                        id: bsz8o5nnhtu9e
+                    - $ref: '#/components/schemas/ObjectiveDetails'
+                      x-stoplight:
+                        id: mdciat4uo1xu8
         '404':
           description: The requested challenge was not found
       parameters:
@@ -176,6 +184,7 @@ paths:
       summary: Get summary all available review types for this objective.
       tags:
         - proposal
+        - review
       description: |
         Lists all available review types used on this events proposal.
       responses:
@@ -222,6 +231,7 @@ paths:
       summary: Get reviews related to a proposal
       tags:
         - proposal
+        - review
       description: |
         Retrieves advisor reviews information for the provided proposal id.
       responses:
@@ -255,8 +265,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  type:
-                    $ref: '#/components/schemas/SearchTable'
                   total:
                     type: integer
                     format: int32
@@ -271,9 +279,9 @@ paths:
                           $ref: '#/components/schemas/ObjectiveSummary'
                       - type: array
                         items:
-                          $ref: '#/components/schemas/Proposal'
+                          $ref: '#/components/schemas/ProposalSummary'
         '400':
-          description: Invalid combination of table/column (e.g. using funds column on challenges table)
+          description: Invalid combination of table/column (e.g. using funds column on event table)
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
@@ -442,15 +450,16 @@ components:
         ends:
           $ref: '#/components/schemas/DateTime'
           description: Date-Time when the Voting Event is expected to finish.
-        finalized:
+        final:
           type: boolean
           description: True if the event is finished and no changes can be made to it.<br>Does not Including payment of rewards or funding of projects.
         reg_checked:
           $ref: '#/components/schemas/DateTime'
-          description: 'Last time registrations and Voting power were checed.If not present, no registration or voting power records exist for this event.'
+          description: 'Last time registrations and Voting power were checked. If not present, no registration or voting power records exist for this event.'
       required:
         - id
         - name
+        - final
       description: A Summary of an individual Voting Event
     VotingPowerSettings:
       title: Voting Power Settings
@@ -688,7 +697,7 @@ components:
       x-stoplight:
         id: ym16khzb1abc4
       examples:
-        - - Abstain
+          - 'Abstain'
           - 'No'
           - 'Yes'
       minItems: 1
@@ -709,7 +718,7 @@ components:
       enum:
         - public
         - private
-        - temp-private
+        - cast-private
       examples:
         - private
         - public
@@ -751,7 +760,7 @@ components:
         All Information here is optional.
         If there is no supplemental information for the Objective this field is omitted.
       properties:
-        sponser:
+        sponsor:
           type: string
           description: Who is sponsoring this Objective.
         video:
@@ -821,6 +830,10 @@ components:
           format: uri
         supplemental:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
+      required:
+        - description
+        - choices
+        - ballot
     VotePlan:
       title: Vote Plan
       type: object
@@ -863,6 +876,7 @@ components:
       required:
         - id
         - title
+        - summary
       x-stoplight:
         id: 149678fbb6bb5
     ProposalBallotDetails:
@@ -873,9 +887,6 @@ components:
         If not defined, then it is not possible to cast a ballot on this proposal yet.
       type: object
       properties:
-        id:
-          type: string
-          description: 'The ID of the proposal, needed to create a ballot for it.'
         index:
           type: integer
           format: int64
@@ -883,7 +894,6 @@ components:
         voteplan:
           $ref: '#/components/schemas/GroupVotePlans'
       required:
-        - id
         - index
       x-stoplight:
         id: ae52aa5a4c3f3
@@ -939,7 +949,7 @@ components:
           type: integer
           format: int64
           description: |-
-            The amount of funds requested by this proposal.  
+            The amount of funds requested by this proposal.
             In the denomination of the Objectives Reward.
             If not present, then this proposal is not requesting any funds.
         url:
@@ -959,8 +969,13 @@ components:
             $ref: '#/components/schemas/ProposerDetails'
         ballot:
           $ref: '#/components/schemas/ProposalBallotDetails'
-        supplimental:
+        supplemental:
           $ref: '#/components/schemas/ProposalSupplementalDetails'
+          required:
+            - funds
+            - url
+            - files
+            - proposer
       x-stoplight:
         id: 55fa0ff965f91
     Proposal:
@@ -988,7 +1003,7 @@ components:
             Reason why this rating was given.
             If NO reason was given, this field is omitted.
       required:
-        - id
+        - review_type
         - score
       x-stoplight:
         id: 6181ea68acf86
@@ -1057,8 +1072,9 @@ components:
       required:
         - id
         - name
+        - min
         - max
-        - group
+        - map
     AdvisorReview:
       title: Advisor Review
       description: Review of a Proposal by a Community Advisor
@@ -1140,7 +1156,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SearchConstraint'
-        order-by:
+        order_by:
           type: array
           items:
             $ref: '#/components/schemas/SearchOrderBy'
@@ -1399,7 +1415,8 @@ components:
       in: path
       required: true
       schema:
-        type: string
+        type: integer
+        format: int32
       description: The ID Number of the Proposal within a Objective of a Voting Event
     limit:
       name: lim

@@ -507,6 +507,11 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="rewards_total_lovelace"  align='text'><font>rewards_total_lovelace</font><br align='left'/></td>
+                <td port="rewards_total_lovelace_out"  ><font><i>bigint</i></font></td>
+            </tr>
+            
+            <tr>
                 <td port="proposers_rewards"  align='text'><font>proposers_rewards</font><br align='left'/></td>
                 <td port="proposers_rewards_out"  ><font><i>bigint</i></font></td>
             </tr>
@@ -700,7 +705,7 @@ digraph erd {
             
             <tr>
                 <td port="bb_vote_options"  align='text'><font>bb_vote_options</font><br align='left'/></td>
-                <td port="bb_vote_options_out"  ><font><i>text</i></font></td>
+                <td port="bb_vote_options_out"  ><font><i>ARRAY</i></font></td>
             </tr>
             
 
@@ -1078,12 +1083,12 @@ digraph erd {
             
             <tr>
                 <td port="idea_scale"  align='text'><font>idea_scale</font><br align='left'/></td>
-                <td port="idea_scale_out"  ><font><i>text</i></font></td>
+                <td port="idea_scale_out"  ><font><i>ARRAY</i></font></td>
             </tr>
             
             <tr>
                 <td port="objective"  align='text'><font>objective</font><br align='left'/></td>
-                <td port="objective_out"  ><font><i>text</i></font></td>
+                <td port="objective_out"  ><font><i>ARRAY</i></font></td>
             </tr>
             
 
@@ -1359,7 +1364,7 @@ digraph erd {
     
     "objective_review_metric":"objective_out" -> "objective":"row_id"
     
-    "objective_review_metric":"metric_out" -> "objective_review_metric":"row_id"
+    "objective_review_metric":"metric_out" -> "review_metric":"row_id"
     
     "review_rating":"review_id_out" -> "proposal_review":"row_id"
     

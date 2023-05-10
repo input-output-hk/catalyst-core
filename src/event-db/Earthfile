@@ -1,0 +1,17 @@
+# This is a Dockerfile for building a container image for the Catalyst Event Database.
+# The container image is built from scratch and includes the necessary files for running
+# the database and its associated software.
+
+VERSION 0.7
+
+build:
+    FROM scratch # Use a scratch image as the base image
+    WORKDIR /event-db # Set the working directory to /event-db
+    COPY refinery.toml . # Copy the refinery.toml file to the working directory
+    COPY --dir setup . # Copy the setup directory to the working directory
+    COPY --dir migrations . # Copy the migrations directory to the working directory
+    COPY --dir historic_data . # Copy the historic_data directory to the working directory
+    SAVE ARTIFACT refinery.toml # Save the refinery.toml file as an artifact
+    SAVE ARTIFACT setup # Save the setup directory as an artifact
+    SAVE ARTIFACT migrations # Save the migrations directory as an artifact
+    SAVE ARTIFACT historic_data # Save the historic_data directory as an artifact

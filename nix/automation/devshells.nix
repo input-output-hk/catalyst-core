@@ -8,8 +8,6 @@
 
   mkEnv = env: l.mapAttrsToList (name: value: {inherit name value;}) env;
 
-
-
   catalystCore = {...}: {
     name = nixpkgs.lib.mkForce "Catalyst Core";
     env = with nixpkgs;
@@ -26,16 +24,24 @@
       cell.configs.treefmt
     ];
     packages = with nixpkgs; [
+      # Build tools
       gcc
-      # rustNightly
-      rustToolchain
+      nodejs
       pkg-config
+      python310
+
+      # Rust tools
+      cargo-insta
+      diesel-cli
+      rustToolchain
+      # rustNightly
       protobuf
       uniffi-bindgen
       postgresql
-      diesel-cli
-      cargo-insta # snapshot testing lib
-      nodejs
+
+      # Misc tools
+      jq
+      python310Packages.pylddwrap
     ];
   };
 in

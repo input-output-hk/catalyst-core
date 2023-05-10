@@ -268,11 +268,11 @@ mod tests {
         let search_query = SearchQuery {
             table: SearchTable::Events,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "Fund".to_string(),
             }],
             order_by: vec![SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: false,
             }],
         };
@@ -383,11 +383,11 @@ mod tests {
         let search_query = SearchQuery {
             table: SearchTable::Events,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "Fund".to_string(),
             }],
             order_by: vec![SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: true,
             }],
         };
@@ -654,11 +654,11 @@ mod tests {
         let search_query: SearchQuery = SearchQuery {
             table: SearchTable::Objectives,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "description".to_string(),
             }],
             order_by: vec![SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: false,
             }],
         };
@@ -701,11 +701,11 @@ mod tests {
         let search_query: SearchQuery = SearchQuery {
             table: SearchTable::Objectives,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "description".to_string(),
             }],
             order_by: vec![SearchOrderBy {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 descending: true,
             }],
         };
@@ -934,7 +934,7 @@ mod tests {
         let search_query = SearchQuery {
             table: SearchTable::Proposals,
             filter: vec![SearchConstraint {
-                column: SearchColumn::Desc,
+                column: SearchColumn::Description,
                 search: "description 1".to_string(),
             }],
             order_by: vec![],

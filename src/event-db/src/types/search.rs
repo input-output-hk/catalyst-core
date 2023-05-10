@@ -15,7 +15,7 @@ pub enum SearchTable {
 pub enum SearchColumn {
     Title,
     Type,
-    Desc,
+    Description,
     Author,
     Funds,
 }
@@ -25,7 +25,7 @@ impl ToString for SearchColumn {
         match self {
             SearchColumn::Title => "title".to_string(),
             SearchColumn::Type => "type".to_string(),
-            SearchColumn::Desc => "description".to_string(),
+            SearchColumn::Description => "description".to_string(),
             SearchColumn::Author => "author".to_string(),
             SearchColumn::Funds => "funds".to_string(),
         }

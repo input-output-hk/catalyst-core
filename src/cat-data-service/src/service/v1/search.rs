@@ -19,12 +19,9 @@ pub fn search(state: Arc<State>) -> Router {
 /// Cannot use serde flattening, look this issue <https://github.com/nox/serde_urlencoded/issues/33>
 #[derive(Deserialize)]
 struct SearchParam {
-    #[serde(rename = "tot")]
     #[serde(default)]
     total: bool,
-    #[serde(rename = "lim")]
     limit: Option<i64>,
-    #[serde(rename = "ofs")]
     offset: Option<i64>,
 }
 
@@ -87,11 +84,11 @@ mod tests {
                 json!({
                     "table": "events",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "Fund"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                     }]
                 })
                 .to_string(),
@@ -198,17 +195,17 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri("/api/v1/search?tot=true".to_string())
+            .uri("/api/v1/search?total=true".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
                     "table": "events",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "Fund"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                     }]
                 })
                 .to_string(),
@@ -234,11 +231,11 @@ mod tests {
                 json!({
                     "table": "events",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "Fund"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                         "descending": true,
                     }]
                 })
@@ -346,17 +343,17 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?lim={0}", 2))
+            .uri(format!("/api/v1/search?limit={0}", 2))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
                     "table": "events",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "Fund"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                         "descending": true,
                     }]
                 })
@@ -412,17 +409,17 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?ofs={0}", 2))
+            .uri(format!("/api/v1/search?offset={0}", 2))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
                     "table": "events",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "Fund"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                         "descending": true,
                     }]
                 })
@@ -496,17 +493,17 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?lim={0}&ofs={1}", 1, 1))
+            .uri(format!("/api/v1/search?limit={0}&offset={1}", 1, 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
                     "table": "events",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "Fund"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                         "descending": true,
                     }]
                 })
@@ -582,11 +579,11 @@ mod tests {
                 json!({
                     "table": "objectives",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "description"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                     }]
                 })
                 .to_string(),
@@ -625,17 +622,17 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri("/api/v1/search?tot=true".to_string())
+            .uri("/api/v1/search?total=true".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
                     "table": "objectives",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "description"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                     }]
                 })
                 .to_string(),
@@ -661,11 +658,11 @@ mod tests {
                 json!({
                     "table": "objectives",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "description"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                         "descending": true,
                     }]
                 })
@@ -705,17 +702,17 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?lim={0}", 1))
+            .uri(format!("/api/v1/search?limit={0}", 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
                     "table": "objectives",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "description"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                         "descending": true,
                     }]
                 })
@@ -744,17 +741,17 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?ofs={0}", 1))
+            .uri(format!("/api/v1/search?offset={0}", 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
                     "table": "objectives",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "description"
                     }],
                     "order_by": [{
-                        "column": "desc",
+                        "column": "description",
                         "descending": true,
                     }]
                 })
@@ -853,7 +850,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri("/api/v1/search?tot=true".to_string())
+            .uri("/api/v1/search?total=true".to_string())
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -930,7 +927,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?lim={0}", 2))
+            .uri(format!("/api/v1/search?limit={0}", 2))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -972,7 +969,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?ofs={0}", 1))
+            .uri(format!("/api/v1/search?offset={0}", 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -1014,7 +1011,7 @@ mod tests {
 
         let request = Request::builder()
             .method(Method::POST)
-            .uri(format!("/api/v1/search?lim={0}&ofs={1}", 1, 1))
+            .uri(format!("/api/v1/search?limit={0}&offset={1}", 1, 1))
             .header(header::CONTENT_TYPE, "application/json")
             .body(Body::from(
                 json!({
@@ -1055,7 +1052,7 @@ mod tests {
                 json!({
                     "table": "proposals",
                     "filter": [{
-                        "column": "desc",
+                        "column": "description",
                         "search": "description 1"
                     }],
                 })

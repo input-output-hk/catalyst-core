@@ -142,7 +142,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/objectives?lim={1}", 1, 1))
+            .uri(format!("/api/v1/event/{0}/objectives?limit={1}", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -187,7 +187,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}/objectives?ofs={1}", 1, 1))
+            .uri(format!("/api/v1/event/{0}/objectives?offset={1}", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -227,7 +227,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/objectives?lim={1}&ofs={2}",
+                "/api/v1/event/{0}/objectives?limit={1}&offset={2}",
                 1, 1, 2
             ))
             .body(Body::empty())

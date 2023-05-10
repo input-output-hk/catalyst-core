@@ -185,7 +185,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/objective/{1}/proposals?lim={2}",
+                "/api/v1/event/{0}/objective/{1}/proposals?limit={2}",
                 1, 1, 2
             ))
             .body(Body::empty())
@@ -213,7 +213,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/objective/{1}/proposals?ofs={2}",
+                "/api/v1/event/{0}/objective/{1}/proposals?offset={2}",
                 1, 1, 1
             ))
             .body(Body::empty())
@@ -241,7 +241,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/event/{0}/objective/{1}/proposals?ofs={2}&lim={3}",
+                "/api/v1/event/{0}/objective/{1}/proposals?offset={2}&limit={3}",
                 1, 1, 1, 1
             ))
             .body(Body::empty())

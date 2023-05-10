@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["MismatchedSchema"],"trait":["SchemaVersion"]};
+window.SIDEBAR_ITEMS = {"trait":["SchemaVersion"]};

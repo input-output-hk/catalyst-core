@@ -551,8 +551,8 @@
                 <span class="kw-2">&amp;</span>proposal.proposal.proposer.proposer_relevant_experience,
             )
             .bind::&lt;diesel::sql_types::Binary, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.chain_proposal_id)
-            .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(
-                proposal.proposal.chain_vote_options.as_csv_string(),
+            .bind::&lt;diesel::sql_types::Array&lt;diesel::sql_types::Text&gt;, <span class="kw">_</span>&gt;(
+                proposal.proposal.chain_vote_options.to_vec_string(),
             )
             .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>proposal.proposal.challenge_id)
             .bind::&lt;diesel::sql_types::Jsonb, <span class="kw">_</span>&gt;(serde_json::to_value(extra).unwrap())

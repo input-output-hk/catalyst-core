@@ -13,28 +13,22 @@ use std::sync::Arc;
 use super::LimitOffset;
 
 mod objective;
-mod proposal;
-mod review;
 
 pub fn event(state: Arc<State>) -> Router {
     let objective = objective::objective(state.clone());
-    let proposal = proposal::proposal(state.clone());
-    let review = review::review(state.clone());
 
     Router::new()
         .nest(
-            "/event",
+            "/event/:event",
             Router::new()
                 .route(
-                    "/:event",
+                    "/",
                     get({
                         let state = state.clone();
                         move |path| async { handle_result(event_exec(path, state).await).await }
                     }),
                 )
-                .merge(objective)
-                .merge(proposal)
-                .merge(review),
+                .merge(objective),
         )
         .route(
             "/events",
@@ -365,7 +359,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/events?ofs={0}", 1))
+            .uri(format!("/api/v1/events?offset={0}", 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -439,7 +433,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/events?lim={0}", 1))
+            .uri(format!("/api/v1/events?limit={0}", 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -477,7 +471,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/events?lim={0}&ofs={1}", 1, 1))
+            .uri(format!("/api/v1/events?limit={0}&offset={1}", 1, 1))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -515,7 +509,7 @@ mod tests {
         );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/events?ofs={0}", 10))
+            .uri(format!("/api/v1/events?offset={0}", 10))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();

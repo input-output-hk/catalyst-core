@@ -1,123 +1,44 @@
 use crate::{
-    error::Error,
-    types::event::{
-        objective::{
-            GroupBallotType, Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
-            ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
-        },
-        EventId,
-    },
-    EventDB,
+    service::{handle_result, v1::LimitOffset, Error},
+    state::State,
 };
-use async_trait::async_trait;
+use axum::{
+    extract::{Path, Query},
+    routing::get,
+    Router,
+};
+use event_db::types::event::{objective::Objective, EventId};
+use std::sync::Arc;
 
-#[async_trait]
-pub trait ObjectiveQueries: Sync + Send + 'static {
-    async fn get_objectives(
-        &self,
-        event: EventId,
-        limit: Option<i64>,
-        offset: Option<i64>,
-    ) -> Result<Vec<Objective>, Error>;
+mod proposal;
+mod review_type;
+
+pub fn objective(state: Arc<State>) -> Router {
+    let proposal = proposal::proposal(state.clone());
+    let review_type = review_type::review_type(state.clone());
+
+    Router::new()
+        .nest("/objective/:objective", proposal.merge(review_type))
+        .route(
+            "/objectives",
+            get(move |path, query| async {
+                handle_result(objectives_exec(path, query, state).await).await
+            }),
+        )
 }
 
-impl EventDB {
-    const OBJECTIVES_QUERY: &'static str =
-        "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
-        objective_category.name, objective_category.description as objective_category_description,
-        vote_options.objective as choices
-        FROM objective
-        INNER JOIN objective_category on objective.category = objective_category.name
-        LEFT JOIN vote_options on objective.vote_options = vote_options.id
-        WHERE objective.event = $1
-        LIMIT $2 OFFSET $3;";
-}
+async fn objectives_exec(
+    Path(event): Path<EventId>,
+    lim_ofs: Query<LimitOffset>,
+    state: Arc<State>,
+) -> Result<Vec<Objective>, Error> {
+    tracing::debug!("objectives_query, event: {0}", event.0);
 
-#[async_trait]
-impl ObjectiveQueries for EventDB {
-    async fn get_objectives(
-        &self,
-        event: EventId,
-        limit: Option<i64>,
-        offset: Option<i64>,
-    ) -> Result<Vec<Objective>, Error> {
-        let conn = self.pool.get().await?;
-
-        let rows = conn
-            .query(
-                Self::OBJECTIVES_QUERY,
-                &[&event.0, &limit, &offset.unwrap_or(0)],
-            )
-            .await?;
-
-        let mut objectives = Vec::new();
-        for row in rows {
-            let summary = ObjectiveSummary {
-                id: ObjectiveId(row.try_get("id")?),
-                objective_type: ObjectiveType {
-                    id: row.try_get("name")?,
-                    description: row.try_get("objective_category_description")?,
-                },
-                title: row.try_get("title")?,
-                description: row.try_get("description")?,
-            };
-            let currency: Option<_> = row.try_get("rewards_currency")?;
-            let value: Option<_> = row.try_get("rewards_total")?;
-            let reward = match (currency, value) {
-                (Some(currency), Some(value)) => Some(RewardDefintion { currency, value }),
-                _ => None,
-            };
-            let extra = row.try_get::<_, Option<serde_json::Value>>("extra")?;
-            let url = extra
-                .as_ref()
-                .and_then(|extra| {
-                    extra
-                        .get("url")
-                        .map(|url| url.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            let sponsor = extra
-                .as_ref()
-                .and_then(|extra| {
-                    extra
-                        .get("sponsor")
-                        .map(|sponsor| sponsor.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            let video = extra
-                .and_then(|val| {
-                    val.get("video")
-                        .map(|video| video.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            let supplemental = match (sponsor, video) {
-                (Some(sponsor), Some(video)) => Some(ObjectiveSupplementalData { sponsor, video }),
-                _ => None,
-            };
-            let details = ObjectiveDetails {
-                reward,
-                url,
-                supplemental,
-                choices: row
-                    .try_get::<_, Option<Vec<_>>>("choices")?
-                    .unwrap_or_default(),
-                // TODO fix this, need to fill with the real data
-                ballot: vec![
-                    GroupBallotType {
-                        group: "rep".to_string(),
-                        ballot: "private".to_string(),
-                    },
-                    GroupBallotType {
-                        group: "direct".to_string(),
-                        ballot: "private".to_string(),
-                    },
-                ],
-            };
-            objectives.push(Objective { summary, details });
-        }
-
-        Ok(objectives)
-    }
+    let event = state
+        .event_db
+        .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
+        .await?;
+    Ok(event)
 }
 
 /// Need to setup and run a test event db instance
@@ -130,19 +51,32 @@ impl ObjectiveQueries for EventDB {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{establish_connection, types::event::objective::GroupBallotType};
+    use crate::service::app;
+    use axum::{
+        body::{Body, HttpBody},
+        http::{Request, StatusCode},
+    };
+    use event_db::types::event::objective::{
+        GroupBallotType, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
+        ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
+    };
+    use tower::ServiceExt;
 
     #[tokio::test]
-    async fn get_objectives_test() {
-        let event_db = establish_connection(None).await.unwrap();
+    async fn objectives_test() {
+        let state = Arc::new(State::new(None).await.unwrap());
+        let app = app(state);
 
-        let objectives = event_db
-            .get_objectives(EventId(1), None, None)
-            .await
+        let request = Request::builder()
+            .uri(format!("/api/v1/event/{0}/objectives", 1))
+            .body(Body::empty())
             .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            objectives,
-            vec![
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&vec![
                 Objective {
                     summary: ObjectiveSummary {
                         id: ObjectiveId(1),
@@ -203,16 +137,20 @@ mod tests {
                         supplemental: None,
                     }
                 }
-            ]
+            ])
+            .unwrap()
         );
 
-        let objectives = event_db
-            .get_objectives(EventId(1), Some(1), None)
-            .await
+        let request = Request::builder()
+            .uri(format!("/api/v1/event/{0}/objectives?limit={1}", 1, 1))
+            .body(Body::empty())
             .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            objectives,
-            vec![Objective {
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&vec![Objective {
                 summary: ObjectiveSummary {
                     id: ObjectiveId(1),
                     objective_type: ObjectiveType {
@@ -244,16 +182,20 @@ mod tests {
                         video: "objective 1 video".to_string()
                     }),
                 }
-            },]
+            },])
+            .unwrap()
         );
 
-        let objectives = event_db
-            .get_objectives(EventId(1), None, Some(1))
-            .await
+        let request = Request::builder()
+            .uri(format!("/api/v1/event/{0}/objectives?offset={1}", 1, 1))
+            .body(Body::empty())
             .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            objectives,
-            vec![Objective {
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&vec![Objective {
                 summary: ObjectiveSummary {
                     id: ObjectiveId(2),
                     objective_type: ObjectiveType {
@@ -279,13 +221,22 @@ mod tests {
                     url: None,
                     supplemental: None,
                 }
-            }]
+            }])
+            .unwrap()
         );
 
-        let objectives = event_db
-            .get_objectives(EventId(1), Some(1), Some(2))
-            .await
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/event/{0}/objectives?limit={1}&offset={2}",
+                1, 1, 2
+            ))
+            .body(Body::empty())
             .unwrap();
-        assert_eq!(objectives, vec![]);
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&Vec::<Objective>::new()).unwrap()
+        );
     }
 }

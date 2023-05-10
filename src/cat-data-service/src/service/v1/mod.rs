@@ -9,9 +9,7 @@ mod search;
 
 #[derive(Deserialize)]
 struct LimitOffset {
-    #[serde(rename = "lim")]
     limit: Option<i64>,
-    #[serde(rename = "ofs")]
     offset: Option<i64>,
 }
 

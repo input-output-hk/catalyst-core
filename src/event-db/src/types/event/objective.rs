@@ -15,6 +15,7 @@ pub struct ObjectiveSummary {
     #[serde(rename = "type")]
     pub objective_type: ObjectiveType,
     pub title: String,
+    pub description: String,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -37,7 +38,6 @@ pub struct ObjectiveSupplementalData {
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveDetails {
-    pub description: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reward: Option<RewardDefintion>,
     pub choices: Vec<String>,
@@ -89,6 +89,7 @@ mod tests {
                 description: "catalyst native type".to_string(),
             },
             title: "objective 1".to_string(),
+            description: "description 1".to_string(),
         };
 
         let json = serde_json::to_value(&objective_summary).unwrap();
@@ -102,6 +103,7 @@ mod tests {
                         "description": "catalyst native type",
                     },
                     "title": "objective 1",
+                    "description": "description 1",
                 }
             )
         );
@@ -165,7 +167,6 @@ mod tests {
     #[test]
     fn objective_details_json_test() {
         let objective_details = ObjectiveDetails {
-            description: "objective 1".to_string(),
             reward: Some(RewardDefintion {
                 currency: "ADA".to_string(),
                 value: 100,
@@ -187,7 +188,6 @@ mod tests {
             json,
             json!(
                 {
-                    "description": "objective 1",
                     "reward": {
                         "currency": "ADA",
                         "value": 100,

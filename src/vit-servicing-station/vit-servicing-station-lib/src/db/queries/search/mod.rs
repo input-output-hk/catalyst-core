@@ -116,7 +116,7 @@ type SelectProposalsST = (
     diesel::sql_types::Text,
     diesel::sql_types::Text,
     diesel::sql_types::Binary,
-    diesel::sql_types::Text,
+    diesel::sql_types::Array<diesel::sql_types::Text>,
     diesel::sql_types::Integer,
     diesel::sql_types::Nullable<diesel::sql_types::Text>,
     diesel::sql_types::Integer,

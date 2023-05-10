@@ -444,7 +444,11 @@ dependencies = [
  "pin-project-lite",
  "rustversion",
  "serde",
+ "serde_json",
+ "serde_path_to_error",
+ "serde_urlencoded",
  "sync_wrapper",
+ "tokio",
  "tower",
  "tower-layer",
  "tower-service",
@@ -845,6 +849,24 @@ name = "cast"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37b2a672a2cb129a2e41c10b1224bb368f9f37a2b16b612598138befd7b37eb5"
+
+[[package]]
+name = "cat-data-service"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "chrono",
+ "clap 4.2.1",
+ "event-db",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "tower",
+ "tracing",
+ "tracing-subscriber",
+]
 
 [[package]]
 name = "catalyst-toolbox"
@@ -2218,7 +2240,12 @@ dependencies = [
  "async-trait",
  "bb8",
  "bb8-postgres",
+ "chrono",
  "dotenvy",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "thiserror",
  "tokio",
  "tokio-postgres",
 ]
@@ -5121,6 +5148,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f028f05971fe20f512bcc679e2c10227e57809a3af86a7606304435bc8896cd6"
 dependencies = [
  "bytes",
+ "chrono",
  "fallible-iterator",
  "postgres-protocol",
  "serde",
@@ -6036,6 +6064,7 @@ dependencies = [
  "rkyv",
  "serde",
  "serde_json",
+ "tokio-postgres",
 ]
 
 [[package]]
@@ -6309,6 +6338,15 @@ checksum = "d721eca97ac802aa7777b701877c8004d950fc142651367300d21c1cc0194744"
 dependencies = [
  "itoa",
  "ryu",
+ "serde",
+]
+
+[[package]]
+name = "serde_path_to_error"
+version = "0.1.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26b04f22b563c91331a10074bda3dd5492e3cc39d56bd557e91c0af42b6c7341"
+dependencies = [
  "serde",
 ]
 

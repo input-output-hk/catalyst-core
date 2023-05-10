@@ -13,7 +13,7 @@ INSERT INTO voteplan_category (name, public_key)
 VALUES
     ('public', false), -- Fully public votes only
     ('private', true), -- Fully private votes only.
-    ('semi-private', true); -- Private until tally, then decrypted.
+    ('cast-private', true); -- Private until tally, then decrypted.
 
 COMMENT ON TABLE voteplan_category IS 'The category of vote plan currently supported.';
 COMMENT ON COLUMN voteplan_category.name IS 'The UNIQUE name of this voteplan category.';
@@ -28,7 +28,7 @@ CREATE TABLE voting_group (
     event_id INTEGER NOT NULL,
     token_id VARCHAR,
 
-    FOREIGN KEY(event_id) REFERENCES event(row_id)
+    FOREIGN KEY(event_id) REFERENCES event(row_id) ON DELETE CASCADE
 );
 
 CREATE UNIQUE INDEX token_event_id ON voting_group (token_id, event_id);
@@ -51,9 +51,9 @@ CREATE TABLE voteplan
     encryption_key VARCHAR,
     group_id INTEGER,
 
-    FOREIGN KEY(event_id) REFERENCES event(row_id),
-    FOREIGN KEY(category) REFERENCES voteplan_category(name),
-    FOREIGN KEY(group_id) REFERENCES voting_group(row_id)
+    FOREIGN KEY(event_id) REFERENCES event(row_id)  ON DELETE CASCADE,
+    FOREIGN KEY(category) REFERENCES voteplan_category(name)  ON DELETE CASCADE,
+    FOREIGN KEY(group_id) REFERENCES voting_group(row_id)  ON DELETE CASCADE
 );
 
 COMMENT ON TABLE voteplan IS 'All Vote plans.';

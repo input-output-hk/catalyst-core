@@ -72,9 +72,8 @@ pub struct SearchResult {
 
 #[cfg(test)]
 mod tests {
-    use crate::types::event::objective::{ObjectiveId, ObjectiveType};
-
     use super::*;
+    use crate::types::event::objective::{ObjectiveId, ObjectiveType};
     use serde_json::json;
 
     #[test]
@@ -155,6 +154,7 @@ mod tests {
                     description: "catalyst native type".to_string(),
                 },
                 title: "objective 1".to_string(),
+                description: "description 1".to_string(),
             }])),
         };
 
@@ -171,7 +171,8 @@ mod tests {
                                 "description": "catalyst native type"
 
                             },
-                            "title": "objective 1"
+                            "title": "objective 1",
+                            "description": "description 1"
                         }
                     ]
 

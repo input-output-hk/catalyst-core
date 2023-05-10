@@ -607,6 +607,7 @@ mod tests {
                             description: "A Simple choice".to_string()
                         },
                         title: "title 1".to_string(),
+                        description: "description 1".to_string(),
                     },
                     ObjectiveSummary {
                         id: ObjectiveId(2),
@@ -615,6 +616,7 @@ mod tests {
                             description: "??".to_string()
                         },
                         title: "title 2".to_string(),
+                        description: "description 2".to_string(),
                     },
                 ]))
             })
@@ -685,6 +687,7 @@ mod tests {
                             description: "??".to_string()
                         },
                         title: "title 2".to_string(),
+                        description: "description 2".to_string(),
                     },
                     ObjectiveSummary {
                         id: ObjectiveId(1),
@@ -693,6 +696,7 @@ mod tests {
                             description: "A Simple choice".to_string()
                         },
                         title: "title 1".to_string(),
+                        description: "description 1".to_string(),
                     },
                 ]))
             })
@@ -732,6 +736,7 @@ mod tests {
                         description: "??".to_string()
                     },
                     title: "title 2".to_string(),
+                    description: "description 2".to_string(),
                 },]))
             })
             .unwrap()
@@ -770,6 +775,7 @@ mod tests {
                         description: "A Simple choice".to_string()
                     },
                     title: "title 1".to_string(),
+                    description: "description 1".to_string(),
                 },]))
             })
             .unwrap()

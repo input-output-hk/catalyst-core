@@ -781,10 +781,17 @@ components:
         title:
           type: string
           description: The title for this Objective.
+        description:
+          type: string
+          description: |-
+            Long form explanation of this particular objective.\
+            *May contain HTML Markup.*\
+            *May contain Links to external content or assets.*
       required:
         - id
         - type
         - title
+        - description
     ObjectiveProposalType:
       title: Objective Proposal Type
       description: The type of proposal that can be made on this Objective.
@@ -802,12 +809,6 @@ components:
       description: Individual Objective Details
       type: object
       properties:
-        description:
-          type: string
-          description: |-
-            Long form explanation of this particular objective.\
-            *May contain HTML Markup.*\
-            *May contain Links to external content or assets.*
         type:
           $ref: '#/components/schemas/ObjectiveProposalType'
         reward:
@@ -829,7 +830,6 @@ components:
         supplemental:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
       required:
-        - description
         - choices
         - ballot
     VotePlan:

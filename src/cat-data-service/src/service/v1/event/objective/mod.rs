@@ -85,9 +85,9 @@ mod tests {
                             description: "A Simple choice".to_string()
                         },
                         title: "title 1".to_string(),
+                        description: "description 1".to_string(),
                     },
                     details: ObjectiveDetails {
-                        description: "description 1".to_string(),
                         reward: Some(RewardDefintion {
                             currency: "ADA".to_string(),
                             value: 100
@@ -118,9 +118,9 @@ mod tests {
                             description: "??".to_string()
                         },
                         title: "title 2".to_string(),
+                        description: "description 2".to_string(),
                     },
                     details: ObjectiveDetails {
-                        description: "description 2".to_string(),
                         reward: None,
                         choices: vec![],
                         ballot: vec![
@@ -158,9 +158,9 @@ mod tests {
                         description: "A Simple choice".to_string()
                     },
                     title: "title 1".to_string(),
+                    description: "description 1".to_string(),
                 },
                 details: ObjectiveDetails {
-                    description: "description 1".to_string(),
                     reward: Some(RewardDefintion {
                         currency: "ADA".to_string(),
                         value: 100
@@ -203,9 +203,9 @@ mod tests {
                         description: "??".to_string()
                     },
                     title: "title 2".to_string(),
+                    description: "description 2".to_string(),
                 },
                 details: ObjectiveDetails {
-                    description: "description 2".to_string(),
                     reward: None,
                     choices: vec![],
                     ballot: vec![

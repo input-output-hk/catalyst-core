@@ -350,6 +350,7 @@
                     description: row.try_get(<span class="string">&quot;objective_category_description&quot;</span>)<span class="question-mark">?</span>,
                 },
                 title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
+                description: row.try_get(<span class="string">&quot;description&quot;</span>)<span class="question-mark">?</span>,
             };
             <span class="kw">let </span>currency: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;rewards_currency&quot;</span>)<span class="question-mark">?</span>;
             <span class="kw">let </span>value: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;rewards_total&quot;</span>)<span class="question-mark">?</span>;
@@ -388,7 +389,6 @@
                 reward,
                 url,
                 supplemental,
-                description: row.try_get(<span class="string">&quot;description&quot;</span>)<span class="question-mark">?</span>,
                 choices: row
                     .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;(<span class="string">&quot;choices&quot;</span>)<span class="question-mark">?
                     </span>.unwrap_or_default(),
@@ -442,9 +442,9 @@
                             description: <span class="string">&quot;A Simple choice&quot;</span>.to_string()
                         },
                         title: <span class="string">&quot;title 1&quot;</span>.to_string(),
+                        description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                     },
                     details: ObjectiveDetails {
-                        description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                         reward: <span class="prelude-val">Some</span>(RewardDefintion {
                             currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
                             value: <span class="number">100
@@ -475,9 +475,9 @@
                             description: <span class="string">&quot;??&quot;</span>.to_string()
                         },
                         title: <span class="string">&quot;title 2&quot;</span>.to_string(),
+                        description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                     },
                     details: ObjectiveDetails {
-                        description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                         reward: <span class="prelude-val">None</span>,
                         choices: <span class="macro">vec!</span>[],
                         ballot: <span class="macro">vec!</span>[
@@ -511,9 +511,9 @@
                         description: <span class="string">&quot;A Simple choice&quot;</span>.to_string()
                     },
                     title: <span class="string">&quot;title 1&quot;</span>.to_string(),
+                    description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                 },
                 details: ObjectiveDetails {
-                    description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                     reward: <span class="prelude-val">Some</span>(RewardDefintion {
                         currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
                         value: <span class="number">100
@@ -552,9 +552,9 @@
                         description: <span class="string">&quot;??&quot;</span>.to_string()
                     },
                     title: <span class="string">&quot;title 2&quot;</span>.to_string(),
+                    description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                 },
                 details: ObjectiveDetails {
-                    description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                     reward: <span class="prelude-val">None</span>,
                     choices: <span class="macro">vec!</span>[],
                     ballot: <span class="macro">vec!</span>[

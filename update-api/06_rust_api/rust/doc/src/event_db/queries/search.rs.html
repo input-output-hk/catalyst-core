@@ -940,6 +940,13 @@
 <a href="#940" id="940">940</a>
 <a href="#941" id="941">941</a>
 <a href="#942" id="942">942</a>
+<a href="#943" id="943">943</a>
+<a href="#944" id="944">944</a>
+<a href="#945" id="945">945</a>
+<a href="#946" id="946">946</a>
+<a href="#947" id="947">947</a>
+<a href="#948" id="948">948</a>
+<a href="#949" id="949">949</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     types::{
         event::{
@@ -974,7 +981,7 @@
         LEFT JOIN snapshot ON event.row_id = snapshot.event&quot;</span>;
 
     <span class="kw">const </span>SEARCH_OBJECTIVES_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT objective.id, objective.title, objective_category.name, objective_category.description as objective_category_description
+        <span class="string">&quot;SELECT objective.id, objective.title, objective.description, objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name&quot;</span>;
 
@@ -1147,6 +1154,7 @@
                                 description: row.try_get(<span class="string">&quot;objective_category_description&quot;</span>)<span class="question-mark">?</span>,
                             },
                             title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
+                            description: row.try_get(<span class="string">&quot;description&quot;</span>)<span class="question-mark">?</span>,
                         };
                         objectives.push(objective);
                     }
@@ -1618,6 +1626,7 @@
                         description: <span class="string">&quot;A Simple choice&quot;</span>.to_string()
                     },
                     title: <span class="string">&quot;title 1&quot;</span>.to_string(),
+                    description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(<span class="number">2</span>),
@@ -1626,6 +1635,7 @@
                         description: <span class="string">&quot;??&quot;</span>.to_string()
                     },
                     title: <span class="string">&quot;title 2&quot;</span>.to_string(),
+                    description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                 },
             ]))
         );
@@ -1663,6 +1673,7 @@
                         description: <span class="string">&quot;??&quot;</span>.to_string()
                     },
                     title: <span class="string">&quot;title 2&quot;</span>.to_string(),
+                    description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(<span class="number">1</span>),
@@ -1671,6 +1682,7 @@
                         description: <span class="string">&quot;A Simple choice&quot;</span>.to_string()
                     },
                     title: <span class="string">&quot;title 1&quot;</span>.to_string(),
+                    description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                 },
             ]))
         );
@@ -1689,6 +1701,7 @@
                     description: <span class="string">&quot;??&quot;</span>.to_string()
                 },
                 title: <span class="string">&quot;title 2&quot;</span>.to_string(),
+                description: <span class="string">&quot;description 2&quot;</span>.to_string(),
             },]))
         );
 
@@ -1706,6 +1719,7 @@
                     description: <span class="string">&quot;A Simple choice&quot;</span>.to_string()
                 },
                 title: <span class="string">&quot;title 1&quot;</span>.to_string(),
+                description: <span class="string">&quot;description 1&quot;</span>.to_string(),
             },]))
         );
 

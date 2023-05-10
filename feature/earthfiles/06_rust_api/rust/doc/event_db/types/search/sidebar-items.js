@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["SearchColumn","SearchTable","ValueResults","__Field"],"struct":["SearchConstraint","SearchOrderBy","SearchQuery","SearchResult","__FieldVisitor","__Visitor"]};

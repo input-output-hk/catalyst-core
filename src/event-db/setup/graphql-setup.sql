@@ -60,13 +60,10 @@
 \echo VARIABLES:
 \echo -> dbName ....................... = :dbName
 \echo -> dbUser ....................... = :dbUser
-\echo -> adminRolePw / $ADMIN_ROLE_PW . = :adminRolePw
-\echo -> anonRolePw / $ANON_ROLE_PW ... = :anonRolePw
 \echo -> adminUserFirstName ........... = :adminUserFirstName
 \echo -> adminUserLastName ............ = :adminUserLastName
 \echo -> adminUserAbout ............... = :adminUserAbout
 \echo -> adminUserEmail ............... = :adminUserEmail
-\echo -> adminUserPw / $ADMIN_USER_PW . = :adminUserPw
 
 
 -- SCHEMA STARTS HERE:

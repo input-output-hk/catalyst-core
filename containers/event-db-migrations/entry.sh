@@ -1,46 +1,147 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-# Set default value for reinitDb flag
-reinitDb=false
+# ---------------------------------------------------------------
+# Entrypoint script for migrations container
+# ---------------------------------------------------------------
+#
+# This script serves as the entrypoint for the migrations container. It sets up
+# the environment, performing optional database initialization if configured,
+# and then runs the migrations.
+#
+# It expects the following environment variables to be set except where noted:
+#
+# DB_HOST - The hostname of the database server
+# DB_PORT - The port of the database server
+# DB_NAME - The name of the database
+# DB_SUPERUSER - The username of the database superuser
+# DB_SUPERUSER_PASSWORD - The password of the database superuser
+# DB_USER - The username of the database user
+# DB_USER_PASSWORD - The password of the database user
+# ADMIN_ROLE_PASSWORD - The password of the cat_admin role for graphql
+# ADMIN_USER_PASSWORD - The password of the admin user for graphql
+# ANON_ROLE_PASSWORD - The password of the cat_anon role for graphql
+# ADMIN_FIRST_NAME - The first name of the admin user for graphql (optional)
+# ADMIN_LAST_NAME - The last name of the admin user for graphql (optional)
+# ADMIN_ABOUT - The about of the admin user for graphql (optional)
+# ADMIN_EMAIL - The email of the admin user for graphql (optional)
+# REINIT_EVENT_DB - If set, the database will be reinitialized (optional) (DESTRUCTIVE)
+# SKIP_EVENT_DB_INIT - If set, the event database will not be initialized (optional)
+# SKIP_GRAPHQL_INIT - If set, graphql will not be initialized (optional)
+# DEBUG - If set, the script will print debug information (optional)
+# DEBUG_SLEEP - If set, the script will sleep for the specified number of seconds (optional)
+# ---------------------------------------------------------------
 
-# Check if reinitDb flag is set in environment variable
-if [ -n "$REINIT_DB" ]; then
-  if [ "$REINIT_DB" = true ] || [ "$REINIT_DB" = false ]; then
-    reinitDb=$REINIT_DB
-  else
-    echo "Invalid value for REINIT_DB environment variable. Must be true or false."
-    exit 1
-  fi
-fi
+set +x
+set -o errexit
+set -o pipefail
+set -o nounset
+set -o functrace
+set -o errtrace
+set -o monitor
+set -o posix
+shopt -s dotglob
 
-# Check if the database has been initialized
-if [ ! -f ./tmp/initialized.txt ] || [ "$reinitDb" = true ]; then
-  echo "Initializing database..."
-  psql -e -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f ./setup/setup-db.sql \
-    -v dbName=CatalystEventDev \
-    -v dbDescription="Local Dev Catalayst Event DB" \
-    -v dbUser="catalyst-event-dev"
-  echo "Initializing database for graphql..."
-  psql -e -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f ./setup/graphql-setup.sql \
-    -v dbName=CatalystEventDev \
-    -v dbUser="catalyst-event-dev" \
-    -v adminUserFirstName="Admin" \
-    -v adminUserLastName="Default" \
-    -v adminUserAbout="Default Admin User" \
-    -v adminUserEmail="admin.default@projectcatalyst.io"
+check_env_vars() {
+    local env_vars=("$@")
 
-  touch ./tmp/initialized.txt
+    # Iterate over the array and check if each variable is set
+    for var in "${env_vars[@]}"; do
+        if [ -z "${!var}" ]; then
+            echo ">>> Error: $var is required and not set."
+            exit 1
+        fi
+    done
+}
+
+debug_sleep() {
+    if [ -n "${DEBUG_SLEEP:-}" ]; then
+        echo "DEBUG_SLEEP is set. Sleeping for ${DEBUG_SLEEP} seconds..."
+        sleep "${DEBUG_SLEEP}"
+    fi
+}
+
+echo ">>> Starting entrypoint script..."
+
+# Check if all required environment variables are set
+REQUIRED_ENV=(
+    "DB_HOST"
+    "DB_PORT"
+    "DB_NAME"
+    "DB_SUPERUSER"
+    "DB_SUPERUSER_PASSWORD"
+    "DB_USER"
+    "DB_USER_PASSWORD"
+    "ADMIN_ROLE_PASSWORD"
+    "ADMIN_USER_PASSWORD"
+    "ANON_ROLE_PASSWORD"
+)
+check_env_vars "${REQUIRED_ENV[@]}"
+
+# Export environment variables
+export PGHOST="${DB_HOST}"
+export PGPORT="${DB_PORT}"
+export PGUSER="${DB_SUPERUSER}"
+export PGPASSWORD="${DB_SUPERUSER_PASSWORD}"
+export PGDATABASE="${DB_NAME}"
+
+: "${ADMIN_FIRST_NAME:='Admin'}"
+: "${ADMIN_LAST_NAME:='Default'}"
+: "${ADMIN_ABOUT:='Default Admin User'}"
+: "${ADMIN_EMAIL:='admin.default@projectcatalyst.io'}"
+
+# Sleep if DEBUG_SLEEP is set
+debug_sleep
+
+# Initialize database if necessary
+if [[ ! -f ./tmp/initialized || -n "${REINIT_EVENT_DB:-}" ]]; then
+
+    PSQL_FLAGS=""
+    if [ -n "${DEBUG:-}" ]; then
+        PSQL_FLAGS="-e"
+    fi
+
+    if [[ -z "${SKIP_EVENT_DB_INIT:-}" ]]; then
+        echo ">>> Initializing event database..."
+        psql "${PSQL_FLAGS}" -f ./setup/setup-db.sql \
+            -v "dbName=${DB_NAME}" \
+            -v dbDescription="Catalayst Event DB" \
+            -v dbUser="${DB_USER}" \
+            -v dbUserPw="${DB_USER_PASSWORD}"
+    fi
+
+    if [[ -z "${SKIP_GRAPHQL_INIT:-}" ]]; then
+        echo ">>> Initializing graphql..."
+        psql "${PSQL_FLAGS}" -f ./setup/graphql-setup.sql \
+            -v dbName="${DB_NAME}" \
+            -v dbUser="${DB_USER}" \
+            -v adminUserFirstName="${ADMIN_FIRST_NAME}" \
+            -v adminUserLastName="${ADMIN_LAST_NAME}" \
+            -v adminUserAbout="${ADMIN_ABOUT}" \
+            -v adminUserEmail="${ADMIN_EMAIL}" \
+            -v adminRolePw="${ADMIN_ROLE_PASSWORD}" \
+            -v adminUserPw="${ADMIN_USER_PASSWORD}" \
+            -v anonRolePw="${ANON_ROLE_PASSWORD}"
+    fi
+
+    if [[ ! -f ./tmp/initialized ]]; then
+        touch ./tmp/initialized
+    fi
 else
-  echo "Database already initialized. Skipping initialization."
+    echo ">>> Event database already initialized. Skipping initialization."
 fi
 
 # Run migrations
+echo ">>> Running migrations..."
+export DATABASE_URL="postgres://${DB_USER}:${DB_USER_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 ./refinery migrate -e DATABASE_URL -c ./refinery.toml -p ./migrations
 
 # Add historic data from previous funds
-directory="./historic_data"
+export PGUSER="${DB_USER}"
+export PGPASSWORD="${DB_USER_PASSWORD}"
 
-for file in $(ls "$directory"/*.sql | sort); do
-  echo "Adding historic data from $file"
-  psql -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f "$file"
-done
+while IFS= read -r -d '' file; do
+    echo "Adding historic data from $file"
+    psql -f "$file"
+done < <(find ./historic_data -name '*.sql' -print0 | sort -z)
+
+echo ">>> Finished entrypoint script"

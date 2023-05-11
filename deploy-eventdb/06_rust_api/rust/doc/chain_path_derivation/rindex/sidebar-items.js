@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["INDEX_ACCOUNT","INDEX_ADDRESS"],"fn":["new"],"macro":["mk_from_str_dp_rindex"],"struct":["Account","Address","Rindex","Root"]};

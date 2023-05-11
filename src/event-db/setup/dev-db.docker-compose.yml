@@ -43,11 +43,6 @@ services:
       - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@db/CatalystEventDev
       - JWT_SECRET=CHANGE_ME
       - GRAPHQL_PORT=5000
-      - PGHOST=db
-      - PGPORT=5432
-      - PGUSER=catalyst-event-dev
-      - PGPASSWORD=CHANGE_ME
-      - PGDATABASE=CatalystEventDev
     ports:
       - 5000:5000
     depends_on:

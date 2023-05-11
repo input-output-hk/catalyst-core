@@ -42,11 +42,6 @@ services:
       - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
       - JWT_SECRET=CHANGE_ME
       - GRAPHQL_PORT=5000
-      - PGHOST=postgres
-      - PGPORT=5432
-      - PGUSER=catalyst-event-dev
-      - PGPASSWORD=CHANGE_ME
-      - PGDATABASE=CatalystEventDev
     ports:
       - 5000:5000
     depends_on:
@@ -60,6 +55,9 @@ services:
     depends_on:
       migrations:
         condition: service_completed_successfully
+    ports:
+      - 3030:3030
+    command: ["run", "--database-url $${DATABASE_URL}"]
 
   leader0:
     image: voting-node:latest

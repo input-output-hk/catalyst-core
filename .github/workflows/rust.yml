@@ -76,6 +76,9 @@ jobs:
         run:
           cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
 
+      - name: Install cargo-make
+        run: cargo install --force cargo-make
+
       - name: Save external dependencies
         uses: actions/cache/save@v3
         with:
@@ -85,6 +88,8 @@ jobs:
                   target/debug/jcli
                   target/debug/jormungandr
                   target/debug/explorer
+                  /home/runner/.cargo/bin/cargo-make
+                  /home/runner/.cargo/bin/makers
           key: deps-${{ github.run_id }}-${{ github.run_attempt }}
 
 
@@ -199,14 +204,13 @@ jobs:
                   target/debug/jcli
                   target/debug/jormungandr
                   target/debug/explorer
+                  /home/runner/.cargo/bin/makers
+                  /home/runner/.cargo/bin/cargo-make
           key: deps-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Install nextest
         uses: taiki-e/install-action@nextest
 
-      - name: Install cargo-make
-        run: cargo install --force cargo-make
-      
       - name: Install refinery
         run: cargo install refinery_cli
 

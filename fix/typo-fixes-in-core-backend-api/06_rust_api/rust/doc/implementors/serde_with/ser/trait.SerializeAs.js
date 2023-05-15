@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jormungandr_lib":[["impl <a class=\"trait\" href=\"https://docs.rs/serde_with/2.3.1/serde_with/ser/trait.SerializeAs.html\" title=\"trait serde_with::ser::SerializeAs\">SerializeAs</a>&lt;<a class=\"enum\" href=\"chain_impl_mockchain/fragment/enum.Fragment.html\" title=\"enum chain_impl_mockchain::fragment::Fragment\">Fragment</a>&gt; for <a class=\"struct\" href=\"jormungandr_lib/interfaces/fragment/struct.FragmentDef.html\" title=\"struct jormungandr_lib::interfaces::fragment::FragmentDef\">FragmentDef</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

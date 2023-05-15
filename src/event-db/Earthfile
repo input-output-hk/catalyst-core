@@ -11,7 +11,20 @@ build:
     COPY --dir setup . # Copy the setup directory to the working directory
     COPY --dir migrations . # Copy the migrations directory to the working directory
     COPY --dir historic_data . # Copy the historic_data directory to the working directory
+    COPY --dir test_data . # Copy the test_data directory to the working directory
     SAVE ARTIFACT refinery.toml # Save the refinery.toml file as an artifact
     SAVE ARTIFACT setup # Save the setup directory as an artifact
     SAVE ARTIFACT migrations # Save the migrations directory as an artifact
     SAVE ARTIFACT historic_data # Save the historic_data directory as an artifact
+    SAVE ARTIFACT test_data # Save the test_data directory as an artifact
+
+test:
+    FROM ../../+builder
+    # BUILD ../../containers/event-db-migrations+docker-test
+
+    WITH DOCKER \
+        --compose docker-compose.yml
+        RUN docker run migrations-test:latest
+    END
+
+    RUN EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev" cargo test -p event-db

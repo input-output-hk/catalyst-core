@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CURVE_HRP"],"mod":["committee","cryptography","encrypted_vote","macros","math","tally"],"struct":["Ballot","BallotVerificationError","Ciphertext","TallyOptimizationTable","UnitVectorInitializationError"],"type":["EncryptedVote","ProofOfCorrectVote","Vote"]};

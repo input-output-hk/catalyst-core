@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ADA_TO_LOVELACE_FACTOR"],"enum":["Error"],"fn":["account_hex_to_address","calc_voter_rewards","calculate_reward","filter_active_addresses","rewards_to_mainnet_addresses"],"type":["Rewards"]};

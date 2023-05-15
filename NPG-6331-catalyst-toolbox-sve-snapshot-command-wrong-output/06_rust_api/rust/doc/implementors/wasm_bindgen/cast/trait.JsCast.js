@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"wallet_wasm_js":[["impl <a class=\"trait\" href=\"https://docs.rs/wasm-bindgen/0.2/wasm_bindgen/cast/trait.JsCast.html\" title=\"trait wasm_bindgen::cast::JsCast\">JsCast</a> for <a class=\"struct\" href=\"wallet_wasm_js/fragment/struct.FragmentIds.html\" title=\"struct wallet_wasm_js::fragment::FragmentIds\">FragmentIds</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

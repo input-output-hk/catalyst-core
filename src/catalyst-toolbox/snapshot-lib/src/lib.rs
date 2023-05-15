@@ -18,6 +18,7 @@ use voting_group::VotingGroupAssigner;
 
 mod influence_cap;
 pub mod registration;
+pub mod sve;
 mod voter_hir;
 pub mod voting_group;
 
@@ -436,7 +437,7 @@ pub mod tests {
     #[test]
     fn test_drep_info_parsing() {
         let dreps: Dreps = serde_json::from_str(r#"{
-            "reps": ["0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663"] 
+            "reps": ["0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663", "0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663"]
         }"#).unwrap();
 
         assert_eq!(dreps.reps.len(), 2);

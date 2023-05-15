@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Db"],"trait":["DbQuery"],"type":["Conn"]};

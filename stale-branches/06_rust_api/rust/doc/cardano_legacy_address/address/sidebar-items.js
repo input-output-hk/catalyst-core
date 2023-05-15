@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["ATTRIBUTE_NAME_TAG_DERIVATION","ATTRIBUTE_NAME_TAG_NETWORK_MAGIC","EXTENDED_ADDR_LEN","SPENDING_DATA_TAG_PUBKEY"],"enum":["AddressMatchXPub","ParseExtendedAddrError"],"fn":["hash_spending_data","sha3_then_blake2b224"],"struct":["Addr","Attributes","ExtendedAddr","PubKeyTag","SpendingData"],"type":["HdAddressPayload"]};

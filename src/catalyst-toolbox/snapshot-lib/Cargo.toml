@@ -12,7 +12,7 @@ license = "MIT OR Apache-2.0"
 jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
 serde = { version = "1", features = ["derive"] }
 proptest = { workspace = true, branch = "master", optional = true }
-chain-addr = { path = "../../chain-libs/chain-addr", optional = true }
+chain-addr = { path = "../../chain-libs/chain-addr" }
 test-strategy = { version = "0.2", optional = true }
 serde_test = { version = "1", optional = true }
 hex = { version = "0.4" }
@@ -33,5 +33,5 @@ proptest = { workspace = true, branch = "master" }
 chain-addr = { path = "../../chain-libs/chain-addr" }
 
 [features]
-proptest = ["dep:proptest", "dep:chain-addr", "dep:test-strategy", "dep:serde_test"]
+proptest = ["dep:proptest", "dep:test-strategy", "dep:serde_test"]
 test-api = []

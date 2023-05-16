@@ -19,8 +19,8 @@ script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
 
 export DB_USER_PW="CHANGE_ME"
-ls setup
-psql -e postgres -f setup/setup-db.sql \
+
+psql -a -U postgres -f setup/setup-db.sql \
     -v dbName=CatalystEventDev \
     -v dbDescription="Local Dev Catalayst Event DB" \
     -v dbUser="catalyst-event-dev" ${@}
@@ -67,7 +67,7 @@ psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_1.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_2.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_3.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_4.sql ${@}
-# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_5.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_5.sql ${@}
 # psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_6.sql ${@}
 # psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_7.sql ${@}
 # psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_8.sql ${@}
@@ -85,7 +85,7 @@ export ADMIN_ROLE_PW="CHANGE_ME"
 export ANON_ROLE_PW="CHANGE_ME"
 export ADMIN_USER_PW="CHANGE_ME"
 
-psql -e postgres -f setup/graphql-setup.sql \
+psql -U postgres -f setup/graphql-setup.sql \
     -v dbName=CatalystEventDev \
     -v dbUser="catalyst-event-dev" \
     -v adminUserFirstName="Admin" \

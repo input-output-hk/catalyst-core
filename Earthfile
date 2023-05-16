@@ -2,9 +2,6 @@
 VERSION 0.7
 FROM debian:stable-slim
 
-install-deps:
-    RUN 
-
 # Installs Cargo chef
 install-chef:
     FROM rust:latest

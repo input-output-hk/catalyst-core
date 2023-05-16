@@ -40,7 +40,21 @@ fi
 # Add historic data from previous funds
 directory="./historic_data"
 
+if [ -d "$directory" ];
+then
 for file in $(ls "$directory"/*.sql | sort); do
   echo "Adding historic data from $file"
   psql -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f "$file"
 done
+fi
+
+# Add test data
+directory="./test_data"
+
+if [ -d "$directory" ];
+then
+for file in $(ls "$directory"/*.sql | sort); do
+  echo "Adding test data from $file"
+  psql -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f "$file"
+done
+fi

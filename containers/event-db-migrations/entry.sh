@@ -53,8 +53,8 @@ directory="./test_data"
 
 if [ -d "$directory" ];
 then
-for file in $(ls "$directory"/*.sql | sort); do
+for file in $(cd "$directory" && ls *.sql | sort -n); do
   echo "Adding test data from $file"
-  psql -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f "$file"
+  psql -U $PGUSER -d $PGDATABASE -h $PGHOST -p $PGPORT -f "$directory/$file"
 done
 fi

@@ -42,17 +42,17 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/event_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/snapshot_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/voter_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/contribution_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/goal_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/voting_group_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/objective_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/proposal_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/proposal_review_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/review_rating_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/objective_review_metric_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/1_event_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/2_snapshot_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/3_voter_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/4_contribution_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/5_goal_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/6_voting_group_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/7_objective_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/8_proposal_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/9_proposal_review_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/10_review_rating_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/11_objective_review_metric_table.sql ${@}
 '''
 
 # Install historic data for past events

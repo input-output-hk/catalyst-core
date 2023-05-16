@@ -29,7 +29,5 @@ test:
         --load migrations-test:latest=../../containers/event-db-migrations+docker-test \
         --service migrations-test \
         --allow-privileged
-        RUN docker run migrations-test:latest
+        RUN EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev" cargo test -p event-db
     END
-
-    RUN EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev" cargo test -p event-db

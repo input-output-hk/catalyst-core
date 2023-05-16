@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["open_config_file"],"struct":["UpdateProposal"]};

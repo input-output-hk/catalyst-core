@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["TallyProof","VoteTallyPayload"],"opaque":[""],"struct":["DecryptedPrivateTally","DecryptedPrivateTallyError","DecryptedPrivateTallyProposal","VoteTally"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS","INPUT_PTR_SIZE","VARIANTS"],"enum":["TransactionInputType","__Field"],"struct":["TransactionInput","__FieldVisitor","__Visitor"]};

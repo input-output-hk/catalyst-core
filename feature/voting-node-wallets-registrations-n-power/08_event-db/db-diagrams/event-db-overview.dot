@@ -1038,11 +1038,6 @@ digraph erd {
             </tr>
             
             <tr>
-                <td port="seckey"  align='text'><font>seckey</font><br align='left'/></td>
-                <td port="seckey_out"  ><font>text</font></td>
-            </tr>
-            
-            <tr>
                 <td port="committee_id"  align='text'><font>committee_id</font><br align='left'/></td>
                 <td port="committee_id_out"  ><font>text</font></td>
             </tr>

@@ -5,14 +5,6 @@ info:
   title: Catalyst 1.0
   description: |-
     Revised API expressing all capabilities of the Catalyst 1.0 Backend.
-
-    TODO:
-    * Implement Permissionless Auth.
-    * Implement Replacement Functionality for GVC.
-    * Implement drep registration on main-chain, distinct from voter registration.
-    * Implement Voting API abstracting the Jormungandr API from public exposure.
-    * Implement Audit API's (Retrieve voting blockchain records,  registration/voting power audit and private tally audit.
-    * Implement API's needed to support posting Ideas/Proposals etc.
   version: 1.0.0
   contact:
     name: Steven Johnson
@@ -49,7 +41,7 @@ servers:
   - url: 'https://qa.xxxxxxxxxxxxxx.io'
     description: QA Testing Environment
   - url: 'https://preprod.xxxxxxxxxxxxxx.io'
-    description: Preprod Stable Contiunous Testing Environment
+    description: Preprod Stable Continuous Testing Environment
   - url: 'https://prod.xxxxxxxxxxxxxx.io'
     description: Production Environment
 paths:
@@ -110,7 +102,7 @@ paths:
         An Objective here is defined as:\
         *"A vote in which all the people in a group decide on an important issue."*\
         Examples of objectives are:
-        * Catalsyt Funding Challenges
+        * Catalyst Funding Challenges
         * General Voting Events
         * Any other Decision to be determined by the Communities Collective will.
         * Non binding community collective opinion measurement.
@@ -136,7 +128,7 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/{obj_id}/proposals':
+  '/api/v1/event/{id}/objective/{obj_id}/proposals':
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -161,7 +153,7 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/{obj_id}/review_types':
+  '/api/v1/event/{id}/objective/{obj_id}/review_types':
     parameters:
       - name: id
         in: path
@@ -183,7 +175,6 @@ paths:
       operationId: getAllReviewTypes
       summary: Get summary all available review types for this objective.
       tags:
-        - proposal
         - review
       description: |
         Lists all available review types used on this events proposal.
@@ -221,7 +212,7 @@ paths:
                 $ref: '#/components/schemas/Proposal'
         '404':
           description: The requested proposal was not found
-  '/api/v1/event/{id}/{obj_id}/{prop_id}/reviews':
+  '/api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/reviews':
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -230,7 +221,6 @@ paths:
       operationId: getProposalReviews
       summary: Get reviews related to a proposal
       tags:
-        - proposal
         - review
       description: |
         Retrieves advisor reviews information for the provided proposal id.
@@ -285,7 +275,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
-        - $ref: '#/components/parameters/totals'
+        - $ref: '#/components/parameters/total'
     parameters: []
   '/api/v1/registration/voter/{vkey}':
     parameters:
@@ -335,7 +325,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/DelegatorInfo'
         '400':
-          description: An error occured
+          description: An error occurred
         '404':
           description: Stake Address for the event was not found in the snapshot.
       parameters:
@@ -565,9 +555,9 @@ components:
       type: object
       description: |-
         The chronological sequence of stages of the voting event.\
-        Stages run chronolgically and only 1 stage can run at a time.\
+        Stages run chronologically and only 1 stage can run at a time.\
         Each new stage terminates the previous stage.\
-        Any ommitted entries are assumed to not exist as a stage in this event.
+        Any omitted entries are assumed to not exist as a stage in this event.
       properties:
         insight_sharing:
           $ref: '#/components/schemas/DateTime'
@@ -616,7 +606,7 @@ components:
       x-stoplight:
         id: lnivx8gtyvbcn
       type: object
-      description: Detaild information for an individual voting event.
+      description: Detailed information for an individual voting event.
       properties:
         voting_power:
           $ref: '#/components/schemas/VotingPowerSettings'
@@ -783,10 +773,17 @@ components:
         title:
           type: string
           description: The title for this Objective.
+        description:
+          type: string
+          description: |-
+            Long form explanation of this particular objective.\
+            *May contain HTML Markup.*\
+            *May contain Links to external content or assets.*
       required:
         - id
         - type
         - title
+        - description
     ObjectiveProposalType:
       title: Objective Proposal Type
       description: The type of proposal that can be made on this Objective.
@@ -804,19 +801,13 @@ components:
       description: Individual Objective Details
       type: object
       properties:
-        description:
-          type: string
-          description: |-
-            Long form explanation of this particular objective.\
-            *May contain HTML Markup.*\
-            *May contain Links to external content or assets.*
         type:
           $ref: '#/components/schemas/ObjectiveProposalType'
         reward:
           $ref: '#/components/schemas/RewardDefintion'
           description: |-
             The Total Reward being offered for this Objective.
-            Distribuition of the Reward is determined under the rules of this Objective.
+            Distribution of the Reward is determined under the rules of this Objective.
             If this field is not present there is no reward being offered for the Objective.
         choices:
           $ref: '#/components/schemas/ObjectiveChoices'
@@ -831,7 +822,6 @@ components:
         supplemental:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
       required:
-        - description
         - choices
         - ballot
     VotePlan:
@@ -933,13 +923,13 @@ components:
           description: 'For `simple` challenges, the free-form description of the proposed solution.'
         brief:
           type: string
-          description: 'For `community-choice` challenges, the free-form brief explanation of the propsal.'
+          description: 'For `community-choice` challenges, the free-form brief explanation of the proposal.'
         importance:
           type: string
-          description: 'For `community-choice` challenges, the free-form explanation of the propsals importance, in the view of the proposers.'
+          description: 'For `community-choice` challenges, the free-form explanation of the proposals importance, in the view of the proposers.'
         metrics:
           type: string
-          description: 'For `community-choise` challenges, the free-form explanation of the metrics of success.  As proposed by the proposers.'
+          description: 'For `community-choice` challenges, the free-form explanation of the metrics of success.  As proposed by the proposers.'
     ProposalDetails:
       title: Proposal Details
       type: object
@@ -1030,7 +1020,7 @@ components:
           description: |-
             The inclusive Minimum value for the reviews rating.
             By definition, lower value ratings are considered lower ratings.
-            Therefore this field represents the lowest posssible rating.
+            Therefore this field represents the lowest possible rating.
           example: 0
           default: 0
         max:
@@ -1038,7 +1028,7 @@ components:
           description: |-
             The inclusive Maximum value for the reviews rating.
             By definition, higher value ratings are considered higher ratings.
-            Therefore this field represents the highest posssible rating.
+            Therefore this field represents the highest possible rating.
           example: 3
         note:
           type: boolean
@@ -1113,7 +1103,7 @@ components:
       enum:
         - title
         - type
-        - desc
+        - description
         - author
         - funds
       x-stoplight:
@@ -1419,7 +1409,7 @@ components:
         format: int32
       description: The ID Number of the Proposal within a Objective of a Voting Event
     limit:
-      name: lim
+      name: limit
       in: query
       required: false
       schema:
@@ -1431,7 +1421,7 @@ components:
       description: Limit the results to this value
       style: form
     offset:
-      name: ofs
+      name: offset
       in: query
       required: false
       schema:
@@ -1458,8 +1448,8 @@ components:
       description: Filter Results to only these voter groups.
       explode: true
       style: form
-    totals:
-      name: tot
+    total:
+      name: total
       in: query
       required: false
       schema:

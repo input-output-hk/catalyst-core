@@ -47,12 +47,6 @@ digraph erd {
             </tr>
             
             <tr>
-                <td port="seckey"  align='text'><font>seckey</font><br align='left'/></td>
-                <td   ><font>text</font></td>
-                <td port="seckey_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The encrypted secret key for the<br align='left'/>committee wallet.</i><br align="left"/></font></td>
-            </tr>
-            
-            <tr>
                 <td port="committee_id"  align='text'><font>committee_id</font><br align='left'/></td>
                 <td   ><font>text</font></td>
                 <td port="committee_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The hex-encoded public key for the<br align='left'/>committee wallet.</i><br align="left"/></font></td>

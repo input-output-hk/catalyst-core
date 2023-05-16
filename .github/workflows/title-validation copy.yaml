@@ -1,0 +1,25 @@
+name: "Enforce Jira Issue Key in Pull Request Title"
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+permissions:
+  contents: read
+
+jobs:
+  main:
+    name: Enforce Jira Issue Key in Pull Request Title
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      statuses: write
+    steps:
+      - uses: ryanvade/enforce-pr-title-style-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectKey: NPG

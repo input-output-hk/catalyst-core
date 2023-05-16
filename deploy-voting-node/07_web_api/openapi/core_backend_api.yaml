@@ -495,7 +495,7 @@ components:
       properties:
         idx:
           type: integer
-          description: The Relative order of this Goal. 0 being highest.
+          description: The Realtive order of this Goal. 0 being highest.
           example: 2
           format: int32
         name:
@@ -597,7 +597,7 @@ components:
       x-stoplight:
         id: x36yug5b7c3r8
       type: integer
-      description: The Numeric ID of an Objective to be decided in a Voting Event
+      description: The Numeric ID of an Objecgtive to be decided in a Voting Event
       example: 11
       format: int32
       minimum: 0
@@ -664,7 +664,7 @@ components:
       description: Currency of the Reward.
       x-stoplight:
         id: 9ng0ptdxjm60i
-    RewardDefinition:
+    RewardDefintion:
       type: object
       x-stoplight:
         id: uncc6j7uf38ge
@@ -804,7 +804,7 @@ components:
         type:
           $ref: '#/components/schemas/ObjectiveProposalType'
         reward:
-          $ref: '#/components/schemas/RewardDefinition'
+          $ref: '#/components/schemas/RewardDefintion'
           description: |-
             The Total Reward being offered for this Objective.
             Distribution of the Reward is determined under the rules of this Objective.
@@ -1262,7 +1262,7 @@ components:
         voting_power_saturation:
           description: |-
             Voting power's share of the total voting power.
-            Can be used to gauge potential voting power saturation.
+            Can be used to guage potential voting power saturation.
             This value is NOT saturated however, and gives the raw share of total registered voting power.
           type: number
           format: float

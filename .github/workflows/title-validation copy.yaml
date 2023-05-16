@@ -19,7 +19,5 @@ jobs:
       statuses: write
     steps:
       - uses: ryanvade/enforce-pr-title-style-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           projectKey: NPG

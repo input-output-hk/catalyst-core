@@ -1,0 +1,110 @@
+{
+	"info": {
+		"_postman_id": "a54a9a24-ef93-48b5-a447-09a5d61d5075",
+		"name": "Mock Farm",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11181958"
+	},
+	"item": [
+		{
+			"name": "List all active environments",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://127.0.0.1:7070/api/v0/active",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "7070",
+					"path": [
+						"api",
+						"v0",
+						"active"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Start new environment with name 'marek' and port = 10010",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://127.0.0.1:7070/api/v0/start/darek",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "7070",
+					"path": [
+						"api",
+						"v0",
+						"start",
+						"darek"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Shutdown existing environment with name 'marek'",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://127.0.0.1:7070/api/v0/start/marek/10010",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "7070",
+					"path": [
+						"api",
+						"v0",
+						"start",
+						"marek",
+						"10010"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Shutdown existing environment with name 'marek'",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://127.0.0.1:7070/api/v0/shutdown/marek",
+					"protocol": "https",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "7070",
+					"path": [
+						"api",
+						"v0",
+						"shutdown",
+						"marek"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

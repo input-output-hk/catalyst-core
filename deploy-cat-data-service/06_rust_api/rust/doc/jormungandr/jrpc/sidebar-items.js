@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["start_jrpc_server"],"opaque":[""],"struct":["Config"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["batch_insert_voteplans","insert_voteplan","query_voteplan_by_id"],"opaque":[""]};

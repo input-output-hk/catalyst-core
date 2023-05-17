@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["copy_initial_storage_if_used","start_node"],"mod":["duration","iteration"],"struct":["ScenarioProgressBar"]};

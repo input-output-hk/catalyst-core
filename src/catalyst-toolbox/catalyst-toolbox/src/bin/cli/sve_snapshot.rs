@@ -4,8 +4,19 @@ use chain_addr::Discrimination;
 use clap::Parser;
 use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, OutputFormat};
-use jormungandr_lib::interfaces::Value;
+use jormungandr_lib::interfaces::{InitialUTxO, Value};
+use serde::Serialize;
 use snapshot_lib::{registration::VotingRegistration, RawSnapshot};
+
+#[derive(Serialize)]
+struct OutputInitial {
+    fund: Vec<InitialUTxO>,
+}
+
+#[derive(Serialize)]
+struct Output {
+    initial: OutputInitial,
+}
 
 #[derive(Parser)]
 pub struct SveSnapshotCmd {
@@ -60,12 +71,16 @@ impl SveSnapshotCmd {
 
         eprintln!("{} registrations rejected", total_registrations_rejected);
 
-        let initials = snapshot.to_block0_initials(self.discrimination, self.lovelace);
+        let output = Output {
+            initial: OutputInitial {
+                fund: snapshot.to_block0_initials(self.discrimination, self.lovelace),
+            },
+        };
 
         let mut out_writer = self.output.open()?;
         let content = self
             .output_format
-            .format_json(serde_json::to_value(initials)?)?;
+            .format_json(serde_json::to_value(output)?)?;
         out_writer.write_all(content.as_bytes())?;
 
         Ok(())

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["TreasuryGovernanceAction","TreasuryGovernanceActionType"],"struct":["TreasuryGovernance"]};

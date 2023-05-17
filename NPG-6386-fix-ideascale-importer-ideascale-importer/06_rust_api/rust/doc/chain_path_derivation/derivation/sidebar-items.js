@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SOFT_DERIVATION_UPPER_BOUND"],"enum":["DerivationError","ParseDerivationError"],"struct":["Derivation","DerivationRange","HardDerivation","HardDerivationRange","SoftDerivation","SoftDerivationRange"]};

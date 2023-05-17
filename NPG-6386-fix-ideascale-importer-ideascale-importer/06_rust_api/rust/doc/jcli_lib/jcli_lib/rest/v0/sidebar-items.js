@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["V0"],"mod":["account","block","diagnostic","leaders","message","network","node","rewards","settings","shutdown","stake","stake_pool","stake_pools","tip","utxo","vote"]};

@@ -22,6 +22,7 @@ docker:
     ENTRYPOINT ["/app/entry.sh"]
     SAVE IMAGE --push ${registry}cat-data-service:$tag
 
+# TODO: it is not completely done
 test:
     FROM ../../+builder
     BUILD ./containers/event-db-migrations+docker --tag="latest" --registry=""

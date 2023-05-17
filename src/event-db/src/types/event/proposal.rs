@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ProposalId(pub i32);
@@ -25,12 +26,7 @@ pub struct ProposalBallotDetails {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ProposalSupplementalDetails {
-    pub solution: String,
-    pub brief: String,
-    pub importance: String,
-    pub metrics: String,
-}
+pub struct ProposalSupplementalDetails(pub Value);
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ProposalDetails {
@@ -116,12 +112,14 @@ mod tests {
 
     #[test]
     fn proposal_supplemental_details_json_test() {
-        let proposal_supplemental_details = ProposalSupplementalDetails {
-            solution: "solution".to_string(),
-            brief: "brief".to_string(),
-            importance: "importance".to_string(),
-            metrics: "metrics".to_string(),
-        };
+        let proposal_supplemental_details = ProposalSupplementalDetails(json!(
+                {
+                    "solution": "solution",
+                    "brief": "brief",
+                    "importance": "importance",
+                    "metrics": "metrics",
+                }
+        ));
 
         let json = serde_json::to_value(&proposal_supplemental_details).unwrap();
         assert_eq!(

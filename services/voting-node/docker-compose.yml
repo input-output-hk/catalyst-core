@@ -66,6 +66,7 @@ services:
       postgres:
         condition: service_started
     environment:
+      # Required env vars
       - IS_NODE_RELOADABLE=True
       - VOTING_HOST=0.0.0.0
       - VOTING_PORT=8000
@@ -84,9 +85,18 @@ services:
       - IDEASCALE_STAGE_ID=4385
       - IDEASCALE_LOG_LEVEL=debug
       - IDEASCALE_API_URL=https://cardano.ideascale.com
+      ### SNAPSHOT TOOL DATA IMPORTER
+      - SNAPSHOT_CONFIG_PATH=/app/snapshot-importer-example-config.json
+      - SNAPSHOT_OUTPUT_DIR=/tmp/snapshot-output
+      - SNAPSHOT_NETWORK_ID=testnet
+      #optional
+      #- SNAPSHOT_RAW_FILE=
+      #- SNAPSHOT_DREPS_FILE=
     volumes:
       - leader0_store:/node_storage
+      - leader0_store:/tmp/snapshot-output
       - ./ideascale-importer-config.json:/app/ideascale-importer-config.json
+      - ./snapshot-importer-example-config.json:/app/snapshot-importer-example-config.json
 
   leader1:
     image: voting-node:latest

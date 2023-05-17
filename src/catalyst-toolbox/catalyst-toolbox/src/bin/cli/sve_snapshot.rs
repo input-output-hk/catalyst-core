@@ -14,8 +14,8 @@ struct OutputInitial {
 }
 
 #[derive(Serialize)]
-struct Output {
-    initial: OutputInitial,
+struct Output<'a> {
+    initial: &'a [OutputInitial],
 }
 
 #[derive(Parser)]
@@ -72,9 +72,9 @@ impl SveSnapshotCmd {
         eprintln!("{} registrations rejected", total_registrations_rejected);
 
         let output = Output {
-            initial: OutputInitial {
+            initial: &[OutputInitial {
                 fund: snapshot.to_block0_initials(self.discrimination, self.lovelace),
-            },
+            }],
         };
 
         let mut out_writer = self.output.open()?;

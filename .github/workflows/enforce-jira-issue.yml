@@ -6,6 +6,7 @@ on:
       - opened
       - edited
       - synchronize
+      - reopened
 
 permissions:
   contents: read
@@ -18,6 +19,7 @@ jobs:
       pull-requests: read
       statuses: write
     steps:
-      - uses: ryanvade/enforce-pr-title-style-action@v1
+      - uses: deepakputhraya/action-pr-title@master
         with:
-          projectKey: NPG
+          regex: '^(?:feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(?:\(.+\))?:\s.+(\s\|\s)(NPG-\d+)$'
+          github_token: ${{ github.token }}

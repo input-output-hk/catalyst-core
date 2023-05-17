@@ -1,12 +1,12 @@
-# See https://github.com/amannn/action-semantic-pull-request
-name: 'PR Title is Conventional'
+name: "PR Title is Conventional and has a Jira Issue ID"
 
 on:
-  pull_request_target:
+  pull_request:
     types:
       - opened
       - edited
       - synchronize
+      - reopened
 
 permissions:
   contents: read
@@ -19,22 +19,7 @@ jobs:
       pull-requests: read
       statuses: write
     steps:
-      - uses: amannn/action-semantic-pull-request@505e44b4f33b4c801f063838b3f053990ee46ea7 # v4.6.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: deepakputhraya/action-pr-title@master
         with:
-          types: |
-            build
-            chore
-            ci
-            docs
-            feat
-            fix
-            perf
-            refactor
-            revert
-            style
-            test
-          subjectPattern: ^[A-Z].+$
-          subjectPatternError: |
-            The subject of the PR must begin with an uppercase letter.
+          regex: '^(?:feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(?:\(.+\))?:\s.+(\s\|\s)(NPG-\d+)$'
+          github_token: ${{ github.token }}

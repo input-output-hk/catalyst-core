@@ -138,7 +138,7 @@ class VoteOptionsNotFound(Exception):
     ...
 
 
-async def get_vote_options_id(conn: asyncpg.Connection, objective: str) -> int:
+async def get_vote_options_id(conn: asyncpg.Connection, objective: List[str]) -> int:
     """Get the id of the vote option matching the given objective."""
     row = await conn.fetchrow("SELECT id FROM vote_options WHERE objective = $1", objective)
     if row is None:

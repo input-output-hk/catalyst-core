@@ -18,11 +18,16 @@ build:
     SAVE ARTIFACT historic_data # Save the historic_data directory as an artifact
     SAVE ARTIFACT test_data # Save the test_data directory as an artifact
 
+docker-compose:
+    FROM scratch 
+    COPY docker-compose.yml .
+    SAVE ARTIFACT docker-compose.yml
+
 # Need to be run with the -P flag
 test:
     FROM ../../+builder
 
-    COPY docker-compose.yml .
+    COPY +docker-compose/docker-compose.yml .
     WITH DOCKER \
         --compose docker-compose.yml \
         --pull postgres:14 \

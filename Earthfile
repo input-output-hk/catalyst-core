@@ -117,6 +117,7 @@ all:
     BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag --registry=$registry_final
     BUILD ./src/voting-tools-rs+docker --tag=$tag --registry=$registry_final
     BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/vit-testing/integration-tests+docker --tag=$tag --registry=$registry_final
 
     BUILD ./services/voting-node+docker --tag=$tag --registry=$registry_final
     BUILD ./utilities/ideascale-importer+docker --tag=$tag --registry=$registry_final

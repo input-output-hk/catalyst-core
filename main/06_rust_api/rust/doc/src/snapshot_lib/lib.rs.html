@@ -454,6 +454,7 @@
 <a href="#454" id="454">454</a>
 <a href="#455" id="455">455</a>
 <a href="#456" id="456">456</a>
+<a href="#457" id="457">457</a>
 </pre><pre class="rust"><code><span class="kw">pub use </span>fraction::Fraction;
 <span class="kw">use </span>jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 <span class="kw">use </span>registration::{
@@ -474,6 +475,7 @@
 
 <span class="kw">mod </span>influence_cap;
 <span class="kw">pub mod </span>registration;
+<span class="kw">pub mod </span>sve;
 <span class="kw">mod </span>voter_hir;
 <span class="kw">pub mod </span>voting_group;
 
@@ -892,7 +894,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_drep_info_parsing() {
         <span class="kw">let </span>dreps: Dreps = serde_json::from_str(<span class="string">r#&quot;{
-            &quot;reps&quot;: [&quot;0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;] 
+            &quot;reps&quot;: [&quot;0x00588e8e1d18cba576a4d35758069fe94e53f638b6faf7c07b8abd2bc5c5cdee&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;, &quot;0xa6a3c0447aeb9cc54cf6422ba32b294e5e1c3ef6d782f2acff4a70694c4d1663&quot;]
         }&quot;#</span>).unwrap();
 
         <span class="macro">assert_eq!</span>(dreps.reps.len(), <span class="number">2</span>);

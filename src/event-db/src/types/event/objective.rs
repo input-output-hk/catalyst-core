@@ -153,7 +153,7 @@ mod tests {
                 ballot: "public".to_string(),
             }],
             supplemental: Some(ObjectiveSupplementalData(json!(
-                {   
+                {
                     "url": "objective url 1",
                     "sponsor": "sponsor 1",
                     "video": "video url 1",

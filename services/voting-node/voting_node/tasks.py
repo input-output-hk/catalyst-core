@@ -3,6 +3,7 @@
 Scheduled tasks are defined for Leader and Follower Nodes, with Leader0 being a special case,
 as it is the only one responsible for initializing block0 for a voting event.
 """
+import brotli
 import json
 import os
 import secrets
@@ -500,8 +501,12 @@ class Leader0Schedule(LeaderSchedule):
         try:
             # fetch the stable snapshot data
             snapshot = await self.db.fetch_snapshot(event.row_id)
-            json.loads(snapshot.dbsync_snapshot_data)
-            logger.debug(f"snapshot:\n{snapshot}")
+            compressed_data: bytes | None = snapshot.dbsync_snapshot_data
+            if compressed_data is None:
+                raise Exception("dbsync snapsthot data is missing")
+            data = brotli.decompress(compressed_data)
+            dbsync_data = json.loads(data)
+            logger.debug(f"snapshot:\n{dbsync_data}")
         except Exception as e:
             logger.error(f"expected snapshot:\n{e}")
 
@@ -518,7 +523,8 @@ class Leader0Schedule(LeaderSchedule):
             logger.debug(f"proposals:\n{proposals}")
             self.proposals = proposals
         except Exception as e:
-            raise Exception(f"failed to fetch proposals from DB: {e}") from e
+            logger.warning("no proposals were found")
+            #raise Exception(f"failed to fetch proposals from DB: {e}") from e
 
     async def setup_tally_committee(self):
         """Fetch or create tally committee data.

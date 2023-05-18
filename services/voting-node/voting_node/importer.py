@@ -25,6 +25,7 @@ Specific to Snapshot
 * SNAPSHOT_OUTPUT_DIR
 * SNAPSHOT_RAW_FILE
 * SNAPSHOT_DREPS_FILE
+* SNAPSHOT_NETWORK_ID
 
 """
 import asyncio
@@ -48,6 +49,7 @@ SNAPSHOT_RAW_FILE: Final = "SNAPSHOT_RAW_FILE"
 """Optional raw snapshot data. When set, the snapshot-tool is not used."""
 SNAPSHOT_DREPS_FILE: Final = "SNAPSHOT_DREPS_FILE"
 """Optional DReps data."""
+SNAPSHOT_NETWORK_ID: Final = "SNAPSHOT_NETWORK_ID"
 
 
 class ExternalDataImporter:
@@ -102,10 +104,6 @@ class ExternalDataImporter:
             os.environ[EVENTDB_URL],
             "--event-id",
             f"{event_id}",
-            "--raw-snapshot-file",
-            os.environ[SNAPSHOT_RAW_FILE],
-            #"--dreps-file",
-            #os.environ[SNAPSHOT_DREPS_FILE],
             "--output-dir",
             os.environ[SNAPSHOT_OUTPUT_DIR],
             "--log-level",

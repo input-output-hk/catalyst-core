@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["gen_group_tests","std_ops_gen"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["clean_str"],"static":["REGEX"],"struct":["CleanString","V"]};

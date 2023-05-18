@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["search","search_exec"],"opaque":[""],"static":["CALLSITE","META"],"struct":["SearchParam","__FieldVisitor","__Visitor"]};

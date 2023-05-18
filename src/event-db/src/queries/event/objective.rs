@@ -71,7 +71,7 @@ impl ObjectiveQueries for EventDB {
                 reward,
                 supplemental: row
                     .try_get::<_, Option<serde_json::Value>>("extra")?
-                    .map(|val| ObjectiveSupplementalData(val)),
+                    .map(ObjectiveSupplementalData),
                 choices: row
                     .try_get::<_, Option<Vec<_>>>("choices")?
                     .unwrap_or_default(),

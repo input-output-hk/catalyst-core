@@ -81,7 +81,7 @@ impl ProposalQueries for EventDB {
             proposer,
             supplemental: row
                 .try_get::<_, Option<serde_json::Value>>("extra")?
-                .map(|val| ProposalSupplementalDetails(val)),
+                .map(ProposalSupplementalDetails),
             funds: row.try_get("funds")?,
             url: row.try_get("url")?,
             files: row.try_get("files_url")?,

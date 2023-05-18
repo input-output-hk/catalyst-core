@@ -4,7 +4,7 @@ FROM debian:stable-slim
 
 # Installs Cargo chef
 install-chef:
-    FROM rust:latest
+    FROM rust:1.65-slim-bullseye
     RUN cargo install --debug cargo-chef
 
 # Prepares the local cache
@@ -36,7 +36,7 @@ build-cache:
 
 # This is the default builder that all other builders should inherit from
 builder:
-    FROM rust:latest
+    FROM rust:1.65-slim-bullseye
     COPY --dir src Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target

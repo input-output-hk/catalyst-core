@@ -2,7 +2,7 @@ VERSION 0.7
 
 build:
     FROM ../../../+builder
-    RUN cargo build --locked --release --bin integration-tests
+    RUN cargo build --locked --release
 
     # Store the artifact
     SAVE ARTIFACT target/release/vit-testing integration-tests
@@ -15,7 +15,7 @@ docker:
     ARG tag="latest"
     ARG registry
 
-    COPY +build/integration-tests .
+    COPY +build/vit-testing/integration-tests .
 
     ENV BIN_PATH=/app/integration-tests
     SAVE IMAGE --push ${registry}integration-tests:$tag

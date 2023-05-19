@@ -30,7 +30,7 @@ CREATE TABLE proposal
     FOREIGN KEY(bb_vote_options) REFERENCES vote_options(objective) ON DELETE CASCADE
 );
 
-CREATE UNIQUE INDEX proposal_index ON proposal(row_id, objective);
+CREATE UNIQUE INDEX proposal_index ON proposal(id, objective);
 
 
 COMMENT ON TABLE proposal IS 'All Proposals for the current fund.';

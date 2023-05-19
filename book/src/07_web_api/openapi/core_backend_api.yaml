@@ -750,6 +750,10 @@ components:
         All Information here is optional.
         If there is no supplemental information for the Objective this field is omitted.
       properties:
+        url:
+          type: string
+          description: External URL that better describes the Objective.
+          format: uri
         sponsor:
           type: string
           description: Who is sponsoring this Objective.

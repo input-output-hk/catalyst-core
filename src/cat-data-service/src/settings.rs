@@ -11,7 +11,7 @@ pub struct Settings {
     pub address: SocketAddr,
 
     /// Url to the postgres event db
-    #[clap(long)]
+    #[clap(long, env)]
     pub database_url: String,
 
     /// Logging level

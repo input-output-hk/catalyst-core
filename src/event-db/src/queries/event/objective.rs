@@ -67,37 +67,11 @@ impl ObjectiveQueries for EventDB {
                 (Some(currency), Some(value)) => Some(RewardDefintion { currency, value }),
                 _ => None,
             };
-            let extra = row.try_get::<_, Option<serde_json::Value>>("extra")?;
-            let url = extra
-                .as_ref()
-                .and_then(|extra| {
-                    extra
-                        .get("url")
-                        .map(|url| url.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            let sponsor = extra
-                .as_ref()
-                .and_then(|extra| {
-                    extra
-                        .get("sponsor")
-                        .map(|sponsor| sponsor.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            let video = extra
-                .and_then(|val| {
-                    val.get("video")
-                        .map(|video| video.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            let supplemental = match (sponsor, video) {
-                (Some(sponsor), Some(video)) => Some(ObjectiveSupplementalData { sponsor, video }),
-                _ => None,
-            };
             let details = ObjectiveDetails {
                 reward,
-                url,
-                supplemental,
+                supplemental: row
+                    .try_get::<_, Option<serde_json::Value>>("extra")?
+                    .map(ObjectiveSupplementalData),
                 choices: row
                     .try_get::<_, Option<Vec<_>>>("choices")?
                     .unwrap_or_default(),
@@ -137,6 +111,8 @@ impl ObjectiveQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
     use crate::{establish_connection, types::event::objective::GroupBallotType};
 
@@ -177,11 +153,13 @@ mod tests {
                                 ballot: "private".to_string(),
                             },
                         ],
-                        url: Some("objective 1 url".to_string()),
-                        supplemental: Some(ObjectiveSupplementalData {
-                            sponsor: "objective 1 sponsor".to_string(),
-                            video: "objective 1 video".to_string()
-                        }),
+                        supplemental: Some(ObjectiveSupplementalData(json!(
+                        {
+                            "url": "objective 1 url",
+                            "sponsor": "objective 1 sponsor",
+                            "video": "objective 1 video"
+                        }
+                        ))),
                     }
                 },
                 Objective {
@@ -207,7 +185,6 @@ mod tests {
                                 ballot: "private".to_string(),
                             },
                         ],
-                        url: None,
                         supplemental: None,
                     }
                 }
@@ -246,11 +223,13 @@ mod tests {
                             ballot: "private".to_string(),
                         },
                     ],
-                    url: Some("objective 1 url".to_string()),
-                    supplemental: Some(ObjectiveSupplementalData {
-                        sponsor: "objective 1 sponsor".to_string(),
-                        video: "objective 1 video".to_string()
-                    }),
+                    supplemental: Some(ObjectiveSupplementalData(json!(
+                    {
+                        "url": "objective 1 url",
+                        "sponsor": "objective 1 sponsor",
+                        "video": "objective 1 video"
+                    }
+                    ))),
                 }
             },]
         );
@@ -284,7 +263,6 @@ mod tests {
                             ballot: "private".to_string(),
                         },
                     ],
-                    url: None,
                     supplemental: None,
                 }
             }]

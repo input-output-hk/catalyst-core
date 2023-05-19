@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["Challenge","ChallengeHighlights","__FieldVisitor","__Visitor"]};

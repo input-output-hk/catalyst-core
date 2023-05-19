@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["EXP_MOVING_AVERAGE_COEFF"],"fn":["calc_running_block_size_average","totals"],"struct":["BlockCounters","SimpleCounter"]};

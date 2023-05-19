@@ -311,7 +311,7 @@ def main():
     )
     parser.add_argument(
         "filename",
-        help="Sqlite3 Fund5 file to read.",
+        help="Sqlite3 Fund6 file to read.",
         type=is_file,
     )
 

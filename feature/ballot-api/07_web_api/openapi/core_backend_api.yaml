@@ -68,7 +68,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
-  '/api/v1/event/{id}':
+  /api/v1/event/{id}:
     parameters:
       - $ref: '#/components/parameters/event_id'
     get:
@@ -89,7 +89,7 @@ paths:
           $ref: '#/components/responses/404-Event'
         '500':
           $ref: '#/components/responses/500'
-  '/api/v1/event/{id}/objectives':
+  /api/v1/event/{id}/objectives:
     parameters:
       - $ref: '#/components/parameters/event_id'
     get:
@@ -128,7 +128,7 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/objective/{obj_id}/proposals':
+  /api/v1/event/{id}/objective/{obj_id}/proposals:
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -153,7 +153,7 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/objective/{obj_id}/review_types':
+  /api/v1/event/{id}/objective/{obj_id}/review_types:
     parameters:
       - name: id
         in: path
@@ -191,7 +191,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
-  '/api/v1/event/{id}/{obj_id}/{prop_id}/proposal':
+  /api/v1/event/{id}/{obj_id}/{prop_id}/proposal:
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -212,7 +212,7 @@ paths:
                 $ref: '#/components/schemas/Proposal'
         '404':
           description: The requested proposal was not found
-  '/api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/reviews':
+  /api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/reviews:
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -306,7 +306,7 @@ paths:
           description: Voting Key not found for requested event.
       parameters:
         - $ref: '#/components/parameters/event_id_filter'
-  '/api/v1/registration/delegations/{sp_key}':
+  /api/v1/registration/delegations/{sp_key}:
     parameters:
       - $ref: '#/components/parameters/stake_public_key'
     get:
@@ -365,7 +365,7 @@ paths:
       operationId: get-api-v1-ballot-cast-id
       description: Cast a Ballot on the requested Voting Event.
       x-internal: true
-  '/api/v1/ballot/proof/{vkey}/{id}':
+  /api/v1/ballot/proof/{vkey}/{id}:
     post:
       summary: Get Ballot Proof
       operationId: getBallotProofs
@@ -802,6 +802,10 @@ components:
           type: string
           format: hash
           description: Blockchain ID of the vote plan transaction.
+        encryption_key:
+          type: string
+          format: hash
+          description: The public encryption key used. ONLY if required by the ballot type (private, cast-private).
       required:
         - chain_proposal_index
         - group
@@ -1320,8 +1324,9 @@ components:
           description: Ballot Choices present for all proposals in this Objective.
         voteplans:
           $ref: '#/components/schemas/GroupVotePlans'
-      x-stoplight:
-        id: ae52aa5a4c3f3
+      required:
+        - choices
+        - voteplans
   securitySchemes:
     Bearer:
       type: http

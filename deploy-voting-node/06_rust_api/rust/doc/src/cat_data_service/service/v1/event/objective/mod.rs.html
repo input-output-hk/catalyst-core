@@ -240,6 +240,9 @@
 <a href="#240" id="240">240</a>
 <a href="#241" id="241">241</a>
 <a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -302,6 +305,7 @@
         GroupBallotType, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
         ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
     };
+    <span class="kw">use </span>serde_json::json;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -345,11 +349,13 @@
                                 ballot: <span class="string">&quot;private&quot;</span>.to_string(),
                             },
                         ],
-                        url: <span class="prelude-val">Some</span>(<span class="string">&quot;objective 1 url&quot;</span>.to_string()),
-                        supplemental: <span class="prelude-val">Some</span>(ObjectiveSupplementalData {
-                            sponsor: <span class="string">&quot;objective 1 sponsor&quot;</span>.to_string(),
-                            video: <span class="string">&quot;objective 1 video&quot;</span>.to_string()
-                        }),
+                        supplemental: <span class="prelude-val">Some</span>(ObjectiveSupplementalData(<span class="macro">json!</span>(
+                            {
+                                <span class="string">&quot;url&quot;</span>:<span class="string">&quot;objective 1 url&quot;</span>,
+                                <span class="string">&quot;sponsor&quot;</span>: <span class="string">&quot;objective 1 sponsor&quot;</span>,
+                                <span class="string">&quot;video&quot;</span>: <span class="string">&quot;objective 1 video&quot;
+                            </span>}
+                        ))),
                     }
                 },
                 Objective {
@@ -375,7 +381,6 @@
                                 ballot: <span class="string">&quot;private&quot;</span>.to_string(),
                             },
                         ],
-                        url: <span class="prelude-val">None</span>,
                         supplemental: <span class="prelude-val">None</span>,
                     }
                 }
@@ -418,11 +423,13 @@
                             ballot: <span class="string">&quot;private&quot;</span>.to_string(),
                         },
                     ],
-                    url: <span class="prelude-val">Some</span>(<span class="string">&quot;objective 1 url&quot;</span>.to_string()),
-                    supplemental: <span class="prelude-val">Some</span>(ObjectiveSupplementalData {
-                        sponsor: <span class="string">&quot;objective 1 sponsor&quot;</span>.to_string(),
-                        video: <span class="string">&quot;objective 1 video&quot;</span>.to_string()
-                    }),
+                    supplemental: <span class="prelude-val">Some</span>(ObjectiveSupplementalData(<span class="macro">json!</span>(
+                        {
+                            <span class="string">&quot;url&quot;</span>:<span class="string">&quot;objective 1 url&quot;</span>,
+                            <span class="string">&quot;sponsor&quot;</span>: <span class="string">&quot;objective 1 sponsor&quot;</span>,
+                            <span class="string">&quot;video&quot;</span>: <span class="string">&quot;objective 1 video&quot;
+                        </span>}
+                    ))),
                 }
             },])
             .unwrap()
@@ -460,7 +467,6 @@
                             ballot: <span class="string">&quot;private&quot;</span>.to_string(),
                         },
                     ],
-                    url: <span class="prelude-val">None</span>,
                     supplemental: <span class="prelude-val">None</span>,
                 }
             }])

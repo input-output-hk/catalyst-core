@@ -191,7 +191,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
-  /api/v1/event/{id}/{obj_id}/{prop_id}/proposal:
+  /api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}:
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -277,7 +277,7 @@ paths:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/total'
     parameters: []
-  '/api/v1/registration/voter/{vkey}':
+  /api/v1/registration/voter/{vkey}:
     parameters:
       - name: vkey
         in: path
@@ -330,6 +330,106 @@ paths:
           description: Stake Address for the event was not found in the snapshot.
       parameters:
         - $ref: '#/components/parameters/event_id_filter'
+  /api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/ballot:
+    parameters:
+      - $ref: '#/components/parameters/event_id'
+      - $ref: '#/components/parameters/obj_id'
+      - $ref: '#/components/parameters/prop_id'
+    get:
+      operationId: getBallotInfoPerProposal
+      summary: Get ballot information needed to cast a vote associated with a proposal
+      tags:
+        - ballot
+      description: |
+        Retrieves all necessary information to cast a vote.
+        If not present, they are not yet defined.
+        If not defined, then it is not possible to cast a ballot on this proposal yet.
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalystV1Ballot'
+        '404':
+          description: Ballot information is not defined.
+  /api/v1/event/{id}/objective/{obj_id}/ballots:
+    parameters:
+      - $ref: '#/components/parameters/event_id'
+      - $ref: '#/components/parameters/obj_id'
+    get:
+      operationId: getAllBallotInfoPerObjective
+      summary: Get all ballot information needed to cast a vote associated with an objective
+      tags:
+        - ballot
+      description: |
+        Retrieves all necessary information to cast a vote.
+        If not present, they are not yet defined.
+        If not defined, then it is not possible to cast a ballot on this proposal yet.
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    proposal_id:
+                      type: integer
+                      format: int32
+                      description: The ID of this proposal.
+                    ballot:
+                      type:
+                        $ref: '#/components/schemas/CatalystV1Ballot'
+                  required:
+                   - proposal_id
+                   - ballot
+  /api/v1/event/{id}/ballots:
+    parameters:
+      - $ref: '#/components/parameters/event_id'
+    get:
+      operationId: getAllBallotInfoPerEvent
+      summary: Get all ballot information needed to cast a vote associated with an event
+      tags:
+        - ballot
+      description: |
+        Retrieves all necessary information to cast a vote.
+        If not present, they are not yet defined.
+        If not defined, then it is not possible to cast a ballot on this proposal yet.
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    objective_id:
+                      type: integer
+                      format: int32
+                      description: The ID of this objective.
+                    ballots:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          proposal_id:
+                            type: integer
+                            format: int32
+                            description: The ID of this proposal.
+                          ballot:
+                            type:
+                              $ref: '#/components/schemas/CatalystV1Ballot'
+                        required:
+                          - proposal_id
+                          - ballot
+                    required:
+                      - objective_id
+                      - ballots
   /api/v1/ballot/check:
     post:
       summary: Check Ballot Validity
@@ -352,7 +452,7 @@ paths:
         If an event is supplied, it should also check if the Voting Key is registered and eligible to vote on the event.
         If no event is supplied, it should check if the "latest" snapshot contains a registration for this voting key.  If it does not, this is not an Error, but a warning status should be returned.
       x-internal: true
-  '/api/v1/ballot/cast/{id}':
+  /api/v1/ballot/cast/{id}:
     parameters:
       - $ref: '#/components/parameters/event_id'
     get:
@@ -1317,8 +1417,8 @@ components:
         final:
           type: boolean
           description: '`True` = this is the final snapshot which will be used for voting power in the event.</br>`False` =This is an interim snapshot, subject to change.'
-    Ballot:
-      title: Ballot
+    CatalystV1Ballot:
+      title: CatalystV1Ballot
       description: |-
         Details necessary to complete a ballot for the specific proposal and objective.
       type: object

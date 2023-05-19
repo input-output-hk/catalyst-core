@@ -135,9 +135,8 @@
 <a href="#135" id="135">135</a>
 <a href="#136" id="136">136</a>
 <a href="#137" id="137">137</a>
-<a href="#138" id="138">138</a>
-<a href="#139" id="139">139</a>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>serde_json::Value;
 
 <span class="attr">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ProposalId(<span class="kw">pub </span>i32);
@@ -164,12 +163,7 @@
 }
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-</span><span class="kw">pub struct </span>ProposalSupplementalDetails {
-    <span class="kw">pub </span>solution: String,
-    <span class="kw">pub </span>brief: String,
-    <span class="kw">pub </span>importance: String,
-    <span class="kw">pub </span>metrics: String,
-}
+</span><span class="kw">pub struct </span>ProposalSupplementalDetails(<span class="kw">pub </span>Value);
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ProposalDetails {
@@ -255,12 +249,14 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>proposal_supplemental_details_json_test() {
-        <span class="kw">let </span>proposal_supplemental_details = ProposalSupplementalDetails {
-            solution: <span class="string">&quot;solution&quot;</span>.to_string(),
-            brief: <span class="string">&quot;brief&quot;</span>.to_string(),
-            importance: <span class="string">&quot;importance&quot;</span>.to_string(),
-            metrics: <span class="string">&quot;metrics&quot;</span>.to_string(),
-        };
+        <span class="kw">let </span>proposal_supplemental_details = ProposalSupplementalDetails(<span class="macro">json!</span>(
+                {
+                    <span class="string">&quot;solution&quot;</span>: <span class="string">&quot;solution&quot;</span>,
+                    <span class="string">&quot;brief&quot;</span>: <span class="string">&quot;brief&quot;</span>,
+                    <span class="string">&quot;importance&quot;</span>: <span class="string">&quot;importance&quot;</span>,
+                    <span class="string">&quot;metrics&quot;</span>: <span class="string">&quot;metrics&quot;</span>,
+                }
+        ));
 
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>proposal_supplemental_details).unwrap();
         <span class="macro">assert_eq!</span>(

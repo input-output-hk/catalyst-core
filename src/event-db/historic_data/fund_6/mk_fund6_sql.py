@@ -91,7 +91,7 @@ VALUES
 
 (6, 'Catalyst Fund 6', '{fund_goal}',
  '2021-08-12 11:00:00', -- Start Time - Date/Time accurate.
- '2021-10-21 11:00:00', -- End Time   - Date/Time accurate.
+ '2021-10-28 11:00:00', -- End Time   - Date/Time accurate.
  '2021-10-04 11:00:00', -- Registration Snapshot Time - Date/time Accurate.
  '2021-10-05 11:00:00', -- Snapshot Start - Date/time Unknown.
  {voting_power_threshold},            -- Voting Power Threshold -- Accurate

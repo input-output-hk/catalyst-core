@@ -261,6 +261,15 @@
 <a href="#261" id="261">261</a>
 <a href="#262" id="262">262</a>
 <a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -354,7 +363,10 @@
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>event_db::types::event::proposal::{ProposalDetails, ProposerDetails};
+    <span class="kw">use </span>event_db::types::event::proposal::{
+        ProposalDetails, ProposalSupplementalDetails, ProposerDetails,
+    };
+    <span class="kw">use </span>serde_json::json;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -392,7 +404,13 @@
                                 </span>.to_string()
                     }],
                     ballot: <span class="prelude-val">None</span>,
-                    supplemental: <span class="prelude-val">None</span>,
+                    supplemental: <span class="prelude-val">Some</span>(ProposalSupplementalDetails(<span class="macro">json!</span>(
+                        {
+                            <span class="string">&quot;brief&quot;</span>: <span class="string">&quot;Brief explanation of a proposal&quot;</span>,
+                            <span class="string">&quot;goal&quot;</span>: <span class="string">&quot;The goal of the proposal is addressed to meet&quot;</span>,
+                            <span class="string">&quot;importance&quot;</span>: <span class="string">&quot;The importance of the proposal&quot;</span>,
+                        }
+                    ))),
                 }
             })
             .unwrap(),

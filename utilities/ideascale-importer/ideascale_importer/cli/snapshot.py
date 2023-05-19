@@ -11,12 +11,13 @@ app = typer.Typer(add_completion=False)
 
 @app.command(name="import")
 def import_snapshot(
-    config_path: str = typer.Option(..., help="Path to the configuration file"),
+    config_path: str = typer.Option(..., envvar="SNAPSHOT_CONFIG_PATH", help="Path to the configuration file"),
     event_id: int = typer.Option(..., help="Database event id to link all snapshot data to"),
-    database_url: str = typer.Option(..., help="URL of the Postgres database in which to import the data to"),
-    output_dir: str = typer.Option(..., help="Output directory for generated files"),
+    database_url: str = typer.Option(..., envvar="EVENTDB_URL", help="URL of the Postgres database in which to import the data to"),
+    output_dir: str = typer.Option(..., envvar="SNAPSHOT_OUTPUT_DIR", help="Output directory for generated files"),
     network_id: str = typer.Option(
         ...,
+        envvar="SNAPSHOT_NETWORK_ID",
         help="Network id to pass as parameter to snapshot_tool",
     ),
     raw_snapshot_file: str = typer.Option(
@@ -35,10 +36,12 @@ def import_snapshot(
     ),
     log_level: str = typer.Option(
         "info",
+        envvar="SNAPSHOT_LOG_LEVEL",
         help="Log level",
     ),
     log_format: str = typer.Option(
         "text",
+        envvar="SNAPSHOT_LOG_FORMAT",
         help="Log format",
     ),
 ):

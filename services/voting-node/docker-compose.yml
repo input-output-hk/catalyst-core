@@ -84,14 +84,14 @@ services:
       - IDEASCALE_CAMPAIGN_GROUP=66
       - IDEASCALE_STAGE_ID=4385
       - IDEASCALE_LOG_LEVEL=debug
+      - IDEASCALE_LOG_FORMAT=text
       - IDEASCALE_API_URL=https://cardano.ideascale.com
       ### SNAPSHOT TOOL DATA IMPORTER
       - SNAPSHOT_CONFIG_PATH=/app/snapshot-importer-example-config.json
       - SNAPSHOT_OUTPUT_DIR=/tmp/snapshot-output
       - SNAPSHOT_NETWORK_ID=testnet
-      #optional
-      #- SNAPSHOT_RAW_FILE=
-      #- SNAPSHOT_DREPS_FILE=
+      - SNAPSHOT_LOG_LEVEL=debug
+      - SNAPSHOT_LOG_FORMAT=text
     volumes:
       - leader0_store:/node_storage
       - leader0_store:/tmp/snapshot-output

@@ -2,30 +2,30 @@
 
 Import data from external services used for voting.
 
-
-Requirements:
-
-* `ideascale-importer` utility used to import external data.
-* A file named `ideascale-importer-config.json` on the current path (TODO: this needs to be set as an envvar).
+# Required environment variables
 
 This module requires the following environment variables to be set:
 
-* `EVENTDB_URL`
+Common to IdeaScale and DBSync snapshots:
 
-Specific to Ideascale
+* `EVENTDB_URL` - URL to the EventDB.
 
-* `IDEASCALE_API_TOKEN`
-* `IDEASCALE_CAMPAIGN_GROUP`
-* `IDEASCALE_STAGE_ID`
-* `IDEASCALE_API_URL`
+## Specific to Ideascale snapshot
 
-Specific to Snapshot
+* `IDEASCALE_API_TOKEN` - API token from ideascale.com.
+* `IDEASCALE_CAMPAIGN_GROUP` - Group ID for the IdeaScale campaign.
+* `IDEASCALE_STAGE_ID` - Stage ID for IdeaScale.
+* `IDEASCALE_API_URL` - URL for IdeaScale API.
+* `IDEASCALE_LOG_LEVEL` - Set the log level for the importer command (optional).
+* `IDEASCALE_LOG_FORMAT` - Set the log format for the importer command (optional).
 
-* SNAPSHOT_CONFIG_PATH
-* SNAPSHOT_OUTPUT_DIR
-* SNAPSHOT_RAW_FILE
-* SNAPSHOT_DREPS_FILE
-* SNAPSHOT_NETWORK_ID
+## Specific to DBSync Snapshot
+
+* `SNAPSHOT_CONFIG_PATH` - Path to the command configuration file.
+* `SNAPSHOT_OUTPUT_DIR`- Path to directory where DBSync snapshot output is written.
+* `SNAPSHOT_NETWORK_ID` - Defines 'mainnet' or 'testnet'.
+* `SNAPSHOT_LOG_LEVEL` - Set the log level for the importer command (optional).
+* `SNAPSHOT_LOG_FORMAT` - Set the log format for the importer command (optional).
 
 """
 import asyncio
@@ -34,46 +34,30 @@ from typing import Final
 
 from loguru import logger
 
-from .envvar import EVENTDB_URL, VOTING_LOG_LEVEL
-
-IDEASCALE_API_TOKEN: Final = "IDEASCALE_API_TOKEN"
-IDEASCALE_CAMPAIGN_GROUP: Final = "IDEASCALE_CAMPAIGN_GROUP"
-IDEASCALE_STAGE_ID: Final = "IDEASCALE_STAGE_ID"
-IDEASCALE_API_URL: Final = "IDEASCALE_API_URL"
-
-SNAPSHOT_CONFIG_PATH: Final = "SNAPSHOT_CONFIG_PATH"
-"""Path to the configuration file for the `ideascale-importer snapshot` tool."""
-SNAPSHOT_OUTPUT_DIR: Final = "SNAPSHOT_OUTPUT_DIR"
-"""Output directory for snapshot data. This directory MUST exist."""
-SNAPSHOT_RAW_FILE: Final = "SNAPSHOT_RAW_FILE"
-"""Optional raw snapshot data. When set, the snapshot-tool is not used."""
-SNAPSHOT_DREPS_FILE: Final = "SNAPSHOT_DREPS_FILE"
-"""Optional DReps data."""
-SNAPSHOT_NETWORK_ID: Final = "SNAPSHOT_NETWORK_ID"
-
 
 class ExternalDataImporter:
     """Importer of external data."""
 
     async def ideascale_import_all(self, event_id: int):
-        """Run 'ideascale-importer ideascale import-all <ARGS..>' as a subprocess."""
+        """Run 'ideascale-importer ideascale import-all <ARGS..>' as a subprocess.
+
+        This command requires the following environment variables to work:
+
+        * `EVENTDB_URL` sets `--database-url`.
+        * `IDEASCALE_API_TOKEN` sets `--api-token`.
+        * `IDEASCALE_CAMPAIGN_GROUP` sets `--campaing-group-id`.
+        * `IDEASCALE_STAGE_ID` sets `--stage-id`.
+        * `IDEASCALE_API_URL` sets `--ideascale-api-url`.
+        * `IDEASCALE_LOG_LEVEL` sets `--log-level` (optional).
+        * `IDEASCALE_LOG_FORMAT` sets `--log-format` (optional).
+        """
         logger.info(f"Running ideascale for event {event_id}")
         proc = await asyncio.create_subprocess_exec(
             "ideascale-importer",
             "ideascale",
             "import-all",
-            "--api-token",
-            os.environ[IDEASCALE_API_TOKEN],
-            "--database-url",
-            os.environ[EVENTDB_URL],
             "--event-id",
             f"{event_id}",
-            "--campaign-group-id",
-            os.environ[IDEASCALE_CAMPAIGN_GROUP],
-            "--stage-id",
-            os.environ[IDEASCALE_STAGE_ID],
-            "--ideascale-api-url",
-            os.environ[IDEASCALE_API_URL],
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
         )
@@ -92,24 +76,24 @@ class ExternalDataImporter:
         logger.debug("ideascale importer has finished")
 
     async def snapshot_import(self, event_id: int):
-        """Run 'ideascale-importer snapshot import <ARGS..>' as a subprocess."""
+        """Run 'ideascale-importer snapshot import <ARGS..>' as a subprocess.
+
+        This command requires the following environment variables to work:
+
+        * `EVENTDB_URL` sets `--database-url`.
+        * `SNAPSHOT_CONFIG_PATH` sets `--config-path`.
+        * `SNAPSHOT_OUTPUT_DIR` sets `--output-dir`.
+        * `SNAPSHOT_NETWORK_ID` sets `--network-id`.
+        * `SNAPSHOT_LOG_LEVEL` sets `--log-level` (optional).
+        * `SNAPSHOT_LOG_FORMAT` sets `--log-format` (optional).
+        """
         logger.info(f"Importing snapshot data for event {event_id}")
         proc = await asyncio.create_subprocess_exec(
             "ideascale-importer",
             "snapshot",
             "import",
-            "--config-path",
-            os.environ[SNAPSHOT_CONFIG_PATH],
-            "--database-url",
-            os.environ[EVENTDB_URL],
             "--event-id",
             f"{event_id}",
-            "--output-dir",
-            os.environ[SNAPSHOT_OUTPUT_DIR],
-            "--log-level",
-            os.environ[VOTING_LOG_LEVEL],
-            "--log-format",
-            "text",
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
         )

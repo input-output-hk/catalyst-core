@@ -60,6 +60,7 @@ mod tests {
         GroupBallotType, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
         ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
     };
+    use serde_json::json;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -103,11 +104,13 @@ mod tests {
                                 ballot: "private".to_string(),
                             },
                         ],
-                        url: Some("objective 1 url".to_string()),
-                        supplemental: Some(ObjectiveSupplementalData {
-                            sponsor: "objective 1 sponsor".to_string(),
-                            video: "objective 1 video".to_string()
-                        }),
+                        supplemental: Some(ObjectiveSupplementalData(json!(
+                            {
+                                "url":"objective 1 url",
+                                "sponsor": "objective 1 sponsor",
+                                "video": "objective 1 video"
+                            }
+                        ))),
                     }
                 },
                 Objective {
@@ -133,7 +136,6 @@ mod tests {
                                 ballot: "private".to_string(),
                             },
                         ],
-                        url: None,
                         supplemental: None,
                     }
                 }
@@ -176,11 +178,13 @@ mod tests {
                             ballot: "private".to_string(),
                         },
                     ],
-                    url: Some("objective 1 url".to_string()),
-                    supplemental: Some(ObjectiveSupplementalData {
-                        sponsor: "objective 1 sponsor".to_string(),
-                        video: "objective 1 video".to_string()
-                    }),
+                    supplemental: Some(ObjectiveSupplementalData(json!(
+                        {
+                            "url":"objective 1 url",
+                            "sponsor": "objective 1 sponsor",
+                            "video": "objective 1 video"
+                        }
+                    ))),
                 }
             },])
             .unwrap()
@@ -218,7 +222,6 @@ mod tests {
                             ballot: "private".to_string(),
                         },
                     ],
-                    url: None,
                     supplemental: None,
                 }
             }])

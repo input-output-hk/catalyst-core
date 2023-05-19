@@ -136,7 +136,7 @@ class Mapper:
             proposer_relevant_experience=proposer_relevant_experience,
             proposer_url=proposer_url,
             bb_proposal_id=None,
-            bb_vote_options="yes,no",
+            bb_vote_options=["yes", "no"],
         )
 
 
@@ -193,11 +193,11 @@ def get_objective_category(c: Campaign) -> str:
     r = c.name.lower()
 
     if "catalyst natives" in r:
-        return "native"
+        return "catalyst-native"
     elif "objective setting" in r:
-        return "community-choice"
+        return "catalyst-community-choice"
     else:
-        return "simple"
+        return "catalyst-simple"
 
 
 class Importer:
@@ -288,7 +288,7 @@ class Importer:
 
         ideas = await client.stage_ideas(self.stage_id)
 
-        vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, "yes,no")
+        vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, ["yes", "no"])
         mapper = Mapper(vote_options_id, self.config)
 
         objectives = [mapper.map_objective(a, self.event_id) for a in group.campaigns]
@@ -296,7 +296,7 @@ class Importer:
         proposal_count = 0
 
         async with self.conn.transaction():
-            inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id"])
+            inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id", "event"])
             inserted_objectives_ix = {o.id: o for o in inserted_objectives}
 
             proposals_with_campaign_id = [(a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)) for a in ideas]
@@ -305,6 +305,6 @@ class Importer:
 
             proposals = [p for (_, p) in proposals_with_campaign_id]
             proposal_count = len(proposals)
-            await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id"])
+            await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id", "objective"])
 
         logger.info("Imported objectives and proposals", objective_count=objective_count, proposal_count=proposal_count)

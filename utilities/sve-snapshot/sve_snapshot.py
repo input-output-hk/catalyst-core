@@ -58,10 +58,11 @@ def convert_sve_snapshot(args: argparse.Namespace):
         # If so, assume its a CIP-15 registration.
         delegation = registration["delegations"]
         if isinstance(delegation, str):
+            registration["delegations"] = fix(delegation)
             new_snapshot.append(registration)
         elif isinstance(delegation, list):
             if len(delegation) == 1:
-                registration["delegations"] = delegation[0][0]
+                registration["delegations"] = fix(delegation[0][0])
                 new_snapshot.append(registration)
             else:
                 print(
@@ -82,6 +83,11 @@ def convert_sve_snapshot(args: argparse.Namespace):
         print(f"{total_rejects} registrations rejected.")
 
     output.write_text(json.dumps(new_snapshot, indent=4))
+
+def fix(r: str) -> str:
+    if r.startswith("0x"):
+        r = r[2:]
+    return "0x" + r.zfill(64)
 
 
 def main() -> int:

@@ -43,7 +43,7 @@ def event_table(con: sqlite3.Connection) -> str:
 
     # fund_name = funds[1]
     fund_goal = funds[2]
-    # registration_snapshot_time = funds[3]
+    registration_snapshot_time = funds[3]
     voting_power_threshold = funds[4]
     fund_start_time = funds[5]
     fund_end_time = funds[6]
@@ -92,8 +92,8 @@ VALUES
 (6, 'Catalyst Fund 6', '{fund_goal}',
  '2021-08-12 11:00:00', -- Start Time - Date/Time accurate.
  '2021-10-21 11:00:00', -- End Time   - Date/Time accurate.
- '2021-07-19 11:00:00', -- Registration Snapshot Time - Date/time Accurate.
- '2021-07-20 11:00:00', -- Snapshot Start - Date/time Unknown.
+ '2021-10-04 11:00:00', -- Registration Snapshot Time - Date/time Accurate.
+ '2021-10-05 11:00:00', -- Snapshot Start - Date/time Unknown.
  {voting_power_threshold},            -- Voting Power Threshold -- Accurate
  100,                   -- Max Voting Power PCT - No max% threshold used in this fund.
  '2021-08-26 11:00:00',                  -- Insight Sharing Start - None

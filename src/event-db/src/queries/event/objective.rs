@@ -2,8 +2,8 @@ use crate::{
     error::Error,
     types::event::{
         objective::{
-            GroupBallotType, Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
-            ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
+            Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData,
+            ObjectiveType, RewardDefintion,
         },
         EventId,
     },
@@ -24,11 +24,9 @@ pub trait ObjectiveQueries: Sync + Send + 'static {
 impl EventDB {
     const OBJECTIVES_QUERY: &'static str =
         "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
-        objective_category.name, objective_category.description as objective_category_description,
-        vote_options.objective as choices
+        objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
-        LEFT JOIN vote_options on objective.vote_options = vote_options.id
         WHERE objective.event = $1
         LIMIT $2 OFFSET $3;";
 }
@@ -72,20 +70,6 @@ impl ObjectiveQueries for EventDB {
                 supplemental: row
                     .try_get::<_, Option<serde_json::Value>>("extra")?
                     .map(ObjectiveSupplementalData),
-                choices: row
-                    .try_get::<_, Option<Vec<_>>>("choices")?
-                    .unwrap_or_default(),
-                // TODO fix this, need to fill with the real data
-                ballot: vec![
-                    GroupBallotType {
-                        group: "rep".to_string(),
-                        ballot: "private".to_string(),
-                    },
-                    GroupBallotType {
-                        group: "direct".to_string(),
-                        ballot: "private".to_string(),
-                    },
-                ],
             };
             objectives.push(Objective { summary, details });
         }
@@ -106,7 +90,7 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::{establish_connection, types::event::objective::GroupBallotType};
+    use crate::establish_connection;
 
     #[tokio::test]
     async fn get_objectives_test() {
@@ -134,17 +118,6 @@ mod tests {
                             currency: "ADA".to_string(),
                             value: 100
                         }),
-                        choices: vec!["yes".to_string(), "no".to_string()],
-                        ballot: vec![
-                            GroupBallotType {
-                                group: "rep".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                            GroupBallotType {
-                                group: "direct".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                        ],
                         supplemental: Some(ObjectiveSupplementalData(json!(
                         {
                             "url": "objective 1 url",
@@ -166,17 +139,6 @@ mod tests {
                     },
                     details: ObjectiveDetails {
                         reward: None,
-                        choices: vec![],
-                        ballot: vec![
-                            GroupBallotType {
-                                group: "rep".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                            GroupBallotType {
-                                group: "direct".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                        ],
                         supplemental: None,
                     }
                 }
@@ -204,17 +166,6 @@ mod tests {
                         currency: "ADA".to_string(),
                         value: 100
                     }),
-                    choices: vec!["yes".to_string(), "no".to_string()],
-                    ballot: vec![
-                        GroupBallotType {
-                            group: "rep".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                        GroupBallotType {
-                            group: "direct".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                    ],
                     supplemental: Some(ObjectiveSupplementalData(json!(
                     {
                         "url": "objective 1 url",
@@ -244,17 +195,6 @@ mod tests {
                 },
                 details: ObjectiveDetails {
                     reward: None,
-                    choices: vec![],
-                    ballot: vec![
-                        GroupBallotType {
-                            group: "rep".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                        GroupBallotType {
-                            group: "direct".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                    ],
                     supplemental: None,
                 }
             }]

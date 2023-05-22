@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["PIN_LENGTH"],"enum":["BadPinError","Error","KeyQrCodeError","KeyQrCodePayloadError","PinReadMode"],"fn":["decode","generate"],"mod":["img","payload"],"struct":["KeyQrCode","QrPin"]};

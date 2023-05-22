@@ -22,17 +22,12 @@ earthly ./containers/event-db-migrations+docker
 Prepare a event-db docker image with the test data
 (from the root directory)
 ```
-earthly ./containers/event-db-migrations+docker-test
+earthly ./containers/event-db-migrations+docker --data=test
 ```
-Run a event db docker container with the historic data
+Run a event db docker container
 (from the root directory)
 ```
 docker-compose -f src/event-db/docker-compose.yml up migrations
-```
-Run a event db docker container with the test data
-(from the root directory)
-```
-docker-compose -f src/event-db/docker-compose.yml up migrations-test
 ```
 This will run postgres on port `5432`
 

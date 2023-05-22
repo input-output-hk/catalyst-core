@@ -33,16 +33,3 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
-  migrations-test:
-    image: migrations-test:latest
-    environment:
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - PGHOST=postgres
-      - PGPORT=5432
-      - PGUSER=catalyst-event-dev
-      - PGPASSWORD=CHANGE_ME
-      - PGDATABASE=CatalystEventDev
-    depends_on:
-      postgres:
-        condition: service_healthy

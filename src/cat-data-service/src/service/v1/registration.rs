@@ -77,11 +77,11 @@ async fn delegations_exec(
 /// To do it you can use the following commands:
 /// Prepare docker images
 /// ```
-/// earthly ./containers/event-db-migrations+docker-test
+/// earthly ./containers/event-db-migrations+docker --data=test
 /// ```
 /// Run event-db container
 /// ```
-/// docker-compose -f src/event-db/docker-compose.yml up migrations-test
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
 /// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```

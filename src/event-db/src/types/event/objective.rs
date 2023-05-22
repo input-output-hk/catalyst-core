@@ -37,8 +37,6 @@ pub struct ObjectiveSupplementalData(pub Value);
 pub struct ObjectiveDetails {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reward: Option<RewardDefintion>,
-    pub choices: Vec<String>,
-    pub ballot: Vec<GroupBallotType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub supplemental: Option<ObjectiveSupplementalData>,
 }
@@ -147,11 +145,6 @@ mod tests {
                 currency: "ADA".to_string(),
                 value: 100,
             }),
-            choices: vec!["Abstain".to_string(), "Yes".to_string(), "No".to_string()],
-            ballot: vec![GroupBallotType {
-                group: "rep".to_string(),
-                ballot: "public".to_string(),
-            }],
             supplemental: Some(ObjectiveSupplementalData(json!(
                 {
                     "url": "objective url 1",
@@ -170,11 +163,6 @@ mod tests {
                         "currency": "ADA",
                         "value": 100,
                     },
-                    "choices": ["Abstain", "Yes", "No"],
-                    "ballot": [{
-                        "group": "rep",
-                        "ballot": "public",
-                    }],
                     "supplemental": {
                         "url": "objective url 1",
                         "sponsor": "sponsor 1",

@@ -3,12 +3,11 @@ version: "3"
 services:
   postgres:
     image: postgres:14
-    environment:
-      - POSTGRES_PASSWORD=CHANGE_ME
-      - POSTGRES_USER=catalyst-event-dev
-      - POSTGRES_DB=CatalystEventDev
-    # it is useful to restart when developing, change according to your needs
     restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: CatalystEventDev
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 2s
@@ -20,12 +19,17 @@ services:
   migrations:
     image: migrations:latest
     environment:
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - PGHOST=postgres
-      - PGPORT=5432
-      - PGUSER=catalyst-event-dev
-      - PGPASSWORD=CHANGE_ME
-      - PGDATABASE=CatalystEventDev
+      # Required environment variables for migrations
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=CatalystEventDev
+      - DB_SUPERUSER=postgres
+      - DB_SUPERUSER_PASSWORD=postgres
+      - DB_USER=catalyst-event-dev
+      - DB_USER_PASSWORD=CHANGE_ME
+      - ADMIN_ROLE_PASSWORD=CHANGE_ME
+      - ADMIN_USER_PASSWORD=CHANGE_ME
+      - ANON_ROLE_PASSWORD=CHANGE_ME
     depends_on:
       postgres:
         condition: service_healthy

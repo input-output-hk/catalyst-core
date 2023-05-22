@@ -85,8 +85,6 @@ impl ProposalQueries for EventDB {
             funds: row.try_get("funds")?,
             url: row.try_get("url")?,
             files: row.try_get("files_url")?,
-            // TODO: fill the correct ballot data
-            ballot: None,
         };
 
         Ok(Proposal {
@@ -176,7 +174,6 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    ballot: None,
                     supplemental: Some(ProposalSupplementalDetails(json!(
                         {
                             "brief": "Brief explanation of a proposal",

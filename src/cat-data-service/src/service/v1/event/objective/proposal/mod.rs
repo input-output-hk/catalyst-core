@@ -139,7 +139,6 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    ballot: None,
                     supplemental: Some(ProposalSupplementalDetails(json!(
                         {
                             "brief": "Brief explanation of a proposal",

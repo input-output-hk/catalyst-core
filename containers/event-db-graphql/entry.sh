@@ -1,5 +1,20 @@
 #!/bin/sh
 
+# ---------------------------------------------------------------
+# Entrypoint script for migrations container
+# ---------------------------------------------------------------
+#
+# This script serves as the entrypoint for the migrations container. It sets up
+# the environment, performing optional database initialization if configured,
+# and then runs the migrations.
+#
+# It expects the following environment variables to be set except where noted:
+#
+# DATABASE_URL - The URL of the database
+# JWT_SECRET - JWT secret for JWT authentication
+# GRAPHQL_PORT - The port of the graphql server (optional)
+# ---------------------------------------------------------------
+
 if [ -z "$DATABASE_URL" ]; then
   echo "ERROR: DATABASE_URL environment variable is not set."
   exit 1

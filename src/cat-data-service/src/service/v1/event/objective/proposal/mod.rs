@@ -91,7 +91,10 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::proposal::{ProposalDetails, ProposerDetails};
+    use event_db::types::event::proposal::{
+        ProposalDetails, ProposalSupplementalDetails, ProposerDetails,
+    };
+    use serde_json::json;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -128,8 +131,13 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    ballot: None,
-                    supplemental: None,
+                    supplemental: Some(ProposalSupplementalDetails(json!(
+                        {
+                            "brief": "Brief explanation of a proposal",
+                            "goal": "The goal of the proposal is addressed to meet",
+                            "importance": "The importance of the proposal",
+                        }
+                    ))),
                 }
             })
             .unwrap(),

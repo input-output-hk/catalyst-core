@@ -71,48 +71,6 @@ impl ProposalQueries for EventDB {
             payment_key: row.try_get("public_key")?,
         }];
 
-        let extra = row.try_get::<_, Option<serde_json::Value>>("extra")?;
-        let solution = extra
-            .as_ref()
-            .and_then(|extra| {
-                extra
-                    .get("solution")
-                    .map(|solution| solution.as_str().map(|str| str.to_string()))
-            })
-            .flatten();
-        let brief = extra
-            .as_ref()
-            .and_then(|extra| {
-                extra
-                    .get("brief")
-                    .map(|brief| brief.as_str().map(|str| str.to_string()))
-            })
-            .flatten();
-        let importance = extra
-            .as_ref()
-            .and_then(|val| {
-                val.get("importance")
-                    .map(|importance| importance.as_str().map(|str| str.to_string()))
-            })
-            .flatten();
-        let metrics = extra
-            .and_then(|val| {
-                val.get("metrics")
-                    .map(|metrics| metrics.as_str().map(|str| str.to_string()))
-            })
-            .flatten();
-        let supplemental = match (solution, brief, importance, metrics) {
-            (Some(solution), Some(brief), Some(importance), Some(metrics)) => {
-                Some(ProposalSupplementalDetails {
-                    solution,
-                    brief,
-                    importance,
-                    metrics,
-                })
-            }
-            _ => None,
-        };
-
         let proposal_summary = ProposalSummary {
             id: row.try_get("id")?,
             title: row.try_get("title")?,
@@ -121,12 +79,12 @@ impl ProposalQueries for EventDB {
 
         let proposal_details = ProposalDetails {
             proposer,
-            supplemental,
+            supplemental: row
+                .try_get::<_, Option<serde_json::Value>>("extra")?
+                .map(ProposalSupplementalDetails),
             funds: row.try_get("funds")?,
             url: row.try_get("url")?,
             files: row.try_get("files_url")?,
-            // TODO: fill the correct ballot data
-            ballot: None,
         };
 
         Ok(Proposal {
@@ -175,6 +133,8 @@ impl ProposalQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
     use crate::establish_connection;
 
@@ -206,8 +166,13 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    ballot: None,
-                    supplemental: None,
+                    supplemental: Some(ProposalSupplementalDetails(json!(
+                        {
+                            "brief": "Brief explanation of a proposal",
+                            "goal": "The goal of the proposal is addressed to meet",
+                            "importance": "The importance of the proposal",
+                        }
+                    ))),
                 }
             },
             proposal

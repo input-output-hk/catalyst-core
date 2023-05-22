@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct ProposalId(pub i32);
@@ -18,19 +19,7 @@ pub struct VotePlan {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ProposalBallotDetails {
-    pub id: String,
-    pub index: i64,
-    pub voteplan: Vec<VotePlan>,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ProposalSupplementalDetails {
-    pub solution: String,
-    pub brief: String,
-    pub importance: String,
-    pub metrics: String,
-}
+pub struct ProposalSupplementalDetails(pub Value);
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ProposalDetails {
@@ -38,8 +27,6 @@ pub struct ProposalDetails {
     pub url: String,
     pub files: String,
     pub proposer: Vec<ProposerDetails>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ballot: Option<ProposalBallotDetails>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub supplemental: Option<ProposalSupplementalDetails>,
 }
@@ -88,40 +75,15 @@ mod tests {
     }
 
     #[test]
-    fn proposal_ballot_details_json_test() {
-        let proposal_ballot_details = ProposalBallotDetails {
-            id: "proposal ballot details id".to_string(),
-            index: 0,
-            voteplan: vec![VotePlan {
-                group: "rep".to_string(),
-                chain_voteplan_id: "chain voteplan id hash".to_string(),
-            }],
-        };
-
-        let json = serde_json::to_value(&proposal_ballot_details).unwrap();
-        assert_eq!(
-            json,
-            json!(
-                {
-                    "id": "proposal ballot details id",
-                    "index": 0,
-                    "voteplan": [{
-                        "group": "rep",
-                        "chain_voteplan_id": "chain voteplan id hash",
-                    }],
-                }
-            )
-        );
-    }
-
-    #[test]
     fn proposal_supplemental_details_json_test() {
-        let proposal_supplemental_details = ProposalSupplementalDetails {
-            solution: "solution".to_string(),
-            brief: "brief".to_string(),
-            importance: "importance".to_string(),
-            metrics: "metrics".to_string(),
-        };
+        let proposal_supplemental_details = ProposalSupplementalDetails(json!(
+                {
+                    "solution": "solution",
+                    "brief": "brief",
+                    "importance": "importance",
+                    "metrics": "metrics",
+                }
+        ));
 
         let json = serde_json::to_value(&proposal_supplemental_details).unwrap();
         assert_eq!(

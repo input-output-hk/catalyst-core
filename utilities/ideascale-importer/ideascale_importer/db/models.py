@@ -2,7 +2,7 @@
 
 import dataclasses
 from datetime import datetime
-from typing import Any, ClassVar, Mapping, Optional, Set
+from typing import Any, ClassVar, List, Mapping, Optional, Set
 
 
 @dataclasses.dataclass
@@ -93,7 +93,7 @@ class Proposal(Model):
     proposer_relevant_experience: str
 
     bb_proposal_id: Optional[bytes]
-    bb_vote_options: Optional[str]
+    bb_vote_options: Optional[List[str]]
 
     @staticmethod
     def table() -> str:

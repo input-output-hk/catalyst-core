@@ -132,7 +132,6 @@ fi
 # Run migrations
 echo ">>> Running migrations..."
 export DATABASE_URL="postgres://${DB_USER}:${DB_USER_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
-echo "$DATABASE_URL"
 ./refinery migrate -e DATABASE_URL -c ./refinery.toml -p ./migrations
 
 # Add historic data from previous funds

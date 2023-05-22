@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","Transaction"],"fn":["display_data_for_witness","display_fragment_id","display_id","display_message"],"mod":["add_account","add_certificate","add_input","add_output","add_witness","auth","common","finalize","info","mk_witness","new","seal","set_expiry_date","simplified","staging"],"type":["StaticStr"]};

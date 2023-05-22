@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SCALE"],"struct":["PercentStake","SplitValueIn","Stake","StakeUnit"]};

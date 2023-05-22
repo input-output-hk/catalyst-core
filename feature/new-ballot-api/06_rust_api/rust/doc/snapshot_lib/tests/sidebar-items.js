@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_strategy_of__additional_reg","_strategy_of__raw","_strategy_of__reg","_strategy_of__stake_threshold","_to_fn_ptr"],"opaque":[""],"struct":["DummyAssigner","_TestNonCatalystRegsAreIgnoredArgs","_TestThresholdArgs","_TestVotingPowerAllDistributedArgs"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["commands"],"struct":["VitCli","VitCliCommand"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_interval_behind_now","get_sync_progress"],"opaque":[""]};

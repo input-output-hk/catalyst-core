@@ -10,58 +10,26 @@ This crate defines the structure and RUST access methods for the Catalyst Event 
     - [GraphQL Users](#graphql-users)
       - [Authentication API](#authentication-api)
 
-## Starting a Local Test DB with Docker
+## Starting a Local Test DB with Docker and Earthly
 
-If you are not running postgresql-14 locally.
-A test server can be run using docker-compose.
+Fistly you will need to prepare a docker images with all migrations and data.
 
-```sh
-docker-compose -f ./setup/dev-db.docker-compose.yml up --remove-orphans -d
+Prepare a event-db docker image with the historic data
+(from the root directory)
 ```
-
-This will run postgres on port `5432`, and an `adminer` UI on `localhost:8080`.
-
-## Creating A Local Test Database
-
-### Dependencies
-
-- `cargo-make`, install `cargo install cargo-make`
-- `refinery`, install `cargo install refinery_cli`
-
-Run the following SQL on your local test PostgreSQL server:
-
-```sql
--- Cleanup if we already ran this before.
-drop database if exists "CatalystEventDev";
-drop user if exists "catalyst-event-dev";
-
--- Create the test user we will use with the local Catalyst-Event dev database.
-create user "catalyst-event-dev" with password 'CHANGE_ME';
-
--- Create the database.
-create database "CatalystEventDev"
-    with owner "catalyst-event-dev";
-
-comment on database "CatalystEventDev" is 'Local Test Catalyst Event DB';
+earthly ./containers/event-db-migrations+docker
 ```
-
-Or (you need to run these scripts from the root folder)
-
-```sh
-cargo make local-event-db-init
+Prepare a event-db docker image with the test data
+(from the root directory)
 ```
-
-Execute Migrations:
-
-```sh
-cargo make run-event-db-migration
+earthly ./containers/event-db-migrations+docker --data=test
 ```
-
-### Setup a clean new dev DB with a single command
-
-```sh
-cargo make local-event-db-setup
+Run a event db docker container
+(from the root directory)
 ```
+docker-compose -f src/event-db/docker-compose.yml up migrations
+```
+This will run postgres on port `5432`
 
 ## GraphQL
 

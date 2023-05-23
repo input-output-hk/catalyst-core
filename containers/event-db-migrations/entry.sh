@@ -30,7 +30,6 @@
 # DEBUG - If set, the script will print debug information (optional)
 # DEBUG_SLEEP - If set, the script will sleep for the specified number of seconds (optional)
 # ---------------------------------------------------------------
-
 set +x
 set -o errexit
 set -o pipefail
@@ -103,7 +102,7 @@ if [[ ! -f ./tmp/initialized || -n "${REINIT_EVENT_DB:-}" ]]; then
     if [[ -z "${SKIP_EVENT_DB_INIT:-}" ]]; then
         echo ">>> Initializing event database..."
         psql "${PSQL_FLAGS}" -f ./setup/setup-db.sql \
-            -v "dbName=${DB_NAME}" \
+            -v dbName="${DB_NAME}" \
             -v dbDescription="Catalayst Event DB" \
             -v dbUser="${DB_USER}" \
             -v dbUserPw="${DB_USER_PASSWORD}"
@@ -136,12 +135,14 @@ export DATABASE_URL="postgres://${DB_USER}:${DB_USER_PASSWORD}@${DB_HOST}:${DB_P
 ./refinery migrate -e DATABASE_URL -c ./refinery.toml -p ./migrations
 
 # Add historic data from previous funds
-export PGUSER="${DB_USER}"
-export PGPASSWORD="${DB_USER_PASSWORD}"
-
 while IFS= read -r -d '' file; do
     echo "Adding historic data from $file"
     psql -f "$file"
 done < <(find ./historic_data -name '*.sql' -print0 | sort -z)
+# Add test data
+while IFS= read -r -d '' file; do
+    echo "Adding test data from $file"
+    psql -f "$file"
+done < <(find ./test_data -name '*.sql' -print0 | sort -z)
 
 echo ">>> Finished entrypoint script"

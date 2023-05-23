@@ -135,7 +135,7 @@ CREATE VIEW voteplans AS SELECT
     voting_group.token_id AS token_identifier
 FROM voteplan
     INNER JOIN event ON voteplan.event_id = event.row_id
-    INNER JOIN voting_group ON voteplan.group_id = voting_group.row_id;
+    INNER JOIN voting_group ON voteplan.group_id = voting_group.name;
 
 COMMENT ON VIEW voteplans IS
     '@omit
@@ -214,9 +214,7 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 -- VIT-SS Compatibility View - groups.
 
 CREATE VIEW groups AS SELECT
-    event_id AS fund_id,
-    token_id AS token_identifier,
-    group_id AS group_id
+    name AS group_id
 FROM voting_group;
 
 COMMENT ON VIEW groups IS

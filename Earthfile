@@ -37,6 +37,15 @@ build-cache:
 # This is the default builder that all other builders should inherit from
 builder:
     FROM rust:1.65-slim-bullseye
+    # Install build dependencies
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends \
+        build-essential \
+        libssl-dev \
+        libpq-dev \
+        libsqlite3-dev \
+        protobuf-compiler
+    RUN rustup component add rustfmt
     COPY --dir src Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target

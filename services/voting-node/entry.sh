@@ -82,6 +82,7 @@ check_env_vars "${REQUIRED_ENV[@]}"
 : "${VOTING_HOST:='0.0.0.0'}"
 : "${VOTING_PORT:='8000'}"
 : "${VOTING_LOG_LEVEL:='info'}"
+: "${VOTING_NODE_STORAGE:='node-storage'}"
 : "${JORM_PATH:='jormungandr'}"
 : "${JCLI_PATH:='jcli'}"
 

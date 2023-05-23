@@ -3,13 +3,24 @@ package main
 import (
 	"fmt"
 	"os"
+	"text/template"
+	"time"
 
 	"github.com/alecthomas/kong"
 	"github.com/input-output-hk/catalyst-core/ci/pkg"
 	"github.com/input-output-hk/catalyst-core/ci/pkg/executors"
+	"github.com/input-output-hk/catalyst-core/ci/pkg/git_clients"
 	"github.com/input-output-hk/catalyst-core/ci/pkg/scanners"
+	"github.com/input-output-hk/catalyst-core/ci/pkg/util"
 	"github.com/spf13/afero"
 )
+
+// TagTemplate is a template for generating image tags.
+type TagTemplate struct {
+	Hash      string
+	Timestamp string
+	Version   string
+}
 
 var cli struct {
 	Tags tagsCmd `cmd:"" help:"Generate image tags with the current git context."`
@@ -17,10 +28,45 @@ var cli struct {
 }
 
 type tagsCmd struct {
+	TemplateString string `arg:"" help:"template for generating image tags" default:"{{ .Hash }}"`
 }
 
 func (c *tagsCmd) Run() error {
-	// TODO: Implement
+	executor := executors.NewLocalExecutor("git")
+	client := git_clients.NewExternalGitClient(executor)
+
+	// Collect the highest version from the git tags
+	tags, err := client.Tags()
+	if err != nil {
+		return err
+	}
+	highest := util.GetHighestVersion(tags)
+
+	// Get the current git commit hash
+	hash, err := executor.Run("rev-parse", "HEAD")
+	if err != nil {
+		return err
+	}
+
+	// Get the current timestamp
+	timestamp := time.Now().Format("20060102150405")
+
+	// Generate the tag
+	tmpl, err := template.New("tag").Parse(c.TemplateString)
+	if err != nil {
+		return err
+	}
+
+	data := TagTemplate{
+		Hash:      hash,
+		Timestamp: timestamp,
+		Version:   highest,
+	}
+	err = tmpl.Execute(os.Stdout, data)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -182,10 +182,10 @@ class SnapshotRunner(BaseModel):
                 except Exception as e:
                     logger.error("Failed to take dbsync snapshot", exc_info=e)
 
-                try:
-                    await importer.ideascale_import_all(event_id)
-                except Exception as e:
-                    logger.error("Failed to take ideascale snapshot", exc_info=e)
+                #try:
+                #    await importer.ideascale_import_all(event_id)
+                #except Exception as e:
+                #    logger.error("Failed to take ideascale snapshot", exc_info=e)
 
                 await asyncio.sleep(0)
                 continue
@@ -199,9 +199,9 @@ class SnapshotRunner(BaseModel):
                 except Exception as e:
                     logger.error("Failed to take dbsync snapshot", exc_info=e)
 
-                try:
-                    await importer.ideascale_import_all(event_id)
-                except Exception as e:
-                    logger.error("Failed to take ideascale snapshot", exc_info=e)
+                #try:
+                #    await importer.ideascale_import_all(event_id)
+                #except Exception as e:
+                #    logger.error("Failed to take ideascale snapshot", exc_info=e)
 
                 break

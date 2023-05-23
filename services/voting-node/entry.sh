@@ -1,5 +1,42 @@
 #!/bin/bash
-# This script is meant to be an entrypoint for a container image, but can also be used locally.
+
+# ---------------------------------------------------------------
+# Entrypoint script for voting-node container
+# ---------------------------------------------------------------
+#
+# This script serves as the entrypoint for the voting-node container. It sets up
+# the environment, and then runs the voting node.
+#
+# It expects the following environment variables to be set except where noted:
+#
+# EVENTDB_URL - The URL of the event database
+# IS_NODE_RELOADABLE - If set, the voting node will reload its configuration (optional). Defaults to true
+# VOTING_HOST - Voting node IP (optional). Defaults to 0.0.0.0
+# VOTING_PORT - Voting node port (optional). Defaults to 8000
+# VOTING_LOG_LEVEL - Log level (optional). Defaults to info
+# VOTING_NODE_STORAGE - Path to node storage (optional). Defaults to ./node-storage
+# JORM_PATH - Path to jormungandr executable (optional). Defaults to jormungandr
+# JCLI_PATH - Path to jcli executable (optional). Defaults to jcli
+#
+# For the case that the hostname is 'leader0', the following environment variables must be set:
+#
+# ### SECRET GENERATION
+# COMMITTEE_CRS - The CRS is used to generate committee members, this is only used by leader0
+# SECRET_SECRET - The password used to encrypt/decrypt secrets in the database
+#
+# ### IDEASCALE DATA IMPORTER
+# IDEASCALE_API_TOKEN - API token for IDEASCALE
+# IDEASCALE_CAMPAIGN_GROUP - Campaign group for IDEASCALE
+# IDEASCALE_STAGE_ID - Stage ID for IDEASCALE
+# IDEASCALE_LOG_LEVEL - Log level for ideascale snapshots
+# IDEASCALE_API_URL - URL for IdeaScale. Example: https://cardano.ideascale.com
+#
+# ### DBSYNC SNAPSHOT DATA IMPORTER
+# SNAPSHOT_CONFIG_PATH - Path to configuration file for importing snapshot data
+# SNAPSHOT_OUTPUT_DIR - Path to directory where snapshot data will be stored
+# SNAPSHOT_NETWORK_ID - Network ID for snapshot data. Possible values are 'mainnet' and 'testnet'
+# SNAPSHOT_INTERVAL_SECONDS - Interval in seconds for snapshot data (optional)
+# ---------------------------------------------------------------
 
 # Enable strict mode
 set +x
@@ -36,17 +73,17 @@ echo ">>> Starting entrypoint script..."
 
 # Check if all required environment variables are set
 REQUIRED_ENV=(
-    "IS_NODE_RELOADABLE"
-    "VOTING_HOST"
-    "VOTING_PORT"
-    "VOTING_LOG_LEVEL"
-    "VOTING_NODE_STORAGE"
     "EVENTDB_URL"
-    "JORM_PATH"
-    "JCLI_PATH"
 )
 echo ">>> Checking required env vars..."
 check_env_vars "${REQUIRED_ENV[@]}"
+
+: "${IS_NODE_RELOADABLE:='true'}"
+: "${VOTING_HOST:='0.0.0.0'}"
+: "${VOTING_PORT:='8000'}"
+: "${VOTING_LOG_LEVEL:='info'}"
+: "${JORM_PATH:='jormungandr'}"
+: "${JCLI_PATH:='jcli'}"
 
 # Get the hostname
 HOSTNAME=$(hostname)
@@ -67,6 +104,8 @@ if [ "$HOSTNAME" = "leader0" ]; then
         "SNAPSHOT_NETWORK_ID"
     )
     check_env_vars "${LEADER0_ENV[@]}"
+
+    : "${SNAPSHOT_INTERVAL_SECONDS:='1800'}"
 fi
 
 # Sleep if DEBUG_SLEEP is set

@@ -3,12 +3,12 @@
 Scheduled tasks are defined for Leader and Follower Nodes, with Leader0 being a special case,
 as it is the only one responsible for initializing block0 for a voting event.
 """
-import brotli
 import json
 import os
 import secrets
 from typing import Final, NoReturn
 
+import brotli
 from loguru import logger
 
 from . import utils
@@ -455,7 +455,6 @@ class Leader0Schedule(LeaderSchedule):
     # Leader0 Node tasks
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
-
     async def fetch_upcoming_event(self):
         """Override common method to fetch the upcoming event from the DB.
 
@@ -466,9 +465,10 @@ class Leader0Schedule(LeaderSchedule):
             event = await self.db.fetch_upcoming_event()
             logger.debug("current event retrieved from DB")
             self.node.event = event
-        except Exception as e:
+        except Exception:
             # run helper to add a default event to the DB
             from .helpers import add_default_event
+
             logger.debug("event not found from DB, attempting to create")
             await add_default_event(db_url=self.settings.db_url)
             logger.info("event added to DB")
@@ -495,7 +495,6 @@ class Leader0Schedule(LeaderSchedule):
         runner = SnapshotRunner(registration_snapshot_time=registration_time, snapshot_start=snapshot_start)
         logger.info("Execute snapshot runner.")
         await runner.take_snapshots(event.row_id)
-
 
     async def collect_snapshot_data(self):
         """Collect the snapshot data from EventDB."""

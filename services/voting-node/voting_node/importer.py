@@ -30,11 +30,11 @@ Common to IdeaScale and DBSync snapshots:
 """
 import asyncio
 import os
-
 from datetime import datetime
+
 from loguru import logger
 from pydantic import BaseModel
-from typing import Final, Tuple
+
 
 class ExternalDataImporter:
     """Importer of external data."""
@@ -67,7 +67,7 @@ class ExternalDataImporter:
         while proc.stdout is not None:
             line = await proc.stdout.readline()
             if line:
-                print(line.decode().rstrip('\n'))
+                print(line.decode().rstrip("\n"))
             else:
                 break
 
@@ -103,7 +103,7 @@ class ExternalDataImporter:
         while proc.stdout is not None:
             line = await proc.stdout.readline()
             if line:
-                print(line.decode().rstrip('\n'))
+                print(line.decode().rstrip("\n"))
             else:
                 break
 
@@ -113,24 +113,22 @@ class ExternalDataImporter:
         logger.debug("ideascale importer has finished")
 
 
-
 class SnapshotRunner(BaseModel):
     """Run snapshots from DBSync and IdeaScale."""
+
     registration_snapshot_time: datetime
     snapshot_start: datetime
 
     def snapshot_start_has_passed(self) -> bool:
-        """
-        Check if the current time is after the snapshot start time.
+        """Check if the current time is after the snapshot start time.
 
         :return: a boolean indicating whether the snapshot start time has passed.
         """
         now = datetime.utcnow()
         return now > self.snapshot_start
 
-    def _reimaining_intervals_n_seconds_to_next_snapshot(self, current_time: datetime, interval: int) -> Tuple[int, int]:
-        """
-        Calculates the remaining number of intervals and seconds until the next snapshot.
+    def _reimaining_intervals_n_seconds_to_next_snapshot(self, current_time: datetime, interval: int) -> tuple[int, int]:
+        """Calculates the remaining number of intervals and seconds until the next snapshot.
 
         :param current_time: The current datetime.
         :type current_time: datetime
@@ -148,13 +146,14 @@ class SnapshotRunner(BaseModel):
         return num_intervals, time_til_next
 
     async def take_snapshots(self, event_id: int) -> None:
-        """
-        Takes snapshots at regular intervals using ExternalDataImporter.
+        """Takes snapshots at regular intervals using ExternalDataImporter.
 
         Args:
+        ----
             event_id (int): The ID of the event to take snapshots for.
 
         Returns:
+        -------
             None
         """
         # Check if snapshot start time has passed
@@ -167,7 +166,7 @@ class SnapshotRunner(BaseModel):
 
         # Take snapshots at regular intervals
         while True:
-            interval = int(os.getenv('SNAPSHOT_INTERVAL_SECONDS', 1800))
+            interval = int(os.getenv("SNAPSHOT_INTERVAL_SECONDS", 1800))
             current_time = datetime.utcnow()
             num_intervals, secs_to_sleep = self._reimaining_intervals_n_seconds_to_next_snapshot(current_time, interval)
             if num_intervals > 0:

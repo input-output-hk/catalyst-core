@@ -48,7 +48,7 @@ class EventDb(BaseModel):
         """Look in EventDB for the next event that will start."""
         # first, check if there is an event that has not finished
         now = datetime.datetime.utcnow()
-        query = f"""
+        query = """
         SELECT
             *
         FROM

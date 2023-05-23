@@ -1,13 +1,9 @@
 import asyncio
 from datetime import datetime, timedelta
-from loguru import logger
 from typing import Final
 
 import asyncpg
-import yaml
-
-from . import db
-from .models import Proposal
+from loguru import logger
 
 SLOT_DURATION: Final = 4
 SLOTS_PER_EPOCH: Final = 900
@@ -19,14 +15,18 @@ def slotdelta(epochs: int = 0, slots: int = 0):
     return timedelta(seconds=slots_in_secs)
 
 
-async def add_default_event(db_url: str = "postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev", reference_date: datetime = DEFAULT_EVENT_START_DATE):
-    """
-    Async function that creates a new event in the database with the provided parameters.
+async def add_default_event(
+    db_url: str = "postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev",
+    reference_date: datetime = DEFAULT_EVENT_START_DATE,
+):
+    """Async function that creates a new event in the database with the provided parameters.
 
     Args:
+    ----
         reference_date (datetime): The reference date to calculate the event's timing based on, defaults to datetime.utcnow().
 
     Returns:
+    -------
         None.
     """
     # Execute a statement to create a new event.
@@ -41,7 +41,7 @@ async def add_default_event(db_url: str = "postgres://catalyst-event-dev:CHANGE_
     # moment that registrations from Cardano main net are frozen
     registration_snapshot_time = block0_date + slotdelta(slots=2)
     # the moment that registrations are considered to be stable
-    snapshot_start = registration_snapshot_time + timedelta(days=14) 
+    snapshot_start = registration_snapshot_time + timedelta(days=14)
 
     voting_start = snapshot_start + slotdelta(slots=15)
     voting_end = voting_start + timedelta(days=14)
@@ -62,8 +62,7 @@ async def add_default_event(db_url: str = "postgres://catalyst-event-dev:CHANGE_
     committee_size = 5
     committee_threshold = 3
 
-    table_fields = ""
-    query = f"""
+    query = """
         INSERT INTO
         event(
             row_id,
@@ -93,7 +92,7 @@ async def add_default_event(db_url: str = "postgres://catalyst-event-dev:CHANGE_
         RETURNING *
     """
     logger.debug("query", query=query)
-    result = await conn.execute(
+    await conn.execute(
         query,
         f"Fund TEST {start_time}",
         "Description for the Fund.",
@@ -137,13 +136,4 @@ async def delete_table(table_name: str, db_url: str = "postgres://catalyst-event
 
 if __name__ == "__main__":
     """Reset the database when called from the command line."""
-    #asyncio.get_event_loop().run_until_complete(delete_table(table_name="voting_node"))
-    #asyncio.get_event_loop().run_until_complete(delete_table(table_name="tally_committee"))
-    #asyncio.get_event_loop().run_until_complete(delete_table(table_name="proposal"))
-    #asyncio.get_event_loop().run_until_complete(delete_table(table_name="objective"))
-    #asyncio.get_event_loop().run_until_complete(delete_table(table_name="snapshot"))
-    #asyncio.get_event_loop().run_until_complete(delete_table(table_name="goal"))
-    #asyncio.get_event_loop().run_until_complete(delete_table(table_name="voteplan"))
-    #asyncio.get_event_loop().run_until_complete(delete_table(table_name="voting_group"))
-    #asyncio.get_event_loop().run_until_complete(delete_table(table_name="event"))
     asyncio.run(add_default_event())

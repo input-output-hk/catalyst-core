@@ -32,7 +32,10 @@
 # IDEASCALE_API_URL - URL for IdeaScale. Example: https://cardano.ideascale.com
 #
 # ### DBSYNC SNAPSHOT DATA IMPORTER
-# SNAPSHOT_CONFIG_PATH - Path to configuration file for importing snapshot data
+# DBSYNC_URL - URL for DBSync database
+# SNAPSHOT_TOOL_PATH - Path to snapshot tool executable (optional). Defaults to 'snapshot_tool'
+# CATALYST_TOOLBOX_PATH - Path to toolbox executable (optional). Defaults to 'catalyst-toolbox'
+# GVC_API_URL - URL for GVC
 # SNAPSHOT_OUTPUT_DIR - Path to directory where snapshot data will be stored
 # SNAPSHOT_NETWORK_ID - Network ID for snapshot data. Possible values are 'mainnet' and 'testnet'
 # SNAPSHOT_INTERVAL_SECONDS - Interval in seconds for snapshot data (optional)
@@ -100,12 +103,15 @@ if [ "$HOSTNAME" = "leader0" ]; then
         "IDEASCALE_STAGE_ID"
         "IDEASCALE_LOG_LEVEL"
         "IDEASCALE_API_URL"
-        "SNAPSHOT_CONFIG_PATH"
+        "DBSYNC_URL"
+        "GVC_API_URL"
         "SNAPSHOT_OUTPUT_DIR"
         "SNAPSHOT_NETWORK_ID"
     )
     check_env_vars "${LEADER0_ENV[@]}"
 
+    : "${SNAPSHOT_TOOL_PATH:='snapshot_tool'}"
+    : "${CATALYST_TOOLBOX_PATH:='catalyst-toolbox'}"
     : "${SNAPSHOT_INTERVAL_SECONDS:='1800'}"
 fi
 

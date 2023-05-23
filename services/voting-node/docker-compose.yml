@@ -65,8 +65,8 @@ services:
     image: voting-node:latest
     hostname: leader0
     depends_on:
-      postgres:
-        condition: service_started
+      migrations:
+        condition: service_completed_successfully
     environment:
       # Required env vars
       - IS_NODE_RELOADABLE=True
@@ -90,16 +90,16 @@ services:
       - IDEASCALE_API_URL=https://cardano.ideascale.com
       ### SNAPSHOT TOOL DATA IMPORTER
       - SNAPSHOT_INTERVAL_SECONDS=60
-      - SNAPSHOT_CONFIG_PATH=/app/snapshot-importer-example-config.json
       - SNAPSHOT_OUTPUT_DIR=/tmp/snapshot-output
       - SNAPSHOT_NETWORK_ID=testnet
+      - DBSYNC_URL=postgres://CHANGE_ME
+      - GVC_API_URL=https://CHANGE_ME
       - SNAPSHOT_LOG_LEVEL=info
       - SNAPSHOT_LOG_FORMAT=text
     volumes:
       - leader0_store:/node_storage
       - leader0_store:/tmp/snapshot-output
       - ./ideascale-importer-config.json:/app/ideascale-importer-config.json
-      - ./snapshot-importer-example-config.json:/app/snapshot-importer-example-config.json
 
   leader1:
     image: voting-node:latest

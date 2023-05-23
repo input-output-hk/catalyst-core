@@ -19,18 +19,12 @@ def import_snapshot(
         envvar="SNAPSHOT_NETWORK_ID",
         help="Network id to pass as parameter to snapshot_tool",
     ),
-    dbsync_url: str = typer.Option(
-        ..., envvar="DBSYNC_URL", help="URL of the DBSync database in which to import the data to"
-    ),
-    snapshot_tool_path: str = typer.Option(
-        default="snapshot_tool", envvar="SNAPSHOT_TOOL_PATH", help="Path to the snapshot tool"
-    ),
+    dbsync_url: str = typer.Option(..., envvar="DBSYNC_URL", help="URL of the DBSync database in which to import the data to"),
+    snapshot_tool_path: str = typer.Option(default="snapshot_tool", envvar="SNAPSHOT_TOOL_PATH", help="Path to the snapshot tool"),
     catalyst_toolbox_path: str = typer.Option(
         default="catalyst-toolbox", envvar="CATALYST_TOOLBOX_PATH", help="Path to the catalyst-toolbox"
     ),
-    gvc_api_url: str = typer.Option(
-        ..., envvar="GVC_API_URL", help="URL of the GVC API"
-    ),
+    gvc_api_url: str = typer.Option(..., envvar="GVC_API_URL", help="URL of the GVC API"),
     raw_snapshot_file: str = typer.Option(
         None,
         help=(

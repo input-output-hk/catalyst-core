@@ -516,26 +516,26 @@ class Leader0Schedule(LeaderSchedule):
             if compressed_data is None:
                 raise Exception("dbsync snapsthot data is missing")
             data = brotli.decompress(compressed_data)
-            dbsync_data = json.loads(data)
+            json.loads(data)
             logger.debug("dbsync snapshot data retrieved")
         except Exception as e:
             logger.error(f"expected snapshot:\n{e}")
 
             # gets event vote plans, raises exception if none is found.
         try:
-            voteplans = await self.db.fetch_voteplans(event.row_id)
-            #logger.debug(f"voteplans:\n{voteplans}")
+            await self.db.fetch_voteplans(event.row_id)
+            # logger.debug(f"voteplans:\n{voteplans}")
         except Exception as e:
             logger.error(f"expected voteplans:\n{e}")
 
         try:
             # gets event proposals, raises exception if none is found.
             proposals = await self.db.fetch_proposals()
-            #logger.debug(f"proposals:\n{proposals}")
+            # logger.debug(f"proposals:\n{proposals}")
             self.proposals = proposals
-        except Exception as e:
+        except Exception:
             logger.warning("no proposals were found")
-            #raise Exception(f"failed to fetch proposals from DB: {e}") from e
+            # raise Exception(f"failed to fetch proposals from DB: {e}") from e
 
     async def setup_tally_committee(self):
         """Fetch or create tally committee data.

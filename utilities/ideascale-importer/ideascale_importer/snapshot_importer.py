@@ -20,6 +20,7 @@ from ideascale_importer.utils import run_cmd
 @dataclass
 class DbSyncDatabaseConfig:
     """Configuration for the database containing data from dbsync."""
+
     db_url: str
 
 
@@ -250,11 +251,7 @@ class Importer:
 
         if not self.skip_snapshot_tool_execution:
             # Fetch max slot
-            conn = await ideascale_importer.db.connect(
-                f"postgres://{self.config.dbsync_database.user}:"
-                + f"{self.config.dbsync_database.password}@{self.config.dbsync_database.host}"
-                f"/{self.config.dbsync_database.db}"
-            )
+            conn = await ideascale_importer.db.connect(self.config.dbsync_database.db_url)
 
             # Fetch slot number and time from the block right before or equal the registration snapshot time
             row = await conn.fetchrow(

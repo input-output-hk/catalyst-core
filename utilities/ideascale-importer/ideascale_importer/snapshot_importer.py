@@ -20,11 +20,7 @@ from ideascale_importer.utils import run_cmd
 @dataclass
 class DbSyncDatabaseConfig:
     """Configuration for the database containing data from dbsync."""
-
-    host: str
-    user: str
-    password: str
-    db: str
+    db_url: str
 
 
 @dataclass
@@ -149,16 +145,24 @@ class Importer:
 
     def __init__(
         self,
-        config_path: str,
         database_url: str,
         event_id: int,
         output_dir: str,
         network_id: str,
+        dbsync_url: str,
+        snapshot_tool_path: str,
+        catalyst_toolbox_path: str,
+        gvc_api_url: str,
         raw_snapshot_file: Optional[str] = None,
         dreps_file: Optional[str] = None,
     ):
         """Initialize the importer."""
-        self.config = Config.from_json_file(config_path)
+        self.config = Config(
+            dbsync_database=DbSyncDatabaseConfig(db_url=dbsync_url),
+            snapshot_tool=SnapshotToolConfig(path=snapshot_tool_path),
+            catalyst_toolbox=CatalystToolboxConfig(path=catalyst_toolbox_path),
+            gvc=GvcConfig(api_url=gvc_api_url),
+        )
         self.database_url = database_url
         self.event_id = event_id
         self.lastest_block_time: Optional[datetime] = None

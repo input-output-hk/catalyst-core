@@ -23,10 +23,10 @@ def import_snapshot(
         ..., envvar="DBSYNC_URL", help="URL of the DBSync database in which to import the data to"
     ),
     snapshot_tool_path: str = typer.Option(
-        ..., envvar="SNAPSHOT_TOOL_PATH", help="Path to the snapshot tool"
+        default="snapshot_tool", envvar="SNAPSHOT_TOOL_PATH", help="Path to the snapshot tool"
     ),
     catalyst_toolbox_path: str = typer.Option(
-        ..., envvar="CATALYST_TOOLBOX_PATH", help="Path to the catalyst-toolbox"
+        default="catalyst-toolbox", envvar="CATALYST_TOOLBOX_PATH", help="Path to the catalyst-toolbox"
     ),
     gvc_api_url: str = typer.Option(
         ..., envvar="GVC_API_URL", help="URL of the GVC API"

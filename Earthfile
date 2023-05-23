@@ -112,3 +112,15 @@ tag-workspace:
     COPY .git .
     RUN git tag -l
     SAVE IMAGE --cache-hint
+
+local:
+    LOCALLY
+    BUILD ./containers/event-db-migrations+docker
+    BUILD ./containers/event-db-graphql+docker
+    BUILD ./src/cat-data-service+docker
+    BUILD ./services/voting-node+docker
+
+    RUN mkdir -p ./local
+    COPY ./containers/dev-local+build/docker-compose.yml ./local/
+    COPY ./utilities/ideascale-importer+build/src/snapshot-importer-example-config.json ./local/
+    COPY ./utilities/ideascale-importer+build/src/ideascale-importer-config.json ./local/

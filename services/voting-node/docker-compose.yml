@@ -93,7 +93,7 @@ services:
       - SNAPSHOT_CONFIG_PATH=/app/snapshot-importer-example-config.json
       - SNAPSHOT_OUTPUT_DIR=/tmp/snapshot-output
       - SNAPSHOT_NETWORK_ID=testnet
-      - SNAPSHOT_LOG_LEVEL=debug
+      - SNAPSHOT_LOG_LEVEL=info
       - SNAPSHOT_LOG_FORMAT=text
     volumes:
       - leader0_store:/node_storage

@@ -109,8 +109,8 @@ class ExternalDataImporter:
 
         returncode = await proc.wait()
         if returncode != 0:
-            raise Exception("failed to run ideascale importer")
-        logger.debug("ideascale importer has finished")
+            raise Exception("failed to run dbsync snapshot importer")
+        logger.debug("dbsync snapshot importer has finished")
 
 
 class SnapshotRunner(BaseModel):
@@ -145,6 +145,26 @@ class SnapshotRunner(BaseModel):
         time_til_next: int = delta_seconds % interval
         return num_intervals, time_til_next
 
+    async def _ideascale_snapshot(self, event_id: int) -> None:
+        """Call the 'ideascale-importer ideascale import-all <ARGS..>' command."""
+        try:
+            # Initialize external data importer
+            #importer = ExternalDataImporter()
+            #await importer.ideascale_import_all(event_id)
+            raise Exception("IdeaScale snapshot is currently disabled. Skipping...")
+        except Exception as e:
+            logger.error("Failed to take ideascale snapshot", exc_info=e)
+
+
+    async def _dbsync_snapshot(self, event_id: int) -> None:
+        """Call the 'ideascale-importer snapshot import <ARGS..>' command."""
+        try:
+            # Initialize external data importer
+            importer = ExternalDataImporter()
+            await importer.snapshot_import(event_id)
+        except Exception as e:
+            logger.error("Failed to take dbsync snapshot", exc_info=e)
+
     async def take_snapshots(self, event_id: int) -> None:
         """Takes snapshots at regular intervals using ExternalDataImporter.
 
@@ -161,46 +181,25 @@ class SnapshotRunner(BaseModel):
             logger.info("Snapshot has become stable. Skipping...")
             return
 
-        # Initialize external data importer
-        importer = ExternalDataImporter()
-
         # Take snapshots at regular intervals
         while True:
             interval = int(os.getenv("SNAPSHOT_INTERVAL_SECONDS", 1800))
             current_time = datetime.utcnow()
             num_intervals, secs_to_sleep = self._reimaining_intervals_n_seconds_to_next_snapshot(current_time, interval)
+
+            logger.info(f"{num_intervals + 1} snapshots remaining. Next snapshot is in {secs_to_sleep} seconds...")
+            # Wait for the next snapshot interval
+            await asyncio.sleep(secs_to_sleep)
+
+            # Take snapshot
+            logger.info("Taking snapshot now")
+            logger.debug(">> Starting DBSync snapshot now")
+            await self._dbsync_snapshot(event_id)
+            logger.debug(">> Starting IdeasScale snapshot now")
+            await self._ideascale_snapshot(event_id)
+
             if num_intervals > 0:
-                # Wait for the next snapshot interval
-                logger.info(f"Next snapshot is in {secs_to_sleep} seconds...")
-                await asyncio.sleep(secs_to_sleep)
-
-                # Take snapshot
-                logger.info("Taking snapshot now")
-                try:
-                    await importer.snapshot_import(event_id)
-                except Exception as e:
-                    logger.error("Failed to take dbsync snapshot", exc_info=e)
-
-                #try:
-                #    await importer.ideascale_import_all(event_id)
-                #except Exception as e:
-                #    logger.error("Failed to take ideascale snapshot", exc_info=e)
-
                 await asyncio.sleep(0)
                 continue
             else:
-                # Take final snapshot
-                logger.info(f"Taking FINAL snapshot in {secs_to_sleep} seconds...")
-                await asyncio.sleep(secs_to_sleep)
-                logger.info("Taking FINAL snapshot now")
-                try:
-                    await importer.snapshot_import(event_id)
-                except Exception as e:
-                    logger.error("Failed to take dbsync snapshot", exc_info=e)
-
-                #try:
-                #    await importer.ideascale_import_all(event_id)
-                #except Exception as e:
-                #    logger.error("Failed to take ideascale snapshot", exc_info=e)
-
                 break

@@ -87,6 +87,7 @@ services:
       - IDEASCALE_LOG_FORMAT=text
       - IDEASCALE_API_URL=https://cardano.ideascale.com
       ### SNAPSHOT TOOL DATA IMPORTER
+      - SNAPSHOT_INTERVAL_SECONDS=60
       - SNAPSHOT_CONFIG_PATH=/app/snapshot-importer-example-config.json
       - SNAPSHOT_OUTPUT_DIR=/tmp/snapshot-output
       - SNAPSHOT_NETWORK_ID=testnet

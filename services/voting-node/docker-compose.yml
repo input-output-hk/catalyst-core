@@ -5,9 +5,12 @@ services:
     image: postgres:14
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: CatalystEventDev
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=CatalystEventDev
+      - PGPASSWORD=postgres
+      - PGUSER=catalyst-event-dev
+      - PGDATABASE=CatalystEventDev
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 2s
@@ -57,7 +60,6 @@ services:
         condition: service_completed_successfully
     ports:
       - 3030:3030
-    command: ["run", "--database-url $${DATABASE_URL}"]
 
   leader0:
     image: voting-node:latest
@@ -70,7 +72,7 @@ services:
       - IS_NODE_RELOADABLE=True
       - VOTING_HOST=0.0.0.0
       - VOTING_PORT=8000
-      - VOTING_LOG_LEVEL=info
+      - VOTING_LOG_LEVEL=debug
       - VOTING_NODE_STORAGE=node_storage
       - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
       - JORM_PATH=jormungandr

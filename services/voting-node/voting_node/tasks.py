@@ -14,7 +14,7 @@ from loguru import logger
 from . import utils
 from .db import EventDb
 from .envvar import COMMITTEE_CRS
-from .importer import ExternalDataImporter
+from .importer import SnapshotRunner
 from .jcli import JCli
 from .jormungandr import Jormungandr
 from .models import (
@@ -36,7 +36,7 @@ from .node import (
 )
 from .storage import SecretDBStorage
 
-RESET_DATA = True
+RESET_DATA = False
 KEEP_DATA = False
 SCHEDULE_RESET_MSG = "schedule was reset"
 
@@ -66,7 +66,6 @@ LEADER0_NODE_SCHEDULE: Final = [
     "set_node_topology_key",
     "set_node_config",
     "wait_for_registration_snapshot_time",
-    "wait_for_snapshot",
     "import_snapshot_data",
     "collect_snapshot_data",
     "setup_tally_committee",
@@ -194,8 +193,8 @@ class NodeTaskSchedule(ScheduleRunner):
         # This all starts by getting the event row that has the nearest
         # `voting_start`. We query the DB to get the row, and store it.
         try:
-            event = await self.db.fetch_current_event()
-            logger.debug("current event retrieved from DB")
+            event = await self.db.fetch_upcoming_event()
+            logger.debug("upcoming event retrieved from DB")
             self.node.event = event
         except Exception as e:
             self.reset_schedule(f"{e}")
@@ -456,6 +455,27 @@ class Leader0Schedule(LeaderSchedule):
     # Leader0 Node tasks
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
+
+    async def fetch_upcoming_event(self):
+        """Override common method to fetch the upcoming event from the DB.
+
+        'leader0' nodes that don't find an upcoming event, create one with
+        default values.
+        """
+        try:
+            event = await self.db.fetch_upcoming_event()
+            logger.debug("current event retrieved from DB")
+            self.node.event = event
+        except Exception as e:
+            # run helper to add a default event to the DB
+            from .helpers import add_default_event
+            logger.debug("event not found from DB, attempting to create")
+            await add_default_event(db_url=self.settings.db_url)
+            logger.info("event added to DB")
+            event = await self.db.fetch_upcoming_event()
+            logger.debug("current event retrieved from DB")
+            self.node.event = event
+
     async def wait_for_registration_snapshot_time(self):
         """Wait for the event registration_snapshot_time."""
         # get the snapshot start timestamp
@@ -467,23 +487,15 @@ class Leader0Schedule(LeaderSchedule):
 
         logger.debug("registration snapshot time reached.")
 
-    async def wait_for_snapshot(self):
-        """Wait for the event snapshot_start time."""
-        # get the snapshot start timestamp
-        # raises an exception otherwise
-        snapshot_start = self.node.get_snapshot_start()
-        # check if now is after the snapshot start time
-        if not self.node.has_snapshot_started():
-            raise Exception(f"snapshot will be stable on {snapshot_start} UTC")
-
-        logger.debug("snapshot is stable")
-
     async def import_snapshot_data(self):
         """Collect the snapshot data from EventDB."""
         event = self.node.get_event()
-        importer = ExternalDataImporter()
-        await importer.ideascale_import_all(event.row_id)
-        await importer.snapshot_import(event.row_id)
+        registration_time = event.get_registration_snapshot_time()
+        snapshot_start = event.get_snapshot_start()
+        runner = SnapshotRunner(registration_snapshot_time=registration_time, snapshot_start=snapshot_start)
+        logger.info("Execute snapshot runner.")
+        await runner.take_snapshots(event.row_id)
+
 
     async def collect_snapshot_data(self):
         """Collect the snapshot data from EventDB."""
@@ -506,21 +518,21 @@ class Leader0Schedule(LeaderSchedule):
                 raise Exception("dbsync snapsthot data is missing")
             data = brotli.decompress(compressed_data)
             dbsync_data = json.loads(data)
-            logger.debug(f"snapshot:\n{dbsync_data}")
+            logger.debug("dbsync snapshot data retrieved")
         except Exception as e:
             logger.error(f"expected snapshot:\n{e}")
 
             # gets event vote plans, raises exception if none is found.
         try:
             voteplans = await self.db.fetch_voteplans(event.row_id)
-            logger.debug(f"voteplans:\n{voteplans}")
+            #logger.debug(f"voteplans:\n{voteplans}")
         except Exception as e:
             logger.error(f"expected voteplans:\n{e}")
 
         try:
             # gets event proposals, raises exception if none is found.
             proposals = await self.db.fetch_proposals()
-            logger.debug(f"proposals:\n{proposals}")
+            #logger.debug(f"proposals:\n{proposals}")
             self.proposals = proposals
         except Exception as e:
             logger.warning("no proposals were found")
@@ -539,7 +551,7 @@ class Leader0Schedule(LeaderSchedule):
         # TODO: fetch tally committee data from secret storage
         try:
             committee = await SecretDBStorage(conn=self.db.conn()).get_committee(event.row_id)
-            logger.debug(f"fetched committee from storage: {committee.as_yaml()}")
+            logger.debug("fetched committee from storage")
             self.node.committee = committee
         except Exception as e:
             logger.warning(f"failed to fetch committee from storage: {e}")

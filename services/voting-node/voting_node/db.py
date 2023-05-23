@@ -44,34 +44,32 @@ class EventDb(BaseModel):
         if self.connection is not None:
             await self.connection.close()
 
-    async def fetch_current_event(self) -> Event:
-        """Look in EventDB for the event that will start voting.
-
-           |--before event--|start_time --- current event ---end_time|--- next event ---|
-
-        """
+    async def fetch_upcoming_event(self) -> Event:
+        """Look in EventDB for the next event that will start."""
         # first, check if there is an event that has not finished
         now = datetime.datetime.utcnow()
-        filter_by = "(voting_end > $1 or voting_end IS NULL) and voting_start < $1"
-        sort_by = "voting_start ASC"
-        query = f"SELECT * FROM event WHERE {filter_by} ORDER BY {sort_by} LIMIT 1"
+        query = f"""
+        SELECT
+            *
+        FROM
+            event
+        WHERE
+            start_time > $1
+        ORDER BY
+            start_time ASC
+        LIMIT 1"""
         result = await self.conn().fetchrow(query, now)
-        if result is not None:
-            logger.debug(f"fetched ongoing event: {result}")
-            return Event(**dict(result))
 
-        filter_by = "voting_start > $1"
-        query = f"SELECT * FROM event WHERE {filter_by} ORDER BY {sort_by} LIMIT 1"
-        result = await self.conn().fetchrow(query, now)
         if result is None:
             raise Exception("failed to fetch event from DB")
+
         logger.debug(f"fetched upcoming event: {result}")
         return Event(**dict(result))
 
     async def fetch_leader_host_info(self, event_row_id: int) -> HostInfo:
         """Return HostInfo for leaders, sorted by hostname."""
-        filter_by = "hostname = $1 AND event = $2"
-        query = f"SELECT * FROM voting_node WHERE {filter_by}"
+        conds = "hostname = $1 AND event = $2"
+        query = f"SELECT * FROM voting_node WHERE {conds}"
         result = await self.conn().fetchrow(query, get_hostname(), event_row_id)
         match result:
             case None:
@@ -179,13 +177,13 @@ class EventDb(BaseModel):
         result = await self.conn().fetchrow(query, event_id)
         if result is None:
             raise Exception("snapshot DB error")
-        logger.debug(f"snapshot retrieved from DB: {result}")
+        logger.debug("snapshot retrieved from DB")
         match result:
             case None:
                 raise Exception("DB error fetching snapshot")
             case snpsht:
                 snapshot = Snapshot(*snpsht["row"])
-                logger.debug(f"snapshot retrieved from DB: {snapshot}")
+                logger.debug("snapshot retrieved from DB")
                 return snapshot
 
     async def fetch_voteplans(self, event_id: int) -> list[VotePlan]:

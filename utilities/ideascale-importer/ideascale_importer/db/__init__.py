@@ -151,6 +151,14 @@ async def connect(url: str) -> asyncpg.Connection:
 
     This also sets the jsonb codec to use the json module.
     """
-    conn = await asyncpg.connect(url)
-    await conn.set_type_codec("jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+    try:
+        conn = await asyncpg.connect(url)
+    except Exception as _:
+        raise Exception("Database connection failed")
+
+    try:
+        await conn.set_type_codec("jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+    except Exception as _:
+        raise Exception("Failed to set jsonb codec")
+
     return conn

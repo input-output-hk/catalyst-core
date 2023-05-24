@@ -68,7 +68,10 @@ def import_snapshot(
             raw_snapshot_file=raw_snapshot_file,
             dreps_file=dreps_file,
         )
-        await importer.run()
+        try:
+            await importer.run()
+        except Exception as e:
+            logger.error(e)
 
     try:
         asyncio.run(inner())

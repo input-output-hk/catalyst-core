@@ -141,7 +141,7 @@ class ScheduleRunner:
 
     async def run_task(self, task_name):
         """Run the async method with the given task_name."""
-        logger.info(f"{task_name}")
+        logger.info(f">> runnning task '{task_name}")
         logger.debug(f"|'{task_name}' start")
         self.current_task = task_name
         task_exec = getattr(self, task_name)
@@ -256,7 +256,7 @@ class NodeTaskSchedule(ScheduleRunner):
                 # raises exception if unable.
                 await self.db.insert_leader_host_info(host_info)
                 # explicitly reset the schedule to ensure this task is run again.
-                self.reset_schedule("added node host info to DB")
+                raise Exception("added node host info to DB")
             except Exception as e:
                 self.reset_schedule(f"{e}")
 
@@ -491,7 +491,7 @@ class Leader0Schedule(LeaderSchedule):
         registration_time = event.get_registration_snapshot_time()
         snapshot_start = event.get_snapshot_start()
         runner = SnapshotRunner(registration_snapshot_time=registration_time, snapshot_start=snapshot_start)
-        logger.info("Execute snapshot runner.")
+        logger.info(f"Execute snapshot runner for event in row {event.row_id}.")
         await runner.take_snapshots(event.row_id)
 
     async def collect_snapshot_data(self):

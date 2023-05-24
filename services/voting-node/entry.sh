@@ -14,6 +14,7 @@
 # VOTING_HOST - Voting node IP (optional). Defaults to 0.0.0.0
 # VOTING_PORT - Voting node port (optional). Defaults to 8000
 # VOTING_LOG_LEVEL - Log level (optional). Defaults to info
+# VOTING_LOG_FORMAT - Log format (optional). Defaults to text
 # VOTING_NODE_STORAGE - Path to node storage (optional). Defaults to ./node_storage
 # JORM_PATH - Path to jormungandr executable (optional). Defaults to jormungandr
 # JCLI_PATH - Path to jcli executable (optional). Defaults to jcli
@@ -85,6 +86,7 @@ check_env_vars "${REQUIRED_ENV[@]}"
 : "${VOTING_HOST:='0.0.0.0'}"
 : "${VOTING_PORT:='8000'}"
 : "${VOTING_LOG_LEVEL:='info'}"
+: "${VOTING_LOG_FORMAT:='text'}"
 : "${VOTING_NODE_STORAGE:='node_storage'}"
 : "${JORM_PATH:='jormungandr'}"
 : "${JCLI_PATH:='jcli'}"

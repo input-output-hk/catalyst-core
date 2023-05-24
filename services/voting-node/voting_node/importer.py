@@ -32,6 +32,7 @@ import asyncio
 import os
 from datetime import datetime
 
+from ideascale_importer.snapshot_importer import Importer as DBSyncImporter
 from loguru import logger
 from pydantic import BaseModel
 
@@ -82,35 +83,30 @@ class ExternalDataImporter:
         This command requires the following environment variables to work:
 
         * `EVENTDB_URL` sets `--database-url`.
-        * `SNAPSHOT_CONFIG_PATH` sets `--config-path`.
         * `SNAPSHOT_OUTPUT_DIR` sets `--output-dir`.
         * `SNAPSHOT_NETWORK_ID` sets `--network-id`.
+        * `DBSYNC_URL` sets `--dbsync-url`.
+        * `SNAPSHT_TOOL_PATH` sets `--snapshot-tool-path` (optional).
+        * `CATALYST_TOOLBOX_PATH` sets `--catalyst-toolbox-path` (optional).
         * `SNAPSHOT_LOG_LEVEL` sets `--log-level` (optional).
         * `SNAPSHOT_LOG_FORMAT` sets `--log-format` (optional).
         """
         logger.info(f"Importing snapshot data for event {event_id}")
-        proc = await asyncio.create_subprocess_exec(
-            "ideascale-importer",
-            "snapshot",
-            "import",
-            "--event-id",
-            f"{event_id}",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
+        importer = DBSyncImporter(
+            database_url=os.environ["EVENTDB_URL"],
+            event_id=event_id,
+            output_dir=os.environ["SNAPSHOT_OUTPUT_DIR"],
+            network_id=os.environ["SNAPSHOT_NETWORK_ID"],
+            dbsync_url=os.environ["DBSYNC_URL"],
+            snapshot_tool_path=os.environ.get("SNAPSHOT_TOOL_PATH", "snapshot_tool"),
+            catalyst_toolbox_path=os.environ.get("CATALYST_TOOLBOX_PATH", "catalyst_toolbox"),
+            gvc_api_url=os.environ["GVC_API_URL"],
         )
-
-        # checks that there is stdout
-        while proc.stdout is not None:
-            line = await proc.stdout.readline()
-            if line:
-                print(line.decode().rstrip("\n"))
-            else:
-                break
-
-        returncode = await proc.wait()
-        if returncode != 0:
-            raise Exception("failed to run dbsync snapshot importer")
-        logger.debug("dbsync snapshot importer has finished")
+        try:
+            await importer.run()
+            logger.debug("dbsync snapshot importer has finished")
+        except Exception as e:
+            raise Exception(f"dbsync import error: {e}")
 
 
 class SnapshotRunner(BaseModel):
@@ -151,9 +147,9 @@ class SnapshotRunner(BaseModel):
             # Initialize external data importer
             # importer = ExternalDataImporter()
             # await importer.ideascale_import_all(event_id)
-            raise Exception("IdeaScale snapshot is currently disabled. Skipping...")
+            raise Exception("ideascale import is DISABLED. Skipping...")
         except Exception as e:
-            logger.error(f"Failed to take ideascale snapshot: {e}")
+            logger.error(f"snapshot: {e}")
 
     async def _dbsync_snapshot(self, event_id: int) -> None:
         """Call the 'ideascale-importer snapshot import <ARGS..>' command."""
@@ -162,7 +158,7 @@ class SnapshotRunner(BaseModel):
             importer = ExternalDataImporter()
             await importer.snapshot_import(event_id)
         except Exception as e:
-            logger.error(f"Failed to take dbsync snapshot: {e}")
+            logger.error(f"snapshot: {e}")
 
     async def take_snapshots(self, event_id: int) -> None:
         """Takes snapshots at regular intervals using ExternalDataImporter.
@@ -192,9 +188,9 @@ class SnapshotRunner(BaseModel):
 
             # Take snapshot
             logger.info("Taking snapshot now")
-            logger.debug(">> Starting DBSync snapshot now")
+            logger.debug("|---> Starting DBSync snapshot now")
             await self._dbsync_snapshot(event_id)
-            logger.debug(">> Starting IdeasScale snapshot now")
+            logger.debug("|---> Starting IdeasScale snapshot now")
             await self._ideascale_snapshot(event_id)
 
             if num_intervals > 0:

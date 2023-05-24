@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["VARIANTS"],"enum":["Error","WalletType","__Field"],"struct":["Wallet","__FieldVisitor","__Visitor"],"type":["WalletLib"]};

@@ -72,7 +72,8 @@ services:
       - IS_NODE_RELOADABLE=True
       - VOTING_HOST=0.0.0.0
       - VOTING_PORT=8000
-      - VOTING_LOG_LEVEL=debug
+      - VOTING_LOG_LEVEL=info
+      - VOTING_LOG_FORMAT=text
       - VOTING_NODE_STORAGE=node_storage
       - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
       - JORM_PATH=jormungandr
@@ -85,17 +86,14 @@ services:
       - IDEASCALE_API_TOKEN=USE-A-VALID-API-TOKEN-FROM-IDEASCALE
       - IDEASCALE_CAMPAIGN_GROUP=66
       - IDEASCALE_STAGE_ID=4385
-      - IDEASCALE_LOG_LEVEL=debug
-      - IDEASCALE_LOG_FORMAT=text
+      - IDEASCALE_CONFIG_PATH=/app/ideascale-importer-config.json
       - IDEASCALE_API_URL=https://cardano.ideascale.com
       ### SNAPSHOT TOOL DATA IMPORTER
-      - SNAPSHOT_INTERVAL_SECONDS=60
+      - SNAPSHOT_INTERVAL_SECONDS=1800
       - SNAPSHOT_OUTPUT_DIR=/tmp/snapshot-output
       - SNAPSHOT_NETWORK_ID=testnet
       - DBSYNC_URL=postgres://CHANGE_ME
       - GVC_API_URL=https://CHANGE_ME
-      - SNAPSHOT_LOG_LEVEL=info
-      - SNAPSHOT_LOG_FORMAT=text
     volumes:
       - leader0_store:/node_storage
       - leader0_store:/tmp/snapshot-output

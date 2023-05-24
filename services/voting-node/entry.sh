@@ -29,8 +29,8 @@
 # IDEASCALE_API_TOKEN - API token for IDEASCALE
 # IDEASCALE_CAMPAIGN_GROUP - Campaign group for IDEASCALE
 # IDEASCALE_STAGE_ID - Stage ID for IDEASCALE
-# IDEASCALE_LOG_LEVEL - Log level for ideascale snapshots
 # IDEASCALE_API_URL - URL for IdeaScale. Example: https://cardano.ideascale.com
+# IDEASCALE_CONFIG_PATH - Path to JSON config file for IdeaScale importer
 #
 # ### DBSYNC SNAPSHOT DATA IMPORTER
 # DBSYNC_URL - URL for DBSync database
@@ -91,6 +91,16 @@ check_env_vars "${REQUIRED_ENV[@]}"
 : "${JORM_PATH:='jormungandr'}"
 : "${JCLI_PATH:='jcli'}"
 
+# Export environment variables
+export IS_NODE_RELOADABLE="${IS_NODE_RELOADABLE}"
+export VOTING_HOST="${VOTING_HOST}"
+export VOTING_PORT="${VOTING_PORT}"
+export VOTING_LOG_LEVEL="${VOTING_LOG_LEVEL}"
+export VOTING_LOG_FORMAT="${VOTING_LOG_FORMAT}"
+export VOTING_NODE_STORAGE="${VOTING_NODE_STORAGE}"
+export JORM_PATH="${JORM_PATH}"
+export JCLI_PATH="${JCLI_PATH}"
+
 # Get the hostname
 HOSTNAME=$(hostname)
 
@@ -103,8 +113,8 @@ if [ "$HOSTNAME" = "leader0" ]; then
         "IDEASCALE_API_TOKEN"
         "IDEASCALE_CAMPAIGN_GROUP"
         "IDEASCALE_STAGE_ID"
-        "IDEASCALE_LOG_LEVEL"
         "IDEASCALE_API_URL"
+        "IDEASCALE_CONFIG_PATH"
         "DBSYNC_URL"
         "GVC_API_URL"
         "SNAPSHOT_OUTPUT_DIR"
@@ -115,6 +125,11 @@ if [ "$HOSTNAME" = "leader0" ]; then
     : "${SNAPSHOT_TOOL_PATH:='snapshot_tool'}"
     : "${CATALYST_TOOLBOX_PATH:='catalyst-toolbox'}"
     : "${SNAPSHOT_INTERVAL_SECONDS:='1800'}"
+
+    # Export environment variables
+    export SNAPSHOT_TOOL_PATH="${SNAPSHOT_TOOL_PATH}"
+    export CATALYST_TOOLBOX_PATH="${CATALYST_TOOLBOX_PATH}"
+    export SNAPSHOT_INTERVAL_SECONDS="${SNAPSHOT_INTERVAL_SECONDS}"
 fi
 
 # Sleep if DEBUG_SLEEP is set

@@ -130,6 +130,7 @@ class EventDb(BaseModel):
             case []:
                 raise Exception("no leader host info found in DB")
             case [*leaders]:
+
                 def extract_leader_info(leader):
                     host_info = LeaderHostInfo(*leader["row"])
                     logger.debug(f"{host_info.hostname}")

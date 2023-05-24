@@ -16,16 +16,16 @@ Common to IdeaScale and DBSync snapshots:
 * `IDEASCALE_CAMPAIGN_GROUP` - Group ID for the IdeaScale campaign.
 * `IDEASCALE_STAGE_ID` - Stage ID for IdeaScale.
 * `IDEASCALE_API_URL` - URL for IdeaScale API.
-* `IDEASCALE_LOG_LEVEL` - Set the log level for the importer command (optional).
-* `IDEASCALE_LOG_FORMAT` - Set the log format for the importer command (optional).
+* `IDEASCALE_CONFIG_PATH` - Path to the ideascale command configuration file.
 
 ## Specific to DBSync Snapshot
 
 * `SNAPSHOT_CONFIG_PATH` - Path to the command configuration file.
 * `SNAPSHOT_OUTPUT_DIR`- Path to directory where DBSync snapshot output is written.
 * `SNAPSHOT_NETWORK_ID` - Defines 'mainnet' or 'testnet'.
-* `SNAPSHOT_LOG_LEVEL` - Set the log level for the importer command (optional).
-* `SNAPSHOT_LOG_FORMAT` - Set the log format for the importer command (optional).
+* `DBSYNC_URL` - URL to DBSync.
+* `SNAPSHOT_TOOL_PATH` - Path to the snapshot_tool executable (optional).
+* `CATALYST_TOOLBOX_PATH` - Path to the catalyst-toolbox executable (optional).
 
 """
 import asyncio
@@ -50,8 +50,7 @@ class ExternalDataImporter:
         * `IDEASCALE_CAMPAIGN_GROUP` sets `--campaing-group-id`.
         * `IDEASCALE_STAGE_ID` sets `--stage-id`.
         * `IDEASCALE_API_URL` sets `--ideascale-api-url`.
-        * `IDEASCALE_LOG_LEVEL` sets `--log-level` (optional).
-        * `IDEASCALE_LOG_FORMAT` sets `--log-format` (optional).
+        * `IDEASCALE_CONFIG_PATH` sets `--config-path`.
         """
         logger.info(f"Running ideascale for event {event_id}")
         proc = await asyncio.create_subprocess_exec(
@@ -86,10 +85,8 @@ class ExternalDataImporter:
         * `SNAPSHOT_OUTPUT_DIR` sets `--output-dir`.
         * `SNAPSHOT_NETWORK_ID` sets `--network-id`.
         * `DBSYNC_URL` sets `--dbsync-url`.
-        * `SNAPSHT_TOOL_PATH` sets `--snapshot-tool-path` (optional).
+        * `SNAPSHOT_TOOL_PATH` sets `--snapshot-tool-path` (optional).
         * `CATALYST_TOOLBOX_PATH` sets `--catalyst-toolbox-path` (optional).
-        * `SNAPSHOT_LOG_LEVEL` sets `--log-level` (optional).
-        * `SNAPSHOT_LOG_FORMAT` sets `--log-format` (optional).
         """
         logger.info(f"Importing snapshot data for event {event_id}")
         importer = DBSyncImporter(

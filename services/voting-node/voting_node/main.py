@@ -5,7 +5,7 @@ Main entrypoint for executing the voting node service from the shell command-lin
 
 import click
 import uvicorn
-
+from ideascale_importer.utils import configure_logger
 from . import api, service
 from .envvar import (
     EVENTDB_URL,
@@ -17,6 +17,7 @@ from .envvar import (
     JORM_PORT_REST,
     VOTING_HOST,
     VOTING_LOG_LEVEL,
+    VOTING_LOG_FORMAT,
     VOTING_NODE_STORAGE,
     VOTING_PORT,
 )
@@ -65,6 +66,15 @@ def voting_node_cli():
     help="""Set the level for logs in the voting node.
 
     If left unset it will look for envvar `VOTING_LOG_LEVEL`. If no level is found, the default value is: info""",
+)
+@click.option(
+    "--log-format",
+    envvar=VOTING_LOG_FORMAT,
+    default="text",
+    type=click.Choice(["text", "json"]),
+    help="""Set the format for logs in the voting node.
+
+    If left unset it will look for envvar `VOTING_LOG_FORMAT`. If no format is found, the default value is: text""",
 )
 @click.option(
     "--database-url",
@@ -128,6 +138,7 @@ def start(
     api_host,
     api_port,
     log_level,
+    log_format,
     database_url,
     node_storage,
     jorm_path,
@@ -137,7 +148,7 @@ def start(
     jorm_port_p2p,
 ):
     """Start the Voting Service."""
-    click.echo(f"reloadable={reloadable}")
+    configure_logger(log_level, log_format)
 
     api_config = uvicorn.Config(api.app, host=api_host, port=api_port, log_level=log_level)
     settings = ServiceSettings(

@@ -385,7 +385,7 @@ class Snapshot:
     event: int
     as_at: datetime
     last_updated: datetime
-    dbsync_snapshot_data: str | None
+    dbsync_snapshot_data: bytes | None
     drep_data: str | None
     catalyst_snapshot_data: str | None
     final: bool

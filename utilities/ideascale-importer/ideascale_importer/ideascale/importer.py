@@ -248,11 +248,11 @@ class Importer:
             except Exception as e:
                 raise ReadProposalsScoresCsv(repr(e)) from e
 
-    async def connect(self):
+    async def connect(self, *args, **kwargs):
         """Connect to the database."""
         if self.conn is None:
             logger.info("Connecting to the database")
-            self.conn = await ideascale_importer.db.connect(self.database_url)
+            self.conn = await ideascale_importer.db.connect(self.database_url, *args, **kwargs)
 
     async def close(self):
         """Close the connection to the database."""

@@ -5,6 +5,7 @@ import typer
 
 from ideascale_importer.snapshot_importer import Importer
 from ideascale_importer.utils import configure_logger
+from loguru import logger
 
 app = typer.Typer(add_completion=False)
 
@@ -51,6 +52,7 @@ def import_snapshot(
     ),
 ):
     """Import snapshot data into the database."""
+    # Configure logger with the given parameters
     configure_logger(log_level, log_format)
 
     async def inner():
@@ -68,4 +70,8 @@ def import_snapshot(
         )
         await importer.run()
 
-    asyncio.run(inner())
+    try:
+        asyncio.run(inner())
+    except Exception as e:
+        logger.error(e)
+        raise typer.Exit(1)

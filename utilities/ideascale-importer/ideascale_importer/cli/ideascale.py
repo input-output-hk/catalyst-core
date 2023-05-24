@@ -7,6 +7,7 @@ import typer
 from ideascale_importer.ideascale.client import Client
 from ideascale_importer.ideascale.importer import Importer
 from ideascale_importer.utils import configure_logger
+from loguru import logger
 
 app = typer.Typer(add_completion=False)
 
@@ -74,4 +75,8 @@ def import_all(
         await importer.run()
         await importer.close()
 
-    asyncio.run(inner(event_id, campaign_group_id, stage_id, proposals_scores_csv, ideascale_api_url))
+    try:
+        asyncio.run(inner(event_id, campaign_group_id, stage_id, proposals_scores_csv, ideascale_api_url))
+    except Exception as e:
+        logger.error(e)
+        raise typer.Exit(1)

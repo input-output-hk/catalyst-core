@@ -108,7 +108,7 @@ class ScheduleRunner:
         """
         if reset_data:
             self.reset_data()
-        raise Exception(f"|->{msg}")
+        raise Exception(f"{msg}")
 
     async def run(self) -> None:
         """Run through the scheduled tasks.
@@ -136,17 +136,17 @@ class ScheduleRunner:
             try:
                 await self.run_task(task)
             except Exception as e:
-                raise Exception(f"'{task}': {e}") from e
+                raise e
         logger.info("SCHEDULE END")
 
     async def run_task(self, task_name):
         """Run the async method with the given task_name."""
-        logger.info(f">> runnning task '{task_name}")
-        logger.debug(f"|'{task_name}' start")
+        logger.info(f">> TASK {task_name}")
+        logger.debug(f"| {task_name} START")
         self.current_task = task_name
         task_exec = getattr(self, task_name)
         await task_exec()
-        logger.debug(f"|'{task_name}' end")
+        logger.debug(f"| {task_name} END")
 
 
 class NodeTaskSchedule(ScheduleRunner):

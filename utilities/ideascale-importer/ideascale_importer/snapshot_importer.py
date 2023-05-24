@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import json
 import os
+import re
 from typing import Dict, List, Tuple, Optional
 from loguru import logger
 import pydantic.tools
@@ -140,6 +141,9 @@ class FinalSnapshotAlreadyPresent(Exception):
 
     ...
 
+class InvalidDatabaseUrl(Exception):
+    """Raised when the database URL is invalid."""
+    ...
 
 class Importer:
     """Snapshot importer."""
@@ -311,12 +315,23 @@ class Importer:
             json.dump(dataclasses.asdict(dreps_data), f)
 
     async def _run_snapshot_tool(self):
+        # Extract the db_user, db_pass, db_host, and db_name from the address using a regular expression
+        match = re.match(r'^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+):?([0-9]*)\/(?P<db_name>[^?]+)?', self.config.dbsync_database.db_url)
+
+        if match is None:
+            raise InvalidDatabaseUrl
+
+        db_user = match.group('db_user')
+        db_pass = match.group('db_pass')
+        db_host = match.group('db_host')
+        db_name = match.group('db_name')
+
         snapshot_tool_cmd = (
             f"{self.config.snapshot_tool.path}"
-            f" --db-user {self.config.dbsync_database.user}"
-            f" --db-pass {self.config.dbsync_database.password}"
-            f" --db-host {self.config.dbsync_database.host}"
-            f" --db {self.config.dbsync_database.db}"
+            f" --db-user {db_user}"
+            f" --db-pass {db_pass}"
+            f" --db-host {db_host}"
+            f" --db {db_name}"
             f" --min-slot 0 --max-slot {self.registration_snapshot_slot}"
             f" --network-id {self.network_id}"
             f" --out-file {self.raw_snapshot_tool_file}"

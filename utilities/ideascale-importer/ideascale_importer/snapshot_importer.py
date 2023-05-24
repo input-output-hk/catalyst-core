@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import json
 import os
+import re
 from typing import Dict, List, Tuple, Optional
 from loguru import logger
 import pydantic.tools
@@ -21,10 +22,7 @@ from ideascale_importer.utils import run_cmd
 class DbSyncDatabaseConfig:
     """Configuration for the database containing data from dbsync."""
 
-    host: str
-    user: str
-    password: str
-    db: str
+    db_url: str
 
 
 @dataclass
@@ -143,22 +141,40 @@ class FinalSnapshotAlreadyPresent(Exception):
 
     ...
 
+class InvalidDatabaseUrl(Exception):
+    """Raised when the database URL is invalid."""
+
+    def __init__(self, db_url: str):
+        """Initialize the exception."""
+        self.db_url = db_url
+
+    def __str__(self):
+        """Return a string representation of the exception."""
+        return "Invalid database URL"
 
 class Importer:
     """Snapshot importer."""
 
     def __init__(
         self,
-        config_path: str,
         database_url: str,
         event_id: int,
         output_dir: str,
         network_id: str,
+        dbsync_url: str,
+        snapshot_tool_path: str,
+        catalyst_toolbox_path: str,
+        gvc_api_url: str,
         raw_snapshot_file: Optional[str] = None,
         dreps_file: Optional[str] = None,
     ):
         """Initialize the importer."""
-        self.config = Config.from_json_file(config_path)
+        self.config = Config(
+            dbsync_database=DbSyncDatabaseConfig(db_url=dbsync_url),
+            snapshot_tool=SnapshotToolConfig(path=snapshot_tool_path),
+            catalyst_toolbox=CatalystToolboxConfig(path=catalyst_toolbox_path),
+            gvc=GvcConfig(api_url=gvc_api_url),
+        )
         self.database_url = database_url
         self.event_id = event_id
         self.lastest_block_time: Optional[datetime] = None
@@ -196,99 +212,102 @@ class Importer:
 
         await conn.close()
 
-    async def _fetch_parameters(self):
+    async def _fetch_parameters(self, *db_args, **db_kwargs):
         # Fetch event parameters
-        conn = await ideascale_importer.db.connect(self.database_url)
-
-        row = await conn.fetchrow(
-            "SELECT "
-            "registration_snapshot_time, snapshot_start, voting_power_threshold, max_voting_power_pct "
-            "FROM event WHERE row_id = $1",
-            self.event_id,
-        )
-        if row is None:
-            raise FetchParametersFailed("Failed to get event parameters from the database: " f"event_id={self.event_id} not found")
-
-        self.voting_power_cap = row["max_voting_power_pct"]
-        if self.voting_power_cap is not None:
-            self.voting_power_cap = float(self.voting_power_cap)
-
-        self.min_stake_threshold = row["voting_power_threshold"]
-        self.snapshot_start_time = row["snapshot_start"]
-        self.registration_snapshot_time = row["registration_snapshot_time"]
-
-        if self.snapshot_start_time is None or self.registration_snapshot_time is None:
-            snapshot_start_time = None
-            if self.snapshot_start_time is not None:
-                snapshot_start_time = self.snapshot_start_time.isoformat()
-
-            registration_snapshot_time = None
-            if self.registration_snapshot_time is not None:
-                registration_snapshot_time = self.registration_snapshot_time.isoformat()
-
-            raise FetchParametersFailed(
-                "Missing snapshot timestamps for event in the database:"
-                f" snapshot_start={snapshot_start_time}"
-                f" registration_snapshot_time={registration_snapshot_time}"
-            )
-
-        logger.info(
-            "Got event parameters",
-            min_stake_threshold=self.min_stake_threshold,
-            voting_power_cap=self.voting_power_cap,
-            snapshot_start=None if self.snapshot_start_time is None else self.snapshot_start_time.isoformat(),
-            registration_snapshot_time=None
-            if self.registration_snapshot_time is None
-            else self.registration_snapshot_time.isoformat(),
-        )
-
-        await conn.close()
-
-        if not self.skip_snapshot_tool_execution:
-            # Fetch max slot
-            conn = await ideascale_importer.db.connect(
-                f"postgres://{self.config.dbsync_database.user}:"
-                + f"{self.config.dbsync_database.password}@{self.config.dbsync_database.host}"
-                f"/{self.config.dbsync_database.db}"
-            )
-
-            # Fetch slot number and time from the block right before or equal the registration snapshot time
-            row = await conn.fetchrow(
-                "SELECT slot_no, time FROM block WHERE time <= $1 AND slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
-                self.registration_snapshot_time,
-            )
-            if row is None:
-                raise FetchParametersFailed(
-                    "Failed to get registration snapshot block data from db_sync database: " "no data returned by the query"
-                )
-
-            self.registration_snapshot_slot = row["slot_no"]
-            self.registration_snapshot_block_time = row["time"]
-            logger.info(
-                "Got registration snapshot block data",
-                slot_no=self.registration_snapshot_slot,
-                block_time=None
-                if self.registration_snapshot_block_time is None
-                else self.registration_snapshot_block_time.isoformat(),
-            )
+        try:
+            conn = await ideascale_importer.db.connect(self.database_url, *db_args, **db_kwargs)
 
             row = await conn.fetchrow(
-                "SELECT slot_no, time FROM block WHERE slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
+                "SELECT "
+                "registration_snapshot_time, snapshot_start, voting_power_threshold, max_voting_power_pct "
+                "FROM event WHERE row_id = $1",
+                self.event_id,
             )
             if row is None:
+                raise FetchParametersFailed("Failed to get event parameters from the database: " f"event_id={self.event_id} not found")
+
+            self.voting_power_cap = row["max_voting_power_pct"]
+            if self.voting_power_cap is not None:
+                self.voting_power_cap = float(self.voting_power_cap)
+
+            self.min_stake_threshold = row["voting_power_threshold"]
+            self.snapshot_start_time = row["snapshot_start"]
+            self.registration_snapshot_time = row["registration_snapshot_time"]
+
+            if self.snapshot_start_time is None or self.registration_snapshot_time is None:
+                snapshot_start_time = None
+                if self.snapshot_start_time is not None:
+                    snapshot_start_time = self.snapshot_start_time.isoformat()
+
+                registration_snapshot_time = None
+                if self.registration_snapshot_time is not None:
+                    registration_snapshot_time = self.registration_snapshot_time.isoformat()
+
                 raise FetchParametersFailed(
-                    "Failed to get latest block time and slot number from db_sync database:" "no data returned by the query"
+                    "Missing snapshot timestamps for event in the database:"
+                    f" snapshot_start={snapshot_start_time}"
+                    f" registration_snapshot_time={registration_snapshot_time}"
                 )
 
-            self.latest_block_slot_no = row["slot_no"]
-            self.lastest_block_time = row["time"]
             logger.info(
-                "Got latest block data",
-                time=None if self.lastest_block_time is None else self.lastest_block_time.isoformat(),
-                slot_no=self.latest_block_slot_no,
+                "Got event parameters",
+                min_stake_threshold=self.min_stake_threshold,
+                voting_power_cap=self.voting_power_cap,
+                snapshot_start=None if self.snapshot_start_time is None else self.snapshot_start_time.isoformat(),
+                registration_snapshot_time=None
+                if self.registration_snapshot_time is None
+                else self.registration_snapshot_time.isoformat(),
             )
 
             await conn.close()
+        except Exception as e:
+            logger.error("Failed to fetch event parameters", exc_info=e)
+            raise FetchParametersFailed(str(e))
+
+        if not self.skip_snapshot_tool_execution:
+            try:
+                # Fetch max slot
+                conn = await ideascale_importer.db.connect(self.config.dbsync_database.db_url)
+
+                # Fetch slot number and time from the block right before or equal the registration snapshot time
+                row = await conn.fetchrow(
+                    "SELECT slot_no, time FROM block WHERE time <= $1 AND slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
+                    self.registration_snapshot_time,
+                )
+                if row is None:
+                    raise FetchParametersFailed(
+                        "Failed to get registration snapshot block data from db_sync database: no data returned by the query"
+                    )
+
+                self.registration_snapshot_slot = row["slot_no"]
+                self.registration_snapshot_block_time = row["time"]
+                logger.info(
+                    "Got registration snapshot block data",
+                    slot_no=self.registration_snapshot_slot,
+                    block_time=None
+                    if self.registration_snapshot_block_time is None
+                    else self.registration_snapshot_block_time.isoformat(),
+                )
+
+                row = await conn.fetchrow(
+                    "SELECT slot_no, time FROM block WHERE slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
+                )
+                if row is None:
+                    raise FetchParametersFailed(
+                        "Failed to get latest block time and slot number from db_sync database: no data returned by the query"
+                    )
+
+                self.latest_block_slot_no = row["slot_no"]
+                self.lastest_block_time = row["time"]
+                logger.info(
+                    "Got latest block data",
+                    time=None if self.lastest_block_time is None else self.lastest_block_time.isoformat(),
+                    slot_no=self.latest_block_slot_no,
+                )
+
+                await conn.close()
+            except Exception as e:
+                raise FetchParametersFailed(f"Failed to get latest block data with snapshot_tool: {e}")
         else:
             logger.info("Skipping querying max slot parameter")
 
@@ -310,12 +329,24 @@ class Importer:
             json.dump(dataclasses.asdict(dreps_data), f)
 
     async def _run_snapshot_tool(self):
+        # Extract the db_user, db_pass, db_host, and db_name from the address using a regular expression
+        db_url = self.config.dbsync_database.db_url
+        match = re.match(r'^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+):?([0-9]*)\/(?P<db_name>[^?]+)?', db_url)
+
+        if match is None:
+            raise InvalidDatabaseUrl(db_url=db_url)
+
+        db_user = match.group('db_user')
+        db_pass = match.group('db_pass')
+        db_host = match.group('db_host')
+        db_name = match.group('db_name')
+
         snapshot_tool_cmd = (
             f"{self.config.snapshot_tool.path}"
-            f" --db-user {self.config.dbsync_database.user}"
-            f" --db-pass {self.config.dbsync_database.password}"
-            f" --db-host {self.config.dbsync_database.host}"
-            f" --db {self.config.dbsync_database.db}"
+            f" --db-user {db_user}"
+            f" --db-pass {db_pass}"
+            f" --db-host {db_host}"
+            f" --db {db_name}"
             f" --min-slot 0 --max-slot {self.registration_snapshot_slot}"
             f" --network-id {self.network_id}"
             f" --out-file {self.raw_snapshot_tool_file}"
@@ -529,9 +560,9 @@ class Importer:
             voters_count=len(voters.values()),
         )
 
-    async def run(self):
+    async def run(self, *db_args, **db_kwargs):
         """Take a snapshot and write the data to the database."""
-        await self._fetch_parameters()
+        await self._fetch_parameters(*db_args, **db_kwargs)
 
         if self.dreps_file is None:
             await self._fetch_gvc_dreps_list()

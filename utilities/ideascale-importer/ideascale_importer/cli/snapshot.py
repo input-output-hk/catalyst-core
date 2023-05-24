@@ -5,20 +5,27 @@ import typer
 
 from ideascale_importer.snapshot_importer import Importer
 from ideascale_importer.utils import configure_logger
+from loguru import logger
 
 app = typer.Typer(add_completion=False)
 
 
 @app.command(name="import")
 def import_snapshot(
-    config_path: str = typer.Option(..., help="Path to the configuration file"),
     event_id: int = typer.Option(..., help="Database event id to link all snapshot data to"),
-    database_url: str = typer.Option(..., help="URL of the Postgres database in which to import the data to"),
-    output_dir: str = typer.Option(..., help="Output directory for generated files"),
+    database_url: str = typer.Option(..., envvar="EVENTDB_URL", help="URL of the Postgres database in which to import the data to"),
+    output_dir: str = typer.Option(..., envvar="SNAPSHOT_OUTPUT_DIR", help="Output directory for generated files"),
     network_id: str = typer.Option(
         ...,
+        envvar="SNAPSHOT_NETWORK_ID",
         help="Network id to pass as parameter to snapshot_tool",
     ),
+    dbsync_url: str = typer.Option(..., envvar="DBSYNC_URL", help="URL of the DBSync database in which to import the data to"),
+    snapshot_tool_path: str = typer.Option(default="snapshot_tool", envvar="SNAPSHOT_TOOL_PATH", help="Path to the snapshot tool"),
+    catalyst_toolbox_path: str = typer.Option(
+        default="catalyst-toolbox", envvar="CATALYST_TOOLBOX_PATH", help="Path to the catalyst-toolbox"
+    ),
+    gvc_api_url: str = typer.Option(..., envvar="GVC_API_URL", help="URL of the GVC API"),
     raw_snapshot_file: str = typer.Option(
         None,
         help=(
@@ -35,26 +42,39 @@ def import_snapshot(
     ),
     log_level: str = typer.Option(
         "info",
+        envvar="SNAPSHOT_LOG_LEVEL",
         help="Log level",
     ),
     log_format: str = typer.Option(
         "text",
+        envvar="SNAPSHOT_LOG_FORMAT",
         help="Log format",
     ),
 ):
     """Import snapshot data into the database."""
+    # Configure logger with the given parameters
     configure_logger(log_level, log_format)
 
     async def inner():
         importer = Importer(
-            config_path=config_path,
             database_url=database_url,
             event_id=event_id,
             output_dir=output_dir,
             network_id=network_id,
+            dbsync_url=dbsync_url,
+            snapshot_tool_path=snapshot_tool_path,
+            catalyst_toolbox_path=catalyst_toolbox_path,
+            gvc_api_url=gvc_api_url,
             raw_snapshot_file=raw_snapshot_file,
             dreps_file=dreps_file,
         )
-        await importer.run()
+        try:
+            await importer.run()
+        except Exception as e:
+            logger.error(e)
 
-    asyncio.run(inner())
+    try:
+        asyncio.run(inner())
+    except Exception as e:
+        logger.error(e)
+        raise typer.Exit(1)

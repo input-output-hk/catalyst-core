@@ -722,11 +722,6 @@ components:
         schedule:
           $ref: '#/components/schemas/EventSchedule'
           description: The schedule of the voting Event
-        groups:
-          type: array
-          description: The valid voter groups for this voting event.
-          items:
-            $ref: '#/components/schemas/VoterGroup'
     Event:
       allOf:
         - $ref: '#/components/schemas/EventSummary'

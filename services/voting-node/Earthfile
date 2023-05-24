@@ -25,10 +25,11 @@ build:
     # Install local python dependencies in the expected relative path
     COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
     COPY --dir voting_node development.md ./
-    # Install package dependencies
+
+    # Configure poetry
     RUN poetry env use python
     RUN poetry config installer.max-workers 10
-
+    # Install package dependencies
     RUN poetry install --no-cache --no-root
 
     # Build the distribution wheels and save them as artifacts

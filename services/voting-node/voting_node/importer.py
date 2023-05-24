@@ -99,7 +99,7 @@ class ExternalDataImporter:
             network_id=os.environ["SNAPSHOT_NETWORK_ID"],
             dbsync_url=os.environ["DBSYNC_URL"],
             snapshot_tool_path=os.environ.get("SNAPSHOT_TOOL_PATH", "snapshot_tool"),
-            catalyst_toolbox_path=os.environ.get("CATALYST_TOOLBOX_PATH", "catalyst_toolbox"),
+            catalyst_toolbox_path=os.environ.get("CATALYST_TOOLBOX_PATH", "catalyst-toolbox"),
             gvc_api_url=os.environ["GVC_API_URL"],
         )
         try:

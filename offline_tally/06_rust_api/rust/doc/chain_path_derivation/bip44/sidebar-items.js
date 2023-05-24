@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["INDEX_ACCOUNT","INDEX_ADDRESS","INDEX_CHANGE","INDEX_COIN_TYPE","INDEX_PURPOSE","PURPOSE_BIP44","PURPOSE_CHIMERIC"],"fn":["new"],"macro":["mk_from_str_dp_bip44"],"struct":["Account","Address","Bip44","Change","CoinType","Purpose","Root"]};

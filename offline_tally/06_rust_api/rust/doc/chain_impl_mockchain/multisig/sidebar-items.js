@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["DeclElement","DeclarationError","LedgerError","TreeIndex"],"mod":["declaration","index","ledger","test","witness"],"struct":["Declaration","Identifier","Index","Ledger","Witness","WitnessBuilder","WitnessMultisigData"]};

@@ -518,16 +518,6 @@
 <a href="#518" id="518">518</a>
 <a href="#519" id="519">519</a>
 <a href="#520" id="520">520</a>
-<a href="#521" id="521">521</a>
-<a href="#522" id="522">522</a>
-<a href="#523" id="523">523</a>
-<a href="#524" id="524">524</a>
-<a href="#525" id="525">525</a>
-<a href="#526" id="526">526</a>
-<a href="#527" id="527">527</a>
-<a href="#528" id="528">528</a>
-<a href="#529" id="529">529</a>
-<a href="#530" id="530">530</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -615,8 +605,8 @@
     };
     <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
     <span class="kw">use </span>event_db::types::event::{
-        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VoterGroup,
-        VotingPowerAlgorithm, VotingPowerSettings,
+        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VotingPowerAlgorithm,
+        VotingPowerSettings,
     };
     <span class="kw">use </span>rust_decimal::Decimal;
     <span class="kw">use </span>tower::ServiceExt;
@@ -768,16 +758,6 @@
                             name: <span class="string">&quot;goal 4&quot;</span>.to_string(),
                         }
                     ],
-                    groups: <span class="macro">vec!</span>[
-                        VoterGroup {
-                            id: <span class="string">&quot;rep&quot;</span>.to_string(),
-                            voting_token: <span class="string">&quot;rep token&quot;</span>.to_string()
-                        },
-                        VoterGroup {
-                            id: <span class="string">&quot;direct&quot;</span>.to_string(),
-                            voting_token: <span class="string">&quot;direct token&quot;</span>.to_string()
-                        }
-                    ]
                 },
             },)
             .unwrap()

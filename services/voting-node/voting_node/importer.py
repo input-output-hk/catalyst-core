@@ -32,6 +32,7 @@ import asyncio
 import os
 from datetime import datetime
 
+from ideascale_importer.ideascale.importer import Importer as IdeascaleImporter
 from ideascale_importer.snapshot_importer import Importer as DBSyncImporter
 from loguru import logger
 from pydantic import BaseModel
@@ -53,28 +54,22 @@ class ExternalDataImporter:
         * `IDEASCALE_CONFIG_PATH` sets `--config-path`.
         """
         logger.info(f"Running ideascale for event {event_id}")
-        proc = await asyncio.create_subprocess_exec(
-            "ideascale-importer",
-            "ideascale",
-            "import-all",
-            "--event-id",
-            f"{event_id}",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.STDOUT,
+        importer = IdeascaleImporter(
+            api_token=os.environ["IDEASCALE_API_TOKEN"],
+            database_url=os.environ["EVENTDB_URL"],
+            config_path=os.environ["IDEASCALE_CONFIG_PATH"],
+            event_id=event_id,
+            campaign_group_id=int(os.environ["IDEASCALE_CAMPAIGN_GROUP"]),
+            stage_id=int(os.environ["IDEASCALE_STAGE_ID"]),
+            proposals_scores_csv_path=None,
+            ideascale_api_url=os.environ["IDEASCALE_API_URL"],
         )
-
-        # checks that there is stdout
-        while proc.stdout is not None:
-            line = await proc.stdout.readline()
-            if line:
-                print(line.decode().rstrip("\n"))
-            else:
-                break
-
-        returncode = await proc.wait()
-        if returncode != 0:
-            raise Exception("failed to run ideascale importer")
-        logger.debug("ideascale importer has finished")
+        try:
+            await importer.connect()
+            await importer.run()
+            logger.debug("ideascale importer has finished")
+        except Exception as e:
+            raise Exception(f"ideascale import error: {e}") from e
 
     async def snapshot_import(self, event_id: int):
         """Run 'ideascale-importer snapshot import <ARGS..>' as a subprocess.
@@ -101,9 +96,9 @@ class ExternalDataImporter:
         )
         try:
             await importer.run()
-            logger.debug("dbsync snapshot importer has finished")
+            logger.debug("dbsync importer has finished")
         except Exception as e:
-            raise Exception(f"dbsync import error: {e}")
+            raise Exception(f"dbsync importer error: {e}") from e
 
 
 class SnapshotRunner(BaseModel):
@@ -142,9 +137,9 @@ class SnapshotRunner(BaseModel):
         """Call the 'ideascale-importer ideascale import-all <ARGS..>' command."""
         try:
             # Initialize external data importer
-            # importer = ExternalDataImporter()
-            # await importer.ideascale_import_all(event_id)
-            raise Exception("ideascale import is DISABLED. Skipping...")
+            importer = ExternalDataImporter()
+            await importer.ideascale_import_all(event_id)
+            # raise Exception("ideascale import is DISABLED. Skipping...")
         except Exception as e:
             logger.error(f"snapshot: {e}")
 

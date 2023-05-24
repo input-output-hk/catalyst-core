@@ -146,13 +146,13 @@ async def get_vote_options_id(conn: asyncpg.Connection, objective: List[str]) ->
     return row["id"]
 
 
-async def connect(url: str) -> asyncpg.Connection:
+async def connect(url: str, *args, **kwargs) -> asyncpg.Connection:
     """Return a connection to the database.
 
     This also sets the jsonb codec to use the json module.
     """
     try:
-        conn = await asyncpg.connect(url)
+        conn = await asyncpg.connect(dsn=url, *args, **kwargs)
     except Exception as _:
         raise Exception("Database connection failed")
 

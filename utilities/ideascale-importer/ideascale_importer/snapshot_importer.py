@@ -212,10 +212,10 @@ class Importer:
 
         await conn.close()
 
-    async def _fetch_parameters(self):
+    async def _fetch_parameters(self, *db_args, **db_kwargs):
         # Fetch event parameters
         try:
-            conn = await ideascale_importer.db.connect(self.database_url)
+            conn = await ideascale_importer.db.connect(self.database_url, *db_args, **db_kwargs)
 
             row = await conn.fetchrow(
                 "SELECT "
@@ -560,9 +560,9 @@ class Importer:
             voters_count=len(voters.values()),
         )
 
-    async def run(self):
+    async def run(self, *db_args, **db_kwargs):
         """Take a snapshot and write the data to the database."""
-        await self._fetch_parameters()
+        await self._fetch_parameters(*db_args, **db_kwargs)
 
         if self.dreps_file is None:
             await self._fetch_gvc_dreps_list()

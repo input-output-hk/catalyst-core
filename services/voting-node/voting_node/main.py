@@ -148,7 +148,6 @@ def start(
     jorm_port_p2p,
 ):
     """Start the Voting Service."""
-
     configure_logger(log_level, log_format)
 
     api_config = uvicorn.Config(api.app, host=api_host, port=api_port, log_level=log_level)

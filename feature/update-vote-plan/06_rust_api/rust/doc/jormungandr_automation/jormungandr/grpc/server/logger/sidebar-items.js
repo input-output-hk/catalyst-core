@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["VARIANTS"],"enum":["MethodType","__Field"],"struct":["ChannelReader","MockLogger","__FieldVisitor","__Visitor"]};

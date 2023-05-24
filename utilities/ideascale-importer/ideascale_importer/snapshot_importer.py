@@ -307,7 +307,7 @@ class Importer:
 
                 await conn.close()
             except Exception as e:
-                raise FetchParametersFailed(f"Failed to get latest block data with snapsthot_tool: {e}")
+                raise FetchParametersFailed(f"Failed to get latest block data with snapshot_tool: {e}")
         else:
             logger.info("Skipping querying max slot parameter")
 

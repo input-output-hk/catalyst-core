@@ -23,7 +23,7 @@ COMMENT ON COLUMN voteplan_category.public_key IS 'Does this vote plan category 
 -- groups
 
 CREATE TABLE voting_group (
-    name TEXT PRIMARY KEY,
+    name TEXT PRIMARY KEY
 );
 
 INSERT INTO voting_group (name)

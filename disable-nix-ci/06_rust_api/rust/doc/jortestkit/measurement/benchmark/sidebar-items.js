@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["benchmark_consumption","benchmark_efficiency","benchmark_endurance","benchmark_speed"],"mod":["consumption_benchmark","efficiency_benchmark","endurance_benchmark","speed_benchmark"]};

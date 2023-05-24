@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Fragment","FragmentTag"],"mod":["config","content","test"],"type":["FragmentId"]};

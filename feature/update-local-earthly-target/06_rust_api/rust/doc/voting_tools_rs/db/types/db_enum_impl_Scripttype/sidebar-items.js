@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["db_str_representation","from_db_binary_representation"],"struct":["ScripttypeMapping"]};

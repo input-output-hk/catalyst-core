@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"mod":["inner","queries","schema","types","utils"],"struct":["DbConfig","__FieldVisitor","__Visitor"]};

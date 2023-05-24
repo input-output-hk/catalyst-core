@@ -63,8 +63,9 @@ class EventDb(BaseModel):
         if result is None:
             raise Exception("failed to fetch event from DB")
 
-        logger.debug(f"fetched upcoming event: {result}")
-        return Event(**dict(result))
+        event = Event(**dict(result))
+        logger.debug(f"fetched upcoming event: {event.name}")
+        return event
 
     async def fetch_leader_host_info(self, event_row_id: int) -> HostInfo:
         """Return HostInfo for leaders, sorted by hostname."""
@@ -111,30 +112,32 @@ class EventDb(BaseModel):
             raise Exception(f"failed to insert '{h.hostname}' info to DB")
         logger.debug(f"{h.hostname} info added: {result}")
 
-    async def fetch_sorted_leaders_host_info(self) -> list[LeaderHostInfo]:
+    async def fetch_sorted_leaders_host_info(self, event_row_id: int) -> list[LeaderHostInfo]:
         """Return a list of leader host information.
 
         Fetch host information for leader nodes.
         Raises exceptions if the DB fails to return a list of records, or if the list is empty.
         """
-        where = f"WHERE hostname ~ '{LEADER_REGEX}'"
-        order_by = "ORDER BY hostname ASC"
-        query = f"SELECT (hostname, pubkey) FROM voting_node {where} {order_by}"
-        result = await self.conn().fetch(query)
+        query = f"""
+        SELECT (hostname, pubkey)
+        FROM voting_node
+        WHERE hostname ~ '{LEADER_REGEX}' AND event = $1
+        ORDER BY hostname ASC"""
+        result = await self.conn().fetch(query, event_row_id)
         match result:
             case None:
                 raise Exception("DB error fetching leaders host info")
             case []:
                 raise Exception("no leader host info found in DB")
             case [*leaders]:
-                logger.debug(f"found leaders: {leaders}")
-
                 def extract_leader_info(leader):
                     host_info = LeaderHostInfo(*leader["row"])
-                    logger.debug(f"{host_info}")
+                    logger.debug(f"{host_info.hostname}")
                     return host_info
 
-                return list(map(extract_leader_info, leaders))
+                logger.debug(f"found {len(leaders)} leaders")
+                extracted_leaders = [extract_leader_info(leader) for leader in leaders]
+                return extracted_leaders
 
     async def fetch_proposals(self) -> list[Proposal]:
         """Return a list of proposals ."""

@@ -227,17 +227,14 @@ class NodeTaskSchedule(ScheduleRunner):
             else:
                 Store host info from step 1.
         """
-        try:
-            # gets the event, raises exception if none is found.
-            event = self.node.get_event()
-        except Exception as e:
-            self.reset_schedule(f"{e}")
+        # gets the event, raises exception if none is found.
+        event = self.node.get_event()
 
         try:
             # gets host information from voting_node table for this event
             # raises exception if none is found.
             host_info: HostInfo = await self.db.fetch_leader_host_info(event.row_id)
-            logger.debug(f"fetched node host info from DB: {host_info}")
+            logger.debug(f"fetched node host info from DB: {host_info.hostname}")
             self.node.host_info = host_info
         except Exception as e:
             # fetching from DB failed
@@ -253,7 +250,7 @@ class NodeTaskSchedule(ScheduleRunner):
             pubkey = await self.jcli().key_to_public(seckey)
             netkey = await self.jcli().key_generate(secret_type="ed25519")
             host_info = HostInfo(hostname, event_id, seckey, pubkey, netkey)
-            logger.debug(f"host info was generated: {host_info}")
+            logger.debug(f"host info was generated: {host_info.hostname}")
             try:
                 # we add the host info row
                 # raises exception if unable.
@@ -265,10 +262,12 @@ class NodeTaskSchedule(ScheduleRunner):
 
     async def fetch_leaders(self):
         """Fetch from the DB host info for other leaders."""
+        # gets the event, raises exception if none is found.
+        event = self.node.get_event()
         try:
             # gets info for other leaders
             # raises exception if unable.
-            leaders = await self.db.fetch_sorted_leaders_host_info()
+            leaders = await self.db.fetch_sorted_leaders_host_info(event.row_id)
             self.node.leaders = leaders
         except Exception as e:
             self.reset_schedule(f"{e}")
@@ -323,7 +322,6 @@ class NodeTaskSchedule(ScheduleRunner):
         host_name = utils.get_hostname()
         host_ip = utils.get_hostname_addr()
         role_n_digits = utils.get_hostname_role_n_digits(host_name)
-        logger.debug(f"{role_n_digits} ip: {host_ip}")
         p2p_port = self.settings.p2p_port
 
         listen_rest = f"{host_ip}:{self.settings.rest_port}"
@@ -365,7 +363,7 @@ class NodeTaskSchedule(ScheduleRunner):
         # convert to yaml and save
         node_config_yaml = NodeConfigYaml(config, self.node.storage.joinpath("node_config.yaml"))
         await node_config_yaml.save()
-        logger.debug(f"{node_config_yaml}")
+        logger.debug("node config saved")
         self.node.config = node_config_yaml
 
     async def cleanup(self):

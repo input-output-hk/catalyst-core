@@ -153,7 +153,7 @@ class SnapshotRunner(BaseModel):
             # await importer.ideascale_import_all(event_id)
             raise Exception("IdeaScale snapshot is currently disabled. Skipping...")
         except Exception as e:
-            logger.error("Failed to take ideascale snapshot", exc_info=e)
+            logger.error(f"Failed to take ideascale snapshot: {e}")
 
     async def _dbsync_snapshot(self, event_id: int) -> None:
         """Call the 'ideascale-importer snapshot import <ARGS..>' command."""
@@ -162,7 +162,7 @@ class SnapshotRunner(BaseModel):
             importer = ExternalDataImporter()
             await importer.snapshot_import(event_id)
         except Exception as e:
-            logger.error("Failed to take dbsync snapshot", exc_info=e)
+            logger.error(f"Failed to take dbsync snapshot: {e}")
 
     async def take_snapshots(self, event_id: int) -> None:
         """Takes snapshots at regular intervals using ExternalDataImporter.

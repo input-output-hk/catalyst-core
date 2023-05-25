@@ -82,24 +82,21 @@ services:
       - COMMITTEE_CRS=COMMON-REFERENCE-STRING-USED-THAT-IS-SECRET
       - SECRET_SECRET=SUPER_SECRET_SECRET_THAT_MUST_BE_CHANGED
       ### EXTERNAL DATA IMPORTER
-      - IDEASCALE_API_TOKEN=CHANGE_ME_FOR_A_PROPER_TOKEN
+      - IDEASCALE_API_TOKEN=USE-A-VALID-API-TOKEN-FROM-IDEASCALE
       - IDEASCALE_CAMPAIGN_GROUP=66
       - IDEASCALE_STAGE_ID=4385
-      - IDEASCALE_LOG_LEVEL=debug
-      - IDEASCALE_LOG_FORMAT=text
+      - IDEASCALE_CONFIG_PATH=/app/ideascale-importer-config.json
       - IDEASCALE_API_URL=https://cardano.ideascale.com
       ### SNAPSHOT TOOL DATA IMPORTER
-      - SNAPSHOT_INTERVAL_SECONDS=60
-      - SNAPSHOT_CONFIG_PATH=/app/snapshot-importer-example-config.json
+      - SNAPSHOT_INTERVAL_SECONDS=1800
       - SNAPSHOT_OUTPUT_DIR=/tmp/snapshot-output
       - SNAPSHOT_NETWORK_ID=testnet
-      - SNAPSHOT_LOG_LEVEL=debug
-      - SNAPSHOT_LOG_FORMAT=text
+      - DBSYNC_URL=postgres://user:password@host:port/dbname
+      - GVC_API_URL=https://cardano.ideascale.com
     volumes:
       - leader0_store:/node_storage
       - leader0_store:/tmp/snapshot-output
       - ./ideascale-importer-config.json:/app/ideascale-importer-config.json
-      - ./snapshot-importer-example-config.json:/app/snapshot-importer-example-config.json
 
 volumes:
   eventdb:

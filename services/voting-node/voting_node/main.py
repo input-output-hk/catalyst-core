@@ -34,6 +34,7 @@ def voting_node_cli():
     "--reloadable",
     is_flag=True,
     envvar=IS_NODE_RELOADABLE,
+    default=False,
     help=r"""Flag to enable the voting node to run in reloadable mode.
 
     When set, the node will reload its settings whenever changes to the current voting event are detected.

@@ -422,7 +422,6 @@
 <a href="#422" id="422">422</a>
 <a href="#423" id="423">423</a>
 <a href="#424" id="424">424</a>
-<a href="#425" id="425">425</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::BTreeMap;
 
 <span class="kw">use </span>diesel::RunQueryDsl;
@@ -432,7 +431,6 @@
     challenges::Challenge,
     community_advisors_reviews::AdvisorReview,
     funds::Fund,
-    groups::Group,
     proposals::{FullProposalInfo, ProposalChallengeInfo},
 };
 <span class="kw">use </span>vit_servicing_station_lib::db::DbConnection;
@@ -691,13 +689,25 @@
             .execute(<span class="self">self</span>.connection)
             .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
 
-            <span class="self">self</span>.insert_groups(<span class="kw-2">&amp;</span>fund.groups.iter().cloned().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())<span class="question-mark">?</span>;
+            <span class="self">self</span>.insert_challenges(<span class="kw-2">&amp;</span>fund.challenges.iter().cloned().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;())<span class="question-mark">?</span>;
 
             <span class="kw">for </span>voteplan <span class="kw">in </span><span class="kw-2">&amp;</span>fund.chain_vote_plans {
-                <span class="kw">let </span>res = diesel::sql_query(<span class="string">&quot;SELECT row_id FROM voting_group WHERE token_id = $1&quot;</span>)
-                    .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.token_identifier)
-                    .get_result::&lt;RowId&gt;(<span class="self">self</span>.connection)
-                    .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
+                <span class="kw">let </span><span class="kw-2">mut </span>group_id = String::new();
+                <span class="kw">for </span>group <span class="kw">in </span><span class="kw-2">&amp;</span>fund.groups {
+                    <span class="kw">if </span>group.token_identifier == voteplan.token_identifier {
+                        group_id = group.group_id.to_string();
+                        <span class="kw">break</span>;
+                    }
+                }
+                <span class="comment">// After the vote plan schema update, event_id (fund id) was replaced to the objective_id (challenge id)
+                // So at this place we need to get an objective id which will corresponds to the correct fund id
+                // That is why we can take the first challenge in the list because it is corresponds to the desired fund
+                </span><span class="kw">let </span>objective_id = fund
+                    .challenges
+                    .iter()
+                    .next()
+                    .expect(<span class="string">&quot;should be at least one challenge&quot;</span>)
+                    .internal_id;
 
                 diesel::sql_query(
                     <span class="string">r#&quot;
@@ -705,9 +715,10 @@
                         row_id,
                         id,
                         category,
-                        event_id,
+                        objective_id,
                         encryption_key,
-                        group_id
+                        group_id,
+                        token_id
                     ) VALUES (
                         $1, $2, $3,
                         $4, $5, $6
@@ -717,9 +728,10 @@
                 .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(voteplan.id)
                 .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.chain_voteplan_id)
                 .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.chain_voteplan_payload)
-                .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.fund_id)
+                .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>objective_id)
                 .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.chain_vote_encryption_key)
-                .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>res.row_id)
+                .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>group_id)
+                .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.token_identifier)
                 .execute(<span class="self">self</span>.connection)
                 .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
             }
@@ -825,20 +837,6 @@
             .execute(<span class="self">self</span>.connection)
             .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
         }
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="kw">pub fn </span>insert_groups(<span class="kw-2">&amp;</span><span class="self">self</span>, groups: <span class="kw-2">&amp;</span>[Group]) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbInserterError&gt; {
-        <span class="kw">for </span>group <span class="kw">in </span>groups {
-            diesel::sql_query(
-                <span class="string">&quot;INSERT INTO voting_group (event_id, token_id, group_id) VALUES ($1, $2, $3) ON CONFLICT (token_id, event_id) DO NOTHING&quot;</span>,
-            )
-            .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>group.fund_id)
-            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>group.token_identifier)
-            .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>group.group_id)
-            .execute(<span class="self">self</span>.connection)<span class="question-mark">?</span>;
-        }
-
         <span class="prelude-val">Ok</span>(())
     }
 }

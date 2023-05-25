@@ -187,49 +187,10 @@
 <a href="#187" id="187">187</a>
 <a href="#188" id="188">188</a>
 <a href="#189" id="189">189</a>
-<a href="#190" id="190">190</a>
-<a href="#191" id="191">191</a>
-<a href="#192" id="192">192</a>
-<a href="#193" id="193">193</a>
-<a href="#194" id="194">194</a>
-<a href="#195" id="195">195</a>
-<a href="#196" id="196">196</a>
-<a href="#197" id="197">197</a>
-<a href="#198" id="198">198</a>
-<a href="#199" id="199">199</a>
-<a href="#200" id="200">200</a>
-<a href="#201" id="201">201</a>
-<a href="#202" id="202">202</a>
-<a href="#203" id="203">203</a>
-<a href="#204" id="204">204</a>
-<a href="#205" id="205">205</a>
-<a href="#206" id="206">206</a>
-<a href="#207" id="207">207</a>
-<a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
-<a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
-<a href="#219" id="219">219</a>
-<a href="#220" id="220">220</a>
-<a href="#221" id="221">221</a>
-<a href="#222" id="222">222</a>
-<a href="#223" id="223">223</a>
-<a href="#224" id="224">224</a>
-<a href="#225" id="225">225</a>
 </pre><pre class="rust"><code><span class="kw">use </span>diesel::RunQueryDsl;
 <span class="kw">use </span>rand::Rng;
 <span class="kw">use </span>thiserror::Error;
-<span class="kw">use </span>vit_servicing_station_lib::db::models::groups::Group;
-<span class="kw">use </span>vit_servicing_station_lib::db::models::{
-    api_tokens::ApiTokenData, challenges::Challenge, funds::Fund,
-};
+<span class="kw">use </span>vit_servicing_station_lib::db::models::{api_tokens::ApiTokenData, funds::Fund};
 <span class="kw">use </span>vit_servicing_station_lib::db::{DbConnection, DbConnectionPool};
 
 <span class="kw">use </span><span class="kw">crate</span>::common::data::Snapshot;
@@ -265,9 +226,7 @@
     tokens: <span class="prelude-ty">Option</span>&lt;Vec&lt;ApiTokenData&gt;&gt;,
     proposals: <span class="prelude-ty">Option</span>&lt;Vec&lt;FullProposalInfo&gt;&gt;,
     funds: <span class="prelude-ty">Option</span>&lt;Vec&lt;Fund&gt;&gt;,
-    challenges: <span class="prelude-ty">Option</span>&lt;Vec&lt;Challenge&gt;&gt;,
     advisor_reviews: <span class="prelude-ty">Option</span>&lt;Vec&lt;AdvisorReview&gt;&gt;,
-    groups: <span class="prelude-ty">Option</span>&lt;Vec&lt;Group&gt;&gt;,
 }
 
 <span class="kw">impl </span>DbBuilder {
@@ -276,9 +235,7 @@
             tokens: <span class="prelude-val">None</span>,
             proposals: <span class="prelude-val">None</span>,
             funds: <span class="prelude-val">None</span>,
-            challenges: <span class="prelude-val">None</span>,
             advisor_reviews: <span class="prelude-val">None</span>,
-            groups: <span class="prelude-val">None</span>,
         }
     }
 
@@ -297,17 +254,10 @@
         <span class="self">self
     </span>}
 
-    <span class="kw">pub fn </span>with_challenges(<span class="kw-2">&amp;mut </span><span class="self">self</span>, challenges: Vec&lt;Challenge&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="self">self</span>.challenges = <span class="prelude-val">Some</span>(challenges);
-        <span class="self">self
-    </span>}
-
     <span class="kw">pub fn </span>with_snapshot(<span class="kw-2">&amp;mut </span><span class="self">self</span>, snapshot: <span class="kw-2">&amp;</span>Snapshot) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="self">self</span>.with_groups(snapshot.groups());
         <span class="self">self</span>.with_proposals(snapshot.proposals());
         <span class="self">self</span>.with_tokens(snapshot.tokens().values().cloned().collect());
         <span class="self">self</span>.with_funds(snapshot.funds());
-        <span class="self">self</span>.with_challenges(snapshot.challenges());
         <span class="self">self</span>.with_advisor_reviews(snapshot.advisor_reviews());
         <span class="self">self
     </span>}
@@ -319,11 +269,6 @@
 
     <span class="kw">pub fn </span>with_advisor_reviews(<span class="kw-2">&amp;mut </span><span class="self">self</span>, reviews: Vec&lt;AdvisorReview&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.advisor_reviews = <span class="prelude-val">Some</span>(reviews);
-        <span class="self">self
-    </span>}
-
-    <span class="kw">pub fn </span>with_groups(<span class="kw-2">&amp;mut </span><span class="self">self</span>, groups: Vec&lt;Group&gt;) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
-        <span class="self">self</span>.groups = <span class="prelude-val">Some</span>(groups);
         <span class="self">self
     </span>}
 
@@ -348,24 +293,9 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn </span>try_insert_challenges(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(challenges) = <span class="kw-2">&amp;</span><span class="self">self</span>.challenges {
-            DbInserter::new(connection).insert_challenges(challenges)<span class="question-mark">?</span>;
-        }
-
-        <span class="prelude-val">Ok</span>(())
-    }
-
     <span class="kw">fn </span>try_insert_reviews(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(reviews) = <span class="kw-2">&amp;</span><span class="self">self</span>.advisor_reviews {
             DbInserter::new(connection).insert_advisor_reviews(reviews)<span class="question-mark">?</span>;
-        }
-        <span class="prelude-val">Ok</span>(())
-    }
-
-    <span class="kw">fn </span>try_insert_groups(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(groups) = <span class="kw-2">&amp;</span><span class="self">self</span>.groups {
-            DbInserter::new(connection).insert_groups(groups)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
@@ -420,8 +350,6 @@
     <span class="kw">fn </span>insert_all(<span class="kw-2">&amp;</span><span class="self">self</span>, connection: <span class="kw-2">&amp;</span>DbConnection) -&gt; <span class="prelude-ty">Result</span>&lt;(), DbBuilderError&gt; {
         <span class="self">self</span>.try_insert_tokens(connection)<span class="question-mark">?</span>;
         <span class="self">self</span>.try_insert_funds(connection)<span class="question-mark">?</span>;
-        <span class="self">self</span>.try_insert_groups(connection)<span class="question-mark">?</span>;
-        <span class="self">self</span>.try_insert_challenges(connection)<span class="question-mark">?</span>;
         <span class="self">self</span>.try_insert_proposals(connection)<span class="question-mark">?</span>;
         <span class="self">self</span>.try_insert_reviews(connection)<span class="question-mark">?</span>;
 

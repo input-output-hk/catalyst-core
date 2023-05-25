@@ -435,11 +435,23 @@
 <a href="#435" id="435">435</a>
 <a href="#436" id="436">436</a>
 <a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::common::data::ArbitraryGenerator;
 <span class="kw">use </span><span class="kw">crate</span>::common::data::ArbitraryValidVotingTemplateGenerator;
 <span class="kw">use </span><span class="kw">crate</span>::common::data::{Snapshot, ValidVotingTemplateGenerator};
 <span class="kw">use </span>chain_impl_mockchain::certificate::ExternalProposalId;
 <span class="kw">use </span>itertools::Itertools;
+<span class="kw">use </span>snapshot_lib::voting_group::DEFAULT_DIRECT_VOTER_GROUP;
+<span class="kw">use </span>snapshot_lib::voting_group::DEFAULT_REPRESENTATIVE_GROUP;
 <span class="kw">use </span>std::collections::BTreeSet;
 <span class="kw">use </span>std::iter;
 <span class="kw">use </span>time::{Duration, OffsetDateTime};
@@ -519,10 +531,18 @@
 
         <span class="kw">let </span>groups: BTreeSet&lt;Group&gt; = std::iter::from_fn(|| <span class="prelude-val">Some</span>(<span class="self">self</span>.id_generator.next_i32()))
             .take(<span class="number">2</span>)
-            .map(|group_id| Group {
-                fund_id: id,
-                token_identifier: <span class="macro">format!</span>(<span class="string">&quot;group{group_id}-token&quot;</span>),
-                group_id: group_id.to_string(),
+            .map(|group_id| {
+                <span class="kw">let </span>group_id = <span class="kw">if </span>group_id % <span class="number">2 </span>== <span class="number">0 </span>{
+                    DEFAULT_DIRECT_VOTER_GROUP.to_string()
+                } <span class="kw">else </span>{
+                    DEFAULT_REPRESENTATIVE_GROUP.to_string()
+                };
+
+                Group {
+                    fund_id: id,
+                    token_identifier: <span class="macro">format!</span>(<span class="string">&quot;group{group_id}-token&quot;</span>),
+                    group_id,
+                }
             })
             .collect();
 

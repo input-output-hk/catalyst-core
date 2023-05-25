@@ -7,7 +7,6 @@ use vit_servicing_station_lib::db::models::{
     challenges::Challenge,
     community_advisors_reviews::AdvisorReview,
     funds::Fund,
-    groups::Group,
     proposals::{FullProposalInfo, ProposalChallengeInfo},
 };
 use vit_servicing_station_lib::db::DbConnection;
@@ -266,13 +265,25 @@ impl<'a> DbInserter<'a> {
             .execute(self.connection)
             .map_err(DbInserterError::DieselError)?;
 
-            self.insert_groups(&fund.groups.iter().cloned().collect::<Vec<_>>())?;
+            self.insert_challenges(&fund.challenges.iter().cloned().collect::<Vec<_>>())?;
 
             for voteplan in &fund.chain_vote_plans {
-                let res = diesel::sql_query("SELECT row_id FROM voting_group WHERE token_id = $1")
-                    .bind::<diesel::sql_types::VarChar, _>(&voteplan.token_identifier)
-                    .get_result::<RowId>(self.connection)
-                    .map_err(DbInserterError::DieselError)?;
+                let mut group_id = String::new();
+                for group in &fund.groups {
+                    if group.token_identifier == voteplan.token_identifier {
+                        group_id = group.group_id.to_string();
+                        break;
+                    }
+                }
+                // After the vote plan schema update, event_id (fund id) was replaced to the objective_id (challenge id)
+                // So at this place we need to get an objective id which will corresponds to the correct fund id
+                // That is why we can take the first challenge in the list because it is corresponds to the desired fund
+                let objective_id = fund
+                    .challenges
+                    .iter()
+                    .next()
+                    .expect("should be at least one challenge")
+                    .internal_id;
 
                 diesel::sql_query(
                     r#"
@@ -280,21 +291,23 @@ impl<'a> DbInserter<'a> {
                         row_id,
                         id,
                         category,
-                        event_id,
+                        objective_id,
                         encryption_key,
-                        group_id
+                        group_id,
+                        token_id
                     ) VALUES (
                         $1, $2, $3,
-                        $4, $5, $6
-                    ) ON CONFLICT (id) DO NOTHING
+                        $4, $5, $6, $7
+                    )
                     "#,
                 )
                 .bind::<diesel::sql_types::Integer, _>(voteplan.id)
                 .bind::<diesel::sql_types::VarChar, _>(&voteplan.chain_voteplan_id)
                 .bind::<diesel::sql_types::Text, _>(&voteplan.chain_voteplan_payload)
-                .bind::<diesel::sql_types::Integer, _>(&voteplan.fund_id)
+                .bind::<diesel::sql_types::Integer, _>(&objective_id)
                 .bind::<diesel::sql_types::VarChar, _>(&voteplan.chain_vote_encryption_key)
-                .bind::<diesel::sql_types::Integer, _>(&res.row_id)
+                .bind::<diesel::sql_types::Text, _>(&group_id)
+                .bind::<diesel::sql_types::Text, _>(&voteplan.token_identifier)
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
             }
@@ -400,20 +413,6 @@ impl<'a> DbInserter<'a> {
             .execute(self.connection)
             .map_err(DbInserterError::DieselError)?;
         }
-        Ok(())
-    }
-
-    pub fn insert_groups(&self, groups: &[Group]) -> Result<(), DbInserterError> {
-        for group in groups {
-            diesel::sql_query(
-                "INSERT INTO voting_group (event_id, token_id, group_id) VALUES ($1, $2, $3) ON CONFLICT (token_id, event_id) DO NOTHING",
-            )
-            .bind::<diesel::sql_types::Integer, _>(&group.fund_id)
-            .bind::<diesel::sql_types::VarChar, _>(&group.token_identifier)
-            .bind::<diesel::sql_types::VarChar, _>(&group.group_id)
-            .execute(self.connection)?;
-        }
-
         Ok(())
     }
 }

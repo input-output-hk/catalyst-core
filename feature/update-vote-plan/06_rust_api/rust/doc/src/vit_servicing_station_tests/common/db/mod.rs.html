@@ -722,7 +722,7 @@
                     ) VALUES (
                         $1, $2, $3,
                         $4, $5, $6, $7
-                    ) ON CONFLICT (id) DO NOTHING
+                    )
                     &quot;#</span>,
                 )
                 .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(voteplan.id)
@@ -730,8 +730,8 @@
                 .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.chain_voteplan_payload)
                 .bind::&lt;diesel::sql_types::Integer, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>objective_id)
                 .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.chain_vote_encryption_key)
-                .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>group_id)
-                .bind::&lt;diesel::sql_types::VarChar, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.token_identifier)
+                .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>group_id)
+                .bind::&lt;diesel::sql_types::Text, <span class="kw">_</span>&gt;(<span class="kw-2">&amp;</span>voteplan.token_identifier)
                 .execute(<span class="self">self</span>.connection)
                 .map_err(DbInserterError::DieselError)<span class="question-mark">?</span>;
             }

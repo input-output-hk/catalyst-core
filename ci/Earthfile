@@ -36,7 +36,7 @@ build:
     SAVE ARTIFACT bin/ci ci
 
 docker:
-    FROM earthly/earthly:v0.7.4
+    FROM earthly/earthly:v0.7.6
 
     ARG tag=latest
     ARG registry

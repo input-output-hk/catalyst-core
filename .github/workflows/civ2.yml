@@ -72,8 +72,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        path: ${{ fromJson(needs.discover.outputs.json).Path }}
+        target: ${{ fromJson(needs.discover.outputs.json) }}
     steps:
       - name: Build Each Path
         run: |
-          echo "Building path: ${{ matrix.path }}"
+          echo "Building path: ${{ matrix.target.Path }}"

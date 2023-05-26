@@ -48,8 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/input-output-hk/catalyst-core/ci:latest
-      env:
-        GITHUB_WORKSPACE: /workspace
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
     defaults:
@@ -61,6 +59,8 @@ jobs:
         target: ${{ fromJson(needs.discover.outputs.json) }}
     steps:
       - uses: actions/checkout@v3
+        env:
+          GITHUB_WORKSPACE: /workspace
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:

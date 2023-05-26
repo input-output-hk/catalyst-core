@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        path: ${{fromJson(needs.discover.outputs.json)}}
+        path: ${{ fromJson(needs.discover.outputs.json).Path }}
     steps:
       - name: Build Each Path
         run: |

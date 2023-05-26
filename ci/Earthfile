@@ -58,4 +58,4 @@ docker:
     END
 
     ENTRYPOINT ["/usr/local/bin/ci"]
-    SAVE IMAGE --push ${registry}ci:${tag}
+    SAVE IMAGE --push ${registry_final}ci:${tag}

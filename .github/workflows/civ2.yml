@@ -2,8 +2,8 @@ name: CIv2
 
 on:
   push:
-    branches:
-      - main
+    # branches:
+    #   - main
 
 permissions:
   id-token: write

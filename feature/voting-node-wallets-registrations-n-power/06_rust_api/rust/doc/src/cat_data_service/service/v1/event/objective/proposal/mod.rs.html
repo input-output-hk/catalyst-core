@@ -261,6 +261,22 @@
 <a href="#261" id="261">261</a>
 <a href="#262" id="262">262</a>
 <a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+<a href="#271" id="271">271</a>
+<a href="#272" id="272">272</a>
+<a href="#273" id="273">273</a>
+<a href="#274" id="274">274</a>
+<a href="#275" id="275">275</a>
+<a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
+<a href="#278" id="278">278</a>
+<a href="#279" id="279">279</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -340,7 +356,15 @@
 }
 
 <span class="doccomment">/// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL=&quot;postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev&quot;
@@ -354,7 +378,10 @@
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>event_db::types::event::proposal::{ProposalDetails, ProposerDetails};
+    <span class="kw">use </span>event_db::types::event::proposal::{
+        ProposalDetails, ProposalSupplementalDetails, ProposerDetails,
+    };
+    <span class="kw">use </span>serde_json::json;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -391,8 +418,13 @@
                             <span class="string">&quot;b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde&quot;
                                 </span>.to_string()
                     }],
-                    ballot: <span class="prelude-val">None</span>,
-                    supplemental: <span class="prelude-val">None</span>,
+                    supplemental: <span class="prelude-val">Some</span>(ProposalSupplementalDetails(<span class="macro">json!</span>(
+                        {
+                            <span class="string">&quot;brief&quot;</span>: <span class="string">&quot;Brief explanation of a proposal&quot;</span>,
+                            <span class="string">&quot;goal&quot;</span>: <span class="string">&quot;The goal of the proposal is addressed to meet&quot;</span>,
+                            <span class="string">&quot;importance&quot;</span>: <span class="string">&quot;The importance of the proposal&quot;</span>,
+                        }
+                    ))),
                 }
             })
             .unwrap(),

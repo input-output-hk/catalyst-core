@@ -2,8 +2,8 @@ name: CIv2
 
 on:
   push:
-    # branches:
-    #   - main
+    branches:
+      - main
 
 permissions:
   id-token: write
@@ -16,7 +16,7 @@ env:
   ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
 
 jobs:
-  build:
+  discover:
     runs-on: ubuntu-latest
     env:
       FORCE_COLOR: 1
@@ -58,9 +58,19 @@ jobs:
             earthly config global.tlskey /tmp/certs/key.pem
             earthly config global.tlscert /tmp/certs/cert.pem
             earthly config global.tlsca /tmp/certs/ca.pem
-      - name: Check tags
-        run: git tag -l
       - name: Discover Earthfiles
+        id: discover
         run: |
-          docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -t +docker .
+          JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers ./src ./services)
+          echo "::set-output name=json::${JSON_OUTPUT}"
 
+  build:
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        path: ${{fromJson(needs.discover.outputs.json)}}
+    steps:
+      - name: Build Each Path
+        run: |
+          echo "Building path: ${{ matrix.path }}"

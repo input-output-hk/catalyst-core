@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"text/template"
@@ -71,8 +72,9 @@ func (c *tagsCmd) Run() error {
 }
 
 type scanCmd struct {
-	Paths  []string `arg:"" help:"paths to scan for Earthfiles" type:"path"`
-	Target string   `short:"t" help:"filter by Earthfiles that include this target" default:""`
+	Paths      []string `arg:"" help:"paths to scan for Earthfiles" type:"path"`
+	Target     string   `short:"t" help:"filter by Earthfiles that include this target" default:""`
+	JsonOutput bool     `short:"j" long:"json" help:"Output in JSON format"`
 }
 
 func (c *scanCmd) Run() error {
@@ -91,8 +93,16 @@ func (c *scanCmd) Run() error {
 		return err
 	}
 
-	for _, file := range files {
-		fmt.Println(file.Path)
+	if c.JsonOutput {
+		jsonFiles, err := json.Marshal(files)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(jsonFiles))
+	} else {
+		for _, file := range files {
+			fmt.Println(file.Path)
+		}
 	}
 
 	return nil

@@ -23,10 +23,6 @@ jobs:
     env:
       FORCE_COLOR: 1
     steps:
-      - name: Install Earthly
-        uses: earthly/actions/setup-earthly@v1
-        with:
-          version: v0.7.0
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -39,15 +35,31 @@ jobs:
             branch="${GITHUB_REF##*/}"
           fi
           git checkout -b "$branch" || true
+      - name: Discover Earthfiles
+        id: discover
+        run: |
+          #JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers ./src ./services)
+          JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers)
+          echo "$JSON_OUTPUT"
+          echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
+
+  build:
+    needs: discover
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/input-output-hk/catalyst-core/ci:latest
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.discover.outputs.json) }}
+    steps:
+      - uses: actions/checkout@v3
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - name: Login to ECR
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.ECR_REGISTRY }}
       - name: Configure Earthly remote runner
         run: |
             mkdir -p /tmp/certs
@@ -60,20 +72,9 @@ jobs:
             earthly config global.tlskey /tmp/certs/key.pem
             earthly config global.tlscert /tmp/certs/cert.pem
             earthly config global.tlsca /tmp/certs/ca.pem
-      - name: Discover Earthfiles
-        id: discover
-        run: |
-          JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers ./src ./services)
-          echo "$JSON_OUTPUT"
-          echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
-
-  build:
-    needs: discover
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target: ${{ fromJson(needs.discover.outputs.json) }}
-    steps:
       - name: Build Each Path
         run: |
-          echo "Building path: ${{ matrix.target.Path }}"
+          echo "Building image: ${{ matrix.target.Path }}+docker"
+          earthly \
+            --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
+            ${{ matrix.target.Path }}+docker

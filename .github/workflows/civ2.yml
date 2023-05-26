@@ -50,6 +50,10 @@ jobs:
       image: ghcr.io/input-output-hk/catalyst-core/ci:latest
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
+    defaults:
+      run:
+        shell: bash
+        working-directory: /workspace
     strategy:
       matrix:
         target: ${{ fromJson(needs.discover.outputs.json) }}
@@ -76,6 +80,8 @@ jobs:
         run: |
           echo "Building image: ${{ matrix.target.Path }}+docker"
           pwd
+          echo ""
+          ls -la
           earthly \
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
             ${{ matrix.target.Path }}+docker

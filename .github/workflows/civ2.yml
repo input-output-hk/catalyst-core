@@ -25,10 +25,9 @@ jobs:
         uses: earthly/actions/setup-earthly@v1
         with:
           version: v0.7.0
-      # Until https://github.com/actions/checkout/pull/579/files is merged
-      - uses: RobertWieczoreck/checkout@c7a760cf65a2b7579e8b874e2b341534ce674801
+      - uses: actions/checkout@v3
         with:
-          fetch-tags: true
+          fetch-depth: 0
       - name: Put back the git branch into git (Earthly uses it for tagging)
         run: |
           branch=""

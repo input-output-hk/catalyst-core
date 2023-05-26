@@ -44,7 +44,7 @@ docker:
     WORKDIR /workspace
 
     # Add runtime dependencies
-    RUN apk add --no-cache aws-cli git jq
+    RUN apk add --no-cache aws-cli bash git jq
 
     # Trust WORKDIR
     RUN git config --global --add safe.directory /workspace

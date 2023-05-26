@@ -299,15 +299,6 @@ impl ArbitrarySnapshotGenerator {
             .collect()
     }
 
-    // TODO: this could be a static/associated method
-    pub fn groups(&mut self, funds: &[Fund]) -> Vec<Group> {
-        funds
-            .iter()
-            .flat_map(|f| f.groups.iter())
-            .cloned()
-            .collect()
-    }
-
     pub fn voteplan_with_fund_id(
         &mut self,
         fund_id: i32,
@@ -428,10 +419,9 @@ impl ArbitrarySnapshotGenerator {
         let reviews = self.advisor_reviews(&mut proposals);
         let goals = self.goals(&funds);
         let tokens = self.id_generator.tokens();
-        let groups = self.groups(&funds);
 
         Snapshot::new(
-            funds, proposals, challenges, tokens, voteplans, reviews, goals, groups,
+            funds, proposals, challenges, tokens, voteplans, reviews, goals,
         )
     }
 }

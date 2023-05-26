@@ -265,8 +265,33 @@ impl<'a> DbInserter<'a> {
             .execute(self.connection)
             .map_err(DbInserterError::DieselError)?;
 
-            self.insert_challenges(&fund.challenges.iter().cloned().collect::<Vec<_>>())?;
+            for (ix, fund_goal) in fund.goals.iter().enumerate() {
+                diesel::sql_query(
+                    r#"
+                    INSERT INTO goal (
+                        id,
+                        name,
+                        event_id,
+                        idx
+                    ) VALUES (
+                        $1, $2, $3, $4
+                    ) ON CONFLICT (id) DO NOTHING
+                    "#,
+                )
+                .bind::<diesel::sql_types::Integer, _>(&fund_goal.id)
+                .bind::<diesel::sql_types::VarChar, _>(&fund_goal.goal_name)
+                .bind::<diesel::sql_types::Integer, _>(&fund_goal.fund_id)
+                .bind::<diesel::sql_types::Integer, _>(ix as i32)
+                .execute(self.connection)
+                .map_err(DbInserterError::DieselError)?;
+            }
+        }
 
+        Ok(())
+    }
+
+    pub fn insert_vote_plans(&self, funds: &[Fund]) -> Result<(), DbInserterError> {
+        for fund in funds {
             for voteplan in &fund.chain_vote_plans {
                 let mut group_id = String::new();
                 for group in &fund.groups {
@@ -275,15 +300,15 @@ impl<'a> DbInserter<'a> {
                         break;
                     }
                 }
+
                 // After the vote plan schema update, event_id (fund id) was replaced to the objective_id (challenge id)
                 // So at this place we need to get an objective id which will corresponds to the correct fund id
                 // That is why we can take the first challenge in the list because it is corresponds to the desired fund
-                let objective_id = fund
-                    .challenges
-                    .iter()
-                    .next()
-                    .expect("should be at least one challenge")
-                    .internal_id;
+                let res =
+                    diesel::sql_query("SELECT row_id FROM objective WHERE event = $1 LIMIT 1")
+                        .bind::<diesel::sql_types::Integer, _>(&fund.id)
+                        .get_result::<RowId>(self.connection)
+                        .map_err(DbInserterError::DieselError)?;
 
                 diesel::sql_query(
                     r#"
@@ -304,31 +329,10 @@ impl<'a> DbInserter<'a> {
                 .bind::<diesel::sql_types::Integer, _>(voteplan.id)
                 .bind::<diesel::sql_types::VarChar, _>(&voteplan.chain_voteplan_id)
                 .bind::<diesel::sql_types::Text, _>(&voteplan.chain_voteplan_payload)
-                .bind::<diesel::sql_types::Integer, _>(&objective_id)
+                .bind::<diesel::sql_types::Integer, _>(&res.row_id)
                 .bind::<diesel::sql_types::VarChar, _>(&voteplan.chain_vote_encryption_key)
                 .bind::<diesel::sql_types::Text, _>(&group_id)
                 .bind::<diesel::sql_types::Text, _>(&voteplan.token_identifier)
-                .execute(self.connection)
-                .map_err(DbInserterError::DieselError)?;
-            }
-
-            for (ix, fund_goal) in fund.goals.iter().enumerate() {
-                diesel::sql_query(
-                    r#"
-                    INSERT INTO goal (
-                        id,
-                        name,
-                        event_id,
-                        idx
-                    ) VALUES (
-                        $1, $2, $3, $4
-                    ) ON CONFLICT (id) DO NOTHING
-                    "#,
-                )
-                .bind::<diesel::sql_types::Integer, _>(&fund_goal.id)
-                .bind::<diesel::sql_types::VarChar, _>(&fund_goal.goal_name)
-                .bind::<diesel::sql_types::Integer, _>(&fund_goal.fund_id)
-                .bind::<diesel::sql_types::Integer, _>(ix as i32)
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
             }

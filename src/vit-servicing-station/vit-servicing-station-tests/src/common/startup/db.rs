@@ -1,7 +1,9 @@
 use diesel::RunQueryDsl;
 use rand::Rng;
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::{api_tokens::ApiTokenData, funds::Fund};
+use vit_servicing_station_lib::db::models::{
+    api_tokens::ApiTokenData, challenges::Challenge, funds::Fund,
+};
 use vit_servicing_station_lib::db::{DbConnection, DbConnectionPool};
 
 use crate::common::data::Snapshot;
@@ -37,6 +39,7 @@ pub struct DbBuilder {
     tokens: Option<Vec<ApiTokenData>>,
     proposals: Option<Vec<FullProposalInfo>>,
     funds: Option<Vec<Fund>>,
+    challenges: Option<Vec<Challenge>>,
     advisor_reviews: Option<Vec<AdvisorReview>>,
 }
 
@@ -46,6 +49,7 @@ impl DbBuilder {
             tokens: None,
             proposals: None,
             funds: None,
+            challenges: None,
             advisor_reviews: None,
         }
     }
@@ -65,10 +69,16 @@ impl DbBuilder {
         self
     }
 
+    pub fn with_challenges(&mut self, challenges: Vec<Challenge>) -> &mut Self {
+        self.challenges = Some(challenges);
+        self
+    }
+
     pub fn with_snapshot(&mut self, snapshot: &Snapshot) -> &mut Self {
         self.with_proposals(snapshot.proposals());
         self.with_tokens(snapshot.tokens().values().cloned().collect());
         self.with_funds(snapshot.funds());
+        self.with_challenges(snapshot.challenges());
         self.with_advisor_reviews(snapshot.advisor_reviews());
         self
     }
@@ -93,6 +103,21 @@ impl DbBuilder {
     fn try_insert_funds(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         if let Some(funds) = &self.funds {
             DbInserter::new(connection).insert_funds(funds)?;
+        }
+        Ok(())
+    }
+
+    fn try_insert_challenges(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(challenges) = &self.challenges {
+            DbInserter::new(connection).insert_challenges(challenges)?;
+        }
+
+        Ok(())
+    }
+
+    fn try_insert_vote_plans(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(funds) = &self.funds {
+            DbInserter::new(connection).insert_vote_plans(funds)?;
         }
         Ok(())
     }
@@ -161,6 +186,8 @@ impl DbBuilder {
     fn insert_all(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         self.try_insert_tokens(connection)?;
         self.try_insert_funds(connection)?;
+        self.try_insert_challenges(connection)?;
+        self.try_insert_vote_plans(connection)?;
         self.try_insert_proposals(connection)?;
         self.try_insert_reviews(connection)?;
 

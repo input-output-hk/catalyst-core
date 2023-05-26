@@ -62,7 +62,8 @@ jobs:
         id: discover
         run: |
           JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers ./src ./services)
-          echo "::set-output name=json::${JSON_OUTPUT}"
+          echo "$JSON_OUTPUT"
+          echo "json=$JSON_OUTPUT" >> $GITHUB_OUTPUT
 
   build:
     needs: discover

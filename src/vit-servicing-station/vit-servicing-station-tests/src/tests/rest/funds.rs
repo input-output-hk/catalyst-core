@@ -29,6 +29,7 @@ pub fn get_funds_by_id() {
     let db_path = DbBuilder::new()
         .with_token(token)
         .with_funds(vec![expected_fund.clone()])
+        .with_challenges(expected_fund.challenges.clone())
         .build()
         .unwrap();
 

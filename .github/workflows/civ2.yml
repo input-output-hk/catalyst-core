@@ -17,6 +17,8 @@ env:
 
 jobs:
   discover:
+    outputs:
+      json: ${{ steps.discover.outputs.json }}
     runs-on: ubuntu-latest
     env:
       FORCE_COLOR: 1
@@ -68,10 +70,10 @@ jobs:
   build:
     needs: discover
     runs-on: ubuntu-latest
-    # strategy:
-    #   matrix:
-    #     path: ${{fromJson(needs.discover.outputs.json)}}
+    strategy:
+      matrix:
+        path: ${{fromJson(needs.discover.outputs.json)}}
     steps:
-      - name: Print JSON
+      - name: Build Each Path
         run: |
-          echo "JSON: ${{ needs.discover.outputs.json }}"
+          echo "Building path: ${{ matrix.path }}"

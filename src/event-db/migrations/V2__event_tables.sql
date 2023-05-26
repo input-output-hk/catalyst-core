@@ -127,7 +127,7 @@ In this case the vote gets cast to all defined destinations.
     chain_id: <int>, // Jormungandr chain id. Defaults to 0.
     // Other parameters TBD.
 },
-"caradno" : { // Voting on Cardano Directly
+"cardano" : { // Voting on Cardano Directly
     chain_id: <int>, // 0 = pre-prod, 1 = mainnet.
     // Other parameters TBD.
 },

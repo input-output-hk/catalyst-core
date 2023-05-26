@@ -75,6 +75,7 @@ jobs:
       - name: Build Each Path
         run: |
           echo "Building image: ${{ matrix.target.Path }}+docker"
+          ls -la
           earthly \
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
             ${{ matrix.target.Path }}+docker

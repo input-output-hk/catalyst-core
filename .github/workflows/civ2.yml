@@ -63,15 +63,15 @@ jobs:
         run: |
           JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers ./src ./services)
           echo "$JSON_OUTPUT"
-          echo "json=$JSON_OUTPUT" >> $GITHUB_OUTPUT
+          echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
 
   build:
     needs: discover
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        path: ${{fromJson(needs.discover.outputs.json)}}
+    # strategy:
+    #   matrix:
+    #     path: ${{fromJson(needs.discover.outputs.json)}}
     steps:
-      - name: Build Each Path
+      - name: Print JSON
         run: |
-          echo "Building path: ${{ matrix.path }}"
+          echo "JSON: ${{ needs.discover.outputs.json }}"

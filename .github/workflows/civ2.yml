@@ -16,9 +16,8 @@ env:
   ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
 
 jobs:
+
   discover:
-    outputs:
-      json: ${{ steps.discover.outputs.json }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/input-output-hk/catalyst-core/ci:latest
@@ -26,17 +25,17 @@ jobs:
       run:
         shell: bash
         working-directory: /workspace
+    outputs:
+      json: ${{ steps.discover.outputs.json }}
+
     steps:
-      - uses: actions/checkout@v3
-        #with:
-          #fetch-depth: 0
-      - name: Copy repository to workspace
-        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
+      - uses: ./.github/actions/setup-workspace@v1
       - name: Discover Earthfiles
         id: discover
         run: |
           JSON_OUTPUT=$(ci scan -jt +docker ./containers ./src ./services ./utilities)
           echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
+
   cache:
     runs-on: ubuntu-latest
     container:
@@ -45,29 +44,13 @@ jobs:
       run:
         shell: bash
         working-directory: /workspace
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - uses: ./.github/actions/setup-workspace@v1
+      - uses: ./github/actions/setup-earthly@v1
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Configure Earthly remote runner
-        run: |
-            mkdir -p /tmp/certs
-
-            # Fetch TLS certs from AWS Secrets Manager
-            JSON=$(aws secretsmanager get-secret-value --secret-id global/ci/ci-tls --query SecretString --output text)
-            echo "${JSON}" | jq -r .private_key | sed 's/\\n/\n/g' > /tmp/certs/key.pem
-            echo "${JSON}" | jq -r .certificate | sed 's/\\n/\n/g' > /tmp/certs/cert.pem
-            echo "${JSON}" | jq -r .ca_certificate | sed 's/\\n/\n/g' > /tmp/certs/ca.pem
-
-            # Configure Earthly
-            earthly config global.tlskey /tmp/certs/key.pem
-            earthly config global.tlscert /tmp/certs/cert.pem
-            earthly config global.tlsca /tmp/certs/ca.pem
-      - name: Copy repository to workspace
-        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
+          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
+          aws_region: ${{ env.AWS_REGION }}
       - name: Build cache
         run: |
           earthly \
@@ -90,33 +73,17 @@ jobs:
     strategy:
       matrix:
         target: ${{ fromJson(needs.discover.outputs.json) }}
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - uses: ./.github/actions/setup-workspace@v1
+      - uses: ./github/actions/setup-earthly@v1
         with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
+          aws_region: ${{ env.AWS_REGION }}
       - name: Login to ECR
         uses: docker/login-action@v2
         with:
           registry: ${{ env.ECR_REGISTRY }}
-      - name: Configure Earthly remote runner
-        run: |
-            mkdir -p /tmp/certs
-
-            # Fetch TLS certs from AWS Secrets Manager
-            JSON=$(aws secretsmanager get-secret-value --secret-id global/ci/ci-tls --query SecretString --output text)
-            echo "${JSON}" | jq -r .private_key | sed 's/\\n/\n/g' > /tmp/certs/key.pem
-            echo "${JSON}" | jq -r .certificate | sed 's/\\n/\n/g' > /tmp/certs/cert.pem
-            echo "${JSON}" | jq -r .ca_certificate | sed 's/\\n/\n/g' > /tmp/certs/ca.pem
-
-            # Configure Earthly
-            earthly config global.tlskey /tmp/certs/key.pem
-            earthly config global.tlscert /tmp/certs/cert.pem
-            earthly config global.tlsca /tmp/certs/ca.pem
-      - name: Copy repository to workspace
-        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
       - name: Build ${{ matrix.target.Path }}+docker
         run: |
           BEFORE=$(docker images --format "{{.ID}} {{.Repository}}:{{.Tag}}" | sort)
@@ -152,16 +119,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: artifacts
-      - name: List all downloaded artifacts
-        run: ls -R artifacts
       - name: Assemble JSON structure
         run: |
           JSON_CONTENT="{}"
           for file in $(find artifacts -type f -name 'image-name.txt'); do
             IMAGE_NAME=$(cat $file)
-            echo "IMAGE_NAME: $IMAGE_NAME"
-            echo {} | jq --arg key "test_image" --arg value "${{ github.sha }}" '. + {($key): $value}'
             JSON_CONTENT=$(echo $JSON_CONTENT | jq --arg key "$IMAGE_NAME" --arg value "${{ github.sha }}" '. + {($key): $value}')
           done
 
           echo "$JSON_CONTENT"
+

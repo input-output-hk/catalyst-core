@@ -141,7 +141,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: image-name-${{ steps.timestamp.outputs.timestamp }}.txt
+          name: ${{ steps.timestamp.outputs.timestamp }}
           path: /workspace/image-name.txt
 
   assemble:
@@ -157,7 +157,7 @@ jobs:
       - name: Assemble JSON structure
         run: |
           JSON_CONTENT="{}"
-          for file in $(find artifacts -type f -name 'image-name-*'); do
+          for file in $(find artifacts -type f -name 'image-name.txt'); do
             IMAGE_NAME=$(cat $file)
             echo "IMAGE_NAME: $IMAGE_NAME"
             echo {} | jq --arg key "test_image" --arg value "${{ github.sha }}" '. + {($key): $value}'

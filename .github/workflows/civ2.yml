@@ -152,11 +152,15 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           path: artifacts
+      - name: List all downloaded artifacts
+        run: ls -R artifacts
       - name: Assemble JSON structure
         run: |
           JSON_CONTENT="{}"
           for file in $(find artifacts -type f -name 'image-name-*'); do
             IMAGE_NAME=$(cat $file)
+            echo "IMAGE_NAME: $IMAGE_NAME"
+            echo {} | jq --arg key "test_image" --arg value "${{ github.sha }}" '. + {($key): $value}'
             JSON_CONTENT=$(echo $JSON_CONTENT | jq --arg key "$IMAGE_NAME" --arg value "${{ github.sha }}" '. + {($key): $value}')
           done
 

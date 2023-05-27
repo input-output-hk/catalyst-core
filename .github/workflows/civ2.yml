@@ -37,10 +37,9 @@ jobs:
       - name: Discover Earthfiles
         id: discover
         run: |
-          TAG="${{ github.sha }}"
-          #JSON_OUTPUT=$(ci scan -jit docker ./containers ./src ./services ./utilities)
-          JSON_OUTPUT=$(ci scan -jit docker ./containers)
+          JSON_OUTPUT=$(ci scan -jit docker ./containers ./src ./services ./utilities)
 
+          TAG="${{ github.sha }}"
           DEPLOYMENT=$(echo "$JSON_OUTPUT" | jq -cr --arg tag "${TAG}" '[.[] .images[] | { (.): $tag }] | add')
           EARTHLY=$(echo "$JSON_OUTPUT" | jq -cr '[.[] | .images |= join(" ")]')
 

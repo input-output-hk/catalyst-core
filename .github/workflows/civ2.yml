@@ -96,7 +96,7 @@ jobs:
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
             ${{ matrix.target.path }}+docker
 
-            echo "Images: ${{ matrix.target.images }}"
+            echo "Images: ${{ toJSON(matrix.target.images) }}"
 
         #   TAG=${{ github.sha }}
         #   NEW_IMAGE="${{ env.ECR_REGISTRY }}/$IMAGE_NAME:$TAG"

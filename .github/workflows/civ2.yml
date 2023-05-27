@@ -97,16 +97,14 @@ jobs:
         run: |
           earthly \
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
-            ${{ matrix.target.path }}+docker
+            ${{ matrix.target.path }}+docker \
+            --tag=latest
 
-          echo "${{ matrix.target.images }}"
-
-        #   TAG=${{ github.sha }}
-        #   NEW_IMAGE="${{ env.ECR_REGISTRY }}/$IMAGE_NAME:$TAG"
-        #   docker tag "$IMAGE_ID" "$NEW_IMAGE"
-        #   docker push "$NEW_IMAGE"
-
-        #   echo "${IMAGE_NAME}" > image-name.txt
+          TAG=${{ github.sha }}
+          for image in ${{ matrix.target.images }}; do
+            docker tag "${image}:latest" "${{ env.ECR_REGISTRY }}/${image}:${TAG}"
+            docker push "${{ env.ECR_REGISTRY }}/${image}:${TAG}"
+          done
     #   - name: Generate timestamp
     #     id: timestamp
     #     run: echo "timestamp=$(date +%s%N)" >>$GITHUB_OUTPUT

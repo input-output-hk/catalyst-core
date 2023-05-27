@@ -4,8 +4,6 @@ description: "Checkout the repository and copy to current directory"
 runs:
   using: "composite"
   steps:
-    - name: Checkout
-      uses: actions/checkout@v3
     - name: Copy repository to workspace
       run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
       shell: bash

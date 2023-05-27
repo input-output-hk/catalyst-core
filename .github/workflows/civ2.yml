@@ -48,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -149,13 +149,10 @@ jobs:
         uses: actions/download-artifact@v2
       - name: Assemble JSON structure
         run: |
-          json_output="{"
-          for filename in $(ls); do
-            if [[ $filename == image-name-* ]]; then
-              image_name=$(cat $filename)
-              json_output="${json_output}\n\"${image_name}\": \"${{ github.sha }}\","
-            fi
+          JSON_CONTENT="{}"
+          for file in artifacts/*; do
+            IMAGE_NAME=$(cat $file)
+            JSON_CONTENT=$(echo $JSON_CONTENT | jq --arg key "$IMAGE_NAME" --arg value "${{ github.sha }}" '. + {($key): $value}')
           done
-          json_output="${json_output}\n}"
 
-          echo "$json_output"
+          echo "$JSON_CONTENT"

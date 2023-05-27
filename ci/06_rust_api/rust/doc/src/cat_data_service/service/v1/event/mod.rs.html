@@ -520,14 +520,6 @@
 <a href="#520" id="520">520</a>
 <a href="#521" id="521">521</a>
 <a href="#522" id="522">522</a>
-<a href="#523" id="523">523</a>
-<a href="#524" id="524">524</a>
-<a href="#525" id="525">525</a>
-<a href="#526" id="526">526</a>
-<a href="#527" id="527">527</a>
-<a href="#528" id="528">528</a>
-<a href="#529" id="529">529</a>
-<a href="#530" id="530">530</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -591,15 +583,7 @@
 }
 
 <span class="doccomment">/// Need to setup and run a test event db instance
-/// To do it you can use the following commands:
-/// Prepare docker images
-/// ```
-/// earthly ./containers/event-db-migrations+docker --data=test
-/// ```
-/// Run event-db container
-/// ```
-/// docker-compose -f src/event-db/docker-compose.yml up migrations
-/// ```
+/// To do it you can use `cargo make local-event-db-test`
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL=&quot;postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev&quot;

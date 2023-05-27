@@ -16,80 +16,35 @@ env:
   ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
 
 jobs:
-  # discover:
-  #   outputs:
-  #     json: ${{ steps.discover.outputs.json }}
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: ghcr.io/input-output-hk/catalyst-core/ci:latest
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #       working-directory: /workspace
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #       #with:
-  #         #fetch-depth: 0
-  #     - name: Copy repository to workspace
-  #       run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
-  #     - name: Discover Earthfiles
-  #       id: discover
-  #       run: |
-  #         JSON_OUTPUT=$(ci scan -jt +docker ./containers ./src ./services ./utilities)
-  #         echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
-  # cache:
-  #   runs-on: ubuntu-latest
-  #   container:
-  #     image: ghcr.io/input-output-hk/catalyst-core/ci:latest
-  #   defaults:
-  #     run:
-  #       shell: bash
-  #       working-directory: /workspace
-  #   steps:
-  #     - uses: actions/checkout@v3
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@v1.7.0
-  #       with:
-  #         role-to-assume: ${{ env.AWS_ROLE_ARN }}
-  #         aws-region: ${{ env.AWS_REGION }}
-  #     - name: Configure Earthly remote runner
-  #       run: |
-  #           mkdir -p /tmp/certs
-
-  #           # Fetch TLS certs from AWS Secrets Manager
-  #           JSON=$(aws secretsmanager get-secret-value --secret-id global/ci/ci-tls --query SecretString --output text)
-  #           echo "${JSON}" | jq -r .private_key | sed 's/\\n/\n/g' > /tmp/certs/key.pem
-  #           echo "${JSON}" | jq -r .certificate | sed 's/\\n/\n/g' > /tmp/certs/cert.pem
-  #           echo "${JSON}" | jq -r .ca_certificate | sed 's/\\n/\n/g' > /tmp/certs/ca.pem
-
-  #           # Configure Earthly
-  #           earthly config global.tlskey /tmp/certs/key.pem
-  #           earthly config global.tlscert /tmp/certs/cert.pem
-  #           earthly config global.tlsca /tmp/certs/ca.pem
-  #     - name: Copy repository to workspace
-  #       run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
-  #     - name: Build cache
-  #       run: |
-  #         earthly \
-  #         --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
-  #         "$(pwd)+builder"
-
-  build:
-    #needs: [discover, cache]
+  discover:
+    outputs:
+      json: ${{ steps.discover.outputs.json }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/input-output-hk/catalyst-core/ci:latest
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-      env:
-        FORCE_COLOR: 1
     defaults:
       run:
         shell: bash
         working-directory: /workspace
-    # strategy:
-    #   matrix:
-    #     target: ${{ fromJson(needs.discover.outputs.json) }}
+    steps:
+      - uses: actions/checkout@v3
+        #with:
+          #fetch-depth: 0
+      - name: Copy repository to workspace
+        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
+      - name: Discover Earthfiles
+        id: discover
+        run: |
+          JSON_OUTPUT=$(ci scan -jt +docker ./containers ./src ./services ./utilities)
+          echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
+  cache:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/input-output-hk/catalyst-core/ci:latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: /workspace
     steps:
       - uses: actions/checkout@v3
       - name: Configure AWS Credentials
@@ -113,8 +68,93 @@ jobs:
             earthly config global.tlsca /tmp/certs/ca.pem
       - name: Copy repository to workspace
         run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
-      - name: Build
+      - name: Build cache
         run: |
           earthly \
+          --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
+          "$(pwd)+builder"
+
+  build:
+    needs: [discover, cache]
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/input-output-hk/catalyst-core/ci:latest
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+      env:
+        FORCE_COLOR: 1
+    defaults:
+      run:
+        shell: bash
+        working-directory: /workspace
+    strategy:
+      matrix:
+        target: ${{ fromJson(needs.discover.outputs.json) }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Login to ECR
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.ECR_REGISTRY }}
+      - name: Configure Earthly remote runner
+        run: |
+            mkdir -p /tmp/certs
+
+            # Fetch TLS certs from AWS Secrets Manager
+            JSON=$(aws secretsmanager get-secret-value --secret-id global/ci/ci-tls --query SecretString --output text)
+            echo "${JSON}" | jq -r .private_key | sed 's/\\n/\n/g' > /tmp/certs/key.pem
+            echo "${JSON}" | jq -r .certificate | sed 's/\\n/\n/g' > /tmp/certs/cert.pem
+            echo "${JSON}" | jq -r .ca_certificate | sed 's/\\n/\n/g' > /tmp/certs/ca.pem
+
+            # Configure Earthly
+            earthly config global.tlskey /tmp/certs/key.pem
+            earthly config global.tlscert /tmp/certs/cert.pem
+            earthly config global.tlsca /tmp/certs/ca.pem
+      - name: Copy repository to workspace
+        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
+      - name: Build ${{ matrix.target.Path }}+docker
+        run: |
+          BEFORE=$(docker images --format "{{.ID}} {{.Repository}}:{{.Tag}}" | sort)
+          earthly \
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
-            "$(pwd)+all"
+            ${{ matrix.target.Path }}+docker
+          AFTER=$(docker images --format "{{.ID}} {{.Repository}}:{{.Tag}}" | sort)
+
+          IMAGE_INFO=$(comm -13 <(echo "$BEFORE") <(echo "$AFTER"))
+          IMAGE_ID=$(echo "$IMAGE_INFO" | awk '{print $1}')
+          IMAGE_NAME=$(echo "$IMAGE_INFO" | awk '{print $2}' | cut -d':' -f1)
+
+          TAG=${{ github.sha }}
+          NEW_IMAGE="${{ env.ECR_REGISTRY }}/$IMAGE_NAME:$TAG"
+          docker tag "$IMAGE_ID" "$NEW_IMAGE"
+          docker push "$NEW_IMAGE"
+
+          echo "${IMAGE_NAME}" > image-name.txt
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: image-name-${{ matrix.target }}
+          path: image-name.txt
+
+  assemble:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v2
+      - name: Assemble JSON structure
+        run: |
+          json_output="{"
+          for filename in $(ls); do
+            if [[ $filename == image-name-* ]]; then
+              image_name=$(cat $filename)
+              json_output="${json_output}\n\"${image_name}\": \"${{ github.sha }}\","
+            fi
+          done
+          json_output="${json_output}\n}"
+          echo "$json_output" > final-output.json

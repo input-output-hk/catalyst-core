@@ -37,7 +37,7 @@ jobs:
         run: |
           #JSON_OUTPUT=$(ci scan -jit docker ./containers ./src ./services ./utilities)
           JSON_OUTPUT=$(ci scan -jit docker ./containers)
-          JSON_OUTPUT_FINAL=$(echo "$JSON_OUTPUT" | jq -r '[.[] | .images |= join(" ")]')
+          JSON_OUTPUT_FINAL=$(echo "$JSON_OUTPUT" | jq -cr '[.[] | .images |= join(" ")]')
 
           echo "json=$JSON_OUTPUT_FINAL" >>$GITHUB_OUTPUT
 

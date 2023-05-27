@@ -35,10 +35,7 @@ jobs:
       - name: Discover Earthfiles
         id: discover
         run: |
-          JSON_OUTPUT=$(ci scan -jt +docker ./containers)
-          #JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers ./src ./services)
-          #JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers)
-          echo "$JSON_OUTPUT"
+          JSON_OUTPUT=$(ci scan -jt +docker ./containers ./src ./services ./utilities)
           echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
   cache:
     runs-on: ubuntu-latest

@@ -102,7 +102,7 @@ func (c *scanCmd) Run() error {
 				return err
 			}
 
-			output[file.Path] = images
+			output[filepath.Dir(file.Path)] = images
 		}
 
 		if c.JsonOutput {

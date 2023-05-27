@@ -26,8 +26,8 @@ jobs:
         shell: bash
         working-directory: /workspace
     outputs:
-      deployment: ${{ steps.discover.outputs.images }}
-      earthly: ${{ steps.discover.outputs.json }}
+      deployment: ${{ steps.discover.outputs.deployment }}
+      earthly: ${{ steps.discover.outputs.earthly }}
       tag: ${{ steps.discover.outputs.tag }}
 
     steps:

@@ -35,7 +35,7 @@ jobs:
       - name: Discover Earthfiles
         id: discover
         run: |
-          JSON_OUTPUT=$(ci scan -jt +docker ./containers ./src ./services ./utilities)
+          JSON_OUTPUT=$(ci scan -jit docker ./containers ./src ./services ./utilities)
           echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
 
   cache:
@@ -90,48 +90,44 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ${{ env.ECR_REGISTRY }}
-      - name: Build ${{ matrix.target.Path }}+docker
+      - name: Build ${{ matrix.target.path }}+docker
         run: |
-          BEFORE=$(docker images --format "{{.ID}} {{.Repository}}:{{.Tag}}" | sort)
           earthly \
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
-            ${{ matrix.target.Path }}+docker
-          AFTER=$(docker images --format "{{.ID}} {{.Repository}}:{{.Tag}}" | sort)
+            ${{ matrix.target.path }}+docker
 
-          IMAGE_INFO=$(comm -13 <(echo "$BEFORE") <(echo "$AFTER"))
-          IMAGE_ID=$(echo "$IMAGE_INFO" | awk '{print $1}')
-          IMAGE_NAME=$(echo "$IMAGE_INFO" | awk '{print $2}' | cut -d':' -f1)
+            echo "Images: ${{ matrix.target.images }}"
 
-          TAG=${{ github.sha }}
-          NEW_IMAGE="${{ env.ECR_REGISTRY }}/$IMAGE_NAME:$TAG"
-          docker tag "$IMAGE_ID" "$NEW_IMAGE"
-          docker push "$NEW_IMAGE"
+        #   TAG=${{ github.sha }}
+        #   NEW_IMAGE="${{ env.ECR_REGISTRY }}/$IMAGE_NAME:$TAG"
+        #   docker tag "$IMAGE_ID" "$NEW_IMAGE"
+        #   docker push "$NEW_IMAGE"
 
-          echo "${IMAGE_NAME}" > image-name.txt
-      - name: Generate timestamp
-        id: timestamp
-        run: echo "timestamp=$(date +%s%N)" >>$GITHUB_OUTPUT
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ steps.timestamp.outputs.timestamp }}
-          path: /workspace/image-name.txt
+        #   echo "${IMAGE_NAME}" > image-name.txt
+    #   - name: Generate timestamp
+    #     id: timestamp
+    #     run: echo "timestamp=$(date +%s%N)" >>$GITHUB_OUTPUT
+    #   - name: Upload artifact
+    #     uses: actions/upload-artifact@v3
+    #     with:
+    #       name: ${{ steps.timestamp.outputs.timestamp }}
+    #       path: /workspace/image-name.txt
 
-  assemble:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: artifacts
-      - name: Assemble JSON structure
-        run: |
-          JSON_CONTENT="{}"
-          for file in $(find artifacts -type f -name 'image-name.txt'); do
-            IMAGE_NAME=$(cat $file)
-            JSON_CONTENT=$(echo $JSON_CONTENT | jq --arg key "$IMAGE_NAME" --arg value "${{ github.sha }}" '. + {($key): $value}')
-          done
+#   assemble:
+#     needs: build
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Download all artifacts
+#         uses: actions/download-artifact@v3
+#         with:
+#           path: artifacts
+#       - name: Assemble JSON structure
+#         run: |
+#           JSON_CONTENT="{}"
+#           for file in $(find artifacts -type f -name 'image-name.txt'); do
+#             IMAGE_NAME=$(cat $file)
+#             JSON_CONTENT=$(echo $JSON_CONTENT | jq --arg key "$IMAGE_NAME" --arg value "${{ github.sha }}" '. + {($key): $value}')
+#           done
 
-          echo "$JSON_CONTENT"
+#           echo "$JSON_CONTENT"
 

@@ -2,8 +2,8 @@ name: Build CI image
 
 on:
   push:
-    # branches:
-    #     - main
+    branches:
+        - main
     paths:
         - ".github/workflows/ci-build.yml"
         - "ci/**"

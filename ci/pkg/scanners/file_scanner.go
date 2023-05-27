@@ -10,9 +10,9 @@ import (
 
 // FileScanner is an interface that can scan for Earthfiles at the given paths.
 type FileScanner struct {
-	executor pkg.Executor
-	fs       afero.Fs
-	paths    []string
+	fs     afero.Fs
+	parser pkg.EarthfileParser
+	paths  []string
 }
 
 func (f *FileScanner) Scan() ([]pkg.Earthfile, error) {
@@ -28,13 +28,8 @@ func (f *FileScanner) Scan() ([]pkg.Earthfile, error) {
 
 func (f *FileScanner) ScanForTarget(target string) ([]pkg.Earthfile, error) {
 	earthfiles, err := f.scan(func(e pkg.Earthfile) (bool, error) {
-		targets, err := e.Targets()
-		if err != nil {
-			return false, err
-		}
-
-		for _, t := range targets {
-			if t == target {
+		for _, t := range e.Targets {
+			if t.Name == target {
 				return true, nil
 			}
 		}
@@ -57,7 +52,11 @@ func (f *FileScanner) scan(filter func(pkg.Earthfile) (bool, error)) ([]pkg.Eart
 				return nil
 			}
 
-			earthfile := pkg.NewEarthfile(filepath.Dir(path), f.executor)
+			earthfile, err := f.parser.Parse(path)
+			if err != nil {
+				return err
+			}
+
 			include, err := filter(earthfile)
 			if err != nil {
 				return err
@@ -76,10 +75,10 @@ func (f *FileScanner) scan(filter func(pkg.Earthfile) (bool, error)) ([]pkg.Eart
 }
 
 // NewFileScanner creates a new FileScanner.
-func NewFileScanner(paths []string, executor pkg.Executor, fs afero.Fs) *FileScanner {
+func NewFileScanner(paths []string, parser pkg.EarthfileParser, fs afero.Fs) *FileScanner {
 	return &FileScanner{
-		executor: executor,
-		fs:       fs,
-		paths:    paths,
+		fs:     fs,
+		parser: parser,
+		paths:  paths,
 	}
 }

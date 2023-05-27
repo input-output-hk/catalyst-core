@@ -41,7 +41,7 @@ jobs:
           #JSON_OUTPUT=$(ci scan -jit docker ./containers ./src ./services ./utilities)
           JSON_OUTPUT=$(ci scan -jit docker ./containers)
 
-          DEPLOYMENT=$(echo "JSON_OUTPUT" | jq -cr '[.[] .images[] | { (.): "${TAG}" }] | add')
+          DEPLOYMENT=$(echo "$JSON_OUTPUT" | jq -c --arg tag "${TAG}" '[.[] .images[] | { (.): $tag }] | add')
           EARTHLY=$(echo "$JSON_OUTPUT" | jq -cr '[.[] | .images |= join(" ")]')
 
           echo "deployment=$DEPLOYMENT" >>$GITHUB_OUTPUT
@@ -123,4 +123,3 @@ jobs:
       - name: Print deployment payload
         run: |
           echo "${{ needs.discover.outputs.deployment }}" | jq
-

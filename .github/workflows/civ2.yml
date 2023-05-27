@@ -20,36 +20,72 @@ jobs:
     outputs:
       json: ${{ steps.discover.outputs.json }}
     runs-on: ubuntu-latest
-    env:
-      FORCE_COLOR: 1
+    container:
+      image: ghcr.io/input-output-hk/catalyst-core/ci:latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: /workspace
     steps:
       - uses: actions/checkout@v3
         #with:
           #fetch-depth: 0
-      - name: Put back the git branch into git (Earthly uses it for tagging)
-        run: |
-          branch=""
-          if [ -n "$GITHUB_HEAD_REF" ]; then
-            branch="$GITHUB_HEAD_REF"
-          else
-            branch="${GITHUB_REF##*/}"
-          fi
-          git checkout -b "$branch" || true
+      - name: Copy repository to workspace
+        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
       - name: Discover Earthfiles
         id: discover
         run: |
+          JSON_OUTPUT=$(ci scan -jt +docker ./containers)
           #JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers ./src ./services)
-          JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers)
+          #JSON_OUTPUT=$(docker run -v $(pwd):/workspace ghcr.io/input-output-hk/catalyst-core/ci:latest scan -jt +docker ./containers)
           echo "$JSON_OUTPUT"
           echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
+  cache:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/input-output-hk/catalyst-core/ci:latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: /workspace
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1.7.0
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Configure Earthly remote runner
+        run: |
+            mkdir -p /tmp/certs
+
+            # Fetch TLS certs from AWS Secrets Manager
+            JSON=$(aws secretsmanager get-secret-value --secret-id global/ci/ci-tls --query SecretString --output text)
+            echo "${JSON}" | jq -r .private_key | sed 's/\\n/\n/g' > /tmp/certs/key.pem
+            echo "${JSON}" | jq -r .certificate | sed 's/\\n/\n/g' > /tmp/certs/cert.pem
+            echo "${JSON}" | jq -r .ca_certificate | sed 's/\\n/\n/g' > /tmp/certs/ca.pem
+
+            # Configure Earthly
+            earthly config global.tlskey /tmp/certs/key.pem
+            earthly config global.tlscert /tmp/certs/cert.pem
+            earthly config global.tlsca /tmp/certs/ca.pem
+      - name: Copy repository to workspace
+        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
+      - name: Build cache
+        run: |
+          earthly \
+          --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
+          "$(pwd)+builder"
 
   build:
-    needs: discover
+    needs: [discover, cache]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/input-output-hk/catalyst-core/ci:latest
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
+      env:
+        FORCE_COLOR: 1
     defaults:
       run:
         shell: bash
@@ -68,19 +104,22 @@ jobs:
         run: |
             mkdir -p /tmp/certs
 
+            # Fetch TLS certs from AWS Secrets Manager
             JSON=$(aws secretsmanager get-secret-value --secret-id global/ci/ci-tls --query SecretString --output text)
             echo "${JSON}" | jq -r .private_key | sed 's/\\n/\n/g' > /tmp/certs/key.pem
             echo "${JSON}" | jq -r .certificate | sed 's/\\n/\n/g' > /tmp/certs/cert.pem
             echo "${JSON}" | jq -r .ca_certificate | sed 's/\\n/\n/g' > /tmp/certs/ca.pem
 
+            # Configure Earthly
             earthly config global.tlskey /tmp/certs/key.pem
             earthly config global.tlscert /tmp/certs/cert.pem
             earthly config global.tlsca /tmp/certs/ca.pem
-      - name: Build Each Path
+      - name: Build ${{ matrix.target.Path }}+docker
         run: |
-          echo "Building image: ${{ matrix.target.Path }}+docker"
+          # Because you can't override where the checkout occurs :(
           cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
-          ls -la
+
+          # Run build
           earthly \
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
             ${{ matrix.target.Path }}+docker

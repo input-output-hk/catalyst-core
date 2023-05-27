@@ -79,7 +79,7 @@ jobs:
       - name: Build Each Path
         run: |
           echo "Building image: ${{ matrix.target.Path }}+docker"
-          cp -r "${GITHUB_WORKSPACE}/*" "$(pwd)"
+          cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
           ls -la
           earthly \
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \

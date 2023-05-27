@@ -5,5 +5,5 @@ runs:
   using: "composite"
   steps:
     - name: Copy repository to workspace
-      run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
+      run: cp -r "${GITHUB_WORKSPACE}"/* /workspace
       shell: bash

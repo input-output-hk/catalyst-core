@@ -93,7 +93,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ env.AWS_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -139,7 +139,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: image-name-${{ matrix.target }}
-          path: image-name.txt
+          path: /workspace/image-name.txt
 
   assemble:
     needs: build
@@ -157,4 +157,5 @@ jobs:
             fi
           done
           json_output="${json_output}\n}"
-          echo "$json_output" > final-output.json
+
+          echo "$json_output"

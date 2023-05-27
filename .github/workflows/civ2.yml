@@ -29,7 +29,7 @@ jobs:
       json: ${{ steps.discover.outputs.json }}
 
     steps:
-      - uses: ./.github/actions/setup-workspace@v1
+      - uses: ./.github/actions/setup-workspace
       - name: Discover Earthfiles
         id: discover
         run: |
@@ -46,8 +46,8 @@ jobs:
         working-directory: /workspace
 
     steps:
-      - uses: ./.github/actions/setup-workspace@v1
-      - uses: ./github/actions/setup-earthly@v1
+      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/setup-earthly
         with:
           aws_role_arn: ${{ env.AWS_ROLE_ARN }}
           aws_region: ${{ env.AWS_REGION }}
@@ -75,8 +75,8 @@ jobs:
         target: ${{ fromJson(needs.discover.outputs.json) }}
 
     steps:
-      - uses: ./.github/actions/setup-workspace@v1
-      - uses: ./github/actions/setup-earthly@v1
+      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/setup-earthly
         with:
           aws_role_arn: ${{ env.AWS_ROLE_ARN }}
           aws_region: ${{ env.AWS_REGION }}

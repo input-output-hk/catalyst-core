@@ -37,7 +37,9 @@ jobs:
         run: |
           #JSON_OUTPUT=$(ci scan -jit docker ./containers ./src ./services ./utilities)
           JSON_OUTPUT=$(ci scan -jit docker ./containers)
-          echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
+          JSON_OUTPUT_FINAL=$(echo "$JSON_OUTPUT" | jq -r '[.[] | .images |= join(" ")]')
+
+          echo "json=$JSON_OUTPUT_FINAL" >>$GITHUB_OUTPUT
 
   cache:
     runs-on: ubuntu-latest
@@ -97,7 +99,7 @@ jobs:
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
             ${{ matrix.target.path }}+docker
 
-          echo "${{ toJSON(matrix.target.images) }}" | jq
+          echo "${{ matrix.target.images }}"
 
         #   TAG=${{ github.sha }}
         #   NEW_IMAGE="${{ env.ECR_REGISTRY }}/$IMAGE_NAME:$TAG"

@@ -136,7 +136,7 @@ jobs:
 
           echo "${IMAGE_NAME}" > image-name.txt
       - name: Upload artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: image-name-${{ matrix.target }}
           path: /workspace/image-name.txt
@@ -146,7 +146,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts
       - name: Assemble JSON structure
         run: |
           JSON_CONTENT="{}"

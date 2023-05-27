@@ -16,66 +16,66 @@ env:
   ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
 
 jobs:
-  discover:
-    outputs:
-      json: ${{ steps.discover.outputs.json }}
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/input-output-hk/catalyst-core/ci:latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: /workspace
-    steps:
-      - uses: actions/checkout@v3
-        #with:
-          #fetch-depth: 0
-      - name: Copy repository to workspace
-        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
-      - name: Discover Earthfiles
-        id: discover
-        run: |
-          JSON_OUTPUT=$(ci scan -jt +docker ./containers ./src ./services ./utilities)
-          echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
-  cache:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/input-output-hk/catalyst-core/ci:latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: /workspace
-    steps:
-      - uses: actions/checkout@v3
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
-        with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Configure Earthly remote runner
-        run: |
-            mkdir -p /tmp/certs
+  # discover:
+  #   outputs:
+  #     json: ${{ steps.discover.outputs.json }}
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: ghcr.io/input-output-hk/catalyst-core/ci:latest
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #       working-directory: /workspace
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #       #with:
+  #         #fetch-depth: 0
+  #     - name: Copy repository to workspace
+  #       run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
+  #     - name: Discover Earthfiles
+  #       id: discover
+  #       run: |
+  #         JSON_OUTPUT=$(ci scan -jt +docker ./containers ./src ./services ./utilities)
+  #         echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
+  # cache:
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: ghcr.io/input-output-hk/catalyst-core/ci:latest
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #       working-directory: /workspace
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v1.7.0
+  #       with:
+  #         role-to-assume: ${{ env.AWS_ROLE_ARN }}
+  #         aws-region: ${{ env.AWS_REGION }}
+  #     - name: Configure Earthly remote runner
+  #       run: |
+  #           mkdir -p /tmp/certs
 
-            # Fetch TLS certs from AWS Secrets Manager
-            JSON=$(aws secretsmanager get-secret-value --secret-id global/ci/ci-tls --query SecretString --output text)
-            echo "${JSON}" | jq -r .private_key | sed 's/\\n/\n/g' > /tmp/certs/key.pem
-            echo "${JSON}" | jq -r .certificate | sed 's/\\n/\n/g' > /tmp/certs/cert.pem
-            echo "${JSON}" | jq -r .ca_certificate | sed 's/\\n/\n/g' > /tmp/certs/ca.pem
+  #           # Fetch TLS certs from AWS Secrets Manager
+  #           JSON=$(aws secretsmanager get-secret-value --secret-id global/ci/ci-tls --query SecretString --output text)
+  #           echo "${JSON}" | jq -r .private_key | sed 's/\\n/\n/g' > /tmp/certs/key.pem
+  #           echo "${JSON}" | jq -r .certificate | sed 's/\\n/\n/g' > /tmp/certs/cert.pem
+  #           echo "${JSON}" | jq -r .ca_certificate | sed 's/\\n/\n/g' > /tmp/certs/ca.pem
 
-            # Configure Earthly
-            earthly config global.tlskey /tmp/certs/key.pem
-            earthly config global.tlscert /tmp/certs/cert.pem
-            earthly config global.tlsca /tmp/certs/ca.pem
-      - name: Copy repository to workspace
-        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
-      - name: Build cache
-        run: |
-          earthly \
-          --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
-          "$(pwd)+builder"
+  #           # Configure Earthly
+  #           earthly config global.tlskey /tmp/certs/key.pem
+  #           earthly config global.tlscert /tmp/certs/cert.pem
+  #           earthly config global.tlsca /tmp/certs/ca.pem
+  #     - name: Copy repository to workspace
+  #       run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
+  #     - name: Build cache
+  #       run: |
+  #         earthly \
+  #         --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
+  #         "$(pwd)+builder"
 
   build:
-    needs: [discover, cache]
+    #needs: [discover, cache]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/input-output-hk/catalyst-core/ci:latest
@@ -87,9 +87,9 @@ jobs:
       run:
         shell: bash
         working-directory: /workspace
-    strategy:
-      matrix:
-        target: ${{ fromJson(needs.discover.outputs.json) }}
+    # strategy:
+    #   matrix:
+    #     target: ${{ fromJson(needs.discover.outputs.json) }}
     steps:
       - uses: actions/checkout@v3
       - name: Configure AWS Credentials
@@ -111,12 +111,10 @@ jobs:
             earthly config global.tlskey /tmp/certs/key.pem
             earthly config global.tlscert /tmp/certs/cert.pem
             earthly config global.tlsca /tmp/certs/ca.pem
-      - name: Build ${{ matrix.target.Path }}+docker
+      - name: Copy repository to workspace
+        run: cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
+      - name: Build
         run: |
-          # Because you can't override where the checkout occurs :(
-          cp -r "${GITHUB_WORKSPACE}"/* "$(pwd)"
-
-          # Run build
           earthly \
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
-            ${{ matrix.target.Path }}+docker
+            "$(pwd)+all"

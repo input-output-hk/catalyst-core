@@ -122,4 +122,4 @@ jobs:
     steps:
       - name: Print deployment payload
         run: |
-          echo "${{ needs.discover.outputs.deployment }}" | jq
+          echo '${{ needs.discover.outputs.deployment }}' | jq

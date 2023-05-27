@@ -35,7 +35,8 @@ jobs:
       - name: Discover Earthfiles
         id: discover
         run: |
-          JSON_OUTPUT=$(ci scan -jit docker ./containers ./src ./services ./utilities)
+          #JSON_OUTPUT=$(ci scan -jit docker ./containers ./src ./services ./utilities)
+          JSON_OUTPUT=$(ci scan -jit docker ./containers)
           echo "json=$JSON_OUTPUT" >>$GITHUB_OUTPUT
 
   cache:
@@ -96,7 +97,7 @@ jobs:
             --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" \
             ${{ matrix.target.path }}+docker
 
-            echo "Images: ${{ toJSON(matrix.target.images) }}"
+          echo "${{ toJSON(matrix.target.images) }}" | jq
 
         #   TAG=${{ github.sha }}
         #   NEW_IMAGE="${{ env.ECR_REGISTRY }}/$IMAGE_NAME:$TAG"

@@ -26,7 +26,9 @@ jobs:
         shell: bash
         working-directory: /workspace
     outputs:
-      json: ${{ steps.discover.outputs.json }}
+      deployment: ${{ steps.discover.outputs.images }}
+      earthly: ${{ steps.discover.outputs.json }}
+      tag: ${{ steps.discover.outputs.tag }}
 
     steps:
       - name: Checkout
@@ -35,11 +37,16 @@ jobs:
       - name: Discover Earthfiles
         id: discover
         run: |
+          TAG=${{ github.sha }}
           #JSON_OUTPUT=$(ci scan -jit docker ./containers ./src ./services ./utilities)
           JSON_OUTPUT=$(ci scan -jit docker ./containers)
-          JSON_OUTPUT_FINAL=$(echo "$JSON_OUTPUT" | jq -cr '[.[] | .images |= join(" ")]')
 
-          echo "json=$JSON_OUTPUT_FINAL" >>$GITHUB_OUTPUT
+          DEPLOYMENT=$(echo "JSON_OUTPUT" | jq -cr '[.[] .images[] | { (.): "${TAG}" }] | add')
+          EARTHLY=$(echo "$JSON_OUTPUT" | jq -cr '[.[] | .images |= join(" ")]')
+
+          echo "deployment=$DEPLOYMENT" >>$GITHUB_OUTPUT
+          echo "earthly=$EARTHLY" >>$GITHUB_OUTPUT
+          echo "tag=$TAG" >>$GITHUB_OUTPUT
 
   cache:
     runs-on: ubuntu-latest
@@ -65,7 +72,7 @@ jobs:
           "$(pwd)+builder"
 
   build:
-    needs: [discover, cache]
+    needs: [cache, discover]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/input-output-hk/catalyst-core/ci:latest
@@ -79,7 +86,7 @@ jobs:
         working-directory: /workspace
     strategy:
       matrix:
-        target: ${{ fromJson(needs.discover.outputs.json) }}
+        target: ${{ fromJson(needs.discover.outputs.earthly) }}
 
     steps:
       - name: Checkout
@@ -100,35 +107,20 @@ jobs:
             ${{ matrix.target.path }}+docker \
             --tag=latest
 
-          TAG=${{ github.sha }}
+          TAG=${{ needs.discover.outputs.tag }}
           for image in ${{ matrix.target.images }}; do
+            echo "Tagging ${image}:latest as ${{ env.ECR_REGISTRY }}/${image}:${TAG}"
             docker tag "${image}:latest" "${{ env.ECR_REGISTRY }}/${image}:${TAG}"
+
+            echo "Pushing ${{ env.ECR_REGISTRY }}/${image}:${TAG}"
             docker push "${{ env.ECR_REGISTRY }}/${image}:${TAG}"
           done
-    #   - name: Generate timestamp
-    #     id: timestamp
-    #     run: echo "timestamp=$(date +%s%N)" >>$GITHUB_OUTPUT
-    #   - name: Upload artifact
-    #     uses: actions/upload-artifact@v3
-    #     with:
-    #       name: ${{ steps.timestamp.outputs.timestamp }}
-    #       path: /workspace/image-name.txt
 
-#   assemble:
-#     needs: build
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Download all artifacts
-#         uses: actions/download-artifact@v3
-#         with:
-#           path: artifacts
-#       - name: Assemble JSON structure
-#         run: |
-#           JSON_CONTENT="{}"
-#           for file in $(find artifacts -type f -name 'image-name.txt'); do
-#             IMAGE_NAME=$(cat $file)
-#             JSON_CONTENT=$(echo $JSON_CONTENT | jq --arg key "$IMAGE_NAME" --arg value "${{ github.sha }}" '. + {($key): $value}')
-#           done
-
-#           echo "$JSON_CONTENT"
+  deploy:
+    needs: [build, discover]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print deployment payload
+        run: |
+          echo "${{ needs.discover.outputs.deployment }}" | jq
 

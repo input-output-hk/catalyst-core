@@ -135,10 +135,13 @@ jobs:
           docker push "$NEW_IMAGE"
 
           echo "${IMAGE_NAME}" > image-name.txt
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "timestamp=$(date +%s%N)" >>$GITHUB_OUTPUT
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: image-name-${{ matrix.target }}
+          name: image-name-${{ steps.timestamp.outputs.timestamp }}.txt
           path: /workspace/image-name.txt
 
   assemble:

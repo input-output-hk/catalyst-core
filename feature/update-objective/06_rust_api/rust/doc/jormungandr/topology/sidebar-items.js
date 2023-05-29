@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_NETWORK_STUCK_INTERVAL"],"fn":["start"],"mod":["gossip","layers","limits","process","quarantine","topic","topology"],"struct":["Gossip","Gossips","NodeId","P2pTopology","PeerInfo","QuarantineConfig","ReportRecords","TaskData","View"],"type":["Peer"]};

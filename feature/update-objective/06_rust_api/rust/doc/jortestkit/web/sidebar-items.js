@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["WebError"],"fn":["download_file"],"mod":["api_token"]};

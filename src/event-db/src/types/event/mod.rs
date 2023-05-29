@@ -134,7 +134,6 @@ pub struct EventDetails {
     pub registration: EventRegistration,
     pub schedule: EventSchedule,
     pub goals: Vec<EventGoal>,
-    pub groups: Vec<VoterGroup>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -497,10 +496,6 @@ mod tests {
                     Utc,
                 )),
             },
-            groups: vec![VoterGroup {
-                id: "rep".to_string(),
-                voting_token: "voting token 1".to_string(),
-            }],
         };
 
         let json = serde_json::to_value(&event_details).unwrap();
@@ -535,12 +530,6 @@ mod tests {
                                     "tallying": "1970-01-01T00:00:00+00:00",
                                     "tallying_end": "1970-01-01T00:00:00+00:00",
                             },
-                    "groups": [
-                                {
-                                    "id": "rep",
-                                    "voting_token": "voting token 1",
-                                }
-                            ],
                 }
             )
         );
@@ -625,10 +614,6 @@ mod tests {
                         Utc,
                     )),
                 },
-                groups: vec![VoterGroup {
-                    id: "rep".to_string(),
-                    voting_token: "voting token 1".to_string(),
-                }],
             },
         };
 
@@ -670,12 +655,6 @@ mod tests {
                                     "tallying": "1970-01-01T00:00:00+00:00",
                                     "tallying_end": "1970-01-01T00:00:00+00:00",
                             },
-                    "groups": [
-                                {
-                                    "id": "rep",
-                                    "voting_token": "voting token 1",
-                                }
-                            ],
                 }
             )
         );

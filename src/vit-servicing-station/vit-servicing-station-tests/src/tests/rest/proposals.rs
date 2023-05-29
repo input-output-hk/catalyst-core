@@ -62,7 +62,7 @@ pub fn get_proposal_by_id() -> Result<(), Box<dyn std::error::Error>> {
 
     // non existing
     assert!(matches!(
-        rest_client.proposal("2", &expected_proposal.group_id),
+        rest_client.proposal("b", &expected_proposal.group_id),
         Err(rest::Error::ErrorStatusCode(StatusCode::NOT_FOUND))
     ));
     // malformed index

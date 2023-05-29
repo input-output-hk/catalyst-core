@@ -3,6 +3,8 @@ use crate::common::data::ArbitraryValidVotingTemplateGenerator;
 use crate::common::data::{Snapshot, ValidVotingTemplateGenerator};
 use chain_impl_mockchain::certificate::ExternalProposalId;
 use itertools::Itertools;
+use snapshot_lib::voting_group::DEFAULT_DIRECT_VOTER_GROUP;
+use snapshot_lib::voting_group::DEFAULT_REPRESENTATIVE_GROUP;
 use std::collections::BTreeSet;
 use std::iter;
 use time::{Duration, OffsetDateTime};
@@ -82,10 +84,18 @@ impl ArbitrarySnapshotGenerator {
 
         let groups: BTreeSet<Group> = std::iter::from_fn(|| Some(self.id_generator.next_i32()))
             .take(2)
-            .map(|group_id| Group {
-                fund_id: id,
-                token_identifier: format!("group{group_id}-token"),
-                group_id: group_id.to_string(),
+            .map(|group_id| {
+                let group_id = if group_id % 2 == 0 {
+                    DEFAULT_DIRECT_VOTER_GROUP.to_string()
+                } else {
+                    DEFAULT_REPRESENTATIVE_GROUP.to_string()
+                };
+
+                Group {
+                    fund_id: id,
+                    token_identifier: format!("group{group_id}-token"),
+                    group_id,
+                }
             })
             .collect();
 
@@ -289,15 +299,6 @@ impl ArbitrarySnapshotGenerator {
             .collect()
     }
 
-    // TODO: this could be a static/associated method
-    pub fn groups(&mut self, funds: &[Fund]) -> Vec<Group> {
-        funds
-            .iter()
-            .flat_map(|f| f.groups.iter())
-            .cloned()
-            .collect()
-    }
-
     pub fn voteplan_with_fund_id(
         &mut self,
         fund_id: i32,
@@ -418,10 +419,9 @@ impl ArbitrarySnapshotGenerator {
         let reviews = self.advisor_reviews(&mut proposals);
         let goals = self.goals(&funds);
         let tokens = self.id_generator.tokens();
-        let groups = self.groups(&funds);
 
         Snapshot::new(
-            funds, proposals, challenges, tokens, voteplans, reviews, goals, groups,
+            funds, proposals, challenges, tokens, voteplans, reviews, goals,
         )
     }
 }

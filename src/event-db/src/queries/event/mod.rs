@@ -2,7 +2,7 @@ use crate::{
     error::Error,
     types::event::{
         Event, EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, EventSummary,
-        VoterGroup, VotingPowerAlgorithm, VotingPowerSettings,
+        VotingPowerAlgorithm, VotingPowerSettings,
     },
     EventDB,
 };
@@ -44,10 +44,6 @@ impl EventDB {
     const EVENT_GOALS_QUERY: &'static str = "SELECT goal.idx, goal.name 
                                             FROM goal 
                                             WHERE goal.event_id = $1;";
-
-    const EVENT_GROUPS_QUERY: &'static str = "SELECT voting_group.group_id, voting_group.token_id 
-                                            FROM voting_group 
-                                            WHERE voting_group.event_id = $1;";
 }
 
 #[async_trait]
@@ -154,15 +150,6 @@ impl EventQueries for EventDB {
             })
         }
 
-        let rows = conn.query(Self::EVENT_GROUPS_QUERY, &[&event.0]).await?;
-        let mut groups = Vec::new();
-        for row in rows {
-            groups.push(VoterGroup {
-                id: row.try_get("group_id")?,
-                voting_token: row.try_get("token_id")?,
-            })
-        }
-
         Ok(Event {
             summary: EventSummary {
                 id: EventId(row.try_get("row_id")?),
@@ -180,7 +167,6 @@ impl EventQueries for EventDB {
                 voting_power,
                 schedule,
                 goals,
-                groups,
                 registration,
             },
         })
@@ -542,16 +528,6 @@ mod tests {
                             name: "goal 4".to_string(),
                         }
                     ],
-                    groups: vec![
-                        VoterGroup {
-                            id: "rep".to_string(),
-                            voting_token: "rep token".to_string()
-                        },
-                        VoterGroup {
-                            id: "direct".to_string(),
-                            voting_token: "direct token".to_string()
-                        }
-                    ]
                 },
             },
         );

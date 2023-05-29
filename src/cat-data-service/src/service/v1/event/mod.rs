@@ -85,8 +85,8 @@ mod tests {
     };
     use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
     use event_db::types::event::{
-        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VoterGroup,
-        VotingPowerAlgorithm, VotingPowerSettings,
+        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VotingPowerAlgorithm,
+        VotingPowerSettings,
     };
     use rust_decimal::Decimal;
     use tower::ServiceExt;
@@ -238,16 +238,6 @@ mod tests {
                             name: "goal 4".to_string(),
                         }
                     ],
-                    groups: vec![
-                        VoterGroup {
-                            id: "rep".to_string(),
-                            voting_token: "rep token".to_string()
-                        },
-                        VoterGroup {
-                            id: "direct".to_string(),
-                            voting_token: "direct token".to_string()
-                        }
-                    ]
                 },
             },)
             .unwrap()

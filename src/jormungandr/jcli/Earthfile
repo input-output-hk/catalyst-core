@@ -1,0 +1,23 @@
+VERSION 0.7
+
+build:
+    FROM ../../../+builder
+    RUN cargo build --locked --release --bin jcli
+
+    # Store the artifact
+    SAVE ARTIFACT target/release/jcli jcli
+    SAVE IMAGE --cache-hint
+
+docker:
+    FROM ../../../+deployment
+
+    WORKDIR /app
+    ARG tag="latest"
+    ARG registry
+
+    COPY +build/jcli .
+    COPY entry.sh .
+    RUN chmod +x entry.sh
+
+    ENTRYPOINT ["/app/entry.sh"]
+    SAVE IMAGE --push ${registry}jcli:$tag

@@ -1,16 +1,20 @@
-use std::collections::HashMap;
+#![allow(missing_docs)]
+
+use std::thread;
 
 use crate::{
-    data::{Registration, SignedRegistration, SlotNo, StakeKeyHex},
+    data::{Registration, SignedRegistration, SlotNo},
+    db::queries::staked_utxo_ada::staked_utxo_ada,
     error::InvalidRegistration,
-    validation::ValidationCtx,
-    DataProvider, SnapshotEntry,
+    verify::{filter_registrations, StakeKeyHash},
+    SnapshotEntry,
 };
-use bigdecimal::BigDecimal;
-use color_eyre::eyre::{eyre, Result};
-use itertools::Itertools;
-use nonempty::nonempty;
-use validity::{Failure, Valid, Validate};
+
+use crate::verify::Unregistered;
+use color_eyre::eyre::Result;
+use dashmap::DashMap;
+
+use postgres::Client;
 
 mod args;
 pub use args::VotingPowerArgs;
@@ -48,88 +52,82 @@ pub use args::VotingPowerArgs;
 ///
 /// Returns an error if either of `lower` or `upper` doesn't fit in an `i64`
 pub fn voting_power(
-    db: impl DataProvider,
+    mut db_client_stakes: Client,
+    db_client_registrations: Client,
     VotingPowerArgs {
         min_slot,
         max_slot,
         network_id,
-        expected_voting_purpose,
+        expected_voting_purpose: _,
     }: VotingPowerArgs,
-) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>)> {
+) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>, Unregistered)> {
     const ABS_MIN_SLOT: SlotNo = SlotNo(0);
     const ABS_MAX_SLOT: SlotNo = SlotNo(i64::MAX as u64);
 
     let min_slot = min_slot.unwrap_or(ABS_MIN_SLOT);
     let max_slot = max_slot.unwrap_or(ABS_MAX_SLOT);
 
-    let ctx = ValidationCtx::default();
+    info!("starting stakes job");
+    let stakes = thread::spawn(move || {
+        staked_utxo_ada(i64::try_from(max_slot.0).unwrap(), &mut db_client_stakes).unwrap()
+    });
 
-    let ctx = ValidationCtx {
-        network_id,
-        expected_voting_purpose,
-        ..ctx
-    };
+    info!("starting registrations job");
+    let registrations = thread::spawn(move || {
+        filter_registrations(min_slot, max_slot, db_client_registrations, network_id).unwrap()
+    });
 
-    let validate = |reg: SignedRegistration| {
-        reg.validate_with(ctx)
-            .map_err(|Failure { value, error }| InvalidRegistration {
-                registration: Some(value),
-                errors: nonempty![error],
-            })
-    };
+    let (valids, invalids) = registrations.join().unwrap();
+    info!("finished processing registrations");
 
-    let registrations = db.vote_registrations(min_slot, max_slot)?;
+    // UTXOs for all possible Stake Addresses
+    let staked_ada_records = stakes.join().unwrap();
+    info!("finished processing stakes");
 
-    let (valid_registrations, validation_errors): (Vec<_>, Vec<_>) =
-        registrations.into_iter().map(validate).partition_result();
-
-    let addrs = stake_addrs(&valid_registrations);
-    let voting_powers = db.stake_values(&addrs)?;
-
-    let snapshot = valid_registrations
+    let snapshot = valids
         .into_iter()
-        .map(|reg| convert_to_snapshot_entry(reg, &voting_powers))
+        .map(|reg| convert_to_snapshot_entry(reg, &staked_ada_records))
         .collect::<Result<_, _>>()?;
 
-    Ok((snapshot, validation_errors))
-}
-
-fn stake_addrs(registrations: &[Valid<SignedRegistration>]) -> Vec<StakeKeyHex> {
-    registrations
-        .iter()
-        .map(|reg| reg.registration.stake_key)
-        .collect()
+    Ok((snapshot, invalids, staked_ada_records))
 }
 
 fn convert_to_snapshot_entry(
-    registration: Valid<SignedRegistration>,
-    voting_powers: &HashMap<StakeKeyHex, BigDecimal>,
+    registration: SignedRegistration,
+    stakes: &DashMap<StakeKeyHash, u128>,
 ) -> Result<SnapshotEntry> {
     let SignedRegistration {
         registration:
             Registration {
-                voting_power_source,
+                voting_key,
                 stake_key,
                 rewards_address,
+                nonce,
                 voting_purpose,
-                ..
             },
         tx_id,
+        stake_key_hash,
         ..
-    } = registration.into_inner();
+    } = registration;
 
-    let voting_power = voting_powers
-        .get(&stake_key)
-        .ok_or_else(|| eyre!("no voting power available for stake key: {}", stake_key))?;
+    // look up stake key hash of valid registration in stakes map to obtain staked ada associated with the key
+    let voting_power = if let Some(voting_power) = stakes.get(&stake_key_hash) {
+        *voting_power
+    } else {
+        // Registrations with no staked ada. No UTXO's.
+        0
+    };
 
-    let voting_power = voting_power.clone();
+    // remove registered, what is left (difference) are stake addresses that are not registered
+    stakes.remove(&stake_key_hash);
 
     Ok(SnapshotEntry {
-        voting_power_source,
+        voting_key,
         rewards_address,
         stake_key,
         voting_power,
         voting_purpose,
         tx_id,
+        nonce: nonce.0,
     })
 }

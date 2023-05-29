@@ -25,7 +25,7 @@ mccabe = "0.7.0"
 multidict = "6.0.3"
 packaging = "22.0"
 pycodestyle = "2.10.0"
-pydantic = "1.10.6"
+pydantic = "~1.10.7"
 pyflakes = "3.0.1"
 pygments = "2.13.0"
 six = "1.16.0"
@@ -37,15 +37,33 @@ typing-inspect = "0.8.0"
 typing-extensions = "4.4.0"
 yarl = "1.8.2"
 loguru = "^0.6.0"
+brotlipy = "^0.7.0"
 
 [tool.poetry.group.dev.dependencies]
-autopep8 = "^2.0.1"
-flake8 = "6.0.0"
-mypy = "0.991"
-mypy-extensions = "0.4.3"
+mypy = ">=1"
+mypy-extensions = ">=1"
+ruff = "^0.0.261"
+black = "^23.3.0"
 
 [tool.poetry.scripts]
 ideascale-importer = "ideascale_importer.app:app"
+
+[tool.black]
+line-length = 132
+target-version = ['py311']
+
+[tool.ruff]
+line-length = 132
+target-version = 'py311'
+exclude = ["tests"]
+extend-select = ["D"]
+
+[[tool.mypy.overrides]]
+module = [
+    "brotli",
+    "markdownify"
+]
+ignore_missing_imports = true
 
 [build-system]
 requires = ["poetry-core"]

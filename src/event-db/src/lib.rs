@@ -1,18 +1,17 @@
 //! Catalyst Election Database crate
-
-mod config_table;
-mod schema_check;
-
 use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
+use dotenvy::dotenv;
+use error::Error;
 use schema_check::SchemaVersion;
+use std::str::FromStr;
 use tokio_postgres::NoTls;
 
-use dotenvy::dotenv;
-
-use std::env;
-use std::error::Error;
-use std::str::FromStr;
+mod config_table;
+pub mod error;
+pub mod queries;
+pub mod schema_check;
+pub mod types;
 
 /// Database URL Environment Variable name.
 /// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
@@ -52,18 +51,14 @@ pub struct EventDB {
 ///
 /// The env var "`DATABASE_URL`" can be set directly as an anv var, or in a
 /// `.env` file.
-pub async fn establish_connection(
-    url: Option<&str>,
-) -> Result<EventDB, Box<dyn Error + Send + Sync + 'static>> {
+pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
     // Support env vars in a `.env` file,  doesn't need to exist.
     dotenv().ok();
 
-    // If the Database connection URL is not supplied, try and get from the env var.
-    let env_raw = env::var(DATABASE_URL_ENVVAR);
-
     let database_url = match url {
         Some(url) => url.to_string(),
-        None => env_raw?,
+        // If the Database connection URL is not supplied, try and get from the env var.
+        None => std::env::var(DATABASE_URL_ENVVAR)?,
     };
 
     let config = tokio_postgres::config::Config::from_str(&database_url)?;
@@ -79,15 +74,28 @@ pub async fn establish_connection(
     Ok(db)
 }
 
+/// Need to setup and run a test event db instance
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
+/// Also need establish `EVENT_DB_URL` env variable with the following value
+/// ```
+/// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
+/// ```
+/// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod test {
+    use super::*;
 
     /// Check if the schema version in the DB is up to date.
     #[tokio::test]
-    #[ignore = "not used"]
     async fn check_schema_version() {
-        use crate::establish_connection;
-
-        establish_connection(None).await.expect("pass");
+        establish_connection(None).await.unwrap();
     }
 }

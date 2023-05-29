@@ -123,7 +123,7 @@ table! {
         proposer_url -> Text,
         proposer_relevant_experience -> Text,
         chain_proposal_id -> Binary,
-        chain_vote_options -> Text,
+        chain_vote_options -> Array<Text>,
         challenge_id -> Integer,
         extra -> Nullable<Text>,
     }

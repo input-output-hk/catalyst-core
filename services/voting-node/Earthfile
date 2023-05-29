@@ -1,0 +1,80 @@
+# Set the Earthly version to 0.7
+VERSION 0.7
+
+# Use current debian stable with python
+FROM python:3.11-slim-bullseye
+# Environment variables for python
+ENV PYTHONUNBUFFERED=true
+
+build:
+    # Install voting-node system dependencies
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends curl
+
+    # Set the working directory
+    WORKDIR /src/services/voting-node
+
+    # Install Poetry
+    RUN curl -sSL https://install.python-poetry.org | python3 -
+    # Set path to poetry
+    ENV PATH=/root/.local/bin:$PATH
+
+    # Copy the pyproject.toml and poetry.lock files to the container
+    COPY pyproject.toml .
+    COPY poetry.lock .
+    # Install local python dependencies in the expected relative path
+    COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
+    COPY --dir voting_node development.md ./
+
+    # Configure poetry
+    RUN poetry env use python
+    RUN poetry config installer.max-workers 10
+    # Install package dependencies
+    RUN poetry install --no-cache --no-root
+
+    # Build the distribution wheels and save them as artifacts
+    RUN poetry export --without-hashes -f requirements.txt --output requirements.txt
+    RUN poetry build --no-cache -f wheel
+    RUN mkdir -p /wheels && mv dist/*.whl /wheels && rm -rf dist
+    SAVE ARTIFACT /src/services/voting-node src
+    SAVE ARTIFACT /wheels wheels
+    SAVE ARTIFACT requirements.txt
+
+docker:
+    ARG tag="latest"
+    ARG registry
+
+    # Install voting-node system dependencies
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends libpq5
+
+    ## apt cleanup
+    RUN apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
+
+    # Set the working directory
+    WORKDIR /app
+
+    # Copy the distribution wheels from the build stage
+    COPY +build/wheels /app
+    COPY +build/requirements.txt /app
+    COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
+    COPY entry.sh /app
+    RUN chmod +x /app/entry.sh
+
+    # Install the package
+    RUN pip3 install --no-cache -r requirements.txt
+    RUN pip3 install --no-cache *.whl
+
+    # Copy the rest of the application code to the container
+    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
+    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
+    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
+    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
+
+    ENV PATH=/app:$PATH
+
+    # Set the default command to run the main script
+    ENTRYPOINT ["/app/entry.sh"]
+
+    SAVE IMAGE --push ${registry}voting-node:$tag

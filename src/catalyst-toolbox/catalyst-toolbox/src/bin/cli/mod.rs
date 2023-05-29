@@ -8,6 +8,7 @@ mod recovery;
 mod rewards;
 mod snapshot;
 mod stats;
+mod sve_snapshot;
 mod vote_check;
 
 use clap::Parser;
@@ -64,6 +65,8 @@ pub enum CatalystCommand {
     Stats(stats::Stats),
     /// Process raw registrations to produce initial blockchain setup
     Snapshot(snapshot::SnapshotCmd),
+    /// Process raw registrations for SVE.
+    SveSnapshot(sve_snapshot::SveSnapshotCmd),
 }
 
 impl Cli {
@@ -97,6 +100,7 @@ impl CatalystCommand {
             VoteCheck(vote_check) => vote_check.exec()?,
             Stats(stats) => stats.exec()?,
             Snapshot(snapshot) => snapshot.exec()?,
+            SveSnapshot(sve_snapshot) => sve_snapshot.exec()?,
         };
         Ok(())
     }

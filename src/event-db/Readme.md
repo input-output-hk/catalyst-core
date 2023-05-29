@@ -2,59 +2,34 @@
 
 This crate defines the structure and RUST access methods for the Catalyst Event Database.
 
-## Starting a Local Test DB with Docker
+- [Catalyst Event Database](#catalyst-event-database)
+  - [Starting a Local Test DB with Docker](#starting-a-local-test-db-with-docker)
+  - [Creating A Local Test Database](#creating-a-local-test-database)
+    - [Setup a clean new dev DB with a single command](#setup-a-clean-new-dev-db-with-a-single-command)
+  - [GraphQL](#graphql)
+    - [GraphQL Users](#graphql-users)
+      - [Authentication API](#authentication-api)
 
-If you are not running postgresql-14 locally.
-A test server can be run using docker-compose.
+## Starting a Local Test DB with Docker and Earthly
 
-```sh
-docker-compose -f ./setup/dev-db.docker-compose.yml up --remove-orphans -d
+Fistly you will need to prepare a docker images with all migrations and data.
+
+Prepare a event-db docker image with the historic data
+(from the root directory)
 ```
-
-This will run postgres on port `5432`, and an `adminer` UI on `localhost:8080`.
-
-## Creating A Local Test Database
-
-Run the following SQL on your local test PostgreSQL server:
-
-```sql
--- Cleanup if we already ran this before.
-drop database if exists "CatalystEventDev";
-drop user if exists "catalyst-event-dev";
-
--- Create the test user we will use with the local Catalyst-Event dev database.
-create user "catalyst-event-dev" with password 'CHANGE_ME';
-
--- Create the database.
-create database "CatalystEventDev"
-    with owner "catalyst-event-dev";
-
-comment on database "CatalystEventDev" is 'Local Test Catalyst Event DB';
+earthly ./containers/event-db-migrations+docker
 ```
-
-This can be done simply with:
-
-```sh
-psql -e -U postgres -f setup/dev-db.sql
+Prepare a event-db docker image with the test data
+(from the root directory)
 ```
-
-Execute Migrations:
-
-```sh
-refinery migrate -c refinery.toml -p ./migrations
+earthly ./containers/event-db-migrations+docker --data=test
 ```
-
-or
-
-```sh
-cargo make run-event-db-migration
+Run a event db docker container
+(from the root directory)
 ```
-
-### Setup a clean new dev DB with a single command
-
-```sh
-cargo make local-event-db-setup
+docker-compose -f src/event-db/docker-compose.yml up migrations
 ```
+This will run postgres on port `5432`
 
 ## GraphQL
 

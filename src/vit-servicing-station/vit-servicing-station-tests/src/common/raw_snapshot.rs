@@ -1,3 +1,5 @@
+use std::convert::TryInto;
+
 use chain_impl_mockchain::testing::TestGen;
 use jormungandr_lib::interfaces::Value;
 use rand::Rng;
@@ -8,8 +10,7 @@ use snapshot_lib::{
     voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
     CATALYST_VOTING_PURPOSE_TAG,
 };
-use snapshot_lib::{Fraction, SnapshotInfo};
-use std::convert::TryInto;
+use snapshot_lib::{Dreps, Fraction, SnapshotInfo};
 use time::OffsetDateTime;
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 
@@ -36,6 +37,7 @@ impl RawSnapshot {
                 voting_power_cap: 0.into(),
                 direct_voters_group: None,
                 representatives_group: None,
+                dreps: None,
             },
         }
     }
@@ -74,14 +76,29 @@ impl From<RawSnapshot> for RepsVotersAssigner {
             .representatives_group
             .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
 
-        RepsVotersAssigner::new(direct_voter, representative)
+        RepsVotersAssigner::new(direct_voter, representative, Dreps::default())
     }
 }
 
 impl TryInto<Vec<SnapshotInfo>> for RawSnapshot {
     type Error = Error;
     fn try_into(self) -> Result<Vec<SnapshotInfo>, Self::Error> {
-        let assigner = self.clone().into();
+        let direct_voter = self
+            .content
+            .direct_voters_group
+            .clone()
+            .unwrap_or_else(|| DEFAULT_DIRECT_VOTER_GROUP.into());
+        let representative = self
+            .content
+            .representatives_group
+            .clone()
+            .unwrap_or_else(|| DEFAULT_REPRESENTATIVE_GROUP.into());
+
+        let assigner = RepsVotersAssigner::new(
+            direct_voter,
+            representative,
+            self.content.dreps.clone().unwrap_or_default(),
+        );
         self.into_full_snapshot_infos(&assigner)
     }
 }
@@ -96,6 +113,7 @@ pub struct RawSnapshotBuilder {
     representatives_group: Option<String>,
     voting_registrations_count: usize,
     voting_registrations: Option<Vec<VotingRegistration>>,
+    dreps: Option<Dreps>,
 }
 
 impl Default for RawSnapshotBuilder {
@@ -109,21 +127,25 @@ impl Default for RawSnapshotBuilder {
             representatives_group: Some(DEFAULT_REPRESENTATIVE_GROUP.into()),
             voting_registrations_count: 2,
             voting_registrations: None,
+            dreps: None,
         }
     }
 }
 
 impl RawSnapshotBuilder {
+    #[must_use]
     pub fn with_tag<S: Into<String>>(mut self, tag: S) -> Self {
         self.tag = tag.into();
         self
     }
 
+    #[must_use]
     pub fn with_voting_registrations_count(mut self, voting_registrations_count: usize) -> Self {
         self.voting_registrations_count = voting_registrations_count;
         self
     }
 
+    #[must_use]
     pub fn with_voting_registrations(
         mut self,
         voting_registrations: Vec<VotingRegistration>,
@@ -132,21 +154,30 @@ impl RawSnapshotBuilder {
         self
     }
 
+    pub fn with_dreps(mut self, dreps: Dreps) -> Self {
+        self.dreps = Some(dreps);
+        self
+    }
+
+    #[must_use]
     pub fn with_timestamp(mut self, timestamp: i64) -> Self {
         self.update_timestamp = timestamp;
         self
     }
 
+    #[must_use]
     pub fn with_voting_power_cap(mut self, voting_power_cap: Fraction) -> Self {
         self.voting_power_cap = voting_power_cap;
         self
     }
 
+    #[must_use]
     pub fn with_min_stake_threshold(mut self, min_stake_threshold: Value) -> Self {
         self.min_stake_threshold = min_stake_threshold;
         self
     }
 
+    #[must_use]
     pub fn build(mut self) -> RawSnapshot {
         let mut rng = rand::rngs::OsRng;
         let mut delegation_type_count = 0;
@@ -170,11 +201,12 @@ impl RawSnapshotBuilder {
                             Delegations::Legacy(TestGen::identifier().into())
                         },
                         voting_purpose: CATALYST_VOTING_PURPOSE_TAG,
+                        nonce: 0,
                     })
                 })
                 .take(self.voting_registrations_count)
                 .collect::<Vec<_>>(),
-            )
+            );
         }
 
         RawSnapshot {
@@ -185,6 +217,7 @@ impl RawSnapshotBuilder {
                 voting_power_cap: self.voting_power_cap,
                 direct_voters_group: self.direct_voters_group,
                 representatives_group: self.representatives_group,
+                dreps: self.dreps,
             },
             tag: self.tag,
         }
@@ -203,11 +236,13 @@ impl From<RawSnapshot> for RawSnapshotUpdater {
 }
 
 impl RawSnapshotUpdater {
+    #[must_use]
     pub fn with_tag<S: Into<String>>(mut self, tag: S) -> Self {
         self.raw_snapshot.tag = tag.into();
         self
     }
 
+    #[must_use]
     pub fn build(self) -> RawSnapshot {
         self.raw_snapshot
     }

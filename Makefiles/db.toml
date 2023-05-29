@@ -10,6 +10,22 @@ run_task = { name = [
         "install-refinery-cli",
     ], parallel = true }
 
+# Setup the local database ready to run the migrations.
+[tasks.local-event-db-init]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+
+export DB_USER_PW="CHANGE_ME"
+ls setup
+psql -e postgres -f setup/setup-db.sql \
+    -v dbName=CatalystEventDev \
+    -v dbDescription="Local Dev Catalayst Event DB" \
+    -v dbUser="catalyst-event-dev" ${@}
+'''
+
 # Run Diesel Migrations, constructing the full up-to-date DB in a local database.
 [tasks.run-event-db-migration]
 workspace = false
@@ -20,14 +36,41 @@ cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
 refinery migrate -c refinery.toml -p ./migrations
 '''
 
-# Setup the local database ready to run the migrations.
-[tasks.local-event-db-init]
+[tasks.local-db-test-data-setup]
 workspace = false
 category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/dev-db.sql
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/01_event_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/02_snapshot_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/03_voter_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/04_contribution_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/05_goal_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/06_objective_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/07_proposal_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/08_proposal_review_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/09_review_rating_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/10_objective_review_metric_table.sql ${@}
+'''
+
+# Install historic data for past events
+[tasks.local-db-historic-data-setup]
+workspace = false
+category = "db"
+script_runner = "@shell"
+script = '''
+cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_0.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_1.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_2.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_3.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_4.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_5.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_6.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_7.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_8.sql ${@}
+# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_9.sql ${@}
 '''
 
 # Setup the local database graphql configuration.
@@ -37,7 +80,17 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/graphql-setup.sql
+export ADMIN_ROLE_PW="CHANGE_ME"
+export ANON_ROLE_PW="CHANGE_ME"
+export ADMIN_USER_PW="CHANGE_ME"
+
+psql -e postgres -f setup/graphql-setup.sql \
+    -v dbName=CatalystEventDev \
+    -v dbUser="catalyst-event-dev" \
+    -v adminUserFirstName="Admin" \
+    -v adminUserLastName="Default" \
+    -v adminUserAbout="Default Admin User" \
+    -v adminUserEmail="admin.default@projectcatalyst.io" ${@}
 '''
 
 
@@ -48,8 +101,20 @@ category = "db"
 dependencies = [
     "local-event-db-init",
     "local-event-db-graphql-init",
-    "run-event-db-migration"
+    "run-event-db-migration",
+    "local-db-historic-data-setup"
 ]
+
+# Setup the local database with the test data.
+[tasks.local-event-db-test]
+workspace = false
+category = "db"
+dependencies = [
+    "local-event-db-init",
+    "run-event-db-migration",
+    "local-db-test-data-setup"
+]
+
 
 
 # Run Diesel Migrations, for documentation purposes.
@@ -69,7 +134,11 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -e -U postgres -f setup/docs-db.sql
+psql -e -f setup/setup-db.sql \
+    -v dbName=CatalystEventDocs \
+    -v dbDescription="Local Docs Catalayst Event DB" \
+    -v dbUser="catalyst-event-docs" \
+    -v dbUserPw="CHANGE_ME" ${@}
 '''
 
 # Setup the local database ready to run the migrations.

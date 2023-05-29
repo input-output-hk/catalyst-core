@@ -30,7 +30,6 @@ pub fn get_funds_by_id() {
         .with_token(token)
         .with_funds(vec![expected_fund.clone()])
         .with_challenges(expected_fund.challenges.clone())
-        .with_groups(expected_fund.groups.iter().cloned().collect())
         .build()
         .unwrap();
 

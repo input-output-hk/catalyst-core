@@ -7,14 +7,11 @@ import socket
 from typing import Final
 
 import uvicorn
+from loguru import logger
 
 from voting_node.models import ServiceSettings
 
 from . import tasks, utils
-from .logs import getLogger
-
-# gets voting node logger
-logger = getLogger()
 
 # time in seconds to wait before retrying to run a schedule
 SLEEP_TO_SCHEDULE_RETRY: Final = 6
@@ -71,7 +68,7 @@ class VotingService(uvicorn.Server):
                         await schedule.run()
                         break
                     except Exception as e:
-                        logger.error(f"schedule retry: {e}")
+                        logger.warning(f"X-> RESET: {e}")
                     # waits before retrying
                     await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
 

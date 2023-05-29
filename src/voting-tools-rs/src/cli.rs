@@ -45,10 +45,6 @@ pub struct Args {
     #[clap(long, short = 'o')]
     pub out_file: PathBuf,
 
-    /// Whether to pretty-print the json
-    #[clap(long, short = 'p')]
-    pub pretty: bool,
-
     /// This parameter should be used only for voting tool dry runs or internal testing
     #[clap(subcommand)]
     pub dry_run: Option<DryRunCommand>,
@@ -137,7 +133,6 @@ mod tests {
             "234",
             "-o",
             "some/path",
-            "-p",
             "--expected-voting-purpose",
             "0",
             "--network-id",
@@ -155,7 +150,6 @@ mod tests {
                 max_slot: Some(234.into()),
                 out_file: "some/path".into(),
                 dry_run: None,
-                pretty: true,
                 network_id: NetworkId::Mainnet,
                 expected_voting_purpose: VotingPurpose::CATALYST,
             }
@@ -167,6 +161,5 @@ mod tests {
         let args = Args::parse_from(["binary_name", "-o", "some/path"]);
 
         assert_eq!(args.out_file, PathBuf::from("some/path"));
-        assert_eq!(args.pretty, false);
     }
 }

@@ -7,7 +7,6 @@ use vit_servicing_station_lib::db::models::{
     challenges::Challenge,
     community_advisors_reviews::AdvisorReview,
     funds::Fund,
-    groups::Group,
     proposals::{FullProposalInfo, ProposalChallengeInfo},
 };
 use vit_servicing_station_lib::db::DbConnection;
@@ -126,8 +125,8 @@ impl<'a> DbInserter<'a> {
                 &proposal.proposal.proposer.proposer_relevant_experience,
             )
             .bind::<diesel::sql_types::Binary, _>(&proposal.proposal.chain_proposal_id)
-            .bind::<diesel::sql_types::Text, _>(
-                proposal.proposal.chain_vote_options.as_csv_string(),
+            .bind::<diesel::sql_types::Array<diesel::sql_types::Text>, _>(
+                proposal.proposal.chain_vote_options.to_vec_string(),
             )
             .bind::<diesel::sql_types::Integer, _>(&proposal.proposal.challenge_id)
             .bind::<diesel::sql_types::Jsonb, _>(serde_json::to_value(extra).unwrap())
@@ -266,39 +265,6 @@ impl<'a> DbInserter<'a> {
             .execute(self.connection)
             .map_err(DbInserterError::DieselError)?;
 
-            self.insert_groups(&fund.groups.iter().cloned().collect::<Vec<_>>())?;
-
-            for voteplan in &fund.chain_vote_plans {
-                let res = diesel::sql_query("SELECT row_id FROM voting_group WHERE token_id = $1")
-                    .bind::<diesel::sql_types::VarChar, _>(&voteplan.token_identifier)
-                    .get_result::<RowId>(self.connection)
-                    .map_err(DbInserterError::DieselError)?;
-
-                diesel::sql_query(
-                    r#"
-                    INSERT INTO voteplan (
-                        row_id,
-                        id,
-                        category,
-                        event_id,
-                        encryption_key,
-                        group_id
-                    ) VALUES (
-                        $1, $2, $3,
-                        $4, $5, $6
-                    ) ON CONFLICT (id) DO NOTHING
-                    "#,
-                )
-                .bind::<diesel::sql_types::Integer, _>(voteplan.id)
-                .bind::<diesel::sql_types::VarChar, _>(&voteplan.chain_voteplan_id)
-                .bind::<diesel::sql_types::Text, _>(&voteplan.chain_voteplan_payload)
-                .bind::<diesel::sql_types::Integer, _>(&voteplan.fund_id)
-                .bind::<diesel::sql_types::VarChar, _>(&voteplan.chain_vote_encryption_key)
-                .bind::<diesel::sql_types::Integer, _>(&res.row_id)
-                .execute(self.connection)
-                .map_err(DbInserterError::DieselError)?;
-            }
-
             for (ix, fund_goal) in fund.goals.iter().enumerate() {
                 diesel::sql_query(
                     r#"
@@ -316,6 +282,57 @@ impl<'a> DbInserter<'a> {
                 .bind::<diesel::sql_types::VarChar, _>(&fund_goal.goal_name)
                 .bind::<diesel::sql_types::Integer, _>(&fund_goal.fund_id)
                 .bind::<diesel::sql_types::Integer, _>(ix as i32)
+                .execute(self.connection)
+                .map_err(DbInserterError::DieselError)?;
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn insert_vote_plans(&self, funds: &[Fund]) -> Result<(), DbInserterError> {
+        for fund in funds {
+            for voteplan in &fund.chain_vote_plans {
+                let mut group_id = String::new();
+                for group in &fund.groups {
+                    if group.token_identifier == voteplan.token_identifier {
+                        group_id = group.group_id.to_string();
+                        break;
+                    }
+                }
+
+                // After the vote plan schema update, event_id (fund id) was replaced to the objective_id (challenge id)
+                // So at this place we need to get an objective id which will corresponds to the correct fund id
+                // That is why we can take the first challenge in the list because it is corresponds to the desired fund
+                let res =
+                    diesel::sql_query("SELECT row_id FROM objective WHERE event = $1 LIMIT 1")
+                        .bind::<diesel::sql_types::Integer, _>(&fund.id)
+                        .get_result::<RowId>(self.connection)
+                        .map_err(DbInserterError::DieselError)?;
+
+                diesel::sql_query(
+                    r#"
+                    INSERT INTO voteplan (
+                        row_id,
+                        id,
+                        category,
+                        objective_id,
+                        encryption_key,
+                        group_id,
+                        token_id
+                    ) VALUES (
+                        $1, $2, $3,
+                        $4, $5, $6, $7
+                    )
+                    "#,
+                )
+                .bind::<diesel::sql_types::Integer, _>(voteplan.id)
+                .bind::<diesel::sql_types::VarChar, _>(&voteplan.chain_voteplan_id)
+                .bind::<diesel::sql_types::Text, _>(&voteplan.chain_voteplan_payload)
+                .bind::<diesel::sql_types::Integer, _>(&res.row_id)
+                .bind::<diesel::sql_types::VarChar, _>(&voteplan.chain_vote_encryption_key)
+                .bind::<diesel::sql_types::Text, _>(&group_id)
+                .bind::<diesel::sql_types::Text, _>(&voteplan.token_identifier)
                 .execute(self.connection)
                 .map_err(DbInserterError::DieselError)?;
             }
@@ -400,20 +417,6 @@ impl<'a> DbInserter<'a> {
             .execute(self.connection)
             .map_err(DbInserterError::DieselError)?;
         }
-        Ok(())
-    }
-
-    pub fn insert_groups(&self, groups: &[Group]) -> Result<(), DbInserterError> {
-        for group in groups {
-            diesel::sql_query(
-                "INSERT INTO voting_group (event_id, token_id, group_id) VALUES ($1, $2, $3) ON CONFLICT (token_id, event_id) DO NOTHING",
-            )
-            .bind::<diesel::sql_types::Integer, _>(&group.fund_id)
-            .bind::<diesel::sql_types::VarChar, _>(&group.token_identifier)
-            .bind::<diesel::sql_types::VarChar, _>(&group.group_id)
-            .execute(self.connection)?;
-        }
-
         Ok(())
     }
 }

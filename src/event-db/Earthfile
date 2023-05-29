@@ -1,0 +1,38 @@
+# This is a Dockerfile for building a container image for the Catalyst Event Database.
+# The container image is built from scratch and includes the necessary files for running
+# the database and its associated software.
+
+VERSION 0.7
+
+build:
+    FROM scratch # Use a scratch image as the base image
+    WORKDIR /event-db # Set the working directory to /event-db
+    COPY refinery.toml . # Copy the refinery.toml file to the working directory
+    COPY --dir setup . # Copy the setup directory to the working directory
+    COPY --dir migrations . # Copy the migrations directory to the working directory
+    COPY --dir historic_data . # Copy the historic_data directory to the working directory
+    COPY --dir test_data . # Copy the test_data directory to the working directory
+    SAVE ARTIFACT refinery.toml # Save the refinery.toml file as an artifact
+    SAVE ARTIFACT setup # Save the setup directory as an artifact
+    SAVE ARTIFACT migrations # Save the migrations directory as an artifact
+    SAVE ARTIFACT historic_data # Save the historic_data directory as an artifact
+    SAVE ARTIFACT test_data # Save the test_data directory as an artifact
+
+docker-compose:
+    FROM scratch 
+    COPY docker-compose.yml .
+    SAVE ARTIFACT docker-compose.yml
+
+# Need to be run with the -P flag
+test:
+    FROM ../../+builder
+
+    COPY +docker-compose/docker-compose.yml .
+    WITH DOCKER \
+        --compose docker-compose.yml \
+        --pull postgres:14 \
+        --load migrations:latest=(../../containers/event-db-migrations+docker --data=test) \
+        --service migrations \
+        --allow-privileged
+        RUN EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev" cargo test -p event-db
+    END

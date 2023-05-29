@@ -1,24 +1,25 @@
+"""Database models for the vit-servicing-station database."""
+
 import dataclasses
 from datetime import datetime
-from typing import Any, Mapping, Optional
+from typing import Any, ClassVar, List, Mapping, Optional, Set
 
 
 @dataclasses.dataclass
 class Model:
-    """
-    Base class for all models.
-    """
+    """Base class for all models."""
+
+    exclude_from_insert: ClassVar[Set[str]] = set()
 
     @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         raise NotImplementedError()
 
 
 @dataclasses.dataclass
 class Event(Model):
-    """
-    Represents a database challenge.
-    """
+    """Represents a database objective."""
 
     name: str
     description: str
@@ -41,15 +42,17 @@ class Event(Model):
 
     @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         return "event"
 
 
 @dataclasses.dataclass
 class Challenge(Model):
-    """
-    Represents a database challenge.
-    """
+    """Represents a database objective."""
 
+    exclude_from_insert: ClassVar[Set[str]] = {"row_id"}
+
+    row_id: int
     id: int
     event: int
     category: str
@@ -63,17 +66,16 @@ class Challenge(Model):
 
     @staticmethod
     def table() -> str:
-        return "challenge"
+        """Return the name of the table that this model is stored in."""
+        return "objective"
 
 
 @dataclasses.dataclass
 class Proposal(Model):
-    """
-    Represents a database proposal.
-    """
+    """Represents a database proposal."""
 
     id: int
-    challenge: int
+    objective: int
     title: str
     summary: str
     category: str
@@ -91,48 +93,45 @@ class Proposal(Model):
     proposer_relevant_experience: str
 
     bb_proposal_id: Optional[bytes]
-    bb_vote_options: Optional[str]
+    bb_vote_options: Optional[List[str]]
 
     @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         return "proposal"
 
 
 @dataclasses.dataclass
 class Goal(Model):
-    """
-    Represents a database goal.
-    """
+    """Represents a database goal."""
 
     event_id: int
     idx: int
     name: str
 
-    @ staticmethod
+    @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         return "goal"
 
 
 @dataclasses.dataclass
 class VotingGroup(Model):
-    """
-    Represents a database voting_group.
-    """
+    """Represents a database voting_group."""
 
     group_id: str
     event_id: int
     token_id: Optional[str]
 
-    @ staticmethod
+    @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         return "voting_group"
 
 
 @dataclasses.dataclass
 class Voteplan(Model):
-    """
-    Represents a database voteplan.
-    """
+    """Represents a database voteplan."""
 
     event_id: int
     id: str
@@ -142,14 +141,13 @@ class Voteplan(Model):
 
     @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         return "voteplan"
 
 
 @dataclasses.dataclass
 class ProposalVoteplan(Model):
-    """
-    Represents a database proposal_voteplan.
-    """
+    """Represents a database proposal_voteplan."""
 
     proposal_id: Optional[int]
     voteplan_id: Optional[int]
@@ -157,14 +155,13 @@ class ProposalVoteplan(Model):
 
     @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         return "proposal_voteplan"
 
 
 @dataclasses.dataclass
 class Voter(Model):
-    """
-    Represents a database voter.
-    """
+    """Represents a database voter."""
 
     voting_key: str
     snapshot_id: int
@@ -173,14 +170,13 @@ class Voter(Model):
 
     @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         return "voter"
 
 
 @dataclasses.dataclass
 class Contribution(Model):
-    """
-    Represents a database contribution.
-    """
+    """Represents a database contribution."""
 
     stake_public_key: str
     snapshot_id: int
@@ -193,25 +189,30 @@ class Contribution(Model):
 
     @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         return "contribution"
 
 
 @dataclasses.dataclass
 class Snapshot(Model):
-    """
-    Represents a database snapshot.
-    """
+    """Represents a database snapshot."""
 
+    exclude_from_insert: ClassVar[Set[str]] = {"row_id"}
+
+    row_id: int
     event: int
     as_at: datetime
+    as_at_slotno: int
     last_updated: datetime
+    last_updated_slotno: int
     final: bool
     dbsync_snapshot_cmd: Optional[str]
-    dbsync_snapshot_data: Optional[str]
-    drep_data: Optional[str]
+    dbsync_snapshot_data: Optional[bytes]
+    drep_data: Optional[bytes]
     catalyst_snapshot_cmd: Optional[str]
-    catalyst_snapshot_data: Optional[str]
+    catalyst_snapshot_data: Optional[bytes]
 
     @staticmethod
     def table() -> str:
+        """Return the name of the table that this model is stored in."""
         return "snapshot"

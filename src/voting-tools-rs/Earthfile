@@ -1,0 +1,31 @@
+VERSION 0.7
+
+build:
+    FROM ../../+builder
+    RUN cargo build --locked --release --bin snapshot_tool
+
+    # Store the artifact
+    SAVE ARTIFACT target/release/snapshot_tool snapshot_tool
+    SAVE IMAGE --cache-hint
+
+docker:
+    FROM ../../+deployment
+
+    WORKDIR /app
+    ARG tag="latest"
+    ARG registry
+
+    # install dependencies
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends libpq5
+    ## apt cleanup
+    RUN apt-get install -y --no-install-recommends && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
+
+    COPY +build/snapshot_tool .
+    COPY entry.sh .
+    RUN chmod +x entry.sh
+
+    ENTRYPOINT ["/app/entry.sh"]
+    SAVE IMAGE --push ${registry}snapshot_tool:$tag

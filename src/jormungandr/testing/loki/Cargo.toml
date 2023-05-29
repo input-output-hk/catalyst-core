@@ -24,5 +24,4 @@ thiserror = "1.0"
 warp = "0.3"
 rand = "0.8"
 rand_core = "0.6"
-
 reqwest = { workspace = true }

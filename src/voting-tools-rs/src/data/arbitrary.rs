@@ -1,6 +1,6 @@
 use crate::{
     validation::{cbor::cbor_to_bytes, hash::hash},
-    Sig, Signature, VotingPowerSource, VotingPurpose,
+    Sig, Signature, VotingKey, VotingPurpose,
 };
 
 use super::{
@@ -44,8 +44,8 @@ pub(crate) fn arbitrary_signed_registration(
     let stake_key: [u8; 32] = public.as_ref().try_into().unwrap();
 
     let registration = Registration {
-        voting_power_source: VotingPowerSource::Direct(voting_key),
-        stake_key: StakeKeyHex(PubKey(stake_key)),
+        voting_key: VotingKey::Direct(voting_key),
+        stake_key: StakeKeyHex(PubKey(stake_key.to_vec())),
         rewards_address,
         nonce,
         voting_purpose: Some(VotingPurpose::CATALYST),
@@ -65,7 +65,9 @@ pub(crate) fn arbitrary_signed_registration(
     SignedRegistration {
         registration,
         signature,
+        stake_key_hash: vec![0; 29],
         tx_id,
+        slot: 12345,
     }
 }
 

@@ -11,12 +11,7 @@ class TestUtils(unittest.TestCase):
                 "InnerDict": 2,
                 "some_key": 3,
             },
-            "list": [
-                1,
-                {
-                    "otherKey": [1, 2, {"SomeKey": 1}]
-                }
-            ]
+            "list": [1, {"otherKey": [1, 2, {"SomeKey": 1}]}],
         }
 
         expected_d = {
@@ -25,12 +20,7 @@ class TestUtils(unittest.TestCase):
                 "inner_dict": 2,
                 "some_key": 3,
             },
-            "list": [
-                1,
-                {
-                    "other_key": [1, 2, {"some_key": 1}]
-                }
-            ]
+            "list": [1, {"other_key": [1, 2, {"some_key": 1}]}],
         }
 
         utils.snake_case_keys(d)

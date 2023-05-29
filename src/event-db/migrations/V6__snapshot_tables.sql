@@ -6,7 +6,10 @@ CREATE TABLE snapshot (
     row_id SERIAL PRIMARY KEY,
     event INTEGER NOT NULL UNIQUE,
     as_at TIMESTAMP NOT NULL,
+    as_at_slotno INTEGER NOT NULL,
     last_updated TIMESTAMP NOT NULL,
+    last_updated_slotno INTEGER NOT NULL,
+
     final BOOLEAN NOT NULL,
 
     dbsync_snapshot_cmd          TEXT NULL,
@@ -21,7 +24,7 @@ CREATE TABLE snapshot (
     catalyst_snapshot_params     JSONB NULL,
     catalyst_snapshot_data       BYTEA NULL,
 
-    FOREIGN KEY(event) REFERENCES event(row_id)
+    FOREIGN KEY(event) REFERENCES event(row_id)  ON DELETE CASCADE
 );
 
 COMMENT ON TABLE snapshot IS

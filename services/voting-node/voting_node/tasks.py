@@ -3,15 +3,20 @@
 Scheduled tasks are defined for Leader and Follower Nodes, with Leader0 being a special case,
 as it is the only one responsible for initializing block0 for a voting event.
 """
+import json
 import os
 import secrets
 from typing import Final, NoReturn
 
+import brotli
+from loguru import logger
+
 from . import utils
 from .db import EventDb
+from .envvar import COMMITTEE_CRS
+from .importer import SnapshotRunner
 from .jcli import JCli
 from .jormungandr import Jormungandr
-from .logs import getLogger
 from .models import (
     BftSigningKey,
     Block0,
@@ -29,11 +34,9 @@ from .node import (
     Leader0Node,
     LeaderNode,
 )
+from .storage import SecretDBStorage
 
-# gets voting node logger
-logger = getLogger()
-
-RESET_DATA = True
+RESET_DATA = False
 KEEP_DATA = False
 SCHEDULE_RESET_MSG = "schedule was reset"
 
@@ -41,7 +44,7 @@ LEADER_NODE_SCHEDULE: Final = [
     "connect_db",
     "fetch_upcoming_event",
     "wait_for_start_time",
-    "setup_host_info",
+    "fetch_host_keys",
     "fetch_leaders",
     "set_node_secret",
     "set_node_topology_key",
@@ -57,12 +60,13 @@ LEADER0_NODE_SCHEDULE: Final = [
     "connect_db",
     "fetch_upcoming_event",
     "wait_for_start_time",
-    "setup_host_info",
+    "fetch_host_keys",
     "fetch_leaders",
     "set_node_secret",
     "set_node_topology_key",
     "set_node_config",
-    "wait_for_snapshot",
+    "wait_for_registration_snapshot_time",
+    "import_snapshot_data",
     "collect_snapshot_data",
     "setup_tally_committee",
     "setup_block0",
@@ -77,7 +81,7 @@ FOLLOWER_NODE_SCHEDULE: Final = [
     "connect_db",
     "fetch_upcoming_event",
     "wait_for_start_time",
-    "setup_host_info",
+    "fetch_host_keys",
     "fetch_leaders",
     "set_node_secret",
     "set_node_topology_key",
@@ -104,7 +108,7 @@ class ScheduleRunner:
         """
         if reset_data:
             self.reset_data()
-        raise Exception(f"|->{msg}")
+        raise Exception(f"{msg}")
 
     async def run(self) -> None:
         """Run through the scheduled tasks.
@@ -132,17 +136,17 @@ class ScheduleRunner:
             try:
                 await self.run_task(task)
             except Exception as e:
-                raise Exception(f"'{task}': {e}") from e
+                raise e
         logger.info("SCHEDULE END")
 
     async def run_task(self, task_name):
         """Run the async method with the given task_name."""
-        logger.info(f"{task_name}")
-        logger.debug(f"|'{task_name}' start")
+        logger.info(f">> TASK {task_name}")
+        logger.debug(f"| {task_name} START")
         self.current_task = task_name
         task_exec = getattr(self, task_name)
         await task_exec()
-        logger.debug(f"|'{task_name}' end")
+        logger.debug(f"| {task_name} END")
 
 
 class NodeTaskSchedule(ScheduleRunner):
@@ -164,7 +168,7 @@ class NodeTaskSchedule(ScheduleRunner):
     def __init__(self, settings: ServiceSettings) -> None:
         """Set the schedule settings, bootstraps node storage, and initializes the node."""
         self.settings = settings
-        self.db = EventDb(settings.db_url)
+        self.db = EventDb(db_url=settings.db_url)
         self.node.set_file_storage(settings.storage)
 
     def reset_data(self) -> None:
@@ -189,8 +193,8 @@ class NodeTaskSchedule(ScheduleRunner):
         # This all starts by getting the event row that has the nearest
         # `voting_start`. We query the DB to get the row, and store it.
         try:
-            event = await self.db.fetch_current_event()
-            logger.debug("current event retrieved from DB")
+            event = await self.db.fetch_upcoming_event()
+            logger.debug("upcoming event retrieved from DB")
             self.node.event = event
         except Exception as e:
             self.reset_schedule(f"{e}")
@@ -205,33 +209,32 @@ class NodeTaskSchedule(ScheduleRunner):
             logger.debug("event has not started")
             self.reset_schedule(f"event will start on {self.node.get_start_time()}")
 
-    async def setup_host_info(self):
-        """Fetch or create node host information.
+    async def fetch_host_keys(self):
+        """Fetch or create voting node secret key information, by hostname, for the current event.
 
-        1. Fetch host info from the EventDB.
+        Reset the schedule if no current event is defined.
+
+        1. Fetch host keys from the `voting_node` table in EventDB.
             If found, save to the schedule node, else, generate and write to DB.
-            Call reset_schedule.
-        2. Fetch host info from node storage.
+            Call `reset_schedule`.
+        2. Fetch host keys from node storage.
             If found:
-                Compare with host info fetched from step 1.
+                Compare with host keys fetched from step 1.
                 If ServiceSettings has the reloadable flag set to True:
-                    Overwrite host info in storage with host info from DB.
+                    Overwrite host info in storage with host info from DB. Use keys from node storage.
                 else:
-                    Log a warning about the difference.
+                    Log a warning about the difference, and use keys from node storage.
             else:
                 Store host info from step 1.
         """
-        try:
-            # gets the event, raises exception if none is found.
-            event = self.node.get_event()
-        except Exception as e:
-            self.reset_schedule(f"{e}")
+        # gets the event, raises exception if none is found.
+        event = self.node.get_event()
 
         try:
             # gets host information from voting_node table for this event
             # raises exception if none is found.
             host_info: HostInfo = await self.db.fetch_leader_host_info(event.row_id)
-            logger.debug("fetched node host info from DB")
+            logger.debug(f"fetched node host info from DB: {host_info.hostname}")
             self.node.host_info = host_info
         except Exception as e:
             # fetching from DB failed
@@ -247,22 +250,24 @@ class NodeTaskSchedule(ScheduleRunner):
             pubkey = await self.jcli().key_to_public(seckey)
             netkey = await self.jcli().key_generate(secret_type="ed25519")
             host_info = HostInfo(hostname, event_id, seckey, pubkey, netkey)
-            logger.debug("host info was generated")
+            logger.debug(f"host info was generated: {host_info.hostname}")
             try:
                 # we add the host info row
                 # raises exception if unable.
                 await self.db.insert_leader_host_info(host_info)
                 # explicitly reset the schedule to ensure this task is run again.
-                self.reset_schedule("added node host info to DB")
+                raise Exception("added node host info to DB")
             except Exception as e:
                 self.reset_schedule(f"{e}")
 
     async def fetch_leaders(self):
         """Fetch from the DB host info for other leaders."""
+        # gets the event, raises exception if none is found.
+        event = self.node.get_event()
         try:
             # gets info for other leaders
             # raises exception if unable.
-            leaders = await self.db.fetch_sorted_leaders_host_info()
+            leaders = await self.db.fetch_sorted_leaders_host_info(event.row_id)
             self.node.leaders = leaders
         except Exception as e:
             self.reset_schedule(f"{e}")
@@ -317,7 +322,6 @@ class NodeTaskSchedule(ScheduleRunner):
         host_name = utils.get_hostname()
         host_ip = utils.get_hostname_addr()
         role_n_digits = utils.get_hostname_role_n_digits(host_name)
-        logger.debug(f"{role_n_digits} ip: {host_ip}")
         p2p_port = self.settings.p2p_port
 
         listen_rest = f"{host_ip}:{self.settings.rest_port}"
@@ -359,7 +363,7 @@ class NodeTaskSchedule(ScheduleRunner):
         # convert to yaml and save
         node_config_yaml = NodeConfigYaml(config, self.node.storage.joinpath("node_config.yaml"))
         await node_config_yaml.save()
-        logger.debug(f"{node_config_yaml}")
+        logger.debug("node config saved")
         self.node.config = node_config_yaml
 
     async def cleanup(self):
@@ -449,21 +453,46 @@ class Leader0Schedule(LeaderSchedule):
     # Leader0 Node tasks
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
-    def __init__(self, settings: ServiceSettings) -> None:
-        super().__init__(settings)
-        # TODO: make this configurable to file or cloud storage
-        self.node.set_secret_file_storage("node_secret")
+    async def fetch_upcoming_event(self):
+        """Override common method to fetch the upcoming event from the DB.
 
-    async def wait_for_snapshot(self):
-        """Wait for the event snapshot_start time."""
+        'leader0' nodes that don't find an upcoming event, create one with
+        default values.
+        """
+        try:
+            event = await self.db.fetch_upcoming_event()
+            logger.debug("current event retrieved from DB")
+            self.node.event = event
+        except Exception:
+            # run helper to add a default event to the DB
+            from .helpers import add_default_event
+
+            logger.debug("event not found from DB, attempting to create")
+            await add_default_event(db_url=self.settings.db_url)
+            logger.info("event added to DB")
+            event = await self.db.fetch_upcoming_event()
+            logger.debug("current event retrieved from DB")
+            self.node.event = event
+
+    async def wait_for_registration_snapshot_time(self):
+        """Wait for the event registration_snapshot_time."""
         # get the snapshot start timestamp
         # raises an exception otherwise
-        snapshot_start = self.node.get_snapshot_start()
+        snapshot_time = self.node.get_registration_snapshot_time()
         # check if now is after the snapshot start time
-        if not self.node.has_snapshot_started():
-            raise Exception(f"snapshot will be stable on {snapshot_start} UTC")
+        if not self.node.has_registration_ended():
+            raise Exception(f"registration snapshot time will be stable on {snapshot_time} UTC")
 
-        logger.debug("snapshot is stable")
+        logger.debug("registration snapshot time reached.")
+
+    async def import_snapshot_data(self):
+        """Collect the snapshot data from EventDB."""
+        event = self.node.get_event()
+        registration_time = event.get_registration_snapshot_time()
+        snapshot_start = event.get_snapshot_start()
+        runner = SnapshotRunner(registration_snapshot_time=registration_time, snapshot_start=snapshot_start)
+        logger.info(f"Execute snapshot runner for event in row {event.row_id}.")
+        await runner.take_snapshots(event.row_id)
 
     async def collect_snapshot_data(self):
         """Collect the snapshot data from EventDB."""
@@ -476,29 +505,35 @@ class Leader0Schedule(LeaderSchedule):
         # check for this field before getting the data
         is_final = await self.db.check_if_snapshot_is_final(event.row_id)
         if not is_final:
-            raise Exception("snapshot is not yet final")
+            logger.warning("snapshot is not final")
 
         try:
             # fetch the stable snapshot data
             snapshot = await self.db.fetch_snapshot(event.row_id)
-            logger.debug(f"snapshot:\n{snapshot}")
+            compressed_data: bytes | None = snapshot.dbsync_snapshot_data
+            if compressed_data is None:
+                raise Exception("dbsync snapsthot data is missing")
+            data = brotli.decompress(compressed_data)
+            json.loads(data)
+            logger.debug("dbsync snapshot data retrieved")
         except Exception as e:
             logger.error(f"expected snapshot:\n{e}")
 
             # gets event vote plans, raises exception if none is found.
         try:
-            voteplans = await self.db.fetch_voteplans(event.row_id)
-            logger.debug(f"voteplans:\n{voteplans}")
+            await self.db.fetch_voteplans(event.row_id)
+            # logger.debug(f"voteplans:\n{voteplans}")
         except Exception as e:
             logger.error(f"expected voteplans:\n{e}")
 
         try:
             # gets event proposals, raises exception if none is found.
             proposals = await self.db.fetch_proposals()
-            logger.debug(f"proposals:\n{proposals}")
+            # logger.debug(f"proposals:\n{proposals}")
             self.proposals = proposals
-        except Exception as e:
-            raise Exception(f"failed to fetch proposals from DB: {e}") from e
+        except Exception:
+            logger.warning("no proposals were found")
+            # raise Exception(f"failed to fetch proposals from DB: {e}") from e
 
     async def setup_tally_committee(self):
         """Fetch or create tally committee data.
@@ -512,8 +547,8 @@ class Leader0Schedule(LeaderSchedule):
         event = self.node.get_event()
         # TODO: fetch tally committee data from secret storage
         try:
-            committee = await self.node.secret_storage.get_committee()
-            logger.debug(f"fetched committee from storage: {committee.as_yaml()}")
+            committee = await SecretDBStorage(conn=self.db.conn()).get_committee(event.row_id)
+            logger.debug("fetched committee from storage")
             self.node.committee = committee
         except Exception as e:
             logger.warning(f"failed to fetch committee from storage: {e}")
@@ -522,19 +557,20 @@ class Leader0Schedule(LeaderSchedule):
             committee_wallet = await utils.create_wallet_keyset(self.jcli())
             logger.debug("creating committee")
             # get CRS from the environment, or create a 32-byte hex token
-            crs = os.environ.get("COMMITTEE_CRS")
+            crs = os.environ.get(COMMITTEE_CRS)
             if crs is None:
                 crs = secrets.token_hex(32)
             committee = await utils.create_committee(
                 self.jcli(),
                 committee_wallet.hex_encoded,
+                event.row_id,
                 event.committee_size,
                 event.committee_threshold,
                 crs,
             )
             logger.debug(f"created committee: {committee.as_yaml()}")
             self.node.committee = committee
-            await self.node.secret_storage.save_committee(committee)
+            await SecretDBStorage(conn=self.db.conn()).save_committee(event_id=event.row_id, committee=committee)
             logger.debug("saved committee to storage")
 
     async def setup_block0(self):

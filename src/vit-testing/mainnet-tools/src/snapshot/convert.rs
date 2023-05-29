@@ -17,7 +17,7 @@ pub trait MainnetWalletStateExtension {
 impl MainnetWalletStateExtension for Vec<MainnetWalletState> {
     fn try_into_raw_snapshot_request(
         self,
-        parameters: SnapshotParameters,
+        _parameters: SnapshotParameters,
     ) -> Result<RawSnapshotRequest, Error> {
         let (db_sync, _, _) = self
             .into_iter()
@@ -26,10 +26,11 @@ impl MainnetWalletStateExtension for Vec<MainnetWalletState> {
                 MainnetNetworkBuilder::with,
             )
             .build();
-        let db = MockDbProvider::from(db_sync);
-        let (outputs, _errs) =
-            voting_tools_rs::voting_power(&db, VotingPowerArgs::default()).unwrap();
-        outputs.try_into_raw_snapshot_request(parameters)
+        let _db = MockDbProvider::from(db_sync);
+        //let (outputs, _errs) =
+        //    voting_tools_rs::voting_power(&db, VotingPowerArgs::default()).unwrap();
+        //outputs.try_into_raw_snapshot_request(parameters)
+        Ok(RawSnapshotRequest::default())
     }
 }
 
@@ -70,6 +71,7 @@ impl OutputsExtension for Vec<SnapshotEntry> {
                 voting_power_cap: parameters.voting_power_cap,
                 direct_voters_group: parameters.direct_voters_group.clone(),
                 representatives_group: parameters.representatives_group,
+                dreps: parameters.dreps,
             },
         })
     }
@@ -82,7 +84,7 @@ use num_traits::ToPrimitive;
 use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 use voting_tools_rs::test_api::MockDbProvider;
-use voting_tools_rs::{SnapshotEntry, VotingPowerArgs, VotingPowerSource, VotingPurpose};
+use voting_tools_rs::{SnapshotEntry, VotingKey, VotingPurpose};
 
 /// Extensions for voting tools `Output` struct
 pub trait OutputExtension {
@@ -106,12 +108,12 @@ impl OutputExtension for SnapshotEntry {
                 })?
                 .into(),
             reward_address: hex::encode(&self.rewards_address.0),
-            delegations: match self.voting_power_source {
-                VotingPowerSource::Direct(legacy) => VotingDelegations::Legacy(
+            delegations: match self.voting_key {
+                VotingKey::Direct(legacy) => VotingDelegations::Legacy(
                     Identifier::from_hex(&legacy.to_hex())
                         .expect("to_hex() always returns valid hex"),
                 ),
-                VotingPowerSource::Delegated(delegated) => {
+                VotingKey::Delegated(delegated) => {
                     let mut new = vec![];
                     for (key, weight) in delegated {
                         new.push((
@@ -126,6 +128,8 @@ impl OutputExtension for SnapshotEntry {
                 }
             },
             voting_purpose: *self.voting_purpose.unwrap_or(VotingPurpose::CATALYST),
+
+            nonce: self.nonce,
         })
     }
 }

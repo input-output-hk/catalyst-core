@@ -63,7 +63,6 @@ tempfile = "3"
 assert_cmd = "2.0.4"
 predicates = "2.0"
 warp = "0.3"
-
 reqwest = { workspace = true }
 
 [dependencies.tracing-subscriber]

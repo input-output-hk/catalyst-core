@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["GroupBallotType","Objective","ObjectiveDetails","ObjectiveId","ObjectiveSummary","ObjectiveSupplementalData","ObjectiveType","RewardDefintion","__Visitor"]};

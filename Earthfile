@@ -2,66 +2,9 @@
 VERSION 0.7
 FROM debian:stable-slim
 
-# Installs and configures the Rust toolchain
-rust-toolchain:
-    ARG user=user
-    ARG uid=1000
-    ARG gid=$uid
-
-    # Install dependencies
-    RUN apt-get update && apt-get install -y --no-install-recommends \
-        ca-certificates \
-        curl \
-        sudo
-
-    # Create a user
-    RUN groupadd -g $gid $user && \
-        useradd -u $uid -g $gid -G sudo -m $user -s /bin/bash
-
-    # Setup sudo
-    RUN sed -i 's/%sudo.*ALL/%sudo   ALL=(ALL:ALL) NOPASSWD:ALL/' /etc/sudoers
-
-    WORKDIR /work
-    ARG rustup_url="https://static.rust-lang.org/rustup/archive/1.26.0/x86_64-unknown-linux-gnu/rustup-init"
-    ENV PATH="${HOME}/.cargo/bin:${PATH}"
-
-    # Install build dependencies
-    RUN sudo apt-get update && \
-        sudo apt-get install -y --no-install-recommends \
-        build-essential \
-        libssl-dev \
-        libpq-dev \
-        libsqlite3-dev \
-        protobuf-compiler
-
-    # Download and verify the Rustup installer
-    RUN curl \
-        --fail \
-        --remote-name \
-        --location \
-        $rustup_url
-    RUN curl \
-        --fail \
-        --remote-name \
-        --location \
-        $rustup_url.sha256
-    RUN sed -i 's| .*rustup-init| rustup-init|' rustup-init.sha256 && \
-        sha256sum --check rustup-init.sha256
-
-    # Install the Rust toolchain
-    RUN chmod +x rustup-init && \
-        ./rustup-init -y --default-toolchain none
-
-    # Cleanup
-    RUN rm rustup-init rustup-init.sha256
-
-    # Force rustup to initialize the toolchain from the rust-toolchain file
-    COPY rust-toolchain .
-    RUN rustup show
-
 # Installs Cargo chef
 install-chef:
-    FROM +rust-toolchain
+    FROM rust:1.65-slim-bullseye
     RUN cargo install --debug cargo-chef
 
 # Prepares the local cache
@@ -76,6 +19,16 @@ prepare-cache:
 build-cache:
     FROM +install-chef
     COPY +prepare-cache/recipe.json ./
+
+    # Install build dependencies
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends \
+        build-essential \
+        libssl-dev \
+        libpq-dev \
+        libsqlite3-dev \
+        protobuf-compiler
+
     RUN cargo chef cook --release
     SAVE ARTIFACT target
     SAVE ARTIFACT $CARGO_HOME cargo_home
@@ -83,7 +36,16 @@ build-cache:
 
 # This is the default builder that all other builders should inherit from
 builder:
-    FROM +rust-toolchain
+    FROM rust:1.65-slim-bullseye
+    # Install build dependencies
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends \
+        build-essential \
+        libssl-dev \
+        libpq-dev \
+        libsqlite3-dev \
+        protobuf-compiler
+    RUN rustup component add rustfmt
     COPY --dir src Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target
@@ -98,7 +60,7 @@ all:
     ARG EARTHLY_CI
     ARG EARTHLY_GIT_SHORT_HASH
     ARG registry
-    ARG tag=latest
+    ARG tag="latest"
 
     # Determine the final registry to push to
     IF [ "$registry" = "" ]
@@ -160,3 +122,14 @@ tag-workspace:
     COPY .git .
     RUN git tag -l
     SAVE IMAGE --cache-hint
+
+local:
+    LOCALLY
+    BUILD ./containers/event-db-migrations+docker
+    BUILD ./containers/event-db-graphql+docker
+    BUILD ./src/cat-data-service+docker
+    BUILD ./services/voting-node+docker
+
+    RUN mkdir -p ./local
+    COPY ./containers/dev-local+build/docker-compose.yml ./local/
+    COPY ./utilities/ideascale-importer+build/src/ideascale-importer-config.json ./local/

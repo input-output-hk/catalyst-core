@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["binrep"],"struct":["Ballot","BallotVerificationError","Ptp","UnitVector","UnitVectorInitializationError","UnitVectorIter"],"type":["EncryptedVote","ProofOfCorrectVote","Vote"]};

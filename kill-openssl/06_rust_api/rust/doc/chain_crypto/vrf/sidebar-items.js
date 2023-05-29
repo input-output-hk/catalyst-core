@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["VrfVerification"],"fn":["vrf_evaluate_and_prove","vrf_verified_get_output","vrf_verify"],"trait":["VerifiableRandomFunction"]};

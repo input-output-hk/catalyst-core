@@ -122,12 +122,6 @@ pub struct EventSchedule {
     pub tallying_end: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq, Deserialize)]
-pub struct VoterGroup {
-    pub id: String,
-    pub voting_token: String,
-}
-
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct EventDetails {
     pub voting_power: VotingPowerSettings,
@@ -411,25 +405,6 @@ mod tests {
                     "voting": "1970-01-01T00:00:00+00:00",
                     "tallying": "1970-01-01T00:00:00+00:00",
                     "tallying_end": "1970-01-01T00:00:00+00:00",
-                }
-            )
-        );
-    }
-
-    #[test]
-    fn voter_group_json_test() {
-        let voter_group = VoterGroup {
-            id: "rep".to_string(),
-            voting_token: "voting token 1".to_string(),
-        };
-
-        let json = serde_json::to_value(&voter_group).unwrap();
-        assert_eq!(
-            json,
-            json!(
-                {
-                    "id": "rep",
-                    "voting_token": "voting token 1",
                 }
             )
         );

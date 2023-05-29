@@ -3,7 +3,7 @@ use crate::{
     types::event::{
         objective::{
             Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData,
-            ObjectiveType, RewardDefintion,
+            ObjectiveType, RewardDefintion, VoterGroup,
         },
         EventId,
     },
@@ -23,12 +23,17 @@ pub trait ObjectiveQueries: Sync + Send + 'static {
 
 impl EventDB {
     const OBJECTIVES_QUERY: &'static str =
-        "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
+        "SELECT objective.row_id, objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
         objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
         WHERE objective.event = $1
         LIMIT $2 OFFSET $3;";
+
+    const VOTING_GROPUS_QEURY: &'static str =
+        "SELECT voteplan.group_id as group, voteplan.token_id as voting_token
+        FROM voteplan 
+        WHERE objective_id = $1;";
 }
 
 #[async_trait]
@@ -50,6 +55,7 @@ impl ObjectiveQueries for EventDB {
 
         let mut objectives = Vec::new();
         for row in rows {
+            let row_id: i32 = row.try_get("row_id")?;
             let summary = ObjectiveSummary {
                 id: ObjectiveId(row.try_get("id")?),
                 objective_type: ObjectiveType {
@@ -65,7 +71,23 @@ impl ObjectiveQueries for EventDB {
                 (Some(currency), Some(value)) => Some(RewardDefintion { currency, value }),
                 _ => None,
             };
+
+            let mut groups = Vec::new();
+            let rows = conn.query(Self::VOTING_GROPUS_QEURY, &[&row_id]).await?;
+            for row in rows {
+                let group: Option<_> = row.try_get("group")?;
+                let voting_token: Option<_> = row.try_get("voting_token")?;
+                match (group, voting_token) {
+                    (None, None) => {}
+                    (group, voting_token) => groups.push(VoterGroup {
+                        group,
+                        voting_token,
+                    }),
+                }
+            }
+
             let details = ObjectiveDetails {
+                groups,
                 reward,
                 supplemental: row
                     .try_get::<_, Option<serde_json::Value>>("extra")?
@@ -122,6 +144,16 @@ mod tests {
                         description: "description 1".to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: vec![
+                            VoterGroup {
+                                group: Some("direct".to_string()),
+                                voting_token: Some("voting token 1".to_string()),
+                            },
+                            VoterGroup {
+                                group: Some("rep".to_string()),
+                                voting_token: Some("voting token 2".to_string()),
+                            }
+                        ],
                         reward: Some(RewardDefintion {
                             currency: "ADA".to_string(),
                             value: 100
@@ -146,6 +178,7 @@ mod tests {
                         description: "description 2".to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: Vec::new(),
                         reward: None,
                         supplemental: None,
                     }
@@ -170,6 +203,16 @@ mod tests {
                     description: "description 1".to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: vec![
+                        VoterGroup {
+                            group: Some("direct".to_string()),
+                            voting_token: Some("voting token 1".to_string()),
+                        },
+                        VoterGroup {
+                            group: Some("rep".to_string()),
+                            voting_token: Some("voting token 2".to_string()),
+                        }
+                    ],
                     reward: Some(RewardDefintion {
                         currency: "ADA".to_string(),
                         value: 100
@@ -202,6 +245,7 @@ mod tests {
                     description: "description 2".to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: Vec::new(),
                     reward: None,
                     supplemental: None,
                 }

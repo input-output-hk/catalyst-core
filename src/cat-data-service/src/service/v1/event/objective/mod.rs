@@ -66,7 +66,7 @@ mod tests {
     };
     use event_db::types::event::objective::{
         ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData, ObjectiveType,
-        RewardDefintion,
+        RewardDefintion, VoterGroup,
     };
     use serde_json::json;
     use tower::ServiceExt;
@@ -97,6 +97,16 @@ mod tests {
                         description: "description 1".to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: vec![
+                            VoterGroup {
+                                group: Some("direct".to_string()),
+                                voting_token: Some("voting token 1".to_string()),
+                            },
+                            VoterGroup {
+                                group: Some("rep".to_string()),
+                                voting_token: Some("voting token 2".to_string()),
+                            }
+                        ],
                         reward: Some(RewardDefintion {
                             currency: "ADA".to_string(),
                             value: 100
@@ -121,6 +131,7 @@ mod tests {
                         description: "description 2".to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: Vec::new(),
                         reward: None,
                         supplemental: None,
                     }
@@ -149,6 +160,16 @@ mod tests {
                     description: "description 1".to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: vec![
+                        VoterGroup {
+                            group: Some("direct".to_string()),
+                            voting_token: Some("voting token 1".to_string()),
+                        },
+                        VoterGroup {
+                            group: Some("rep".to_string()),
+                            voting_token: Some("voting token 2".to_string()),
+                        }
+                    ],
                     reward: Some(RewardDefintion {
                         currency: "ADA".to_string(),
                         value: 100
@@ -185,6 +206,7 @@ mod tests {
                     description: "description 2".to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: Vec::new(),
                     reward: None,
                     supplemental: None,
                 }

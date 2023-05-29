@@ -52,6 +52,8 @@
 <a href="#52" id="52">52</a>
 <a href="#53" id="53">53</a>
 <a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
 </pre><pre class="rust"><code><span class="kw">mod </span>rest;
 <span class="kw">mod </span>voting_power;
 
@@ -59,6 +61,7 @@
 <span class="kw">use </span>rand::rngs::OsRng;
 <span class="kw">use </span>rand::RngCore;
 <span class="kw">pub use </span>rest::VitRestRequestGenerator;
+<span class="kw">use </span>snapshot_lib::voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP};
 <span class="kw">pub use </span>voting_power::VotingPowerRequestGenerator;
 
 <span class="attr">#[derive(Clone, Debug)]
@@ -94,10 +97,11 @@
     }
 
     <span class="kw">pub fn </span>random_group_id(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; String {
-        <span class="kw">let </span>groups = <span class="self">self</span>.snapshot.groups();
-        <span class="kw">let </span>random_idx = <span class="self">self</span>.random_usize() % groups.len();
-
-        groups[random_idx].group_id.clone()
+        <span class="kw">if </span><span class="self">self</span>.random_usize() % <span class="number">2 </span>== <span class="number">0 </span>{
+            DEFAULT_DIRECT_VOTER_GROUP.to_string()
+        } <span class="kw">else </span>{
+            DEFAULT_REPRESENTATIVE_GROUP.to_string()
+        }
     }
 
     <span class="kw">pub fn </span>random_fund_id(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; i32 {

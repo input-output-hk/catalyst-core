@@ -1,4 +1,5 @@
 use super::dates::FundDates;
+use snapshot_lib::voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP};
 use vit_servicing_station_lib::db::models::{funds::Fund, goals::Goal, groups::Group};
 
 #[derive(Debug, Clone)]
@@ -66,12 +67,12 @@ impl Default for FundInfo {
                 Group {
                     fund_id: 1,
                     token_identifier: "00000000000000000000000000000000000000000000000000000000.0000000000000000000000000000000000000000000000000000000000000000".to_string(),
-                    group_id: "12345".to_string(),
+                    group_id: DEFAULT_DIRECT_VOTER_GROUP.to_string(),
                 },
                 Group {
                     fund_id: 1,
                     token_identifier: "00000000000000000000000000000000000000000000000000000001.0000000000000000000000000000000000000000000000000000000000000000".to_string(),
-                    group_id: "12346".to_string(),
+                    group_id: DEFAULT_REPRESENTATIVE_GROUP.to_string(),
                 },
             ],
         }

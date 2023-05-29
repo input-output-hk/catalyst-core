@@ -37,6 +37,15 @@ build-cache:
 # This is the default builder that all other builders should inherit from
 builder:
     FROM rust:1.65-slim-bullseye
+    # Install build dependencies
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends \
+        build-essential \
+        libssl-dev \
+        libpq-dev \
+        libsqlite3-dev \
+        protobuf-compiler
+    RUN rustup component add rustfmt
     COPY --dir src Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target
@@ -112,3 +121,14 @@ tag-workspace:
     COPY .git .
     RUN git tag -l
     SAVE IMAGE --cache-hint
+
+local:
+    LOCALLY
+    BUILD ./containers/event-db-migrations+docker
+    BUILD ./containers/event-db-graphql+docker
+    BUILD ./src/cat-data-service+docker
+    BUILD ./services/voting-node+docker
+
+    RUN mkdir -p ./local
+    COPY ./containers/dev-local+build/docker-compose.yml ./local/
+    COPY ./utilities/ideascale-importer+build/src/ideascale-importer-config.json ./local/

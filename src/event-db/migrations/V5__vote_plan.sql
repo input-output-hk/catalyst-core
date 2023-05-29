@@ -23,37 +23,33 @@ COMMENT ON COLUMN voteplan_category.public_key IS 'Does this vote plan category 
 -- groups
 
 CREATE TABLE voting_group (
-    row_id SERIAL PRIMARY KEY,
-    group_id VARCHAR NOT NULL,
-    event_id INTEGER NOT NULL,
-    token_id VARCHAR,
-
-    FOREIGN KEY(event_id) REFERENCES event(row_id) ON DELETE CASCADE
+    name TEXT PRIMARY KEY
 );
 
-CREATE UNIQUE INDEX token_event_id ON voting_group (token_id, event_id);
+INSERT INTO voting_group (name)
+VALUES
+    ('direct'), -- Direct Voters
+    ('rep'); -- Delegated Voter (Check what is the real name for this group we already use in snapshot)
 
 COMMENT ON TABLE voting_group IS 'All Groups.';
-COMMENT ON COLUMN voting_group.row_id IS 'Synthetic Unique Key.';
-COMMENT ON COLUMN voting_group.group_id IS 'The ID of this voting group.';
-COMMENT ON COLUMN voting_group.event_id IS 'The event this voting group belongs to.';
-COMMENT ON COLUMN voting_group.token_id IS 'The ID of the voting token used by this group.';
+COMMENT ON COLUMN voting_group.name IS 'The ID of this voting group.';
 
 -- Vote Plans
 
 CREATE TABLE voteplan
 (
     row_id SERIAL PRIMARY KEY,
-    event_id INTEGER NOT NULL,
+    objective_id INTEGER NOT NULL,
 
-    id VARCHAR NOT NULL UNIQUE,
+    id VARCHAR NOT NULL,
     category TEXT NOT NULL,
     encryption_key VARCHAR,
-    group_id INTEGER,
+    group_id TEXT,
+    token_id TEXT,
 
-    FOREIGN KEY(event_id) REFERENCES event(row_id)  ON DELETE CASCADE,
+    FOREIGN KEY(objective_id) REFERENCES objective(row_id)  ON DELETE CASCADE,
     FOREIGN KEY(category) REFERENCES voteplan_category(name)  ON DELETE CASCADE,
-    FOREIGN KEY(group_id) REFERENCES voting_group(row_id)  ON DELETE CASCADE
+    FOREIGN KEY(group_id) REFERENCES voting_group(name)  ON DELETE CASCADE
 );
 
 COMMENT ON TABLE voteplan IS 'All Vote plans.';

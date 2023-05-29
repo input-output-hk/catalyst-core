@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["WITNESS_TAG_ACCOUNT","WITNESS_TAG_MULTISIG","WITNESS_TAG_OLDUTXO","WITNESS_TAG_UTXO"],"enum":["Witness","WitnessUtxoVersion"],"fn":["witness_data_common"],"struct":["WitnessAccountData","WitnessMultisigData","WitnessUtxoData"]};

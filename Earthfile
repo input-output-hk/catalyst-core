@@ -103,8 +103,8 @@ ci:
 
 # Define the test stage, which runs the Rust project's tests
 test:
-    FROM +devshell
-    RUN cargo --version
+    BUILD ./src/event-db+test
+    BUILD ./src/cat-data-service+test
 
 tag-workspace:
     ARG SVU_VERSION=1.10.2

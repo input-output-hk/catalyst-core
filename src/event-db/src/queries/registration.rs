@@ -1,7 +1,7 @@
 use crate::{
     types::{
         event::EventId,
-        registration::{Delegation, Delegator, Voter, VoterInfo},
+        registration::{Delegation, Delegator, Voter, VoterGroupId, VoterInfo},
     },
     Error, EventDB,
 };
@@ -98,17 +98,17 @@ impl RegistrationQueries for EventDB {
             .get(0)
             .ok_or_else(|| Error::NotFound("can not find voter value".to_string()))?;
 
-        let voting_group = voter.try_get("voting_group")?;
+        let voting_group = VoterGroupId(voter.try_get("voting_group")?);
         let voting_power = voter.try_get("voting_power")?;
 
         let rows = if let Some(event) = event {
             conn.query(
                 Self::TOTAL_BY_EVENT_VOTING_QUERY,
-                &[&voting_group, &event.0],
+                &[&voting_group.0, &event.0],
             )
             .await?
         } else {
-            conn.query(Self::TOTAL_BY_LAST_EVENT_VOTING_QUERY, &[&voting_group])
+            conn.query(Self::TOTAL_BY_LAST_EVENT_VOTING_QUERY, &[&voting_group.0])
                 .await?
         };
 
@@ -179,7 +179,7 @@ impl RegistrationQueries for EventDB {
         for row in delegation_rows {
             delegations.push(Delegation {
                 voting_key: row.try_get("voting_key")?,
-                group: row.try_get("voting_group")?,
+                group: VoterGroupId(row.try_get("voting_group")?),
                 weight: row.try_get("voting_weight")?,
                 value: row.try_get("value")?,
             })
@@ -249,7 +249,7 @@ mod tests {
             Voter {
                 voter_info: VoterInfo {
                     voting_power: 250,
-                    voting_group: "rep".to_string(),
+                    voting_group: VoterGroupId("rep".to_string()),
                     delegations_power: 250,
                     delegations_count: 2,
                     voting_power_saturation: 0.625,
@@ -282,7 +282,7 @@ mod tests {
             Voter {
                 voter_info: VoterInfo {
                     voting_power: 250,
-                    voting_group: "rep".to_string(),
+                    voting_group: VoterGroupId("rep".to_string()),
                     delegations_power: 250,
                     delegations_count: 2,
                     voting_power_saturation: 0.625,
@@ -326,13 +326,13 @@ mod tests {
                 delegations: vec![
                     Delegation {
                         voting_key: "voting_key_1".to_string(),
-                        group: "rep".to_string(),
+                        group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 140
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
-                        group: "rep".to_string(),
+                        group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 100
                     }
@@ -368,13 +368,13 @@ mod tests {
                 delegations: vec![
                     Delegation {
                         voting_key: "voting_key_1".to_string(),
-                        group: "rep".to_string(),
+                        group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 140
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
-                        group: "rep".to_string(),
+                        group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 100
                     }

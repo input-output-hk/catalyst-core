@@ -1,6 +1,7 @@
 use self::{
     event::{
-        objective::ObjectiveQueries, proposal::ProposalQueries, review::ReviewQueries, EventQueries,
+        ballot::BallotQueries, objective::ObjectiveQueries, proposal::ProposalQueries,
+        review::ReviewQueries, EventQueries,
     },
     registration::RegistrationQueries,
     search::SearchQueries,
@@ -18,6 +19,7 @@ pub trait EventDbQueries:
     + ProposalQueries
     + ReviewQueries
     + SearchQueries
+    + BallotQueries
 {
 }
 

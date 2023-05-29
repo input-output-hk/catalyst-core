@@ -1,3 +1,4 @@
+use crate::types::registration::VoterGroupId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -25,10 +26,10 @@ pub struct RewardDefintion {
     pub value: i64,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct VoterGroup {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub group: Option<String>,
+    pub group: Option<VoterGroupId>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub voting_token: Option<String>,
 }
@@ -127,7 +128,7 @@ mod tests {
     #[test]
     fn voter_group_json_test() {
         let voter_group = VoterGroup {
-            group: Some("rep".to_string()),
+            group: Some(VoterGroupId("rep".to_string())),
             voting_token: Some("voting token 1".to_string()),
         };
 
@@ -147,7 +148,7 @@ mod tests {
     fn objective_details_json_test() {
         let objective_details = ObjectiveDetails {
             groups: vec![VoterGroup {
-                group: Some("rep".to_string()),
+                group: Some(VoterGroupId("rep".to_string())),
                 voting_token: Some("voting token 1".to_string()),
             }],
             reward: Some(RewardDefintion {

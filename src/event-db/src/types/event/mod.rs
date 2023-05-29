@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
+pub mod ballot;
 pub mod objective;
 pub mod proposal;
 pub mod review;

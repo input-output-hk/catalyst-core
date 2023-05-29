@@ -97,7 +97,7 @@ mod tests {
         http::{Request, StatusCode},
     };
     use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-    use event_db::types::registration::{Delegation, VoterInfo};
+    use event_db::types::registration::{Delegation, VoterGroupId, VoterInfo};
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -117,7 +117,7 @@ mod tests {
             serde_json::to_string(&Voter {
                 voter_info: VoterInfo {
                     voting_power: 250,
-                    voting_group: "rep".to_string(),
+                    voting_group: VoterGroupId("rep".to_string()),
                     delegations_power: 250,
                     delegations_count: 2,
                     voting_power_saturation: 0.625,
@@ -156,7 +156,7 @@ mod tests {
             serde_json::to_string(&Voter {
                 voter_info: VoterInfo {
                     voting_power: 250,
-                    voting_group: "rep".to_string(),
+                    voting_group: VoterGroupId("rep".to_string()),
                     delegations_power: 250,
                     delegations_count: 2,
                     voting_power_saturation: 0.625,
@@ -219,13 +219,13 @@ mod tests {
                 delegations: vec![
                     Delegation {
                         voting_key: "voting_key_1".to_string(),
-                        group: "rep".to_string(),
+                        group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 140
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
-                        group: "rep".to_string(),
+                        group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 100
                     }
@@ -267,13 +267,13 @@ mod tests {
                 delegations: vec![
                     Delegation {
                         voting_key: "voting_key_1".to_string(),
-                        group: "rep".to_string(),
+                        group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 140
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
-                        group: "rep".to_string(),
+                        group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 100
                     }

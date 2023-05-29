@@ -1,11 +1,14 @@
 use crate::{
     error::Error,
-    types::event::{
-        objective::{
-            Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData,
-            ObjectiveType, RewardDefintion, VoterGroup,
+    types::{
+        event::{
+            objective::{
+                Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
+                ObjectiveSupplementalData, ObjectiveType, RewardDefintion, VoterGroup,
+            },
+            EventId,
         },
-        EventId,
+        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -75,7 +78,7 @@ impl ObjectiveQueries for EventDB {
             let mut groups = Vec::new();
             let rows = conn.query(Self::VOTING_GROPUS_QEURY, &[&row_id]).await?;
             for row in rows {
-                let group: Option<_> = row.try_get("group")?;
+                let group = row.try_get::<_, Option<String>>("group")?.map(VoterGroupId);
                 let voting_token: Option<_> = row.try_get("voting_token")?;
                 match (group, voting_token) {
                     (None, None) => {}
@@ -146,11 +149,11 @@ mod tests {
                     details: ObjectiveDetails {
                         groups: vec![
                             VoterGroup {
-                                group: Some("direct".to_string()),
+                                group: Some(VoterGroupId("direct".to_string())),
                                 voting_token: Some("voting token 1".to_string()),
                             },
                             VoterGroup {
-                                group: Some("rep".to_string()),
+                                group: Some(VoterGroupId("rep".to_string())),
                                 voting_token: Some("voting token 2".to_string()),
                             }
                         ],
@@ -205,11 +208,11 @@ mod tests {
                 details: ObjectiveDetails {
                     groups: vec![
                         VoterGroup {
-                            group: Some("direct".to_string()),
+                            group: Some(VoterGroupId("direct".to_string())),
                             voting_token: Some("voting token 1".to_string()),
                         },
                         VoterGroup {
-                            group: Some("rep".to_string()),
+                            group: Some(VoterGroupId("rep".to_string())),
                             voting_token: Some("voting token 2".to_string()),
                         }
                     ],

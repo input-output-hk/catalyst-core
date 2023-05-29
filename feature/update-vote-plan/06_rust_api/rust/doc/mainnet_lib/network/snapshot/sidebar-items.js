@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["default_latest"],"struct":["Initials","Parameters","__FieldVisitor","__Visitor"]};

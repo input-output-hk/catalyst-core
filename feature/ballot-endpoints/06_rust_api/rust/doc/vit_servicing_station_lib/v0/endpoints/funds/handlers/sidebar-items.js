@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["get_all_funds","get_fund","get_fund_by_id","put_fund"],"opaque":[""]};

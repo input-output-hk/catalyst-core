@@ -317,9 +317,9 @@ digraph erd {
             </tr>
             
             <tr>
-                <td port="event_id"  align='text'><font>event_id</font><br align='left'/></td>
+                <td port="objective_id"  align='text'><font>objective_id</font><br align='left'/></td>
                 <td   ><font>integer</font></td>
-                <td port="event_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+                <td port="objective_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             
             <tr>
@@ -342,8 +342,14 @@ digraph erd {
             
             <tr>
                 <td port="group_id"  align='text'><font>group_id</font><br align='left'/></td>
-                <td   ><font><i>integer</i></font></td>
+                <td   ><font><i>text</i></font></td>
                 <td port="group_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The identifier of voting power token<br align='left'/>used withing this plan.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="token_id"  align='text'><font>token_id</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="token_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             
 
@@ -520,7 +526,7 @@ digraph erd {
 
             
             <tr>
-                <td port="row_id"  align='text'><font>row_id</font><br align='left'/></td>
+                <td port="name"  align='text'><font>name</font><br align='left'/></td>
             </tr>
             
 
@@ -573,11 +579,11 @@ digraph erd {
     >];
 
     
-    "voteplan":"event_id_out" -> "event":"row_id"
+    "voteplan":"objective_id_out" -> "objective":"row_id"
     
     "voteplan":"category_out" -> "voteplan_category":"name"
     
-    "voteplan":"group_id_out" -> "voting_group":"row_id"
+    "voteplan":"group_id_out" -> "voting_group":"name"
     
     "snapshot":"event_out" -> "event":"row_id"
     

@@ -172,6 +172,12 @@
 <a href="#172" id="172">172</a>
 <a href="#173" id="173">173</a>
 <a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::logic;
 <span class="kw">use </span><span class="kw">crate</span>::v0::endpoints::proposals::requests::ProposalsByVoteplanIdAndIndex;
 <span class="kw">use </span><span class="kw">crate</span>::v0::{context::SharedContext, result::HandlerResult};
@@ -277,7 +283,13 @@
         <span class="kw">let </span>filter_context = shared_context.clone();
         <span class="kw">let </span>with_context = warp::any().map(<span class="kw">move </span>|| filter_context.clone());
 
-        <span class="kw">let </span>proposal = snapshot.proposals().into_iter().next().unwrap();
+        <span class="kw">let </span>proposals = snapshot.proposals();
+        <span class="kw">let </span>first_proposal = proposals.into_iter().next().unwrap();
+        <span class="kw">let </span>proposals: Vec&lt;<span class="kw">_</span>&gt; = snapshot
+            .proposals()
+            .into_iter()
+            .filter(|p| p.group_id == first_proposal.group_id)
+            .collect();
 
         <span class="comment">// build filter
         </span><span class="kw">let </span>filter = warp::any()
@@ -288,14 +300,14 @@
 
         <span class="kw">let </span>result = warp::test::request()
             .method(<span class="string">&quot;GET&quot;</span>)
-            .path(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/{}&quot;</span>, proposal.group_id))
+            .path(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;/{}&quot;</span>, first_proposal.group_id))
             .reply(<span class="kw-2">&amp;</span>filter)
             .<span class="kw">await</span>;
         <span class="macro">assert_eq!</span>(result.status(), warp::http::StatusCode::OK);
         <span class="kw">let </span>result_proposals: Vec&lt;FullProposalInfo&gt; =
             serde_json::from_str(<span class="kw-2">&amp;</span>String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
         <span class="macro">assert_eq!</span>(
-            serde_json::to_value(<span class="macro">vec!</span>[proposal]).unwrap(),
+            serde_json::to_value(proposals).unwrap(),
             serde_json::to_value(result_proposals).unwrap()
         );
     }

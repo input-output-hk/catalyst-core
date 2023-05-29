@@ -869,6 +869,11 @@ components:
       description: Individual Objective Details
       type: object
       properties:
+        groups:
+           type: array
+           description: The valid voter groups for this voting event.
+           items:
+             $ref: '#/components/schemas/VoterGroup'
         reward:
           $ref: '#/components/schemas/RewardDefinition'
           description: |-
@@ -1270,7 +1275,7 @@ components:
     VoterGroup:
       type: object
       properties:
-        id:
+        group:
           $ref: '#/components/schemas/VoterGroupId'
         voting_token:
           type: string

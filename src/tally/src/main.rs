@@ -82,7 +82,7 @@ fn main() -> Result<()> {
         let encrypted_tally = load_encrypted_tally(
             args.encrypted_tally
                 .clone()
-                .expect("path to encrypted tally not correct"),
+                .expect("corrupted encrypted tally"),
         )
         .expect("unable to read encrypted tally - should be base64 format");
 
@@ -107,7 +107,7 @@ fn main() -> Result<()> {
         let encrypted_tally = load_encrypted_tally(
             args.encrypted_tally
                 .clone()
-                .expect("path to encrypted tally not correct"),
+                .expect("corrupted encrypted tally"),
         )
         .expect("unable to read encrypted tally - should be base64 format");
 
@@ -127,7 +127,7 @@ fn main() -> Result<()> {
         let encrypted_tally = load_encrypted_tally(
             args.encrypted_tally
                 .clone()
-                .expect("path to encrypted tally not correct"),
+                .expect("corrupted encrypted tally"),
         )
         .expect("unable to read encrypted tally - should be base64 format");
 

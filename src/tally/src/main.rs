@@ -370,9 +370,9 @@ mod tests {
         let committee_public_keys =
             vec![alice.public_key(), bob.public_key(), charlie.public_key()];
         let committee_secret_keys = vec![
-            alice.secret_key_a(),
-            bob.secret_key_a(),
-            charlie.secret_key_a(),
+            alice.member_secret_key(),
+            bob.member_secret_key(),
+            charlie.member_secret_key(),
         ];
 
         let ek = ElectionPublicKey::from_participants(&committee_public_keys);

@@ -267,7 +267,7 @@ pub fn encode_decrypt_shares(decrypt_shares: Vec<TallyDecryptShare>) -> Vec<Stri
     shares
 }
 
-/// encode committee secret keys to bech32
+/// Encode committee secret keys to Bech32
 pub fn encode_secret_keys(
     committee_secret_keys: Vec<SecretKey<Ed25519>>,
 ) -> Result<Vec<String>, Box<dyn std::error::Error>> {

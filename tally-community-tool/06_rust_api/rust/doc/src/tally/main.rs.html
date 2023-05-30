@@ -443,6 +443,7 @@
 <a href="#443" id="443">443</a>
 <a href="#444" id="444">444</a>
 <a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
 </pre><pre class="rust"><code><span class="doccomment">//!
 //! Community Tally Verification Tool
 //!
@@ -490,6 +491,7 @@
         short,
         long,
         requires = <span class="string">&quot;encrypted_tally&quot;</span>,
+        requires = <span class="string">&quot;public_keys&quot;</span>,
         value_delimiter = <span class="string">&#39; &#39;</span>,
         num_args = <span class="number">1</span>..
     )]
@@ -711,7 +713,7 @@
     shares
 }
 
-<span class="doccomment">/// encode committee secret keys to bech32
+<span class="doccomment">/// Encode committee secret keys to Bech32
 </span><span class="kw">pub fn </span>encode_secret_keys(
     committee_secret_keys: Vec&lt;SecretKey&lt;Ed25519&gt;&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;, Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {

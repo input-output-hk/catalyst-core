@@ -1157,6 +1157,7 @@ dependencies = [
 name = "chain-vote"
 version = "0.1.0"
 dependencies = [
+ "base64 0.21.0",
  "cfg-if 1.0.0",
  "chain-core",
  "chain-crypto",
@@ -1289,6 +1290,7 @@ dependencies = [
  "anstyle",
  "bitflags",
  "clap_lex 0.4.1",
+ "once_cell",
  "strsim",
 ]
 
@@ -1299,6 +1301,38 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "01c22dcfb410883764b29953103d9ef7bb8fe21b3fa1158bc99986c2067294bd"
 dependencies = [
  "clap 4.2.1",
+]
+
+[[package]]
+name = "clap_complete_command"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "183495371ea78d4c9ff638bfc6497d46fed2396e4f9c50aebc1278a4a9919a3d"
+dependencies = [
+ "clap 4.2.1",
+ "clap_complete",
+ "clap_complete_fig",
+ "clap_complete_nushell",
+]
+
+[[package]]
+name = "clap_complete_fig"
+version = "4.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0c73f19beec3b698ecc59d023cf373943f0ff405237ed0d7c6df118fb554334b"
+dependencies = [
+ "clap 4.2.1",
+ "clap_complete",
+]
+
+[[package]]
+name = "clap_complete_nushell"
+version = "0.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5d02bc8b1a18ee47c4d2eec3fb5ac034dc68ebea6125b1509e9ccdffcddce66e"
+dependencies = [
+ "clap 4.2.1",
+ "clap_complete",
 ]
 
 [[package]]
@@ -6897,6 +6931,23 @@ dependencies = [
  "once_cell",
  "rayon",
  "winapi",
+]
+
+[[package]]
+name = "tally"
+version = "0.1.0"
+dependencies = [
+ "base64 0.21.0",
+ "bech32 0.8.1",
+ "chain-crypto",
+ "chain-vote",
+ "clap 4.2.1",
+ "clap_complete_command",
+ "color-eyre",
+ "criterion",
+ "rand_chacha 0.3.1",
+ "rand_core 0.6.4",
+ "smoke",
 ]
 
 [[package]]

@@ -170,6 +170,10 @@ impl MemberState {
         &self.sk
     }
 
+    pub fn secret_key_a(&self) -> MemberSecretKey {
+        self.sk.clone()
+    }
+
     pub fn public_key(&self) -> MemberPublicKey {
         MemberPublicKey(PublicKey {
             pk: self.apubs[0].clone(),

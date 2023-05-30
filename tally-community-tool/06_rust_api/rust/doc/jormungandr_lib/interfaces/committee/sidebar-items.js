@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["get_bytes"],"struct":["CommitteeId","CommitteeIdDef"]};
+window.SIDEBAR_ITEMS = {"fn":["get_bytes"],"struct":["CommitteeId","CommitteeIdDef","__Visitor"]};

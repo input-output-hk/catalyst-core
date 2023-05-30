@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["UTxOInfo","UTxOOutputInfo"]};
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["UTxOInfo","UTxOOutputInfo","__FieldVisitor","__Visitor"]};

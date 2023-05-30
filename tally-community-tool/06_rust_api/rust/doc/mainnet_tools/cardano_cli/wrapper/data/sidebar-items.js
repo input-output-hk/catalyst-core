@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["CardanoKeyTemplate"]};
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["CardanoKeyTemplate","__FieldVisitor","__Visitor"]};

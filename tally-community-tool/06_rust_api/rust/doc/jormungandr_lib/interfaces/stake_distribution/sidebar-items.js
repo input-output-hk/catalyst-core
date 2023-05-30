@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["StakeDistribution","StakeDistributionDto"]};
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["StakeDistribution","StakeDistributionDto","__FieldVisitor","__Visitor"]};

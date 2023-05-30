@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"opaque":[""],"struct":["BlockchainBuilder","BlockchainConfiguration"]};
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"opaque":[""],"struct":["BlockchainBuilder","BlockchainConfiguration","__DeserializeWith","__FieldVisitor","__Visitor"]};

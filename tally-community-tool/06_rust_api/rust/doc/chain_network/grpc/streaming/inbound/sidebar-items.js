@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["__assert_not_repr_packed"],"struct":["InboundStream","__InboundStream","__InboundStreamProjection","__InboundStreamProjectionRef"],"trait":["InboundStreamMustNotImplDrop"]};

@@ -42,4 +42,3 @@ rayon = "1"
 sha2 = "0.9"
 sha-1 = "0.9"
 reqwest = { workspace = true }
-

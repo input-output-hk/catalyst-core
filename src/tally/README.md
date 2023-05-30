@@ -2,7 +2,7 @@
 
 This tool allows the community to cross reference and validate vote results.
 
-Example usage:
+*Example usage:*
 
 ```
 cargo build --release -p tally

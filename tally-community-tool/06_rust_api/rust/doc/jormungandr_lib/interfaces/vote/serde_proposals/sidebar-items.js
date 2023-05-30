@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["deserialize","serialize"],"struct":["ProposalInternal","ProposalsList","__DeserializeWith","__SerializeWith","__Visitor"]};
+window.SIDEBAR_ITEMS = {"fn":["deserialize","serialize"],"struct":["ProposalInternal","ProposalsList"]};

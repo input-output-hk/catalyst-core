@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["Error","__Field"],"struct":["__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"]};

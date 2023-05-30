@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["LogMaxEntries","Mempool","PersistentLog","PoolMaxEntries","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"struct":["LogMaxEntries","Mempool","PersistentLog","PoolMaxEntries"]};

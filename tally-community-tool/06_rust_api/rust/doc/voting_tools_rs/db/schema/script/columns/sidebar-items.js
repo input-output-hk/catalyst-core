@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FROM_CLAUSE"],"macro":["__static_cond"],"struct":["bytes","hash","id","json","serialised_size","star","tx_id","type_"]};
+window.SIDEBAR_ITEMS = {"constant":["FROM_CLAUSE"],"struct":["bytes","hash","id","json","serialised_size","star","tx_id","type_"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["ARR_LEN","CONCATP_NHPMWYD3NJA","CONCAT_ARR","CONCAT_STR"],"struct":["ElectionPublicKey","MemberCommunicationKey","MemberCommunicationPublicKey","MemberPublicKey","MemberSecretKey","MemberState"]};
+window.SIDEBAR_ITEMS = {"struct":["ElectionPublicKey","MemberCommunicationKey","MemberCommunicationPublicKey","MemberPublicKey","MemberSecretKey","MemberState"]};

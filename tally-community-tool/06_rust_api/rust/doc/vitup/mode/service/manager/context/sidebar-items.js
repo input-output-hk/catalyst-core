@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["VARIANTS"],"enum":["State","__Field"],"struct":["ControlContext","__FieldVisitor","__Visitor"],"type":["ControlContextLock"]};
+window.SIDEBAR_ITEMS = {"enum":["State"],"struct":["ControlContext"],"type":["ControlContextLock"]};

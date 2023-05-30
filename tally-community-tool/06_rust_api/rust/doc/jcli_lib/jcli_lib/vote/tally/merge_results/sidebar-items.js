@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["Error","__Field"],"fn":["merge_voteplans"],"struct":["MergeVotePlan","MergedVotePlan","MergedVoteProposalStatus","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["merge_voteplans"],"struct":["MergeVotePlan","MergedVotePlan","MergedVoteProposalStatus"]};

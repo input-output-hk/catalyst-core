@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["CsvDataCmd","Error","__Field"],"struct":["ImportSettings","LoadCmd","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["CsvDataCmd","Error"],"struct":["ImportSettings","LoadCmd"]};

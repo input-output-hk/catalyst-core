@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","OPERATION_NAME","QUERY","__QUERY_WORKAROUND"],"enum":["__Field"],"struct":["AddressAddress","ResponseData","Variables","__FieldVisitor","__Visitor"],"type":["Boolean","Float","ID","Int"]};
+window.SIDEBAR_ITEMS = {"constant":["OPERATION_NAME","QUERY","__QUERY_WORKAROUND"],"struct":["AddressAddress","ResponseData","Variables"],"type":["Boolean","Float","ID","Int"]};

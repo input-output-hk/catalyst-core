@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["csv_writer","generate_archive_files"],"opaque":[""],"struct":["Fund","Proposal","__SerializeWith"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["csv_writer","generate_archive_files"],"opaque":[""],"struct":["Fund","Proposal"]};

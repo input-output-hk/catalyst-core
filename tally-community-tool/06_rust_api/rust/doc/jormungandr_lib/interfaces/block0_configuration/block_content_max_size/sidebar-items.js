@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["BlockContentMaxSize","__Visitor"]};
+window.SIDEBAR_ITEMS = {"struct":["BlockContentMaxSize"]};

@@ -12,7 +12,7 @@ Example usage:
 cargo build --release -p tally
 ```  
 
-#### Public use: validate results 
+#### Public use: Validate results 
 #### `decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext`
 
 ```bash

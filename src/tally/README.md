@@ -12,7 +12,8 @@ Example usage:
 cargo build --release -p tally
 ```  
 
-#### Public use: validate results `(pub_keys, encrypted_tally, decrypt_shares) -> TallyResultPlaintext`
+#### Public use: validate results 
+#### `decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext`
 
 ```bash
 SHARES_ALICE='WDDMb68A6JCVR5UdhDtl7QYrQHSMOFqg44lHcmtB/Q3IfSoqusq+obtC/JJOtDYWadSM9mOXtPwUfwV14hrGAw30MilDYi93ULxgB9JZ8+hlTaCkH4Dr3y3zALLBS6UEWDDMb68A6JCVR5UdhDtl7QYrQHSMOFqg44lHcmtB/Q2Q9hcGlcFVV4QLXxlWOAb1hJT9/2WhM16JXyJ+RC3MAyUKJf2AJJGuENKWyPEROI7ROuiVU6hn/iVIVbGQeO0I'
@@ -34,7 +35,8 @@ echo $ENCRYPTED_TALLY
 ./target/release/tally --decrypt-tally-from-shares $SHARES_ALICE $SHARES_BOB $SHARES_CHARLIE --encrypted-tally $ENCRYPTED_TALLY --public-keys $PUBLIC_KEY_ALICE $PUBLIC_KEY_BOB $PUBLIC_KEY_CHARLIE
 ```
 
-#### Internal use: Generate decrypt shares for publication `(secret_keys, encrypted_tally)-> DecryptShares`
+#### Internal use: Generate decrypt shares for publication 
+#### `produce_decrypt_shares(secret_keys, encrypted_tally)-> decryptShares`
 
 ```bash
 ENCRYPTED_TALLY='rs9sAB/n6vaQh5NMH+UunES87fdcpA3QDll/AV8p1x8IAAAAAAAAAMZEhl0tYixbZzHhAXWklbdJbvwiJvfYidowNZ1KzUs/NKi98HtPNN3gdl1T+ehhNhxLFQ/7fTJSVjAJycNWhkDGRIZdLWIsW2cx4QF1pJW3SW78Iib32InaMDWdSs1LP0pyBYKkVTpExb78GZrf/8csqWtNQNshoLoHsa827gdF'
@@ -48,7 +50,8 @@ CHARLIE_SECRET_KEY='ristretto255_membersk1392k23gzgwv827hdfjg3g9es0depszcz4t3glv
  ./target/release/tally --produce-decrypt-shares $ALICE_SECRET_KEY $BOB_SECRET_KEY $CHARLIE_SECRET_KEY --encrypted-tally $ENCRYPTED_TALLY
 ```
 
-#### Internal use: Decrypt tally `(secret_keys, encrypted_tally)-> TallyResultPlaintext`
+#### Internal use: Decrypt tally 
+#### `decrypt_tally_from_keys(secret_keys, encrypted_tally)-> tallyResultPlaintext`
 
 ```bash 
 ENCRYPTED_TALLY='rs9sAB/n6vaQh5NMH+UunES87fdcpA3QDll/AV8p1x8IAAAAAAAAAMZEhl0tYixbZzHhAXWklbdJbvwiJvfYidowNZ1KzUs/NKi98HtPNN3gdl1T+ehhNhxLFQ/7fTJSVjAJycNWhkDGRIZdLWIsW2cx4QF1pJW3SW78Iib32InaMDWdSs1LP0pyBYKkVTpExb78GZrf/8csqWtNQNshoLoHsa827gdF'
@@ -62,7 +65,8 @@ CHARLIE_SECRET_KEY='ristretto255_membersk1392k23gzgwv827hdfjg3g9es0depszcz4t3glv
  ./target/release/tally --decrypt-tally-from-keys $ALICE_SECRET_KEY $BOB_SECRET_KEY $CHARLIE_SECRET_KEY --encrypted-tally $ENCRYPTED_TALLY
 ```
 
-#### Internal use: Show public keys of private keys `(secret_keys)-> PubKeys`
+#### Internal use: Show public keys of private keys 
+#### `show_public_keys(secret_keys)-> PubKeys`
 
 ```bash
 ALICE_SECRET_KEY='ristretto255_membersk1e6445v082djlnky70t38ac5c9f4xxldhkyqst97dcwsqthzvvcyqh3f78t'

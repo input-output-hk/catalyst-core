@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["measure_and_log_sync_time","measure_fragment_propagation_speed","measure_how_many_nodes_are_running","print_error_for_failed_leaders"]};

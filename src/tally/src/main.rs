@@ -45,6 +45,7 @@ pub struct Args {
         short,
         long,
         requires = "encrypted_tally",
+        requires = "public_keys",
         value_delimiter = ' ',
         num_args = 1..
     )]

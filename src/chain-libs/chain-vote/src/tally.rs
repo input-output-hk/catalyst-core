@@ -132,7 +132,7 @@ impl EncryptedTally {
         general_purpose::STANDARD.encode(bytes)
     }
 
-    /// Generate encrypted tally type from base64 representation
+    /// Generate `EncryptedTally` type from base64 representation
     /// # Errors
     /// - `Base64DecodeError`
     pub fn from_base_64(encrypted_tally_b64: String) -> Result<Self, Box<dyn std::error::Error>> {

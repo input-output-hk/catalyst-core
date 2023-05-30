@@ -1,10 +1,6 @@
 ### Community Tally verification tool
 
-This tool allows the community to cross reference vote results by utilising:
-
-1. `Public Keys of committee members`
-2. `Encrypted Tally` 
-3. `Decrypt Shares`
+This tool allows the community to cross reference and validate vote results.
 
 Example usage:
 

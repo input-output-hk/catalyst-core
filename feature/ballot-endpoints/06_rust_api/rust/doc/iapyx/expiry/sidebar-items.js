@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["default_block_date_generator","from_block_or_shift"]};

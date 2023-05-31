@@ -126,6 +126,19 @@
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
 <a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::{
@@ -201,9 +214,7 @@
             voteplans.push(VotePlan {
                 chain_proposal_index: row.try_get(<span class="string">&quot;bb_proposal_index&quot;</span>)<span class="question-mark">?</span>,
                 group: VoterGroupId(row.try_get(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?</span>),
-                ballot_type: row
-                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;String&gt;&gt;(<span class="string">&quot;category&quot;</span>)<span class="question-mark">?
-                    </span>.map(BallotType),
+                ballot_type: BallotType(row.try_get(<span class="string">&quot;category&quot;</span>)<span class="question-mark">?</span>),
                 chain_voteplan_id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
                 encryption_key: row.try_get(<span class="string">&quot;encryption_key&quot;</span>)<span class="question-mark">?</span>,
             })
@@ -211,7 +222,7 @@
 
         <span class="prelude-val">Ok</span>(Ballot {
             choices: ObjectiveChoices(choices),
-            voteplans: GroupVotePlans(<span class="macro">vec!</span>[]),
+            voteplans: GroupVotePlans(voteplans),
         })
     }
 }
@@ -248,7 +259,22 @@
         <span class="macro">assert_eq!</span>(
             Ballot {
                 choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
-                voteplans: GroupVotePlans(<span class="macro">vec!</span>[]),
+                voteplans: GroupVotePlans(<span class="macro">vec!</span>[
+                    VotePlan {
+                        chain_proposal_index: <span class="number">10</span>,
+                        group: VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string()),
+                        ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
+                        chain_voteplan_id: <span class="string">&quot;1&quot;</span>.to_string(),
+                        encryption_key: <span class="prelude-val">None</span>,
+                    },
+                    VotePlan {
+                        chain_proposal_index: <span class="number">12</span>,
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
+                        ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
+                        chain_voteplan_id: <span class="string">&quot;2&quot;</span>.to_string(),
+                        encryption_key: <span class="prelude-val">None</span>,
+                    }
+                ]),
             },
             ballot,
         );

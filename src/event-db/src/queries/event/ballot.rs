@@ -73,9 +73,7 @@ impl BallotQueries for EventDB {
             voteplans.push(VotePlan {
                 chain_proposal_index: row.try_get("bb_proposal_index")?,
                 group: VoterGroupId(row.try_get("group_id")?),
-                ballot_type: row
-                    .try_get::<_, Option<String>>("category")?
-                    .map(BallotType),
+                ballot_type: BallotType(row.try_get("category")?),
                 chain_voteplan_id: row.try_get("id")?,
                 encryption_key: row.try_get("encryption_key")?,
             })
@@ -83,7 +81,7 @@ impl BallotQueries for EventDB {
 
         Ok(Ballot {
             choices: ObjectiveChoices(choices),
-            voteplans: GroupVotePlans(vec![]),
+            voteplans: GroupVotePlans(voteplans),
         })
     }
 }
@@ -120,7 +118,22 @@ mod tests {
         assert_eq!(
             Ballot {
                 choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
-                voteplans: GroupVotePlans(vec![]),
+                voteplans: GroupVotePlans(vec![
+                    VotePlan {
+                        chain_proposal_index: 10,
+                        group: VoterGroupId("direct".to_string()),
+                        ballot_type: BallotType("public".to_string()),
+                        chain_voteplan_id: "1".to_string(),
+                        encryption_key: None,
+                    },
+                    VotePlan {
+                        chain_proposal_index: 12,
+                        group: VoterGroupId("rep".to_string()),
+                        ballot_type: BallotType("public".to_string()),
+                        chain_voteplan_id: "2".to_string(),
+                        encryption_key: None,
+                    }
+                ]),
             },
             ballot,
         );

@@ -55,7 +55,9 @@ impl ProposalQueries for EventDB {
         objective: ObjectiveId,
         proposal: ProposalId,
     ) -> Result<Proposal, Error> {
-        let conn = self.pool.get().await?;
+        let conn: bb8::PooledConnection<
+            bb8_postgres::PostgresConnectionManager<tokio_postgres::NoTls>,
+        > = self.pool.get().await?;
 
         let rows = conn
             .query(Self::PROPOSAL_QUERY, &[&event.0, &objective.0, &proposal.0])
@@ -141,10 +143,9 @@ impl ProposalQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
-
     use super::*;
     use crate::establish_connection;
+    use serde_json::json;
 
     #[tokio::test]
     async fn get_proposal_test() {

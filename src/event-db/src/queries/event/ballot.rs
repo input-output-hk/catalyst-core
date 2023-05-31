@@ -1,10 +1,13 @@
 use crate::{
     error::Error,
-    types::event::{
-        ballot::{Ballot, GroupVotePlans, ObjectiveChoices},
-        objective::ObjectiveId,
-        proposal::ProposalId,
-        EventId,
+    types::{
+        event::{
+            ballot::{Ballot, BallotType, GroupVotePlans, ObjectiveChoices, VotePlan},
+            objective::ObjectiveId,
+            proposal::ProposalId,
+            EventId,
+        },
+        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -21,11 +24,19 @@ pub trait BallotQueries: Sync + Send + 'static {
 }
 
 impl EventDB {
-    const BALLOT_BY_EVENT_OBJECTIVE_PROPOSAL_QUERY: &'static str = "SELECT *
+    const BALLOT_VOTE_OPTIONS_QUERY: &'static str = "SELECT vote_options.objective
         FROM proposal
-        LEFT INNER JOIN proposal ON proposal.objective = objective.row_id
-        LEFT INNER JOIN objective.event ON objective.event = event.row_id
-        WHERE event.row_id = $1 AND objective.row_id = $2 AND proposal.row_id = $2;";
+        INNER JOIN objective ON proposal.objective = objective.row_id
+        INNER JOIN vote_options ON objective.vote_options = vote_options.id
+        WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3;";
+
+    const BALLOT_VOTE_PLANS_QUERY: &'static str = "SELECT proposal_voteplan.bb_proposal_index,
+        voteplan.id, voteplan.category, voteplan.encryption_key, voteplan.group_id
+        FROM proposal_voteplan
+        INNER JOIN proposal ON proposal_voteplan.proposal_id = proposal.row_id
+        INNER JOIN voteplan ON proposal_voteplan.voteplan_id = voteplan.row_id
+        INNER JOIN objective ON proposal.objective = objective.row_id
+        WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3;";
 }
 
 #[async_trait]
@@ -36,8 +47,42 @@ impl BallotQueries for EventDB {
         objective: ObjectiveId,
         proposal: ProposalId,
     ) -> Result<Ballot, Error> {
+        let conn: bb8::PooledConnection<
+            bb8_postgres::PostgresConnectionManager<tokio_postgres::NoTls>,
+        > = self.pool.get().await?;
+
+        let rows = conn
+            .query(
+                Self::BALLOT_VOTE_OPTIONS_QUERY,
+                &[&event.0, &objective.0, &proposal.0],
+            )
+            .await?;
+        let row = rows
+            .get(0)
+            .ok_or_else(|| Error::NotFound("cat not find ballot value".to_string()))?;
+        let choices = row.try_get("objective")?;
+
+        let rows = conn
+            .query(
+                Self::BALLOT_VOTE_PLANS_QUERY,
+                &[&event.0, &objective.0, &proposal.0],
+            )
+            .await?;
+        let mut voteplans = Vec::new();
+        for row in rows {
+            voteplans.push(VotePlan {
+                chain_proposal_index: row.try_get("bb_proposal_index")?,
+                group: VoterGroupId(row.try_get("group_id")?),
+                ballot_type: row
+                    .try_get::<_, Option<String>>("category")?
+                    .map(BallotType),
+                chain_voteplan_id: row.try_get("id")?,
+                encryption_key: row.try_get("encryption_key")?,
+            })
+        }
+
         Ok(Ballot {
-            choices: ObjectiveChoices(vec![]),
+            choices: ObjectiveChoices(choices),
             voteplans: GroupVotePlans(vec![]),
         })
     }
@@ -59,4 +104,25 @@ impl BallotQueries for EventDB {
 /// ```
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+    use crate::establish_connection;
+
+    #[tokio::test]
+    async fn get_ballot_test() {
+        let event_db = establish_connection(None).await.unwrap();
+
+        let ballot = event_db
+            .get_ballot(EventId(1), ObjectiveId(1), ProposalId(1))
+            .await
+            .unwrap();
+
+        assert_eq!(
+            Ballot {
+                choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
+                voteplans: GroupVotePlans(vec![]),
+            },
+            ballot,
+        );
+    }
+}

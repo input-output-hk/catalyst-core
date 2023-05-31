@@ -2,7 +2,7 @@ use crate::types::registration::VoterGroupId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct ObjectiveId(pub i32);
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]

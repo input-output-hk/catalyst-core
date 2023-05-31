@@ -60,13 +60,82 @@
 <a href="#60" id="60">60</a>
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
-    types::event::{
-        ballot::{Ballot, GroupVotePlans, ObjectiveChoices},
-        objective::ObjectiveId,
-        proposal::ProposalId,
-        EventId,
+    types::{
+        event::{
+            ballot::{Ballot, BallotType, GroupVotePlans, ObjectiveChoices, VotePlan},
+            objective::ObjectiveId,
+            proposal::ProposalId,
+            EventId,
+        },
+        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -83,11 +152,19 @@
 }
 
 <span class="kw">impl </span>EventDB {
-    <span class="kw">const </span>BALLOT_BY_EVENT_OBJECTIVE_PROPOSAL_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT *
+    <span class="kw">const </span>BALLOT_VOTE_OPTIONS_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT vote_options.objective
         FROM proposal
-        LEFT INNER JOIN proposal ON proposal.objective = objective.row_id
-        LEFT INNER JOIN objective.event ON objective.event = event.row_id
-        WHERE event.row_id = $1 AND objective.row_id = $2 AND proposal.row_id = $2;&quot;</span>;
+        INNER JOIN objective ON proposal.objective = objective.row_id
+        INNER JOIN vote_options ON objective.vote_options = vote_options.id
+        WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3;&quot;</span>;
+
+    <span class="kw">const </span>BALLOT_VOTE_PLANS_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT proposal_voteplan.bb_proposal_index,
+        voteplan.id, voteplan.category, voteplan.encryption_key, voteplan.group_id
+        FROM proposal_voteplan
+        INNER JOIN proposal ON proposal_voteplan.proposal_id = proposal.row_id
+        INNER JOIN voteplan ON proposal_voteplan.voteplan_id = voteplan.row_id
+        INNER JOIN objective ON proposal.objective = objective.row_id
+        WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3;&quot;</span>;
 }
 
 <span class="attr">#[async_trait]
@@ -98,8 +175,42 @@
         objective: ObjectiveId,
         proposal: ProposalId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Ballot, Error&gt; {
+        <span class="kw">let </span>conn: bb8::PooledConnection&lt;
+            bb8_postgres::PostgresConnectionManager&lt;tokio_postgres::NoTls&gt;,
+        &gt; = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
+
+        <span class="kw">let </span>rows = conn
+            .query(
+                <span class="self">Self</span>::BALLOT_VOTE_OPTIONS_QUERY,
+                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>objective.<span class="number">0</span>, <span class="kw-2">&amp;</span>proposal.<span class="number">0</span>],
+            )
+            .<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>row = rows
+            .get(<span class="number">0</span>)
+            .ok_or_else(|| Error::NotFound(<span class="string">&quot;cat not find ballot value&quot;</span>.to_string()))<span class="question-mark">?</span>;
+        <span class="kw">let </span>choices = row.try_get(<span class="string">&quot;objective&quot;</span>)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>rows = conn
+            .query(
+                <span class="self">Self</span>::BALLOT_VOTE_PLANS_QUERY,
+                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>objective.<span class="number">0</span>, <span class="kw-2">&amp;</span>proposal.<span class="number">0</span>],
+            )
+            .<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>voteplans = Vec::new();
+        <span class="kw">for </span>row <span class="kw">in </span>rows {
+            voteplans.push(VotePlan {
+                chain_proposal_index: row.try_get(<span class="string">&quot;bb_proposal_index&quot;</span>)<span class="question-mark">?</span>,
+                group: VoterGroupId(row.try_get(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?</span>),
+                ballot_type: row
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;String&gt;&gt;(<span class="string">&quot;category&quot;</span>)<span class="question-mark">?
+                    </span>.map(BallotType),
+                chain_voteplan_id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
+                encryption_key: row.try_get(<span class="string">&quot;encryption_key&quot;</span>)<span class="question-mark">?</span>,
+            })
+        }
+
         <span class="prelude-val">Ok</span>(Ballot {
-            choices: ObjectiveChoices(<span class="macro">vec!</span>[]),
+            choices: ObjectiveChoices(choices),
             voteplans: GroupVotePlans(<span class="macro">vec!</span>[]),
         })
     }
@@ -121,6 +232,27 @@
 /// ```
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 </span><span class="attr">#[cfg(test)]
-</span><span class="kw">mod </span>tests {}
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
+
+    <span class="attr">#[tokio::test]
+    </span><span class="kw">async fn </span>get_ballot_test() {
+        <span class="kw">let </span>event_db = establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
+
+        <span class="kw">let </span>ballot = event_db
+            .get_ballot(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">1</span>))
+            .<span class="kw">await
+            </span>.unwrap();
+
+        <span class="macro">assert_eq!</span>(
+            Ballot {
+                choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
+                voteplans: GroupVotePlans(<span class="macro">vec!</span>[]),
+            },
+            ballot,
+        );
+    }
+}
 </code></pre></div>
 </section></main></body></html>

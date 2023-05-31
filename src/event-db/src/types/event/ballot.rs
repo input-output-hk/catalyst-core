@@ -35,16 +35,10 @@ pub struct ProposalBallot {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ProposalBallots(pub Vec<ProposalBallot>);
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveBallots {
     pub objective_id: ObjectiveId,
-    pub ballots: ProposalBallots,
+    pub ballots: Vec<ProposalBallot>,
 }
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ObjectivesBallots(pub Vec<ObjectiveBallots>);
 
 #[cfg(test)]
 mod tests {
@@ -144,7 +138,7 @@ mod tests {
     fn objective_ballots_json_test() {
         let objective_ballot = ObjectiveBallots {
             objective_id: ObjectiveId(1),
-            ballots: ProposalBallots(vec![ProposalBallot {
+            ballots: vec![ProposalBallot {
                 proposal_id: ProposalId(1),
                 ballot: Ballot {
                     choices: ObjectiveChoices(vec![
@@ -160,7 +154,7 @@ mod tests {
                         encryption_key: Some("encryption_key 1".to_string()),
                     }]),
                 },
-            }]),
+            }],
         };
 
         let json = serde_json::to_value(&objective_ballot).unwrap();

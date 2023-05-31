@@ -2,7 +2,9 @@ use crate::{
     error::Error,
     types::{
         event::{
-            ballot::{Ballot, BallotType, GroupVotePlans, ObjectiveChoices, VotePlan},
+            ballot::{
+                Ballot, BallotType, GroupVotePlans, ObjectiveChoices, ProposalBallot, VotePlan,
+            },
             objective::ObjectiveId,
             proposal::ProposalId,
             EventId,
@@ -21,6 +23,11 @@ pub trait BallotQueries: Sync + Send + 'static {
         objective: ObjectiveId,
         proposal: ProposalId,
     ) -> Result<Ballot, Error>;
+    async fn get_objective_ballots(
+        &self,
+        event: EventId,
+        objective: ObjectiveId,
+    ) -> Result<Vec<ProposalBallot>, Error>;
 }
 
 impl EventDB {
@@ -37,6 +44,13 @@ impl EventDB {
         INNER JOIN voteplan ON proposal_voteplan.voteplan_id = voteplan.row_id
         INNER JOIN objective ON proposal.objective = objective.row_id
         WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3;";
+
+    const BALLOTS_VOTE_OPTIONS_PER_OBJECTIVE_QUERY: &'static str =
+        "SELECT vote_options.objective, proposal.id
+        FROM proposal
+        INNER JOIN objective ON proposal.objective = objective.row_id
+        INNER JOIN vote_options ON objective.vote_options = vote_options.id
+        WHERE objective.event = $1 AND objective.id = $2;";
 }
 
 #[async_trait]
@@ -47,9 +61,7 @@ impl BallotQueries for EventDB {
         objective: ObjectiveId,
         proposal: ProposalId,
     ) -> Result<Ballot, Error> {
-        let conn: bb8::PooledConnection<
-            bb8_postgres::PostgresConnectionManager<tokio_postgres::NoTls>,
-        > = self.pool.get().await?;
+        let conn = self.pool.get().await?;
 
         let rows = conn
             .query(
@@ -83,6 +95,53 @@ impl BallotQueries for EventDB {
             choices: ObjectiveChoices(choices),
             voteplans: GroupVotePlans(voteplans),
         })
+    }
+
+    async fn get_objective_ballots(
+        &self,
+        event: EventId,
+        objective: ObjectiveId,
+    ) -> Result<Vec<ProposalBallot>, Error> {
+        let conn = self.pool.get().await?;
+
+        let rows = conn
+            .query(
+                Self::BALLOTS_VOTE_OPTIONS_PER_OBJECTIVE_QUERY,
+                &[&event.0, &objective.0],
+            )
+            .await?;
+
+        let mut ballots = Vec::new();
+        for row in rows {
+            let choices = row.try_get("objective")?;
+            let proposal_id = ProposalId(row.try_get("id")?);
+
+            let rows = conn
+                .query(
+                    Self::BALLOT_VOTE_PLANS_QUERY,
+                    &[&event.0, &objective.0, &proposal_id.0],
+                )
+                .await?;
+            let mut voteplans = Vec::new();
+            for row in rows {
+                voteplans.push(VotePlan {
+                    chain_proposal_index: row.try_get("bb_proposal_index")?,
+                    group: VoterGroupId(row.try_get("group_id")?),
+                    ballot_type: BallotType(row.try_get("category")?),
+                    chain_voteplan_id: row.try_get("id")?,
+                    encryption_key: row.try_get("encryption_key")?,
+                })
+            }
+
+            ballots.push(ProposalBallot {
+                proposal_id,
+                ballot: Ballot {
+                    choices: ObjectiveChoices(choices),
+                    voteplans: GroupVotePlans(voteplans),
+                },
+            })
+        }
+        Ok(ballots)
     }
 }
 
@@ -136,6 +195,73 @@ mod tests {
                 ]),
             },
             ballot,
+        );
+    }
+
+    #[tokio::test]
+    async fn get_objective_ballots_test() {
+        let event_db = establish_connection(None).await.unwrap();
+
+        let ballots = event_db
+            .get_objective_ballots(EventId(1), ObjectiveId(1))
+            .await
+            .unwrap();
+
+        assert_eq!(
+            vec![
+                ProposalBallot {
+                    proposal_id: ProposalId(1),
+                    ballot: Ballot {
+                        choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
+                        voteplans: GroupVotePlans(vec![
+                            VotePlan {
+                                chain_proposal_index: 10,
+                                group: VoterGroupId("direct".to_string()),
+                                ballot_type: BallotType("public".to_string()),
+                                chain_voteplan_id: "1".to_string(),
+                                encryption_key: None,
+                            },
+                            VotePlan {
+                                chain_proposal_index: 12,
+                                group: VoterGroupId("rep".to_string()),
+                                ballot_type: BallotType("public".to_string()),
+                                chain_voteplan_id: "2".to_string(),
+                                encryption_key: None,
+                            }
+                        ]),
+                    },
+                },
+                ProposalBallot {
+                    proposal_id: ProposalId(2),
+                    ballot: Ballot {
+                        choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
+                        voteplans: GroupVotePlans(vec![
+                            VotePlan {
+                                chain_proposal_index: 11,
+                                group: VoterGroupId("direct".to_string()),
+                                ballot_type: BallotType("public".to_string()),
+                                chain_voteplan_id: "1".to_string(),
+                                encryption_key: None,
+                            },
+                            VotePlan {
+                                chain_proposal_index: 13,
+                                group: VoterGroupId("rep".to_string()),
+                                ballot_type: BallotType("public".to_string()),
+                                chain_voteplan_id: "2".to_string(),
+                                encryption_key: None,
+                            }
+                        ]),
+                    },
+                },
+                ProposalBallot {
+                    proposal_id: ProposalId(3),
+                    ballot: Ballot {
+                        choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
+                        voteplans: GroupVotePlans(vec![]),
+                    },
+                }
+            ],
+            ballots,
         );
     }
 }

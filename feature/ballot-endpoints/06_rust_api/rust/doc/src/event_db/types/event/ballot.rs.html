@@ -191,12 +191,6 @@
 <a href="#191" id="191">191</a>
 <a href="#192" id="192">192</a>
 <a href="#193" id="193">193</a>
-<a href="#194" id="194">194</a>
-<a href="#195" id="195">195</a>
-<a href="#196" id="196">196</a>
-<a href="#197" id="197">197</a>
-<a href="#198" id="198">198</a>
-<a href="#199" id="199">199</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::registration::VoterGroupId;
 <span class="kw">use </span>serde::Serialize;
 
@@ -234,16 +228,10 @@
 }
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-</span><span class="kw">pub struct </span>ProposalBallots(<span class="kw">pub </span>Vec&lt;ProposalBallot&gt;);
-
-<span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ObjectiveBallots {
     <span class="kw">pub </span>objective_id: ObjectiveId,
-    <span class="kw">pub </span>ballots: ProposalBallots,
+    <span class="kw">pub </span>ballots: Vec&lt;ProposalBallot&gt;,
 }
-
-<span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-</span><span class="kw">pub struct </span>ObjectivesBallots(<span class="kw">pub </span>Vec&lt;ObjectiveBallots&gt;);
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
@@ -343,7 +331,7 @@
     </span><span class="kw">fn </span>objective_ballots_json_test() {
         <span class="kw">let </span>objective_ballot = ObjectiveBallots {
             objective_id: ObjectiveId(<span class="number">1</span>),
-            ballots: ProposalBallots(<span class="macro">vec!</span>[ProposalBallot {
+            ballots: <span class="macro">vec!</span>[ProposalBallot {
                 proposal_id: ProposalId(<span class="number">1</span>),
                 ballot: Ballot {
                     choices: ObjectiveChoices(<span class="macro">vec!</span>[
@@ -359,7 +347,7 @@
                         encryption_key: <span class="prelude-val">Some</span>(<span class="string">&quot;encryption_key 1&quot;</span>.to_string()),
                     }]),
                 },
-            }]),
+            }],
         };
 
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>objective_ballot).unwrap();

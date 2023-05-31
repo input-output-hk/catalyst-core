@@ -179,10 +179,8 @@
 <a href="#179" id="179">179</a>
 <a href="#180" id="180">180</a>
 <a href="#181" id="181">181</a>
-<a href="#182" id="182">182</a>
-</pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
-
-<span class="kw">use </span><span class="kw">super</span>::event::{objective::ObjectiveSummary, proposal::ProposalSummary, EventSummary};
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::event::{objective::ObjectiveSummary, proposal::ProposalSummary, EventSummary};
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 
 <span class="attr">#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]

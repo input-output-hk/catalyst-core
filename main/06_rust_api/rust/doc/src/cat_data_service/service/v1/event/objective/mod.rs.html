@@ -229,6 +229,9 @@
 <a href="#229" id="229">229</a>
 <a href="#230" id="230">230</a>
 <a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -295,9 +298,12 @@
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>event_db::types::event::objective::{
-        ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData, ObjectiveType,
-        RewardDefintion, VoterGroup,
+    <span class="kw">use </span>event_db::types::{
+        event::objective::{
+            ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData,
+            ObjectiveType, RewardDefintion, VoterGroup,
+        },
+        registration::VoterGroupId,
     };
     <span class="kw">use </span>serde_json::json;
     <span class="kw">use </span>tower::ServiceExt;
@@ -330,11 +336,11 @@
                     details: ObjectiveDetails {
                         groups: <span class="macro">vec!</span>[
                             VoterGroup {
-                                group: <span class="prelude-val">Some</span>(<span class="string">&quot;direct&quot;</span>.to_string()),
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
                                 voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
                             },
                             VoterGroup {
-                                group: <span class="prelude-val">Some</span>(<span class="string">&quot;rep&quot;</span>.to_string()),
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                                 voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 2&quot;</span>.to_string()),
                             }
                         ],
@@ -393,11 +399,11 @@
                 details: ObjectiveDetails {
                     groups: <span class="macro">vec!</span>[
                         VoterGroup {
-                            group: <span class="prelude-val">Some</span>(<span class="string">&quot;direct&quot;</span>.to_string()),
+                            group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
                             voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
                         },
                         VoterGroup {
-                            group: <span class="prelude-val">Some</span>(<span class="string">&quot;rep&quot;</span>.to_string()),
+                            group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                             voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 2&quot;</span>.to_string()),
                         }
                     ],

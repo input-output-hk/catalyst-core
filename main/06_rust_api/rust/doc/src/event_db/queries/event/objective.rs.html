@@ -259,14 +259,20 @@
 <a href="#259" id="259">259</a>
 <a href="#260" id="260">260</a>
 <a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
-    types::event::{
-        objective::{
-            Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData,
-            ObjectiveType, RewardDefintion, VoterGroup,
+    types::{
+        event::{
+            objective::{
+                Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
+                ObjectiveSupplementalData, ObjectiveType, RewardDefintion, VoterGroup,
+            },
+            EventId,
         },
-        EventId,
+        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -336,7 +342,7 @@
             <span class="kw">let </span><span class="kw-2">mut </span>groups = Vec::new();
             <span class="kw">let </span>rows = conn.query(<span class="self">Self</span>::VOTING_GROPUS_QEURY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>row_id]).<span class="kw">await</span><span class="question-mark">?</span>;
             <span class="kw">for </span>row <span class="kw">in </span>rows {
-                <span class="kw">let </span>group: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;group&quot;</span>)<span class="question-mark">?</span>;
+                <span class="kw">let </span>group = row.try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;String&gt;&gt;(<span class="string">&quot;group&quot;</span>)<span class="question-mark">?</span>.map(VoterGroupId);
                 <span class="kw">let </span>voting_token: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;voting_token&quot;</span>)<span class="question-mark">?</span>;
                 <span class="kw">match </span>(group, voting_token) {
                     (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; {}
@@ -407,11 +413,11 @@
                     details: ObjectiveDetails {
                         groups: <span class="macro">vec!</span>[
                             VoterGroup {
-                                group: <span class="prelude-val">Some</span>(<span class="string">&quot;direct&quot;</span>.to_string()),
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
                                 voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
                             },
                             VoterGroup {
-                                group: <span class="prelude-val">Some</span>(<span class="string">&quot;rep&quot;</span>.to_string()),
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                                 voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 2&quot;</span>.to_string()),
                             }
                         ],
@@ -466,11 +472,11 @@
                 details: ObjectiveDetails {
                     groups: <span class="macro">vec!</span>[
                         VoterGroup {
-                            group: <span class="prelude-val">Some</span>(<span class="string">&quot;direct&quot;</span>.to_string()),
+                            group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
                             voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
                         },
                         VoterGroup {
-                            group: <span class="prelude-val">Some</span>(<span class="string">&quot;rep&quot;</span>.to_string()),
+                            group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                             voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 2&quot;</span>.to_string()),
                         }
                     ],

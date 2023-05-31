@@ -188,10 +188,12 @@
 <a href="#188" id="188">188</a>
 <a href="#189" id="189">189</a>
 <a href="#190" id="190">190</a>
-</pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Serialize};
+<a href="#191" id="191">191</a>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::registration::VoterGroupId;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>serde_json::Value;
 
-<span class="attr">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+<span class="attr">#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 </span><span class="kw">pub struct </span>ObjectiveId(<span class="kw">pub </span>i32);
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -215,10 +217,10 @@
     <span class="kw">pub </span>value: i64,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq, Deserialize)]
+<span class="attr">#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>VoterGroup {
     <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>group: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    </span><span class="kw">pub </span>group: <span class="prelude-ty">Option</span>&lt;VoterGroupId&gt;,
     <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>voting_token: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
@@ -317,7 +319,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>voter_group_json_test() {
         <span class="kw">let </span>voter_group = VoterGroup {
-            group: <span class="prelude-val">Some</span>(<span class="string">&quot;rep&quot;</span>.to_string()),
+            group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
             voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
         };
 
@@ -337,7 +339,7 @@
     </span><span class="kw">fn </span>objective_details_json_test() {
         <span class="kw">let </span>objective_details = ObjectiveDetails {
             groups: <span class="macro">vec!</span>[VoterGroup {
-                group: <span class="prelude-val">Some</span>(<span class="string">&quot;rep&quot;</span>.to_string()),
+                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                 voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
             }],
             reward: <span class="prelude-val">Some</span>(RewardDefintion {

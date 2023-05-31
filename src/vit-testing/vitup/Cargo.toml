@@ -85,9 +85,5 @@ quickcheck_macros = "0.9"
 assert_fs ="1.0"
 assert_cmd = "2"
 
-
-
-
-
 [features]
 soak = []

@@ -53,6 +53,7 @@ psql -U catalyst-event-dev -d CatalystEventDev -f test_data/08_proposal_table.sq
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/09_proposal_review_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/10_review_rating_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/11_objective_review_metric_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/12_proposal_voteplan_table.sql ${@}
 '''
 
 # Install historic data for past events

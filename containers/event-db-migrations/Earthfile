@@ -1,7 +1,7 @@
 VERSION 0.7
 
 build:
-    FROM ../../+builder
+    FROM ../../+rust-toolchain
 
     # Build refinery
     RUN cargo install refinery_cli --version 0.8.7 --root .

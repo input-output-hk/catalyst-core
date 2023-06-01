@@ -419,7 +419,7 @@
         http::{Request, StatusCode},
     };
     <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-    <span class="kw">use </span>event_db::types::registration::{Delegation, VoterInfo};
+    <span class="kw">use </span>event_db::types::registration::{Delegation, VoterGroupId, VoterInfo};
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -439,7 +439,7 @@
             serde_json::to_string(<span class="kw-2">&amp;</span>Voter {
                 voter_info: VoterInfo {
                     voting_power: <span class="number">250</span>,
-                    voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                    voting_group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                     delegations_power: <span class="number">250</span>,
                     delegations_count: <span class="number">2</span>,
                     voting_power_saturation: <span class="number">0.625</span>,
@@ -478,7 +478,7 @@
             serde_json::to_string(<span class="kw-2">&amp;</span>Voter {
                 voter_info: VoterInfo {
                     voting_power: <span class="number">250</span>,
-                    voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                    voting_group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                     delegations_power: <span class="number">250</span>,
                     delegations_count: <span class="number">2</span>,
                     voting_power_saturation: <span class="number">0.625</span>,
@@ -541,13 +541,13 @@
                 delegations: <span class="macro">vec!</span>[
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">140
                     </span>},
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">100
                     </span>}
@@ -589,13 +589,13 @@
                 delegations: <span class="macro">vec!</span>[
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">140
                     </span>},
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">100
                     </span>}

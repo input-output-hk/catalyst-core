@@ -274,6 +274,7 @@
 <a href="#274" id="274">274</a>
 <a href="#275" id="275">275</a>
 <a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
@@ -331,7 +332,9 @@
         objective: ObjectiveId,
         proposal: ProposalId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Proposal, Error&gt; {
-        <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>conn: bb8::PooledConnection&lt;
+            bb8_postgres::PostgresConnectionManager&lt;tokio_postgres::NoTls&gt;,
+        &gt; = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span>rows = conn
             .query(<span class="self">Self</span>::PROPOSAL_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>objective.<span class="number">0</span>, <span class="kw-2">&amp;</span>proposal.<span class="number">0</span>])
@@ -417,10 +420,9 @@
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span>serde_json::json;
-
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
+    <span class="kw">use </span>serde_json::json;
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>get_proposal_test() {

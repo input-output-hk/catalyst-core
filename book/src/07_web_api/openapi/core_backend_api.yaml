@@ -1100,7 +1100,7 @@ components:
             * True - **MUST** include a note.
         map:
           type: array
-          item: string
+          item: object
           description: |-
             Optional sequential list of mapped named values for rating scores.
             * If not present, the rating score is numeric.

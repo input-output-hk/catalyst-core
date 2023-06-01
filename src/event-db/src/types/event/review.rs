@@ -1,18 +1,20 @@
 use serde::Serialize;
+use serde_json::Value;
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct ReviewType {
     pub id: i32,
     pub name: String,
     pub description: Option<String>,
     pub min: i32,
     pub max: i32,
-    pub map: Vec<String>,
+    pub map: Vec<Value>,
     pub note: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub group: Option<String>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Rating {
     pub review_type: i32,
     pub score: i32,
@@ -20,7 +22,7 @@ pub struct Rating {
     pub note: Option<String>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct AdvisorReview {
     pub assessor: String,
     pub ratings: Vec<Rating>,
@@ -40,7 +42,7 @@ mod tests {
             min: 1,
             max: 2,
             note: Some(true),
-            map: vec!["map".to_string()],
+            map: vec![json!({})],
             group: Some("group".to_string()),
         };
         let json = serde_json::to_value(&review_type).unwrap();
@@ -54,7 +56,7 @@ mod tests {
                 "min": 1,
                 "max": 2,
                 "note": true,
-                "map": ["map"],
+                "map": [{}],
                 "group": "group",
             })
         )

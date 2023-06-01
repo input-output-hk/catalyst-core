@@ -1,3 +1,4 @@
+use super::LimitOffset;
 use crate::{
     service::{handle_result, Error},
     state::State,
@@ -10,12 +11,12 @@ use axum::{
 use event_db::types::event::{Event, EventId, EventSummary};
 use std::sync::Arc;
 
-use super::LimitOffset;
-
+mod ballots;
 mod objective;
 
 pub fn event(state: Arc<State>) -> Router {
     let objective = objective::objective(state.clone());
+    let ballots = ballots::ballots(state.clone());
 
     Router::new()
         .nest(
@@ -28,7 +29,8 @@ pub fn event(state: Arc<State>) -> Router {
                         move |path| async { handle_result(event_exec(path, state).await).await }
                     }),
                 )
-                .merge(objective),
+                .merge(objective)
+                .merge(ballots),
         )
         .route(
             "/events",
@@ -61,7 +63,15 @@ async fn events_exec(
 }
 
 /// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
@@ -77,8 +87,8 @@ mod tests {
     };
     use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
     use event_db::types::event::{
-        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VoterGroup,
-        VotingPowerAlgorithm, VotingPowerSettings,
+        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VotingPowerAlgorithm,
+        VotingPowerSettings,
     };
     use rust_decimal::Decimal;
     use tower::ServiceExt;
@@ -230,16 +240,6 @@ mod tests {
                             name: "goal 4".to_string(),
                         }
                     ],
-                    groups: vec![
-                        VoterGroup {
-                            id: "rep".to_string(),
-                            voting_token: "rep token".to_string()
-                        },
-                        VoterGroup {
-                            id: "direct".to_string(),
-                            voting_token: "direct token".to_string()
-                        }
-                    ]
                 },
             },)
             .unwrap()

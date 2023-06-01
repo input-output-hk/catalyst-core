@@ -34,8 +34,6 @@ impl ValidVotePlanGenerator {
         let fund_template = template_generator.next_fund();
         self.parameters.current_fund.info.fund_goal = fund_template.goal;
 
-        let groups = self.parameters.current_fund.info.groups.clone();
-
         let vote_plans: Vec<Voteplan> = self
             .parameters
             .current_fund
@@ -98,7 +96,8 @@ impl ValidVotePlanGenerator {
         let mut mirrored_templates = HashMap::<ExternalProposalId, ProposalTemplate>::new();
 
         for (index, vote_plan) in vote_plans.iter().enumerate() {
-            let group = groups
+            let group = fund
+                .groups
                 .iter()
                 .find(|g| g.token_identifier == vote_plan.token_identifier)
                 .unwrap();
@@ -233,7 +232,6 @@ impl ValidVotePlanGenerator {
             vote_plans,
             reviews,
             goals,
-            groups,
         )
     }
 }

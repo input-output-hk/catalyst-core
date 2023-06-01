@@ -5,6 +5,7 @@ use crate::common::data::Snapshot as Data;
 use rand::rngs::OsRng;
 use rand::RngCore;
 pub use rest::VitRestRequestGenerator;
+use snapshot_lib::voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP};
 pub use voting_power::VotingPowerRequestGenerator;
 
 #[derive(Clone, Debug)]
@@ -40,10 +41,11 @@ impl SnapshotRandomizer {
     }
 
     pub fn random_group_id(&mut self) -> String {
-        let groups = self.snapshot.groups();
-        let random_idx = self.random_usize() % groups.len();
-
-        groups[random_idx].group_id.clone()
+        if self.random_usize() % 2 == 0 {
+            DEFAULT_DIRECT_VOTER_GROUP.to_string()
+        } else {
+            DEFAULT_REPRESENTATIVE_GROUP.to_string()
+        }
     }
 
     pub fn random_fund_id(&mut self) -> i32 {

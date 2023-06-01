@@ -68,7 +68,7 @@ class VotingService(uvicorn.Server):
                         await schedule.run()
                         break
                     except Exception as e:
-                        logger.error(f"schedule retry: {e}")
+                        logger.warning(f"X-> RESET: {e}")
                     # waits before retrying
                     await asyncio.sleep(SLEEP_TO_SCHEDULE_RETRY)
 

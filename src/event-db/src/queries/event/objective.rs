@@ -1,11 +1,14 @@
 use crate::{
     error::Error,
-    types::event::{
-        objective::{
-            GroupBallotType, Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
-            ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
+    types::{
+        event::{
+            objective::{
+                Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
+                ObjectiveSupplementalData, ObjectiveType, RewardDefintion, VoterGroup,
+            },
+            EventId,
         },
-        EventId,
+        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -23,14 +26,17 @@ pub trait ObjectiveQueries: Sync + Send + 'static {
 
 impl EventDB {
     const OBJECTIVES_QUERY: &'static str =
-        "SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
-        objective_category.name, objective_category.description as objective_category_description,
-        vote_options.objective as choices
+        "SELECT objective.row_id, objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
+        objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
-        LEFT JOIN vote_options on objective.vote_options = vote_options.id
         WHERE objective.event = $1
         LIMIT $2 OFFSET $3;";
+
+    const VOTING_GROPUS_QEURY: &'static str =
+        "SELECT voteplan.group_id as group, voteplan.token_id as voting_token
+        FROM voteplan 
+        WHERE objective_id = $1;";
 }
 
 #[async_trait]
@@ -52,6 +58,7 @@ impl ObjectiveQueries for EventDB {
 
         let mut objectives = Vec::new();
         for row in rows {
+            let row_id: i32 = row.try_get("row_id")?;
             let summary = ObjectiveSummary {
                 id: ObjectiveId(row.try_get("id")?),
                 objective_type: ObjectiveType {
@@ -67,51 +74,27 @@ impl ObjectiveQueries for EventDB {
                 (Some(currency), Some(value)) => Some(RewardDefintion { currency, value }),
                 _ => None,
             };
-            let extra = row.try_get::<_, Option<serde_json::Value>>("extra")?;
-            let url = extra
-                .as_ref()
-                .and_then(|extra| {
-                    extra
-                        .get("url")
-                        .map(|url| url.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            let sponsor = extra
-                .as_ref()
-                .and_then(|extra| {
-                    extra
-                        .get("sponsor")
-                        .map(|sponsor| sponsor.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            let video = extra
-                .and_then(|val| {
-                    val.get("video")
-                        .map(|video| video.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            let supplemental = match (sponsor, video) {
-                (Some(sponsor), Some(video)) => Some(ObjectiveSupplementalData { sponsor, video }),
-                _ => None,
-            };
+
+            let mut groups = Vec::new();
+            let rows = conn.query(Self::VOTING_GROPUS_QEURY, &[&row_id]).await?;
+            for row in rows {
+                let group = row.try_get::<_, Option<String>>("group")?.map(VoterGroupId);
+                let voting_token: Option<_> = row.try_get("voting_token")?;
+                match (group, voting_token) {
+                    (None, None) => {}
+                    (group, voting_token) => groups.push(VoterGroup {
+                        group,
+                        voting_token,
+                    }),
+                }
+            }
+
             let details = ObjectiveDetails {
+                groups,
                 reward,
-                url,
-                supplemental,
-                choices: row
-                    .try_get::<_, Option<Vec<_>>>("choices")?
-                    .unwrap_or_default(),
-                // TODO fix this, need to fill with the real data
-                ballot: vec![
-                    GroupBallotType {
-                        group: "rep".to_string(),
-                        ballot: "private".to_string(),
-                    },
-                    GroupBallotType {
-                        group: "direct".to_string(),
-                        ballot: "private".to_string(),
-                    },
-                ],
+                supplemental: row
+                    .try_get::<_, Option<serde_json::Value>>("extra")?
+                    .map(ObjectiveSupplementalData),
             };
             objectives.push(Objective { summary, details });
         }
@@ -121,7 +104,15 @@ impl ObjectiveQueries for EventDB {
 }
 
 /// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
@@ -129,8 +120,10 @@ impl ObjectiveQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
+    use serde_json::json;
+
     use super::*;
-    use crate::{establish_connection, types::event::objective::GroupBallotType};
+    use crate::establish_connection;
 
     #[tokio::test]
     async fn get_objectives_test() {
@@ -154,26 +147,27 @@ mod tests {
                         description: "description 1".to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: vec![
+                            VoterGroup {
+                                group: Some(VoterGroupId("direct".to_string())),
+                                voting_token: Some("voting token 1".to_string()),
+                            },
+                            VoterGroup {
+                                group: Some(VoterGroupId("rep".to_string())),
+                                voting_token: Some("voting token 2".to_string()),
+                            }
+                        ],
                         reward: Some(RewardDefintion {
                             currency: "ADA".to_string(),
                             value: 100
                         }),
-                        choices: vec!["yes".to_string(), "no".to_string()],
-                        ballot: vec![
-                            GroupBallotType {
-                                group: "rep".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                            GroupBallotType {
-                                group: "direct".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                        ],
-                        url: Some("objective 1 url".to_string()),
-                        supplemental: Some(ObjectiveSupplementalData {
-                            sponsor: "objective 1 sponsor".to_string(),
-                            video: "objective 1 video".to_string()
-                        }),
+                        supplemental: Some(ObjectiveSupplementalData(json!(
+                        {
+                            "url": "objective 1 url",
+                            "sponsor": "objective 1 sponsor",
+                            "video": "objective 1 video"
+                        }
+                        ))),
                     }
                 },
                 Objective {
@@ -187,19 +181,8 @@ mod tests {
                         description: "description 2".to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: Vec::new(),
                         reward: None,
-                        choices: vec![],
-                        ballot: vec![
-                            GroupBallotType {
-                                group: "rep".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                            GroupBallotType {
-                                group: "direct".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                        ],
-                        url: None,
                         supplemental: None,
                     }
                 }
@@ -223,26 +206,27 @@ mod tests {
                     description: "description 1".to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: vec![
+                        VoterGroup {
+                            group: Some(VoterGroupId("direct".to_string())),
+                            voting_token: Some("voting token 1".to_string()),
+                        },
+                        VoterGroup {
+                            group: Some(VoterGroupId("rep".to_string())),
+                            voting_token: Some("voting token 2".to_string()),
+                        }
+                    ],
                     reward: Some(RewardDefintion {
                         currency: "ADA".to_string(),
                         value: 100
                     }),
-                    choices: vec!["yes".to_string(), "no".to_string()],
-                    ballot: vec![
-                        GroupBallotType {
-                            group: "rep".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                        GroupBallotType {
-                            group: "direct".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                    ],
-                    url: Some("objective 1 url".to_string()),
-                    supplemental: Some(ObjectiveSupplementalData {
-                        sponsor: "objective 1 sponsor".to_string(),
-                        video: "objective 1 video".to_string()
-                    }),
+                    supplemental: Some(ObjectiveSupplementalData(json!(
+                    {
+                        "url": "objective 1 url",
+                        "sponsor": "objective 1 sponsor",
+                        "video": "objective 1 video"
+                    }
+                    ))),
                 }
             },]
         );
@@ -264,19 +248,8 @@ mod tests {
                     description: "description 2".to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: Vec::new(),
                     reward: None,
-                    choices: vec![],
-                    ballot: vec![
-                        GroupBallotType {
-                            group: "rep".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                        GroupBallotType {
-                            group: "direct".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                    ],
-                    url: None,
                     supplemental: None,
                 }
             }]

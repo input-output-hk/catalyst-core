@@ -10,15 +10,20 @@ use axum::{
 use event_db::types::event::{objective::Objective, EventId};
 use std::sync::Arc;
 
+mod ballots;
 mod proposal;
 mod review_type;
 
 pub fn objective(state: Arc<State>) -> Router {
     let proposal = proposal::proposal(state.clone());
     let review_type = review_type::review_type(state.clone());
+    let ballots = ballots::ballots(state.clone());
 
     Router::new()
-        .nest("/objective/:objective", proposal.merge(review_type))
+        .nest(
+            "/objective/:objective",
+            proposal.merge(review_type).merge(ballots),
+        )
         .route(
             "/objectives",
             get(move |path, query| async {
@@ -42,7 +47,15 @@ async fn objectives_exec(
 }
 
 /// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
@@ -56,10 +69,14 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::objective::{
-        GroupBallotType, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
-        ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
+    use event_db::types::{
+        event::objective::{
+            ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData,
+            ObjectiveType, RewardDefintion, VoterGroup,
+        },
+        registration::VoterGroupId,
     };
+    use serde_json::json;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -88,26 +105,27 @@ mod tests {
                         description: "description 1".to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: vec![
+                            VoterGroup {
+                                group: Some(VoterGroupId("direct".to_string())),
+                                voting_token: Some("voting token 1".to_string()),
+                            },
+                            VoterGroup {
+                                group: Some(VoterGroupId("rep".to_string())),
+                                voting_token: Some("voting token 2".to_string()),
+                            }
+                        ],
                         reward: Some(RewardDefintion {
                             currency: "ADA".to_string(),
                             value: 100
                         }),
-                        choices: vec!["yes".to_string(), "no".to_string()],
-                        ballot: vec![
-                            GroupBallotType {
-                                group: "rep".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                            GroupBallotType {
-                                group: "direct".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                        ],
-                        url: Some("objective 1 url".to_string()),
-                        supplemental: Some(ObjectiveSupplementalData {
-                            sponsor: "objective 1 sponsor".to_string(),
-                            video: "objective 1 video".to_string()
-                        }),
+                        supplemental: Some(ObjectiveSupplementalData(json!(
+                            {
+                                "url":"objective 1 url",
+                                "sponsor": "objective 1 sponsor",
+                                "video": "objective 1 video"
+                            }
+                        ))),
                     }
                 },
                 Objective {
@@ -121,19 +139,8 @@ mod tests {
                         description: "description 2".to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: Vec::new(),
                         reward: None,
-                        choices: vec![],
-                        ballot: vec![
-                            GroupBallotType {
-                                group: "rep".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                            GroupBallotType {
-                                group: "direct".to_string(),
-                                ballot: "private".to_string(),
-                            },
-                        ],
-                        url: None,
                         supplemental: None,
                     }
                 }
@@ -161,26 +168,27 @@ mod tests {
                     description: "description 1".to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: vec![
+                        VoterGroup {
+                            group: Some(VoterGroupId("direct".to_string())),
+                            voting_token: Some("voting token 1".to_string()),
+                        },
+                        VoterGroup {
+                            group: Some(VoterGroupId("rep".to_string())),
+                            voting_token: Some("voting token 2".to_string()),
+                        }
+                    ],
                     reward: Some(RewardDefintion {
                         currency: "ADA".to_string(),
                         value: 100
                     }),
-                    choices: vec!["yes".to_string(), "no".to_string()],
-                    ballot: vec![
-                        GroupBallotType {
-                            group: "rep".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                        GroupBallotType {
-                            group: "direct".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                    ],
-                    url: Some("objective 1 url".to_string()),
-                    supplemental: Some(ObjectiveSupplementalData {
-                        sponsor: "objective 1 sponsor".to_string(),
-                        video: "objective 1 video".to_string()
-                    }),
+                    supplemental: Some(ObjectiveSupplementalData(json!(
+                        {
+                            "url":"objective 1 url",
+                            "sponsor": "objective 1 sponsor",
+                            "video": "objective 1 video"
+                        }
+                    ))),
                 }
             },])
             .unwrap()
@@ -206,19 +214,8 @@ mod tests {
                     description: "description 2".to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: Vec::new(),
                     reward: None,
-                    choices: vec![],
-                    ballot: vec![
-                        GroupBallotType {
-                            group: "rep".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                        GroupBallotType {
-                            group: "direct".to_string(),
-                            ballot: "private".to_string(),
-                        },
-                    ],
-                    url: None,
                     supplemental: None,
                 }
             }])

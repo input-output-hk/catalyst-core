@@ -1,6 +1,8 @@
+use crate::types::registration::VoterGroupId;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct ObjectiveId(pub i32);
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -24,26 +26,21 @@ pub struct RewardDefintion {
     pub value: i64,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct GroupBallotType {
-    pub group: String,
-    pub ballot: String,
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct VoterGroup {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group: Option<VoterGroupId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voting_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ObjectiveSupplementalData {
-    pub sponsor: String,
-    pub video: String,
-}
-
+pub struct ObjectiveSupplementalData(pub Value);
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveDetails {
+    pub groups: Vec<VoterGroup>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reward: Option<RewardDefintion>,
-    pub choices: Vec<String>,
-    pub ballot: Vec<GroupBallotType>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub supplemental: Option<ObjectiveSupplementalData>,
 }
@@ -129,36 +126,19 @@ mod tests {
     }
 
     #[test]
-    fn group_ballot_type_json_test() {
-        let group_ballot_type = GroupBallotType {
-            group: "rep".to_string(),
-            ballot: "public".to_string(),
+    fn voter_group_json_test() {
+        let voter_group = VoterGroup {
+            group: Some(VoterGroupId("rep".to_string())),
+            voting_token: Some("voting token 1".to_string()),
         };
 
-        let json = serde_json::to_value(&group_ballot_type).unwrap();
-        assert_eq!(
-            json,
-            json!({
-                "group": "rep",
-                "ballot": "public",
-            })
-        );
-    }
-
-    #[test]
-    fn objective_supplemental_data_json_test() {
-        let objective_supplemental_data = ObjectiveSupplementalData {
-            sponsor: "sponsor 1".to_string(),
-            video: "video url 1".to_string(),
-        };
-
-        let json = serde_json::to_value(&objective_supplemental_data).unwrap();
+        let json = serde_json::to_value(&voter_group).unwrap();
         assert_eq!(
             json,
             json!(
                 {
-                    "sponsor": "sponsor 1",
-                    "video": "video url 1",
+                    "group": "rep",
+                    "voting_token": "voting token 1",
                 }
             )
         );
@@ -167,20 +147,21 @@ mod tests {
     #[test]
     fn objective_details_json_test() {
         let objective_details = ObjectiveDetails {
+            groups: vec![VoterGroup {
+                group: Some(VoterGroupId("rep".to_string())),
+                voting_token: Some("voting token 1".to_string()),
+            }],
             reward: Some(RewardDefintion {
                 currency: "ADA".to_string(),
                 value: 100,
             }),
-            choices: vec!["Abstain".to_string(), "Yes".to_string(), "No".to_string()],
-            ballot: vec![GroupBallotType {
-                group: "rep".to_string(),
-                ballot: "public".to_string(),
-            }],
-            url: Some("objective url 1".to_string()),
-            supplemental: Some(ObjectiveSupplementalData {
-                sponsor: "sponsor 1".to_string(),
-                video: "video url 1".to_string(),
-            }),
+            supplemental: Some(ObjectiveSupplementalData(json!(
+                {
+                    "url": "objective url 1",
+                    "sponsor": "sponsor 1",
+                    "video": "video url 1",
+                }
+            ))),
         };
 
         let json = serde_json::to_value(&objective_details).unwrap();
@@ -188,17 +169,18 @@ mod tests {
             json,
             json!(
                 {
+                    "groups": [
+                        {
+                            "group": "rep",
+                            "voting_token": "voting token 1",
+                        }
+                    ],
                     "reward": {
                         "currency": "ADA",
                         "value": 100,
                     },
-                    "choices": ["Abstain", "Yes", "No"],
-                    "ballot": [{
-                        "group": "rep",
-                        "ballot": "public",
-                    }],
-                    "url": "objective url 1",
                     "supplemental": {
+                        "url": "objective url 1",
                         "sponsor": "sponsor 1",
                         "video": "video url 1",
                     },

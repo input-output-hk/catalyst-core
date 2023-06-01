@@ -55,7 +55,9 @@ impl ProposalQueries for EventDB {
         objective: ObjectiveId,
         proposal: ProposalId,
     ) -> Result<Proposal, Error> {
-        let conn = self.pool.get().await?;
+        let conn: bb8::PooledConnection<
+            bb8_postgres::PostgresConnectionManager<tokio_postgres::NoTls>,
+        > = self.pool.get().await?;
 
         let rows = conn
             .query(Self::PROPOSAL_QUERY, &[&event.0, &objective.0, &proposal.0])
@@ -71,48 +73,6 @@ impl ProposalQueries for EventDB {
             payment_key: row.try_get("public_key")?,
         }];
 
-        let extra = row.try_get::<_, Option<serde_json::Value>>("extra")?;
-        let solution = extra
-            .as_ref()
-            .and_then(|extra| {
-                extra
-                    .get("solution")
-                    .map(|solution| solution.as_str().map(|str| str.to_string()))
-            })
-            .flatten();
-        let brief = extra
-            .as_ref()
-            .and_then(|extra| {
-                extra
-                    .get("brief")
-                    .map(|brief| brief.as_str().map(|str| str.to_string()))
-            })
-            .flatten();
-        let importance = extra
-            .as_ref()
-            .and_then(|val| {
-                val.get("importance")
-                    .map(|importance| importance.as_str().map(|str| str.to_string()))
-            })
-            .flatten();
-        let metrics = extra
-            .and_then(|val| {
-                val.get("metrics")
-                    .map(|metrics| metrics.as_str().map(|str| str.to_string()))
-            })
-            .flatten();
-        let supplemental = match (solution, brief, importance, metrics) {
-            (Some(solution), Some(brief), Some(importance), Some(metrics)) => {
-                Some(ProposalSupplementalDetails {
-                    solution,
-                    brief,
-                    importance,
-                    metrics,
-                })
-            }
-            _ => None,
-        };
-
         let proposal_summary = ProposalSummary {
             id: row.try_get("id")?,
             title: row.try_get("title")?,
@@ -121,12 +81,12 @@ impl ProposalQueries for EventDB {
 
         let proposal_details = ProposalDetails {
             proposer,
-            supplemental,
+            supplemental: row
+                .try_get::<_, Option<serde_json::Value>>("extra")?
+                .map(ProposalSupplementalDetails),
             funds: row.try_get("funds")?,
             url: row.try_get("url")?,
             files: row.try_get("files_url")?,
-            // TODO: fill the correct ballot data
-            ballot: None,
         };
 
         Ok(Proposal {
@@ -167,7 +127,15 @@ impl ProposalQueries for EventDB {
 }
 
 /// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
@@ -177,6 +145,7 @@ impl ProposalQueries for EventDB {
 mod tests {
     use super::*;
     use crate::establish_connection;
+    use serde_json::json;
 
     #[tokio::test]
     async fn get_proposal_test() {
@@ -206,8 +175,13 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    ballot: None,
-                    supplemental: None,
+                    supplemental: Some(ProposalSupplementalDetails(json!(
+                        {
+                            "brief": "Brief explanation of a proposal",
+                            "goal": "The goal of the proposal is addressed to meet",
+                            "importance": "The importance of the proposal",
+                        }
+                    ))),
                 }
             },
             proposal

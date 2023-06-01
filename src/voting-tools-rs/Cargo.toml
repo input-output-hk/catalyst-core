@@ -41,7 +41,7 @@ tracing-subscriber.workspace = true
 rust_decimal = { version = "1.26", features = ["serde", "db-postgres"] }
 
 mainnet-lib = { path = "../vit-testing/mainnet-lib"}
-cardano-serialization-lib = "11.0.0"
+cardano-serialization-lib = "11.3.1"
 
 rand = "0.6"
 rand_core = "0.4"

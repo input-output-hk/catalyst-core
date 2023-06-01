@@ -138,7 +138,7 @@ class VoteOptionsNotFound(Exception):
     ...
 
 
-async def get_vote_options_id(conn: asyncpg.Connection, objective: str) -> int:
+async def get_vote_options_id(conn: asyncpg.Connection, objective: List[str]) -> int:
     """Get the id of the vote option matching the given objective."""
     row = await conn.fetchrow("SELECT id FROM vote_options WHERE objective = $1", objective)
     if row is None:
@@ -146,11 +146,19 @@ async def get_vote_options_id(conn: asyncpg.Connection, objective: str) -> int:
     return row["id"]
 
 
-async def connect(url: str) -> asyncpg.Connection:
+async def connect(url: str, *args, **kwargs) -> asyncpg.Connection:
     """Return a connection to the database.
 
     This also sets the jsonb codec to use the json module.
     """
-    conn = await asyncpg.connect(url)
-    await conn.set_type_codec("jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+    try:
+        conn = await asyncpg.connect(dsn=url, *args, **kwargs)
+    except Exception as _:
+        raise Exception("Database connection failed")
+
+    try:
+        await conn.set_type_codec("jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
+    except Exception as _:
+        raise Exception("Failed to set jsonb codec")
+
     return conn

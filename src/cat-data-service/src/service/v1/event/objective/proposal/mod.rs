@@ -14,10 +14,12 @@ use event_db::types::event::{
 };
 use std::sync::Arc;
 
+mod ballot;
 mod review;
 
 pub fn proposal(state: Arc<State>) -> Router {
     let review = review::review(state.clone());
+    let ballot = ballot::ballot(state.clone());
 
     Router::new()
         .nest(
@@ -30,7 +32,8 @@ pub fn proposal(state: Arc<State>) -> Router {
                         move |path| async { handle_result(proposal_exec(path, state).await).await }
                     }),
                 )
-                .merge(review),
+                .merge(review)
+                .merge(ballot),
         )
         .route(
             "/proposals",
@@ -77,7 +80,15 @@ async fn proposal_exec(
 }
 
 /// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
@@ -91,7 +102,10 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::proposal::{ProposalDetails, ProposerDetails};
+    use event_db::types::event::proposal::{
+        ProposalDetails, ProposalSupplementalDetails, ProposerDetails,
+    };
+    use serde_json::json;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -128,8 +142,13 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    ballot: None,
-                    supplemental: None,
+                    supplemental: Some(ProposalSupplementalDetails(json!(
+                        {
+                            "brief": "Brief explanation of a proposal",
+                            "goal": "The goal of the proposal is addressed to meet",
+                            "importance": "The importance of the proposal",
+                        }
+                    ))),
                 }
             })
             .unwrap(),

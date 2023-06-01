@@ -1,7 +1,6 @@
 use diesel::RunQueryDsl;
 use rand::Rng;
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::groups::Group;
 use vit_servicing_station_lib::db::models::{
     api_tokens::ApiTokenData, challenges::Challenge, funds::Fund,
 };
@@ -42,7 +41,6 @@ pub struct DbBuilder {
     funds: Option<Vec<Fund>>,
     challenges: Option<Vec<Challenge>>,
     advisor_reviews: Option<Vec<AdvisorReview>>,
-    groups: Option<Vec<Group>>,
 }
 
 impl DbBuilder {
@@ -53,7 +51,6 @@ impl DbBuilder {
             funds: None,
             challenges: None,
             advisor_reviews: None,
-            groups: None,
         }
     }
 
@@ -78,7 +75,6 @@ impl DbBuilder {
     }
 
     pub fn with_snapshot(&mut self, snapshot: &Snapshot) -> &mut Self {
-        self.with_groups(snapshot.groups());
         self.with_proposals(snapshot.proposals());
         self.with_tokens(snapshot.tokens().values().cloned().collect());
         self.with_funds(snapshot.funds());
@@ -97,11 +93,6 @@ impl DbBuilder {
         self
     }
 
-    pub fn with_groups(&mut self, groups: Vec<Group>) -> &mut Self {
-        self.groups = Some(groups);
-        self
-    }
-
     fn try_insert_tokens(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         if let Some(tokens) = &self.tokens {
             DbInserter::new(connection).insert_tokens(tokens)?;
@@ -116,13 +107,6 @@ impl DbBuilder {
         Ok(())
     }
 
-    fn try_insert_proposals(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
-        if let Some(proposals) = &self.proposals {
-            DbInserter::new(connection).insert_proposals(proposals)?;
-        }
-        Ok(())
-    }
-
     fn try_insert_challenges(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         if let Some(challenges) = &self.challenges {
             DbInserter::new(connection).insert_challenges(challenges)?;
@@ -131,16 +115,23 @@ impl DbBuilder {
         Ok(())
     }
 
-    fn try_insert_reviews(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
-        if let Some(reviews) = &self.advisor_reviews {
-            DbInserter::new(connection).insert_advisor_reviews(reviews)?;
+    fn try_insert_vote_plans(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(funds) = &self.funds {
+            DbInserter::new(connection).insert_vote_plans(funds)?;
         }
         Ok(())
     }
 
-    fn try_insert_groups(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
-        if let Some(groups) = &self.groups {
-            DbInserter::new(connection).insert_groups(groups)?;
+    fn try_insert_proposals(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(proposals) = &self.proposals {
+            DbInserter::new(connection).insert_proposals(proposals)?;
+        }
+        Ok(())
+    }
+
+    fn try_insert_reviews(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
+        if let Some(reviews) = &self.advisor_reviews {
+            DbInserter::new(connection).insert_advisor_reviews(reviews)?;
         }
         Ok(())
     }
@@ -195,8 +186,8 @@ impl DbBuilder {
     fn insert_all(&self, connection: &DbConnection) -> Result<(), DbBuilderError> {
         self.try_insert_tokens(connection)?;
         self.try_insert_funds(connection)?;
-        self.try_insert_groups(connection)?;
         self.try_insert_challenges(connection)?;
+        self.try_insert_vote_plans(connection)?;
         self.try_insert_proposals(connection)?;
         self.try_insert_reviews(connection)?;
 

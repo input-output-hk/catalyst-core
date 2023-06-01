@@ -18,6 +18,8 @@ use chain_crypto::testing::TestCryptoRng;
 use color_eyre::Result;
 use rand_core::SeedableRng;
 
+use std::error::Error;
+
 /// A Bech32_encoded address consists of 3 parts: A Human-Readable Part (HRP) + Separator + Data:
 const HRP_PK: &str = "ristretto255_memberpk";
 const HRP_SK: &str = "ristretto255_membersk";
@@ -64,7 +66,7 @@ pub struct Args {
     pub show_public_keys: Option<Vec<String>>,
 }
 
-fn main() -> Result<()> {
+fn main() -> Result<(), Box<dyn Error>> {
     color_eyre::install()?;
 
     let args = Args::parse();
@@ -74,20 +76,13 @@ fn main() -> Result<()> {
     // Intended for public use
     //
     if let Some(shares) = args.decrypt_tally_from_shares {
-        let shares = load_decrypt_shares(shares).expect("unable to load decrypt shares");
-        let pub_keys = args
-            .public_keys
-            .clone()
-            .expect("key requirement enforced by clap");
+        let shares = load_decrypt_shares(shares)?;
+        let pub_keys = args.public_keys.clone().ok_or("handled by clap")?;
 
-        let encrypted_tally = load_encrypted_tally(
-            args.encrypted_tally
-                .clone()
-                .expect("corrupted encrypted tally"),
-        )
-        .expect("unable to read encrypted tally - should be base64 format");
+        let encrypted_tally =
+            load_encrypted_tally(args.encrypted_tally.clone().ok_or("handled by clap")?)?;
 
-        let pks = parse_public_committee_keys(pub_keys).expect("unable to parse public keys");
+        let pks = parse_public_committee_keys(pub_keys)?;
 
         let validated_tally = encrypted_tally.validate_partial_decryptions(&pks, &shares)?;
 
@@ -102,15 +97,10 @@ fn main() -> Result<()> {
     // Internal use only
     //
     if let Some(committee_private_keys) = args.produce_decrypt_shares {
-        let (_pub_keys, priv_keys) =
-            parse_private_committee_keys(committee_private_keys).expect("unable to parse keys");
+        let (_pub_keys, priv_keys) = parse_private_committee_keys(committee_private_keys)?;
 
-        let encrypted_tally = load_encrypted_tally(
-            args.encrypted_tally
-                .clone()
-                .expect("corrupted encrypted tally"),
-        )
-        .expect("unable to read encrypted tally - should be base64 format");
+        let encrypted_tally =
+            load_encrypted_tally(args.encrypted_tally.clone().ok_or("handled by clap")?)?;
 
         let shares = extract_decrypt_shares(encrypted_tally, priv_keys);
 
@@ -122,15 +112,10 @@ fn main() -> Result<()> {
     // Intended for internal use
     //
     if let Some(committee_private_keys) = args.decrypt_tally_from_keys {
-        let (_pub_keys, priv_keys) =
-            parse_private_committee_keys(committee_private_keys).expect("unable to parse keys");
+        let (_pub_keys, priv_keys) = parse_private_committee_keys(committee_private_keys)?;
 
-        let encrypted_tally = load_encrypted_tally(
-            args.encrypted_tally
-                .clone()
-                .expect("corrupted encrypted tally"),
-        )
-        .expect("unable to read encrypted tally - should be base64 format");
+        let encrypted_tally =
+            load_encrypted_tally(args.encrypted_tally.clone().ok_or("handled by clap")?)?;
 
         println!(
             "tally decryption {:?}",
@@ -142,10 +127,9 @@ fn main() -> Result<()> {
     // Show public keys of private keys
     //
     if let Some(committee_private_keys) = args.show_public_keys {
-        let (pub_keys, _priv_keys) = parse_private_committee_keys(committee_private_keys.clone())
-            .expect("unable to parse keys");
+        let (pub_keys, _priv_keys) = parse_private_committee_keys(committee_private_keys.clone())?;
 
-        let encoded = encode_public_keys(pub_keys).expect("unable to encode public key");
+        let encoded = encode_public_keys(pub_keys)?;
         let it = encoded.iter().zip(committee_private_keys.iter());
 
         for (i, (x, y)) in it.enumerate() {

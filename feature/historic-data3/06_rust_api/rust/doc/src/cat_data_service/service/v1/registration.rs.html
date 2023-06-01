@@ -312,6 +312,14 @@
 <a href="#312" id="312">312</a>
 <a href="#313" id="313">313</a>
 <a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -388,7 +396,15 @@
 }
 
 <span class="doccomment">/// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL=&quot;postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev&quot;
@@ -403,7 +419,7 @@
         http::{Request, StatusCode},
     };
     <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-    <span class="kw">use </span>event_db::types::registration::{Delegation, VoterInfo};
+    <span class="kw">use </span>event_db::types::registration::{Delegation, VoterGroupId, VoterInfo};
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -423,7 +439,7 @@
             serde_json::to_string(<span class="kw-2">&amp;</span>Voter {
                 voter_info: VoterInfo {
                     voting_power: <span class="number">250</span>,
-                    voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                    voting_group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                     delegations_power: <span class="number">250</span>,
                     delegations_count: <span class="number">2</span>,
                     voting_power_saturation: <span class="number">0.625</span>,
@@ -462,7 +478,7 @@
             serde_json::to_string(<span class="kw-2">&amp;</span>Voter {
                 voter_info: VoterInfo {
                     voting_power: <span class="number">250</span>,
-                    voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                    voting_group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                     delegations_power: <span class="number">250</span>,
                     delegations_count: <span class="number">2</span>,
                     voting_power_saturation: <span class="number">0.625</span>,
@@ -525,13 +541,13 @@
                 delegations: <span class="macro">vec!</span>[
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">140
                     </span>},
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">100
                     </span>}
@@ -573,13 +589,13 @@
                 delegations: <span class="macro">vec!</span>[
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">140
                     </span>},
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">100
                     </span>}

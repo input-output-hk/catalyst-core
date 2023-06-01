@@ -520,7 +520,8 @@
 <a href="#520" id="520">520</a>
 <a href="#521" id="521">521</a>
 <a href="#522" id="522">522</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::LimitOffset;
+<span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
 };
@@ -532,12 +533,12 @@
 <span class="kw">use </span>event_db::types::event::{Event, EventId, EventSummary};
 <span class="kw">use </span>std::sync::Arc;
 
-<span class="kw">use </span><span class="kw">super</span>::LimitOffset;
-
+<span class="kw">mod </span>ballots;
 <span class="kw">mod </span>objective;
 
 <span class="kw">pub fn </span>event(state: Arc&lt;State&gt;) -&gt; Router {
     <span class="kw">let </span>objective = objective::objective(state.clone());
+    <span class="kw">let </span>ballots = ballots::ballots(state.clone());
 
     Router::new()
         .nest(
@@ -550,7 +551,8 @@
                         <span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(event_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}
                     }),
                 )
-                .merge(objective),
+                .merge(objective)
+                .merge(ballots),
         )
         .route(
             <span class="string">&quot;/events&quot;</span>,
@@ -583,7 +585,15 @@
 }
 
 <span class="doccomment">/// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL=&quot;postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev&quot;
@@ -599,8 +609,8 @@
     };
     <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
     <span class="kw">use </span>event_db::types::event::{
-        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VoterGroup,
-        VotingPowerAlgorithm, VotingPowerSettings,
+        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VotingPowerAlgorithm,
+        VotingPowerSettings,
     };
     <span class="kw">use </span>rust_decimal::Decimal;
     <span class="kw">use </span>tower::ServiceExt;
@@ -752,16 +762,6 @@
                             name: <span class="string">&quot;goal 4&quot;</span>.to_string(),
                         }
                     ],
-                    groups: <span class="macro">vec!</span>[
-                        VoterGroup {
-                            id: <span class="string">&quot;rep&quot;</span>.to_string(),
-                            voting_token: <span class="string">&quot;rep token&quot;</span>.to_string()
-                        },
-                        VoterGroup {
-                            id: <span class="string">&quot;direct&quot;</span>.to_string(),
-                            voting_token: <span class="string">&quot;direct token&quot;</span>.to_string()
-                        }
-                    ]
                 },
             },)
             .unwrap()

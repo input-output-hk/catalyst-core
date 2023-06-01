@@ -114,6 +114,7 @@
 <a href="#114" id="114">114</a>
 <a href="#115" id="115">115</a>
 <a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 <span class="kw">use </span>vit_servicing_station_lib::db::models::goals::Goal;
@@ -132,7 +133,6 @@
     voteplans: Vec&lt;Voteplan&gt;,
     reviews: Vec&lt;AdvisorReview&gt;,
     goals: Vec&lt;Goal&gt;,
-    groups: Vec&lt;Group&gt;,
 }
 
 <span class="kw">impl </span>Snapshot {
@@ -145,7 +145,6 @@
         voteplans: Vec&lt;Voteplan&gt;,
         reviews: Vec&lt;AdvisorReview&gt;,
         goals: Vec&lt;Goal&gt;,
-        groups: Vec&lt;Group&gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             funds,
@@ -155,7 +154,6 @@
             voteplans,
             reviews,
             goals,
-            groups,
         }
     }
 
@@ -219,7 +217,11 @@
     }
 
     <span class="kw">pub fn </span>groups(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;Group&gt; {
-        <span class="self">self</span>.groups.clone()
+        <span class="self">self</span>.funds
+            .iter()
+            .flat_map(|f| f.groups.iter())
+            .cloned()
+            .collect()
     }
 
     <span class="kw">pub fn </span>advisor_reviews_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>Vec&lt;AdvisorReview&gt; {

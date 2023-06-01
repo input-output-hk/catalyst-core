@@ -76,7 +76,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
-  '/api/v1/event/{id}':
+  /api/v1/event/{id}:
     parameters:
       - $ref: '#/components/parameters/event_id'
     get:
@@ -97,7 +97,7 @@ paths:
           $ref: '#/components/responses/404-Event'
         '500':
           $ref: '#/components/responses/500'
-  '/api/v1/event/{id}/objectives':
+  /api/v1/event/{id}/objectives:
     parameters:
       - $ref: '#/components/parameters/event_id'
     get:
@@ -136,7 +136,7 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/objective/{obj_id}/proposals':
+  /api/v1/event/{id}/objective/{obj_id}/proposals:
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -161,7 +161,7 @@ paths:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/voter_groups_filter'
-  '/api/v1/event/{id}/objective/{obj_id}/review_types':
+  /api/v1/event/{id}/objective/{obj_id}/review_types:
     parameters:
       - name: id
         in: path
@@ -199,7 +199,7 @@ paths:
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
-  '/api/v1/event/{id}/{obj_id}/{prop_id}/proposal':
+  /api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}:
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -220,7 +220,7 @@ paths:
                 $ref: '#/components/schemas/Proposal'
         '404':
           description: The requested proposal was not found
-  '/api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/reviews':
+  /api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/reviews:
     parameters:
       - $ref: '#/components/parameters/event_id'
       - $ref: '#/components/parameters/obj_id'
@@ -285,7 +285,7 @@ paths:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/total'
     parameters: []
-  '/api/v1/registration/voter/{vkey}':
+  /api/v1/registration/voter/{vkey}:
     parameters:
       - name: vkey
         in: path
@@ -314,7 +314,7 @@ paths:
           description: Voting Key not found for requested event.
       parameters:
         - $ref: '#/components/parameters/event_id_filter'
-  '/api/v1/registration/delegations/{sp_key}':
+  /api/v1/registration/delegations/{sp_key}:
     parameters:
       - $ref: '#/components/parameters/stake_public_key'
     get:
@@ -338,6 +338,106 @@ paths:
           description: Stake Address for the event was not found in the snapshot.
       parameters:
         - $ref: '#/components/parameters/event_id_filter'
+  /api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/ballot:
+    parameters:
+      - $ref: '#/components/parameters/event_id'
+      - $ref: '#/components/parameters/obj_id'
+      - $ref: '#/components/parameters/prop_id'
+    get:
+      operationId: getBallotInfoPerProposal
+      summary: Get ballot information needed to cast a vote associated with a proposal
+      tags:
+        - ballot
+      description: |
+        Retrieves all necessary information to cast a vote.
+        If not present, they are not yet defined.
+        If not defined, then it is not possible to cast a ballot on this proposal yet.
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalystV1Ballot'
+        '404':
+          description: Ballot information is not defined.
+  /api/v1/event/{id}/objective/{obj_id}/ballots:
+    parameters:
+      - $ref: '#/components/parameters/event_id'
+      - $ref: '#/components/parameters/obj_id'
+    get:
+      operationId: getAllBallotInfoPerObjective
+      summary: Get all ballot information needed to cast a vote associated with an objective
+      tags:
+        - ballot
+      description: |
+        Retrieves all necessary information to cast a vote.
+        If not present, they are not yet defined.
+        If not defined, then it is not possible to cast a ballot on this proposal yet.
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    proposal_id:
+                      type: integer
+                      format: int32
+                      description: The ID of this proposal.
+                    ballot:
+                      type:
+                        $ref: '#/components/schemas/CatalystV1Ballot'
+                  required:
+                   - proposal_id
+                   - ballot
+  /api/v1/event/{id}/ballots:
+    parameters:
+      - $ref: '#/components/parameters/event_id'
+    get:
+      operationId: getAllBallotInfoPerEvent
+      summary: Get all ballot information needed to cast a vote associated with an event
+      tags:
+        - ballot
+      description: |
+        Retrieves all necessary information to cast a vote.
+        If not present, they are not yet defined.
+        If not defined, then it is not possible to cast a ballot on this proposal yet.
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    objective_id:
+                      type: integer
+                      format: int32
+                      description: The ID of this objective.
+                    ballots:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          proposal_id:
+                            type: integer
+                            format: int32
+                            description: The ID of this proposal.
+                          ballot:
+                            type:
+                              $ref: '#/components/schemas/CatalystV1Ballot'
+                        required:
+                          - proposal_id
+                          - ballot
+                    required:
+                      - objective_id
+                      - ballots
   /api/v1/ballot/check:
     post:
       summary: Check Ballot Validity
@@ -360,7 +460,7 @@ paths:
         If an event is supplied, it should also check if the Voting Key is registered and eligible to vote on the event.
         If no event is supplied, it should check if the "latest" snapshot contains a registration for this voting key.  If it does not, this is not an Error, but a warning status should be returned.
       x-internal: true
-  '/api/v1/ballot/cast/{id}':
+  /api/v1/ballot/cast/{id}:
     parameters:
       - $ref: '#/components/parameters/event_id'
     get:
@@ -373,7 +473,7 @@ paths:
       operationId: get-api-v1-ballot-cast-id
       description: Cast a Ballot on the requested Voting Event.
       x-internal: true
-  '/api/v1/ballot/proof/{vkey}/{id}':
+  /api/v1/ballot/proof/{vkey}/{id}:
     post:
       summary: Get Ballot Proof
       operationId: getBallotProofs
@@ -503,7 +603,7 @@ components:
       properties:
         idx:
           type: integer
-          description: The Realtive order of this Goal. 0 being highest.
+          description: The Relative order of this Goal. 0 being highest.
           example: 2
           format: int32
         name:
@@ -605,7 +705,7 @@ components:
       x-stoplight:
         id: x36yug5b7c3r8
       type: integer
-      description: The Numeric ID of an Objecgtive to be decided in a Voting Event
+      description: The Numeric ID of an Objective to be decided in a Voting Event
       example: 11
       format: int32
       minimum: 0
@@ -630,11 +730,6 @@ components:
         schedule:
           $ref: '#/components/schemas/EventSchedule'
           description: The schedule of the voting Event
-        groups:
-          type: array
-          description: The valid voter groups for this voting event.
-          items:
-            $ref: '#/components/schemas/VoterGroup'
     Event:
       allOf:
         - $ref: '#/components/schemas/EventSummary'
@@ -672,7 +767,7 @@ components:
       description: Currency of the Reward.
       x-stoplight:
         id: 9ng0ptdxjm60i
-    RewardDefintion:
+    RewardDefinition:
       type: object
       x-stoplight:
         id: uncc6j7uf38ge
@@ -727,27 +822,6 @@ components:
       items:
         type: string
         minLength: 1
-    GroupBallotType:
-      title: Group Ballot Type
-      type: array
-      minItems: 1
-      uniqueItems: true
-      description: |-
-        List of Voter Groups and the kind of ballot they must cast.
-        Each voter group that can vote on the objective:
-        * MUST be listed.
-        * MUST be listed only once.
-      items:
-        type: object
-        properties:
-          group:
-            $ref: '#/components/schemas/VoterGroupId'
-            description: The name of the group (Must be unique in the array).
-          ballot:
-            $ref: '#/components/schemas/BallotType'
-            description: The type of ballot this group must cast.
-      x-stoplight:
-        id: qaz93o6qdkr5c
     ObjectiveSupplementalData:
       title: Objective Supplemental Data
       x-stoplight:
@@ -758,6 +832,10 @@ components:
         All Information here is optional.
         If there is no supplemental information for the Objective this field is omitted.
       properties:
+        url:
+          type: string
+          description: External URL that better describes the Objective.
+          format: uri
         sponsor:
           type: string
           description: Who is sponsoring this Objective.
@@ -792,16 +870,6 @@ components:
         - type
         - title
         - description
-    ObjectiveProposalType:
-      title: Objective Proposal Type
-      description: The type of proposal that can be made on this Objective.
-      type: string
-      enum:
-        - simple
-        - native
-        - community-choice
-      x-stoplight:
-        id: 424bd4d9fd817
     ObjectiveDetails:
       title: Objective Details
       x-stoplight:
@@ -809,20 +877,17 @@ components:
       description: Individual Objective Details
       type: object
       properties:
-        type:
-          $ref: '#/components/schemas/ObjectiveProposalType'
+        groups:
+           type: array
+           description: The valid voter groups for this voting event.
+           items:
+             $ref: '#/components/schemas/VoterGroup'
         reward:
-          $ref: '#/components/schemas/RewardDefintion'
+          $ref: '#/components/schemas/RewardDefinition'
           description: |-
             The Total Reward being offered for this Objective.
             Distribution of the Reward is determined under the rules of this Objective.
             If this field is not present there is no reward being offered for the Objective.
-        choices:
-          $ref: '#/components/schemas/ObjectiveChoices'
-          description: Ballot Choices present for all proposals in this Objective.
-        ballot:
-          $ref: '#/components/schemas/GroupBallotType'
-          description: The types of Ballot each group may cast.
         url:
           type: string
           description: External URL that better describes the Objective.
@@ -830,20 +895,33 @@ components:
         supplemental:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
       required:
-        - choices
-        - ballot
     VotePlan:
       title: Vote Plan
       type: object
       description: The voteplan to use for this group.
       properties:
+        chain_proposal_index:
+          type: integer
+          format: int64
+          description: The Index of the proposal, needed to create a ballot for it.
         group:
           $ref: '#/components/schemas/VoterGroupId'
           description: The name of the group (Must be unique in the array).
+        ballot_type:
+            $ref: '#/components/schemas/BallotType'
+            description: The type of ballot this group must cast.
         chain_voteplan_id:
           type: string
           format: hash
           description: Blockchain ID of the vote plan transaction.
+        encryption_key:
+          type: string
+          format: hash
+          description: The public encryption key used. ONLY if required by the ballot type (private, cast-private).
+      required:
+        - chain_proposal_index
+        - group
+        - chain_voteplan_id
       x-stoplight:
         id: owvld2uvjjnty
     GroupVotePlans:
@@ -877,24 +955,6 @@ components:
         - summary
       x-stoplight:
         id: 149678fbb6bb5
-    ProposalBallotDetails:
-      title: Proposal Ballot Details
-      description: |-
-        Details necessary to complete a ballot for this proposal.
-        If not present, they are not yet defined.
-        If not defined, then it is not possible to cast a ballot on this proposal yet.
-      type: object
-      properties:
-        index:
-          type: integer
-          format: int64
-          description: 'The Index of the proposal, needed to create a ballot for it.'
-        voteplan:
-          $ref: '#/components/schemas/GroupVotePlans'
-      required:
-        - index
-      x-stoplight:
-        id: ae52aa5a4c3f3
     ProposerDetails:
       title: Proposer Details
       description: Details about a proposer for a particular proposal.
@@ -965,8 +1025,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ProposerDetails'
-        ballot:
-          $ref: '#/components/schemas/ProposalBallotDetails'
         supplemental:
           $ref: '#/components/schemas/ProposalSupplementalDetails'
           required:
@@ -1225,7 +1283,7 @@ components:
     VoterGroup:
       type: object
       properties:
-        id:
+        group:
           $ref: '#/components/schemas/VoterGroupId'
         voting_token:
           type: string
@@ -1270,7 +1328,7 @@ components:
         voting_power_saturation:
           description: |-
             Voting power's share of the total voting power.
-            Can be used to guage potential voting power saturation.
+            Can be used to gauge potential voting power saturation.
             This value is NOT saturated however, and gives the raw share of total registered voting power.
           type: number
           format: float
@@ -1367,6 +1425,20 @@ components:
         final:
           type: boolean
           description: '`True` = this is the final snapshot which will be used for voting power in the event.</br>`False` =This is an interim snapshot, subject to change.'
+    CatalystV1Ballot:
+      title: CatalystV1Ballot
+      description: |-
+        Details necessary to complete a ballot for the specific proposal and objective.
+      type: object
+      properties:
+        choices:
+          $ref: '#/components/schemas/ObjectiveChoices'
+          description: Ballot Choices present for all proposals in this Objective.
+        voteplans:
+          $ref: '#/components/schemas/GroupVotePlans'
+      required:
+        - choices
+        - voteplans
   securitySchemes:
     Bearer:
       type: http

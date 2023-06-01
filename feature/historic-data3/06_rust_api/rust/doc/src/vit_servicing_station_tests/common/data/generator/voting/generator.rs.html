@@ -235,8 +235,6 @@
 <a href="#235" id="235">235</a>
 <a href="#236" id="236">236</a>
 <a href="#237" id="237">237</a>
-<a href="#238" id="238">238</a>
-<a href="#239" id="239">239</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
 <span class="kw">use </span><span class="kw">super</span>::parameters::SingleVotePlanParameters;
@@ -272,8 +270,6 @@
 
         <span class="kw">let </span>fund_template = template_generator.next_fund();
         <span class="self">self</span>.parameters.current_fund.info.fund_goal = fund_template.goal;
-
-        <span class="kw">let </span>groups = <span class="self">self</span>.parameters.current_fund.info.groups.clone();
 
         <span class="kw">let </span>vote_plans: Vec&lt;Voteplan&gt; = <span class="self">self
             </span>.parameters
@@ -337,7 +333,8 @@
         <span class="kw">let </span><span class="kw-2">mut </span>mirrored_templates = HashMap::&lt;ExternalProposalId, ProposalTemplate&gt;::new();
 
         <span class="kw">for </span>(index, vote_plan) <span class="kw">in </span>vote_plans.iter().enumerate() {
-            <span class="kw">let </span>group = groups
+            <span class="kw">let </span>group = fund
+                .groups
                 .iter()
                 .find(|g| g.token_identifier == vote_plan.token_identifier)
                 .unwrap();
@@ -472,7 +469,6 @@
             vote_plans,
             reviews,
             goals,
-            groups,
         )
     }
 }

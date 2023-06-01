@@ -262,41 +262,17 @@
 <a href="#262" id="262">262</a>
 <a href="#263" id="263">263</a>
 <a href="#264" id="264">264</a>
-<a href="#265" id="265">265</a>
-<a href="#266" id="266">266</a>
-<a href="#267" id="267">267</a>
-<a href="#268" id="268">268</a>
-<a href="#269" id="269">269</a>
-<a href="#270" id="270">270</a>
-<a href="#271" id="271">271</a>
-<a href="#272" id="272">272</a>
-<a href="#273" id="273">273</a>
-<a href="#274" id="274">274</a>
-<a href="#275" id="275">275</a>
-<a href="#276" id="276">276</a>
-<a href="#277" id="277">277</a>
-<a href="#278" id="278">278</a>
-<a href="#279" id="279">279</a>
-<a href="#280" id="280">280</a>
-<a href="#281" id="281">281</a>
-<a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
-<a href="#284" id="284">284</a>
-<a href="#285" id="285">285</a>
-<a href="#286" id="286">286</a>
-<a href="#287" id="287">287</a>
-<a href="#288" id="288">288</a>
-<a href="#289" id="289">289</a>
-<a href="#290" id="290">290</a>
-<a href="#291" id="291">291</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
-    types::event::{
-        objective::{
-            GroupBallotType, Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
-            ObjectiveSupplementalData, ObjectiveType, RewardDefintion,
+    types::{
+        event::{
+            objective::{
+                Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
+                ObjectiveSupplementalData, ObjectiveType, RewardDefintion, VoterGroup,
+            },
+            EventId,
         },
-        EventId,
+        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -314,14 +290,17 @@
 
 <span class="kw">impl </span>EventDB {
     <span class="kw">const </span>OBJECTIVES_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
-        objective_category.name, objective_category.description as objective_category_description,
-        vote_options.objective as choices
+        <span class="string">&quot;SELECT objective.row_id, objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
+        objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
-        LEFT JOIN vote_options on objective.vote_options = vote_options.id
         WHERE objective.event = $1
         LIMIT $2 OFFSET $3;&quot;</span>;
+
+    <span class="kw">const </span>VOTING_GROPUS_QEURY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
+        <span class="string">&quot;SELECT voteplan.group_id as group, voteplan.token_id as voting_token
+        FROM voteplan 
+        WHERE objective_id = $1;&quot;</span>;
 }
 
 <span class="attr">#[async_trait]
@@ -343,6 +322,7 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>objectives = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {
+            <span class="kw">let </span>row_id: i32 = row.try_get(<span class="string">&quot;row_id&quot;</span>)<span class="question-mark">?</span>;
             <span class="kw">let </span>summary = ObjectiveSummary {
                 id: ObjectiveId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
                 objective_type: ObjectiveType {
@@ -358,51 +338,27 @@
                 (<span class="prelude-val">Some</span>(currency), <span class="prelude-val">Some</span>(value)) =&gt; <span class="prelude-val">Some</span>(RewardDefintion { currency, value }),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
             };
-            <span class="kw">let </span>extra = row.try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;&gt;(<span class="string">&quot;extra&quot;</span>)<span class="question-mark">?</span>;
-            <span class="kw">let </span>url = extra
-                .as_ref()
-                .and_then(|extra| {
-                    extra
-                        .get(<span class="string">&quot;url&quot;</span>)
-                        .map(|url| url.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            <span class="kw">let </span>sponsor = extra
-                .as_ref()
-                .and_then(|extra| {
-                    extra
-                        .get(<span class="string">&quot;sponsor&quot;</span>)
-                        .map(|sponsor| sponsor.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            <span class="kw">let </span>video = extra
-                .and_then(|val| {
-                    val.get(<span class="string">&quot;video&quot;</span>)
-                        .map(|video| video.as_str().map(|str| str.to_string()))
-                })
-                .flatten();
-            <span class="kw">let </span>supplemental = <span class="kw">match </span>(sponsor, video) {
-                (<span class="prelude-val">Some</span>(sponsor), <span class="prelude-val">Some</span>(video)) =&gt; <span class="prelude-val">Some</span>(ObjectiveSupplementalData { sponsor, video }),
-                <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
-            };
+
+            <span class="kw">let </span><span class="kw-2">mut </span>groups = Vec::new();
+            <span class="kw">let </span>rows = conn.query(<span class="self">Self</span>::VOTING_GROPUS_QEURY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>row_id]).<span class="kw">await</span><span class="question-mark">?</span>;
+            <span class="kw">for </span>row <span class="kw">in </span>rows {
+                <span class="kw">let </span>group = row.try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;String&gt;&gt;(<span class="string">&quot;group&quot;</span>)<span class="question-mark">?</span>.map(VoterGroupId);
+                <span class="kw">let </span>voting_token: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;voting_token&quot;</span>)<span class="question-mark">?</span>;
+                <span class="kw">match </span>(group, voting_token) {
+                    (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; {}
+                    (group, voting_token) =&gt; groups.push(VoterGroup {
+                        group,
+                        voting_token,
+                    }),
+                }
+            }
+
             <span class="kw">let </span>details = ObjectiveDetails {
+                groups,
                 reward,
-                url,
-                supplemental,
-                choices: row
-                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;&gt;(<span class="string">&quot;choices&quot;</span>)<span class="question-mark">?
-                    </span>.unwrap_or_default(),
-                <span class="comment">// TODO fix this, need to fill with the real data
-                </span>ballot: <span class="macro">vec!</span>[
-                    GroupBallotType {
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                        ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                    },
-                    GroupBallotType {
-                        group: <span class="string">&quot;direct&quot;</span>.to_string(),
-                        ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                    },
-                ],
+                supplemental: row
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;&gt;(<span class="string">&quot;extra&quot;</span>)<span class="question-mark">?
+                    </span>.map(ObjectiveSupplementalData),
             };
             objectives.push(Objective { summary, details });
         }
@@ -412,7 +368,15 @@
 }
 
 <span class="doccomment">/// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL=&quot;postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev&quot;
@@ -420,8 +384,10 @@
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>serde_json::json;
+
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use crate</span>::{establish_connection, types::event::objective::GroupBallotType};
+    <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>get_objectives_test() {
@@ -445,26 +411,27 @@
                         description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: <span class="macro">vec!</span>[
+                            VoterGroup {
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
+                                voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
+                            },
+                            VoterGroup {
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
+                                voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 2&quot;</span>.to_string()),
+                            }
+                        ],
                         reward: <span class="prelude-val">Some</span>(RewardDefintion {
                             currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
                             value: <span class="number">100
                         </span>}),
-                        choices: <span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()],
-                        ballot: <span class="macro">vec!</span>[
-                            GroupBallotType {
-                                group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                                ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                            },
-                            GroupBallotType {
-                                group: <span class="string">&quot;direct&quot;</span>.to_string(),
-                                ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                            },
-                        ],
-                        url: <span class="prelude-val">Some</span>(<span class="string">&quot;objective 1 url&quot;</span>.to_string()),
-                        supplemental: <span class="prelude-val">Some</span>(ObjectiveSupplementalData {
-                            sponsor: <span class="string">&quot;objective 1 sponsor&quot;</span>.to_string(),
-                            video: <span class="string">&quot;objective 1 video&quot;</span>.to_string()
-                        }),
+                        supplemental: <span class="prelude-val">Some</span>(ObjectiveSupplementalData(<span class="macro">json!</span>(
+                        {
+                            <span class="string">&quot;url&quot;</span>: <span class="string">&quot;objective 1 url&quot;</span>,
+                            <span class="string">&quot;sponsor&quot;</span>: <span class="string">&quot;objective 1 sponsor&quot;</span>,
+                            <span class="string">&quot;video&quot;</span>: <span class="string">&quot;objective 1 video&quot;
+                        </span>}
+                        ))),
                     }
                 },
                 Objective {
@@ -478,19 +445,8 @@
                         description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: Vec::new(),
                         reward: <span class="prelude-val">None</span>,
-                        choices: <span class="macro">vec!</span>[],
-                        ballot: <span class="macro">vec!</span>[
-                            GroupBallotType {
-                                group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                                ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                            },
-                            GroupBallotType {
-                                group: <span class="string">&quot;direct&quot;</span>.to_string(),
-                                ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                            },
-                        ],
-                        url: <span class="prelude-val">None</span>,
                         supplemental: <span class="prelude-val">None</span>,
                     }
                 }
@@ -514,26 +470,27 @@
                     description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: <span class="macro">vec!</span>[
+                        VoterGroup {
+                            group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
+                            voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
+                        },
+                        VoterGroup {
+                            group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
+                            voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 2&quot;</span>.to_string()),
+                        }
+                    ],
                     reward: <span class="prelude-val">Some</span>(RewardDefintion {
                         currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
                         value: <span class="number">100
                     </span>}),
-                    choices: <span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()],
-                    ballot: <span class="macro">vec!</span>[
-                        GroupBallotType {
-                            group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                            ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                        },
-                        GroupBallotType {
-                            group: <span class="string">&quot;direct&quot;</span>.to_string(),
-                            ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                        },
-                    ],
-                    url: <span class="prelude-val">Some</span>(<span class="string">&quot;objective 1 url&quot;</span>.to_string()),
-                    supplemental: <span class="prelude-val">Some</span>(ObjectiveSupplementalData {
-                        sponsor: <span class="string">&quot;objective 1 sponsor&quot;</span>.to_string(),
-                        video: <span class="string">&quot;objective 1 video&quot;</span>.to_string()
-                    }),
+                    supplemental: <span class="prelude-val">Some</span>(ObjectiveSupplementalData(<span class="macro">json!</span>(
+                    {
+                        <span class="string">&quot;url&quot;</span>: <span class="string">&quot;objective 1 url&quot;</span>,
+                        <span class="string">&quot;sponsor&quot;</span>: <span class="string">&quot;objective 1 sponsor&quot;</span>,
+                        <span class="string">&quot;video&quot;</span>: <span class="string">&quot;objective 1 video&quot;
+                    </span>}
+                    ))),
                 }
             },]
         );
@@ -555,19 +512,8 @@
                     description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: Vec::new(),
                     reward: <span class="prelude-val">None</span>,
-                    choices: <span class="macro">vec!</span>[],
-                    ballot: <span class="macro">vec!</span>[
-                        GroupBallotType {
-                            group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                            ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                        },
-                        GroupBallotType {
-                            group: <span class="string">&quot;direct&quot;</span>.to_string(),
-                            ballot: <span class="string">&quot;private&quot;</span>.to_string(),
-                        },
-                    ],
-                    url: <span class="prelude-val">None</span>,
                     supplemental: <span class="prelude-val">None</span>,
                 }
             }]

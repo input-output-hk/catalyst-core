@@ -399,10 +399,18 @@
 <a href="#399" id="399">399</a>
 <a href="#400" id="400">400</a>
 <a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     types::{
         event::EventId,
-        registration::{Delegation, Delegator, Voter, VoterInfo},
+        registration::{Delegation, Delegator, Voter, VoterGroupId, VoterInfo},
     },
     Error, EventDB,
 };
@@ -499,17 +507,17 @@
             .get(<span class="number">0</span>)
             .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find voter value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>voting_group = voter.try_get(<span class="string">&quot;voting_group&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>voting_group = VoterGroupId(voter.try_get(<span class="string">&quot;voting_group&quot;</span>)<span class="question-mark">?</span>);
         <span class="kw">let </span>voting_power = voter.try_get(<span class="string">&quot;voting_power&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>rows = <span class="kw">if let </span><span class="prelude-val">Some</span>(event) = event {
             conn.query(
                 <span class="self">Self</span>::TOTAL_BY_EVENT_VOTING_QUERY,
-                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>voting_group, <span class="kw-2">&amp;</span>event.<span class="number">0</span>],
+                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>voting_group.<span class="number">0</span>, <span class="kw-2">&amp;</span>event.<span class="number">0</span>],
             )
             .<span class="kw">await</span><span class="question-mark">?
         </span>} <span class="kw">else </span>{
-            conn.query(<span class="self">Self</span>::TOTAL_BY_LAST_EVENT_VOTING_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>voting_group])
+            conn.query(<span class="self">Self</span>::TOTAL_BY_LAST_EVENT_VOTING_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>voting_group.<span class="number">0</span>])
                 .<span class="kw">await</span><span class="question-mark">?
         </span>};
 
@@ -580,7 +588,7 @@
         <span class="kw">for </span>row <span class="kw">in </span>delegation_rows {
             delegations.push(Delegation {
                 voting_key: row.try_get(<span class="string">&quot;voting_key&quot;</span>)<span class="question-mark">?</span>,
-                group: row.try_get(<span class="string">&quot;voting_group&quot;</span>)<span class="question-mark">?</span>,
+                group: VoterGroupId(row.try_get(<span class="string">&quot;voting_group&quot;</span>)<span class="question-mark">?</span>),
                 weight: row.try_get(<span class="string">&quot;voting_weight&quot;</span>)<span class="question-mark">?</span>,
                 value: row.try_get(<span class="string">&quot;value&quot;</span>)<span class="question-mark">?</span>,
             })
@@ -616,7 +624,15 @@
 }
 
 <span class="doccomment">/// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL=&quot;postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev&quot;
@@ -642,7 +658,7 @@
             Voter {
                 voter_info: VoterInfo {
                     voting_power: <span class="number">250</span>,
-                    voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                    voting_group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                     delegations_power: <span class="number">250</span>,
                     delegations_count: <span class="number">2</span>,
                     voting_power_saturation: <span class="number">0.625</span>,
@@ -675,7 +691,7 @@
             Voter {
                 voter_info: VoterInfo {
                     voting_power: <span class="number">250</span>,
-                    voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                    voting_group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                     delegations_power: <span class="number">250</span>,
                     delegations_count: <span class="number">2</span>,
                     voting_power_saturation: <span class="number">0.625</span>,
@@ -719,13 +735,13 @@
                 delegations: <span class="macro">vec!</span>[
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">140
                     </span>},
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">100
                     </span>}
@@ -761,13 +777,13 @@
                 delegations: <span class="macro">vec!</span>[
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">140
                     </span>},
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
                         value: <span class="number">100
                     </span>}

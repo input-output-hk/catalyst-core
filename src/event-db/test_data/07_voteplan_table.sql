@@ -3,5 +3,5 @@ INSERT INTO voteplan
 VALUES
 (1, 1, '1', 'public', 'direct', 'voting token 1'),
 (2, 1, '2', 'public', 'rep', 'voting token 2'),
-(3, 2, '2', 'public', NULL, NULL),
+(3, 2, '1', 'public', NULL, NULL),
 (4, 2, '2', 'public', NULL, NULL);

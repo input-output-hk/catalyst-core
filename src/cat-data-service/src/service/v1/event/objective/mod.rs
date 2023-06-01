@@ -64,9 +64,12 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::objective::{
-        ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData, ObjectiveType,
-        RewardDefintion, VoterGroup,
+    use event_db::types::{
+        event::objective::{
+            ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData,
+            ObjectiveType, RewardDefintion, VoterGroup,
+        },
+        registration::VoterGroupId,
     };
     use serde_json::json;
     use tower::ServiceExt;
@@ -99,11 +102,11 @@ mod tests {
                     details: ObjectiveDetails {
                         groups: vec![
                             VoterGroup {
-                                group: Some("direct".to_string()),
+                                group: Some(VoterGroupId("direct".to_string())),
                                 voting_token: Some("voting token 1".to_string()),
                             },
                             VoterGroup {
-                                group: Some("rep".to_string()),
+                                group: Some(VoterGroupId("rep".to_string())),
                                 voting_token: Some("voting token 2".to_string()),
                             }
                         ],
@@ -162,11 +165,11 @@ mod tests {
                 details: ObjectiveDetails {
                     groups: vec![
                         VoterGroup {
-                            group: Some("direct".to_string()),
+                            group: Some(VoterGroupId("direct".to_string())),
                             voting_token: Some("voting token 1".to_string()),
                         },
                         VoterGroup {
-                            group: Some("rep".to_string()),
+                            group: Some(VoterGroupId("rep".to_string())),
                             voting_token: Some("voting token 2".to_string()),
                         }
                     ],

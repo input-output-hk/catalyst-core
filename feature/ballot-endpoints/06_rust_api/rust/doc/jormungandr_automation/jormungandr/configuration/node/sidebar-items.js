@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["manager","node_config_builder"]};

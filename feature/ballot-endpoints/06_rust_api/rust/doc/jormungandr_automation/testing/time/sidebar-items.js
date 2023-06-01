@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_current_date","is_it_due","wait_for_date","wait_for_epoch"]};

@@ -47,13 +47,13 @@ async fn ballots_exec(
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
     use super::*;
     use crate::service::app;
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
+    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]

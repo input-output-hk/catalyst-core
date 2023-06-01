@@ -232,6 +232,11 @@
 <a href="#232" id="232">232</a>
 <a href="#233" id="233">233</a>
 <a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -244,15 +249,20 @@
 <span class="kw">use </span>event_db::types::event::{objective::Objective, EventId};
 <span class="kw">use </span>std::sync::Arc;
 
+<span class="kw">mod </span>ballots;
 <span class="kw">mod </span>proposal;
 <span class="kw">mod </span>review_type;
 
 <span class="kw">pub fn </span>objective(state: Arc&lt;State&gt;) -&gt; Router {
     <span class="kw">let </span>proposal = proposal::proposal(state.clone());
     <span class="kw">let </span>review_type = review_type::review_type(state.clone());
+    <span class="kw">let </span>ballots = ballots::ballots(state.clone());
 
     Router::new()
-        .nest(<span class="string">&quot;/objective/:objective&quot;</span>, proposal.merge(review_type))
+        .nest(
+            <span class="string">&quot;/objective/:objective&quot;</span>,
+            proposal.merge(review_type).merge(ballots),
+        )
         .route(
             <span class="string">&quot;/objectives&quot;</span>,
             get(<span class="kw">move </span>|path, query| <span class="kw">async </span>{

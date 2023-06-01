@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["objective","objectives_exec"],"mod":["proposal","review_type"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"fn":["objective","objectives_exec"],"mod":["ballots","proposal","review_type"],"opaque":[""],"static":["CALLSITE","META"]};

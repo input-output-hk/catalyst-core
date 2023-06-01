@@ -428,22 +428,6 @@
 <a href="#428" id="428">428</a>
 <a href="#429" id="429">429</a>
 <a href="#430" id="430">430</a>
-<a href="#431" id="431">431</a>
-<a href="#432" id="432">432</a>
-<a href="#433" id="433">433</a>
-<a href="#434" id="434">434</a>
-<a href="#435" id="435">435</a>
-<a href="#436" id="436">436</a>
-<a href="#437" id="437">437</a>
-<a href="#438" id="438">438</a>
-<a href="#439" id="439">439</a>
-<a href="#440" id="440">440</a>
-<a href="#441" id="441">441</a>
-<a href="#442" id="442">442</a>
-<a href="#443" id="443">443</a>
-<a href="#444" id="444">444</a>
-<a href="#445" id="445">445</a>
-<a href="#446" id="446">446</a>
 </pre><pre class="rust"><code><span class="doccomment">//!
 //! Community Tally Verification Tool
 //!
@@ -463,6 +447,8 @@
 <span class="kw">use </span>chain_crypto::testing::TestCryptoRng;
 <span class="kw">use </span>color_eyre::Result;
 <span class="kw">use </span>rand_core::SeedableRng;
+
+<span class="kw">use </span>std::error::Error;
 
 <span class="doccomment">/// A Bech32_encoded address consists of 3 parts: A Human-Readable Part (HRP) + Separator + Data:
 </span><span class="kw">const </span>HRP_PK: <span class="kw-2">&amp;</span>str = <span class="string">&quot;ristretto255_memberpk&quot;</span>;
@@ -510,7 +496,7 @@
     </span><span class="kw">pub </span>show_public_keys: <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt;,
 }
 
-<span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+<span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
     color_eyre::install()<span class="question-mark">?</span>;
 
     <span class="kw">let </span>args = Args::parse();
@@ -520,20 +506,13 @@
     // Intended for public use
     //
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(shares) = args.decrypt_tally_from_shares {
-        <span class="kw">let </span>shares = load_decrypt_shares(shares).expect(<span class="string">&quot;unable to load decrypt shares&quot;</span>);
-        <span class="kw">let </span>pub_keys = args
-            .public_keys
-            .clone()
-            .expect(<span class="string">&quot;key requirement enforced by clap&quot;</span>);
+        <span class="kw">let </span>shares = load_decrypt_shares(shares)<span class="question-mark">?</span>;
+        <span class="kw">let </span>pub_keys = args.public_keys.clone().ok_or(<span class="string">&quot;handled by clap&quot;</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>encrypted_tally = load_encrypted_tally(
-            args.encrypted_tally
-                .clone()
-                .expect(<span class="string">&quot;corrupted encrypted tally&quot;</span>),
-        )
-        .expect(<span class="string">&quot;unable to read encrypted tally - should be base64 format&quot;</span>);
+        <span class="kw">let </span>encrypted_tally =
+            load_encrypted_tally(args.encrypted_tally.clone().ok_or(<span class="string">&quot;handled by clap&quot;</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>pks = parse_public_committee_keys(pub_keys).expect(<span class="string">&quot;unable to parse public keys&quot;</span>);
+        <span class="kw">let </span>pks = parse_public_committee_keys(pub_keys)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>validated_tally = encrypted_tally.validate_partial_decryptions(<span class="kw-2">&amp;</span>pks, <span class="kw-2">&amp;</span>shares)<span class="question-mark">?</span>;
 
@@ -548,15 +527,10 @@
     // Internal use only
     //
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(committee_private_keys) = args.produce_decrypt_shares {
-        <span class="kw">let </span>(_pub_keys, priv_keys) =
-            parse_private_committee_keys(committee_private_keys).expect(<span class="string">&quot;unable to parse keys&quot;</span>);
+        <span class="kw">let </span>(_pub_keys, priv_keys) = parse_private_committee_keys(committee_private_keys)<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>encrypted_tally = load_encrypted_tally(
-            args.encrypted_tally
-                .clone()
-                .expect(<span class="string">&quot;corrupted encrypted tally&quot;</span>),
-        )
-        .expect(<span class="string">&quot;unable to read encrypted tally - should be base64 format&quot;</span>);
+        <span class="kw">let </span>encrypted_tally =
+            load_encrypted_tally(args.encrypted_tally.clone().ok_or(<span class="string">&quot;handled by clap&quot;</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>shares = extract_decrypt_shares(encrypted_tally, priv_keys);
 
@@ -568,15 +542,10 @@
     // Intended for internal use
     //
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(committee_private_keys) = args.decrypt_tally_from_keys {
-        <span class="kw">let </span>(_pub_keys, priv_keys) =
-            parse_private_committee_keys(committee_private_keys).expect(<span class="string">&quot;unable to parse keys&quot;</span>);
+        <span class="kw">let </span>(_pub_keys, priv_keys) = parse_private_committee_keys(committee_private_keys)<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>encrypted_tally = load_encrypted_tally(
-            args.encrypted_tally
-                .clone()
-                .expect(<span class="string">&quot;corrupted encrypted tally&quot;</span>),
-        )
-        .expect(<span class="string">&quot;unable to read encrypted tally - should be base64 format&quot;</span>);
+        <span class="kw">let </span>encrypted_tally =
+            load_encrypted_tally(args.encrypted_tally.clone().ok_or(<span class="string">&quot;handled by clap&quot;</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
 
         <span class="macro">println!</span>(
             <span class="string">&quot;tally decryption {:?}&quot;</span>,
@@ -588,10 +557,9 @@
     // Show public keys of private keys
     //
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(committee_private_keys) = args.show_public_keys {
-        <span class="kw">let </span>(pub_keys, _priv_keys) = parse_private_committee_keys(committee_private_keys.clone())
-            .expect(<span class="string">&quot;unable to parse keys&quot;</span>);
+        <span class="kw">let </span>(pub_keys, _priv_keys) = parse_private_committee_keys(committee_private_keys.clone())<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>encoded = encode_public_keys(pub_keys).expect(<span class="string">&quot;unable to encode public key&quot;</span>);
+        <span class="kw">let </span>encoded = encode_public_keys(pub_keys)<span class="question-mark">?</span>;
         <span class="kw">let </span>it = encoded.iter().zip(committee_private_keys.iter());
 
         <span class="kw">for </span>(i, (x, y)) <span class="kw">in </span>it.enumerate() {

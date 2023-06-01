@@ -14,10 +14,12 @@ use event_db::types::event::{
 };
 use std::sync::Arc;
 
+mod ballot;
 mod review;
 
 pub fn proposal(state: Arc<State>) -> Router {
     let review = review::review(state.clone());
+    let ballot = ballot::ballot(state.clone());
 
     Router::new()
         .nest(
@@ -30,7 +32,8 @@ pub fn proposal(state: Arc<State>) -> Router {
                         move |path| async { handle_result(proposal_exec(path, state).await).await }
                     }),
                 )
-                .merge(review),
+                .merge(review)
+                .merge(ballot),
         )
         .route(
             "/proposals",

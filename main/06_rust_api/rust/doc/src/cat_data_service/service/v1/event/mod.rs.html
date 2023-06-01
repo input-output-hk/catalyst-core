@@ -518,7 +518,10 @@
 <a href="#518" id="518">518</a>
 <a href="#519" id="519">519</a>
 <a href="#520" id="520">520</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::LimitOffset;
+<span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
 };
@@ -530,12 +533,12 @@
 <span class="kw">use </span>event_db::types::event::{Event, EventId, EventSummary};
 <span class="kw">use </span>std::sync::Arc;
 
-<span class="kw">use </span><span class="kw">super</span>::LimitOffset;
-
+<span class="kw">mod </span>ballots;
 <span class="kw">mod </span>objective;
 
 <span class="kw">pub fn </span>event(state: Arc&lt;State&gt;) -&gt; Router {
     <span class="kw">let </span>objective = objective::objective(state.clone());
+    <span class="kw">let </span>ballots = ballots::ballots(state.clone());
 
     Router::new()
         .nest(
@@ -548,7 +551,8 @@
                         <span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(event_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}
                     }),
                 )
-                .merge(objective),
+                .merge(objective)
+                .merge(ballots),
         )
         .route(
             <span class="string">&quot;/events&quot;</span>,

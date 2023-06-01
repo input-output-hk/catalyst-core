@@ -1,3 +1,4 @@
+use super::LimitOffset;
 use crate::{
     service::{handle_result, Error},
     state::State,
@@ -10,12 +11,12 @@ use axum::{
 use event_db::types::event::{Event, EventId, EventSummary};
 use std::sync::Arc;
 
-use super::LimitOffset;
-
+mod ballots;
 mod objective;
 
 pub fn event(state: Arc<State>) -> Router {
     let objective = objective::objective(state.clone());
+    let ballots = ballots::ballots(state.clone());
 
     Router::new()
         .nest(
@@ -28,7 +29,8 @@ pub fn event(state: Arc<State>) -> Router {
                         move |path| async { handle_result(event_exec(path, state).await).await }
                     }),
                 )
-                .merge(objective),
+                .merge(objective)
+                .merge(ballots),
         )
         .route(
             "/events",

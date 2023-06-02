@@ -127,7 +127,7 @@ CREATE TABLE review_metric (
   description VARCHAR NULL,
   min INTEGER NOT NULL,
   max INTEGER NOT NULL,
-  map JSONB NULL
+  map JSONB ARRAY NULL
 );
 COMMENT ON TABLE review_metric IS 'Definition of all possible review metrics.';
 COMMENT ON COLUMN review_metric.row_id IS 'The synthetic ID of this metric.';
@@ -155,11 +155,11 @@ VALUES
     ('feasibility','Feasibility Rating', 0, 5, NULL),
     ('auditability','Auditability Rating', 0, 5, NULL),
     ('value','Value Proposition Rating', 0, 5, NULL),
-    ('vpa_ranking','VPA Ranking of the review',0,3,
-      '[{"name":"Excellent","desc":"Excellent Review"},
-         {"name":"Good","desc":"Could be improved."},
-         {"name":"FilteredOut","desc":"Exclude this review"},
-         {"name":"NA", "desc":"Not Applicable"}]');
+    ('vpa_ranking','VPA Ranking of the review',0,3, ARRAY [
+            '{"name":"Excellent","desc":"Excellent Review"}',
+            '{"name":"Good","desc":"Could be improved."}',
+            '{"name":"FilteredOut","desc":"Exclude this review"}',
+            '{"name":"NA", "desc":"Not Applicable"}']::JSON[]);
 
 CREATE TABLE objective_review_metric (
   row_id SERIAL PRIMARY KEY,

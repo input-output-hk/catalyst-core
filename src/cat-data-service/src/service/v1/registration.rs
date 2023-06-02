@@ -96,8 +96,7 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-    use event_db::types::registration::{Delegation, VoterGroupId, VoterInfo};
+    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -112,33 +111,26 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Voter {
-                voter_info: VoterInfo {
-                    voting_power: 250,
-                    voting_group: VoterGroupId("rep".to_string()),
-                    delegations_power: 250,
-                    delegations_count: 2,
-                    voting_power_saturation: 0.625,
-                },
-                as_at: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: true,
-            })
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                {
+                    "voter_info": {
+                        "voting_power": 250,
+                        "voting_group": "rep",
+                        "delegations_power": 250,
+                        "delegations_count": 2,
+                        "voting_power_saturation": 0.625
+                    },
+                    "as_at": "2022-03-31T12:00:00+00:00",
+                    "last_updated": "2022-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
         );
 
         let request = Request::builder()
@@ -151,33 +143,26 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Voter {
-                voter_info: VoterInfo {
-                    voting_power: 250,
-                    voting_group: VoterGroupId("rep".to_string()),
-                    delegations_power: 250,
-                    delegations_count: 2,
-                    voting_power_saturation: 0.625,
-                },
-                as_at: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: true,
-            })
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                {
+                    "voter_info": {
+                        "voting_power": 250,
+                        "voting_group": "rep",
+                        "delegations_power": 250,
+                        "delegations_count": 2,
+                        "voting_power_saturation": 0.625
+                    },
+                    "as_at": "2020-03-31T12:00:00+00:00",
+                    "last_updated": "2020-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
         );
 
         let request = Request::builder()
@@ -213,42 +198,35 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Delegator {
-                delegations: vec![
-                    Delegation {
-                        voting_key: "voting_key_1".to_string(),
-                        group: VoterGroupId("rep".to_string()),
-                        weight: 1,
-                        value: 140
-                    },
-                    Delegation {
-                        voting_key: "voting_key_2".to_string(),
-                        group: VoterGroupId("rep".to_string()),
-                        weight: 1,
-                        value: 100
-                    }
-                ],
-                raw_power: 240,
-                total_power: 1000,
-                as_at: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: true
-            })
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                {
+                    "delegations": [
+                        {
+                            "voting_key": "voting_key_1",
+                            "group": "rep",
+                            "weight": 1,
+                            "value": 140
+                        },
+                        {
+                            "voting_key": "voting_key_2",
+                            "group": "rep",
+                            "weight": 1,
+                            "value": 100
+                        },
+                    ],
+                    "raw_power": 240,
+                    "total_power": 1000,
+                    "as_at": "2022-03-31T12:00:00+00:00",
+                    "last_updated": "2022-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
         );
 
         let request = Request::builder()
@@ -261,42 +239,35 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Delegator {
-                delegations: vec![
-                    Delegation {
-                        voting_key: "voting_key_1".to_string(),
-                        group: VoterGroupId("rep".to_string()),
-                        weight: 1,
-                        value: 140
-                    },
-                    Delegation {
-                        voting_key: "voting_key_2".to_string(),
-                        group: VoterGroupId("rep".to_string()),
-                        weight: 1,
-                        value: 100
-                    }
-                ],
-                raw_power: 240,
-                total_power: 1000,
-                as_at: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: true
-            })
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                {
+                    "delegations": [
+                        {
+                            "voting_key": "voting_key_1",
+                            "group": "rep",
+                            "weight": 1,
+                            "value": 140
+                        },
+                        {
+                            "voting_key": "voting_key_2",
+                            "group": "rep",
+                            "weight": 1,
+                            "value": 100
+                        },
+                    ],
+                    "raw_power": 240,
+                    "total_power": 1000,
+                    "as_at": "2020-03-31T12:00:00+00:00",
+                    "last_updated": "2020-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
         );
 
         let request = Request::builder()

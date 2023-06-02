@@ -46,16 +46,7 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::{
-        event::{
-            ballot::{
-                Ballot, BallotType, GroupVotePlans, ObjectiveChoices, ProposalBallot, VotePlan,
-            },
-            objective::ObjectiveId,
-            proposal::ProposalId,
-        },
-        registration::VoterGroupId,
-    };
+    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -71,65 +62,66 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
 
         assert_eq!(
-            serde_json::to_string(&vec![ObjectiveBallots {
-                objective_id: ObjectiveId(1),
-                ballots: vec![
-                    ProposalBallot {
-                        proposal_id: ProposalId(1),
-                        ballot: Ballot {
-                            choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
-                            voteplans: GroupVotePlans(vec![
-                                VotePlan {
-                                    chain_proposal_index: 10,
-                                    group: VoterGroupId("direct".to_string()),
-                                    ballot_type: BallotType("public".to_string()),
-                                    chain_voteplan_id: "1".to_string(),
-                                    encryption_key: None,
-                                },
-                                VotePlan {
-                                    chain_proposal_index: 12,
-                                    group: VoterGroupId("rep".to_string()),
-                                    ballot_type: BallotType("public".to_string()),
-                                    chain_voteplan_id: "2".to_string(),
-                                    encryption_key: None,
-                                }
-                            ]),
-                        },
-                    },
-                    ProposalBallot {
-                        proposal_id: ProposalId(2),
-                        ballot: Ballot {
-                            choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
-                            voteplans: GroupVotePlans(vec![
-                                VotePlan {
-                                    chain_proposal_index: 11,
-                                    group: VoterGroupId("direct".to_string()),
-                                    ballot_type: BallotType("public".to_string()),
-                                    chain_voteplan_id: "1".to_string(),
-                                    encryption_key: None,
-                                },
-                                VotePlan {
-                                    chain_proposal_index: 13,
-                                    group: VoterGroupId("rep".to_string()),
-                                    ballot_type: BallotType("public".to_string()),
-                                    chain_voteplan_id: "2".to_string(),
-                                    encryption_key: None,
-                                }
-                            ]),
-                        },
-                    },
-                    ProposalBallot {
-                        proposal_id: ProposalId(3),
-                        ballot: Ballot {
-                            choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
-                            voteplans: GroupVotePlans(vec![]),
-                        },
-                    }
-                ]
-            }],)
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!([
+                {
+                    "objective_id": 1,
+                    "ballots": [
+                        {
+                            "proposal_id": 1,
+                            "ballot": {
+                                "choices": ["yes", "no"],
+                                "voteplans": [
+                                    {
+                                        "chain_proposal_index": 10,
+                                        "group": "direct",
+                                        "ballot_type": "public",
+                                        "chain_voteplan_id": "1",
+                                    },
+                                    {
+                                        "chain_proposal_index": 12,
+                                        "group": "rep",
+                                        "ballot_type": "public",
+                                        "chain_voteplan_id": "2",
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "proposal_id": 2,
+                            "ballot": {
+                                "choices": ["yes", "no"],
+                                "voteplans": [
+                                    {
+                                        "chain_proposal_index": 11,
+                                        "group": "direct",
+                                        "ballot_type": "public",
+                                        "chain_voteplan_id": "1",
+                                    },
+                                    {
+                                        "chain_proposal_index": 13,
+                                        "group": "rep",
+                                        "ballot_type": "public",
+                                        "chain_voteplan_id": "2",
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "proposal_id": 3,
+                            "ballot": {
+                                "choices": ["yes", "no"],
+                                "voteplans": []
+                            }
+                        }
+                    ]
+                }
+            ])
         );
     }
 }

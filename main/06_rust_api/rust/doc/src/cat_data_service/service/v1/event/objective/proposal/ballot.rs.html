@@ -112,7 +112,6 @@
 <a href="#112" id="112">112</a>
 <a href="#113" id="113">113</a>
 <a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -171,10 +170,7 @@
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>event_db::types::{
-        event::ballot::{BallotType, GroupVotePlans, ObjectiveChoices, VotePlan},
-        registration::VoterGroupId,
-    };
+    <span class="kw">use </span>std::str::FromStr;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -191,30 +187,32 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-
         <span class="macro">assert_eq!</span>(
-            serde_json::to_string(<span class="kw-2">&amp;</span>Ballot {
-                choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
-                voteplans: GroupVotePlans(<span class="macro">vec!</span>[
-                    VotePlan {
-                        chain_proposal_index: <span class="number">10</span>,
-                        group: VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string()),
-                        ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
-                        chain_voteplan_id: <span class="string">&quot;1&quot;</span>.to_string(),
-                        encryption_key: <span class="prelude-val">None</span>,
-                    },
-                    VotePlan {
-                        chain_proposal_index: <span class="number">12</span>,
-                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
-                        ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
-                        chain_voteplan_id: <span class="string">&quot;2&quot;</span>.to_string(),
-                        encryption_key: <span class="prelude-val">None</span>,
-                    }
-                ]),
-            })
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap()
+            <span class="macro">serde_json::json!</span>(
+                {
+                    <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
+                    <span class="string">&quot;voteplans&quot;</span>: [
+                        {
+                            <span class="string">&quot;chain_proposal_index&quot;</span>: <span class="number">10</span>,
+                            <span class="string">&quot;group&quot;</span>: <span class="string">&quot;direct&quot;</span>,
+                            <span class="string">&quot;ballot_type&quot;</span>: <span class="string">&quot;public&quot;</span>,
+                            <span class="string">&quot;chain_voteplan_id&quot;</span>: <span class="string">&quot;1&quot;</span>,
+                        },
+                        {
+                            <span class="string">&quot;chain_proposal_index&quot;</span>: <span class="number">12</span>,
+                            <span class="string">&quot;group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                            <span class="string">&quot;ballot_type&quot;</span>: <span class="string">&quot;public&quot;</span>,
+                            <span class="string">&quot;chain_voteplan_id&quot;</span>: <span class="string">&quot;2&quot;</span>,
+                        }
+                    ]
+                }
+            )
         );
 
         <span class="kw">let </span>request = Request::builder()

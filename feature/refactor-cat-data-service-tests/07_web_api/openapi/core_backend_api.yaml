@@ -1109,6 +1109,7 @@ components:
               * The array is sequential with no gaps.
           items:
             type: object
+            additionalProperties: true
             properties:
               name:
                 type: string

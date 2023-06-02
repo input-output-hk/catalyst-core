@@ -125,14 +125,6 @@
 <a href="#125" id="125">125</a>
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
-<a href="#131" id="131">131</a>
-<a href="#132" id="132">132</a>
-<a href="#133" id="133">133</a>
-<a href="#134" id="134">134</a>
-<a href="#135" id="135">135</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -181,16 +173,7 @@
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>event_db::types::{
-        event::{
-            ballot::{
-                Ballot, BallotType, GroupVotePlans, ObjectiveChoices, ProposalBallot, VotePlan,
-            },
-            objective::ObjectiveId,
-            proposal::ProposalId,
-        },
-        registration::VoterGroupId,
-    };
+    <span class="kw">use </span>std::str::FromStr;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -206,65 +189,66 @@
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
 
         <span class="macro">assert_eq!</span>(
-            serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[ObjectiveBallots {
-                objective_id: ObjectiveId(<span class="number">1</span>),
-                ballots: <span class="macro">vec!</span>[
-                    ProposalBallot {
-                        proposal_id: ProposalId(<span class="number">1</span>),
-                        ballot: Ballot {
-                            choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
-                            voteplans: GroupVotePlans(<span class="macro">vec!</span>[
-                                VotePlan {
-                                    chain_proposal_index: <span class="number">10</span>,
-                                    group: VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string()),
-                                    ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
-                                    chain_voteplan_id: <span class="string">&quot;1&quot;</span>.to_string(),
-                                    encryption_key: <span class="prelude-val">None</span>,
-                                },
-                                VotePlan {
-                                    chain_proposal_index: <span class="number">12</span>,
-                                    group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
-                                    ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
-                                    chain_voteplan_id: <span class="string">&quot;2&quot;</span>.to_string(),
-                                    encryption_key: <span class="prelude-val">None</span>,
-                                }
-                            ]),
-                        },
-                    },
-                    ProposalBallot {
-                        proposal_id: ProposalId(<span class="number">2</span>),
-                        ballot: Ballot {
-                            choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
-                            voteplans: GroupVotePlans(<span class="macro">vec!</span>[
-                                VotePlan {
-                                    chain_proposal_index: <span class="number">11</span>,
-                                    group: VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string()),
-                                    ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
-                                    chain_voteplan_id: <span class="string">&quot;1&quot;</span>.to_string(),
-                                    encryption_key: <span class="prelude-val">None</span>,
-                                },
-                                VotePlan {
-                                    chain_proposal_index: <span class="number">13</span>,
-                                    group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
-                                    ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
-                                    chain_voteplan_id: <span class="string">&quot;2&quot;</span>.to_string(),
-                                    encryption_key: <span class="prelude-val">None</span>,
-                                }
-                            ]),
-                        },
-                    },
-                    ProposalBallot {
-                        proposal_id: ProposalId(<span class="number">3</span>),
-                        ballot: Ballot {
-                            choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
-                            voteplans: GroupVotePlans(<span class="macro">vec!</span>[]),
-                        },
-                    }
-                ]
-            }],)
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap()
+            <span class="macro">serde_json::json!</span>([
+                {
+                    <span class="string">&quot;objective_id&quot;</span>: <span class="number">1</span>,
+                    <span class="string">&quot;ballots&quot;</span>: [
+                        {
+                            <span class="string">&quot;proposal_id&quot;</span>: <span class="number">1</span>,
+                            <span class="string">&quot;ballot&quot;</span>: {
+                                <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
+                                <span class="string">&quot;voteplans&quot;</span>: [
+                                    {
+                                        <span class="string">&quot;chain_proposal_index&quot;</span>: <span class="number">10</span>,
+                                        <span class="string">&quot;group&quot;</span>: <span class="string">&quot;direct&quot;</span>,
+                                        <span class="string">&quot;ballot_type&quot;</span>: <span class="string">&quot;public&quot;</span>,
+                                        <span class="string">&quot;chain_voteplan_id&quot;</span>: <span class="string">&quot;1&quot;</span>,
+                                    },
+                                    {
+                                        <span class="string">&quot;chain_proposal_index&quot;</span>: <span class="number">12</span>,
+                                        <span class="string">&quot;group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                                        <span class="string">&quot;ballot_type&quot;</span>: <span class="string">&quot;public&quot;</span>,
+                                        <span class="string">&quot;chain_voteplan_id&quot;</span>: <span class="string">&quot;2&quot;</span>,
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            <span class="string">&quot;proposal_id&quot;</span>: <span class="number">2</span>,
+                            <span class="string">&quot;ballot&quot;</span>: {
+                                <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
+                                <span class="string">&quot;voteplans&quot;</span>: [
+                                    {
+                                        <span class="string">&quot;chain_proposal_index&quot;</span>: <span class="number">11</span>,
+                                        <span class="string">&quot;group&quot;</span>: <span class="string">&quot;direct&quot;</span>,
+                                        <span class="string">&quot;ballot_type&quot;</span>: <span class="string">&quot;public&quot;</span>,
+                                        <span class="string">&quot;chain_voteplan_id&quot;</span>: <span class="string">&quot;1&quot;</span>,
+                                    },
+                                    {
+                                        <span class="string">&quot;chain_proposal_index&quot;</span>: <span class="number">13</span>,
+                                        <span class="string">&quot;group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                                        <span class="string">&quot;ballot_type&quot;</span>: <span class="string">&quot;public&quot;</span>,
+                                        <span class="string">&quot;chain_voteplan_id&quot;</span>: <span class="string">&quot;2&quot;</span>,
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            <span class="string">&quot;proposal_id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;ballot&quot;</span>: {
+                                <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
+                                <span class="string">&quot;voteplans&quot;</span>: []
+                            }
+                        }
+                    ]
+                }
+            ])
         );
     }
 }

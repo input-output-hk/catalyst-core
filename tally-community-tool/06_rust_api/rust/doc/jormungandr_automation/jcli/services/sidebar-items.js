@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"mod":["certificate_builder","fragment_check","fragment_sender","fragments_check","transaction_builder"]};

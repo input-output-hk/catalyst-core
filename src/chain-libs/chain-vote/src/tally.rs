@@ -1,5 +1,6 @@
 use std::num::NonZeroU64;
 
+use crate::GroupElement;
 use crate::{
     committee::*,
     cryptography::{Ciphertext, CorrectShareGenerationZkp},
@@ -7,8 +8,7 @@ use crate::{
     math::babystep::baby_step_giant_step,
     TallyOptimizationTable,
 };
-
-use crate::GroupElement;
+use base64::{engine::general_purpose, Engine as _};
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 use rand_core::{CryptoRng, RngCore};
@@ -101,6 +101,15 @@ pub struct TallyError;
 #[error("Incorrect decryption shares")]
 pub struct DecryptionError;
 
+#[derive(Debug, thiserror::Error)]
+#[error("Incorrect decryption shares")]
+pub struct EncryptedTallyError;
+
+/// Base64 decode error
+#[derive(Debug, thiserror::Error)]
+#[error("Invalid data, cannot decode base64 {0}")]
+pub struct Base64DecodeError(String);
+
 impl EncryptedTally {
     const MAX_STAKE_BYTES_LEN: usize = std::mem::size_of::<u64>();
 
@@ -113,6 +122,26 @@ impl EncryptedTally {
             r,
             fingerprint: (&election_pk, &crs).into(),
             max_stake: 0,
+        }
+    }
+
+    /// Returns base64 representation of `EncryptedTally`
+    #[must_use]
+    pub fn to_base64(&self) -> String {
+        let bytes = self.to_bytes();
+        general_purpose::STANDARD.encode(bytes)
+    }
+
+    /// Generate `EncryptedTally` type from base64 representation
+    /// # Errors
+    /// - `Base64DecodeError`
+    pub fn from_base_64(encrypted_tally_b64: String) -> Result<Self, Box<dyn std::error::Error>> {
+        match general_purpose::STANDARD.decode(encrypted_tally_b64) {
+            Ok(bytes) => match EncryptedTally::from_bytes(&bytes) {
+                Some(encrypted_tally) => Ok(encrypted_tally),
+                None => Err(Box::new(EncryptedTallyError)),
+            },
+            Err(err) => Err(Box::new(Base64DecodeError(err.to_string()))),
         }
     }
 

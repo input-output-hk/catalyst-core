@@ -52,6 +52,7 @@
 <a href="#52" id="52">52</a>
 <a href="#53" id="53">53</a>
 <a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Rust implementation of voting tools
 //!
 //! Original Haskell repository is &lt;https://github.com/input-output-hk/voting-tools&gt;
@@ -75,7 +76,8 @@
     clippy::iter_nth_zero,
     clippy::type_complexity,
     clippy::match_same_arms,
-    clippy::useless_conversion
+    clippy::useless_conversion,
+    clippy::wildcard_imports
 )]
 #![cfg_attr(test, allow(clippy::let_underscore_drop))] </span><span class="comment">// useful in tests, often a bug otherwise
 

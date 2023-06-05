@@ -862,7 +862,7 @@ digraph erd {
             
             <tr>
                 <td port="map"  align='text'><font>map</font><br align='left'/></td>
-                <td port="map_out"  ><font><i>jsonb</i></font></td>
+                <td port="map_out"  ><font><i>ARRAY</i></font></td>
             </tr>
             
 

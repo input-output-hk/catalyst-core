@@ -440,6 +440,8 @@
 <span class="kw">use </span><span class="kw">crate</span>::common::data::{Snapshot, ValidVotingTemplateGenerator};
 <span class="kw">use </span>chain_impl_mockchain::certificate::ExternalProposalId;
 <span class="kw">use </span>itertools::Itertools;
+<span class="kw">use </span>snapshot_lib::voting_group::DEFAULT_DIRECT_VOTER_GROUP;
+<span class="kw">use </span>snapshot_lib::voting_group::DEFAULT_REPRESENTATIVE_GROUP;
 <span class="kw">use </span>std::collections::BTreeSet;
 <span class="kw">use </span>std::iter;
 <span class="kw">use </span>time::{Duration, OffsetDateTime};
@@ -519,10 +521,18 @@
 
         <span class="kw">let </span>groups: BTreeSet&lt;Group&gt; = std::iter::from_fn(|| <span class="prelude-val">Some</span>(<span class="self">self</span>.id_generator.next_i32()))
             .take(<span class="number">2</span>)
-            .map(|group_id| Group {
-                fund_id: id,
-                token_identifier: <span class="macro">format!</span>(<span class="string">&quot;group{group_id}-token&quot;</span>),
-                group_id: group_id.to_string(),
+            .map(|group_id| {
+                <span class="kw">let </span>group_id = <span class="kw">if </span>group_id % <span class="number">2 </span>== <span class="number">0 </span>{
+                    DEFAULT_DIRECT_VOTER_GROUP.to_string()
+                } <span class="kw">else </span>{
+                    DEFAULT_REPRESENTATIVE_GROUP.to_string()
+                };
+
+                Group {
+                    fund_id: id,
+                    token_identifier: <span class="macro">format!</span>(<span class="string">&quot;group{group_id}-token&quot;</span>),
+                    group_id,
+                }
             })
             .collect();
 
@@ -726,15 +736,6 @@
             .collect()
     }
 
-    <span class="comment">// TODO: this could be a static/associated method
-    </span><span class="kw">pub fn </span>groups(<span class="kw-2">&amp;mut </span><span class="self">self</span>, funds: <span class="kw-2">&amp;</span>[Fund]) -&gt; Vec&lt;Group&gt; {
-        funds
-            .iter()
-            .flat_map(|f| f.groups.iter())
-            .cloned()
-            .collect()
-    }
-
     <span class="kw">pub fn </span>voteplan_with_fund_id(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         fund_id: i32,
@@ -855,10 +856,9 @@
         <span class="kw">let </span>reviews = <span class="self">self</span>.advisor_reviews(<span class="kw-2">&amp;mut </span>proposals);
         <span class="kw">let </span>goals = <span class="self">self</span>.goals(<span class="kw-2">&amp;</span>funds);
         <span class="kw">let </span>tokens = <span class="self">self</span>.id_generator.tokens();
-        <span class="kw">let </span>groups = <span class="self">self</span>.groups(<span class="kw-2">&amp;</span>funds);
 
         Snapshot::new(
-            funds, proposals, challenges, tokens, voteplans, reviews, goals, groups,
+            funds, proposals, challenges, tokens, voteplans, reviews, goals,
         )
     }
 }

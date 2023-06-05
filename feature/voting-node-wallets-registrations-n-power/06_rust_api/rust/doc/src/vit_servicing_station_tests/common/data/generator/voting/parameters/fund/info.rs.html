@@ -77,7 +77,9 @@
 <a href="#77" id="77">77</a>
 <a href="#78" id="78">78</a>
 <a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::dates::FundDates;
+<span class="kw">use </span>snapshot_lib::voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP};
 <span class="kw">use </span>vit_servicing_station_lib::db::models::{funds::Fund, goals::Goal, groups::Group};
 
 <span class="attr">#[derive(Debug, Clone)]
@@ -145,12 +147,12 @@
                 Group {
                     fund_id: <span class="number">1</span>,
                     token_identifier: <span class="string">&quot;00000000000000000000000000000000000000000000000000000000.0000000000000000000000000000000000000000000000000000000000000000&quot;</span>.to_string(),
-                    group_id: <span class="string">&quot;12345&quot;</span>.to_string(),
+                    group_id: DEFAULT_DIRECT_VOTER_GROUP.to_string(),
                 },
                 Group {
                     fund_id: <span class="number">1</span>,
                     token_identifier: <span class="string">&quot;00000000000000000000000000000000000000000000000000000001.0000000000000000000000000000000000000000000000000000000000000000&quot;</span>.to_string(),
-                    group_id: <span class="string">&quot;12346&quot;</span>.to_string(),
+                    group_id: DEFAULT_REPRESENTATIVE_GROUP.to_string(),
                 },
             ],
         }

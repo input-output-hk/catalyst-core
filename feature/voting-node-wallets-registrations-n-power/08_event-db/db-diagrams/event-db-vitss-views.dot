@@ -450,7 +450,7 @@ digraph erd {
             
             <tr>
                 <td port="group_id"  align='text'><font>group_id</font><br align='left'/></td>
-                <td   ><font><i>varchar</i></font></td>
+                <td   ><font><i>text</i></font></td>
                 <td port="group_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             
@@ -684,13 +684,13 @@ digraph erd {
             
             <tr>
                 <td port="token_identifier"  align='text'><font>token_identifier</font><br align='left'/></td>
-                <td   ><font><i>varchar</i></font></td>
+                <td   ><font><i>text</i></font></td>
                 <td port="token_identifier_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="group_id"  align='text'><font>group_id</font><br align='left'/></td>
-                <td   ><font><i>varchar</i></font></td>
+                <td   ><font><i>text</i></font></td>
                 <td port="group_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             
@@ -1054,7 +1054,7 @@ digraph erd {
             
             <tr>
                 <td port="token_identifier"  align='text'><font>token_identifier</font><br align='left'/></td>
-                <td   ><font><i>varchar</i></font></td>
+                <td   ><font><i>text</i></font></td>
                 <td port="token_identifier_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             

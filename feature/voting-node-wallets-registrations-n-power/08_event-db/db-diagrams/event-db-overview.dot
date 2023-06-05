@@ -862,7 +862,7 @@ digraph erd {
             
             <tr>
                 <td port="map"  align='text'><font>map</font><br align='left'/></td>
-                <td port="map_out"  ><font><i>jsonb</i></font></td>
+                <td port="map_out"  ><font><i>ARRAY</i></font></td>
             </tr>
             
 
@@ -1038,6 +1038,11 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="committee_pk"  align='text'><font>committee_pk</font><br align='left'/></td>
+                <td port="committee_pk_out"  ><font>text</font></td>
+            </tr>
+            
+            <tr>
                 <td port="committee_id"  align='text'><font>committee_id</font><br align='left'/></td>
                 <td port="committee_id_out"  ><font>text</font></td>
             </tr>
@@ -1111,8 +1116,8 @@ digraph erd {
             </tr>
             
             <tr>
-                <td port="event_id"  align='text'><font>event_id</font><br align='left'/></td>
-                <td port="event_id_out"  ><font>integer</font></td>
+                <td port="objective_id"  align='text'><font>objective_id</font><br align='left'/></td>
+                <td port="objective_id_out"  ><font>integer</font></td>
             </tr>
             
             <tr>
@@ -1132,7 +1137,12 @@ digraph erd {
             
             <tr>
                 <td port="group_id"  align='text'><font>group_id</font><br align='left'/></td>
-                <td port="group_id_out"  ><font><i>integer</i></font></td>
+                <td port="group_id_out"  ><font><i>text</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="token_id"  align='text'><font>token_id</font><br align='left'/></td>
+                <td port="token_id_out"  ><font><i>text</i></font></td>
             </tr>
             
 
@@ -1228,23 +1238,8 @@ digraph erd {
 
             
             <tr>
-                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
-                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
-            </tr>
-            
-            <tr>
-                <td port="group_id"  align='text'><font>group_id</font><br align='left'/></td>
-                <td port="group_id_out"  ><font>varchar</font></td>
-            </tr>
-            
-            <tr>
-                <td port="event_id"  align='text'><font>event_id</font><br align='left'/></td>
-                <td port="event_id_out"  ><font>integer</font></td>
-            </tr>
-            
-            <tr>
-                <td port="token_id"  align='text'><font>token_id</font><br align='left'/></td>
-                <td port="token_id_out"  ><font><i>varchar</i></font></td>
+                <td port="name" bgcolor="seagreen1" align='text'><font>name</font><br align='left'/></td>
+                <td port="name_out" bgcolor="seagreen1" ><font>text</font></td>
             </tr>
             
 
@@ -1365,13 +1360,11 @@ digraph erd {
     
     "review_rating":"metric_out" -> "review_metric":"row_id"
     
-    "voting_group":"event_id_out" -> "event":"row_id"
-    
-    "voteplan":"event_id_out" -> "event":"row_id"
+    "voteplan":"objective_id_out" -> "objective":"row_id"
     
     "voteplan":"category_out" -> "voteplan_category":"name"
     
-    "voteplan":"group_id_out" -> "voting_group":"row_id"
+    "voteplan":"group_id_out" -> "voting_group":"name"
     
     "proposal_voteplan":"proposal_id_out" -> "proposal":"row_id"
     

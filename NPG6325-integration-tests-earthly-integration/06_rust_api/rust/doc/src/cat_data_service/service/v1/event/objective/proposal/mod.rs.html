@@ -277,6 +277,14 @@
 <a href="#277" id="277">277</a>
 <a href="#278" id="278">278</a>
 <a href="#279" id="279">279</a>
+<a href="#280" id="280">280</a>
+<a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -293,10 +301,12 @@
 };
 <span class="kw">use </span>std::sync::Arc;
 
+<span class="kw">mod </span>ballot;
 <span class="kw">mod </span>review;
 
 <span class="kw">pub fn </span>proposal(state: Arc&lt;State&gt;) -&gt; Router {
     <span class="kw">let </span>review = review::review(state.clone());
+    <span class="kw">let </span>ballot = ballot::ballot(state.clone());
 
     Router::new()
         .nest(
@@ -309,7 +319,8 @@
                         <span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(proposal_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}
                     }),
                 )
-                .merge(review),
+                .merge(review)
+                .merge(ballot),
         )
         .route(
             <span class="string">&quot;/proposals&quot;</span>,
@@ -378,10 +389,7 @@
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>event_db::types::event::proposal::{
-        ProposalDetails, ProposalSupplementalDetails, ProposerDetails,
-    };
-    <span class="kw">use </span>serde_json::json;
+    <span class="kw">use </span>std::str::FromStr;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -398,38 +406,36 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-
         <span class="macro">assert_eq!</span>(
-            serde_json::to_string(<span class="kw-2">&amp;</span>Proposal {
-                proposal_summary: ProposalSummary {
-                    id: <span class="number">1</span>,
-                    title: String::from(<span class="string">&quot;title 1&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
-                },
-                proposal_details: ProposalDetails {
-                    funds: <span class="number">100</span>,
-                    url: <span class="string">&quot;url.xyz&quot;</span>.to_string(),
-                    files: <span class="string">&quot;files.xyz&quot;</span>.to_string(),
-                    proposer: <span class="macro">vec!</span>[ProposerDetails {
-                        name: <span class="string">&quot;alice&quot;</span>.to_string(),
-                        email: <span class="string">&quot;alice@io&quot;</span>.to_string(),
-                        url: <span class="string">&quot;alice.prop.xyz&quot;</span>.to_string(),
-                        payment_key:
-                            <span class="string">&quot;b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde&quot;
-                                </span>.to_string()
-                    }],
-                    supplemental: <span class="prelude-val">Some</span>(ProposalSupplementalDetails(<span class="macro">json!</span>(
-                        {
-                            <span class="string">&quot;brief&quot;</span>: <span class="string">&quot;Brief explanation of a proposal&quot;</span>,
-                            <span class="string">&quot;goal&quot;</span>: <span class="string">&quot;The goal of the proposal is addressed to meet&quot;</span>,
-                            <span class="string">&quot;importance&quot;</span>: <span class="string">&quot;The importance of the proposal&quot;</span>,
-                        }
-                    ))),
-                }
-            })
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap()
+            <span class="macro">serde_json::json!</span>(
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
+                    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 1&quot;</span>,
+                    <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 1&quot;</span>,
+                    <span class="string">&quot;funds&quot;</span>: <span class="number">100</span>,
+                    <span class="string">&quot;url&quot;</span>: <span class="string">&quot;url.xyz&quot;</span>,
+                    <span class="string">&quot;files&quot;</span>: <span class="string">&quot;files.xyz&quot;</span>,
+                    <span class="string">&quot;proposer&quot;</span>: [
+                        {
+                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;alice&quot;</span>,
+                            <span class="string">&quot;email&quot;</span>: <span class="string">&quot;alice@io&quot;</span>,
+                            <span class="string">&quot;url&quot;</span>: <span class="string">&quot;alice.prop.xyz&quot;</span>,
+                            <span class="string">&quot;payment_key&quot;</span>: <span class="string">&quot;b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde&quot;
+                        </span>}
+                    ],
+                    <span class="string">&quot;supplemental&quot;</span>: {
+                        <span class="string">&quot;brief&quot;</span>: <span class="string">&quot;Brief explanation of a proposal&quot;</span>,
+                        <span class="string">&quot;goal&quot;</span>: <span class="string">&quot;The goal of the proposal is addressed to meet&quot;</span>,
+                        <span class="string">&quot;importance&quot;</span>: <span class="string">&quot;The importance of the proposal&quot;</span>,
+                    }
+                }
+            )
         );
 
         <span class="kw">let </span>request = Request::builder()
@@ -454,28 +460,30 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-
         <span class="macro">assert_eq!</span>(
-            serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[
-                ProposalSummary {
-                    id: <span class="number">1</span>,
-                    title: String::from(<span class="string">&quot;title 1&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            <span class="macro">serde_json::json!</span>([
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
+                    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 1&quot;</span>,
+                    <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 1&quot;</span>,
                 },
-                ProposalSummary {
-                    id: <span class="number">2</span>,
-                    title: String::from(<span class="string">&quot;title 2&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
+                    <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 2&quot;</span>,
                 },
-                ProposalSummary {
-                    id: <span class="number">3</span>,
-                    title: String::from(<span class="string">&quot;title 3&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 3&quot;</span>,
+                    <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 3&quot;</span>,
                 }
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap()
         );
 
         <span class="kw">let </span>request = Request::builder()
@@ -487,23 +495,25 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-
         <span class="macro">assert_eq!</span>(
-            serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[
-                ProposalSummary {
-                    id: <span class="number">1</span>,
-                    title: String::from(<span class="string">&quot;title 1&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            <span class="macro">serde_json::json!</span>([
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
+                    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 1&quot;</span>,
+                    <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 1&quot;</span>,
                 },
-                ProposalSummary {
-                    id: <span class="number">2</span>,
-                    title: String::from(<span class="string">&quot;title 2&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
+                    <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 2&quot;</span>,
                 },
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap()
         );
 
         <span class="kw">let </span>request = Request::builder()
@@ -515,23 +525,25 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-
         <span class="macro">assert_eq!</span>(
-            serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[
-                ProposalSummary {
-                    id: <span class="number">2</span>,
-                    title: String::from(<span class="string">&quot;title 2&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            <span class="macro">serde_json::json!</span>([
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
+                    <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 2&quot;</span>,
                 },
-                ProposalSummary {
-                    id: <span class="number">3</span>,
-                    title: String::from(<span class="string">&quot;title 3&quot;</span>),
-                    summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 3&quot;</span>,
+                    <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 3&quot;</span>,
                 }
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap()
         );
 
         <span class="kw">let </span>request = Request::builder()
@@ -543,16 +555,20 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-
         <span class="macro">assert_eq!</span>(
-            serde_json::to_string(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[ProposalSummary {
-                id: <span class="number">2</span>,
-                title: String::from(<span class="string">&quot;title 2&quot;</span>),
-                summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
-            },])
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap()
+            <span class="macro">serde_json::json!</span>([
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
+                    <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 2&quot;</span>,
+                },
+            ])
         );
     }
 }

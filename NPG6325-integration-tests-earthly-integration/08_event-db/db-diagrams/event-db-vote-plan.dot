@@ -91,9 +91,9 @@ digraph erd {
             </tr>
             
             <tr>
-                <td port="event_id"  align='text'><font>event_id</font><br align='left'/></td>
+                <td port="objective_id"  align='text'><font>objective_id</font><br align='left'/></td>
                 <td   ><font>integer</font></td>
-                <td port="event_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+                <td port="objective_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             
             <tr>
@@ -116,8 +116,14 @@ digraph erd {
             
             <tr>
                 <td port="group_id"  align='text'><font>group_id</font><br align='left'/></td>
-                <td   ><font><i>integer</i></font></td>
+                <td   ><font><i>text</i></font></td>
                 <td port="group_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The identifier of voting power token<br align='left'/>used withing this plan.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="token_id"  align='text'><font>token_id</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="token_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
             </tr>
             
 
@@ -185,27 +191,9 @@ digraph erd {
 
             
             <tr>
-                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
-                <td  bgcolor="seagreen1" ><font>integer+</font></td>
-                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Synthetic Unique Key.</i><br align="left"/></font></td>
-            </tr>
-            
-            <tr>
-                <td port="group_id"  align='text'><font>group_id</font><br align='left'/></td>
-                <td   ><font>varchar</font></td>
-                <td port="group_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The ID of this voting group.</i><br align="left"/></font></td>
-            </tr>
-            
-            <tr>
-                <td port="event_id"  align='text'><font>event_id</font><br align='left'/></td>
-                <td   ><font>integer</font></td>
-                <td port="event_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The event this voting group belongs to.</i><br align="left"/></font></td>
-            </tr>
-            
-            <tr>
-                <td port="token_id"  align='text'><font>token_id</font><br align='left'/></td>
-                <td   ><font><i>varchar</i></font></td>
-                <td port="token_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The ID of the voting token used by this<br align='left'/>group.</i><br align="left"/></font></td>
+                <td port="name" bgcolor="seagreen1" align='text'><font>name</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>text</font></td>
+                <td port="name_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The ID of this voting group.</i><br align="left"/></font></td>
             </tr>
             
 
@@ -223,10 +211,10 @@ digraph erd {
 
     
 
-    "event" [label=<
+    "objective" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
             <tr>
-                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>event</b></font></td>
+                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>objective</b></font></td>
             </tr>
             <tr>
                 <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
@@ -310,13 +298,11 @@ digraph erd {
     >];
 
     
-    "voting_group":"event_id_out" -> "event":"row_id"
-    
-    "voteplan":"event_id_out" -> "event":"row_id"
+    "voteplan":"objective_id_out" -> "objective":"row_id"
     
     "voteplan":"category_out" -> "voteplan_category":"name"
     
-    "voteplan":"group_id_out" -> "voting_group":"row_id"
+    "voteplan":"group_id_out" -> "voting_group":"name"
     
     "proposal_voteplan":"proposal_id_out" -> "proposal":"row_id"
     

@@ -215,14 +215,64 @@
 <a href="#215" id="215">215</a>
 <a href="#216" id="216">216</a>
 <a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
-    types::event::{
-        objective::{
-            Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData,
-            ObjectiveType, RewardDefintion,
+    types::{
+        event::{
+            objective::{
+                Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
+                ObjectiveSupplementalData, ObjectiveType, RewardDefintion, VoterGroup,
+            },
+            EventId,
         },
-        EventId,
+        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -240,12 +290,17 @@
 
 <span class="kw">impl </span>EventDB {
     <span class="kw">const </span>OBJECTIVES_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
+        <span class="string">&quot;SELECT objective.row_id, objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
         objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
         WHERE objective.event = $1
         LIMIT $2 OFFSET $3;&quot;</span>;
+
+    <span class="kw">const </span>VOTING_GROPUS_QEURY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
+        <span class="string">&quot;SELECT voteplan.group_id as group, voteplan.token_id as voting_token
+        FROM voteplan 
+        WHERE objective_id = $1;&quot;</span>;
 }
 
 <span class="attr">#[async_trait]
@@ -267,6 +322,7 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>objectives = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {
+            <span class="kw">let </span>row_id: i32 = row.try_get(<span class="string">&quot;row_id&quot;</span>)<span class="question-mark">?</span>;
             <span class="kw">let </span>summary = ObjectiveSummary {
                 id: ObjectiveId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
                 objective_type: ObjectiveType {
@@ -282,7 +338,23 @@
                 (<span class="prelude-val">Some</span>(currency), <span class="prelude-val">Some</span>(value)) =&gt; <span class="prelude-val">Some</span>(RewardDefintion { currency, value }),
                 <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
             };
+
+            <span class="kw">let </span><span class="kw-2">mut </span>groups = Vec::new();
+            <span class="kw">let </span>rows = conn.query(<span class="self">Self</span>::VOTING_GROPUS_QEURY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>row_id]).<span class="kw">await</span><span class="question-mark">?</span>;
+            <span class="kw">for </span>row <span class="kw">in </span>rows {
+                <span class="kw">let </span>group = row.try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;String&gt;&gt;(<span class="string">&quot;group&quot;</span>)<span class="question-mark">?</span>.map(VoterGroupId);
+                <span class="kw">let </span>voting_token: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;voting_token&quot;</span>)<span class="question-mark">?</span>;
+                <span class="kw">match </span>(group, voting_token) {
+                    (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; {}
+                    (group, voting_token) =&gt; groups.push(VoterGroup {
+                        group,
+                        voting_token,
+                    }),
+                }
+            }
+
             <span class="kw">let </span>details = ObjectiveDetails {
+                groups,
                 reward,
                 supplemental: row
                     .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;&gt;(<span class="string">&quot;extra&quot;</span>)<span class="question-mark">?
@@ -339,6 +411,16 @@
                         description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: <span class="macro">vec!</span>[
+                            VoterGroup {
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
+                                voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
+                            },
+                            VoterGroup {
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
+                                voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 2&quot;</span>.to_string()),
+                            }
+                        ],
                         reward: <span class="prelude-val">Some</span>(RewardDefintion {
                             currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
                             value: <span class="number">100
@@ -363,6 +445,7 @@
                         description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                     },
                     details: ObjectiveDetails {
+                        groups: Vec::new(),
                         reward: <span class="prelude-val">None</span>,
                         supplemental: <span class="prelude-val">None</span>,
                     }
@@ -387,6 +470,16 @@
                     description: <span class="string">&quot;description 1&quot;</span>.to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: <span class="macro">vec!</span>[
+                        VoterGroup {
+                            group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
+                            voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 1&quot;</span>.to_string()),
+                        },
+                        VoterGroup {
+                            group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
+                            voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;voting token 2&quot;</span>.to_string()),
+                        }
+                    ],
                     reward: <span class="prelude-val">Some</span>(RewardDefintion {
                         currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
                         value: <span class="number">100
@@ -419,6 +512,7 @@
                     description: <span class="string">&quot;description 2&quot;</span>.to_string(),
                 },
                 details: ObjectiveDetails {
+                    groups: Vec::new(),
                     reward: <span class="prelude-val">None</span>,
                     supplemental: <span class="prelude-val">None</span>,
                 }

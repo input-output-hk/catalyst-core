@@ -314,10 +314,6 @@
 <a href="#314" id="314">314</a>
 <a href="#315" id="315">315</a>
 <a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cryptography::{Ciphertext, HybridCiphertext, PublicKey, SecretKey};
 <span class="kw">use </span><span class="kw">crate</span>::encrypted_vote::{EncryptedVote, ProofOfCorrectVote, Vote};
 <span class="kw">use </span><span class="kw">crate</span>::math::polynomial::Polynomial;
@@ -488,10 +484,6 @@
 
     <span class="kw">pub fn </span>secret_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>MemberSecretKey {
         <span class="kw-2">&amp;</span><span class="self">self</span>.sk
-    }
-
-    <span class="kw">pub fn </span>member_secret_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; MemberSecretKey {
-        <span class="self">self</span>.sk.clone()
     }
 
     <span class="kw">pub fn </span>public_key(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; MemberPublicKey {

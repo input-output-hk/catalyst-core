@@ -47,7 +47,6 @@ var sourcesIndex = JSON.parse('{\
 "snapshot_wormhole":["",[],["snapshot-wormhole.rs"]],\
 "sparse_array":["",[],["bitmap.rs","fast.rs","lib.rs","sparse_array.rs"]],\
 "symmetric_cipher":["",[],["lib.rs"]],\
-"tally":["",[],["main.rs"]],\
 "thor":["",[["cli",[],["config.rs","controller.rs","error.rs","mod.rs","wallet_controller.rs"]],["fragment",[],["chain_sender.rs","export.rs","initial_certificates.rs","mod.rs","persistent_log.rs","sender.rs","setup.rs","transaction_utils.rs","verifier.rs"]],["utils",[],["mod.rs"]],["wallet",[["committee",[],["mod.rs","single.rs"]]],["account.rs","delegation.rs","discrimination.rs","mod.rs","utxo.rs"]]],["lib.rs","stake_pool.rs"]],\
 "typed_bytes":["",[],["builder.rs","lib.rs"]],\
 "valgrind":["",[["client",[["node",[],["mod.rs","rest.rs"]],["utils",[],["mod.rs","settings.rs"]]],["mod.rs","proxy.rs","vit_station.rs"]],["startup",[],["mod.rs","server.rs"]]],["data.rs","lib.rs"]],\

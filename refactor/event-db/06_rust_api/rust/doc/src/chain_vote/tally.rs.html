@@ -815,38 +815,8 @@
 <a href="#815" id="815">815</a>
 <a href="#816" id="816">816</a>
 <a href="#817" id="817">817</a>
-<a href="#818" id="818">818</a>
-<a href="#819" id="819">819</a>
-<a href="#820" id="820">820</a>
-<a href="#821" id="821">821</a>
-<a href="#822" id="822">822</a>
-<a href="#823" id="823">823</a>
-<a href="#824" id="824">824</a>
-<a href="#825" id="825">825</a>
-<a href="#826" id="826">826</a>
-<a href="#827" id="827">827</a>
-<a href="#828" id="828">828</a>
-<a href="#829" id="829">829</a>
-<a href="#830" id="830">830</a>
-<a href="#831" id="831">831</a>
-<a href="#832" id="832">832</a>
-<a href="#833" id="833">833</a>
-<a href="#834" id="834">834</a>
-<a href="#835" id="835">835</a>
-<a href="#836" id="836">836</a>
-<a href="#837" id="837">837</a>
-<a href="#838" id="838">838</a>
-<a href="#839" id="839">839</a>
-<a href="#840" id="840">840</a>
-<a href="#841" id="841">841</a>
-<a href="#842" id="842">842</a>
-<a href="#843" id="843">843</a>
-<a href="#844" id="844">844</a>
-<a href="#845" id="845">845</a>
-<a href="#846" id="846">846</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::num::NonZeroU64;
 
-<span class="kw">use </span><span class="kw">crate</span>::GroupElement;
 <span class="kw">use crate</span>::{
     committee::<span class="kw-2">*</span>,
     cryptography::{Ciphertext, CorrectShareGenerationZkp},
@@ -854,7 +824,8 @@
     math::babystep::baby_step_giant_step,
     TallyOptimizationTable,
 };
-<span class="kw">use </span>base64::{engine::general_purpose, Engine <span class="kw">as _</span>};
+
+<span class="kw">use </span><span class="kw">crate</span>::GroupElement;
 <span class="kw">use </span>cryptoxide::blake2b::Blake2b;
 <span class="kw">use </span>cryptoxide::digest::Digest;
 <span class="kw">use </span>rand_core::{CryptoRng, RngCore};
@@ -947,15 +918,6 @@
 #[error(<span class="string">&quot;Incorrect decryption shares&quot;</span>)]
 </span><span class="kw">pub struct </span>DecryptionError;
 
-<span class="attr">#[derive(Debug, thiserror::Error)]
-#[error(<span class="string">&quot;Incorrect decryption shares&quot;</span>)]
-</span><span class="kw">pub struct </span>EncryptedTallyError;
-
-<span class="doccomment">/// Base64 decode error
-</span><span class="attr">#[derive(Debug, thiserror::Error)]
-#[error(<span class="string">&quot;Invalid data, cannot decode base64 {0}&quot;</span>)]
-</span><span class="kw">pub struct </span>Base64DecodeError(String);
-
 <span class="kw">impl </span>EncryptedTally {
     <span class="kw">const </span>MAX_STAKE_BYTES_LEN: usize = std::mem::size_of::&lt;u64&gt;();
 
@@ -968,26 +930,6 @@
             r,
             fingerprint: (<span class="kw-2">&amp;</span>election_pk, <span class="kw-2">&amp;</span>crs).into(),
             max_stake: <span class="number">0</span>,
-        }
-    }
-
-    <span class="doccomment">/// Returns base64 representation of `EncryptedTally`
-    </span><span class="attr">#[must_use]
-    </span><span class="kw">pub fn </span>to_base64(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="kw">let </span>bytes = <span class="self">self</span>.to_bytes();
-        general_purpose::STANDARD.encode(bytes)
-    }
-
-    <span class="doccomment">/// Generate `EncryptedTally` type from base64 representation
-    /// # Errors
-    /// - `Base64DecodeError`
-    </span><span class="kw">pub fn </span>from_base_64(encrypted_tally_b64: String) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Box&lt;<span class="kw">dyn </span>std::error::Error&gt;&gt; {
-        <span class="kw">match </span>general_purpose::STANDARD.decode(encrypted_tally_b64) {
-            <span class="prelude-val">Ok</span>(bytes) =&gt; <span class="kw">match </span>EncryptedTally::from_bytes(<span class="kw-2">&amp;</span>bytes) {
-                <span class="prelude-val">Some</span>(encrypted_tally) =&gt; <span class="prelude-val">Ok</span>(encrypted_tally),
-                <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(Box::new(EncryptedTallyError)),
-            },
-            <span class="prelude-val">Err</span>(err) =&gt; <span class="prelude-val">Err</span>(Box::new(Base64DecodeError(err.to_string()))),
         }
     }
 

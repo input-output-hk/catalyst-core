@@ -48,7 +48,6 @@ digraph {
     46 [ label = "voting_tools_rs" shape = box]
     47 [ label = "integration-tests" shape = box]
     48 [ label = "cat-data-service" shape = box]
-    49 [ label = "tally" shape = box]
     0 -> 17 [ ]
     0 -> 23 [ ]
     0 -> 24 [ ]
@@ -118,6 +117,5 @@ digraph {
     47 -> 38 [ ]
     47 -> 40 [ ]
     48 -> 25 [ ]
-    49 -> 9 [ ]
 }
 

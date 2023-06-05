@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
+pub mod ballot;
 pub mod objective;
 pub mod proposal;
 pub mod review;
@@ -122,19 +123,12 @@ pub struct EventSchedule {
     pub tallying_end: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq, Deserialize)]
-pub struct VoterGroup {
-    pub id: String,
-    pub voting_token: String,
-}
-
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct EventDetails {
     pub voting_power: VotingPowerSettings,
     pub registration: EventRegistration,
     pub schedule: EventSchedule,
     pub goals: Vec<EventGoal>,
-    pub groups: Vec<VoterGroup>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -418,25 +412,6 @@ mod tests {
     }
 
     #[test]
-    fn voter_group_json_test() {
-        let voter_group = VoterGroup {
-            id: "rep".to_string(),
-            voting_token: "voting token 1".to_string(),
-        };
-
-        let json = serde_json::to_value(&voter_group).unwrap();
-        assert_eq!(
-            json,
-            json!(
-                {
-                    "id": "rep",
-                    "voting_token": "voting token 1",
-                }
-            )
-        );
-    }
-
-    #[test]
     fn event_details_json_test() {
         let event_details = EventDetails {
             voting_power: VotingPowerSettings {
@@ -497,10 +472,6 @@ mod tests {
                     Utc,
                 )),
             },
-            groups: vec![VoterGroup {
-                id: "rep".to_string(),
-                voting_token: "voting token 1".to_string(),
-            }],
         };
 
         let json = serde_json::to_value(&event_details).unwrap();
@@ -535,12 +506,6 @@ mod tests {
                                     "tallying": "1970-01-01T00:00:00+00:00",
                                     "tallying_end": "1970-01-01T00:00:00+00:00",
                             },
-                    "groups": [
-                                {
-                                    "id": "rep",
-                                    "voting_token": "voting token 1",
-                                }
-                            ],
                 }
             )
         );
@@ -625,10 +590,6 @@ mod tests {
                         Utc,
                     )),
                 },
-                groups: vec![VoterGroup {
-                    id: "rep".to_string(),
-                    voting_token: "voting token 1".to_string(),
-                }],
             },
         };
 
@@ -670,12 +631,6 @@ mod tests {
                                     "tallying": "1970-01-01T00:00:00+00:00",
                                     "tallying_end": "1970-01-01T00:00:00+00:00",
                             },
-                    "groups": [
-                                {
-                                    "id": "rep",
-                                    "voting_token": "voting token 1",
-                                }
-                            ],
                 }
             )
         );

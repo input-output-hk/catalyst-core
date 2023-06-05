@@ -1,3 +1,4 @@
+use super::LimitOffset;
 use crate::{
     service::{handle_result, Error},
     state::State,
@@ -10,12 +11,12 @@ use axum::{
 use event_db::types::event::{Event, EventId, EventSummary};
 use std::sync::Arc;
 
-use super::LimitOffset;
-
+mod ballots;
 mod objective;
 
 pub fn event(state: Arc<State>) -> Router {
     let objective = objective::objective(state.clone());
+    let ballots = ballots::ballots(state.clone());
 
     Router::new()
         .nest(
@@ -28,7 +29,8 @@ pub fn event(state: Arc<State>) -> Router {
                         move |path| async { handle_result(event_exec(path, state).await).await }
                     }),
                 )
-                .merge(objective),
+                .merge(objective)
+                .merge(ballots),
         )
         .route(
             "/events",
@@ -83,12 +85,7 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-    use event_db::types::event::{
-        EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, VoterGroup,
-        VotingPowerAlgorithm, VotingPowerSettings,
-    };
-    use rust_decimal::Decimal;
+    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -103,154 +100,60 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Event {
-                summary: EventSummary {
-                    id: EventId(1),
-                    name: "Test Fund 1".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    ends: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    reg_checked: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    is_final: true,
-                },
-                details: EventDetails {
-                    voting_power: VotingPowerSettings {
-                        alg: VotingPowerAlgorithm::ThresholdStakedADA,
-                        min_ada: Some(1),
-                        max_pct: Some(Decimal::new(100, 0)),
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                {
+                    "id": 1,
+                    "name": "Test Fund 1",
+                    "starts": "2020-05-01T12:00:00+00:00",
+                    "ends": "2020-06-01T12:00:00+00:00",
+                    "reg_checked": "2020-03-31T12:00:00+00:00",
+                    "final": true,
+                    "voting_power": {
+                        "alg": "threshold_staked_ADA",
+                        "min_ada": 1,
+                        "max_pct": 100.0
                     },
-                    registration: EventRegistration {
-                        purpose: None,
-                        deadline: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
-                        taken: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        ))
+                    "registration": {
+                        "deadline": "2020-03-31T12:00:00+00:00",
+                        "taken": "2020-03-31T12:00:00+00:00",
                     },
-                    schedule: EventSchedule {
-                        insight_sharing: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
-                        proposal_submission: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
-                        refine_proposals: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
-                        finalize_proposals: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
-                        proposal_assessment: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
-                        assessment_qa_start: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 3, 1).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
-                        voting: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
-                        tallying: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
-                        tallying_end: Some(DateTime::<Utc>::from_utc(
-                            NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2020, 7, 1).unwrap(),
-                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                            ),
-                            Utc
-                        )),
+                    "schedule": {
+                        "insight_sharing": "2020-03-01T12:00:00+00:00",
+                        "proposal_submission": "2020-03-01T12:00:00+00:00",
+                        "refine_proposals": "2020-03-01T12:00:00+00:00",
+                        "finalize_proposals": "2020-03-01T12:00:00+00:00",
+                        "proposal_assessment": "2020-03-01T12:00:00+00:00",
+                        "assessment_qa_start": "2020-03-01T12:00:00+00:00",
+                        "voting": "2020-05-01T12:00:00+00:00",
+                        "tallying": "2020-06-01T12:00:00+00:00",
+                        "tallying_end": "2020-07-01T12:00:00+00:00",
                     },
-                    goals: vec![
-                        EventGoal {
-                            idx: 1,
-                            name: "goal 1".to_string(),
+                    "goals": [
+                        {
+                            "idx": 1,
+                            "name": "goal 1"
                         },
-                        EventGoal {
-                            idx: 2,
-                            name: "goal 2".to_string(),
+                        {
+                            "idx": 2,
+                            "name": "goal 2"
                         },
-                        EventGoal {
-                            idx: 3,
-                            name: "goal 3".to_string(),
+                        {
+                            "idx": 3,
+                            "name": "goal 3"
                         },
-                        EventGoal {
-                            idx: 4,
-                            name: "goal 4".to_string(),
-                        }
-                    ],
-                    groups: vec![
-                        VoterGroup {
-                            id: "rep".to_string(),
-                            voting_token: "rep token".to_string()
-                        },
-                        VoterGroup {
-                            id: "direct".to_string(),
-                            voting_token: "direct token".to_string()
+                        {
+                            "idx": 4,
+                            "name": "goal 4"
                         }
                     ]
-                },
-            },)
-            .unwrap()
+                }
+            )
         );
 
         let request = Request::builder()
@@ -273,97 +176,45 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&vec![
-                EventSummary {
-                    id: EventId(1),
-                    name: "Test Fund 1".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    ends: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    reg_checked: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    is_final: true,
-                },
-                EventSummary {
-                    id: EventId(2),
-                    name: "Test Fund 2".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    ends: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    reg_checked: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    is_final: true,
-                },
-                EventSummary {
-                    id: EventId(3),
-                    name: "Test Fund 3".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    ends: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    reg_checked: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    is_final: true,
-                },
-                EventSummary {
-                    id: EventId(4),
-                    name: "Test Fund 4".to_string(),
-                    starts: None,
-                    ends: None,
-                    reg_checked: None,
-                    is_final: false,
-                }
-            ])
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                [
+                    {
+                        "id": 1,
+                        "name": "Test Fund 1",
+                        "starts": "2020-05-01T12:00:00+00:00",
+                        "ends": "2020-06-01T12:00:00+00:00",
+                        "reg_checked": "2020-03-31T12:00:00+00:00",
+                        "final": true,
+                    },
+                    {
+                        "id": 2,
+                        "name": "Test Fund 2",
+                        "starts": "2021-05-01T12:00:00+00:00",
+                        "ends": "2021-06-01T12:00:00+00:00",
+                        "reg_checked": "2021-03-31T12:00:00+00:00",
+                        "final": true,
+                    },
+                    {
+                        "id": 3,
+                        "name": "Test Fund 3",
+                        "starts": "2022-05-01T12:00:00+00:00",
+                        "ends": "2022-06-01T12:00:00+00:00",
+                        "reg_checked": "2022-03-31T12:00:00+00:00",
+                        "final": true,
+                    },
+                    {
+                        "id": 4,
+                        "name": "Test Fund 4",
+                        "final": false,
+                    },
+                ]
+            )
         );
 
         let request = Request::builder()
@@ -373,71 +224,37 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&vec![
-                EventSummary {
-                    id: EventId(2),
-                    name: "Test Fund 2".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    ends: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    reg_checked: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    is_final: true,
-                },
-                EventSummary {
-                    id: EventId(3),
-                    name: "Test Fund 3".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    ends: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    reg_checked: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    is_final: true,
-                },
-                EventSummary {
-                    id: EventId(4),
-                    name: "Test Fund 4".to_string(),
-                    starts: None,
-                    ends: None,
-                    reg_checked: None,
-                    is_final: false,
-                }
-            ])
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                [
+                    {
+                        "id": 2,
+                        "name": "Test Fund 2",
+                        "starts": "2021-05-01T12:00:00+00:00",
+                        "ends": "2021-06-01T12:00:00+00:00",
+                        "reg_checked": "2021-03-31T12:00:00+00:00",
+                        "final": true,
+                    },
+                    {
+                        "id": 3,
+                        "name": "Test Fund 3",
+                        "starts": "2022-05-01T12:00:00+00:00",
+                        "ends": "2022-06-01T12:00:00+00:00",
+                        "reg_checked": "2022-03-31T12:00:00+00:00",
+                        "final": true,
+                    },
+                    {
+                        "id": 4,
+                        "name": "Test Fund 4",
+                        "final": false,
+                    },
+                ]
+            )
         );
 
         let request = Request::builder()
@@ -447,35 +264,24 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&vec![EventSummary {
-                id: EventId(1),
-                name: "Test Fund 1".to_string(),
-                starts: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 5, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                ends: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 6, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                reg_checked: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                is_final: true,
-            },])
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                [
+                    {
+                        "id": 1,
+                        "name": "Test Fund 1",
+                        "starts": "2020-05-01T12:00:00+00:00",
+                        "ends": "2020-06-01T12:00:00+00:00",
+                        "reg_checked": "2020-03-31T12:00:00+00:00",
+                        "final": true,
+                    },
+                ]
+            )
         );
 
         let request = Request::builder()
@@ -485,35 +291,24 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&vec![EventSummary {
-                id: EventId(2),
-                name: "Test Fund 2".to_string(),
-                starts: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                ends: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                reg_checked: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                is_final: true,
-            },])
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                [
+                    {
+                        "id": 2,
+                        "name": "Test Fund 2",
+                        "starts": "2021-05-01T12:00:00+00:00",
+                        "ends": "2021-06-01T12:00:00+00:00",
+                        "reg_checked": "2021-03-31T12:00:00+00:00",
+                        "final": true,
+                    },
+                ]
+            )
         );
 
         let request = Request::builder()

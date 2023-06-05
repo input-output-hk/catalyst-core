@@ -2,9 +2,12 @@
 VERSION 0.7
 FROM debian:stable-slim
 
+rust-toolchain:
+    FROM rust:1.65-slim-bullseye
+
 # Installs Cargo chef
 install-chef:
-    FROM rust:1.65-slim-bullseye
+    FROM +rust-toolchain
     RUN cargo install --debug cargo-chef
 
 # Prepares the local cache
@@ -36,7 +39,7 @@ build-cache:
 
 # This is the default builder that all other builders should inherit from
 builder:
-    FROM rust:1.65-slim-bullseye
+    FROM +rust-toolchain
     # Install build dependencies
     RUN apt-get update && \
         apt-get install -y --no-install-recommends \
@@ -104,8 +107,8 @@ ci:
 
 # Define the test stage, which runs the Rust project's tests
 test:
-    FROM +devshell
-    RUN cargo --version
+    BUILD ./src/event-db+test
+    BUILD ./src/cat-data-service+test
 
 tag-workspace:
     ARG SVU_VERSION=1.10.2

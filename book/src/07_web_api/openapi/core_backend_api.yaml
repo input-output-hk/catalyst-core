@@ -722,11 +722,6 @@ components:
         schedule:
           $ref: '#/components/schemas/EventSchedule'
           description: The schedule of the voting Event
-        groups:
-          type: array
-          description: The valid voter groups for this voting event.
-          items:
-            $ref: '#/components/schemas/VoterGroup'
     Event:
       allOf:
         - $ref: '#/components/schemas/EventSummary'
@@ -874,6 +869,11 @@ components:
       description: Individual Objective Details
       type: object
       properties:
+        groups:
+           type: array
+           description: The valid voter groups for this voting event.
+           items:
+             $ref: '#/components/schemas/VoterGroup'
         reward:
           $ref: '#/components/schemas/RewardDefinition'
           description: |-
@@ -1100,7 +1100,6 @@ components:
             * True - **MUST** include a note.
         map:
           type: array
-          item: string
           description: |-
             Optional sequential list of mapped named values for rating scores.
             * If not present, the rating score is numeric.
@@ -1108,11 +1107,18 @@ components:
               * all possible rating scores must be represented with mapped names and the rating is represented by the value in the map.
               * The lowest numbered score comes first in the array.
               * The array is sequential with no gaps.
-          example:
-            - NA
-            - FilteredOut
-            - Good
-            - Excellent
+          items:
+            type: object
+            additionalProperties: true
+            properties:
+              name:
+                type: string
+                description: Symbolic Name for the metric score.
+              desc:
+                type: string
+                description: Description of what the named metric score means.
+            required:
+              - name
         group:
           type: string
           description: The reviewer group who can create this review type.
@@ -1275,7 +1281,7 @@ components:
     VoterGroup:
       type: object
       properties:
-        id:
+        group:
           $ref: '#/components/schemas/VoterGroupId'
         voting_token:
           type: string

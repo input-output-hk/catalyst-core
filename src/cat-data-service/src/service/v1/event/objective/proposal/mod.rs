@@ -14,10 +14,12 @@ use event_db::types::event::{
 };
 use std::sync::Arc;
 
+mod ballot;
 mod review;
 
 pub fn proposal(state: Arc<State>) -> Router {
     let review = review::review(state.clone());
+    let ballot = ballot::ballot(state.clone());
 
     Router::new()
         .nest(
@@ -30,7 +32,8 @@ pub fn proposal(state: Arc<State>) -> Router {
                         move |path| async { handle_result(proposal_exec(path, state).await).await }
                     }),
                 )
-                .merge(review),
+                .merge(review)
+                .merge(ballot),
         )
         .route(
             "/proposals",
@@ -99,10 +102,7 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::proposal::{
-        ProposalDetails, ProposalSupplementalDetails, ProposerDetails,
-    };
-    use serde_json::json;
+    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -119,38 +119,36 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&Proposal {
-                proposal_summary: ProposalSummary {
-                    id: 1,
-                    title: String::from("title 1"),
-                    summary: String::from("summary 1")
-                },
-                proposal_details: ProposalDetails {
-                    funds: 100,
-                    url: "url.xyz".to_string(),
-                    files: "files.xyz".to_string(),
-                    proposer: vec![ProposerDetails {
-                        name: "alice".to_string(),
-                        email: "alice@io".to_string(),
-                        url: "alice.prop.xyz".to_string(),
-                        payment_key:
-                            "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
-                                .to_string()
-                    }],
-                    supplemental: Some(ProposalSupplementalDetails(json!(
-                        {
-                            "brief": "Brief explanation of a proposal",
-                            "goal": "The goal of the proposal is addressed to meet",
-                            "importance": "The importance of the proposal",
-                        }
-                    ))),
-                }
-            })
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!(
+                {
+                    "id": 1,
+                    "title": "title 1",
+                    "summary": "summary 1",
+                    "funds": 100,
+                    "url": "url.xyz",
+                    "files": "files.xyz",
+                    "proposer": [
+                        {
+                            "name": "alice",
+                            "email": "alice@io",
+                            "url": "alice.prop.xyz",
+                            "payment_key": "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
+                        }
+                    ],
+                    "supplemental": {
+                        "brief": "Brief explanation of a proposal",
+                        "goal": "The goal of the proposal is addressed to meet",
+                        "importance": "The importance of the proposal",
+                    }
+                }
+            )
         );
 
         let request = Request::builder()
@@ -175,28 +173,30 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![
-                ProposalSummary {
-                    id: 1,
-                    title: String::from("title 1"),
-                    summary: String::from("summary 1")
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!([
+                {
+                    "id": 1,
+                    "title": "title 1",
+                    "summary": "summary 1",
                 },
-                ProposalSummary {
-                    id: 2,
-                    title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                {
+                    "id": 2,
+                    "title": "title 2",
+                    "summary": "summary 2",
                 },
-                ProposalSummary {
-                    id: 3,
-                    title: String::from("title 3"),
-                    summary: String::from("summary 3")
+                {
+                    "id": 3,
+                    "title": "title 3",
+                    "summary": "summary 3",
                 }
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
         );
 
         let request = Request::builder()
@@ -208,23 +208,25 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![
-                ProposalSummary {
-                    id: 1,
-                    title: String::from("title 1"),
-                    summary: String::from("summary 1")
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!([
+                {
+                    "id": 1,
+                    "title": "title 1",
+                    "summary": "summary 1",
                 },
-                ProposalSummary {
-                    id: 2,
-                    title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                {
+                    "id": 2,
+                    "title": "title 2",
+                    "summary": "summary 2",
                 },
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
         );
 
         let request = Request::builder()
@@ -236,23 +238,25 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![
-                ProposalSummary {
-                    id: 2,
-                    title: String::from("title 2"),
-                    summary: String::from("summary 2")
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!([
+                {
+                    "id": 2,
+                    "title": "title 2",
+                    "summary": "summary 2",
                 },
-                ProposalSummary {
-                    id: 3,
-                    title: String::from("title 3"),
-                    summary: String::from("summary 3")
+                {
+                    "id": 3,
+                    "title": "title 3",
+                    "summary": "summary 3",
                 }
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
         );
 
         let request = Request::builder()
@@ -264,16 +268,20 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![ProposalSummary {
-                id: 2,
-                title: String::from("title 2"),
-                summary: String::from("summary 2")
-            },])
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!([
+                {
+                    "id": 2,
+                    "title": "title 2",
+                    "summary": "summary 2",
+                },
+            ])
         );
     }
 }

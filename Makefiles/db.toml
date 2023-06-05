@@ -47,12 +47,13 @@ psql -U catalyst-event-dev -d CatalystEventDev -f test_data/02_snapshot_table.sq
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/03_voter_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/04_contribution_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/05_goal_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/06_voting_group_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/07_objective_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/06_objective_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/07_voteplan_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/08_proposal_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/09_proposal_review_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/10_review_rating_table.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f test_data/11_objective_review_metric_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/12_proposal_voteplan_table.sql ${@}
 '''
 
 # Install historic data for past events

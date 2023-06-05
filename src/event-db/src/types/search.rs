@@ -1,6 +1,5 @@
-use serde::{Deserialize, Serialize};
-
 use super::event::{objective::ObjectiveSummary, proposal::ProposalSummary, EventSummary};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]

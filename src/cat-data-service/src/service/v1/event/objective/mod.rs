@@ -10,15 +10,20 @@ use axum::{
 use event_db::types::event::{objective::Objective, EventId};
 use std::sync::Arc;
 
+mod ballots;
 mod proposal;
 mod review_type;
 
 pub fn objective(state: Arc<State>) -> Router {
     let proposal = proposal::proposal(state.clone());
     let review_type = review_type::review_type(state.clone());
+    let ballots = ballots::ballots(state.clone());
 
     Router::new()
-        .nest("/objective/:objective", proposal.merge(review_type))
+        .nest(
+            "/objective/:objective",
+            proposal.merge(review_type).merge(ballots),
+        )
         .route(
             "/objectives",
             get(move |path, query| async {
@@ -64,11 +69,7 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::objective::{
-        ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveSupplementalData, ObjectiveType,
-        RewardDefintion,
-    };
-    use serde_json::json;
+    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -83,50 +84,54 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&vec![
-                Objective {
-                    summary: ObjectiveSummary {
-                        id: ObjectiveId(1),
-                        objective_type: ObjectiveType {
-                            id: "catalyst-simple".to_string(),
-                            description: "A Simple choice".to_string()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                [
+                    {
+                        "id": 1,
+                        "type": {
+                            "id": "catalyst-simple",
+                            "description": "A Simple choice"
                         },
-                        title: "title 1".to_string(),
-                        description: "description 1".to_string(),
-                    },
-                    details: ObjectiveDetails {
-                        reward: Some(RewardDefintion {
-                            currency: "ADA".to_string(),
-                            value: 100
-                        }),
-                        supplemental: Some(ObjectiveSupplementalData(json!(
+                        "title": "title 1",
+                        "description": "description 1",
+                        "groups": [
                             {
-                                "url":"objective 1 url",
-                                "sponsor": "objective 1 sponsor",
-                                "video": "objective 1 video"
+                                "group": "direct",
+                                "voting_token": "voting token 1"
+                            },
+                            {
+                                "group": "rep",
+                                "voting_token": "voting token 2"
                             }
-                        ))),
-                    }
-                },
-                Objective {
-                    summary: ObjectiveSummary {
-                        id: ObjectiveId(2),
-                        objective_type: ObjectiveType {
-                            id: "catalyst-native".to_string(),
-                            description: "??".to_string()
+                        ],
+                        "reward": {
+                            "currency": "ADA",
+                            "value": 100
                         },
-                        title: "title 2".to_string(),
-                        description: "description 2".to_string(),
+                        "supplemental": {
+                            "url":"objective 1 url",
+                            "sponsor": "objective 1 sponsor",
+                            "video": "objective 1 video"
+                        }
                     },
-                    details: ObjectiveDetails {
-                        reward: None,
-                        supplemental: None,
+                    {
+                        "id": 2,
+                        "type": {
+                            "id": "catalyst-native",
+                            "description": "??"
+                        },
+                        "title": "title 2",
+                        "description": "description 2",
+                        "groups": [],
                     }
-                }
-            ])
-            .unwrap()
+                ]
+            )
         );
 
         let request = Request::builder()
@@ -136,33 +141,44 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&vec![Objective {
-                summary: ObjectiveSummary {
-                    id: ObjectiveId(1),
-                    objective_type: ObjectiveType {
-                        id: "catalyst-simple".to_string(),
-                        description: "A Simple choice".to_string()
-                    },
-                    title: "title 1".to_string(),
-                    description: "description 1".to_string(),
-                },
-                details: ObjectiveDetails {
-                    reward: Some(RewardDefintion {
-                        currency: "ADA".to_string(),
-                        value: 100
-                    }),
-                    supplemental: Some(ObjectiveSupplementalData(json!(
-                        {
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                [
+                    {
+                        "id": 1,
+                        "type": {
+                            "id": "catalyst-simple",
+                            "description": "A Simple choice"
+                        },
+                        "title": "title 1",
+                        "description": "description 1",
+                        "groups": [
+                            {
+                                "group": "direct",
+                                "voting_token": "voting token 1"
+                            },
+                            {
+                                "group": "rep",
+                                "voting_token": "voting token 2"
+                            }
+                        ],
+                        "reward": {
+                            "currency": "ADA",
+                            "value": 100
+                        },
+                        "supplemental": {
                             "url":"objective 1 url",
                             "sponsor": "objective 1 sponsor",
                             "video": "objective 1 video"
                         }
-                    ))),
-                }
-            },])
-            .unwrap()
+                    },
+                ]
+            )
         );
 
         let request = Request::builder()
@@ -172,24 +188,26 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&vec![Objective {
-                summary: ObjectiveSummary {
-                    id: ObjectiveId(2),
-                    objective_type: ObjectiveType {
-                        id: "catalyst-native".to_string(),
-                        description: "??".to_string()
-                    },
-                    title: "title 2".to_string(),
-                    description: "description 2".to_string(),
-                },
-                details: ObjectiveDetails {
-                    reward: None,
-                    supplemental: None,
-                }
-            }])
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!(
+                [
+                    {
+                        "id": 2,
+                        "type": {
+                            "id": "catalyst-native",
+                            "description": "??"
+                        },
+                        "title": "title 2",
+                        "description": "description 2",
+                        "groups": [],
+                    }
+                ]
+            )
         );
 
         let request = Request::builder()

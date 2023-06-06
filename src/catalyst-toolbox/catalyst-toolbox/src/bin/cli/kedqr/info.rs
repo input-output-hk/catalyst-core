@@ -19,19 +19,16 @@ pub struct InfoForQrCodeCmd {
     /// Path to file containing img or payload.
     #[clap(short, long, value_parser = PathBuf::from_str)]
     input: PathBuf,
-
     /// Pin code. 4-digit number is used on Catalyst.
-    #[clap(short, long, value_parser = PathBuf::from_str)]
+    #[clap(short, long, value_parser = QrPin::from_str)]
     pin: QrPin,
-
     /// Blockchain block0. Can be either url of local file path
     #[clap(long = "block0")]
     pub block0: Option<String>,
-
     /// Set the discrimination type to testing (default is production).
     #[clap(short, long)]
     pub testing: bool,
-
+    /// Set to img or payload
     #[clap(short, long, value_parser = QrCodeOpts::from_str)]
     opts: QrCodeOpts,
 }
@@ -74,7 +71,7 @@ impl InfoForQrCodeCmd {
                         .find(|x| x.address == address.clone().into())
                     {
                         println!(
-                            "Address corresponding to input qr found in block0: '{}' with value: '{}'", 
+                            "Address corresponding to input qr found in block0: '{}' with value: '{}'",
                             AddressReadable::from_address(&test_prefix(self.testing),&address), entry.value);
                         return Ok(());
                     }

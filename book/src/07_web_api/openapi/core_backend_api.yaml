@@ -45,6 +45,32 @@ servers:
   - url: 'https://prod.xxxxxxxxxxxxxx.io'
     description: Production Environment
 paths:
+  /health/ready:
+    get:
+      operationId: healthReady
+      summary: readiness of the service to accept incoming requests
+      description: readiness of the service to accept incoming requests
+      responses:
+        '200':
+          content:
+            description: Valid response
+            application/json:
+              schema:
+                type: boolean
+                description: returns 'true' if service is ready
+  /health/live:
+    get:
+      operationId: healthLive
+      summary: liveness of the service
+      description: liveness of the service
+      responses:
+        '200':
+          content:
+            description: Valid response
+            application/json:
+              schema:
+                type: boolean
+                description: returns 'true' if service is live
   /api/v1/events:
     get:
       operationId: getEvents

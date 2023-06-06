@@ -522,7 +522,7 @@ digraph erd {
             
             <tr>
                 <td port="map"  align='text'><font>map</font><br align='left'/></td>
-                <td   ><font><i>jsonb</i></font></td>
+                <td   ><font><i>ARRAY</i></font></td>
                 <td port="map_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>OPTIONAL: JSON Array which defines extra<br align='left'/>details for each metric score.<br align='left'/>There MUST be one entry per possible<br align='left'/>score in the range.<br align='left'/>Entries are IN ORDER, from the lowest<br align='left'/>numeric score to the highest.<br align='left'/>Each entry =<br align='left'/>```jsonc<br align='left'/>{<br align='left'/>   &quot;name&quot; : &quot;&lt;name&gt;&quot;, &#x2f;&#x2f; Symbolic Name<br align='left'/>for the metric score.<br align='left'/>   &quot;description&quot; : &quot;&lt;desc&gt;&quot;, &#x2f;&#x2f;<br align='left'/>Description of what the named metric<br align='left'/>score means.<br align='left'/>}<br align='left'/>```</i><br align="left"/></font></td>
             </tr>
             

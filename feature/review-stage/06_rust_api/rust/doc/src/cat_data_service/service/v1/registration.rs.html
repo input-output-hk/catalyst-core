@@ -291,35 +291,6 @@
 <a href="#291" id="291">291</a>
 <a href="#292" id="292">292</a>
 <a href="#293" id="293">293</a>
-<a href="#294" id="294">294</a>
-<a href="#295" id="295">295</a>
-<a href="#296" id="296">296</a>
-<a href="#297" id="297">297</a>
-<a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
-<a href="#312" id="312">312</a>
-<a href="#313" id="313">313</a>
-<a href="#314" id="314">314</a>
-<a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
-<a href="#320" id="320">320</a>
-<a href="#321" id="321">321</a>
-<a href="#322" id="322">322</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -418,8 +389,7 @@
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-    <span class="kw">use </span>event_db::types::registration::{Delegation, VoterInfo};
+    <span class="kw">use </span>std::str::FromStr;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -434,33 +404,26 @@
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
         <span class="macro">assert_eq!</span>(
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(<span class="kw-2">&amp;</span>Voter {
-                voter_info: VoterInfo {
-                    voting_power: <span class="number">250</span>,
-                    voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                    delegations_power: <span class="number">250</span>,
-                    delegations_count: <span class="number">2</span>,
-                    voting_power_saturation: <span class="number">0.625</span>,
-                },
-                as_at: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2022</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2022</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: <span class="bool-val">true</span>,
-            })
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            <span class="macro">serde_json::json!</span>(
+                {
+                    <span class="string">&quot;voter_info&quot;</span>: {
+                        <span class="string">&quot;voting_power&quot;</span>: <span class="number">250</span>,
+                        <span class="string">&quot;voting_group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                        <span class="string">&quot;delegations_power&quot;</span>: <span class="number">250</span>,
+                        <span class="string">&quot;delegations_count&quot;</span>: <span class="number">2</span>,
+                        <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.625
+                    </span>},
+                    <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+                </span>}
+            )
         );
 
         <span class="kw">let </span>request = Request::builder()
@@ -473,33 +436,26 @@
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
         <span class="macro">assert_eq!</span>(
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(<span class="kw-2">&amp;</span>Voter {
-                voter_info: VoterInfo {
-                    voting_power: <span class="number">250</span>,
-                    voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                    delegations_power: <span class="number">250</span>,
-                    delegations_count: <span class="number">2</span>,
-                    voting_power_saturation: <span class="number">0.625</span>,
-                },
-                as_at: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: <span class="bool-val">true</span>,
-            })
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            <span class="macro">serde_json::json!</span>(
+                {
+                    <span class="string">&quot;voter_info&quot;</span>: {
+                        <span class="string">&quot;voting_power&quot;</span>: <span class="number">250</span>,
+                        <span class="string">&quot;voting_group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                        <span class="string">&quot;delegations_power&quot;</span>: <span class="number">250</span>,
+                        <span class="string">&quot;delegations_count&quot;</span>: <span class="number">2</span>,
+                        <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.625
+                    </span>},
+                    <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+                </span>}
+            )
         );
 
         <span class="kw">let </span>request = Request::builder()
@@ -535,42 +491,35 @@
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
         <span class="macro">assert_eq!</span>(
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(<span class="kw-2">&amp;</span>Delegator {
-                delegations: <span class="macro">vec!</span>[
-                    Delegation {
-                        voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                        weight: <span class="number">1</span>,
-                        value: <span class="number">140
-                    </span>},
-                    Delegation {
-                        voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                        weight: <span class="number">1</span>,
-                        value: <span class="number">100
-                    </span>}
-                ],
-                raw_power: <span class="number">240</span>,
-                total_power: <span class="number">1000</span>,
-                as_at: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2022</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2022</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: <span class="bool-val">true
-            </span>})
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            <span class="macro">serde_json::json!</span>(
+                {
+                    <span class="string">&quot;delegations&quot;</span>: [
+                        {
+                            <span class="string">&quot;voting_key&quot;</span>: <span class="string">&quot;voting_key_1&quot;</span>,
+                            <span class="string">&quot;group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                            <span class="string">&quot;weight&quot;</span>: <span class="number">1</span>,
+                            <span class="string">&quot;value&quot;</span>: <span class="number">140
+                        </span>},
+                        {
+                            <span class="string">&quot;voting_key&quot;</span>: <span class="string">&quot;voting_key_2&quot;</span>,
+                            <span class="string">&quot;group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                            <span class="string">&quot;weight&quot;</span>: <span class="number">1</span>,
+                            <span class="string">&quot;value&quot;</span>: <span class="number">100
+                        </span>},
+                    ],
+                    <span class="string">&quot;raw_power&quot;</span>: <span class="number">240</span>,
+                    <span class="string">&quot;total_power&quot;</span>: <span class="number">1000</span>,
+                    <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+                </span>}
+            )
         );
 
         <span class="kw">let </span>request = Request::builder()
@@ -583,42 +532,35 @@
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
         <span class="macro">assert_eq!</span>(
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(<span class="kw-2">&amp;</span>Delegator {
-                delegations: <span class="macro">vec!</span>[
-                    Delegation {
-                        voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                        weight: <span class="number">1</span>,
-                        value: <span class="number">140
-                    </span>},
-                    Delegation {
-                        voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
-                        group: <span class="string">&quot;rep&quot;</span>.to_string(),
-                        weight: <span class="number">1</span>,
-                        value: <span class="number">100
-                    </span>}
-                ],
-                raw_power: <span class="number">240</span>,
-                total_power: <span class="number">1000</span>,
-                as_at: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::&lt;Utc&gt;::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(<span class="number">2020</span>, <span class="number">3</span>, <span class="number">31</span>).unwrap(),
-                        NaiveTime::from_hms_opt(<span class="number">12</span>, <span class="number">0</span>, <span class="number">0</span>).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: <span class="bool-val">true
-            </span>})
-            .unwrap()
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            <span class="macro">serde_json::json!</span>(
+                {
+                    <span class="string">&quot;delegations&quot;</span>: [
+                        {
+                            <span class="string">&quot;voting_key&quot;</span>: <span class="string">&quot;voting_key_1&quot;</span>,
+                            <span class="string">&quot;group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                            <span class="string">&quot;weight&quot;</span>: <span class="number">1</span>,
+                            <span class="string">&quot;value&quot;</span>: <span class="number">140
+                        </span>},
+                        {
+                            <span class="string">&quot;voting_key&quot;</span>: <span class="string">&quot;voting_key_2&quot;</span>,
+                            <span class="string">&quot;group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                            <span class="string">&quot;weight&quot;</span>: <span class="number">1</span>,
+                            <span class="string">&quot;value&quot;</span>: <span class="number">100
+                        </span>},
+                    ],
+                    <span class="string">&quot;raw_power&quot;</span>: <span class="number">240</span>,
+                    <span class="string">&quot;total_power&quot;</span>: <span class="number">1000</span>,
+                    <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+                </span>}
+            )
         );
 
         <span class="kw">let </span>request = Request::builder()

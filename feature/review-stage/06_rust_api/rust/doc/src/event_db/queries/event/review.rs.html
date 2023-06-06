@@ -412,12 +412,6 @@
 <a href="#412" id="412">412</a>
 <a href="#413" id="413">413</a>
 <a href="#414" id="414">414</a>
-<a href="#415" id="415">415</a>
-<a href="#416" id="416">416</a>
-<a href="#417" id="417">417</a>
-<a href="#418" id="418">418</a>
-<a href="#419" id="419">419</a>
-<a href="#420" id="420">420</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
@@ -538,13 +532,9 @@
             .<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>review_types = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {
-            <span class="kw">let </span>map = row.try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;&gt;(<span class="string">&quot;map&quot;</span>)<span class="question-mark">?</span>;
-            <span class="kw">let </span>map = map
-                .and_then(|map| {
-                    map.as_array()
-                        .map(|array| array.iter().map(|el| el.to_string()).collect())
-                })
-                .unwrap_or_default();
+            <span class="kw">let </span>map = row
+                .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;Vec&lt;serde_json::Value&gt;&gt;&gt;(<span class="string">&quot;map&quot;</span>)<span class="question-mark">?
+                </span>.unwrap_or_default();
 
             review_types.push(ReviewType {
                 map,
@@ -735,11 +725,10 @@
                     map: <span class="macro">vec!</span>[
                         <span class="macro">json!</span>(
                             {<span class="string">&quot;name&quot;</span>:<span class="string">&quot;Excellent&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Excellent Review&quot;</span>}
-                        )
-                        .to_string(),
-                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;Good&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Could be improved.&quot;</span>}).to_string(),
-                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;FilteredOut&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Exclude this review&quot;</span>}).to_string(),
-                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;NA&quot;</span>, <span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Not Applicable&quot;</span>}).to_string()
+                        ),
+                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;Good&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Could be improved.&quot;</span>}),
+                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;FilteredOut&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Exclude this review&quot;</span>}),
+                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;NA&quot;</span>, <span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Not Applicable&quot;</span>})
                     ],
                     note: <span class="prelude-val">Some</span>(<span class="bool-val">false</span>),
                     group: <span class="prelude-val">None</span>,
@@ -805,11 +794,10 @@
                     map: <span class="macro">vec!</span>[
                         <span class="macro">json!</span>(
                             {<span class="string">&quot;name&quot;</span>:<span class="string">&quot;Excellent&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Excellent Review&quot;</span>}
-                        )
-                        .to_string(),
-                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;Good&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Could be improved.&quot;</span>}).to_string(),
-                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;FilteredOut&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Exclude this review&quot;</span>}).to_string(),
-                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;NA&quot;</span>, <span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Not Applicable&quot;</span>}).to_string()
+                        ),
+                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;Good&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Could be improved.&quot;</span>}),
+                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;FilteredOut&quot;</span>,<span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Exclude this review&quot;</span>}),
+                        <span class="macro">json!</span>({<span class="string">&quot;name&quot;</span>:<span class="string">&quot;NA&quot;</span>, <span class="string">&quot;desc&quot;</span>:<span class="string">&quot;Not Applicable&quot;</span>})
                     ],
                     note: <span class="prelude-val">Some</span>(<span class="bool-val">false</span>),
                     group: <span class="prelude-val">None</span>,

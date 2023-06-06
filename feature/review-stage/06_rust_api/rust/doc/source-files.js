@@ -2,7 +2,7 @@ var sourcesIndex = JSON.parse('{\
 "blockchain":["",[],["block0.rs","blockchain.rs","checkpoints.rs","epoch_info.rs","lib.rs","reference.rs"]],\
 "cardano_cli_mock":["",[],["cardano-cli-mock.rs"]],\
 "cardano_legacy_address":["",[],["address.rs","base58.rs","cbor.rs","crc32.rs","lib.rs"]],\
-"cat_data_service":["",[["service",[["v1",[["event",[["objective",[["proposal",[],["mod.rs","review.rs"]]],["mod.rs","review_type.rs"]]],["mod.rs"]]],["mod.rs","registration.rs","search.rs"]]],["mod.rs"]]],["cli.rs","logger.rs","main.rs","settings.rs","state.rs"]],\
+"cat_data_service":["",[["service",[["v1",[["event",[["objective",[["proposal",[],["ballot.rs","mod.rs","review.rs"]]],["ballots.rs","mod.rs","review_type.rs"]]],["ballots.rs","mod.rs"]]],["mod.rs","registration.rs","search.rs"]]],["mod.rs"]]],["cli.rs","logger.rs","main.rs","settings.rs","state.rs"]],\
 "catalyst_toolbox":["",[["archive",[],["mod.rs","node.rs","vit_ss.rs"]],["community_advisors",[["models",[],["de.rs","mod.rs"]]],["mod.rs"]],["http",[],["mod.rs","rate_limit.rs","reqwest.rs"]],["ideascale",[["models",[["de",[],["ada_rewards.rs","approval.rs","challenge_title.rs","clean_string.rs","mod.rs"]]],["custom_fields.rs","mod.rs","se.rs"]]],["fetch.rs","mod.rs"]],["kedqr",[],["img.rs","mod.rs","payload.rs"]],["logs",[],["compare.rs","mod.rs","sentry.rs"]],["notifications",[["requests",[],["create_message.rs","mod.rs"]],["responses",[],["create_message.rs","mod.rs"]]],["mod.rs","send.rs"]],["recovery",[],["mod.rs","replay.rs","tally.rs"]],["rewards",[["community_advisors",[],["funding.rs","lottery.rs","mod.rs"]],["proposers",[],["io.rs","mod.rs","types.rs","util.rs"]]],["dreps.rs","mod.rs","veterans.rs","voters.rs"]],["stats",[["archive",[],["calculator.rs","loader.rs","mod.rs"]],["live",[],["harvester.rs","mod.rs","monitor.rs","settings.rs"]]],["distribution.rs","mod.rs","snapshot.rs","voters.rs"]],["utils",[],["csv.rs","mod.rs","serde.rs"]],["vca_reviews",[],["mod.rs"]],["vote_check",[],["explorer.rs","mod.rs"]]],["lib.rs","testing.rs"]],\
 "chain_addr":["",[],["lib.rs","testing.rs"]],\
 "chain_core":["",[],["lib.rs","property.rs"]],\
@@ -14,7 +14,7 @@ var sourcesIndex = JSON.parse('{\
 "chain_storage":["",[],["block_info.rs","block_store.rs","error.rs","iterator.rs","lib.rs","permanent_store.rs","test_utils.rs","value.rs"]],\
 "chain_time":["",[],["era.rs","lib.rs","testing.rs","timeframe.rs","timeline.rs","units.rs"]],\
 "chain_vote":["",[["cryptography",[["zkps",[["correct_decryption",[],["mod.rs","zkp.rs"]],["correct_hybrid_decryption_key",[],["mod.rs","zkp.rs"]],["correct_share_generation",[],["mod.rs","zkp.rs"]],["dl_equality",[],["challenge_context.rs","mod.rs","zkp.rs"]],["unit_vector",[],["challenge_context.rs","messages.rs","mod.rs","zkp.rs"]]],["mod.rs"]]],["commitment.rs","elgamal.rs","mod.rs"]],["math",[],["babystep.rs","mod.rs","polynomial.rs"]]],["committee.rs","encrypted_vote.rs","lib.rs","macros.rs","tally.rs"]],\
-"event_db":["",[["queries",[["event",[],["mod.rs","objective.rs","proposal.rs","review.rs"]]],["mod.rs","registration.rs","search.rs"]],["types",[["event",[],["mod.rs","objective.rs","proposal.rs","review.rs"]]],["mod.rs","registration.rs","search.rs","utils.rs"]]],["config_table.rs","error.rs","lib.rs","schema_check.rs"]],\
+"event_db":["",[["queries",[["event",[],["ballot.rs","mod.rs","objective.rs","proposal.rs","review.rs"]]],["mod.rs","registration.rs","search.rs"]],["types",[["event",[],["ballot.rs","mod.rs","objective.rs","proposal.rs","review.rs"]]],["mod.rs","registration.rs","search.rs","utils.rs"]]],["config_table.rs","error.rs","lib.rs","schema_check.rs"]],\
 "explorer":["",[["api",[["graphql",[],["certificates.rs","config_param.rs","connections.rs","error.rs","mod.rs","scalars.rs"]]],["mod.rs"]],["db",[],["error.rs","indexing.rs","mod.rs","multiverse.rs","persistent_sequence.rs","tally.rs"]]],["indexer.rs","logging.rs","main.rs","settings.rs"]],\
 "explorer_client":["",[],["explorer-client.rs"]],\
 "grpc_client_app":["",[],["grpc_client_app.rs"]],\
@@ -47,6 +47,7 @@ var sourcesIndex = JSON.parse('{\
 "snapshot_wormhole":["",[],["snapshot-wormhole.rs"]],\
 "sparse_array":["",[],["bitmap.rs","fast.rs","lib.rs","sparse_array.rs"]],\
 "symmetric_cipher":["",[],["lib.rs"]],\
+"tally":["",[],["main.rs"]],\
 "thor":["",[["cli",[],["config.rs","controller.rs","error.rs","mod.rs","wallet_controller.rs"]],["fragment",[],["chain_sender.rs","export.rs","initial_certificates.rs","mod.rs","persistent_log.rs","sender.rs","setup.rs","transaction_utils.rs","verifier.rs"]],["utils",[],["mod.rs"]],["wallet",[["committee",[],["mod.rs","single.rs"]]],["account.rs","delegation.rs","discrimination.rs","mod.rs","utxo.rs"]]],["lib.rs","stake_pool.rs"]],\
 "typed_bytes":["",[],["builder.rs","lib.rs"]],\
 "valgrind":["",[["client",[["node",[],["mod.rs","rest.rs"]],["utils",[],["mod.rs","settings.rs"]]],["mod.rs","proxy.rs","vit_station.rs"]],["startup",[],["mod.rs","server.rs"]]],["data.rs","lib.rs"]],\

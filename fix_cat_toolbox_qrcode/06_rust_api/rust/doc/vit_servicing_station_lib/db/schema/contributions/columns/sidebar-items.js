@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["_impl_query_id_for_reward_address","_impl_query_id_for_snapshot_tag","_impl_query_id_for_stake_public_key","_impl_query_id_for_value","_impl_query_id_for_voting_group","_impl_query_id_for_voting_key"],"struct":["reward_address","snapshot_tag","stake_public_key","star","value","voting_group","voting_key"]};

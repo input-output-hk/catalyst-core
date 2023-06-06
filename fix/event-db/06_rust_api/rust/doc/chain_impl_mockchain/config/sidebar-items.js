@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAXIMUM_LEN","VAL_PROD","VAL_TEST"],"enum":["ConfigParam","Error","RewardParams","Tag"],"mod":["test"],"struct":["Block0Date","TagIter","TagLen"],"trait":["ConfigParamVariant"]};

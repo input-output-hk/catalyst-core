@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_DISCRIMINATION","DEFAULT_PREFIX"],"enum":["ParseAccountIdentifierError"],"struct":["AccountIdentifier"]};

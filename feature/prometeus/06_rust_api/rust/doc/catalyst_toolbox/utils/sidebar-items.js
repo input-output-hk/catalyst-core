@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_DECIMAL_PRECISION"],"fn":["assert_are_close"],"mod":["csv","serde"]};

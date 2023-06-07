@@ -312,7 +312,7 @@
     <span class="kw">const </span>PROPOSALS_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT proposal.id, proposal.title, proposal.summary
         FROM proposal
         INNER JOIN objective on proposal.objective = objective.row_id
-        WHERE proposal.objective = $1 AND objective.event = $2
+        WHERE objective.id = $1 AND objective.event = $2
         LIMIT $3 OFFSET $4;&quot;</span>;
 
     <span class="kw">const </span>PROPOSAL_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
@@ -321,7 +321,7 @@
     proposal.proposer_name, proposal.proposer_contact, proposal.proposer_url, proposal.public_key
     FROM proposal
     INNER JOIN objective on proposal.objective = objective.row_id
-    WHERE proposal.id = $1 AND proposal.objective = $2 AND objective.event = $3;&quot;</span>;
+    WHERE proposal.id = $1 AND objective.id = $2 AND objective.event = $3;&quot;</span>;
 }
 
 <span class="attr">#[async_trait]

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","Genesis"],"fn":["decode_block_0","encode_block_0","init_genesis_yaml","load_block","open_block_file","open_output","print_hash"],"struct":["Common","Input"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["proposal","proposal_exec","proposals_exec"],"mod":["ballot","review"],"opaque":[""],"static":["CALLSITE","META"]};

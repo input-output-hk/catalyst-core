@@ -35,7 +35,7 @@ impl EventDB {
     const PROPOSALS_QUERY: &'static str = "SELECT proposal.id, proposal.title, proposal.summary
         FROM proposal
         INNER JOIN objective on proposal.objective = objective.row_id
-        WHERE proposal.objective = $1 AND objective.event = $2
+        WHERE objective.id = $1 AND objective.event = $2
         LIMIT $3 OFFSET $4;";
 
     const PROPOSAL_QUERY: &'static str =
@@ -44,7 +44,7 @@ impl EventDB {
     proposal.proposer_name, proposal.proposer_contact, proposal.proposer_url, proposal.public_key
     FROM proposal
     INNER JOIN objective on proposal.objective = objective.row_id
-    WHERE proposal.id = $1 AND proposal.objective = $2 AND objective.event = $3;";
+    WHERE proposal.id = $1 AND objective.id = $2 AND objective.event = $3;";
 }
 
 #[async_trait]

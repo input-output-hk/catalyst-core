@@ -74,14 +74,12 @@ jobs:
 
       - name: Build external dependencies
         run:
-          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
+          cargo build -p jcli -p jormungandr -p explorer
 
       - name: Save external dependencies
         uses: actions/cache/save@v3
         with:
           path: |
-                  target/debug/vit-servicing-station-cli
-                  target/debug/vit-servicing-station-server
                   target/debug/jcli
                   target/debug/jormungandr
                   target/debug/explorer
@@ -194,8 +192,6 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: |
-                  target/debug/vit-servicing-station-cli
-                  target/debug/vit-servicing-station-server
                   target/debug/jcli
                   target/debug/jormungandr
                   target/debug/explorer
@@ -237,6 +233,7 @@ jobs:
           cargo nextest run \
           -E "not (package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) \
           + test(ui_test))" \
+          --workspace \
           --archive-file nextest-archive.tar.zst --extract-to ${{ github.workspace }} \
           --extract-overwrite --partition hash:${{ matrix.partition }}/10 --profile ci
 

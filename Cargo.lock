@@ -7900,27 +7900,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "vit-servicing-station-cli"
-version = "0.3.4-dev"
-dependencies = [
- "base64 0.13.1",
- "clap 4.2.1",
- "csv",
- "diesel 1.4.8",
- "diesel_migrations 1.4.0",
- "r2d2",
- "rand 0.7.3",
- "serde",
- "serde_json",
- "tempfile",
- "thiserror",
- "time 0.3.20",
- "url",
- "vit-servicing-station-lib",
- "vit-servicing-station-tests",
-]
-
-[[package]]
 name = "vit-servicing-station-lib"
 version = "0.3.4-dev"
 dependencies = [
@@ -7957,26 +7936,6 @@ dependencies = [
  "url",
  "vit-servicing-station-tests",
  "warp",
-]
-
-[[package]]
-name = "vit-servicing-station-server"
-version = "0.3.4-dev"
-dependencies = [
- "clap 4.2.1",
- "log",
- "opentelemetry",
- "opentelemetry-otlp",
- "opentelemetry-semantic-conventions",
- "thiserror",
- "tokio",
- "tracing",
- "tracing-appender",
- "tracing-futures",
- "tracing-opentelemetry",
- "tracing-subscriber",
- "url",
- "vit-servicing-station-lib",
 ]
 
 [[package]]

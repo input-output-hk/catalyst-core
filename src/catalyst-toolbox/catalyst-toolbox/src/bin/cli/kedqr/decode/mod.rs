@@ -22,7 +22,7 @@ pub struct DecodeQrCodeCmd {
     /// Pin code. 4-digit number is used on Catalyst.
     #[clap(short, long, value_parser = QrPin::from_str)]
     pin: QrPin,
-
+    /// Set to img or payload
     #[clap(short, long, value_parser = QrCodeOpts::from_str)]
     opts: QrCodeOpts,
 }

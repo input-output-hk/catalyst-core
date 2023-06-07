@@ -5,6 +5,7 @@ This crate defines the structure and RUST access methods for the Catalyst Event 
 - [Catalyst Event Database](#catalyst-event-database)
   - [Starting a Local Test DB with Docker](#starting-a-local-test-db-with-docker)
   - [Creating A Local Test Database](#creating-a-local-test-database)
+    - [Dependencies](#dependencies)
     - [Setup a clean new dev DB with a single command](#setup-a-clean-new-dev-db-with-a-single-command)
   - [GraphQL](#graphql)
     - [GraphQL Users](#graphql-users)
@@ -49,8 +50,8 @@ See <https://www.graphile.org/postgraphile/> for documentation on the GraphQL se
 
 There are two GraphQL Users:
 
-* `cat_admin`: Full admin access to the database.
-* `cat_anon`: Unauthenticated read-only access to the database.
+- `cat_admin`: Full admin access to the database.
+- `cat_anon`: Unauthenticated read-only access to the database.
 
 To authenticate, as the `cat_admin` user, execute the `authenticate` mutation.
 This will return a Signed JWT Token for the user.
@@ -63,15 +64,15 @@ Further Security Roles or Admin management functions can be added as required.
 
 #### Authentication API
 
-The GraphQL exposes 2 **Mutations** which are used for security.
+The GraphQL server exposes 2 **Mutations** that are used for security.
 
 If the user is NOT authenticated, they can not update any data in the database, only read data.
 
 To authenticate run the `authenticate` mutation with the email address and password of the user to be authenticated.
 If successful, this mutation will return a JWT which will have 1 hr of Life.
-Place the returned JSW in a `Authorization: Bearer <JWT>` header for all subsequent calls.
+Place the returned JWT in an `Authorization: Bearer <JWT>` header for all subsequent calls.
 
-`currentAcct` query will return the authenticated users current account details and role.
+`currentAcct` query will return the authenticated user's current account details and role.
 
 To register a new user, the `registerAdmin` mutation can be used.
 It will only work if the user is properly authenticated with a `cat_admin` role.

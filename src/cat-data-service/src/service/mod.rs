@@ -1,11 +1,15 @@
 use crate::state::State;
 use axum::{
-    http::StatusCode,
+    extract::MatchedPath,
+    http::{Request, StatusCode},
+    middleware::{self, Next},
     response::{IntoResponse, Response},
+    routing::get,
     Json, Router,
 };
+use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
 use serde::Serialize;
-use std::{net::SocketAddr, sync::Arc};
+use std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
 
 mod health;
 mod v1;
@@ -25,16 +29,50 @@ pub fn app(state: Arc<State>) -> Router {
     Router::new().nest("/api", v1).merge(health)
 }
 
-pub async fn run_service(addr: &SocketAddr, state: Arc<State>) -> Result<(), Error> {
-    tracing::info!("Starting service...");
-    tracing::info!("Listening on {}", addr);
+fn metrics_app() -> Router {
+    let recorder_handle = setup_metrics_recorder();
+    Router::new().route("/metrics", get(move || ready(recorder_handle.render())))
+}
 
-    let app = app(state);
+pub async fn run(
+    service_addr: &SocketAddr,
+    metrics_addr: &Option<SocketAddr>,
+    state: Arc<State>,
+) -> Result<(), Error> {
+    if let Some(metrics_addr) = metrics_addr {
+        tracing::info!("Starting metrics...");
+        tracing::info!("Listening on {}", metrics_addr);
 
-    axum::Server::bind(addr)
-        .serve(app.into_make_service())
-        .await
-        .map_err(|e| Error::CannotRunService(e.to_string()))?;
+        tracing::info!("Starting service...");
+        tracing::info!("Listening on {}", service_addr);
+
+        let app = app(state).route_layer(middleware::from_fn(track_metrics));
+
+        tokio::join!(
+            async {
+                axum::Server::bind(metrics_addr)
+                    .serve(metrics_app().into_make_service())
+                    .await
+                    .map_err(|e| Error::CannotRunService(e.to_string()));
+            },
+            async {
+                axum::Server::bind(service_addr)
+                    .serve(app.into_make_service())
+                    .await
+                    .map_err(|e| Error::CannotRunService(e.to_string()));
+            },
+        );
+    } else {
+        let app = app(state);
+
+        tracing::info!("Starting service...");
+        tracing::info!("Listening on {}", service_addr);
+
+        axum::Server::bind(service_addr)
+            .serve(app.into_make_service())
+            .await
+            .map_err(|e| Error::CannotRunService(e.to_string()))?;
+    }
     Ok(())
 }
 
@@ -46,6 +84,47 @@ fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
         }
         Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response(),
     }
+}
+
+fn setup_metrics_recorder() -> PrometheusHandle {
+    const EXPONENTIAL_SECONDS: &[f64] = &[
+        0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0,
+    ];
+
+    PrometheusBuilder::new()
+        .set_buckets_for_metric(
+            Matcher::Full("http_requests_duration_seconds".to_string()),
+            EXPONENTIAL_SECONDS,
+        )
+        .unwrap()
+        .install_recorder()
+        .unwrap()
+}
+
+async fn track_metrics<T>(req: Request<T>, next: Next<T>) -> impl IntoResponse {
+    let start = Instant::now();
+    let path = if let Some(matched_path) = req.extensions().get::<MatchedPath>() {
+        matched_path.as_str().to_owned()
+    } else {
+        req.uri().path().to_owned()
+    };
+    let method = req.method().clone();
+
+    let response = next.run(req).await;
+
+    let latency = start.elapsed().as_secs_f64();
+    let status = response.status().as_u16().to_string();
+
+    let labels = [
+        ("method", method.to_string()),
+        ("path", path),
+        ("status", status),
+    ];
+
+    metrics::increment_counter!("http_requests_total", &labels);
+    metrics::histogram!("http_requests_duration_seconds", latency, &labels);
+
+    response
 }
 
 #[cfg(test)]

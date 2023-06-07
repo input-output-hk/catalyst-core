@@ -7,6 +7,7 @@ use axum::{
 use serde::Serialize;
 use std::{net::SocketAddr, sync::Arc};
 
+mod health;
 mod v1;
 
 #[derive(thiserror::Error, Debug)]
@@ -20,7 +21,8 @@ pub enum Error {
 pub fn app(state: Arc<State>) -> Router {
     // build our application with a route
     let v1 = v1::v1(state);
-    Router::new().nest("/api", v1)
+    let health = health::health();
+    Router::new().nest("/api", v1).merge(health)
 }
 
 pub async fn run_service(addr: &SocketAddr, state: Arc<State>) -> Result<(), Error> {

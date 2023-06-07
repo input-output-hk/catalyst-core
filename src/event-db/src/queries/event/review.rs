@@ -34,7 +34,7 @@ impl EventDB {
         FROM proposal_review
         INNER JOIN proposal on proposal.row_id = proposal_review.proposal_id
         INNER JOIN objective on proposal.objective = objective.row_id
-        WHERE objective.event = $1 AND proposal.objective = $2 AND proposal.id = $3
+        WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3
         LIMIT $4 OFFSET $5;";
 
     const RATINGS_PER_REVIEW_QUERY: &'static str =
@@ -49,7 +49,7 @@ impl EventDB {
         FROM review_metric
         INNER JOIN objective_review_metric on review_metric.row_id = objective_review_metric.metric
         INNER JOIN objective on objective_review_metric.objective = objective.row_id
-        WHERE objective.event = $1 AND objective.row_id = $2
+        WHERE objective.event = $1 AND objective.id = $2
         LIMIT $3 OFFSET $4;";
 }
 
@@ -118,12 +118,8 @@ impl ReviewQueries for EventDB {
             .await?;
         let mut review_types = Vec::new();
         for row in rows {
-            let map = row.try_get::<_, Option<serde_json::Value>>("map")?;
-            let map = map
-                .and_then(|map| {
-                    map.as_array()
-                        .map(|array| array.iter().map(|el| el.to_string()).collect())
-                })
+            let map = row
+                .try_get::<_, Option<Vec<serde_json::Value>>>("map")?
                 .unwrap_or_default();
 
             review_types.push(ReviewType {
@@ -315,11 +311,10 @@ mod tests {
                     map: vec![
                         json!(
                             {"name":"Excellent","desc":"Excellent Review"}
-                        )
-                        .to_string(),
-                        json!({"name":"Good","desc":"Could be improved."}).to_string(),
-                        json!({"name":"FilteredOut","desc":"Exclude this review"}).to_string(),
-                        json!({"name":"NA", "desc":"Not Applicable"}).to_string()
+                        ),
+                        json!({"name":"Good","desc":"Could be improved."}),
+                        json!({"name":"FilteredOut","desc":"Exclude this review"}),
+                        json!({"name":"NA", "desc":"Not Applicable"})
                     ],
                     note: Some(false),
                     group: None,
@@ -385,11 +380,10 @@ mod tests {
                     map: vec![
                         json!(
                             {"name":"Excellent","desc":"Excellent Review"}
-                        )
-                        .to_string(),
-                        json!({"name":"Good","desc":"Could be improved."}).to_string(),
-                        json!({"name":"FilteredOut","desc":"Exclude this review"}).to_string(),
-                        json!({"name":"NA", "desc":"Not Applicable"}).to_string()
+                        ),
+                        json!({"name":"Good","desc":"Could be improved."}),
+                        json!({"name":"FilteredOut","desc":"Exclude this review"}),
+                        json!({"name":"NA", "desc":"Not Applicable"})
                     ],
                     note: Some(false),
                     group: None,

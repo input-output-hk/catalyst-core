@@ -56,10 +56,7 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::{
-        event::ballot::{BallotType, GroupVotePlans, ObjectiveChoices, VotePlan},
-        registration::VoterGroupId,
-    };
+    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -76,30 +73,32 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&Ballot {
-                choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
-                voteplans: GroupVotePlans(vec![
-                    VotePlan {
-                        chain_proposal_index: 10,
-                        group: VoterGroupId("direct".to_string()),
-                        ballot_type: BallotType("public".to_string()),
-                        chain_voteplan_id: "1".to_string(),
-                        encryption_key: None,
-                    },
-                    VotePlan {
-                        chain_proposal_index: 12,
-                        group: VoterGroupId("rep".to_string()),
-                        ballot_type: BallotType("public".to_string()),
-                        chain_voteplan_id: "2".to_string(),
-                        encryption_key: None,
-                    }
-                ]),
-            })
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!(
+                {
+                    "choices": ["yes", "no"],
+                    "voteplans": [
+                        {
+                            "chain_proposal_index": 10,
+                            "group": "direct",
+                            "ballot_type": "public",
+                            "chain_voteplan_id": "1",
+                        },
+                        {
+                            "chain_proposal_index": 12,
+                            "group": "rep",
+                            "ballot_type": "public",
+                            "chain_voteplan_id": "2",
+                        }
+                    ]
+                }
+            )
         );
 
         let request = Request::builder()

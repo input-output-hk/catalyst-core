@@ -63,7 +63,7 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::review::Rating;
+    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -80,41 +80,43 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![
-                AdvisorReview {
-                    assessor: "assessor 1".to_string(),
-                    ratings: vec![
-                        Rating {
-                            review_type: 1,
-                            score: 10,
-                            note: Some("note 1".to_string()),
-                        },
-                        Rating {
-                            review_type: 2,
-                            score: 15,
-                            note: Some("note 2".to_string()),
-                        },
-                        Rating {
-                            review_type: 5,
-                            score: 20,
-                            note: Some("note 3".to_string()),
-                        }
-                    ],
-                },
-                AdvisorReview {
-                    assessor: "assessor 2".to_string(),
-                    ratings: vec![],
-                },
-                AdvisorReview {
-                    assessor: "assessor 3".to_string(),
-                    ratings: vec![],
-                },
-            ])
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!([
+                {
+                    "assessor": "assessor 1",
+                    "ratings": [
+                        {
+                            "review_type": 1,
+                            "score": 10,
+                            "note": "note 1"
+                        },
+                        {
+                            "review_type": 2,
+                            "score": 15,
+                            "note": "note 2"
+                        },
+                        {
+                            "review_type": 5,
+                            "score": 20,
+                            "note": "note 3"
+                        }
+                    ]
+                },
+                {
+                    "assessor": "assessor 2",
+                    "ratings": []
+                },
+                {
+                    "assessor": "assessor 3",
+                    "ratings": []
+                }
+            ])
         );
 
         let request = Request::builder()
@@ -126,37 +128,39 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![
-                AdvisorReview {
-                    assessor: "assessor 1".to_string(),
-                    ratings: vec![
-                        Rating {
-                            review_type: 1,
-                            score: 10,
-                            note: Some("note 1".to_string()),
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
+            .unwrap(),
+            serde_json::json!([
+                {
+                    "assessor": "assessor 1",
+                    "ratings": [
+                        {
+                            "review_type": 1,
+                            "score": 10,
+                            "note": "note 1"
                         },
-                        Rating {
-                            review_type: 2,
-                            score: 15,
-                            note: Some("note 2".to_string()),
+                        {
+                            "review_type": 2,
+                            "score": 15,
+                            "note": "note 2"
                         },
-                        Rating {
-                            review_type: 5,
-                            score: 20,
-                            note: Some("note 3".to_string()),
+                        {
+                            "review_type": 5,
+                            "score": 20,
+                            "note": "note 3"
                         }
-                    ],
+                    ]
                 },
-                AdvisorReview {
-                    assessor: "assessor 2".to_string(),
-                    ratings: vec![],
+                {
+                    "assessor": "assessor 2",
+                    "ratings": []
                 },
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
         );
 
         let request = Request::builder()
@@ -168,21 +172,23 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![
-                AdvisorReview {
-                    assessor: "assessor 2".to_string(),
-                    ratings: vec![],
-                },
-                AdvisorReview {
-                    assessor: "assessor 3".to_string(),
-                    ratings: vec![],
-                },
-            ])
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!([
+                {
+                    "assessor": "assessor 2",
+                    "ratings": []
+                },
+                {
+                    "assessor": "assessor 3",
+                    "ratings": []
+                }
+            ])
         );
 
         let request = Request::builder()
@@ -194,15 +200,19 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![AdvisorReview {
-                assessor: "assessor 2".to_string(),
-                ratings: vec![],
-            },])
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!([
+                {
+                    "assessor": "assessor 2",
+                    "ratings": []
+                },
+            ])
         );
     }
 }

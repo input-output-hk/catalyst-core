@@ -60,7 +60,7 @@ mod tests {
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use serde_json::json;
+    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -77,51 +77,51 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![
-                ReviewType {
-                    id: 1,
-                    name: "impact".to_string(),
-                    description: Some("Impact Rating".to_string()),
-                    min: 0,
-                    max: 5,
-                    map: vec![],
-                    note: None,
-                    group: Some("review_group 1".to_string()),
-                },
-                ReviewType {
-                    id: 2,
-                    name: "feasibility".to_string(),
-                    description: Some("Feasibility Rating".to_string()),
-                    min: 0,
-                    max: 5,
-                    map: vec![],
-                    note: Some(true),
-                    group: Some("review_group 2".to_string()),
-                },
-                ReviewType {
-                    id: 5,
-                    name: "vpa_ranking".to_string(),
-                    description: Some("VPA Ranking of the review".to_string()),
-                    min: 0,
-                    max: 3,
-                    map: vec![
-                        json!(
-                            {"name":"Excellent","desc":"Excellent Review"}
-                        )
-                        .to_string(),
-                        json!({"name":"Good","desc":"Could be improved."}).to_string(),
-                        json!({"name":"FilteredOut","desc":"Exclude this review"}).to_string(),
-                        json!({"name":"NA", "desc":"Not Applicable"}).to_string()
-                    ],
-                    note: Some(false),
-                    group: None,
-                }
-            ])
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!(
+                [
+                    {
+                        "id": 1,
+                        "name": "impact",
+                        "description": "Impact Rating",
+                        "min": 0,
+                        "max": 5,
+                        "map": [],
+                        "group": "review_group 1",
+                        "note": null,
+                    },
+                    {
+                        "id": 2,
+                        "name": "feasibility",
+                        "description": "Feasibility Rating",
+                        "min": 0,
+                        "max": 5,
+                        "map": [],
+                        "note": true,
+                        "group": "review_group 2"
+                    },
+                    {
+                        "id": 5,
+                        "name": "vpa_ranking",
+                        "description": "VPA Ranking of the review",
+                        "min": 0,
+                        "max": 3,
+                        "map": [
+                            {"name": "Excellent", "desc": "Excellent Review"},
+                            {"name": "Good", "desc": "Could be improved."},
+                            {"name": "FilteredOut", "desc": "Exclude this review"},
+                            {"name": "NA", "desc": "Not Applicable"}
+                        ],
+                        "note": false,
+                    }
+                ]
+            )
         );
 
         let request = Request::builder()
@@ -133,33 +133,37 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![
-                ReviewType {
-                    id: 1,
-                    name: "impact".to_string(),
-                    description: Some("Impact Rating".to_string()),
-                    min: 0,
-                    max: 5,
-                    map: vec![],
-                    note: None,
-                    group: Some("review_group 1".to_string()),
-                },
-                ReviewType {
-                    id: 2,
-                    name: "feasibility".to_string(),
-                    description: Some("Feasibility Rating".to_string()),
-                    min: 0,
-                    max: 5,
-                    map: vec![],
-                    note: Some(true),
-                    group: Some("review_group 2".to_string()),
-                },
-            ])
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!(
+                [
+                    {
+                        "id": 1,
+                        "name": "impact",
+                        "description": "Impact Rating",
+                        "min": 0,
+                        "max": 5,
+                        "map": [],
+                        "group": "review_group 1",
+                        "note": null,
+                    },
+                    {
+                        "id": 2,
+                        "name": "feasibility",
+                        "description": "Feasibility Rating",
+                        "min": 0,
+                        "max": 5,
+                        "map": [],
+                        "note": true,
+                        "group": "review_group 2"
+                    },
+                ]
+            )
         );
 
         let request = Request::builder()
@@ -171,41 +175,41 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![
-                ReviewType {
-                    id: 2,
-                    name: "feasibility".to_string(),
-                    description: Some("Feasibility Rating".to_string()),
-                    min: 0,
-                    max: 5,
-                    map: vec![],
-                    note: Some(true),
-                    group: Some("review_group 2".to_string()),
-                },
-                ReviewType {
-                    id: 5,
-                    name: "vpa_ranking".to_string(),
-                    description: Some("VPA Ranking of the review".to_string()),
-                    min: 0,
-                    max: 3,
-                    map: vec![
-                        json!(
-                            {"name":"Excellent","desc":"Excellent Review"}
-                        )
-                        .to_string(),
-                        json!({"name":"Good","desc":"Could be improved."}).to_string(),
-                        json!({"name":"FilteredOut","desc":"Exclude this review"}).to_string(),
-                        json!({"name":"NA", "desc":"Not Applicable"}).to_string()
-                    ],
-                    note: Some(false),
-                    group: None,
-                }
-            ])
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!(
+                [
+                    {
+                        "id": 2,
+                        "name": "feasibility",
+                        "description": "Feasibility Rating",
+                        "min": 0,
+                        "max": 5,
+                        "map": [],
+                        "note": true,
+                        "group": "review_group 2"
+                    },
+                    {
+                        "id": 5,
+                        "name": "vpa_ranking",
+                        "description": "VPA Ranking of the review",
+                        "min": 0,
+                        "max": 3,
+                        "map": [
+                            {"name": "Excellent", "desc": "Excellent Review"},
+                            {"name": "Good", "desc": "Could be improved."},
+                            {"name": "FilteredOut", "desc": "Exclude this review"},
+                            {"name": "NA", "desc": "Not Applicable"}
+                        ],
+                        "note": false,
+                    }
+                ]
+            )
         );
 
         let request = Request::builder()
@@ -217,21 +221,27 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
         assert_eq!(
-            serde_json::to_string(&vec![ReviewType {
-                id: 2,
-                name: "feasibility".to_string(),
-                description: Some("Feasibility Rating".to_string()),
-                min: 0,
-                max: 5,
-                map: vec![],
-                note: Some(true),
-                group: Some("review_group 2".to_string()),
-            },])
+            serde_json::Value::from_str(
+                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                    .unwrap()
+                    .as_str()
+            )
             .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
+            serde_json::json!(
+                [
+                    {
+                        "id": 2,
+                        "name": "feasibility",
+                        "description": "Feasibility Rating",
+                        "min": 0,
+                        "max": 5,
+                        "map": [],
+                        "note": true,
+                        "group": "review_group 2"
+                    },
+                ]
+            )
         );
     }
 }

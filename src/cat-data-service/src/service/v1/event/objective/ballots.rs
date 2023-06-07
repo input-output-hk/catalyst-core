@@ -9,7 +9,7 @@ use std::sync::Arc;
 pub fn ballots(state: Arc<State>) -> Router {
     Router::new().route(
         "/ballots",
-        get(move |path| async { handle_result(ballots_exec(path, state).await).await }),
+        get(move |path| async { handle_result(ballots_exec(path, state).await) }),
     )
 }
 
@@ -48,12 +48,11 @@ async fn ballots_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::app;
+    use crate::service::{app, tests::body_data_json_check};
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -67,14 +66,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
                     {
@@ -126,6 +119,6 @@ mod tests {
                     }
                 ]
             )
-        );
+        ));
     }
 }

@@ -126,10 +126,20 @@
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
 <a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::{
     extract::MatchedPath,
-    http::{Request, StatusCode},
+    http::{Method, Request, StatusCode},
     middleware::{<span class="self">self</span>, Next},
     response::{IntoResponse, Response},
     routing::get,
@@ -138,6 +148,7 @@
 <span class="kw">use </span>metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
 <span class="kw">use </span>serde::Serialize;
 <span class="kw">use </span>std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
+<span class="kw">use </span>tower_http::cors::{Any, CorsLayer};
 
 <span class="kw">mod </span>health;
 <span class="kw">mod </span>v1;
@@ -162,6 +173,12 @@
     Router::new().route(<span class="string">&quot;/metrics&quot;</span>, get(<span class="kw">move </span>|| ready(recorder_handle.render())))
 }
 
+<span class="kw">fn </span>cors_layer() -&gt; CorsLayer {
+    CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_origin(Any)
+}
+
 <span class="kw">async fn </span>run_service(app: Router, addr: <span class="kw-2">&amp;</span>SocketAddr, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Starting {name}...&quot;</span>);
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Listening on {addr}&quot;</span>);
@@ -178,16 +195,19 @@
     metrics_addr: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="kw">let </span>cors = cors_layer();
     <span class="kw">if let </span><span class="prelude-val">Some</span>(metrics_addr) = metrics_addr {
-        <span class="kw">let </span>service_app = app(state).route_layer(middleware::from_fn(track_metrics));
-        <span class="kw">let </span>metrics_app = metrics_app();
+        <span class="kw">let </span>service_app = app(state)
+            .layer(cors.clone())
+            .route_layer(middleware::from_fn(track_metrics));
+        <span class="kw">let </span>metrics_app = metrics_app().layer(cors);
 
         <span class="macro">tokio::try_join!</span>(
             run_service(service_app, service_addr, <span class="string">&quot;service&quot;</span>),
             run_service(metrics_app, metrics_addr, <span class="string">&quot;metrics&quot;</span>),
         )<span class="question-mark">?</span>;
     } <span class="kw">else </span>{
-        <span class="kw">let </span>service_app = app(state);
+        <span class="kw">let </span>service_app = app(state).layer(cors);
 
         run_service(service_app, service_addr, <span class="string">&quot;service&quot;</span>).<span class="kw">await</span><span class="question-mark">?</span>;
     }

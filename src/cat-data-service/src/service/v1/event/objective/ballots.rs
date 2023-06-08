@@ -78,7 +78,7 @@ mod tests {
             serde_json::json!(
                 [
                     {
-                        "proposal_id": 1,
+                        "proposal_id": 10,
                         "ballot": {
                             "choices": ["yes", "no"],
                             "voteplans": [
@@ -98,7 +98,7 @@ mod tests {
                         }
                     },
                     {
-                        "proposal_id": 2,
+                        "proposal_id": 20,
                         "ballot": {
                             "choices": ["yes", "no"],
                             "voteplans": [
@@ -118,7 +118,7 @@ mod tests {
                         }
                     },
                     {
-                        "proposal_id": 3,
+                        "proposal_id": 30,
                         "ballot": {
                             "choices": ["yes", "no"],
                             "voteplans": []

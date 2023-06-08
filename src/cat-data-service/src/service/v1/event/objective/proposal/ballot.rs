@@ -67,7 +67,7 @@ mod tests {
         let request = Request::builder()
             .uri(format!(
                 "/api/v1/event/{0}/objective/{1}/proposal/{2}/ballot",
-                1, 1, 1
+                1, 1, 10
             ))
             .body(Body::empty())
             .unwrap();

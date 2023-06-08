@@ -34,44 +34,34 @@ fn metrics_app() -> Router {
     Router::new().route("/metrics", get(move || ready(recorder_handle.render())))
 }
 
+async fn run_service(app: Router, addr: &SocketAddr, name: &str) -> Result<(), Error> {
+    tracing::info!("Starting {name}...");
+    tracing::info!("Listening on {addr}");
+
+    axum::Server::bind(addr)
+        .serve(app.into_make_service())
+        .await
+        .map_err(|e| Error::CannotRunService(e.to_string()))?;
+    Ok(())
+}
+
 pub async fn run(
     service_addr: &SocketAddr,
     metrics_addr: &Option<SocketAddr>,
     state: Arc<State>,
 ) -> Result<(), Error> {
     if let Some(metrics_addr) = metrics_addr {
-        tracing::info!("Starting metrics...");
-        tracing::info!("Listening on {}", metrics_addr);
+        let service_app = app(state).route_layer(middleware::from_fn(track_metrics));
+        let metrics_app = metrics_app();
 
-        tracing::info!("Starting service...");
-        tracing::info!("Listening on {}", service_addr);
-
-        let app = app(state).route_layer(middleware::from_fn(track_metrics));
-
-        tokio::join!(
-            async {
-                axum::Server::bind(metrics_addr)
-                    .serve(metrics_app().into_make_service())
-                    .await
-                    .map_err(|e| Error::CannotRunService(e.to_string()));
-            },
-            async {
-                axum::Server::bind(service_addr)
-                    .serve(app.into_make_service())
-                    .await
-                    .map_err(|e| Error::CannotRunService(e.to_string()));
-            },
-        );
+        tokio::try_join!(
+            run_service(service_app, service_addr, "service"),
+            run_service(metrics_app, metrics_addr, "metrics"),
+        )?;
     } else {
-        let app = app(state);
+        let service_app = app(state);
 
-        tracing::info!("Starting service...");
-        tracing::info!("Listening on {}", service_addr);
-
-        axum::Server::bind(service_addr)
-            .serve(app.into_make_service())
-            .await
-            .map_err(|e| Error::CannotRunService(e.to_string()))?;
+        run_service(service_app, service_addr, "service").await?;
     }
     Ok(())
 }

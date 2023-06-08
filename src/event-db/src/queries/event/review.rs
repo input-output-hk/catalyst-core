@@ -165,7 +165,7 @@ mod tests {
         let event_db = establish_connection(None).await.unwrap();
 
         let reviews = event_db
-            .get_reviews(EventId(1), ObjectiveId(1), ProposalId(1), None, None)
+            .get_reviews(EventId(1), ObjectiveId(1), ProposalId(10), None, None)
             .await
             .unwrap();
 
@@ -204,7 +204,7 @@ mod tests {
         );
 
         let reviews = event_db
-            .get_reviews(EventId(1), ObjectiveId(1), ProposalId(1), Some(2), None)
+            .get_reviews(EventId(1), ObjectiveId(1), ProposalId(10), Some(2), None)
             .await
             .unwrap();
 
@@ -239,7 +239,7 @@ mod tests {
         );
 
         let reviews = event_db
-            .get_reviews(EventId(1), ObjectiveId(1), ProposalId(1), None, Some(1))
+            .get_reviews(EventId(1), ObjectiveId(1), ProposalId(10), None, Some(1))
             .await
             .unwrap();
 
@@ -258,7 +258,7 @@ mod tests {
         );
 
         let reviews = event_db
-            .get_reviews(EventId(1), ObjectiveId(1), ProposalId(1), Some(1), Some(1))
+            .get_reviews(EventId(1), ObjectiveId(1), ProposalId(10), Some(1), Some(1))
             .await
             .unwrap();
 

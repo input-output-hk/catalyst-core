@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["COUNT","EXPONENTIAL_SECONDS"],"enum":["Error"],"fn":["app","handle_result","metrics_app","run","setup_metrics_recorder","track_metrics"],"mod":["health","v1"],"opaque":[""],"static":["CALLSITE","META","METRIC_NAME"]};
+window.SIDEBAR_ITEMS = {"constant":["COUNT","EXPONENTIAL_SECONDS"],"enum":["Error"],"fn":["app","handle_result","metrics_app","run","run_service","setup_metrics_recorder","track_metrics"],"mod":["health","v1"],"opaque":[""],"static":["CALLSITE","META","METRIC_NAME"]};

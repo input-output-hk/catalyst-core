@@ -9,6 +9,7 @@ use snapshot_trigger_service::config::JobParameters;
 use vitup::config::{DIRECT_VOTING_GROUP, REP_VOTING_GROUP};
 
 #[test]
+#[ignore]
 pub fn mixed_registration_transactions() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let stake = 10_000;

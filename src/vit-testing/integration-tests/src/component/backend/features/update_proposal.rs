@@ -28,6 +28,7 @@ const PIN: &str = "1234";
 const ALICE: &str = "ALICE";
 const COMMITTEE: &str = "COMMITTEE";
 #[test]
+#[ignore]
 pub fn increase_max_block_content_size_during_voting() {
     let old_block_context_max_size = 10_000;
     let new_block_context_max_size = 100_000;

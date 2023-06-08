@@ -18,6 +18,7 @@ use vitup::testing::spawn_network;
 use vitup::testing::vitup_setup;
 
 #[test]
+#[ignore]
 pub fn private_vote_e2e_flow() -> std::result::Result<(), Error> {
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,

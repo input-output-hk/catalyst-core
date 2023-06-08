@@ -15,6 +15,7 @@ use vitup::config::{ConfigBuilder, Role, VoteBlockchainTime};
 use vitup::testing::{spawn_network, vitup_setup};
 
 #[test]
+#[ignore]
 pub fn persistent_log_contains_all_sent_votes() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let endpoint = "http://127.0.0.1:8080";

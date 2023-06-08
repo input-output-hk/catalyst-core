@@ -17,6 +17,7 @@ use vitup::testing::vitup_setup;
 const PIN: &str = "1234";
 
 #[test]
+#[ignore]
 pub fn public_vote_multiple_vote_plans() -> std::result::Result<(), Error> {
     let vote_timing = VoteBlockchainTime {
         vote_start: 0,

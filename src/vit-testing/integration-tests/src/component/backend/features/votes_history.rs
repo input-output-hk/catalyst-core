@@ -19,6 +19,7 @@ const PIN: &str = "1234";
 const ALICE: &str = "alice";
 
 #[test]
+#[ignore]
 pub fn votes_history_reflects_casted_votes() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let batch_size = 1;

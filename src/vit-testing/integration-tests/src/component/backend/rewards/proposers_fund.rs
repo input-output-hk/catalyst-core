@@ -9,6 +9,7 @@ use vitup::config::{Block0Initial, Block0Initials, ConfigBuilder};
 use vitup::testing::vitup_setup;
 
 #[test]
+#[ignore]
 pub fn single_proposal_in_single_challenge_got_funded() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
 

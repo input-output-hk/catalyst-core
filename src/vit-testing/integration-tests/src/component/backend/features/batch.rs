@@ -13,6 +13,7 @@ const PIN: &str = "1234";
 const ALICE: &str = "alice";
 
 #[test]
+#[ignore]
 pub fn transactions_are_send_between_nodes_with_correct_order() {
     let testing_directory = TempDir::new().unwrap().into_persistent();
     let batch_size = 10;

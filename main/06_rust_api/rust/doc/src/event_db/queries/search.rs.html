@@ -959,7 +959,7 @@
     types::{
         event::{
             objective::{ObjectiveId, ObjectiveSummary, ObjectiveType},
-            proposal::ProposalSummary,
+            proposal::{ProposalId, ProposalSummary},
             EventId, EventSummary,
         },
         search::{
@@ -1184,7 +1184,7 @@
                     <span class="kw">let </span><span class="kw-2">mut </span>proposals = Vec::new();
                     <span class="kw">for </span>row <span class="kw">in </span>rows {
                         <span class="kw">let </span>summary = ProposalSummary {
-                            id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
+                            id: ProposalId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
                             title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
                             summary: row.try_get(<span class="string">&quot;summary&quot;</span>)<span class="question-mark">?</span>,
                         };
@@ -1779,17 +1779,17 @@
             query_result.results,
             <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                 ProposalSummary {
-                    id: <span class="number">1</span>,
+                    id: ProposalId(<span class="number">10</span>),
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">2</span>,
+                    id: ProposalId(<span class="number">20</span>),
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">3</span>,
+                    id: ProposalId(<span class="number">30</span>),
                     title: String::from(<span class="string">&quot;title 3&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
                 },
@@ -1823,17 +1823,17 @@
             query_result.results,
             <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                 ProposalSummary {
-                    id: <span class="number">3</span>,
+                    id: ProposalId(<span class="number">30</span>),
                     title: String::from(<span class="string">&quot;title 3&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">2</span>,
+                    id: ProposalId(<span class="number">20</span>),
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">1</span>,
+                    id: ProposalId(<span class="number">10</span>),
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
@@ -1849,12 +1849,12 @@
             query_result.results,
             <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                 ProposalSummary {
-                    id: <span class="number">3</span>,
+                    id: ProposalId(<span class="number">30</span>),
                     title: String::from(<span class="string">&quot;title 3&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">2</span>,
+                    id: ProposalId(<span class="number">20</span>),
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
                 },
@@ -1870,12 +1870,12 @@
             query_result.results,
             <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[
                 ProposalSummary {
-                    id: <span class="number">2</span>,
+                    id: ProposalId(<span class="number">20</span>),
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">1</span>,
+                    id: ProposalId(<span class="number">10</span>),
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
@@ -1890,7 +1890,7 @@
         <span class="macro">assert_eq!</span>(
             query_result.results,
             <span class="prelude-val">Some</span>(ValueResults::Proposals(<span class="macro">vec!</span>[ProposalSummary {
-                id: <span class="number">2</span>,
+                id: ProposalId(<span class="number">20</span>),
                 title: String::from(<span class="string">&quot;title 2&quot;</span>),
                 summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
             },]))

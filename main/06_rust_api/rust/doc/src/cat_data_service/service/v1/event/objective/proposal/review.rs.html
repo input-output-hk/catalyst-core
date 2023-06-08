@@ -292,7 +292,7 @@
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
                 <span class="string">&quot;/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews&quot;</span>,
-                <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">10
             </span>))
             .body(Body::empty())
             .unwrap();
@@ -340,7 +340,7 @@
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
                 <span class="string">&quot;/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews?limit={3}&quot;</span>,
-                <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">2
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">10</span>, <span class="number">2
             </span>))
             .body(Body::empty())
             .unwrap();
@@ -384,7 +384,7 @@
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
                 <span class="string">&quot;/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews?offset={3}&quot;</span>,
-                <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">10</span>, <span class="number">1
             </span>))
             .body(Body::empty())
             .unwrap();
@@ -412,7 +412,7 @@
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
                 <span class="string">&quot;/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews?limit={3}&amp;offset={4}&quot;</span>,
-                <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">10</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())
             .unwrap();

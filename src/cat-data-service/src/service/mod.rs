@@ -1,7 +1,7 @@
 use crate::state::State;
 use axum::{
     extract::MatchedPath,
-    http::{Request, StatusCode},
+    http::{Method, Request, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::get,
@@ -10,6 +10,7 @@ use axum::{
 use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
 use serde::Serialize;
 use std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
+use tower_http::cors::{Any, CorsLayer};
 
 mod health;
 mod v1;
@@ -34,6 +35,12 @@ fn metrics_app() -> Router {
     Router::new().route("/metrics", get(move || ready(recorder_handle.render())))
 }
 
+fn cors_layer() -> CorsLayer {
+    CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST])
+        .allow_origin(Any)
+}
+
 async fn run_service(app: Router, addr: &SocketAddr, name: &str) -> Result<(), Error> {
     tracing::info!("Starting {name}...");
     tracing::info!("Listening on {addr}");
@@ -50,16 +57,19 @@ pub async fn run(
     metrics_addr: &Option<SocketAddr>,
     state: Arc<State>,
 ) -> Result<(), Error> {
+    let cors = cors_layer();
     if let Some(metrics_addr) = metrics_addr {
-        let service_app = app(state).route_layer(middleware::from_fn(track_metrics));
-        let metrics_app = metrics_app();
+        let service_app = app(state)
+            .layer(cors.clone())
+            .route_layer(middleware::from_fn(track_metrics));
+        let metrics_app = metrics_app().layer(cors);
 
         tokio::try_join!(
             run_service(service_app, service_addr, "service"),
             run_service(metrics_app, metrics_addr, "metrics"),
         )?;
     } else {
-        let service_app = app(state);
+        let service_app = app(state).layer(cors);
 
         run_service(service_app, service_addr, "service").await?;
     }

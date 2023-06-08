@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"mod":["filter_level_opt_serde"],"struct":["Bootstrap","Config","ConfigLogSettings","Connection","Cors","JRpc","LayersConfig","Leadership","P2pConfig","Prometheus","Rest","Tls","TrustedPeer","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"]};

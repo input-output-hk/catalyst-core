@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["generate_arbitrary_delegator","generate_arbitrary_representative"]};

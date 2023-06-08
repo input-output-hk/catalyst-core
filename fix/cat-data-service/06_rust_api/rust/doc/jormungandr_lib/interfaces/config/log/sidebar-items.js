@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["LogOutput","__Field"],"struct":["Log","LogEntry","__FieldVisitor","__Visitor"]};

@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"jortestkit":[["impl Reducer&lt;<a class=\"primitive\" href=\"https://doc.rust-lang.org/nightly/std/primitive.unit.html\">()</a>&gt; for <a class=\"struct\" href=\"jortestkit/load/rayon/struct.NoopReducer.html\" title=\"struct jortestkit::load::rayon::NoopReducer\">NoopReducer</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

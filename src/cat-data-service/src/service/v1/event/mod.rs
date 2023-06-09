@@ -26,7 +26,7 @@ pub fn event(state: Arc<State>) -> Router {
                     "/",
                     get({
                         let state = state.clone();
-                        move |path| async { handle_result(event_exec(path, state).await).await }
+                        move |path| async { handle_result(event_exec(path, state).await) }
                     }),
                 )
                 .merge(objective)
@@ -34,7 +34,7 @@ pub fn event(state: Arc<State>) -> Router {
         )
         .route(
             "/events",
-            get(move |query| async { handle_result(events_exec(query, state).await).await }),
+            get(move |query| async { handle_result(events_exec(query, state).await) }),
         )
 }
 
@@ -80,12 +80,11 @@ async fn events_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::app;
+    use crate::service::{app, tests::body_data_json_check};
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -99,13 +98,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
                     "id": 1,
@@ -154,7 +148,7 @@ mod tests {
                     ]
                 }
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!("/api/v1/event/{0}", 10))
@@ -175,13 +169,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
                     {
@@ -215,7 +204,7 @@ mod tests {
                     },
                 ]
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?offset={0}", 1))
@@ -223,13 +212,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
                     {
@@ -255,7 +239,7 @@ mod tests {
                     },
                 ]
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?limit={0}", 1))
@@ -263,13 +247,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
                     {
@@ -282,7 +261,7 @@ mod tests {
                     },
                 ]
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?limit={0}&offset={1}", 1, 1))
@@ -290,13 +269,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
                     {
@@ -309,7 +283,7 @@ mod tests {
                     },
                 ]
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?offset={0}", 10))

@@ -29,7 +29,7 @@ pub fn proposal(state: Arc<State>) -> Router {
                     "/",
                     get({
                         let state = state.clone();
-                        move |path| async { handle_result(proposal_exec(path, state).await).await }
+                        move |path| async { handle_result(proposal_exec(path, state).await) }
                     }),
                 )
                 .merge(review)
@@ -38,7 +38,7 @@ pub fn proposal(state: Arc<State>) -> Router {
         .route(
             "/proposals",
             get(move |path, query| async {
-                handle_result(proposals_exec(path, query, state).await).await
+                handle_result(proposals_exec(path, query, state).await)
             }),
         )
 }
@@ -97,12 +97,11 @@ async fn proposal_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::app;
+    use crate::service::{app, tests::body_data_json_check};
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -119,13 +118,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
                     "id": 10,
@@ -149,7 +143,7 @@ mod tests {
                     }
                 }
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -173,13 +167,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
                     "id": 10,
@@ -197,7 +186,7 @@ mod tests {
                     "summary": "summary 3",
                 }
             ])
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -208,13 +197,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
                     "id": 10,
@@ -227,7 +211,7 @@ mod tests {
                     "summary": "summary 2",
                 },
             ])
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -238,13 +222,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
                     "id": 20,
@@ -257,7 +236,7 @@ mod tests {
                     "summary": "summary 3",
                 }
             ])
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -268,13 +247,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
                     "id": 20,
@@ -282,6 +256,6 @@ mod tests {
                     "summary": "summary 2",
                 },
             ])
-        );
+        ));
     }
 }

@@ -8,5 +8,5 @@ How to do it, you can read this [README.md](https://github.com/input-output-hk/c
 
 Run
 ```
-cat-data-service run --address "127.0.0.1:3031" --database-url=postgres://catalyst-event-dev@localhost/CatalystEventDev --log-level=debug
+cat-data-service run --address "127.0.0.1:3030" --database-url=postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev --log-level=debug --metrics-address "127.0.0.1:3031"
 ```

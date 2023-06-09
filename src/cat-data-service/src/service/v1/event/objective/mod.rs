@@ -27,7 +27,7 @@ pub fn objective(state: Arc<State>) -> Router {
         .route(
             "/objectives",
             get(move |path, query| async {
-                handle_result(objectives_exec(path, query, state).await).await
+                handle_result(objectives_exec(path, query, state).await)
             }),
         )
 }
@@ -64,12 +64,11 @@ async fn objectives_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::app;
+    use crate::service::{app, tests::body_data_json_check};
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -83,13 +82,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
                     {
@@ -132,7 +126,7 @@ mod tests {
                     }
                 ]
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!("/api/v1/event/{0}/objectives?limit={1}", 1, 1))
@@ -140,13 +134,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
                     {
@@ -179,7 +168,7 @@ mod tests {
                     },
                 ]
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!("/api/v1/event/{0}/objectives?offset={1}", 1, 1))
@@ -187,13 +176,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
                     {
@@ -208,7 +192,7 @@ mod tests {
                     }
                 ]
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(

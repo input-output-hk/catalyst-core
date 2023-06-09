@@ -7,11 +7,11 @@ pub fn health() -> Router {
     Router::new()
         .route(
             "/health/ready",
-            get(|| async { handle_result(ready_exec().await).await }),
+            get(|| async { handle_result(ready_exec().await) }),
         )
         .route(
             "/health/live",
-            get(|| async { handle_result(live_exec().await).await }),
+            get(|| async { handle_result(live_exec().await) }),
         )
 }
 

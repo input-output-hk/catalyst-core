@@ -20,16 +20,14 @@ pub fn registration(state: Arc<State>) -> Router {
             "/registration/voter/:voting_key",
             get({
                 let state = state.clone();
-                move |path, query| async {
-                    handle_result(voter_exec(path, query, state).await).await
-                }
+                move |path, query| async { handle_result(voter_exec(path, query, state).await) }
             }),
         )
         .route(
             "/registration/delegations/:stake_public_key",
             get({
                 move |path, query| async {
-                    handle_result(delegations_exec(path, query, state).await).await
+                    handle_result(delegations_exec(path, query, state).await)
                 }
             }),
         )
@@ -91,12 +89,11 @@ async fn delegations_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::app;
+    use crate::service::{app, tests::body_data_json_check};
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use std::str::FromStr;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -110,13 +107,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
                     "voter_info": {
@@ -131,7 +123,7 @@ mod tests {
                     "final": true
                 }
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -142,13 +134,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
                     "voter_info": {
@@ -163,7 +150,7 @@ mod tests {
                     "final": true
                 }
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!("/api/v1/registration/voter/{0}", "voting_key"))
@@ -197,13 +184,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
                     "delegations": [
@@ -227,7 +209,7 @@ mod tests {
                     "final": true
                 }
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -238,13 +220,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
                     "delegations": [
@@ -268,7 +245,7 @@ mod tests {
                     "final": true
                 }
             )
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(

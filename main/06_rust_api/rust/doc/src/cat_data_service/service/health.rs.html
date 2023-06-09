@@ -99,11 +99,11 @@
     Router::new()
         .route(
             <span class="string">&quot;/health/ready&quot;</span>,
-            get(|| <span class="kw">async </span>{ handle_result(ready_exec().<span class="kw">await</span>).<span class="kw">await </span>}),
+            get(|| <span class="kw">async </span>{ handle_result(ready_exec().<span class="kw">await</span>) }),
         )
         .route(
             <span class="string">&quot;/health/live&quot;</span>,
-            get(|| <span class="kw">async </span>{ handle_result(live_exec().<span class="kw">await</span>).<span class="kw">await </span>}),
+            get(|| <span class="kw">async </span>{ handle_result(live_exec().<span class="kw">await</span>) }),
         )
 }
 

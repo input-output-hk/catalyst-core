@@ -252,6 +252,12 @@
 <a href="#252" id="252">252</a>
 <a href="#253" id="253">253</a>
 <a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{challenge::Challenge, goal::Goal, group::Group, vote_plan::Voteplan};
 <span class="kw">use </span><span class="kw">crate</span>::types::utils::serialize_datetime_as_rfc3339;
 <span class="kw">use </span>chrono::{DateTime, Utc};
@@ -407,35 +413,38 @@
         };
 
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>fund).unwrap();
-        <span class="macro">assert_eq!</span>(json, <span class="macro">json!</span>(
-            {
-                <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
-                <span class="string">&quot;fund_name&quot;</span>: <span class="string">&quot;fund_name 1&quot;</span>,
-                <span class="string">&quot;fund_goal&quot;</span>: <span class="string">&quot;fund_goal 1&quot;</span>,
-                <span class="string">&quot;voting_power_threshold&quot;</span>: <span class="number">1</span>,
-                <span class="string">&quot;fund_start_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;fund_end_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;next_fund_start_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;registration_snapshot_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;next_registration_snapshot_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;chain_vote_plans&quot;</span>: [],
-                <span class="string">&quot;challenges&quot;</span>: [],
-                <span class="string">&quot;insight_sharing_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;proposal_submission_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;refine_proposals_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;finalize_proposals_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;proposal_assessment_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;assessment_qa_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;snapshot_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;voting_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;voting_end&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;tallying_end&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;goals&quot;</span>: [],
-                <span class="string">&quot;results_url&quot;</span>: <span class="string">&quot;results_url 1&quot;</span>,
-                <span class="string">&quot;survey_url&quot;</span>: <span class="string">&quot;survey_url 1&quot;</span>,
-                <span class="string">&quot;groups&quot;</span>: [],
-            }
-        ))
+        <span class="macro">assert_eq!</span>(
+            json,
+            <span class="macro">json!</span>(
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
+                    <span class="string">&quot;fund_name&quot;</span>: <span class="string">&quot;fund_name 1&quot;</span>,
+                    <span class="string">&quot;fund_goal&quot;</span>: <span class="string">&quot;fund_goal 1&quot;</span>,
+                    <span class="string">&quot;voting_power_threshold&quot;</span>: <span class="number">1</span>,
+                    <span class="string">&quot;fund_start_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;fund_end_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;next_fund_start_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;registration_snapshot_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;next_registration_snapshot_time&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;chain_vote_plans&quot;</span>: [],
+                    <span class="string">&quot;challenges&quot;</span>: [],
+                    <span class="string">&quot;insight_sharing_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;proposal_submission_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;refine_proposals_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;finalize_proposals_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;proposal_assessment_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;assessment_qa_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;snapshot_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;voting_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;voting_end&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;tallying_end&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;goals&quot;</span>: [],
+                    <span class="string">&quot;results_url&quot;</span>: <span class="string">&quot;results_url 1&quot;</span>,
+                    <span class="string">&quot;survey_url&quot;</span>: <span class="string">&quot;survey_url 1&quot;</span>,
+                    <span class="string">&quot;groups&quot;</span>: [],
+                }
+            )
+        )
     }
 
     <span class="attr">#[test]
@@ -488,22 +497,25 @@
         };
 
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>fund_next_info).unwrap();
-        <span class="macro">assert_eq!</span>(json, <span class="macro">json!</span>(
-            {
-                <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
-                <span class="string">&quot;fund_name&quot;</span>: <span class="string">&quot;fund_name 1&quot;</span>,
-                <span class="string">&quot;insight_sharing_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;proposal_submission_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;refine_proposals_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;finalize_proposals_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;proposal_assessment_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;assessment_qa_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;snapshot_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;voting_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;voting_end&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-                <span class="string">&quot;tallying_end&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
-            }
-        ))
+        <span class="macro">assert_eq!</span>(
+            json,
+            <span class="macro">json!</span>(
+                {
+                    <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
+                    <span class="string">&quot;fund_name&quot;</span>: <span class="string">&quot;fund_name 1&quot;</span>,
+                    <span class="string">&quot;insight_sharing_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;proposal_submission_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;refine_proposals_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;finalize_proposals_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;proposal_assessment_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;assessment_qa_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;snapshot_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;voting_start&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;voting_end&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                    <span class="string">&quot;tallying_end&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                }
+            )
+        )
     }
 }
 </code></pre></div>

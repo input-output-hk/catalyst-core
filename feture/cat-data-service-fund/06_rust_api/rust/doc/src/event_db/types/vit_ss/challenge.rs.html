@@ -64,7 +64,6 @@
 <a href="#64" id="64">64</a>
 <a href="#65" id="65">65</a>
 <a href="#66" id="66">66</a>
-<a href="#67" id="67">67</a>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
@@ -84,8 +83,7 @@
     <span class="kw">pub </span>proposers_rewards: i64,
     <span class="kw">pub </span>fund_id: i32,
     <span class="kw">pub </span>challenge_url: String,
-    <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-    </span><span class="kw">pub </span>highlights: <span class="prelude-ty">Option</span>&lt;ChallengeHighlights&gt;,
+    <span class="kw">pub </span>highlights: <span class="prelude-ty">Option</span>&lt;ChallengeHighlights&gt;,
 }
 
 <span class="attr">#[cfg(test)]

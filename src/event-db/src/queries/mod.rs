@@ -11,6 +11,8 @@ use crate::EventDB;
 pub mod event;
 pub mod registration;
 pub mod search;
+// DEPRECATED, addded as a backward compatibility with the VIT-SS
+pub mod fund;
 
 pub trait EventDbQueries:
     RegistrationQueries

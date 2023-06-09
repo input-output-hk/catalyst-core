@@ -12,7 +12,7 @@ pub mod event;
 pub mod registration;
 pub mod search;
 // DEPRECATED, addded as a backward compatibility with the VIT-SS
-pub mod fund;
+pub mod vit_ss;
 
 pub trait EventDbQueries:
     RegistrationQueries
@@ -22,6 +22,7 @@ pub trait EventDbQueries:
     + ReviewQueries
     + SearchQueries
     + BallotQueries
+    + vit_ss::fund::VitSSFundQueries
 {
 }
 

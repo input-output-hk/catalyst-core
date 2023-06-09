@@ -153,35 +153,38 @@ mod tests {
         };
 
         let json = serde_json::to_value(&fund).unwrap();
-        assert_eq!(json, json!(
-            {
-                "id": 1,
-                "fund_name": "fund_name 1",
-                "fund_goal": "fund_goal 1",
-                "voting_power_threshold": 1,
-                "fund_start_time": "1970-01-01T00:00:00+00:00",
-                "fund_end_time": "1970-01-01T00:00:00+00:00",
-                "next_fund_start_time": "1970-01-01T00:00:00+00:00",
-                "registration_snapshot_time": "1970-01-01T00:00:00+00:00",
-                "next_registration_snapshot_time": "1970-01-01T00:00:00+00:00",
-                "chain_vote_plans": [],
-                "challenges": [],
-                "insight_sharing_start": "1970-01-01T00:00:00+00:00",
-                "proposal_submission_start": "1970-01-01T00:00:00+00:00",
-                "refine_proposals_start": "1970-01-01T00:00:00+00:00",
-                "finalize_proposals_start": "1970-01-01T00:00:00+00:00",
-                "proposal_assessment_start": "1970-01-01T00:00:00+00:00",
-                "assessment_qa_start": "1970-01-01T00:00:00+00:00",
-                "snapshot_start": "1970-01-01T00:00:00+00:00",
-                "voting_start": "1970-01-01T00:00:00+00:00",
-                "voting_end": "1970-01-01T00:00:00+00:00",
-                "tallying_end": "1970-01-01T00:00:00+00:00",
-                "goals": [],
-                "results_url": "results_url 1",
-                "survey_url": "survey_url 1",
-                "groups": [],
-            }
-        ))
+        assert_eq!(
+            json,
+            json!(
+                {
+                    "id": 1,
+                    "fund_name": "fund_name 1",
+                    "fund_goal": "fund_goal 1",
+                    "voting_power_threshold": 1,
+                    "fund_start_time": "1970-01-01T00:00:00+00:00",
+                    "fund_end_time": "1970-01-01T00:00:00+00:00",
+                    "next_fund_start_time": "1970-01-01T00:00:00+00:00",
+                    "registration_snapshot_time": "1970-01-01T00:00:00+00:00",
+                    "next_registration_snapshot_time": "1970-01-01T00:00:00+00:00",
+                    "chain_vote_plans": [],
+                    "challenges": [],
+                    "insight_sharing_start": "1970-01-01T00:00:00+00:00",
+                    "proposal_submission_start": "1970-01-01T00:00:00+00:00",
+                    "refine_proposals_start": "1970-01-01T00:00:00+00:00",
+                    "finalize_proposals_start": "1970-01-01T00:00:00+00:00",
+                    "proposal_assessment_start": "1970-01-01T00:00:00+00:00",
+                    "assessment_qa_start": "1970-01-01T00:00:00+00:00",
+                    "snapshot_start": "1970-01-01T00:00:00+00:00",
+                    "voting_start": "1970-01-01T00:00:00+00:00",
+                    "voting_end": "1970-01-01T00:00:00+00:00",
+                    "tallying_end": "1970-01-01T00:00:00+00:00",
+                    "goals": [],
+                    "results_url": "results_url 1",
+                    "survey_url": "survey_url 1",
+                    "groups": [],
+                }
+            )
+        )
     }
 
     #[test]
@@ -234,21 +237,24 @@ mod tests {
         };
 
         let json = serde_json::to_value(&fund_next_info).unwrap();
-        assert_eq!(json, json!(
-            {
-                "id": 1,
-                "fund_name": "fund_name 1",
-                "insight_sharing_start": "1970-01-01T00:00:00+00:00",
-                "proposal_submission_start": "1970-01-01T00:00:00+00:00",
-                "refine_proposals_start": "1970-01-01T00:00:00+00:00",
-                "finalize_proposals_start": "1970-01-01T00:00:00+00:00",
-                "proposal_assessment_start": "1970-01-01T00:00:00+00:00",
-                "assessment_qa_start": "1970-01-01T00:00:00+00:00",
-                "snapshot_start": "1970-01-01T00:00:00+00:00",
-                "voting_start": "1970-01-01T00:00:00+00:00",
-                "voting_end": "1970-01-01T00:00:00+00:00",
-                "tallying_end": "1970-01-01T00:00:00+00:00",
-            }
-        ))
+        assert_eq!(
+            json,
+            json!(
+                {
+                    "id": 1,
+                    "fund_name": "fund_name 1",
+                    "insight_sharing_start": "1970-01-01T00:00:00+00:00",
+                    "proposal_submission_start": "1970-01-01T00:00:00+00:00",
+                    "refine_proposals_start": "1970-01-01T00:00:00+00:00",
+                    "finalize_proposals_start": "1970-01-01T00:00:00+00:00",
+                    "proposal_assessment_start": "1970-01-01T00:00:00+00:00",
+                    "assessment_qa_start": "1970-01-01T00:00:00+00:00",
+                    "snapshot_start": "1970-01-01T00:00:00+00:00",
+                    "voting_start": "1970-01-01T00:00:00+00:00",
+                    "voting_end": "1970-01-01T00:00:00+00:00",
+                    "tallying_end": "1970-01-01T00:00:00+00:00",
+                }
+            )
+        )
     }
 }

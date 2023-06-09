@@ -17,7 +17,6 @@ pub struct Challenge {
     pub proposers_rewards: i64,
     pub fund_id: i32,
     pub challenge_url: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub highlights: Option<ChallengeHighlights>,
 }
 

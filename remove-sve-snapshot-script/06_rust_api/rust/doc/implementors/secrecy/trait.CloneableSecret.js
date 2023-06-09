@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"voting_tools_rs":[["impl <a class=\"trait\" href=\"https://docs.rs/secrecy/0.8.0/secrecy/trait.CloneableSecret.html\" title=\"trait secrecy::CloneableSecret\">CloneableSecret</a> for <a class=\"struct\" href=\"voting_tools_rs/data/struct.__WrapperDbPass.html\" title=\"struct voting_tools_rs::data::__WrapperDbPass\">__WrapperDbPass</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

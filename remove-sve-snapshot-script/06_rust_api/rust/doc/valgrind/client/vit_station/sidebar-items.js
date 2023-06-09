@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["API_TOKEN_HEADER"],"enum":["RestError"],"struct":["RestClientLogger","RestPathBuilder","VitStationRestClient"]};

@@ -2,7 +2,7 @@ use crate::{
     types::{
         event::{
             objective::{ObjectiveId, ObjectiveSummary, ObjectiveType},
-            proposal::ProposalSummary,
+            proposal::{ProposalId, ProposalSummary},
             EventId, EventSummary,
         },
         search::{
@@ -227,7 +227,7 @@ impl SearchQueries for EventDB {
                     let mut proposals = Vec::new();
                     for row in rows {
                         let summary = ProposalSummary {
-                            id: row.try_get("id")?,
+                            id: ProposalId(row.try_get("id")?),
                             title: row.try_get("title")?,
                             summary: row.try_get("summary")?,
                         };
@@ -822,17 +822,17 @@ mod tests {
             query_result.results,
             Some(ValueResults::Proposals(vec![
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 },
@@ -866,17 +866,17 @@ mod tests {
             query_result.results,
             Some(ValueResults::Proposals(vec![
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
@@ -892,12 +892,12 @@ mod tests {
             query_result.results,
             Some(ValueResults::Proposals(vec![
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
@@ -913,12 +913,12 @@ mod tests {
             query_result.results,
             Some(ValueResults::Proposals(vec![
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
@@ -933,7 +933,7 @@ mod tests {
         assert_eq!(
             query_result.results,
             Some(ValueResults::Proposals(vec![ProposalSummary {
-                id: 2,
+                id: ProposalId(20),
                 title: String::from("title 2"),
                 summary: String::from("summary 2")
             },]))

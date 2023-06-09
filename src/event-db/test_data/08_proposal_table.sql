@@ -20,7 +20,7 @@ INSERT INTO
     )
 VALUES (
         1,
-        1,
+        10,
         1,
         'title 1',
         'summary 1',
@@ -38,7 +38,7 @@ VALUES (
         '70726f706f73616c'
     ), (
         2,
-        2,
+        20,
         1,
         'title 2',
         'summary 2',
@@ -56,7 +56,7 @@ VALUES (
         '70726f706f73616c'
     ), (
         3,
-        3,
+        30,
         1,
         'title 3',
         'summary 3',
@@ -74,7 +74,7 @@ VALUES (
         '70726f706f73616c'
     ), (
         4,
-        1,
+        10,
         2,
         'title 1',
         'summary 1',
@@ -92,7 +92,7 @@ VALUES (
         '70726f706f73616c'
     ), (
         5,
-        2,
+        20,
         2,
         'title 2',
         'summary 2',
@@ -110,7 +110,7 @@ VALUES (
         '70726f706f73616c'
     ), (
         6,
-        3,
+        30,
         2,
         'title 3',
         'summary 3',

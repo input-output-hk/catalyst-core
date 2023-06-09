@@ -23,6 +23,11 @@ pub enum Error {
     EventDbError(#[from] event_db::error::Error),
 }
 
+#[derive(Serialize, Debug)]
+pub struct ErrorMessage {
+    error: String,
+}
+
 pub fn app(state: Arc<State>) -> Router {
     // build our application with a route
     let v1 = v1::v1(state);
@@ -79,10 +84,16 @@ pub async fn run(
 fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
     match res {
         Ok(res) => (StatusCode::OK, Json(res)).into_response(),
-        Err(Error::EventDbError(event_db::error::Error::NotFound(err))) => {
-            (StatusCode::NOT_FOUND, err).into_response()
+        Err(Error::EventDbError(event_db::error::Error::NotFound(error))) => {
+            (StatusCode::NOT_FOUND, Json(ErrorMessage { error })).into_response()
         }
-        Err(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()).into_response(),
+        Err(error) => (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ErrorMessage {
+                error: error.to_string(),
+            }),
+        )
+            .into_response(),
     }
 }
 

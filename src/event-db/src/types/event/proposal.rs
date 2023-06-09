@@ -27,7 +27,7 @@ pub struct ProposalDetails {
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct ProposalSummary {
-    pub id: i32,
+    pub id: ProposalId,
     pub title: String,
     pub summary: String,
 }

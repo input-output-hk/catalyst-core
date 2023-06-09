@@ -112,7 +112,7 @@ mod tests {
         let request = Request::builder()
             .uri(format!(
                 "/api/v1/event/{0}/objective/{1}/proposal/{2}",
-                1, 1, 1
+                1, 1, 10
             ))
             .body(Body::empty())
             .unwrap();
@@ -122,7 +122,7 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
-                    "id": 1,
+                    "id": 10,
                     "title": "title 1",
                     "summary": "summary 1",
                     "funds": 100,
@@ -171,17 +171,17 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
-                    "id": 1,
+                    "id": 10,
                     "title": "title 1",
                     "summary": "summary 1",
                 },
                 {
-                    "id": 2,
+                    "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
                 },
                 {
-                    "id": 3,
+                    "id": 30,
                     "title": "title 3",
                     "summary": "summary 3",
                 }
@@ -201,12 +201,12 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
-                    "id": 1,
+                    "id": 10,
                     "title": "title 1",
                     "summary": "summary 1",
                 },
                 {
-                    "id": 2,
+                    "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
                 },
@@ -226,12 +226,12 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
-                    "id": 2,
+                    "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
                 },
                 {
-                    "id": 3,
+                    "id": 30,
                     "title": "title 3",
                     "summary": "summary 3",
                 }
@@ -251,7 +251,7 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
-                    "id": 2,
+                    "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
                 },

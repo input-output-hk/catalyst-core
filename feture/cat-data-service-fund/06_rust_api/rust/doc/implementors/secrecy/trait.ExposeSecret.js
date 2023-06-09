@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"voting_tools_rs":[["impl <a class=\"trait\" href=\"https://docs.rs/secrecy/0.8.0/secrecy/trait.ExposeSecret.html\" title=\"trait secrecy::ExposeSecret\">ExposeSecret</a>&lt;<a class=\"struct\" href=\"https://doc.rust-lang.org/nightly/alloc/string/struct.String.html\" title=\"struct alloc::string::String\">String</a>&gt; for <a class=\"struct\" href=\"voting_tools_rs/data/struct.DbPass.html\" title=\"struct voting_tools_rs::data::DbPass\">DbPass</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_BUF_SIZE"],"enum":["Error"],"fn":["is_fragment_valid","is_transaction_valid"],"mod":["internal"],"opaque":[""],"static":["CALLSITE","META"],"struct":["Pool"]};

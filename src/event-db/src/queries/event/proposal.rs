@@ -35,7 +35,7 @@ impl EventDB {
     const PROPOSALS_QUERY: &'static str = "SELECT proposal.id, proposal.title, proposal.summary
         FROM proposal
         INNER JOIN objective on proposal.objective = objective.row_id
-        WHERE objective.id = $1 AND objective.event = $2
+        WHERE objective.event = $1 AND objective.id = $2
         LIMIT $3 OFFSET $4;";
 
     const PROPOSAL_QUERY: &'static str =
@@ -44,7 +44,7 @@ impl EventDB {
     proposal.proposer_name, proposal.proposer_contact, proposal.proposer_url, proposal.public_key
     FROM proposal
     INNER JOIN objective on proposal.objective = objective.row_id
-    WHERE proposal.id = $1 AND objective.id = $2 AND objective.event = $3;";
+    WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3;";
 }
 
 #[async_trait]
@@ -74,7 +74,7 @@ impl ProposalQueries for EventDB {
         }];
 
         let proposal_summary = ProposalSummary {
-            id: row.try_get("id")?,
+            id: ProposalId(row.try_get("id")?),
             title: row.try_get("title")?,
             summary: row.try_get("summary")?,
         };
@@ -107,14 +107,14 @@ impl ProposalQueries for EventDB {
         let rows = conn
             .query(
                 Self::PROPOSALS_QUERY,
-                &[&objective.0, &event.0, &limit, &offset.unwrap_or(0)],
+                &[&event.0, &objective.0, &limit, &offset.unwrap_or(0)],
             )
             .await?;
 
         let mut proposals = Vec::new();
         for row in rows {
             let summary = ProposalSummary {
-                id: row.try_get("id")?,
+                id: ProposalId(row.try_get("id")?),
                 title: row.try_get("title")?,
                 summary: row.try_get("summary")?,
             };
@@ -152,14 +152,14 @@ mod tests {
         let event_db = establish_connection(None).await.unwrap();
 
         let proposal = event_db
-            .get_proposal(EventId(1), ObjectiveId(1), ProposalId(1))
+            .get_proposal(EventId(1), ObjectiveId(1), ProposalId(10))
             .await
             .unwrap();
 
         assert_eq!(
             Proposal {
                 proposal_summary: ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
@@ -200,17 +200,17 @@ mod tests {
         assert_eq!(
             vec![
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 }
@@ -226,12 +226,12 @@ mod tests {
         assert_eq!(
             vec![
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
@@ -247,12 +247,12 @@ mod tests {
         assert_eq!(
             vec![
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 }
@@ -267,7 +267,7 @@ mod tests {
 
         assert_eq!(
             vec![ProposalSummary {
-                id: 2,
+                id: ProposalId(20),
                 title: String::from("title 2"),
                 summary: String::from("summary 2")
             },],

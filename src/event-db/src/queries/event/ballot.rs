@@ -230,7 +230,7 @@ mod tests {
         let event_db = establish_connection(None).await.unwrap();
 
         let ballot = event_db
-            .get_ballot(EventId(1), ObjectiveId(1), ProposalId(1))
+            .get_ballot(EventId(1), ObjectiveId(1), ProposalId(10))
             .await
             .unwrap();
 
@@ -270,7 +270,7 @@ mod tests {
         assert_eq!(
             vec![
                 ProposalBallot {
-                    proposal_id: ProposalId(1),
+                    proposal_id: ProposalId(10),
                     ballot: Ballot {
                         choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
                         voteplans: GroupVotePlans(vec![
@@ -292,7 +292,7 @@ mod tests {
                     },
                 },
                 ProposalBallot {
-                    proposal_id: ProposalId(2),
+                    proposal_id: ProposalId(20),
                     ballot: Ballot {
                         choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
                         voteplans: GroupVotePlans(vec![
@@ -314,7 +314,7 @@ mod tests {
                     },
                 },
                 ProposalBallot {
-                    proposal_id: ProposalId(3),
+                    proposal_id: ProposalId(30),
                     ballot: Ballot {
                         choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
                         voteplans: GroupVotePlans(vec![]),
@@ -336,7 +336,7 @@ mod tests {
                 objective_id: ObjectiveId(1),
                 ballots: vec![
                     ProposalBallot {
-                        proposal_id: ProposalId(1),
+                        proposal_id: ProposalId(10),
                         ballot: Ballot {
                             choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
                             voteplans: GroupVotePlans(vec![
@@ -358,7 +358,7 @@ mod tests {
                         },
                     },
                     ProposalBallot {
-                        proposal_id: ProposalId(2),
+                        proposal_id: ProposalId(20),
                         ballot: Ballot {
                             choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
                             voteplans: GroupVotePlans(vec![
@@ -380,7 +380,7 @@ mod tests {
                         },
                     },
                     ProposalBallot {
-                        proposal_id: ProposalId(3),
+                        proposal_id: ProposalId(30),
                         ballot: Ballot {
                             choices: ObjectiveChoices(vec!["yes".to_string(), "no".to_string()]),
                             voteplans: GroupVotePlans(vec![]),

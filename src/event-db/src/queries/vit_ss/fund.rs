@@ -2,6 +2,7 @@ use crate::{
     types::vit_ss::{
         challenge::{Challenge, ChallengeHighlights},
         fund::{Fund, FundNextInfo, FundStageDates, FundWithNext},
+        goal::Goal,
         vote_plan::Voteplan,
     },
     Error, EventDB,
@@ -92,6 +93,13 @@ impl EventDB {
 
     FROM objective
     WHERE objective.event = $1;";
+
+    const FUND_GOALS_QUERY: &'static str = "SELECT
+    id,
+    name AS goal_name
+
+    FROM goal
+    WHERE goal.event_id = $1;";
 }
 
 #[async_trait]
@@ -167,6 +175,16 @@ impl VitSSFundQueries for EventDB {
             })
         }
 
+        let rows = conn.query(Self::FUND_GOALS_QUERY, &[&fund_id]).await?;
+        let mut goals = Vec::new();
+        for row in rows {
+            goals.push(Goal {
+                id: row.try_get("id")?,
+                goal_name: row.try_get("goal_name")?,
+                fund_id,
+            })
+        }
+
         let fund = Fund {
             id: fund_id,
             fund_name: row.try_get("fund_name")?,
@@ -237,7 +255,7 @@ impl VitSSFundQueries for EventDB {
                 voting_end: fund_voting_end,
                 tallying_end: fund_tallying_end,
             },
-            goals: vec![],
+            goals,
             results_url: row
                 .try_get::<_, Option<String>>("results_url")?
                 .unwrap_or_default(),
@@ -531,7 +549,28 @@ mod tests {
                             Utc
                         ),
                     },
-                    goals: vec![],
+                    goals: vec![
+                        Goal {
+                            id: 13,
+                            goal_name: "goal 13".to_string(),
+                            fund_id: 4
+                        },
+                        Goal {
+                            id: 14,
+                            goal_name: "goal 14".to_string(),
+                            fund_id: 4
+                        },
+                        Goal {
+                            id: 15,
+                            goal_name: "goal 15".to_string(),
+                            fund_id: 4
+                        },
+                        Goal {
+                            id: 16,
+                            goal_name: "goal 16".to_string(),
+                            fund_id: 4
+                        }
+                    ],
                     groups: vec![],
                     survey_url: "".to_string(),
                     results_url: "".to_string(),

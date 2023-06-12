@@ -870,6 +870,26 @@
 <a href="#870" id="870">870</a>
 <a href="#871" id="871">871</a>
 <a href="#872" id="872">872</a>
+<a href="#873" id="873">873</a>
+<a href="#874" id="874">874</a>
+<a href="#875" id="875">875</a>
+<a href="#876" id="876">876</a>
+<a href="#877" id="877">877</a>
+<a href="#878" id="878">878</a>
+<a href="#879" id="879">879</a>
+<a href="#880" id="880">880</a>
+<a href="#881" id="881">881</a>
+<a href="#882" id="882">882</a>
+<a href="#883" id="883">883</a>
+<a href="#884" id="884">884</a>
+<a href="#885" id="885">885</a>
+<a href="#886" id="886">886</a>
+<a href="#887" id="887">887</a>
+<a href="#888" id="888">888</a>
+<a href="#889" id="889">889</a>
+<a href="#890" id="890">890</a>
+<a href="#891" id="891">891</a>
+<a href="#892" id="892">892</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -967,7 +987,7 @@
         <span class="macro">assert!</span>(body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>({
-                <span class="string">&quot;total&quot;</span>: <span class="number">4</span>,
+                <span class="string">&quot;total&quot;</span>: <span class="number">5</span>,
                 <span class="string">&quot;results&quot;</span>: [
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
@@ -996,6 +1016,13 @@
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
                         <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
+                        <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2024-06-01T12:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
+                    </span>},
+                    {
+                        <span class="string">&quot;id&quot;</span>: <span class="number">5</span>,
+                        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 5&quot;</span>,
                         <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
                     </span>}
                 ]
@@ -1025,7 +1052,7 @@
         <span class="macro">assert!</span>(body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>({
-                <span class="string">&quot;total&quot;</span>: <span class="number">4</span>,
+                <span class="string">&quot;total&quot;</span>: <span class="number">5</span>,
             })
         ));
 
@@ -1053,11 +1080,18 @@
         <span class="macro">assert!</span>(body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>({
-                <span class="string">&quot;total&quot;</span>: <span class="number">4</span>,
+                <span class="string">&quot;total&quot;</span>: <span class="number">5</span>,
                 <span class="string">&quot;results&quot;</span>: [
+                    {
+                        <span class="string">&quot;id&quot;</span>: <span class="number">5</span>,
+                        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 5&quot;</span>,
+                        <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
+                    </span>},
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
                         <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
+                        <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2024-06-01T12:00:00+00:00&quot;</span>,
                         <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
                     </span>},
                     {
@@ -1116,18 +1150,17 @@
                     <span class="string">&quot;total&quot;</span>: <span class="number">2</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
-                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">5</span>,
+                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 5&quot;</span>,
                             <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
                         </span>},
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
-                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 3&quot;</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
+                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
                             <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2022-06-01T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;reg_checked&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
-                        </span>}
+                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2024-06-01T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
+                        </span>},
                     ]
                 }
             ),
@@ -1158,8 +1191,16 @@
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
-                    <span class="string">&quot;total&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;total&quot;</span>: <span class="number">3</span>,
                     <span class="string">&quot;results&quot;</span>: [
+                        {
+                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 3&quot;</span>,
+                            <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2022-06-01T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;reg_checked&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+                        </span>},
                         {
                             <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
                             <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 2&quot;</span>,
@@ -1209,13 +1250,12 @@
                     <span class="string">&quot;total&quot;</span>: <span class="number">1</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
-                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 3&quot;</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
+                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
                             <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2022-06-01T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;reg_checked&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
-                        </span>}
+                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2024-06-01T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
+                        </span>},
                     ]
                 }
             )

@@ -57,15 +57,6 @@
 <a href="#57" id="57">57</a>
 <a href="#58" id="58">58</a>
 <a href="#59" id="59">59</a>
-<a href="#60" id="60">60</a>
-<a href="#61" id="61">61</a>
-<a href="#62" id="62">62</a>
-<a href="#63" id="63">63</a>
-<a href="#64" id="64">64</a>
-<a href="#65" id="65">65</a>
-<a href="#66" id="66">66</a>
-<a href="#67" id="67">67</a>
-<a href="#68" id="68">68</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::serialize_datetime_as_rfc3339;
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::Serialize;
@@ -97,18 +88,9 @@
         <span class="kw">let </span>voteplan = Voteplan {
             id: <span class="number">1</span>,
             chain_voteplan_id: <span class="string">&quot;chain_voteplan_id 1&quot;</span>.to_string(),
-            chain_vote_start_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
-                Utc,
-            ),
-            chain_vote_end_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
-                Utc,
-            ),
-            chain_committee_end_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(),
-                Utc,
-            ),
+            chain_vote_start_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            chain_vote_end_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            chain_committee_end_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
             chain_voteplan_payload: <span class="string">&quot;chain_voteplan_payload 1&quot;</span>.to_string(),
             chain_vote_encryption_key: <span class="string">&quot;chain_vote_encryption_key 1&quot;</span>.to_string(),
             fund_id: <span class="number">1</span>,

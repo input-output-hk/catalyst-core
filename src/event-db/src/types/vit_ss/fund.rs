@@ -82,69 +82,24 @@ mod tests {
             fund_name: "fund_name 1".to_string(),
             fund_goal: "fund_goal 1".to_string(),
             voting_power_threshold: 1,
-            fund_start_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            ),
-            fund_end_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            ),
-            next_fund_start_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            ),
-            registration_snapshot_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            ),
-            next_registration_snapshot_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            ),
+            fund_start_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            fund_end_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            next_fund_start_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            registration_snapshot_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            next_registration_snapshot_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
             chain_vote_plans: vec![],
             challenges: vec![],
             stage_dates: FundStageDates {
-                insight_sharing_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                proposal_submission_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                refine_proposals_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                finalize_proposals_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                proposal_assessment_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                assessment_qa_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                snapshot_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                voting_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                voting_end: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                tallying_end: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
+                insight_sharing_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                proposal_submission_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                refine_proposals_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                finalize_proposals_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                proposal_assessment_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                assessment_qa_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                snapshot_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                voting_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                voting_end: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                tallying_end: DateTime::from_utc(NaiveDateTime::default(), Utc),
             },
             goals: vec![],
             results_url: "results_url 1".to_string(),
@@ -193,46 +148,16 @@ mod tests {
             id: 1,
             fund_name: "fund_name 1".to_string(),
             stage_dates: FundStageDates {
-                insight_sharing_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                proposal_submission_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                refine_proposals_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                finalize_proposals_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                proposal_assessment_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                assessment_qa_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                snapshot_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                voting_start: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                voting_end: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
-                tallying_end: DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                ),
+                insight_sharing_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                proposal_submission_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                refine_proposals_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                finalize_proposals_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                proposal_assessment_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                assessment_qa_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                snapshot_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                voting_start: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                voting_end: DateTime::from_utc(NaiveDateTime::default(), Utc),
+                tallying_end: DateTime::from_utc(NaiveDateTime::default(), Utc),
             },
         };
 

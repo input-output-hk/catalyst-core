@@ -200,7 +200,14 @@ mod tests {
                     {
                         "id": 4,
                         "name": "Test Fund 4",
-                        "final": false,
+                        "starts": "2022-05-01T12:00:00+00:00",
+                        "ends": "2024-06-01T12:00:00+00:00",
+                        "final": false
+                    },
+                    {
+                        "id": 5,
+                        "name": "Test Fund 5",
+                        "final": false
                     },
                 ]
             )
@@ -235,7 +242,14 @@ mod tests {
                     {
                         "id": 4,
                         "name": "Test Fund 4",
-                        "final": false,
+                        "starts": "2022-05-01T12:00:00+00:00",
+                        "ends": "2024-06-01T12:00:00+00:00",
+                        "final": false
+                    },
+                    {
+                        "id": 5,
+                        "name": "Test Fund 5",
+                        "final": false
                     },
                 ]
             )

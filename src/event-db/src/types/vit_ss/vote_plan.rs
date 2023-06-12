@@ -29,18 +29,9 @@ mod tests {
         let voteplan = Voteplan {
             id: 1,
             chain_voteplan_id: "chain_voteplan_id 1".to_string(),
-            chain_vote_start_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            ),
-            chain_vote_end_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            ),
-            chain_committee_end_time: DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            ),
+            chain_vote_start_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            chain_vote_end_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            chain_committee_end_time: DateTime::from_utc(NaiveDateTime::default(), Utc),
             chain_voteplan_payload: "chain_voteplan_payload 1".to_string(),
             chain_vote_encryption_key: "chain_vote_encryption_key 1".to_string(),
             fund_id: 1,

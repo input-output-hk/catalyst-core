@@ -285,6 +285,26 @@ mod tests {
                 EventSummary {
                     id: EventId(4),
                     name: "Test Fund 4".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: None,
+                    is_final: false,
+                },
+                EventSummary {
+                    id: EventId(5),
+                    name: "Test Fund 5".to_string(),
                     starts: None,
                     ends: None,
                     reg_checked: None,

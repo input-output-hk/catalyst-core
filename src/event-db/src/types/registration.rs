@@ -62,8 +62,8 @@ mod tests {
                 delegations_count: 1,
                 voting_power_saturation: 0.4,
             },
-            as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
             is_final: true,
         };
         let json = serde_json::to_value(&voter).unwrap();
@@ -97,8 +97,8 @@ mod tests {
             }],
             raw_power: 100,
             total_power: 1000,
-            as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
             is_final: true,
         };
         let json = serde_json::to_value(&delegator).unwrap();

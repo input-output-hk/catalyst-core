@@ -95,7 +95,7 @@ mod tests {
         assert!(body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!({
-                "total": 4,
+                "total": 5,
                 "results": [
                     {
                         "id": 1,
@@ -124,6 +124,13 @@ mod tests {
                     {
                         "id": 4,
                         "name": "Test Fund 4",
+                        "starts": "2022-05-01T12:00:00+00:00",
+                        "ends": "2024-06-01T12:00:00+00:00",
+                        "final": false
+                    },
+                    {
+                        "id": 5,
+                        "name": "Test Fund 5",
                         "final": false
                     }
                 ]
@@ -153,7 +160,7 @@ mod tests {
         assert!(body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!({
-                "total": 4,
+                "total": 5,
             })
         ));
 
@@ -181,11 +188,18 @@ mod tests {
         assert!(body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!({
-                "total": 4,
+                "total": 5,
                 "results": [
+                    {
+                        "id": 5,
+                        "name": "Test Fund 5",
+                        "final": false
+                    },
                     {
                         "id": 4,
                         "name": "Test Fund 4",
+                        "starts": "2022-05-01T12:00:00+00:00",
+                        "ends": "2024-06-01T12:00:00+00:00",
                         "final": false
                     },
                     {
@@ -244,18 +258,17 @@ mod tests {
                     "total": 2,
                     "results": [
                         {
-                            "id": 4,
-                            "name": "Test Fund 4",
+                            "id": 5,
+                            "name": "Test Fund 5",
                             "final": false
                         },
                         {
-                            "id": 3,
-                            "name": "Test Fund 3",
+                            "id": 4,
+                            "name": "Test Fund 4",
                             "starts": "2022-05-01T12:00:00+00:00",
-                            "ends": "2022-06-01T12:00:00+00:00",
-                            "reg_checked": "2022-03-31T12:00:00+00:00",
-                            "final": true
-                        }
+                            "ends": "2024-06-01T12:00:00+00:00",
+                            "final": false
+                        },
                     ]
                 }
             ),
@@ -286,8 +299,16 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
-                    "total": 2,
+                    "total": 3,
                     "results": [
+                        {
+                            "id": 3,
+                            "name": "Test Fund 3",
+                            "starts": "2022-05-01T12:00:00+00:00",
+                            "ends": "2022-06-01T12:00:00+00:00",
+                            "reg_checked": "2022-03-31T12:00:00+00:00",
+                            "final": true
+                        },
                         {
                             "id": 2,
                             "name": "Test Fund 2",
@@ -337,13 +358,12 @@ mod tests {
                     "total": 1,
                     "results": [
                         {
-                            "id": 3,
-                            "name": "Test Fund 3",
+                            "id": 4,
+                            "name": "Test Fund 4",
                             "starts": "2022-05-01T12:00:00+00:00",
-                            "ends": "2022-06-01T12:00:00+00:00",
-                            "reg_checked": "2022-03-31T12:00:00+00:00",
-                            "final": true
-                        }
+                            "ends": "2024-06-01T12:00:00+00:00",
+                            "final": false
+                        },
                     ]
                 }
             )

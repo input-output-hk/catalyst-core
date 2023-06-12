@@ -1,5 +1,5 @@
 use crate::{
-    types::vit_ss::fund::{Fund, FundStageDates},
+    types::vit_ss::fund::{Fund, FundNextInfo, FundStageDates, FundWithNext},
     Error, EventDB,
 };
 use async_trait::async_trait;
@@ -7,12 +7,10 @@ use chrono::{NaiveDateTime, Utc};
 
 #[async_trait]
 pub trait VitSSFundQueries: Sync + Send + 'static {
-    async fn get_fund(&self) -> Result<Fund, Error>;
+    async fn get_fund(&self) -> Result<FundWithNext, Error>;
 }
 
 impl EventDB {
-    // this assumes that the next will be the second inserted
-    // and that the current is the first.
     const FUND_QUERY: &'static str = "
     SELECT
     this_fund.row_id AS id,
@@ -37,12 +35,27 @@ impl EventDB {
     this_fund.voting_end AS voting_end,
     this_fund.tallying_end AS tallying_end,
 
+    (this_fund.extra->'url'->'results') #>> '{}' AS results_url,
+    (this_fund.extra->'url'->'survey') #>> '{}' AS survey_url,
+
+    next_fund.row_id AS next_id,
+
     next_fund.start_time AS next_fund_start_time,
     next_fund.registration_snapshot_time AS next_registration_snapshot_time,
 
-    (this_fund.extra->'url'->'results') #>> '{}' AS results_url,
-    (this_fund.extra->'url'->'survey') #>> '{}' AS survey_url
+    next_fund.name AS next_fund_name,
 
+    next_fund.insight_sharing_start AS next_insight_sharing_start,
+    next_fund.proposal_submission_start AS next_proposal_submission_start,
+    next_fund.refine_proposals_start AS next_refine_proposals_start,
+    next_fund.finalize_proposals_start AS next_finalize_proposals_start,
+    next_fund.proposal_assessment_start AS next_proposal_assessment_start,
+    next_fund.assessment_qa_start AS next_assessment_qa_start,
+    next_fund.snapshot_start AS next_snapshot_start,
+    next_fund.voting_start AS next_voting_start,
+    next_fund.voting_end AS next_voting_end,
+    next_fund.tallying_end AS next_tallying_end
+    
     FROM event this_fund
     LEFT JOIN event next_fund ON next_fund.row_id = this_fund.row_id + 1
     WHERE this_fund.end_time > CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AND this_fund.start_time < CURRENT_TIMESTAMP AT TIME ZONE 'UTC'
@@ -52,7 +65,7 @@ impl EventDB {
 
 #[async_trait]
 impl VitSSFundQueries for EventDB {
-    async fn get_fund(&self) -> Result<Fund, Error> {
+    async fn get_fund(&self) -> Result<FundWithNext, Error> {
         let conn = self.pool.get().await?;
 
         let rows = conn.query(Self::FUND_QUERY, &[]).await?;
@@ -152,7 +165,67 @@ impl VitSSFundQueries for EventDB {
             groups: vec![],
         };
 
-        Ok(fund)
+        let next = match row.try_get::<_, Option<i32>>("next_id")? {
+            Some(id) => Some(FundNextInfo {
+                id,
+                fund_name: row.try_get("next_fund_name")?,
+                stage_dates: FundStageDates {
+                    insight_sharing_start: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_insight_sharing_start")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                    proposal_submission_start: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_proposal_submission_start")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                    refine_proposals_start: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_refine_proposals_start")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                    finalize_proposals_start: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_finalize_proposals_start")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                    proposal_assessment_start: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_proposal_assessment_start")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                    assessment_qa_start: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_assessment_qa_start")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                    snapshot_start: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_snapshot_start")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                    voting_start: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_voting_start")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                    voting_end: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_voting_end")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                    tallying_end: row
+                        .try_get::<_, Option<NaiveDateTime>>("next_tallying_end")?
+                        .unwrap_or_default()
+                        .and_local_timezone(Utc)
+                        .unwrap(),
+                },
+            }),
+            None => None,
+        };
+
+        Ok(FundWithNext { fund, next })
     }
 }
 
@@ -173,11 +246,9 @@ impl VitSSFundQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, NaiveDate, NaiveTime};
-
     use super::*;
     use crate::establish_connection;
-    // use chrono::{DateTime, NaiveDate, NaiveTime};
+    use chrono::{DateTime, NaiveDate, NaiveTime};
 
     #[tokio::test]
     async fn get_fund_test() {
@@ -186,115 +257,151 @@ mod tests {
         let fund = event_db.get_fund().await.unwrap();
         assert_eq!(
             fund,
-            Fund {
-                id: 4,
-                fund_name: "Test Fund 4".to_string(),
-                fund_goal: "Test Fund 4 description".to_string(),
-                voting_power_threshold: 1,
-                fund_start_time: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                fund_end_time: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                next_fund_start_time: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
-                registration_snapshot_time: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                next_registration_snapshot_time: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::default(),
-                    Utc
-                ),
-                chain_vote_plans: vec![],
-                challenges: vec![],
-                stage_dates: FundStageDates {
-                    insight_sharing_start: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    ),
-                    proposal_submission_start: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    ),
-                    refine_proposals_start: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    ),
-                    finalize_proposals_start: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    ),
-                    proposal_assessment_start: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    ),
-                    assessment_qa_start: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    ),
-                    snapshot_start: DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                        ),
-                        Utc
-                    ),
-                    voting_start: DateTime::<Utc>::from_utc(
+            FundWithNext {
+                fund: Fund {
+                    id: 4,
+                    fund_name: "Test Fund 4".to_string(),
+                    fund_goal: "Test Fund 4 description".to_string(),
+                    voting_power_threshold: 1,
+                    fund_start_time: DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
                     ),
-                    voting_end: DateTime::<Utc>::from_utc(
+                    fund_end_time: DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
                             NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
                     ),
-                    tallying_end: DateTime::<Utc>::from_utc(
+                    next_fund_start_time: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
+                    registration_snapshot_time: DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2024, 7, 1).unwrap(),
+                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
                             NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
                     ),
+                    next_registration_snapshot_time: DateTime::<Utc>::from_utc(
+                        NaiveDateTime::default(),
+                        Utc
+                    ),
+                    chain_vote_plans: vec![],
+                    challenges: vec![],
+                    stage_dates: FundStageDates {
+                        insight_sharing_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                        proposal_submission_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                        refine_proposals_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                        finalize_proposals_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                        proposal_assessment_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                        assessment_qa_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                        snapshot_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                        voting_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                        voting_end: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                        tallying_end: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::new(
+                                NaiveDate::from_ymd_opt(2024, 7, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                            ),
+                            Utc
+                        ),
+                    },
+                    goals: vec![],
+                    groups: vec![],
+                    survey_url: "".to_string(),
+                    results_url: "".to_string(),
                 },
-                goals: vec![],
-                groups: vec![],
-                survey_url: "".to_string(),
-                results_url: "".to_string(),
+                next: Some(FundNextInfo {
+                    id: 5,
+                    fund_name: "Test Fund 5".to_string(),
+                    stage_dates: FundStageDates {
+                        insight_sharing_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        proposal_submission_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        refine_proposals_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        finalize_proposals_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        proposal_assessment_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        assessment_qa_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        snapshot_start: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
+                        voting_start: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
+                        voting_end: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
+                        tallying_end: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
+                    },
+                })
             }
         )
     }

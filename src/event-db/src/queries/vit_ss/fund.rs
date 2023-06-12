@@ -37,12 +37,17 @@ impl EventDB {
     this_fund.voting_end AS voting_end,
     this_fund.tallying_end AS tallying_end,
 
+    next_fund.start_time AS next_fund_start_time,
+    next_fund.registration_snapshot_time AS next_registration_snapshot_time,
+
     (this_fund.extra->'url'->'results') #>> '{}' AS results_url,
     (this_fund.extra->'url'->'survey') #>> '{}' AS survey_url
 
     FROM event this_fund
+    LEFT JOIN event next_fund ON next_fund.row_id = this_fund.row_id + 1
+    WHERE this_fund.end_time > CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AND this_fund.start_time < CURRENT_TIMESTAMP AT TIME ZONE 'UTC'
     ORDER BY this_fund.row_id DESC
-    LIMIT 1 OFFSET 1;";
+    LIMIT 1;";
 }
 
 #[async_trait]
@@ -71,7 +76,8 @@ impl VitSSFundQueries for EventDB {
             // TODO
             next_fund_start_time: Utc::now(),
             registration_snapshot_time: row
-                .try_get::<_, NaiveDateTime>("registration_snapshot_time")?
+                .try_get::<_, Option<NaiveDateTime>>("registration_snapshot_time")?
+                .unwrap_or_default()
                 .and_local_timezone(Utc)
                 .unwrap(),
             // TODO
@@ -80,43 +86,53 @@ impl VitSSFundQueries for EventDB {
             challenges: vec![],
             stage_dates: FundStageDates {
                 insight_sharing_start: row
-                    .try_get::<_, NaiveDateTime>("insight_sharing_start")?
+                    .try_get::<_, Option<NaiveDateTime>>("insight_sharing_start")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
                 proposal_submission_start: row
-                    .try_get::<_, NaiveDateTime>("proposal_submission_start")?
+                    .try_get::<_, Option<NaiveDateTime>>("proposal_submission_start")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
                 refine_proposals_start: row
-                    .try_get::<_, NaiveDateTime>("refine_proposals_start")?
+                    .try_get::<_, Option<NaiveDateTime>>("refine_proposals_start")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
                 finalize_proposals_start: row
-                    .try_get::<_, NaiveDateTime>("finalize_proposals_start")?
+                    .try_get::<_, Option<NaiveDateTime>>("finalize_proposals_start")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
                 proposal_assessment_start: row
-                    .try_get::<_, NaiveDateTime>("proposal_assessment_start")?
+                    .try_get::<_, Option<NaiveDateTime>>("proposal_assessment_start")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
                 assessment_qa_start: row
-                    .try_get::<_, NaiveDateTime>("assessment_qa_start")?
+                    .try_get::<_, Option<NaiveDateTime>>("assessment_qa_start")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
                 snapshot_start: row
-                    .try_get::<_, NaiveDateTime>("snapshot_start")?
+                    .try_get::<_, Option<NaiveDateTime>>("snapshot_start")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
                 voting_start: row
-                    .try_get::<_, NaiveDateTime>("voting_start")?
+                    .try_get::<_, Option<NaiveDateTime>>("voting_start")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
                 voting_end: row
-                    .try_get::<_, NaiveDateTime>("voting_end")?
+                    .try_get::<_, Option<NaiveDateTime>>("voting_end")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
                 tallying_end: row
-                    .try_get::<_, NaiveDateTime>("tallying_end")?
+                    .try_get::<_, Option<NaiveDateTime>>("tallying_end")?
+                    .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
             },

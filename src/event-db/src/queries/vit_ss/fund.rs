@@ -3,6 +3,7 @@ use crate::{
         challenge::{Challenge, ChallengeHighlights},
         fund::{Fund, FundNextInfo, FundStageDates, FundWithNext},
         goal::Goal,
+        group::Group,
         vote_plan::Voteplan,
     },
     Error, EventDB,
@@ -100,6 +101,15 @@ impl EventDB {
 
     FROM goal
     WHERE goal.event_id = $1;";
+
+    const FUND_GROUPS_QUERY: &'static str = "SELECT
+    voteplan.token_id AS token_identifier,
+    voting_group.name AS group_id
+
+    FROM voting_group
+    INNER JOIN voteplan ON voteplan.group_id = voting_group.name
+    INNER JOIN objective ON voteplan.objective_id = objective.row_id
+    WHERE objective.event = $1;";
 }
 
 #[async_trait]
@@ -185,6 +195,16 @@ impl VitSSFundQueries for EventDB {
             })
         }
 
+        let rows = conn.query(Self::FUND_GROUPS_QUERY, &[&fund_id]).await?;
+        let mut groups = Vec::new();
+        for row in rows {
+            groups.push(Group {
+                group_id: row.try_get("group_id")?,
+                token_identifier: row.try_get("token_identifier")?,
+                fund_id,
+            })
+        }
+
         let fund = Fund {
             id: fund_id,
             fund_name: row.try_get("fund_name")?,
@@ -262,7 +282,7 @@ impl VitSSFundQueries for EventDB {
             survey_url: row
                 .try_get::<_, Option<String>>("survey_url")?
                 .unwrap_or_default(),
-            groups: vec![],
+            groups,
         };
 
         let next = match row.try_get::<_, Option<i32>>("next_id")? {
@@ -571,7 +591,11 @@ mod tests {
                             fund_id: 4
                         }
                     ],
-                    groups: vec![],
+                    groups: vec![Group {
+                        group_id: "direct".to_string(),
+                        token_identifier: "voting token 3".to_string(),
+                        fund_id: 4,
+                    },],
                     survey_url: "".to_string(),
                     results_url: "".to_string(),
                 },

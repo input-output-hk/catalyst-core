@@ -1,5 +1,8 @@
 use crate::{
-    types::vit_ss::fund::{Fund, FundNextInfo, FundStageDates, FundWithNext},
+    types::vit_ss::{
+        fund::{Fund, FundNextInfo, FundStageDates, FundWithNext},
+        vote_plan::Voteplan,
+    },
     Error, EventDB,
 };
 use async_trait::async_trait;
@@ -61,6 +64,21 @@ impl EventDB {
     WHERE this_fund.end_time > CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AND this_fund.start_time < CURRENT_TIMESTAMP AT TIME ZONE 'UTC'
     ORDER BY this_fund.row_id DESC
     LIMIT 1;";
+
+    const FUND_VOTE_PLANS_QUERY: &'static str = "
+    SELECT
+    voteplan.row_id AS id,
+    voteplan.id AS chain_voteplan_id,
+
+    voteplan.category AS chain_voteplan_payload,
+    voteplan.encryption_key AS chain_vote_encryption_key,
+    event.row_id AS fund_id,
+    voteplan.token_id AS token_identifier
+
+    FROM voteplan
+    INNER JOIN objective ON voteplan.objective_id = objective.row_id
+    INNER JOIN event ON objective.event = event.row_id
+    WHERE event.row_id = $1;";
 }
 
 #[async_trait]
@@ -73,8 +91,46 @@ impl VitSSFundQueries for EventDB {
             .get(0)
             .ok_or_else(|| Error::NotFound("can not find fund value".to_string()))?;
 
+        let fund_id = row.try_get("id")?;
+
+        let fund_voting_start = row
+            .try_get::<_, Option<NaiveDateTime>>("voting_start")?
+            .unwrap_or_default()
+            .and_local_timezone(Utc)
+            .unwrap();
+        let fund_voting_end = row
+            .try_get::<_, Option<NaiveDateTime>>("voting_end")?
+            .unwrap_or_default()
+            .and_local_timezone(Utc)
+            .unwrap();
+        let fund_tallying_end = row
+            .try_get::<_, Option<NaiveDateTime>>("tallying_end")?
+            .unwrap_or_default()
+            .and_local_timezone(Utc)
+            .unwrap();
+
+        let rows = conn.query(Self::FUND_VOTE_PLANS_QUERY, &[&fund_id]).await?;
+        let mut chain_vote_plans = Vec::new();
+        for row in rows {
+            chain_vote_plans.push(Voteplan {
+                id: row.try_get("id")?,
+                chain_voteplan_id: row.try_get("chain_voteplan_id")?,
+                chain_vote_start_time: fund_voting_start,
+                chain_vote_end_time: fund_voting_end,
+                chain_committee_end_time: fund_tallying_end,
+                chain_voteplan_payload: row.try_get("chain_voteplan_payload")?,
+                chain_vote_encryption_key: row
+                    .try_get::<_, Option<String>>("chain_vote_encryption_key")?
+                    .unwrap_or_default(),
+                fund_id,
+                token_identifier: row
+                    .try_get::<_, Option<String>>("token_identifier")?
+                    .unwrap_or_default(),
+            });
+        }
+
         let fund = Fund {
-            id: row.try_get("id")?,
+            id: fund_id,
             fund_name: row.try_get("fund_name")?,
             fund_goal: row.try_get("fund_goal")?,
             voting_power_threshold: row.try_get("voting_power_threshold")?,
@@ -101,7 +157,7 @@ impl VitSSFundQueries for EventDB {
                 .unwrap_or_default()
                 .and_local_timezone(Utc)
                 .unwrap(),
-            chain_vote_plans: vec![],
+            chain_vote_plans,
             challenges: vec![],
             stage_dates: FundStageDates {
                 insight_sharing_start: row
@@ -139,21 +195,9 @@ impl VitSSFundQueries for EventDB {
                     .unwrap_or_default()
                     .and_local_timezone(Utc)
                     .unwrap(),
-                voting_start: row
-                    .try_get::<_, Option<NaiveDateTime>>("voting_start")?
-                    .unwrap_or_default()
-                    .and_local_timezone(Utc)
-                    .unwrap(),
-                voting_end: row
-                    .try_get::<_, Option<NaiveDateTime>>("voting_end")?
-                    .unwrap_or_default()
-                    .and_local_timezone(Utc)
-                    .unwrap(),
-                tallying_end: row
-                    .try_get::<_, Option<NaiveDateTime>>("tallying_end")?
-                    .unwrap_or_default()
-                    .and_local_timezone(Utc)
-                    .unwrap(),
+                voting_start: fund_voting_start,
+                voting_end: fund_voting_end,
+                tallying_end: fund_tallying_end,
             },
             goals: vec![],
             results_url: row
@@ -289,7 +333,66 @@ mod tests {
                         NaiveDateTime::default(),
                         Utc
                     ),
-                    chain_vote_plans: vec![],
+                    chain_vote_plans: vec![
+                        Voteplan {
+                            id: 5,
+                            chain_voteplan_id: "1".to_string(),
+                            chain_vote_start_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_vote_end_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_committee_end_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2024, 7, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_voteplan_payload: "public".to_string(),
+                            chain_vote_encryption_key: "".to_string(),
+                            fund_id: 4,
+                            token_identifier: "voting token 3".to_string(),
+                        },
+                        Voteplan {
+                            id: 6,
+                            chain_voteplan_id: "2".to_string(),
+                            chain_vote_start_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_vote_end_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_committee_end_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2024, 7, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_voteplan_payload: "public".to_string(),
+                            chain_vote_encryption_key: "".to_string(),
+                            fund_id: 4,
+                            token_identifier: "".to_string(),
+                        }
+                    ],
                     challenges: vec![],
                     stage_dates: FundStageDates {
                         insight_sharing_start: DateTime::<Utc>::from_utc(

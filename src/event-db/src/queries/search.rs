@@ -728,7 +728,7 @@ mod tests {
             .search(search_query.clone(), false, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 2);
+        assert_eq!(query_result.total, 4);
         assert_eq!(
             query_result.results,
             Some(ValueResults::Objectives(vec![
@@ -750,6 +750,24 @@ mod tests {
                     title: "title 2".to_string(),
                     description: "description 2".to_string(),
                 },
+                ObjectiveSummary {
+                    id: ObjectiveId(3),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 3".to_string(),
+                    description: "description 3".to_string(),
+                },
+                ObjectiveSummary {
+                    id: ObjectiveId(4),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-native".to_string(),
+                        description: "??".to_string()
+                    },
+                    title: "title 4".to_string(),
+                    description: "description 4".to_string(),
+                },
             ]))
         );
 
@@ -757,7 +775,7 @@ mod tests {
             .search(search_query, true, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 2);
+        assert_eq!(query_result.total, 4);
         assert_eq!(query_result.results, None);
 
         let search_query: SearchQuery = SearchQuery {
@@ -775,10 +793,28 @@ mod tests {
             .search(search_query.clone(), false, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 2);
+        assert_eq!(query_result.total, 4);
         assert_eq!(
             query_result.results,
             Some(ValueResults::Objectives(vec![
+                ObjectiveSummary {
+                    id: ObjectiveId(4),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-native".to_string(),
+                        description: "??".to_string()
+                    },
+                    title: "title 4".to_string(),
+                    description: "description 4".to_string(),
+                },
+                ObjectiveSummary {
+                    id: ObjectiveId(3),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 3".to_string(),
+                    description: "description 3".to_string(),
+                },
                 ObjectiveSummary {
                     id: ObjectiveId(2),
                     objective_type: ObjectiveType {
@@ -808,13 +844,13 @@ mod tests {
         assert_eq!(
             query_result.results,
             Some(ValueResults::Objectives(vec![ObjectiveSummary {
-                id: ObjectiveId(2),
+                id: ObjectiveId(4),
                 objective_type: ObjectiveType {
                     id: "catalyst-native".to_string(),
                     description: "??".to_string()
                 },
-                title: "title 2".to_string(),
-                description: "description 2".to_string(),
+                title: "title 4".to_string(),
+                description: "description 4".to_string(),
             },]))
         );
 
@@ -822,18 +858,38 @@ mod tests {
             .search(search_query, false, None, Some(1))
             .await
             .unwrap();
-        assert_eq!(query_result.total, 1);
+        assert_eq!(query_result.total, 3);
         assert_eq!(
             query_result.results,
-            Some(ValueResults::Objectives(vec![ObjectiveSummary {
-                id: ObjectiveId(1),
-                objective_type: ObjectiveType {
-                    id: "catalyst-simple".to_string(),
-                    description: "A Simple choice".to_string()
+            Some(ValueResults::Objectives(vec![
+                ObjectiveSummary {
+                    id: ObjectiveId(3),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 3".to_string(),
+                    description: "description 3".to_string(),
                 },
-                title: "title 1".to_string(),
-                description: "description 1".to_string(),
-            },]))
+                ObjectiveSummary {
+                    id: ObjectiveId(2),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-native".to_string(),
+                        description: "??".to_string()
+                    },
+                    title: "title 2".to_string(),
+                    description: "description 2".to_string(),
+                },
+                ObjectiveSummary {
+                    id: ObjectiveId(1),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 1".to_string(),
+                    description: "description 1".to_string(),
+                },
+            ]))
         );
 
         let search_query = SearchQuery {

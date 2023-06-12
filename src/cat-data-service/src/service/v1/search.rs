@@ -417,7 +417,7 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
-                    "total": 2,
+                    "total": 4,
                     "results": [
                         {
                             "id": 1,
@@ -436,6 +436,24 @@ mod tests {
                             },
                             "title": "title 2",
                             "description": "description 2"
+                        },
+                        {
+                            "id": 3,
+                            "type": {
+                                "id": "catalyst-simple",
+                                "description": "A Simple choice"
+                            },
+                            "title": "title 3",
+                            "description": "description 3"
+                        },
+                        {
+                            "id": 4,
+                            "type": {
+                                "id": "catalyst-native",
+                                "description": "??"
+                            },
+                            "title": "title 4",
+                            "description": "description 4"
                         }
                     ]
                 }
@@ -466,7 +484,7 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
-                    "total": 2,
+                    "total": 4,
                 }
             )
         ));
@@ -496,8 +514,26 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
-                    "total": 2,
+                    "total": 4,
                     "results": [
+                        {
+                            "id": 4,
+                            "type": {
+                                "id": "catalyst-native",
+                                "description": "??"
+                            },
+                            "title": "title 4",
+                            "description": "description 4"
+                        },
+                        {
+                            "id": 3,
+                            "type": {
+                                "id": "catalyst-simple",
+                                "description": "A Simple choice"
+                            },
+                            "title": "title 3",
+                            "description": "description 3"
+                        },
                         {
                             "id": 2,
                             "type": {
@@ -549,14 +585,14 @@ mod tests {
                     "total": 1,
                     "results": [
                         {
-                            "id": 2,
+                            "id": 4,
                             "type": {
                                 "id": "catalyst-native",
                                 "description": "??"
                             },
-                            "title": "title 2",
-                            "description": "description 2"
-                        }
+                            "title": "title 4",
+                            "description": "description 4"
+                        },
                     ]
 
                 }
@@ -588,8 +624,26 @@ mod tests {
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
-                    "total": 1,
+                    "total": 3,
                     "results": [
+                        {
+                            "id": 3,
+                            "type": {
+                                "id": "catalyst-simple",
+                                "description": "A Simple choice"
+                            },
+                            "title": "title 3",
+                            "description": "description 3"
+                        },
+                        {
+                            "id": 2,
+                            "type": {
+                                "id": "catalyst-native",
+                                "description": "??"
+                            },
+                            "title": "title 2",
+                            "description": "description 2"
+                        },
                         {
                             "id": 1,
                             "type": {

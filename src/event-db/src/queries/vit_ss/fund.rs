@@ -1,5 +1,6 @@
 use crate::{
     types::vit_ss::{
+        challenge::{Challenge, ChallengeHighlights},
         fund::{Fund, FundNextInfo, FundStageDates, FundWithNext},
         vote_plan::Voteplan,
     },
@@ -14,8 +15,7 @@ pub trait VitSSFundQueries: Sync + Send + 'static {
 }
 
 impl EventDB {
-    const FUND_QUERY: &'static str = "
-    SELECT
+    const FUND_QUERY: &'static str = "SELECT
     this_fund.row_id AS id,
     this_fund.name AS fund_name,
     this_fund.description AS fund_goal,
@@ -65,8 +65,7 @@ impl EventDB {
     ORDER BY this_fund.row_id DESC
     LIMIT 1;";
 
-    const FUND_VOTE_PLANS_QUERY: &'static str = "
-    SELECT
+    const FUND_VOTE_PLANS_QUERY: &'static str = "SELECT
     voteplan.row_id AS id,
     voteplan.id AS chain_voteplan_id,
 
@@ -79,6 +78,20 @@ impl EventDB {
     INNER JOIN objective ON voteplan.objective_id = objective.row_id
     INNER JOIN event ON objective.event = event.row_id
     WHERE event.row_id = $1;";
+
+    const FUND_CHALLENGES_QUERY: &'static str = "SELECT
+    objective.row_id AS internal_id,
+    objective.id AS id,
+    objective.category AS challenge_type,
+    objective.title AS title,
+    objective.description AS description,
+    objective.rewards_total AS rewards_total,
+    objective.proposers_rewards AS proposers_rewards,
+    (objective.extra->'url') #>> '{}' AS challenge_url,
+    (objective.extra->'sponsor') #>> '{}' AS highlights
+
+    FROM objective
+    WHERE objective.event = $1;";
 }
 
 #[async_trait]
@@ -129,6 +142,31 @@ impl VitSSFundQueries for EventDB {
             });
         }
 
+        let rows = conn.query(Self::FUND_CHALLENGES_QUERY, &[&fund_id]).await?;
+        let mut challenges = Vec::new();
+        for row in rows {
+            challenges.push(Challenge {
+                id: row.try_get("id")?,
+                internal_id: row.try_get("internal_id")?,
+                challenge_type: row.try_get("challenge_type")?,
+                title: row.try_get("title")?,
+                description: row.try_get("description")?,
+                rewards_total: row
+                    .try_get::<_, Option<i64>>("rewards_total")?
+                    .unwrap_or_default(),
+                proposers_rewards: row
+                    .try_get::<_, Option<i64>>("proposers_rewards")?
+                    .unwrap_or_default(),
+                fund_id,
+                challenge_url: row
+                    .try_get::<_, Option<String>>("challenge_url")?
+                    .unwrap_or_default(),
+                highlights: row
+                    .try_get::<_, Option<String>>("highlights")?
+                    .map(|sponsor| ChallengeHighlights { sponsor }),
+            })
+        }
+
         let fund = Fund {
             id: fund_id,
             fund_name: row.try_get("fund_name")?,
@@ -158,7 +196,7 @@ impl VitSSFundQueries for EventDB {
                 .and_local_timezone(Utc)
                 .unwrap(),
             chain_vote_plans,
-            challenges: vec![],
+            challenges,
             stage_dates: FundStageDates {
                 insight_sharing_start: row
                     .try_get::<_, Option<NaiveDateTime>>("insight_sharing_start")?
@@ -393,7 +431,34 @@ mod tests {
                             token_identifier: "".to_string(),
                         }
                     ],
-                    challenges: vec![],
+                    challenges: vec![
+                        Challenge {
+                            internal_id: 3,
+                            id: 3,
+                            challenge_type: "catalyst-simple".to_string(),
+                            title: "title 3".to_string(),
+                            description: "description 3".to_string(),
+                            rewards_total: 100,
+                            proposers_rewards: 100,
+                            challenge_url: "objective 3 url".to_string(),
+                            fund_id: 4,
+                            highlights: Some(ChallengeHighlights {
+                                sponsor: "objective 3 sponsor".to_string()
+                            }),
+                        },
+                        Challenge {
+                            internal_id: 4,
+                            id: 4,
+                            challenge_type: "catalyst-native".to_string(),
+                            title: "title 4".to_string(),
+                            description: "description 4".to_string(),
+                            rewards_total: 0,
+                            proposers_rewards: 0,
+                            challenge_url: "".to_string(),
+                            fund_id: 4,
+                            highlights: None,
+                        }
+                    ],
                     stage_dates: FundStageDates {
                         insight_sharing_start: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(

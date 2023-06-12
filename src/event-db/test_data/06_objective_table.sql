@@ -15,9 +15,9 @@ NULL
 ),
 (3,
 3, 4,
-'catalyst-simple', 'title 3', 'description 4',
+'catalyst-simple', 'title 3', 'description 3',
 'ADA', 100, 100, 1,
-'{"url": "objective 4 url", "sponsor": "objective 4 sponsor", "video": "objective 4 video"}'
+'{"url": "objective 3 url", "sponsor": "objective 3 sponsor", "video": "objective 3 video"}'
 ), 
 (4,
 4, 4,

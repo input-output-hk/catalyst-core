@@ -162,6 +162,22 @@
 <a href="#162" id="162">162</a>
 <a href="#163" id="163">163</a>
 <a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     types::vit_ss::fund::{Fund, FundStageDates},
     Error, EventDB,
@@ -201,12 +217,17 @@
     this_fund.voting_end AS voting_end,
     this_fund.tallying_end AS tallying_end,
 
+    next_fund.start_time AS next_fund_start_time,
+    next_fund.registration_snapshot_time AS next_registration_snapshot_time,
+
     (this_fund.extra-&gt;&#39;url&#39;-&gt;&#39;results&#39;) #&gt;&gt; &#39;{}&#39; AS results_url,
     (this_fund.extra-&gt;&#39;url&#39;-&gt;&#39;survey&#39;) #&gt;&gt; &#39;{}&#39; AS survey_url
 
     FROM event this_fund
+    LEFT JOIN event next_fund ON next_fund.row_id = this_fund.row_id + 1
+    WHERE this_fund.end_time &gt; CURRENT_TIMESTAMP AT TIME ZONE &#39;UTC&#39; AND this_fund.start_time &lt; CURRENT_TIMESTAMP AT TIME ZONE &#39;UTC&#39;
     ORDER BY this_fund.row_id DESC
-    LIMIT 1 OFFSET 1;&quot;</span>;
+    LIMIT 1;&quot;</span>;
 }
 
 <span class="attr">#[async_trait]
@@ -235,8 +256,9 @@
             <span class="comment">// TODO
             </span>next_fund_start_time: Utc::now(),
             registration_snapshot_time: row
-                .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;registration_snapshot_time&quot;</span>)<span class="question-mark">?
-                </span>.and_local_timezone(Utc)
+                .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;registration_snapshot_time&quot;</span>)<span class="question-mark">?
+                </span>.unwrap_or_default()
+                .and_local_timezone(Utc)
                 .unwrap(),
             <span class="comment">// TODO
             </span>next_registration_snapshot_time: Utc::now(),
@@ -244,44 +266,54 @@
             challenges: <span class="macro">vec!</span>[],
             stage_dates: FundStageDates {
                 insight_sharing_start: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;insight_sharing_start&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;insight_sharing_start&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
                 proposal_submission_start: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;proposal_submission_start&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;proposal_submission_start&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
                 refine_proposals_start: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;refine_proposals_start&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;refine_proposals_start&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
                 finalize_proposals_start: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;finalize_proposals_start&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;finalize_proposals_start&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
                 proposal_assessment_start: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;proposal_assessment_start&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;proposal_assessment_start&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
                 assessment_qa_start: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;assessment_qa_start&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;assessment_qa_start&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
                 snapshot_start: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;snapshot_start&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;snapshot_start&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
                 voting_start: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;voting_start&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;voting_start&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
                 voting_end: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;voting_end&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;voting_end&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
                 tallying_end: row
-                    .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;tallying_end&quot;</span>)<span class="question-mark">?
-                    </span>.and_local_timezone(Utc)
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;NaiveDateTime&gt;&gt;(<span class="string">&quot;tallying_end&quot;</span>)<span class="question-mark">?
+                    </span>.unwrap_or_default()
+                    .and_local_timezone(Utc)
                     .unwrap(),
             },
             goals: <span class="macro">vec!</span>[],

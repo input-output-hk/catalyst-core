@@ -3,7 +3,7 @@ use crate::types::utils::serialize_datetime_as_rfc3339;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct FundStageDates {
     #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
     pub insight_sharing_start: DateTime<Utc>,
@@ -27,7 +27,7 @@ pub struct FundStageDates {
     pub tallying_end: DateTime<Utc>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Fund {
     pub id: i32,
     pub fund_name: String,
@@ -53,7 +53,7 @@ pub struct Fund {
     pub groups: Vec<Group>,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct FundNextInfo {
     pub id: i32,
     pub fund_name: String,
@@ -61,7 +61,7 @@ pub struct FundNextInfo {
     pub stage_dates: FundStageDates,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct FundWithNext {
     #[serde(flatten)]
     pub fund: Fund,

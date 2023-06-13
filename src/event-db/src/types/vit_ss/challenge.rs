@@ -1,11 +1,11 @@
 use serde::Serialize;
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct ChallengeHighlights {
     pub sponsor: String,
 }
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Challenge {
     // this is used only to retain the original insert order
     pub internal_id: i32,

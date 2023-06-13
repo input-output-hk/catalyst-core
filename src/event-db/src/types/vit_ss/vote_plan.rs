@@ -2,7 +2,7 @@ use crate::types::utils::serialize_datetime_as_rfc3339;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 
-#[derive(Debug, Serialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Voteplan {
     pub id: i32,
     pub chain_voteplan_id: String,

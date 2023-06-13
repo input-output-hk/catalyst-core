@@ -66,12 +66,12 @@
 <a href="#66" id="66">66</a>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ChallengeHighlights {
     <span class="kw">pub </span>sponsor: String,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Challenge {
     <span class="comment">// this is used only to retain the original insert order
     </span><span class="kw">pub </span>internal_id: i32,

@@ -849,7 +849,7 @@
             .validate_partial_decryptions(<span class="kw-2">&amp;</span>pub_keys, <span class="kw-2">&amp;</span>shares)
             .unwrap();
 
-        <span class="kw">let </span>tally = <span class="kw-2">&amp;</span>batch_decrypt([validated_tally.clone()]).unwrap()[<span class="number">0</span>];
+        <span class="kw">let </span>tally = <span class="kw-2">&amp;</span>batch_decrypt([validated_tally]).unwrap()[<span class="number">0</span>];
 
         <span class="macro">assert_eq!</span>(tally.votes, <span class="macro">vec!</span>[<span class="number">5</span>, <span class="number">3</span>]);
 

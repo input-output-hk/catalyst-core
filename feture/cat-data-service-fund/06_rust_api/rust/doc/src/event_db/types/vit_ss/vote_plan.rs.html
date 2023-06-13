@@ -61,7 +61,7 @@
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::Serialize;
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Voteplan {
     <span class="kw">pub </span>id: i32,
     <span class="kw">pub </span>chain_voteplan_id: String,

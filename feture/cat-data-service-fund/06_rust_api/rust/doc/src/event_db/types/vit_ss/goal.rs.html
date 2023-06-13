@@ -35,7 +35,7 @@
 <a href="#35" id="35">35</a>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Goal {
     <span class="kw">pub </span>id: i32,
     <span class="kw">pub </span>goal_name: String,

@@ -188,7 +188,7 @@
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::Serialize;
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>FundStageDates {
     <span class="attr">#[serde(serialize_with = <span class="string">&quot;serialize_datetime_as_rfc3339&quot;</span>)]
     </span><span class="kw">pub </span>insight_sharing_start: DateTime&lt;Utc&gt;,
@@ -212,7 +212,7 @@
     </span><span class="kw">pub </span>tallying_end: DateTime&lt;Utc&gt;,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Fund {
     <span class="kw">pub </span>id: i32,
     <span class="kw">pub </span>fund_name: String,
@@ -238,7 +238,7 @@
     <span class="kw">pub </span>groups: Vec&lt;Group&gt;,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>FundNextInfo {
     <span class="kw">pub </span>id: i32,
     <span class="kw">pub </span>fund_name: String,
@@ -246,7 +246,7 @@
     </span><span class="kw">pub </span>stage_dates: FundStageDates,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>FundWithNext {
     <span class="attr">#[serde(flatten)]
     </span><span class="kw">pub </span>fund: Fund,

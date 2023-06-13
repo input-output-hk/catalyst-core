@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["proposal","proposals","proposals_exec"],"opaque":[""],"static":["CALLSITE","META"],"struct":["ProposalsQuery","__FieldVisitor","__Visitor"]};

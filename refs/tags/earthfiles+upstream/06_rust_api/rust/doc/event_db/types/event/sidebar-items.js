@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["VotingPowerAlgorithm","__Field"],"mod":["objective","proposal"],"struct":["Event","EventDetails","EventGoal","EventId","EventRegistration","EventSchedule","EventSummary","VoterGroup","VotingPowerSettings","__FieldVisitor","__SerializeWith","__Visitor"]};

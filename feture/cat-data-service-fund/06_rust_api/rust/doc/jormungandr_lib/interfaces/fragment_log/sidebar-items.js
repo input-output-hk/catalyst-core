@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["FragmentOrigin","FragmentStatus","__Field"],"struct":["FragmentLog","__FieldVisitor","__Visitor"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["read_config"],"struct":["Config","__FieldVisitor","__Visitor"]};

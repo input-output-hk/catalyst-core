@@ -419,7 +419,7 @@ mod tests {
             .validate_partial_decryptions(&pub_keys, &shares)
             .unwrap();
 
-        let tally = &batch_decrypt([validated_tally.clone()]).unwrap()[0];
+        let tally = &batch_decrypt([validated_tally]).unwrap()[0];
 
         assert_eq!(tally.votes, vec![5, 3]);
 

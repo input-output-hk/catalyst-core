@@ -20,19 +20,18 @@ docker:
     # Add psql
     RUN apt-get update && apt-get install -y --no-install-recommends \
         wget \
-        gnupg2 \
-        ca-certificates \
-        lsb-release \
-        apt-transport-https \
-        && rm -rf /var/lib/apt/lists/* && \
-        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-        echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
-        apt-get update && \
-        apt-get install -y --no-install-recommends postgresql-client-14 && \
-        apt-get remove -y wget gnupg2 lsb-release apt-transport-https && \
-        apt-get autoremove -y && \
-        apt-get clean && rm -rf /var/lib/apt/lists/*
-
+         gnupg2 \
+         ca-certificates \
+         lsb-release \
+         apt-transport-https \
+         && rm -rf /var/lib/apt/lists/* && \
+         wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
+         echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+         apt-get update && \
+         apt-get install -y --no-install-recommends postgresql-14 && \
+         apt-get remove -y wget gnupg2 lsb-release apt-transport-https && \
+         apt-get autoremove -y && \
+         apt-get clean && rm -rf /var/lib/apt/lists/*
 
     # Add refinery
     COPY +build/refinery .

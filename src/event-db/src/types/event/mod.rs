@@ -160,18 +160,9 @@ mod tests {
         let event_summary = EventSummary {
             id: EventId(1),
             name: "Fund 10".to_string(),
-            starts: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            ends: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            reg_checked: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
+            starts: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            ends: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            reg_checked: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
             is_final: true,
         };
 
@@ -253,14 +244,8 @@ mod tests {
     fn event_registration_json_test() {
         let event_registration = EventRegistration {
             purpose: Some(1),
-            deadline: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            taken: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
+            deadline: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            taken: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
         };
 
         let json = serde_json::to_value(&event_registration).unwrap();
@@ -277,14 +262,8 @@ mod tests {
 
         let event_registration = EventRegistration {
             purpose: None,
-            deadline: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            taken: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
+            deadline: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            taken: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
         };
 
         let json = serde_json::to_value(&event_registration).unwrap();
@@ -321,42 +300,15 @@ mod tests {
     #[test]
     fn event_schedule_json_test() {
         let event_schedule = EventSchedule {
-            insight_sharing: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            proposal_submission: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            refine_proposals: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            finalize_proposals: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            proposal_assessment: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            assessment_qa_start: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            voting: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            tallying: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            tallying_end: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
+            insight_sharing: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            proposal_submission: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            refine_proposals: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            finalize_proposals: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            proposal_assessment: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            assessment_qa_start: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            voting: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            tallying: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            tallying_end: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
         };
 
         let json = serde_json::to_value(&event_schedule).unwrap();
@@ -384,18 +336,9 @@ mod tests {
             finalize_proposals: None,
             proposal_assessment: None,
             assessment_qa_start: None,
-            voting: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            tallying: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
-            tallying_end: Some(DateTime::from_utc(
-                NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                Utc,
-            )),
+            voting: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            tallying: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+            tallying_end: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
         };
 
         let json = serde_json::to_value(&event_schedule).unwrap();
@@ -421,56 +364,23 @@ mod tests {
             },
             registration: EventRegistration {
                 purpose: Some(1),
-                deadline: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                taken: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
+                deadline: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                taken: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
             },
             goals: vec![EventGoal {
                 idx: 1,
                 name: "goal 1".to_string(),
             }],
             schedule: EventSchedule {
-                insight_sharing: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                proposal_submission: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                refine_proposals: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                finalize_proposals: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                proposal_assessment: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                assessment_qa_start: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                voting: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                tallying: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                tallying_end: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
+                insight_sharing: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                proposal_submission: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                refine_proposals: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                finalize_proposals: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                proposal_assessment: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                assessment_qa_start: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                voting: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                tallying: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                tallying_end: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
             },
         };
 
@@ -517,18 +427,9 @@ mod tests {
             summary: EventSummary {
                 id: EventId(1),
                 name: "Fund 10".to_string(),
-                starts: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                ends: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
-                reg_checked: Some(DateTime::from_utc(
-                    NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                    Utc,
-                )),
+                starts: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                ends: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                reg_checked: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
                 is_final: true,
             },
             details: EventDetails {
@@ -539,56 +440,23 @@ mod tests {
                 },
                 registration: EventRegistration {
                     purpose: Some(1),
-                    deadline: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
-                    taken: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
+                    deadline: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                    taken: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
                 },
                 goals: vec![EventGoal {
                     idx: 1,
                     name: "goal 1".to_string(),
                 }],
                 schedule: EventSchedule {
-                    insight_sharing: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
-                    proposal_submission: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
-                    refine_proposals: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
-                    finalize_proposals: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
-                    proposal_assessment: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
-                    assessment_qa_start: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
-                    voting: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
-                    tallying: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
-                    tallying_end: Some(DateTime::from_utc(
-                        NaiveDateTime::from_timestamp_opt(0, 0).unwrap(),
-                        Utc,
-                    )),
+                    insight_sharing: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                    proposal_submission: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                    refine_proposals: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                    finalize_proposals: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                    proposal_assessment: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                    assessment_qa_start: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                    voting: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                    tallying: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
+                    tallying_end: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
                 },
             },
         };

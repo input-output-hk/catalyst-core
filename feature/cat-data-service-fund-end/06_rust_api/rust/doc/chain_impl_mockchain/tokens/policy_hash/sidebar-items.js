@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["POLICY_HASH_SIZE"],"fn":["_strategy_of_0","_to_fn_ptr"],"mod":["tests"],"opaque":[""],"struct":["PolicyHash"]};

@@ -11,6 +11,7 @@ from typing import Any, List, TypeVar
 from .models import Model, Contribution, Voter
 
 
+PG_MAX_QUERY_PARAMS = 32767
 M = TypeVar("M", bound=Model)
 
 
@@ -22,26 +23,35 @@ async def insert_many(conn: asyncpg.Connection, models: List[M]) -> List[M]:
     # Extract field names and values for each field in each model
     cols = [field.name for field in dataclasses.fields(models[0])]
     insert_cols = [col for col in cols if col not in models[0].exclude_from_insert]
+    cols_str = ",".join(cols)
+    insert_cols_str = ",".join(insert_cols)
     vals = [[getattr(m, f) for f in cols] for m in models]
 
     # Creates a list for the placeholders for value params, e.g. ["($1, $2, $3)", "($4, $5, $6)"]
     val_nums = []
-    for i in range(0, len(vals)):
-        nums = range(i * len(insert_cols) + 1, (i + 1) * len(insert_cols) + 1)
+    cur_vals = []
+    k = 1
+    results = []
+    for i in range(len(vals)):
+        nums = range(k, k + len(insert_cols))
+        k += len(insert_cols)
+
         nums_str = ",".join(map(lambda x: f"${x}", nums))
+
+        cur_vals.extend(vals[i])
         val_nums.append(f"({nums_str})")
 
-    val_nums_str = ",".join(val_nums)
-    cols_str = ",".join(cols)
-    insert_cols_str = ",".join(insert_cols)
+        if len(cur_vals) + len(insert_cols) >= PG_MAX_QUERY_PARAMS or i == (len(vals) - 1):
+            val_nums_str = ",".join(val_nums)
+            stmt_template = f"INSERT INTO {models[0].table()} ({insert_cols_str}) VALUES {val_nums_str} RETURNING {cols_str}"
+            result = await conn.fetch(stmt_template, *cur_vals)
+            results.extend([models[0].__class__(**record) for record in result])
 
-    flat_vals = [v for vs in vals for v in vs]
+            cur_vals = []
+            val_nums = []
+            k = 1
 
-    stmt_template = f"INSERT INTO {models[0].table()} ({insert_cols_str}) VALUES {val_nums_str} RETURNING {cols_str}"
-
-    result = await conn.fetch(stmt_template, *flat_vals)
-
-    return [models[0].__class__(**record) for record in result]
+    return results
 
 
 async def insert(conn: asyncpg.Connection, model: Model) -> Any:

@@ -46,12 +46,6 @@ jobs:
           targets: ${{ env.EARTHLY_TARGET }}
   cache:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/input-output-hk/catalyst-core/ci:latest
-    defaults:
-      run:
-        shell: bash
-        working-directory: /workspace
     steps:
       - uses: actions/checkout@v3
       - name: Setup CI

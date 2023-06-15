@@ -29,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       json: ${{ steps.discover.outputs.json}}
+      images: ${{ steps.discover.outputs.images}}
     steps:
       - uses: actions/checkout@v3
       - name: Setup CI
@@ -72,22 +73,33 @@ jobs:
           registry: ${{ env.ECR_REGISTRY }}
           tags: "${{ env.TAG }}"
           target: ${{ env.EARTHLY_TARGET }}
-#   deploy:
-#     runs-on: ubuntu-latest
-#     needs: [discover, build]
-#     steps:
-#       - name: Setup CI
-#         uses: input-output-hk/catalyst-ci/actions/setup@master
-#         id: setup
-#         with:
-#           aws_role_arn: ${{ env.AWS_ROLE_ARN }}
-#           aws_region: ${{ env.AWS_REGION }}
-#           earthly_version: ${{ env.EARTHLY_VERSION }}
-#       - name: Deploy
-#         uses: input-output-hk/catalyst-ci/actions/deploy@master
-#         with:
-#           deployment_repo: input-output-hk/catalyst-world
-#           discover_output: ${{ needs.discover.outputs.json }}
-#           environment: dev
-#           tag: ${{ env.TAG }}
-#           token: ${{ steps.setup.outputs.token }}
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [discover, build]
+    steps:
+      - name: Setup CI
+        uses: input-output-hk/catalyst-ci/actions/setup@master
+        id: setup
+        with:
+          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
+          aws_region: ${{ env.AWS_REGION }}
+          earthly_version: ${{ env.EARTHLY_VERSION }}
+      - name: Filter images
+        id: filtered
+        run: |
+          # NOTE: When adding new images to deploy, this list must be updated
+          IMAGES_TO_DEPLOY="cat-data-service migrations voting-node"
+
+          FILTER=$(echo "$IMAGES_TO_DEPLOY" | tr ' ' '|')
+          FILTERED_IMAGES=$(echo "${{ needs.discover.outputs.images }}" | tr ' ' '\n' | grep -E "$FILTER" | paste -sd " " -)
+
+          echo "Filtered images: $FILTERED_IMAGES"
+          echo "images=$FILTERED_IMAGES" >>$GITHUB_OUTPUT
+    #   - name: Deploy
+    #     uses: input-output-hk/catalyst-ci/actions/deploy@master
+    #     with:
+    #       deployment_repo: input-output-hk/catalyst-world
+    #       discover_output: ${{ needs.discover.outputs.json }}
+    #       environment: dev
+    #       tag: ${{ env.TAG }}
+    #       token: ${{ steps.setup.outputs.token }}

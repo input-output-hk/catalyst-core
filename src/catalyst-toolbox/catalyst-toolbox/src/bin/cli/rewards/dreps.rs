@@ -61,7 +61,7 @@ fn write_rewards_results(
     }
 
     dump_to_csv_or_print(
-        &output,
+        output,
         rewards
             .into_iter()
             .map(|(address, reward)| Entry { address, reward }),

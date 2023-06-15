@@ -44,9 +44,31 @@ jobs:
         with:
           parse_images: "true"
           targets: ${{ env.EARTHLY_TARGET }}
+  cache:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/input-output-hk/catalyst-core/ci:latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: /workspace
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup CI
+        uses: input-output-hk/catalyst-ci/actions/setup@master
+        with:
+          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
+          aws_region: ${{ env.AWS_REGION }}
+          earthly_version: ${{ env.EARTHLY_VERSION }}
+      - name: Build cache
+        uses: input-output-hk/catalyst-ci/actions/build@master
+        with:
+          earthfile: .
+          earthly_satellite: ${{ secrets.EARTHLY_SATELLITE_ADDRESS }}
+          target: builder
   build:
     runs-on: ubuntu-latest
-    needs: [discover]
+    needs: [cache, discover]
     strategy:
       fail-fast: false
       matrix:

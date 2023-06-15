@@ -1,23 +1,21 @@
-use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, BTreeSet};
-use std::path::{Path, PathBuf};
-use std::str::FromStr;
-
+use catalyst_toolbox::community_advisors::models::{
+    AdvisorReviewRow, ApprovedProposalRow, ProposalStatus,
+};
 use catalyst_toolbox::rewards::community_advisors::{
     calculate_ca_rewards, ApprovedProposals, CommunityAdvisor, FundSetting, Funds,
     ProposalRewardSlots, ProposalsReviews, Rewards, Seed,
 };
 use catalyst_toolbox::utils;
+use catalyst_toolbox::utils::csv::dump_data_to_csv;
 use chain_crypto::digest::DigestOf;
+use clap::Parser;
 use color_eyre::eyre::{bail, eyre};
 use color_eyre::Report;
 use rust_decimal::prelude::ToPrimitive;
-
-use catalyst_toolbox::community_advisors::models::{
-    AdvisorReviewRow, ApprovedProposalRow, ProposalStatus,
-};
-use catalyst_toolbox::utils::csv::dump_data_to_csv;
-use clap::Parser;
+use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, BTreeSet};
+use std::path::{Path, PathBuf};
+use std::str::FromStr;
 
 #[derive(Debug, Deserialize, Parser)]
 pub struct FundSettingOpt {

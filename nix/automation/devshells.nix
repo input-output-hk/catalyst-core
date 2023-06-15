@@ -30,13 +30,6 @@
       pkg-config
       python310
 
-      # Go tools
-      ginkgo
-      go
-      golint
-      gopls
-      go-tools
-
       # Rust tools
       cargo-insta
       diesel-cli

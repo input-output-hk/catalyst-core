@@ -1,9 +1,0 @@
-name: "Setup Workspace"
-description: "Checkout the repository and copy to current directory"
-
-runs:
-  using: "composite"
-  steps:
-    - name: Copy repository to workspace
-      run: cp -r "${GITHUB_WORKSPACE}"/* /workspace
-      shell: bash

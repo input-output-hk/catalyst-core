@@ -96,21 +96,25 @@
 <a href="#96" id="96">96</a>
 <a href="#97" id="97">97</a>
 <a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
 </pre><pre class="rust"><code><span class="kw">use </span>serde::Serialize;
+<span class="kw">use </span>serde_json::Value;
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ReviewType {
     <span class="kw">pub </span>id: i32,
     <span class="kw">pub </span>name: String,
     <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub </span>min: i32,
     <span class="kw">pub </span>max: i32,
-    <span class="kw">pub </span>map: Vec&lt;String&gt;,
+    <span class="kw">pub </span>map: Vec&lt;Value&gt;,
     <span class="kw">pub </span>note: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    <span class="kw">pub </span>group: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>group: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Rating {
     <span class="kw">pub </span>review_type: i32,
     <span class="kw">pub </span>score: i32,
@@ -118,7 +122,7 @@
     </span><span class="kw">pub </span>note: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
-<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>AdvisorReview {
     <span class="kw">pub </span>assessor: String,
     <span class="kw">pub </span>ratings: Vec&lt;Rating&gt;,
@@ -138,7 +142,7 @@
             min: <span class="number">1</span>,
             max: <span class="number">2</span>,
             note: <span class="prelude-val">Some</span>(<span class="bool-val">true</span>),
-            map: <span class="macro">vec!</span>[<span class="string">&quot;map&quot;</span>.to_string()],
+            map: <span class="macro">vec!</span>[<span class="macro">json!</span>({})],
             group: <span class="prelude-val">Some</span>(<span class="string">&quot;group&quot;</span>.to_string()),
         };
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>review_type).unwrap();
@@ -152,7 +156,7 @@
                 <span class="string">&quot;min&quot;</span>: <span class="number">1</span>,
                 <span class="string">&quot;max&quot;</span>: <span class="number">2</span>,
                 <span class="string">&quot;note&quot;</span>: <span class="bool-val">true</span>,
-                <span class="string">&quot;map&quot;</span>: [<span class="string">&quot;map&quot;</span>],
+                <span class="string">&quot;map&quot;</span>: [{}],
                 <span class="string">&quot;group&quot;</span>: <span class="string">&quot;group&quot;</span>,
             })
         )

@@ -274,6 +274,7 @@
 <a href="#274" id="274">274</a>
 <a href="#275" id="275">275</a>
 <a href="#276" id="276">276</a>
+<a href="#277" id="277">277</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
@@ -311,7 +312,7 @@
     <span class="kw">const </span>PROPOSALS_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT proposal.id, proposal.title, proposal.summary
         FROM proposal
         INNER JOIN objective on proposal.objective = objective.row_id
-        WHERE proposal.objective = $1 AND objective.event = $2
+        WHERE objective.event = $1 AND objective.id = $2
         LIMIT $3 OFFSET $4;&quot;</span>;
 
     <span class="kw">const </span>PROPOSAL_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
@@ -320,7 +321,7 @@
     proposal.proposer_name, proposal.proposer_contact, proposal.proposer_url, proposal.public_key
     FROM proposal
     INNER JOIN objective on proposal.objective = objective.row_id
-    WHERE proposal.id = $1 AND proposal.objective = $2 AND objective.event = $3;&quot;</span>;
+    WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3;&quot;</span>;
 }
 
 <span class="attr">#[async_trait]
@@ -331,7 +332,9 @@
         objective: ObjectiveId,
         proposal: ProposalId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Proposal, Error&gt; {
-        <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
+        <span class="kw">let </span>conn: bb8::PooledConnection&lt;
+            bb8_postgres::PostgresConnectionManager&lt;tokio_postgres::NoTls&gt;,
+        &gt; = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span>rows = conn
             .query(<span class="self">Self</span>::PROPOSAL_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>objective.<span class="number">0</span>, <span class="kw-2">&amp;</span>proposal.<span class="number">0</span>])
@@ -348,7 +351,7 @@
         }];
 
         <span class="kw">let </span>proposal_summary = ProposalSummary {
-            id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
+            id: ProposalId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
             title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
             summary: row.try_get(<span class="string">&quot;summary&quot;</span>)<span class="question-mark">?</span>,
         };
@@ -381,14 +384,14 @@
         <span class="kw">let </span>rows = conn
             .query(
                 <span class="self">Self</span>::PROPOSALS_QUERY,
-                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>objective.<span class="number">0</span>, <span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
+                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>, <span class="kw-2">&amp;</span>objective.<span class="number">0</span>, <span class="kw-2">&amp;</span>limit, <span class="kw-2">&amp;</span>offset.unwrap_or(<span class="number">0</span>)],
             )
             .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let </span><span class="kw-2">mut </span>proposals = Vec::new();
         <span class="kw">for </span>row <span class="kw">in </span>rows {
             <span class="kw">let </span>summary = ProposalSummary {
-                id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
+                id: ProposalId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
                 title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
                 summary: row.try_get(<span class="string">&quot;summary&quot;</span>)<span class="question-mark">?</span>,
             };
@@ -417,24 +420,23 @@
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span>serde_json::json;
-
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::establish_connection;
+    <span class="kw">use </span>serde_json::json;
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>get_proposal_test() {
         <span class="kw">let </span>event_db = establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
 
         <span class="kw">let </span>proposal = event_db
-            .get_proposal(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">1</span>))
+            .get_proposal(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">10</span>))
             .<span class="kw">await
             </span>.unwrap();
 
         <span class="macro">assert_eq!</span>(
             Proposal {
                 proposal_summary: ProposalSummary {
-                    id: <span class="number">1</span>,
+                    id: ProposalId(<span class="number">10</span>),
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
@@ -475,17 +477,17 @@
         <span class="macro">assert_eq!</span>(
             <span class="macro">vec!</span>[
                 ProposalSummary {
-                    id: <span class="number">1</span>,
+                    id: ProposalId(<span class="number">10</span>),
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">2</span>,
+                    id: ProposalId(<span class="number">20</span>),
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">3</span>,
+                    id: ProposalId(<span class="number">30</span>),
                     title: String::from(<span class="string">&quot;title 3&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
                 }
@@ -501,12 +503,12 @@
         <span class="macro">assert_eq!</span>(
             <span class="macro">vec!</span>[
                 ProposalSummary {
-                    id: <span class="number">1</span>,
+                    id: ProposalId(<span class="number">10</span>),
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">2</span>,
+                    id: ProposalId(<span class="number">20</span>),
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
                 },
@@ -522,12 +524,12 @@
         <span class="macro">assert_eq!</span>(
             <span class="macro">vec!</span>[
                 ProposalSummary {
-                    id: <span class="number">2</span>,
+                    id: ProposalId(<span class="number">20</span>),
                     title: String::from(<span class="string">&quot;title 2&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
                 },
                 ProposalSummary {
-                    id: <span class="number">3</span>,
+                    id: ProposalId(<span class="number">30</span>),
                     title: String::from(<span class="string">&quot;title 3&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 3&quot;</span>)
                 }
@@ -542,7 +544,7 @@
 
         <span class="macro">assert_eq!</span>(
             <span class="macro">vec!</span>[ProposalSummary {
-                id: <span class="number">2</span>,
+                id: ProposalId(<span class="number">20</span>),
                 title: String::from(<span class="string">&quot;title 2&quot;</span>),
                 summary: String::from(<span class="string">&quot;summary 2&quot;</span>)
             },],

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Delegation","Delegator","Voter","VoterInfo","__SerializeWith"]};
+window.SIDEBAR_ITEMS = {"struct":["Delegation","Delegator","Voter","VoterGroupId","VoterInfo","__SerializeWith","__Visitor"]};

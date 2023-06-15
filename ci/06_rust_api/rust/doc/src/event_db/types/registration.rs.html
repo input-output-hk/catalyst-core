@@ -114,14 +114,20 @@
 <a href="#114" id="114">114</a>
 <a href="#115" id="115">115</a>
 <a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::serialize_datetime_as_rfc3339;
 <span class="kw">use </span>chrono::{DateTime, Utc};
-<span class="kw">use </span>serde::Serialize;
+<span class="kw">use </span>serde::{Deserialize, Serialize};
+
+<span class="attr">#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>VoterGroupId(<span class="kw">pub </span>String);
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
 </span><span class="kw">pub struct </span>VoterInfo {
     <span class="kw">pub </span>voting_power: i64,
-    <span class="kw">pub </span>voting_group: String,
+    <span class="kw">pub </span>voting_group: VoterGroupId,
     <span class="kw">pub </span>delegations_power: i64,
     <span class="kw">pub </span>delegations_count: i64,
     <span class="kw">pub </span>voting_power_saturation: f64,
@@ -141,7 +147,7 @@
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Delegation {
     <span class="kw">pub </span>voting_key: String,
-    <span class="kw">pub </span>group: String,
+    <span class="kw">pub </span>group: VoterGroupId,
     <span class="kw">pub </span>weight: i32,
     <span class="kw">pub </span>value: i64,
 }
@@ -170,13 +176,13 @@
         <span class="kw">let </span>voter = Voter {
             voter_info: VoterInfo {
                 voting_power: <span class="number">100</span>,
-                voting_group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                voting_group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                 delegations_power: <span class="number">100</span>,
                 delegations_count: <span class="number">1</span>,
                 voting_power_saturation: <span class="number">0.4</span>,
             },
-            as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
-            last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
+            as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
             is_final: <span class="bool-val">true</span>,
         };
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>voter).unwrap();
@@ -204,14 +210,14 @@
         <span class="kw">let </span>delegator = Delegator {
             delegations: <span class="macro">vec!</span>[Delegation {
                 voting_key: <span class="string">&quot;voter&quot;</span>.to_string(),
-                group: <span class="string">&quot;rep&quot;</span>.to_string(),
+                group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                 weight: <span class="number">5</span>,
                 value: <span class="number">100</span>,
             }],
             raw_power: <span class="number">100</span>,
             total_power: <span class="number">1000</span>,
-            as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
-            last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(<span class="number">0</span>, <span class="number">0</span>).unwrap(), Utc),
+            as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
             is_final: <span class="bool-val">true</span>,
         };
         <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>delegator).unwrap();

@@ -1,0 +1,6 @@
+VERSION 0.7
+
+build:
+    FROM scratch
+    COPY docker-compose.yml .
+    SAVE ARTIFACT docker-compose.yml

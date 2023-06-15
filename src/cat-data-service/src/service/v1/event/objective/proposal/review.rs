@@ -15,9 +15,7 @@ use std::sync::Arc;
 pub fn review(state: Arc<State>) -> Router {
     Router::new().route(
         "/reviews",
-        get(move |path, query| async {
-            handle_result(reviews_exec(path, query, state).await).await
-        }),
+        get(move |path, query| async { handle_result(reviews_exec(path, query, state).await) }),
     )
 }
 
@@ -41,7 +39,15 @@ async fn reviews_exec(
 }
 
 /// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
@@ -50,12 +56,11 @@ async fn reviews_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::app;
+    use crate::service::{app, tests::body_data_json_check};
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::review::Rating;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -66,135 +71,125 @@ mod tests {
         let request = Request::builder()
             .uri(format!(
                 "/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews",
-                1, 1, 1
+                1, 1, 10
             ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::to_string(&vec![
-                AdvisorReview {
-                    assessor: "assessor 1".to_string(),
-                    ratings: vec![
-                        Rating {
-                            review_type: 1,
-                            score: 10,
-                            note: Some("note 1".to_string()),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!([
+                {
+                    "assessor": "assessor 1",
+                    "ratings": [
+                        {
+                            "review_type": 1,
+                            "score": 10,
+                            "note": "note 1"
                         },
-                        Rating {
-                            review_type: 2,
-                            score: 15,
-                            note: Some("note 2".to_string()),
+                        {
+                            "review_type": 2,
+                            "score": 15,
+                            "note": "note 2"
                         },
-                        Rating {
-                            review_type: 5,
-                            score: 20,
-                            note: Some("note 3".to_string()),
+                        {
+                            "review_type": 5,
+                            "score": 20,
+                            "note": "note 3"
                         }
-                    ],
+                    ]
                 },
-                AdvisorReview {
-                    assessor: "assessor 2".to_string(),
-                    ratings: vec![],
+                {
+                    "assessor": "assessor 2",
+                    "ratings": []
                 },
-                AdvisorReview {
-                    assessor: "assessor 3".to_string(),
-                    ratings: vec![],
-                },
+                {
+                    "assessor": "assessor 3",
+                    "ratings": []
+                }
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
                 "/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews?limit={3}",
-                1, 1, 1, 2
+                1, 1, 10, 2
             ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::to_string(&vec![
-                AdvisorReview {
-                    assessor: "assessor 1".to_string(),
-                    ratings: vec![
-                        Rating {
-                            review_type: 1,
-                            score: 10,
-                            note: Some("note 1".to_string()),
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!([
+                {
+                    "assessor": "assessor 1",
+                    "ratings": [
+                        {
+                            "review_type": 1,
+                            "score": 10,
+                            "note": "note 1"
                         },
-                        Rating {
-                            review_type: 2,
-                            score: 15,
-                            note: Some("note 2".to_string()),
+                        {
+                            "review_type": 2,
+                            "score": 15,
+                            "note": "note 2"
                         },
-                        Rating {
-                            review_type: 5,
-                            score: 20,
-                            note: Some("note 3".to_string()),
+                        {
+                            "review_type": 5,
+                            "score": 20,
+                            "note": "note 3"
                         }
-                    ],
+                    ]
                 },
-                AdvisorReview {
-                    assessor: "assessor 2".to_string(),
-                    ratings: vec![],
+                {
+                    "assessor": "assessor 2",
+                    "ratings": []
                 },
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
                 "/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews?offset={3}",
-                1, 1, 1, 1
+                1, 1, 10, 1
             ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::to_string(&vec![
-                AdvisorReview {
-                    assessor: "assessor 2".to_string(),
-                    ratings: vec![],
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!([
+                {
+                    "assessor": "assessor 2",
+                    "ratings": []
                 },
-                AdvisorReview {
-                    assessor: "assessor 3".to_string(),
-                    ratings: vec![],
-                },
+                {
+                    "assessor": "assessor 3",
+                    "ratings": []
+                }
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
                 "/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews?limit={3}&offset={4}",
-                1, 1, 1, 1, 1
+                1, 1, 10, 1, 1
             ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::to_string(&vec![AdvisorReview {
-                assessor: "assessor 2".to_string(),
-                ratings: vec![],
-            },])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
-        );
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!([
+                {
+                    "assessor": "assessor 2",
+                    "ratings": []
+                },
+            ])
+        ));
     }
 }

@@ -13,12 +13,6 @@ pub struct ProposerDetails {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct VotePlan {
-    pub group: String,
-    pub chain_voteplan_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ProposalSupplementalDetails(pub Value);
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -33,7 +27,7 @@ pub struct ProposalDetails {
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct ProposalSummary {
-    pub id: i32,
+    pub id: ProposalId,
     pub title: String,
     pub summary: String,
 }

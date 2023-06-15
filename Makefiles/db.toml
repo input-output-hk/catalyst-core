@@ -19,8 +19,8 @@ script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
 
 export DB_USER_PW="CHANGE_ME"
-ls setup
-psql -e postgres -f setup/setup-db.sql \
+
+psql -a -U postgres -f setup/setup-db.sql \
     -v dbName=CatalystEventDev \
     -v dbDescription="Local Dev Catalayst Event DB" \
     -v dbUser="catalyst-event-dev" ${@}
@@ -42,17 +42,18 @@ category = "db"
 script_runner = "@shell"
 script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/event_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/snapshot_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/voter_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/contribution_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/goal_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/voting_group_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/objective_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/proposal_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/proposal_review_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/review_rating_table.sql ${@}
-psql -U catalyst-event-dev -d CatalystEventDev -f test_data/objective_review_metric_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/01_event_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/02_snapshot_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/03_voter_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/04_contribution_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/05_goal_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/06_objective_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/07_voteplan_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/08_proposal_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/09_proposal_review_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/10_review_rating_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/11_objective_review_metric_table.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f test_data/12_proposal_voteplan_table.sql ${@}
 '''
 
 # Install historic data for past events
@@ -67,7 +68,7 @@ psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_1.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_2.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_3.sql ${@}
 psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_4.sql ${@}
-# psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_5.sql ${@}
+psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_5.sql ${@}
 # psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_6.sql ${@}
 # psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_7.sql ${@}
 # psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_8.sql ${@}
@@ -85,7 +86,7 @@ export ADMIN_ROLE_PW="CHANGE_ME"
 export ANON_ROLE_PW="CHANGE_ME"
 export ADMIN_USER_PW="CHANGE_ME"
 
-psql -e postgres -f setup/graphql-setup.sql \
+psql -U postgres -f setup/graphql-setup.sql \
     -v dbName=CatalystEventDev \
     -v dbUser="catalyst-event-dev" \
     -v adminUserFirstName="Admin" \

@@ -1,7 +1,8 @@
+use crate::types::registration::VoterGroupId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct ObjectiveId(pub i32);
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -25,16 +26,19 @@ pub struct RewardDefintion {
     pub value: i64,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct GroupBallotType {
-    pub group: String,
-    pub ballot: String,
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct VoterGroup {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group: Option<VoterGroupId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voting_token: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveSupplementalData(pub Value);
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveDetails {
+    pub groups: Vec<VoterGroup>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reward: Option<RewardDefintion>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -122,25 +126,31 @@ mod tests {
     }
 
     #[test]
-    fn group_ballot_type_json_test() {
-        let group_ballot_type = GroupBallotType {
-            group: "rep".to_string(),
-            ballot: "public".to_string(),
+    fn voter_group_json_test() {
+        let voter_group = VoterGroup {
+            group: Some(VoterGroupId("rep".to_string())),
+            voting_token: Some("voting token 1".to_string()),
         };
 
-        let json = serde_json::to_value(&group_ballot_type).unwrap();
+        let json = serde_json::to_value(&voter_group).unwrap();
         assert_eq!(
             json,
-            json!({
-                "group": "rep",
-                "ballot": "public",
-            })
+            json!(
+                {
+                    "group": "rep",
+                    "voting_token": "voting token 1",
+                }
+            )
         );
     }
 
     #[test]
     fn objective_details_json_test() {
         let objective_details = ObjectiveDetails {
+            groups: vec![VoterGroup {
+                group: Some(VoterGroupId("rep".to_string())),
+                voting_token: Some("voting token 1".to_string()),
+            }],
             reward: Some(RewardDefintion {
                 currency: "ADA".to_string(),
                 value: 100,
@@ -159,6 +169,12 @@ mod tests {
             json,
             json!(
                 {
+                    "groups": [
+                        {
+                            "group": "rep",
+                            "voting_token": "voting token 1",
+                        }
+                    ],
                     "reward": {
                         "currency": "ADA",
                         "value": 100,

@@ -132,10 +132,10 @@ CREATE VIEW voteplans AS SELECT
     voteplan.category AS chain_voteplan_payload,
     voteplan.encryption_key AS chain_vote_encryption_key,
     event.row_id AS fund_id,
-    voting_group.token_id AS token_identifier
+    voteplan.token_id AS token_identifier
 FROM voteplan
-    INNER JOIN event ON voteplan.event_id = event.row_id
-    INNER JOIN voting_group ON voteplan.group_id = voting_group.row_id;
+    INNER JOIN objective ON voteplan.objective_id = objective.row_id
+    INNER JOIN event ON objective.event = event.row_id;
 
 COMMENT ON VIEW voteplans IS
     '@omit
@@ -214,10 +214,12 @@ Do not use this VIEW for new queries, its ONLY for backward compatibility.';
 -- VIT-SS Compatibility View - groups.
 
 CREATE VIEW groups AS SELECT
-    event_id AS fund_id,
-    token_id AS token_identifier,
-    group_id AS group_id
-FROM voting_group;
+     objective.event AS fund_id,
+     voteplan.token_id AS token_identifier,
+     voting_group.name AS group_id
+ FROM voting_group
+    INNER JOIN voteplan ON voteplan.group_id = voting_group.name
+    INNER JOIN objective ON voteplan.objective_id = objective.row_id;
 
 COMMENT ON VIEW groups IS
     '@omit
@@ -244,12 +246,12 @@ SELECT
     pccc.proposal_metrics,
     pvp.chain_proposal_index,
     pvp.chain_voteplan_id,
-    gr.group_id
+    voteplan.group_id
 FROM proposals p
 INNER JOIN proposals_voteplans pvp ON p.id::VARCHAR = pvp.proposal_id
 INNER JOIN voteplans vp ON pvp.chain_voteplan_id = vp.chain_voteplan_id
 INNER JOIN challenges ch ON ch.id = p.challenge_id
-INNER JOIN groups gr ON vp.token_identifier = gr.token_identifier
+INNER JOIN voteplan ON voteplan.id = vp.chain_voteplan_id
 LEFT JOIN proposal_simple_challenge psc
     ON p.proposal_id = psc.proposal_id
     AND ch.challenge_type = 'catalyst-simple'

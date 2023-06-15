@@ -14,10 +14,12 @@ use event_db::types::event::{
 };
 use std::sync::Arc;
 
+mod ballot;
 mod review;
 
 pub fn proposal(state: Arc<State>) -> Router {
     let review = review::review(state.clone());
+    let ballot = ballot::ballot(state.clone());
 
     Router::new()
         .nest(
@@ -27,15 +29,16 @@ pub fn proposal(state: Arc<State>) -> Router {
                     "/",
                     get({
                         let state = state.clone();
-                        move |path| async { handle_result(proposal_exec(path, state).await).await }
+                        move |path| async { handle_result(proposal_exec(path, state).await) }
                     }),
                 )
-                .merge(review),
+                .merge(review)
+                .merge(ballot),
         )
         .route(
             "/proposals",
             get(move |path, query| async {
-                handle_result(proposals_exec(path, query, state).await).await
+                handle_result(proposals_exec(path, query, state).await)
             }),
         )
 }
@@ -77,7 +80,15 @@ async fn proposal_exec(
 }
 
 /// Need to setup and run a test event db instance
-/// To do it you can use `cargo make local-event-db-test`
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
 /// Also need establish `EVENT_DB_URL` env variable with the following value
 /// ```
 /// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
@@ -86,15 +97,11 @@ async fn proposal_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::app;
+    use crate::service::{app, tests::body_data_json_check};
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use event_db::types::event::proposal::{
-        ProposalDetails, ProposalSupplementalDetails, ProposerDetails,
-    };
-    use serde_json::json;
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -105,45 +112,38 @@ mod tests {
         let request = Request::builder()
             .uri(format!(
                 "/api/v1/event/{0}/objective/{1}/proposal/{2}",
-                1, 1, 1
+                1, 1, 10
             ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::to_string(&Proposal {
-                proposal_summary: ProposalSummary {
-                    id: 1,
-                    title: String::from("title 1"),
-                    summary: String::from("summary 1")
-                },
-                proposal_details: ProposalDetails {
-                    funds: 100,
-                    url: "url.xyz".to_string(),
-                    files: "files.xyz".to_string(),
-                    proposer: vec![ProposerDetails {
-                        name: "alice".to_string(),
-                        email: "alice@io".to_string(),
-                        url: "alice.prop.xyz".to_string(),
-                        payment_key:
-                            "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
-                                .to_string()
-                    }],
-                    supplemental: Some(ProposalSupplementalDetails(json!(
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                {
+                    "id": 10,
+                    "title": "title 1",
+                    "summary": "summary 1",
+                    "funds": 100,
+                    "url": "url.xyz",
+                    "files": "files.xyz",
+                    "proposer": [
                         {
-                            "brief": "Brief explanation of a proposal",
-                            "goal": "The goal of the proposal is addressed to meet",
-                            "importance": "The importance of the proposal",
+                            "name": "alice",
+                            "email": "alice@io",
+                            "url": "alice.prop.xyz",
+                            "payment_key": "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                         }
-                    ))),
+                    ],
+                    "supplemental": {
+                        "brief": "Brief explanation of a proposal",
+                        "goal": "The goal of the proposal is addressed to meet",
+                        "importance": "The importance of the proposal",
+                    }
                 }
-            })
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
-        );
+            )
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -167,29 +167,26 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::to_string(&vec![
-                ProposalSummary {
-                    id: 1,
-                    title: String::from("title 1"),
-                    summary: String::from("summary 1")
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!([
+                {
+                    "id": 10,
+                    "title": "title 1",
+                    "summary": "summary 1",
                 },
-                ProposalSummary {
-                    id: 2,
-                    title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                {
+                    "id": 20,
+                    "title": "title 2",
+                    "summary": "summary 2",
                 },
-                ProposalSummary {
-                    id: 3,
-                    title: String::from("title 3"),
-                    summary: String::from("summary 3")
+                {
+                    "id": 30,
+                    "title": "title 3",
+                    "summary": "summary 3",
                 }
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -200,24 +197,21 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::to_string(&vec![
-                ProposalSummary {
-                    id: 1,
-                    title: String::from("title 1"),
-                    summary: String::from("summary 1")
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!([
+                {
+                    "id": 10,
+                    "title": "title 1",
+                    "summary": "summary 1",
                 },
-                ProposalSummary {
-                    id: 2,
-                    title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                {
+                    "id": 20,
+                    "title": "title 2",
+                    "summary": "summary 2",
                 },
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -228,24 +222,21 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::to_string(&vec![
-                ProposalSummary {
-                    id: 2,
-                    title: String::from("title 2"),
-                    summary: String::from("summary 2")
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!([
+                {
+                    "id": 20,
+                    "title": "title 2",
+                    "summary": "summary 2",
                 },
-                ProposalSummary {
-                    id: 3,
-                    title: String::from("title 3"),
-                    summary: String::from("summary 3")
+                {
+                    "id": 30,
+                    "title": "title 3",
+                    "summary": "summary 3",
                 }
             ])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
-        );
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -256,16 +247,15 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-
-        assert_eq!(
-            serde_json::to_string(&vec![ProposalSummary {
-                id: 2,
-                title: String::from("title 2"),
-                summary: String::from("summary 2")
-            },])
-            .unwrap(),
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap()
-        );
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!([
+                {
+                    "id": 20,
+                    "title": "title 2",
+                    "summary": "summary 2",
+                },
+            ])
+        ));
     }
 }

@@ -16,7 +16,6 @@ pub struct Snapshot {
     voteplans: Vec<Voteplan>,
     reviews: Vec<AdvisorReview>,
     goals: Vec<Goal>,
-    groups: Vec<Group>,
 }
 
 impl Snapshot {
@@ -29,7 +28,6 @@ impl Snapshot {
         voteplans: Vec<Voteplan>,
         reviews: Vec<AdvisorReview>,
         goals: Vec<Goal>,
-        groups: Vec<Group>,
     ) -> Self {
         Self {
             funds,
@@ -39,7 +37,6 @@ impl Snapshot {
             voteplans,
             reviews,
             goals,
-            groups,
         }
     }
 
@@ -103,7 +100,11 @@ impl Snapshot {
     }
 
     pub fn groups(&self) -> Vec<Group> {
-        self.groups.clone()
+        self.funds
+            .iter()
+            .flat_map(|f| f.groups.iter())
+            .cloned()
+            .collect()
     }
 
     pub fn advisor_reviews_mut(&mut self) -> &mut Vec<AdvisorReview> {

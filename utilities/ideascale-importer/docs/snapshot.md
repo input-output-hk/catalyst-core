@@ -18,7 +18,7 @@ In order to import snapshot data you'll need:
 With that you can run:
 
 ```sh
-PYTHONPATH=(pwd) poetry run python ideascale_importer snapshot import --config-path PATH_TO_CONFIG_FILE --event-id EVENT_ROW_ID --database-url VITSS_DB_URL --output-dir OUTDIR_PATH
+PYTHONPATH=(pwd) poetry run python ideascale_importer snapshot import --event-id EVENT_ROW_ID --database-url VITSS_DB_URL --dbsync-url DBSYNC_URL --gvc-api-url GVC_API_URL --output-dir OUTDIR_PATH
 ```
 
 If everything went as expected you should have snapshot, voters and contributions data inserted to the database.

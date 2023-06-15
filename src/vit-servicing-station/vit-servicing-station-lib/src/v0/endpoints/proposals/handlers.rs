@@ -103,7 +103,13 @@ pub mod test {
         let filter_context = shared_context.clone();
         let with_context = warp::any().map(move || filter_context.clone());
 
-        let proposal = snapshot.proposals().into_iter().next().unwrap();
+        let proposals = snapshot.proposals();
+        let first_proposal = proposals.into_iter().next().unwrap();
+        let proposals: Vec<_> = snapshot
+            .proposals()
+            .into_iter()
+            .filter(|p| p.group_id == first_proposal.group_id)
+            .collect();
 
         // build filter
         let filter = warp::any()
@@ -114,14 +120,14 @@ pub mod test {
 
         let result = warp::test::request()
             .method("GET")
-            .path(&format!("/{}", proposal.group_id))
+            .path(&format!("/{}", first_proposal.group_id))
             .reply(&filter)
             .await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_proposals: Vec<FullProposalInfo> =
             serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
         assert_eq!(
-            serde_json::to_value(vec![proposal]).unwrap(),
+            serde_json::to_value(proposals).unwrap(),
             serde_json::to_value(result_proposals).unwrap()
         );
     }

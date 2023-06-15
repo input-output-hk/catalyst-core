@@ -1,11 +1,14 @@
 use crate::types::utils::serialize_datetime_as_rfc3339;
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+pub struct VoterGroupId(pub String);
 
 #[derive(Debug, Serialize, Clone, PartialEq)]
 pub struct VoterInfo {
     pub voting_power: i64,
-    pub voting_group: String,
+    pub voting_group: VoterGroupId,
     pub delegations_power: i64,
     pub delegations_count: i64,
     pub voting_power_saturation: f64,
@@ -25,7 +28,7 @@ pub struct Voter {
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Delegation {
     pub voting_key: String,
-    pub group: String,
+    pub group: VoterGroupId,
     pub weight: i32,
     pub value: i64,
 }
@@ -54,13 +57,13 @@ mod tests {
         let voter = Voter {
             voter_info: VoterInfo {
                 voting_power: 100,
-                voting_group: "rep".to_string(),
+                voting_group: VoterGroupId("rep".to_string()),
                 delegations_power: 100,
                 delegations_count: 1,
                 voting_power_saturation: 0.4,
             },
-            as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
             is_final: true,
         };
         let json = serde_json::to_value(&voter).unwrap();
@@ -88,14 +91,14 @@ mod tests {
         let delegator = Delegator {
             delegations: vec![Delegation {
                 voting_key: "voter".to_string(),
-                group: "rep".to_string(),
+                group: VoterGroupId("rep".to_string()),
                 weight: 5,
                 value: 100,
             }],
             raw_power: 100,
             total_power: 1000,
-            as_at: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
-            last_updated: DateTime::from_utc(NaiveDateTime::from_timestamp_opt(0, 0).unwrap(), Utc),
+            as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
+            last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
             is_final: true,
         };
         let json = serde_json::to_value(&delegator).unwrap();

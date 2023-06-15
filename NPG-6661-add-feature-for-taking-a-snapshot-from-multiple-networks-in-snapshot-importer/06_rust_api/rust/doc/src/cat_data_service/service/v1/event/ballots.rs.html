@@ -118,13 +118,6 @@
 <a href="#118" id="118">118</a>
 <a href="#119" id="119">119</a>
 <a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -136,7 +129,7 @@
 <span class="kw">pub fn </span>ballots(state: Arc&lt;State&gt;) -&gt; Router {
     Router::new().route(
         <span class="string">&quot;/ballots&quot;</span>,
-        get(<span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(ballots_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}),
+        get(<span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(ballots_exec(path, state).<span class="kw">await</span>) }),
     )
 }
 
@@ -168,12 +161,11 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::service::app;
+    <span class="kw">use </span><span class="kw">crate</span>::service::{app, tests::body_data_json_check};
     <span class="kw">use </span>axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>std::str::FromStr;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -187,20 +179,14 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>([
                 {
                     <span class="string">&quot;objective_id&quot;</span>: <span class="number">1</span>,
                     <span class="string">&quot;ballots&quot;</span>: [
                         {
-                            <span class="string">&quot;proposal_id&quot;</span>: <span class="number">1</span>,
+                            <span class="string">&quot;proposal_id&quot;</span>: <span class="number">10</span>,
                             <span class="string">&quot;ballot&quot;</span>: {
                                 <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
                                 <span class="string">&quot;voteplans&quot;</span>: [
@@ -220,7 +206,7 @@
                             }
                         },
                         {
-                            <span class="string">&quot;proposal_id&quot;</span>: <span class="number">2</span>,
+                            <span class="string">&quot;proposal_id&quot;</span>: <span class="number">20</span>,
                             <span class="string">&quot;ballot&quot;</span>: {
                                 <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
                                 <span class="string">&quot;voteplans&quot;</span>: [
@@ -240,7 +226,7 @@
                             }
                         },
                         {
-                            <span class="string">&quot;proposal_id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;proposal_id&quot;</span>: <span class="number">30</span>,
                             <span class="string">&quot;ballot&quot;</span>: {
                                 <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
                                 <span class="string">&quot;voteplans&quot;</span>: []
@@ -249,7 +235,7 @@
                     ]
                 }
             ])
-        );
+        ));
     }
 }
 </code></pre></div>

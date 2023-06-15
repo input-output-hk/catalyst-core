@@ -448,7 +448,7 @@
         FROM proposal_review
         INNER JOIN proposal on proposal.row_id = proposal_review.proposal_id
         INNER JOIN objective on proposal.objective = objective.row_id
-        WHERE objective.event = $1 AND proposal.objective = $2 AND proposal.id = $3
+        WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3
         LIMIT $4 OFFSET $5;&quot;</span>;
 
     <span class="kw">const </span>RATINGS_PER_REVIEW_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
@@ -463,7 +463,7 @@
         FROM review_metric
         INNER JOIN objective_review_metric on review_metric.row_id = objective_review_metric.metric
         INNER JOIN objective on objective_review_metric.objective = objective.row_id
-        WHERE objective.event = $1 AND objective.row_id = $2
+        WHERE objective.event = $1 AND objective.id = $2
         LIMIT $3 OFFSET $4;&quot;</span>;
 }
 
@@ -579,7 +579,7 @@
         <span class="kw">let </span>event_db = establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
 
         <span class="kw">let </span>reviews = event_db
-            .get_reviews(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">1</span>), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
+            .get_reviews(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">10</span>), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
 
@@ -618,7 +618,7 @@
         );
 
         <span class="kw">let </span>reviews = event_db
-            .get_reviews(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">2</span>), <span class="prelude-val">None</span>)
+            .get_reviews(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">10</span>), <span class="prelude-val">Some</span>(<span class="number">2</span>), <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
 
@@ -653,7 +653,7 @@
         );
 
         <span class="kw">let </span>reviews = event_db
-            .get_reviews(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">1</span>), <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>))
+            .get_reviews(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">10</span>), <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">1</span>))
             .<span class="kw">await
             </span>.unwrap();
 
@@ -672,7 +672,7 @@
         );
 
         <span class="kw">let </span>reviews = event_db
-            .get_reviews(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>))
+            .get_reviews(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">10</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>), <span class="prelude-val">Some</span>(<span class="number">1</span>))
             .<span class="kw">await
             </span>.unwrap();
 

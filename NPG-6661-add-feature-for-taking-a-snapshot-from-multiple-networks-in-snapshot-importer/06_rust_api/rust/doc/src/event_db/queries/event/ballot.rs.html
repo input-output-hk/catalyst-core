@@ -624,7 +624,7 @@
         <span class="kw">let </span>event_db = establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap();
 
         <span class="kw">let </span>ballot = event_db
-            .get_ballot(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">1</span>))
+            .get_ballot(EventId(<span class="number">1</span>), ObjectiveId(<span class="number">1</span>), ProposalId(<span class="number">10</span>))
             .<span class="kw">await
             </span>.unwrap();
 
@@ -664,7 +664,7 @@
         <span class="macro">assert_eq!</span>(
             <span class="macro">vec!</span>[
                 ProposalBallot {
-                    proposal_id: ProposalId(<span class="number">1</span>),
+                    proposal_id: ProposalId(<span class="number">10</span>),
                     ballot: Ballot {
                         choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
                         voteplans: GroupVotePlans(<span class="macro">vec!</span>[
@@ -686,7 +686,7 @@
                     },
                 },
                 ProposalBallot {
-                    proposal_id: ProposalId(<span class="number">2</span>),
+                    proposal_id: ProposalId(<span class="number">20</span>),
                     ballot: Ballot {
                         choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
                         voteplans: GroupVotePlans(<span class="macro">vec!</span>[
@@ -708,7 +708,7 @@
                     },
                 },
                 ProposalBallot {
-                    proposal_id: ProposalId(<span class="number">3</span>),
+                    proposal_id: ProposalId(<span class="number">30</span>),
                     ballot: Ballot {
                         choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
                         voteplans: GroupVotePlans(<span class="macro">vec!</span>[]),
@@ -730,7 +730,7 @@
                 objective_id: ObjectiveId(<span class="number">1</span>),
                 ballots: <span class="macro">vec!</span>[
                     ProposalBallot {
-                        proposal_id: ProposalId(<span class="number">1</span>),
+                        proposal_id: ProposalId(<span class="number">10</span>),
                         ballot: Ballot {
                             choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
                             voteplans: GroupVotePlans(<span class="macro">vec!</span>[
@@ -752,7 +752,7 @@
                         },
                     },
                     ProposalBallot {
-                        proposal_id: ProposalId(<span class="number">2</span>),
+                        proposal_id: ProposalId(<span class="number">20</span>),
                         ballot: Ballot {
                             choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
                             voteplans: GroupVotePlans(<span class="macro">vec!</span>[
@@ -774,7 +774,7 @@
                         },
                     },
                     ProposalBallot {
-                        proposal_id: ProposalId(<span class="number">3</span>),
+                        proposal_id: ProposalId(<span class="number">30</span>),
                         ballot: Ballot {
                             choices: ObjectiveChoices(<span class="macro">vec!</span>[<span class="string">&quot;yes&quot;</span>.to_string(), <span class="string">&quot;no&quot;</span>.to_string()]),
                             voteplans: GroupVotePlans(<span class="macro">vec!</span>[]),

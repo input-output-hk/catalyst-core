@@ -85,7 +85,7 @@ jobs:
           earthfile: ${{ matrix.earthfile.path }}
           earthly_satellite: ${{ secrets.EARTHLY_SATELLITE_ADDRESS }}
           images: ${{ matrix.earthfile.images }}
-          publish: "false"
+          publish: "true"
           registry: ${{ env.ECR_REGISTRY }}
           tags: "${{ env.TAG }}"
           target: ${{ env.EARTHLY_TARGET }}
@@ -100,22 +100,12 @@ jobs:
           aws_role_arn: ${{ env.AWS_ROLE_ARN }}
           aws_region: ${{ env.AWS_REGION }}
           earthly_version: ${{ env.EARTHLY_VERSION }}
-      - name: Filter images
-        id: filtered
-        run: |
-          # NOTE: When adding new images to deploy, this list must be updated
-          IMAGES_TO_DEPLOY="cat-data-service migrations voting-node"
-
-          FILTER=$(echo "$IMAGES_TO_DEPLOY" | tr ' ' '|')
-          FILTERED_IMAGES=$(echo "${{ needs.discover.outputs.images }}" | tr ' ' '\n' | grep -E "$FILTER" | paste -sd " " -)
-
-          echo "Filtered images: $FILTERED_IMAGES"
-          echo "images=$FILTERED_IMAGES" >>$GITHUB_OUTPUT
-    #   - name: Deploy
-    #     uses: input-output-hk/catalyst-ci/actions/deploy@master
-    #     with:
-    #       deployment_repo: input-output-hk/catalyst-world
-    #       discover_output: ${{ needs.discover.outputs.json }}
-    #       environment: dev
-    #       tag: ${{ env.TAG }}
-    #       token: ${{ steps.setup.outputs.token }}
+      - name: Deploy
+        uses: input-output-hk/catalyst-ci/actions/deploy@master
+        with:
+          deployment_repo: input-output-hk/catalyst-world
+          # NOTE: For new services being deployed, this list must be updated
+          images: cat-data-service migrations voting-node
+          environment: dev
+          tag: ${{ env.TAG }}
+          token: ${{ steps.setup.outputs.token }}

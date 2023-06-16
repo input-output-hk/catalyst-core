@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["API_TOKEN_HEADER"],"enum":["State","TokenError"],"fn":["start_rest_server"],"mod":["context","file_lister","rest","service"],"struct":["APIToken","APITokenManager","ControlContext","ManagerService","ServerStopper"],"type":["ControlContextLock"]};

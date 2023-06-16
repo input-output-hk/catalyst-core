@@ -5,8 +5,7 @@ mod proposers;
 mod veterans;
 mod voters;
 
-use std::{collections::HashMap, path::PathBuf};
-
+use catalyst_toolbox::types::proposal::FullProposalInfo;
 use catalyst_toolbox::{
     http::default_http_client,
     rewards::{proposers as proposers_lib, VoteCount},
@@ -17,7 +16,7 @@ use jormungandr_lib::{
     crypto::{account::Identifier, hash::Hash},
     interfaces::AccountVotes,
 };
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+use std::{collections::HashMap, path::PathBuf};
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

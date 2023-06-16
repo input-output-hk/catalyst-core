@@ -1,2 +1,2 @@
-pub mod proposal;
 pub mod challenge;
+pub mod proposal;

@@ -1,16 +1,16 @@
-use crate::http::HttpClient;
+use super::{build_path_for_challenge, Calculation, OutputFormat};
+use crate::{
+    http::HttpClient,
+    types::{challenge::Challenge, proposal::Proposal},
+};
 use color_eyre::eyre::Result;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{VotePlanStatus, VoteProposalStatus},
 };
+use serde::Deserialize;
 use std::{collections::HashMap, fs::File, io::BufWriter, path::Path};
 use tracing::{info, warn};
-use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
-
-use serde::Deserialize;
-
-use super::{build_path_for_challenge, Calculation, OutputFormat};
 
 type VitSSData = (Vec<Proposal>, Vec<VotePlanStatus>, Vec<Challenge>);
 type CleanedVitSSData = (

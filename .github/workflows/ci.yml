@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    # branches:
-    #     - main
-    # paths:
-    #     - ".github/workflows/ci.yml"
-    #     - "containers/**"
-    #     - "services/**"
-    #     - "src/**"
-    #     - "utilities/**"
+    branches:
+        - main
+    paths:
+        - ".github/workflows/ci.yml"
+        - "containers/**"
+        - "services/**"
+        - "src/**"
+        - "utilities/**"
 
 permissions:
   id-token: write

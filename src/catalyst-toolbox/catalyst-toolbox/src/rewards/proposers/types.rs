@@ -58,16 +58,13 @@ pub struct ProposerRewards {
     pub output_format: OutputFormat,
 
     #[clap(long = "proposals-path")]
-    pub proposals: Option<PathBuf>,
+    pub proposals: PathBuf,
     #[clap(long = "excluded-proposals-path")]
     pub excluded_proposals: Option<PathBuf>,
     #[clap(long = "active-voteplan-path")]
-    pub active_voteplans: Option<PathBuf>,
+    pub active_voteplans: PathBuf,
     #[clap(long = "challenges-path")]
-    pub challenges: Option<PathBuf>,
-
-    #[clap(default_value = "https://servicing-station.vit.iohk.io")]
-    pub vit_station_url: String,
+    pub challenges: PathBuf,
 
     #[clap(long = "committee-keys-path")]
     pub committee_keys: Option<PathBuf>,

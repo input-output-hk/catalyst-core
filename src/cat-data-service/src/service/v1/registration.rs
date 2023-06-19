@@ -194,16 +194,15 @@ mod tests {
                             "group": "rep",
                             "weight": 1,
                             "value": 140,
-                            "reward_address": "reward_address_1"
                         },
                         {
                             "voting_key": "voting_key_2",
                             "group": "rep",
                             "weight": 1,
                             "value": 100,
-                            "reward_address": "reward_address_3"
                         },
                     ],
+                    "reward_address": "reward_address_1",
                     "raw_power": 240,
                     "total_power": 1000,
                     "as_at": "2022-03-31T12:00:00+00:00",
@@ -232,16 +231,15 @@ mod tests {
                             "group": "rep",
                             "weight": 1,
                             "value": 140,
-                            "reward_address": "reward_address_1"
                         },
                         {
                             "voting_key": "voting_key_2",
                             "group": "rep",
                             "weight": 1,
                             "value": 100,
-                            "reward_address": "reward_address_3"
                         },
                     ],
+                    "reward_address": "reward_address_1",
                     "raw_power": 240,
                     "total_power": 1000,
                     "as_at": "2020-03-31T12:00:00+00:00",

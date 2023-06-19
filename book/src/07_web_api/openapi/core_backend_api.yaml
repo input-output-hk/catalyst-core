@@ -1665,10 +1665,6 @@ components:
           type: number
           format: u64
           description: Raw voting power distributed to this voting key.
-        reward_address:
-          type: string
-          pattern: '[0-9a-f]{64}'
-          description: Hex encoded reward address for this delegation.
       required:
         - voting_key
         - group
@@ -1691,6 +1687,10 @@ components:
           description: |-
             List off delegations made by this stake address.
             In the order as presented in the voters registration.
+        reward_address:
+          type: string
+          pattern: '[0-9a-f]{64}'
+          description: Hex encoded reward address for this delegation.
         raw_power:
           type: number
           description: Raw total voting power from stake address

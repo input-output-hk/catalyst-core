@@ -176,13 +176,12 @@ impl RegistrationQueries for EventDB {
         }
 
         let mut delegations = Vec::new();
-        for row in delegation_rows {
+        for row in &delegation_rows {
             delegations.push(Delegation {
                 voting_key: row.try_get("voting_key")?,
                 group: VoterGroupId(row.try_get("voting_group")?),
                 weight: row.try_get("voting_weight")?,
                 value: row.try_get("value")?,
-                reward_address: row.try_get("reward_address")?,
             })
         }
 
@@ -200,6 +199,7 @@ impl RegistrationQueries for EventDB {
 
         Ok(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
+            reward_address: delegation_rows[0].try_get("reward_address")?,
             as_at: delegator_snapshot_info
                 .try_get::<_, NaiveDateTime>("as_at")?
                 .and_local_timezone(Utc)
@@ -330,16 +330,15 @@ mod tests {
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 140,
-                        reward_address: "reward_address_1".to_string()
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 100,
-                        reward_address: "reward_address_3".to_string()
                     }
                 ],
+                reward_address: "reward_address_1".to_string(),
                 raw_power: 240,
                 total_power: 1000,
                 as_at: DateTime::<Utc>::from_utc(
@@ -374,16 +373,15 @@ mod tests {
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 140,
-                        reward_address: "reward_address_1".to_string()
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
                         value: 100,
-                        reward_address: "reward_address_3".to_string()
                     }
                 ],
+                reward_address: "reward_address_1".to_string(),
                 raw_power: 240,
                 total_power: 1000,
                 as_at: DateTime::<Utc>::from_utc(

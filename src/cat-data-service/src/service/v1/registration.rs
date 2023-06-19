@@ -49,7 +49,10 @@ async fn voter_exec(
         eid_query.eid
     );
 
-    let voter = state.event_db.get_voter(&eid_query.eid, voting_key).await?;
+    let voter = state
+        .event_db
+        .get_voter(&eid_query.eid, voting_key, false)
+        .await?;
     Ok(voter)
 }
 

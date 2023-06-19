@@ -1,5 +1,6 @@
 use catalyst_toolbox::rewards::voters::calc_voter_rewards;
 use catalyst_toolbox::rewards::{Rewards, Threshold};
+use catalyst_toolbox::types::proposal::FullProposalInfo;
 use catalyst_toolbox::utils::csv::dump_to_csv_or_print;
 use clap::Parser;
 use color_eyre::Report;
@@ -8,7 +9,6 @@ use serde::Serialize;
 use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

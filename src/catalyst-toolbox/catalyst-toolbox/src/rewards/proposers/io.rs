@@ -1,12 +1,11 @@
+use super::{build_path_for_challenge, Calculation, OutputFormat};
+use crate::types::{challenge::Challenge, proposal::Proposal};
 use color_eyre::eyre::Result;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{VotePlanStatus, VoteProposalStatus},
 };
 use std::{collections::HashMap, fs::File, io::BufWriter, path::Path};
-use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
-
-use super::{build_path_for_challenge, Calculation, OutputFormat};
 
 type CleanedVitSSData = (
     HashMap<Hash, Proposal>,

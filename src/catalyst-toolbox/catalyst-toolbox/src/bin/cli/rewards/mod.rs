@@ -6,6 +6,7 @@ mod veterans;
 mod voters;
 
 use catalyst_toolbox::rewards::{proposers as proposers_lib, VoteCount};
+use catalyst_toolbox::types::proposal::FullProposalInfo;
 use clap::Parser;
 use color_eyre::{eyre::eyre, Report};
 use jormungandr_lib::{
@@ -13,7 +14,6 @@ use jormungandr_lib::{
     interfaces::AccountVotes,
 };
 use std::{collections::HashMap, path::PathBuf};
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]

@@ -218,7 +218,12 @@ mod tests {
             votes_count,
             String::new(),
             voters.len(),
-            Threshold::new(1, per_challenge_threshold.clone(), proposals.clone()).unwrap(),
+            Threshold::new(
+                1,
+                per_challenge_threshold.clone(),
+                proposals.clone().into_iter().map(Into::into).collect(),
+            )
+            .unwrap(),
             Rewards::ONE,
         )
         .unwrap();
@@ -228,7 +233,12 @@ mod tests {
             only_active,
             String::new(),
             voters.len(),
-            Threshold::new(1, per_challenge_threshold, proposals).unwrap(),
+            Threshold::new(
+                1,
+                per_challenge_threshold,
+                proposals.into_iter().map(Into::into).collect(),
+            )
+            .unwrap(),
             Rewards::ONE,
         )
         .unwrap();

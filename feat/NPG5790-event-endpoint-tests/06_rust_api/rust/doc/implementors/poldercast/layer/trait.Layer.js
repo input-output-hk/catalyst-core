@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jormungandr":[["impl Layer for <a class=\"struct\" href=\"jormungandr/topology/layers/preferred_list/struct.PreferredListLayer.html\" title=\"struct jormungandr::topology::layers::preferred_list::PreferredListLayer\">PreferredListLayer</a>"],["impl Layer for <a class=\"struct\" href=\"jormungandr/topology/layers/rings/struct.Rings.html\" title=\"struct jormungandr::topology::layers::rings::Rings\">Rings</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

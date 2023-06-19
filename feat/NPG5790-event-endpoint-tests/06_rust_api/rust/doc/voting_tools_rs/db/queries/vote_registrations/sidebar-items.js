@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["convert_row","query"],"macro":["__static_cond"],"opaque":[""],"static":["CALLSITE","META","METADATA_KEY","SIGNATURE_KEY"],"struct":["meta_table","sig_table"],"type":["Row"]};

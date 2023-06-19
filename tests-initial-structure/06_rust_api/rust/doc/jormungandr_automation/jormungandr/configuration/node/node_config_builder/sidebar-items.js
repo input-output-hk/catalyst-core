@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_HOST","DEFAULT_RPC_THREADS_AMOUNT"],"struct":["NodeConfigBuilder"]};

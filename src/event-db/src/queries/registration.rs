@@ -60,7 +60,7 @@ impl EventDB {
                                                 WHERE snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot)
                                                 LIMIT 1;";
 
-    const DELEGATIONS_BY_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value
+    const DELEGATIONS_BY_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value, contribution.reward_address
                                                 FROM contribution
                                                 INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
                                                 WHERE contribution.stake_public_key = $1 AND snapshot.event = $2;";
@@ -182,6 +182,7 @@ impl RegistrationQueries for EventDB {
                 group: VoterGroupId(row.try_get("voting_group")?),
                 weight: row.try_get("voting_weight")?,
                 value: row.try_get("value")?,
+                reward_address: row.try_get("reward_address")?,
             })
         }
 
@@ -328,13 +329,15 @@ mod tests {
                         voting_key: "voting_key_1".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
-                        value: 140
+                        value: 140,
+                        reward_address: "reward_address_1".to_string()
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
-                        value: 100
+                        value: 100,
+                        reward_address: "reward_address_3".to_string()
                     }
                 ],
                 raw_power: 240,
@@ -370,13 +373,15 @@ mod tests {
                         voting_key: "voting_key_1".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
-                        value: 140
+                        value: 140,
+                        reward_address: "reward_address_1".to_string()
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
-                        value: 100
+                        value: 100,
+                        reward_address: "reward_address_3".to_string()
                     }
                 ],
                 raw_power: 240,

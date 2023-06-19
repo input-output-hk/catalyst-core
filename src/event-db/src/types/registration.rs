@@ -31,6 +31,7 @@ pub struct Delegation {
     pub group: VoterGroupId,
     pub weight: i32,
     pub value: i64,
+    pub reward_address: String,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
@@ -94,6 +95,7 @@ mod tests {
                 group: VoterGroupId("rep".to_string()),
                 weight: 5,
                 value: 100,
+                reward_address: "reward address 1".to_string(),
             }],
             raw_power: 100,
             total_power: 1000,
@@ -106,7 +108,7 @@ mod tests {
             json,
             json!(
                 {
-                    "delegations": [{"voting_key": "voter","group": "rep","weight": 5,"value": 100}],
+                    "delegations": [{"voting_key": "voter","group": "rep","weight": 5,"value": 100,"reward_address": "reward address 1"}],
                     "raw_power": 100,
                     "total_power": 1000,
                     "as_at": "1970-01-01T00:00:00+00:00",

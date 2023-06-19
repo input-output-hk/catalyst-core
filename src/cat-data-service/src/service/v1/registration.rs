@@ -193,13 +193,15 @@ mod tests {
                             "voting_key": "voting_key_1",
                             "group": "rep",
                             "weight": 1,
-                            "value": 140
+                            "value": 140,
+                            "reward_address": "reward_address_1"
                         },
                         {
                             "voting_key": "voting_key_2",
                             "group": "rep",
                             "weight": 1,
-                            "value": 100
+                            "value": 100,
+                            "reward_address": "reward_address_3"
                         },
                     ],
                     "raw_power": 240,
@@ -229,13 +231,15 @@ mod tests {
                             "voting_key": "voting_key_1",
                             "group": "rep",
                             "weight": 1,
-                            "value": 140
+                            "value": 140,
+                            "reward_address": "reward_address_1"
                         },
                         {
                             "voting_key": "voting_key_2",
                             "group": "rep",
                             "weight": 1,
-                            "value": 100
+                            "value": 100,
+                            "reward_address": "reward_address_3"
                         },
                     ],
                     "raw_power": 240,

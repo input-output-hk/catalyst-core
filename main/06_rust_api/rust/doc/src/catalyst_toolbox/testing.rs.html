@@ -146,15 +146,6 @@
 <a href="#146" id="146">146</a>
 <a href="#147" id="147">147</a>
 <a href="#148" id="148">148</a>
-<a href="#149" id="149">149</a>
-<a href="#150" id="150">150</a>
-<a href="#151" id="151">151</a>
-<a href="#152" id="152">152</a>
-<a href="#153" id="153">153</a>
-<a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
 </pre><pre class="rust"><code><span class="kw">use </span>assert_fs::fixture::PathChild;
 <span class="kw">use </span>assert_fs::TempDir;
 <span class="kw">use </span>std::process::Command;
@@ -179,7 +170,6 @@
     excluded_proposals_path: <span class="prelude-ty">Option</span>&lt;String&gt;,
     active_voteplan_path: <span class="prelude-ty">Option</span>&lt;String&gt;,
     challenges_path: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    vit_station_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
 <span class="attr">#[derive(Debug, Error)]
@@ -202,7 +192,6 @@
             excluded_proposals_path: <span class="prelude-val">None</span>,
             active_voteplan_path: <span class="prelude-val">None</span>,
             challenges_path: <span class="prelude-val">None</span>,
-            vit_station_url: <span class="prelude-val">None</span>,
         }
     }
 }
@@ -255,10 +244,6 @@
         <span class="self">self</span>.challenges_path = <span class="prelude-val">Some</span>(challenges_path);
         <span class="self">self
     </span>}
-    <span class="kw">pub fn </span>vit_station_url(<span class="kw-2">mut </span><span class="self">self</span>, vit_station_url: String) -&gt; <span class="self">Self </span>{
-        <span class="self">self</span>.vit_station_url = <span class="prelude-val">Some</span>(vit_station_url);
-        <span class="self">self
-    </span>}
 
     <span class="kw">pub fn </span>cmd(<span class="self">self</span>, temp_dir: <span class="kw-2">&amp;</span>TempDir) -&gt; <span class="prelude-ty">Result</span>&lt;Command, Error&gt; {
         <span class="kw">let </span>script_content = <span class="macro">include_str!</span>(<span class="string">&quot;../scripts/python/proposers_rewards.py&quot;</span>);
@@ -304,9 +289,6 @@
             command
                 .arg(<span class="string">&quot;--committee-keys-path&quot;</span>)
                 .arg(committee_keys_path);
-        }
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(vit_station_url) = <span class="self">self</span>.vit_station_url {
-            command.arg(<span class="string">&quot;--vit-station-url&quot;</span>).arg(vit_station_url);
         }
 
         <span class="prelude-val">Ok</span>(command)

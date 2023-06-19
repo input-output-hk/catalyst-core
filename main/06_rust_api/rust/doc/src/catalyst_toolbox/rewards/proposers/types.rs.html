@@ -125,9 +125,6 @@
 <a href="#125" id="125">125</a>
 <a href="#126" id="126">126</a>
 <a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-<a href="#130" id="130">130</a>
 </pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>jormungandr_lib::crypto::hash::Hash;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -188,16 +185,13 @@
     </span><span class="kw">pub </span>output_format: OutputFormat,
 
     <span class="attr">#[clap(long = <span class="string">&quot;proposals-path&quot;</span>)]
-    </span><span class="kw">pub </span>proposals: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+    </span><span class="kw">pub </span>proposals: PathBuf,
     <span class="attr">#[clap(long = <span class="string">&quot;excluded-proposals-path&quot;</span>)]
     </span><span class="kw">pub </span>excluded_proposals: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
     <span class="attr">#[clap(long = <span class="string">&quot;active-voteplan-path&quot;</span>)]
-    </span><span class="kw">pub </span>active_voteplans: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+    </span><span class="kw">pub </span>active_voteplans: PathBuf,
     <span class="attr">#[clap(long = <span class="string">&quot;challenges-path&quot;</span>)]
-    </span><span class="kw">pub </span>challenges: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
-
-    <span class="attr">#[clap(default_value = <span class="string">&quot;https://servicing-station.vit.iohk.io&quot;</span>)]
-    </span><span class="kw">pub </span>vit_station_url: String,
+    </span><span class="kw">pub </span>challenges: PathBuf,
 
     <span class="attr">#[clap(long = <span class="string">&quot;committee-keys-path&quot;</span>)]
     </span><span class="kw">pub </span>committee_keys: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,

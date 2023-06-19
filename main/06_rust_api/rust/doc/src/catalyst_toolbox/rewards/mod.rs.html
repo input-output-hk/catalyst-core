@@ -101,12 +101,12 @@
 </span><span class="kw">pub type </span>Rewards = Decimal;
 <span class="kw">pub type </span>VoteCount = HashMap&lt;Identifier, HashSet&lt;Hash&gt;&gt;;
 
+<span class="kw">use </span><span class="kw">crate</span>::types::proposal::FullProposalInfo;
 <span class="kw">use </span>chain_impl_mockchain::certificate::ExternalProposalId;
 <span class="kw">use </span>jormungandr_lib::crypto::{account::Identifier, hash::Hash};
 <span class="kw">use </span>std::collections::{HashMap, HashSet};
 <span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>thiserror::Error;
-<span class="kw">use </span>vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 <span class="attr">#[derive(Debug, Error)]
 </span><span class="kw">pub enum </span>Error {

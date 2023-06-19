@@ -236,6 +236,16 @@
 <a href="#236" id="236">236</a>
 <a href="#237" id="237">237</a>
 <a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Rewards, Threshold, VoteCount};
 <span class="kw">use </span><span class="kw">crate</span>::utils::assert_are_close;
 <span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
@@ -456,7 +466,12 @@
             votes_count,
             String::new(),
             voters.len(),
-            Threshold::new(<span class="number">1</span>, per_challenge_threshold.clone(), proposals.clone()).unwrap(),
+            Threshold::new(
+                <span class="number">1</span>,
+                per_challenge_threshold.clone(),
+                proposals.clone().into_iter().map(Into::into).collect(),
+            )
+            .unwrap(),
             Rewards::ONE,
         )
         .unwrap();
@@ -466,7 +481,12 @@
             only_active,
             String::new(),
             voters.len(),
-            Threshold::new(<span class="number">1</span>, per_challenge_threshold, proposals).unwrap(),
+            Threshold::new(
+                <span class="number">1</span>,
+                per_challenge_threshold,
+                proposals.into_iter().map(Into::into).collect(),
+            )
+            .unwrap(),
             Rewards::ONE,
         )
         .unwrap();

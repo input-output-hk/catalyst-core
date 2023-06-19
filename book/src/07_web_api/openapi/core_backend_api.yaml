@@ -1665,6 +1665,10 @@ components:
           type: number
           format: u64
           description: Raw voting power distributed to this voting key.
+        reward_address:
+          type: string
+          pattern: '[0-9a-f]{64}'
+          description: Hex encoded reward address for this delegation.
       required:
         - voting_key
         - group

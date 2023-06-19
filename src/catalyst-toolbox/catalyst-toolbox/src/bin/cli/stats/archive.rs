@@ -43,27 +43,27 @@ impl ArchiveCommand {
                 let result = archiver.number_of_votes_per_caster();
                 if self.calculate_distribution {
                     let dist = ArchiveStats::calculate_distribution(&result);
-                    dump_to_csv_or_print(self.output, dist.values())?;
+                    dump_to_csv_or_print(&self.output, dist.values())?;
                 } else {
-                    dump_to_csv_or_print(self.output, result.values())?;
+                    dump_to_csv_or_print(&self.output, result.values())?;
                 }
             }
             Command::VotesBySlot => {
                 let result = archiver.number_of_tx_per_slot();
                 if self.calculate_distribution {
                     let dist = ArchiveStats::calculate_distribution(&result);
-                    dump_to_csv_or_print(self.output, dist.values())?;
+                    dump_to_csv_or_print(&self.output, dist.values())?;
                 } else {
-                    dump_to_csv_or_print(self.output, result.values())?;
+                    dump_to_csv_or_print(&self.output, result.values())?;
                 }
             }
             Command::BatchSizeByCaster(batch_size_by_caster) => {
                 let result = batch_size_by_caster.exec(archiver)?;
                 if self.calculate_distribution {
                     let dist = ArchiveStats::calculate_distribution(&result);
-                    dump_to_csv_or_print(self.output, dist.values())?;
+                    dump_to_csv_or_print(&self.output, dist.values())?;
                 } else {
-                    dump_to_csv_or_print(self.output, result.values())?;
+                    dump_to_csv_or_print(&self.output, result.values())?;
                 }
             }
         };

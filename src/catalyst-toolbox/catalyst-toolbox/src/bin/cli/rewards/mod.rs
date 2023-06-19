@@ -5,11 +5,8 @@ mod proposers;
 mod veterans;
 mod voters;
 
+use catalyst_toolbox::rewards::{proposers as proposers_lib, VoteCount};
 use catalyst_toolbox::types::proposal::FullProposalInfo;
-use catalyst_toolbox::{
-    http::default_http_client,
-    rewards::{proposers as proposers_lib, VoteCount},
-};
 use clap::Parser;
 use color_eyre::{eyre::eyre, Report};
 use jormungandr_lib::{
@@ -48,9 +45,7 @@ impl Rewards {
             Rewards::Veterans(cmd) => cmd.exec(),
             Rewards::Dreps(cmd) => cmd.exec(),
             Rewards::Full { path } => full::full_rewards(&path),
-            Rewards::Proposers(proposers) => {
-                proposers::rewards(&proposers, &default_http_client(None))
-            }
+            Rewards::Proposers(proposers) => proposers::rewards(&proposers),
         }
     }
 }

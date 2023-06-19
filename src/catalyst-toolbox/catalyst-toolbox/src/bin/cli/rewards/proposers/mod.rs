@@ -1,13 +1,11 @@
-use std::{collections::HashSet, fs::File};
-
 use catalyst_toolbox::{
-    http::HttpClient,
     rewards::proposers::{
-        io::{load_data, write_results},
-        proposer_rewards, ProposerRewards, ProposerRewardsInputs,
+        io::write_results, proposer_rewards, ProposerRewards, ProposerRewardsInputs,
     },
+    utils::json_from_file,
 };
 use color_eyre::eyre::Result;
+use std::{collections::HashSet, fs::File};
 
 pub fn rewards(
     ProposerRewards {
@@ -21,26 +19,20 @@ pub fn rewards(
         total_stake_threshold,
         approval_threshold,
         output_format,
-        vit_station_url,
     }: &ProposerRewards,
-    http: &impl HttpClient,
 ) -> Result<()> {
-    let (proposals, voteplans, challenges) = load_data(
-        http,
-        vit_station_url,
-        proposals.as_deref(),
-        active_voteplans.as_deref(),
-        challenges.as_deref(),
-    )?;
+    let proposals = json_from_file(proposals)?;
+    let voteplans = json_from_file(active_voteplans)?;
+    let challenges = json_from_file(challenges)?;
 
     let block0_config = serde_yaml::from_reader(File::open(block0)?)?;
 
     let excluded_proposals = match excluded_proposals {
-        Some(path) => serde_json::from_reader(File::open(path)?)?,
+        Some(path) => json_from_file(path)?,
         None => HashSet::new(),
     };
     let committee_keys = match committee_keys {
-        Some(path) => serde_json::from_reader(File::open(path)?)?,
+        Some(path) => json_from_file(path)?,
         None => vec![],
     };
 

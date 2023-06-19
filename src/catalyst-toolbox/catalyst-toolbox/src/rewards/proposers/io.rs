@@ -1,18 +1,12 @@
 use super::{build_path_for_challenge, Calculation, OutputFormat};
-use crate::{
-    http::HttpClient,
-    types::{challenge::Challenge, proposal::Proposal},
-};
+use crate::types::{challenge::Challenge, proposal::Proposal};
 use color_eyre::eyre::Result;
 use jormungandr_lib::{
     crypto::hash::Hash,
     interfaces::{VotePlanStatus, VoteProposalStatus},
 };
-use serde::Deserialize;
 use std::{collections::HashMap, fs::File, io::BufWriter, path::Path};
-use tracing::{info, warn};
 
-type VitSSData = (Vec<Proposal>, Vec<VotePlanStatus>, Vec<Challenge>);
 type CleanedVitSSData = (
     HashMap<Hash, Proposal>,
     HashMap<Hash, VoteProposalStatus>,
@@ -53,32 +47,6 @@ fn write_csv(path: &Path, results: &[Calculation]) -> Result<()> {
     Ok(())
 }
 
-pub fn load_data(
-    http: &impl HttpClient,
-    vit_station_url: &str,
-    proposals: Option<&Path>,
-    active_voteplans: Option<&Path>,
-    challenges: Option<&Path>,
-) -> Result<VitSSData> {
-    let data = match (proposals, active_voteplans, challenges) {
-        (Some(p), Some(vp), Some(c)) => {
-            info!("loading data from files");
-            get_data_from_files(p, vp, c)?
-        }
-        (None, None, None) => {
-            info!("loading data from network: {vit_station_url}");
-            get_data_from_network(http, vit_station_url)?
-        }
-        _else => {
-            warn!("warning: not all of --proposals, --active-voteplans and --challenges were set, falling back to network");
-            info!("loading data from network: {vit_station_url}");
-            get_data_from_network(http, vit_station_url)?
-        }
-    };
-
-    Ok(data)
-}
-
 pub fn vecs_to_maps(
     proposals: Vec<Proposal>,
     voteplans: Vec<VotePlanStatus>,
@@ -104,49 +72,12 @@ pub fn vecs_to_maps(
     Ok((proposals_map, voteplan_proposals, challenge_map))
 }
 
-fn get_data_from_network(http: &impl HttpClient, vit_station_url: &str) -> Result<VitSSData> {
-    let proposals = json_from_network(http, format!("{vit_station_url}/api/v0/proposals"))?;
-    let voteplans = json_from_network(http, format!("{vit_station_url}/api/v0/vote/active/plans"))?;
-    let challenges = json_from_network(http, format!("{vit_station_url}/api/v0/challenges"))?;
-
-    Ok((proposals, voteplans, challenges))
-}
-
-pub fn json_from_file<T: for<'a> Deserialize<'a>>(path: impl AsRef<Path>) -> Result<T> {
-    Ok(serde_json::from_reader(File::open(path)?)?)
-}
-
-pub fn json_from_network<T: for<'a> Deserialize<'a>>(
-    http: &impl HttpClient,
-    url: impl AsRef<str>,
-) -> Result<T> {
-    http.get(url.as_ref())?.json()
-}
-
-fn get_data_from_files(
-    proposals: &Path,
-    active_voteplans: &Path,
-    challenges: &Path,
-) -> Result<VitSSData> {
-    let proposals = json_from_file(proposals)?;
-    let voteplans = json_from_file(active_voteplans)?;
-    let challenges = json_from_file(challenges)?;
-
-    Ok((proposals, voteplans, challenges))
-}
-
 #[cfg(test)]
 mod tests {
-    use std::fs::read_to_string;
-
     use super::*;
+    use crate::{rewards::proposers::Calculation, utils::json_from_file};
     use assert_fs::TempDir;
-    use reqwest::StatusCode;
-
-    use crate::{
-        http::mock::{Method, MockClient, Spec},
-        rewards::proposers::Calculation,
-    };
+    use std::fs::read_to_string;
 
     #[test]
     fn write_csv_adds_header() {
@@ -190,33 +121,9 @@ mod tests {
         std::fs::write(&voteplans_file, empty).unwrap();
         std::fs::write(&challenges_file, empty).unwrap();
 
-        let (proposals, voteplans, challenges) =
-            get_data_from_files(&proposals_file, &voteplans_file, &challenges_file).unwrap();
-
-        assert_eq!(proposals, vec![]);
-        assert_eq!(voteplans, vec![]);
-        assert_eq!(challenges, vec![]);
-    }
-
-    #[test]
-    fn can_read_data_from_network() {
-        let mock_client = MockClient::new(|spec| match spec {
-            Spec {
-                method: Method::Get,
-                path: "/api/v0/proposals",
-            } => ("[]".to_string(), StatusCode::OK),
-            Spec {
-                method: Method::Get,
-                path: "/api/v0/vote/active/plans",
-            } => ("[]".to_string(), StatusCode::OK),
-            Spec {
-                method: Method::Get,
-                path: "/api/v0/challenges",
-            } => ("[]".to_string(), StatusCode::OK),
-            _ => ("not found".to_string(), StatusCode::NOT_FOUND),
-        });
-
-        let (proposals, voteplans, challenges) = get_data_from_network(&mock_client, "").unwrap();
+        let proposals: Vec<Proposal> = json_from_file(proposals_file).unwrap();
+        let voteplans: Vec<VotePlanStatus> = json_from_file(voteplans_file).unwrap();
+        let challenges: Vec<Challenge> = json_from_file(challenges_file).unwrap();
 
         assert_eq!(proposals, vec![]);
         assert_eq!(voteplans, vec![]);

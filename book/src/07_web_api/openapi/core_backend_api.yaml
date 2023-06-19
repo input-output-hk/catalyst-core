@@ -1613,6 +1613,14 @@ components:
           format: float
           minimum: 0
           maximum: 100
+        delegator_addresses:
+          description: |-
+            List of stake public key addresses which delegated to this voting key.
+          type: array
+          items:
+            type: string
+            pattern: '[0-9a-f]{64}'
+            description: Hex string of stake public key address.
       required:
         - voting_power
         - voting_group

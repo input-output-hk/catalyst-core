@@ -131,6 +131,7 @@ impl RegistrationQueries for EventDB {
                 voting_power_saturation,
                 voting_power,
                 voting_group,
+                delegator_addresses: vec![],
             },
             as_at: voter
                 .try_get::<_, NaiveDateTime>("as_at")?
@@ -253,6 +254,7 @@ mod tests {
                     delegations_power: 250,
                     delegations_count: 2,
                     voting_power_saturation: 0.625,
+                    delegator_addresses: vec![],
                 },
                 as_at: DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
@@ -286,6 +288,7 @@ mod tests {
                     delegations_power: 250,
                     delegations_count: 2,
                     voting_power_saturation: 0.625,
+                    delegator_addresses: vec![],
                 },
                 as_at: DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(

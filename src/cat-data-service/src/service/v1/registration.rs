@@ -116,7 +116,8 @@ mod tests {
                         "voting_group": "rep",
                         "delegations_power": 250,
                         "delegations_count": 2,
-                        "voting_power_saturation": 0.625
+                        "voting_power_saturation": 0.625,
+                        "delegator_addresses": [],
                     },
                     "as_at": "2022-03-31T12:00:00+00:00",
                     "last_updated": "2022-03-31T12:00:00+00:00",
@@ -143,7 +144,8 @@ mod tests {
                         "voting_group": "rep",
                         "delegations_power": 250,
                         "delegations_count": 2,
-                        "voting_power_saturation": 0.625
+                        "voting_power_saturation": 0.625,
+                        "delegator_addresses": [],
                     },
                     "as_at": "2020-03-31T12:00:00+00:00",
                     "last_updated": "2020-03-31T12:00:00+00:00",

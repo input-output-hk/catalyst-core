@@ -407,6 +407,9 @@
 <a href="#407" id="407">407</a>
 <a href="#408" id="408">408</a>
 <a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     types::{
         event::EventId,
@@ -458,27 +461,21 @@
         INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id AND snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot)
         WHERE voter.voting_group = $1;&quot;</span>;
 
-    <span class="kw">const </span>DELEGATOR_BY_EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT contribution.voting_key, contribution.voting_group, snapshot.as_at, snapshot.last_updated, snapshot.final
-                                                FROM contribution
-                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
-                                                WHERE contribution.stake_public_key = $1 AND snapshot.event = $2
+    <span class="kw">const </span>DELEGATOR_SNAPSHOT_INFO_BY_EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;
+                                                SELECT snapshot.as_at, snapshot.last_updated, snapshot.final
+                                                FROM snapshot
+                                                WHERE snapshot.event = $1
                                                 LIMIT 1;&quot;</span>;
 
-    <span class="kw">const </span>DELEGATOR_BY_LAST_EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT contribution.voting_key, contribution.voting_group, snapshot.as_at, snapshot.last_updated, snapshot.final
-                                                FROM contribution
-                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
-                                                WHERE contribution.stake_public_key = $1 AND snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot)
+    <span class="kw">const </span>DELEGATOR_SNAPSHOT_INFO_BY_LAST_EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT snapshot.event, snapshot.as_at, snapshot.last_updated, snapshot.final
+                                                FROM snapshot
+                                                WHERE snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot)
                                                 LIMIT 1;&quot;</span>;
 
-    <span class="kw">const </span>DELEGATIONS_BY_EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value,  snapshot.as_at, snapshot.last_updated, snapshot.final
+    <span class="kw">const </span>DELEGATIONS_BY_EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value, contribution.reward_address
                                                 FROM contribution
                                                 INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
                                                 WHERE contribution.stake_public_key = $1 AND snapshot.event = $2;&quot;</span>;
-
-    <span class="kw">const </span>DELEGATIONS_BY_LAST_EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value,  snapshot.as_at, snapshot.last_updated, snapshot.final
-                                                FROM contribution
-                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
-                                                WHERE contribution.stake_public_key = $1 AND snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot);&quot;</span>;
 
     <span class="kw">const </span>TOTAL_POWER_BY_EVENT_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;SELECT SUM(voter.voting_power)::BIGINT as total_voting_power
                                                 FROM voter
@@ -560,16 +557,13 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Delegator, Error&gt; {
         <span class="kw">let </span>conn = <span class="self">self</span>.pool.get().<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>rows = <span class="kw">if let </span><span class="prelude-val">Some</span>(event) = event {
-            conn.query(
-                <span class="self">Self</span>::DELEGATOR_BY_EVENT_QUERY,
-                <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>stake_public_key, <span class="kw-2">&amp;</span>event.<span class="number">0</span>],
-            )
-            .<span class="kw">await</span><span class="question-mark">?
+            conn.query(<span class="self">Self</span>::DELEGATOR_SNAPSHOT_INFO_BY_EVENT_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>event.<span class="number">0</span>])
+                .<span class="kw">await</span><span class="question-mark">?
         </span>} <span class="kw">else </span>{
-            conn.query(<span class="self">Self</span>::DELEGATOR_BY_LAST_EVENT_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>stake_public_key])
+            conn.query(<span class="self">Self</span>::DELEGATOR_SNAPSHOT_INFO_BY_LAST_EVENT_QUERY, <span class="kw-2">&amp;</span>[])
                 .<span class="kw">await</span><span class="question-mark">?
         </span>};
-        <span class="kw">let </span>delegator = rows
+        <span class="kw">let </span>delegator_snapshot_info = rows
             .get(<span class="number">0</span>)
             .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find delegator value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
@@ -580,12 +574,21 @@
             )
             .<span class="kw">await</span><span class="question-mark">?
         </span>} <span class="kw">else </span>{
-            conn.query(<span class="self">Self</span>::DELEGATIONS_BY_LAST_EVENT_QUERY, <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>stake_public_key])
-                .<span class="kw">await</span><span class="question-mark">?
+            conn.query(
+                <span class="self">Self</span>::DELEGATIONS_BY_EVENT_QUERY,
+                <span class="kw-2">&amp;</span>[
+                    <span class="kw-2">&amp;</span>stake_public_key,
+                    <span class="kw-2">&amp;</span>delegator_snapshot_info.try_get::&lt;<span class="kw">_</span>, i32&gt;(<span class="string">&quot;event&quot;</span>)<span class="question-mark">?</span>,
+                ],
+            )
+            .<span class="kw">await</span><span class="question-mark">?
         </span>};
+        <span class="kw">if </span>delegation_rows.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::NotFound(<span class="string">&quot;can not find delegator value&quot;</span>.to_string()));
+        }
 
         <span class="kw">let </span><span class="kw-2">mut </span>delegations = Vec::new();
-        <span class="kw">for </span>row <span class="kw">in </span>delegation_rows {
+        <span class="kw">for </span>row <span class="kw">in </span><span class="kw-2">&amp;</span>delegation_rows {
             delegations.push(Delegation {
                 voting_key: row.try_get(<span class="string">&quot;voting_key&quot;</span>)<span class="question-mark">?</span>,
                 group: VoterGroupId(row.try_get(<span class="string">&quot;voting_group&quot;</span>)<span class="question-mark">?</span>),
@@ -608,15 +611,16 @@
 
         <span class="prelude-val">Ok</span>(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
-            as_at: delegator
+            reward_address: delegation_rows[<span class="number">0</span>].try_get(<span class="string">&quot;reward_address&quot;</span>)<span class="question-mark">?</span>,
+            as_at: delegator_snapshot_info
                 .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;as_at&quot;</span>)<span class="question-mark">?
                 </span>.and_local_timezone(Utc)
                 .unwrap(),
-            last_updated: delegator
+            last_updated: delegator_snapshot_info
                 .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;last_updated&quot;</span>)<span class="question-mark">?
                 </span>.and_local_timezone(Utc)
                 .unwrap(),
-            is_final: delegator.try_get(<span class="string">&quot;final&quot;</span>)<span class="question-mark">?</span>,
+            is_final: delegator_snapshot_info.try_get(<span class="string">&quot;final&quot;</span>)<span class="question-mark">?</span>,
             delegations,
             total_power,
         })
@@ -737,15 +741,16 @@
                         voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
                         group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
-                        value: <span class="number">140
-                    </span>},
+                        value: <span class="number">140</span>,
+                    },
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
                         group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
-                        value: <span class="number">100
-                    </span>}
+                        value: <span class="number">100</span>,
+                    }
                 ],
+                reward_address: <span class="string">&quot;reward_address_1&quot;</span>.to_string(),
                 raw_power: <span class="number">240</span>,
                 total_power: <span class="number">1000</span>,
                 as_at: DateTime::&lt;Utc&gt;::from_utc(
@@ -779,15 +784,16 @@
                         voting_key: <span class="string">&quot;voting_key_1&quot;</span>.to_string(),
                         group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
-                        value: <span class="number">140
-                    </span>},
+                        value: <span class="number">140</span>,
+                    },
                     Delegation {
                         voting_key: <span class="string">&quot;voting_key_2&quot;</span>.to_string(),
                         group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
                         weight: <span class="number">1</span>,
-                        value: <span class="number">100
-                    </span>}
+                        value: <span class="number">100</span>,
+                    }
                 ],
+                reward_address: <span class="string">&quot;reward_address_1&quot;</span>.to_string(),
                 raw_power: <span class="number">240</span>,
                 total_power: <span class="number">1000</span>,
                 as_at: DateTime::&lt;Utc&gt;::from_utc(

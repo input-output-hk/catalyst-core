@@ -55,27 +55,21 @@ impl EventDB {
         INNER JOIN snapshot ON voter.snapshot_id = snapshot.row_id AND snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot)
         WHERE voter.voting_group = $1;";
 
-    const DELEGATOR_BY_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, snapshot.as_at, snapshot.last_updated, snapshot.final
-                                                FROM contribution
-                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
-                                                WHERE contribution.stake_public_key = $1 AND snapshot.event = $2
+    const DELEGATOR_SNAPSHOT_INFO_BY_EVENT_QUERY: &'static str = "
+                                                SELECT snapshot.as_at, snapshot.last_updated, snapshot.final
+                                                FROM snapshot
+                                                WHERE snapshot.event = $1
                                                 LIMIT 1;";
 
-    const DELEGATOR_BY_LAST_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, snapshot.as_at, snapshot.last_updated, snapshot.final
-                                                FROM contribution
-                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
-                                                WHERE contribution.stake_public_key = $1 AND snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot)
+    const DELEGATOR_SNAPSHOT_INFO_BY_LAST_EVENT_QUERY: &'static str = "SELECT snapshot.event, snapshot.as_at, snapshot.last_updated, snapshot.final
+                                                FROM snapshot
+                                                WHERE snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot)
                                                 LIMIT 1;";
 
-    const DELEGATIONS_BY_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value,  snapshot.as_at, snapshot.last_updated, snapshot.final
+    const DELEGATIONS_BY_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value, contribution.reward_address
                                                 FROM contribution
                                                 INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
                                                 WHERE contribution.stake_public_key = $1 AND snapshot.event = $2;";
-
-    const DELEGATIONS_BY_LAST_EVENT_QUERY: &'static str = "SELECT contribution.voting_key, contribution.voting_group, contribution.voting_weight, contribution.value,  snapshot.as_at, snapshot.last_updated, snapshot.final
-                                                FROM contribution
-                                                INNER JOIN snapshot ON contribution.snapshot_id = snapshot.row_id
-                                                WHERE contribution.stake_public_key = $1 AND snapshot.last_updated = (SELECT MAX(snapshot.last_updated) as last_updated from snapshot);";
 
     const TOTAL_POWER_BY_EVENT_QUERY: &'static str = "SELECT SUM(voter.voting_power)::BIGINT as total_voting_power
                                                 FROM voter
@@ -185,16 +179,13 @@ impl RegistrationQueries for EventDB {
     ) -> Result<Delegator, Error> {
         let conn = self.pool.get().await?;
         let rows = if let Some(event) = event {
-            conn.query(
-                Self::DELEGATOR_BY_EVENT_QUERY,
-                &[&stake_public_key, &event.0],
-            )
-            .await?
+            conn.query(Self::DELEGATOR_SNAPSHOT_INFO_BY_EVENT_QUERY, &[&event.0])
+                .await?
         } else {
-            conn.query(Self::DELEGATOR_BY_LAST_EVENT_QUERY, &[&stake_public_key])
+            conn.query(Self::DELEGATOR_SNAPSHOT_INFO_BY_LAST_EVENT_QUERY, &[])
                 .await?
         };
-        let delegator = rows
+        let delegator_snapshot_info = rows
             .get(0)
             .ok_or_else(|| Error::NotFound("can not find delegator value".to_string()))?;
 
@@ -205,12 +196,21 @@ impl RegistrationQueries for EventDB {
             )
             .await?
         } else {
-            conn.query(Self::DELEGATIONS_BY_LAST_EVENT_QUERY, &[&stake_public_key])
-                .await?
+            conn.query(
+                Self::DELEGATIONS_BY_EVENT_QUERY,
+                &[
+                    &stake_public_key,
+                    &delegator_snapshot_info.try_get::<_, i32>("event")?,
+                ],
+            )
+            .await?
         };
+        if delegation_rows.is_empty() {
+            return Err(Error::NotFound("can not find delegator value".to_string()));
+        }
 
         let mut delegations = Vec::new();
-        for row in delegation_rows {
+        for row in &delegation_rows {
             delegations.push(Delegation {
                 voting_key: row.try_get("voting_key")?,
                 group: VoterGroupId(row.try_get("voting_group")?),
@@ -233,15 +233,16 @@ impl RegistrationQueries for EventDB {
 
         Ok(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
-            as_at: delegator
+            reward_address: delegation_rows[0].try_get("reward_address")?,
+            as_at: delegator_snapshot_info
                 .try_get::<_, NaiveDateTime>("as_at")?
                 .and_local_timezone(Utc)
                 .unwrap(),
-            last_updated: delegator
+            last_updated: delegator_snapshot_info
                 .try_get::<_, NaiveDateTime>("last_updated")?
                 .and_local_timezone(Utc)
                 .unwrap(),
-            is_final: delegator.try_get("final")?,
+            is_final: delegator_snapshot_info.try_get("final")?,
             delegations,
             total_power,
         })
@@ -440,15 +441,16 @@ mod tests {
                         voting_key: "voting_key_1".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
-                        value: 140
+                        value: 140,
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
-                        value: 100
+                        value: 100,
                     }
                 ],
+                reward_address: "reward_address_1".to_string(),
                 raw_power: 240,
                 total_power: 1000,
                 as_at: DateTime::<Utc>::from_utc(
@@ -482,15 +484,16 @@ mod tests {
                         voting_key: "voting_key_1".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
-                        value: 140
+                        value: 140,
                     },
                     Delegation {
                         voting_key: "voting_key_2".to_string(),
                         group: VoterGroupId("rep".to_string()),
                         weight: 1,
-                        value: 100
+                        value: 100,
                     }
                 ],
+                reward_address: "reward_address_1".to_string(),
                 raw_power: 240,
                 total_power: 1000,
                 as_at: DateTime::<Utc>::from_utc(

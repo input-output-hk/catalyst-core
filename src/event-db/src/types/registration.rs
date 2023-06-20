@@ -36,6 +36,7 @@ pub struct Delegation {
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Delegator {
     pub delegations: Vec<Delegation>,
+    pub reward_address: String,
     pub raw_power: i64,
     pub total_power: i64,
     #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
@@ -95,6 +96,7 @@ mod tests {
                 weight: 5,
                 value: 100,
             }],
+            reward_address: "reward address 1".to_string(),
             raw_power: 100,
             total_power: 1000,
             as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
@@ -107,6 +109,7 @@ mod tests {
             json!(
                 {
                     "delegations": [{"voting_key": "voter","group": "rep","weight": 5,"value": 100}],
+                    "reward_address": "reward address 1",
                     "raw_power": 100,
                     "total_power": 1000,
                     "as_at": "1970-01-01T00:00:00+00:00",

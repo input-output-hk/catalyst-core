@@ -331,7 +331,7 @@ paths:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/total'
     parameters: []
-  /api/v1/registration/voter/{vkey}:
+  /api/v1/registration/voter/{vkey}?event_id={eid}&with_delegators={flag}:
     parameters:
       - name: vkey
         in: path
@@ -339,6 +339,13 @@ paths:
         schema:
           type: string
         description: A Voting Key.
+      - $ref: '#/components/parameters/event_id_filter'
+      - name: with_delegators
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Flag to include delegators list in the response.
     get:
       operationId: getVoterInfo
       summary: Get voter's info by voting key
@@ -346,7 +353,8 @@ paths:
         - registration
       description: |
         Get voter's registration and voting power by their voting key.\
-        If the `eid` query parameter is omitted, then the latest voting power is retrieved.
+        If the `event_id` query parameter is omitted, then the latest voting power is retrieved.
+        If the `with_delegators` query parameter is ommitted, then `delegator_addresses` field of `VoterInfo` type does not provided.
       responses:
         '200':
           description: Success
@@ -358,11 +366,10 @@ paths:
           description: There is an error with the request.
         '404':
           description: Voting Key not found for requested event.
-      parameters:
-        - $ref: '#/components/parameters/event_id_filter'
-  /api/v1/registration/delegations/{sp_key}:
+  /api/v1/registration/delegations/{sp_key}?event_id={eid}:
     parameters:
       - $ref: '#/components/parameters/stake_public_key'
+      - $ref: '#/components/parameters/event_id_filter'
     get:
       operationId: getDelegatorInfo
       summary: Get voters info by stake public key
@@ -382,8 +389,6 @@ paths:
           description: An error occurred
         '404':
           description: Stake Address for the event was not found in the snapshot.
-      parameters:
-        - $ref: '#/components/parameters/event_id_filter'
   /api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/ballot:
     parameters:
       - $ref: '#/components/parameters/event_id'
@@ -1613,6 +1618,14 @@ components:
           format: float
           minimum: 0
           maximum: 100
+        delegator_addresses:
+          description: |-
+            List of stake public key addresses which delegated to this voting key.
+          type: array
+          items:
+            type: string
+            pattern: '[0-9a-f]{64}'
+            description: Hex string of stake public key address.
       required:
         - voting_power
         - voting_group
@@ -1837,7 +1850,7 @@ components:
         type: string
       description: Stake Public key
     event_id_filter:
-      name: eid
+      name: event_id
       in: query
       required: false
       schema:

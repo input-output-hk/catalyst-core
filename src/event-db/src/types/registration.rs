@@ -12,6 +12,8 @@ pub struct VoterInfo {
     pub delegations_power: i64,
     pub delegations_count: i64,
     pub voting_power_saturation: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub delegator_addresses: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq)]
@@ -97,6 +99,7 @@ mod tests {
                 delegations_power: 100,
                 delegations_count: 1,
                 voting_power_saturation: 0.4,
+                delegator_addresses: Some(vec!["stake_public_key_1".to_string()]),
             },
             as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
             last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
@@ -112,7 +115,8 @@ mod tests {
                             "voting_group": "rep",
                             "delegations_power": 100,
                             "delegations_count": 1,
-                            "voting_power_saturation": 0.4
+                            "voting_power_saturation": 0.4,
+                            "delegator_addresses": ["stake_public_key_1"]
                         },
                     "as_at": "1970-01-01T00:00:00+00:00",
                     "last_updated": "1970-01-01T00:00:00+00:00",

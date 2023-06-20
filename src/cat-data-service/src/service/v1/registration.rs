@@ -140,6 +140,34 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
+                "/api/v1/registration/voter/{0}?with_delegators=true",
+                "voting_key_1"
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                {
+                    "voter_info": {
+                        "voting_power": 250,
+                        "voting_group": "rep",
+                        "delegations_power": 250,
+                        "delegations_count": 2,
+                        "voting_power_saturation": 0.625,
+                        "delegator_addresses": ["stake_public_key_1", "stake_public_key_2"]
+                    },
+                    "as_at": "2022-03-31T12:00:00+00:00",
+                    "last_updated": "2022-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
+        ));
+
+        let request = Request::builder()
+            .uri(format!(
                 "/api/v1/registration/voter/{0}?event_id={1}",
                 "voting_key_1", 1
             ))
@@ -157,6 +185,34 @@ mod tests {
                         "delegations_power": 250,
                         "delegations_count": 2,
                         "voting_power_saturation": 0.625,
+                    },
+                    "as_at": "2020-03-31T12:00:00+00:00",
+                    "last_updated": "2020-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
+        ));
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/voter/{0}?event_id={1}&with_delegators=true",
+                "voting_key_1", 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                {
+                    "voter_info": {
+                        "voting_power": 250,
+                        "voting_group": "rep",
+                        "delegations_power": 250,
+                        "delegations_count": 2,
+                        "voting_power_saturation": 0.625,
+                        "delegator_addresses": ["stake_public_key_1", "stake_public_key_2"]
                     },
                     "as_at": "2020-03-31T12:00:00+00:00",
                     "last_updated": "2020-03-31T12:00:00+00:00",

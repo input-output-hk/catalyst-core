@@ -34,42 +34,52 @@ pub fn registration(state: Arc<State>) -> Router {
 }
 
 #[derive(Deserialize)]
-struct EventIdQuery {
-    eid: Option<EventId>,
+struct VotersQuery {
+    event_id: Option<EventId>,
+    with_delegators: Option<bool>,
 }
 
 async fn voter_exec(
     Path(voting_key): Path<String>,
-    eid_query: Query<EventIdQuery>,
+    voters_query: Query<VotersQuery>,
     state: Arc<State>,
 ) -> Result<Voter, Error> {
     tracing::debug!(
-        "voter_query: voting_key: {0}, eid: {1:?}",
+        "voter_query: voting_key: {0}, event_id: {1:?}",
         voting_key,
-        eid_query.eid
+        voters_query.event_id
     );
 
     let voter = state
         .event_db
-        .get_voter(&eid_query.eid, voting_key, false)
+        .get_voter(
+            &voters_query.event_id,
+            voting_key,
+            voters_query.with_delegators.unwrap_or(false),
+        )
         .await?;
     Ok(voter)
 }
 
+#[derive(Deserialize)]
+struct DelegationsQuery {
+    event_id: Option<EventId>,
+}
+
 async fn delegations_exec(
     Path(stake_public_key): Path<String>,
-    eid_query: Query<EventIdQuery>,
+    delegations_query: Query<DelegationsQuery>,
     state: Arc<State>,
 ) -> Result<Delegator, Error> {
     tracing::debug!(
         "delegator_query: stake_public_key: {0}, eid: {1:?}",
         stake_public_key,
-        eid_query.eid
+        delegations_query.event_id
     );
 
     let delegator = state
         .event_db
-        .get_delegator(&eid_query.eid, stake_public_key)
+        .get_delegator(&delegations_query.event_id, stake_public_key)
         .await?;
     Ok(delegator)
 }
@@ -120,7 +130,6 @@ mod tests {
                         "delegations_power": 250,
                         "delegations_count": 2,
                         "voting_power_saturation": 0.625,
-                        "delegator_addresses": [],
                     },
                     "as_at": "2022-03-31T12:00:00+00:00",
                     "last_updated": "2022-03-31T12:00:00+00:00",
@@ -131,7 +140,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/voter/{0}?eid={1}",
+                "/api/v1/registration/voter/{0}?event_id={1}",
                 "voting_key_1", 1
             ))
             .body(Body::empty())
@@ -148,7 +157,6 @@ mod tests {
                         "delegations_power": 250,
                         "delegations_count": 2,
                         "voting_power_saturation": 0.625,
-                        "delegator_addresses": [],
                     },
                     "as_at": "2020-03-31T12:00:00+00:00",
                     "last_updated": "2020-03-31T12:00:00+00:00",
@@ -166,7 +174,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/voter/{0}?eid={1}",
+                "/api/v1/registration/voter/{0}?event_id={1}",
                 "voting_key", 1
             ))
             .body(Body::empty())
@@ -218,7 +226,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/delegations/{0}?eid={1}",
+                "/api/v1/registration/delegations/{0}?event_id={1}",
                 "stake_public_key_1", 1
             ))
             .body(Body::empty())
@@ -264,7 +272,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/delegations/{0}?eid={1}",
+                "/api/v1/registration/delegations/{0}?event_id={1}",
                 "stake_public_key", 1
             ))
             .body(Body::empty())

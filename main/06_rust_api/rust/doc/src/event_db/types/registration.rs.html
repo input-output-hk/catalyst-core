@@ -120,6 +120,10 @@
 <a href="#120" id="120">120</a>
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::serialize_datetime_as_rfc3339;
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -134,6 +138,8 @@
     <span class="kw">pub </span>delegations_power: i64,
     <span class="kw">pub </span>delegations_count: i64,
     <span class="kw">pub </span>voting_power_saturation: f64,
+    <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>delegator_addresses: <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt;,
 }
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
@@ -184,6 +190,7 @@
                 delegations_power: <span class="number">100</span>,
                 delegations_count: <span class="number">1</span>,
                 voting_power_saturation: <span class="number">0.4</span>,
+                delegator_addresses: <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;stake_public_key_1&quot;</span>.to_string()]),
             },
             as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
             last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
@@ -199,8 +206,9 @@
                             <span class="string">&quot;voting_group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
                             <span class="string">&quot;delegations_power&quot;</span>: <span class="number">100</span>,
                             <span class="string">&quot;delegations_count&quot;</span>: <span class="number">1</span>,
-                            <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.4
-                        </span>},
+                            <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.4</span>,
+                            <span class="string">&quot;delegator_addresses&quot;</span>: [<span class="string">&quot;stake_public_key_1&quot;</span>]
+                        },
                     <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
                     <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
                     <span class="string">&quot;final&quot;</span>: <span class="bool-val">true

@@ -1,7 +1,7 @@
 use crate::{
     types::{
         event::EventId,
-        registration::{Delegation, Delegator, Voter, VoterGroupId, VoterInfo},
+        registration::{Delegation, Delegator, RewardAddress, Voter, VoterGroupId, VoterInfo},
     },
     Error, EventDB,
 };
@@ -199,7 +199,7 @@ impl RegistrationQueries for EventDB {
 
         Ok(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
-            reward_address: delegation_rows[0].try_get("reward_address")?,
+            reward_address: RewardAddress::new(delegation_rows[0].try_get("reward_address")?),
             as_at: delegator_snapshot_info
                 .try_get::<_, NaiveDateTime>("as_at")?
                 .and_local_timezone(Utc)
@@ -338,7 +338,7 @@ mod tests {
                         value: 100,
                     }
                 ],
-                reward_address: "reward_address_1".to_string(),
+                reward_address: RewardAddress::new("addrrreward_address_1".to_string()),
                 raw_power: 240,
                 total_power: 1000,
                 as_at: DateTime::<Utc>::from_utc(
@@ -381,7 +381,7 @@ mod tests {
                         value: 100,
                     }
                 ],
-                reward_address: "reward_address_1".to_string(),
+                reward_address: RewardAddress::new("addrrreward_address_1".to_string()),
                 raw_power: 240,
                 total_power: 1000,
                 as_at: DateTime::<Utc>::from_utc(

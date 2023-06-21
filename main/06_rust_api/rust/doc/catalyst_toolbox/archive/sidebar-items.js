@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["node","vit_ss"]};
+window.SIDEBAR_ITEMS = {"mod":["node"]};

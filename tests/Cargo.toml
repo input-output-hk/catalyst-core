@@ -9,3 +9,19 @@ publish = false
 [[test]]
 name = "component"
 path = "component/main.rs"
+
+[[test]]
+name = "component"
+path = "component/main.rs"
+
+[[test]]
+name = "integration"
+path = "integration/main.rs"
+
+[[test]]
+name = "end2end"
+path = "end2end/main.rs"
+
+[[test]]
+name = "non_functional"
+path = "non_functional/main.rs"

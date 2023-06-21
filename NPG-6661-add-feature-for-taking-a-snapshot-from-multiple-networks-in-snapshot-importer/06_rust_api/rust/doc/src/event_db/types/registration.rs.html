@@ -117,6 +117,13 @@
 <a href="#117" id="117">117</a>
 <a href="#118" id="118">118</a>
 <a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::serialize_datetime_as_rfc3339;
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -131,6 +138,8 @@
     <span class="kw">pub </span>delegations_power: i64,
     <span class="kw">pub </span>delegations_count: i64,
     <span class="kw">pub </span>voting_power_saturation: f64,
+    <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>delegator_addresses: <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt;,
 }
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq)]
@@ -155,6 +164,7 @@
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Delegator {
     <span class="kw">pub </span>delegations: Vec&lt;Delegation&gt;,
+    <span class="kw">pub </span>reward_address: String,
     <span class="kw">pub </span>raw_power: i64,
     <span class="kw">pub </span>total_power: i64,
     <span class="attr">#[serde(serialize_with = <span class="string">&quot;serialize_datetime_as_rfc3339&quot;</span>)]
@@ -180,6 +190,7 @@
                 delegations_power: <span class="number">100</span>,
                 delegations_count: <span class="number">1</span>,
                 voting_power_saturation: <span class="number">0.4</span>,
+                delegator_addresses: <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="string">&quot;stake_public_key_1&quot;</span>.to_string()]),
             },
             as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
             last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
@@ -195,8 +206,9 @@
                             <span class="string">&quot;voting_group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
                             <span class="string">&quot;delegations_power&quot;</span>: <span class="number">100</span>,
                             <span class="string">&quot;delegations_count&quot;</span>: <span class="number">1</span>,
-                            <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.4
-                        </span>},
+                            <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.4</span>,
+                            <span class="string">&quot;delegator_addresses&quot;</span>: [<span class="string">&quot;stake_public_key_1&quot;</span>]
+                        },
                     <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
                     <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
                     <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
@@ -214,6 +226,7 @@
                 weight: <span class="number">5</span>,
                 value: <span class="number">100</span>,
             }],
+            reward_address: <span class="string">&quot;reward address 1&quot;</span>.to_string(),
             raw_power: <span class="number">100</span>,
             total_power: <span class="number">1000</span>,
             as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
@@ -226,6 +239,7 @@
             <span class="macro">json!</span>(
                 {
                     <span class="string">&quot;delegations&quot;</span>: [{<span class="string">&quot;voting_key&quot;</span>: <span class="string">&quot;voter&quot;</span>,<span class="string">&quot;group&quot;</span>: <span class="string">&quot;rep&quot;</span>,<span class="string">&quot;weight&quot;</span>: <span class="number">5</span>,<span class="string">&quot;value&quot;</span>: <span class="number">100</span>}],
+                    <span class="string">&quot;reward_address&quot;</span>: <span class="string">&quot;reward address 1&quot;</span>,
                     <span class="string">&quot;raw_power&quot;</span>: <span class="number">100</span>,
                     <span class="string">&quot;total_power&quot;</span>: <span class="number">1000</span>,
                     <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,

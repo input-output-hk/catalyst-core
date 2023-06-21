@@ -55,8 +55,8 @@
     csv_reader.deserialize().collect::&lt;<span class="prelude-ty">Result</span>&lt;Vec&lt;T&gt;, <span class="kw">_</span>&gt;&gt;()
 }
 
-<span class="kw">pub fn </span>dump_data_to_csv&lt;<span class="lifetime">&#39;a</span>, T: <span class="lifetime">&#39;a </span>+ Serialize&gt;(
-    data: <span class="kw">impl </span>IntoIterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T&gt;,
+<span class="kw">pub fn </span>dump_data_to_csv&lt;T: Serialize&gt;(
+    data: <span class="kw">impl </span>IntoIterator&lt;Item = T&gt;,
     file_path: <span class="kw-2">&amp;</span>Path,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), csv::Error&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>writer = csv::WriterBuilder::new()
@@ -68,11 +68,11 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub fn </span>dump_to_csv_or_print&lt;<span class="lifetime">&#39;a</span>, T: <span class="lifetime">&#39;a </span>+ Serialize + Debug&gt;(
-    output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
-    result: <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T&gt; + Debug,
+<span class="kw">pub fn </span>dump_to_csv_or_print&lt;T: Serialize + Debug&gt;(
+    output: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+    result: <span class="kw">impl </span>Iterator&lt;Item = T&gt; + Debug,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::io::Error&gt; {
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(output) = <span class="kw-2">&amp;</span>output {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(output) = output {
         dump_data_to_csv(result, output)<span class="question-mark">?</span>;
     } <span class="kw">else </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>writer = csv::WriterBuilder::new()

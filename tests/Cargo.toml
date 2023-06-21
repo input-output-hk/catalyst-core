@@ -11,10 +11,6 @@ name = "component"
 path = "component/main.rs"
 
 [[test]]
-name = "component"
-path = "component/main.rs"
-
-[[test]]
 name = "integration"
 path = "integration/main.rs"
 

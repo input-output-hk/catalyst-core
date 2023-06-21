@@ -22,7 +22,6 @@ pub struct ProposerRewardsCommand {
     excluded_proposals_path: Option<String>,
     active_voteplan_path: Option<String>,
     challenges_path: Option<String>,
-    vit_station_url: Option<String>,
 }
 
 #[derive(Debug, Error)]
@@ -45,7 +44,6 @@ impl Default for ProposerRewardsCommand {
             excluded_proposals_path: None,
             active_voteplan_path: None,
             challenges_path: None,
-            vit_station_url: None,
         }
     }
 }
@@ -98,10 +96,6 @@ impl ProposerRewardsCommand {
         self.challenges_path = Some(challenges_path);
         self
     }
-    pub fn vit_station_url(mut self, vit_station_url: String) -> Self {
-        self.vit_station_url = Some(vit_station_url);
-        self
-    }
 
     pub fn cmd(self, temp_dir: &TempDir) -> Result<Command, Error> {
         let script_content = include_str!("../scripts/python/proposers_rewards.py");
@@ -147,9 +141,6 @@ impl ProposerRewardsCommand {
             command
                 .arg("--committee-keys-path")
                 .arg(committee_keys_path);
-        }
-        if let Some(vit_station_url) = self.vit_station_url {
-            command.arg("--vit-station-url").arg(vit_station_url);
         }
 
         Ok(command)

@@ -451,7 +451,7 @@ mod tests {
             Threshold::new(
                 DEFAULT_TEST_THRESHOLD,
                 per_challenge_threshold.clone(),
-                proposals.clone(),
+                proposals.clone().into_iter().map(Into::into).collect(),
             )
             .unwrap(),
             Rewards::ONE,
@@ -461,7 +461,12 @@ mod tests {
         let rewards_only_active = calc_voter_rewards(
             only_active,
             voters,
-            Threshold::new(DEFAULT_TEST_THRESHOLD, per_challenge_threshold, proposals).unwrap(),
+            Threshold::new(
+                DEFAULT_TEST_THRESHOLD,
+                per_challenge_threshold,
+                proposals.into_iter().map(Into::into).collect(),
+            )
+            .unwrap(),
             Rewards::ONE,
         )
         .unwrap();

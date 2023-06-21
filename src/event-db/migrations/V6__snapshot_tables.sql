@@ -102,6 +102,7 @@ CREATE TABLE contribution (
 
     voting_group TEXT NOT NULL,
 
+    -- each unique stake_public_key should have the same reward_address
     reward_address TEXT NULL,
 
     FOREIGN KEY(snapshot_id) REFERENCES snapshot(row_id) ON DELETE CASCADE

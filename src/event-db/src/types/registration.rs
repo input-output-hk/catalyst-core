@@ -12,6 +12,8 @@ pub struct VoterInfo {
     pub delegations_power: i64,
     pub delegations_count: i64,
     pub voting_power_saturation: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub delegator_addresses: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq)]
@@ -36,6 +38,7 @@ pub struct Delegation {
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 pub struct Delegator {
     pub delegations: Vec<Delegation>,
+    pub reward_address: String,
     pub raw_power: i64,
     pub total_power: i64,
     #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
@@ -61,6 +64,7 @@ mod tests {
                 delegations_power: 100,
                 delegations_count: 1,
                 voting_power_saturation: 0.4,
+                delegator_addresses: Some(vec!["stake_public_key_1".to_string()]),
             },
             as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
             last_updated: DateTime::from_utc(NaiveDateTime::default(), Utc),
@@ -76,7 +80,8 @@ mod tests {
                             "voting_group": "rep",
                             "delegations_power": 100,
                             "delegations_count": 1,
-                            "voting_power_saturation": 0.4
+                            "voting_power_saturation": 0.4,
+                            "delegator_addresses": ["stake_public_key_1"]
                         },
                     "as_at": "1970-01-01T00:00:00+00:00",
                     "last_updated": "1970-01-01T00:00:00+00:00",
@@ -95,6 +100,7 @@ mod tests {
                 weight: 5,
                 value: 100,
             }],
+            reward_address: "reward address 1".to_string(),
             raw_power: 100,
             total_power: 1000,
             as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
@@ -107,6 +113,7 @@ mod tests {
             json!(
                 {
                     "delegations": [{"voting_key": "voter","group": "rep","weight": 5,"value": 100}],
+                    "reward_address": "reward address 1",
                     "raw_power": 100,
                     "total_power": 1000,
                     "as_at": "1970-01-01T00:00:00+00:00",

@@ -1,2 +1,2 @@
-mod ideascale-importer;
-mod cat-data-service;
+mod ideascale_importer;
+mod cat_data_service;

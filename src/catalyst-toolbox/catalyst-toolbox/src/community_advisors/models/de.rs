@@ -1,6 +1,5 @@
-use crate::utils::serde::deserialize_truthy_falsy;
+use crate::{types::advisor_review::ReviewRanking, utils::serde::deserialize_truthy_falsy};
 use serde::{Deserialize, Serialize};
-use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewRanking as VitReviewRanking;
 
 /// (Proposal Id, Assessor Id), an assessor cannot assess the same proposal more than once
 pub type AdvisorReviewId = (String, String);
@@ -53,32 +52,6 @@ pub struct VeteranRankingRow {
     )]
     filtered_out: bool,
     pub vca: VeteranAdvisorId,
-}
-
-#[derive(Hash, Clone, PartialEq, Eq, Debug)]
-pub enum ReviewRanking {
-    Excellent,
-    Good,
-    FilteredOut,
-    NA, // not reviewed by vCAs
-}
-
-#[allow(clippy::from_over_into)]
-impl Into<VitReviewRanking> for ReviewRanking {
-    fn into(self) -> VitReviewRanking {
-        match self {
-            ReviewRanking::Good => VitReviewRanking::Good,
-            ReviewRanking::Excellent => VitReviewRanking::Excellent,
-            ReviewRanking::FilteredOut => VitReviewRanking::FilteredOut,
-            ReviewRanking::NA => VitReviewRanking::NA,
-        }
-    }
-}
-
-impl ReviewRanking {
-    pub fn is_positive(&self) -> bool {
-        matches!(self, Self::Excellent | Self::Good)
-    }
 }
 
 impl VeteranRankingRow {

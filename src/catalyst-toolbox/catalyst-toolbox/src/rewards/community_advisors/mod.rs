@@ -1,7 +1,7 @@
 mod funding;
 mod lottery;
 
-use crate::community_advisors::models::{AdvisorReviewRow, ReviewRanking};
+use crate::{community_advisors::models::AdvisorReviewRow, types::advisor_review::ReviewRanking};
 use lottery::{CasWinnings, TicketsDistribution};
 use rand::{Rng, SeedableRng};
 use rand_chacha::{ChaCha8Rng, ChaChaRng};

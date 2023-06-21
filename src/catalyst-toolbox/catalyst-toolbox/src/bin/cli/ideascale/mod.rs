@@ -1,8 +1,9 @@
 use catalyst_toolbox::{
-    community_advisors::models::{ReviewRanking, VeteranRankingRow},
+    community_advisors::models::VeteranRankingRow,
     ideascale::{
         build_challenges, build_fund, build_proposals, fetch_all, CustomFieldTags, Scores, Sponsors,
     },
+    types::advisor_review::ReviewRanking,
     utils::csv::{dump_data_to_csv, load_data_from_csv},
 };
 use color_eyre::Report;

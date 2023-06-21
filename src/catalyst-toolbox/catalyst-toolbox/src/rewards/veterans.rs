@@ -1,8 +1,6 @@
-use crate::community_advisors::models::{
-    ReviewRanking::{self, *},
-    VeteranAdvisorId, VeteranRankingRow,
-};
+use crate::community_advisors::models::{VeteranAdvisorId, VeteranRankingRow};
 use crate::rewards::Rewards;
+use crate::types::advisor_review::ReviewRanking;
 use itertools::Itertools;
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 use std::borrow::Borrow;
@@ -29,7 +27,10 @@ fn calc_final_ranking_per_review(rankings: &[impl Borrow<VeteranRankingRow>]) ->
     let rankings_majority = Decimal::from(rankings.len()) / Decimal::from(2);
     let ranks = rankings.iter().counts_by(|r| r.borrow().score());
 
-    match (ranks.get(&FilteredOut), ranks.get(&Excellent)) {
+    match (
+        ranks.get(&ReviewRanking::FilteredOut),
+        ranks.get(&ReviewRanking::Excellent),
+    ) {
         (Some(filtered_out), _) if Decimal::from(*filtered_out) >= rankings_majority => {
             ReviewRanking::FilteredOut
         }

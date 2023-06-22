@@ -488,9 +488,9 @@ paths:
                         required:
                           - proposal_id
                           - ballot
-                    required:
-                      - objective_id
-                      - ballots
+                  required:
+                    - objective_id
+                    - ballots
   /api/v1/ballot/check:
     post:
       summary: Check Ballot Validity

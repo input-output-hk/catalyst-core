@@ -1,5 +1,6 @@
 [workspace]
 members = [
+  "tests",
   "src/catalyst-toolbox/catalyst-toolbox",
   "src/catalyst-toolbox/snapshot-lib",
   "src/chain-libs/imhamt",

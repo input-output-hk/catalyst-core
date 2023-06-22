@@ -225,7 +225,7 @@ impl Filter {
                     ReviewRanking::Excellent => include_excellent,
                     ReviewRanking::Good => include_good,
                     ReviewRanking::FilteredOut => include_filtered,
-                    ReviewRanking::NA => true, // if unknown, ignore
+                    ReviewRanking::NotReviewedByVCA => true, // if unknown, ignore
                 })
             })
             .cloned()

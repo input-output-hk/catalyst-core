@@ -95,7 +95,7 @@ fn ranking_mux(excellent: bool, good: bool, filtered_out: bool) -> ReviewRanking
         (true, false, false) => ReviewRanking::Excellent,
         (false, true, false) => ReviewRanking::Good,
         (false, false, true) => ReviewRanking::FilteredOut,
-        (false, false, false) => ReviewRanking::NA,
+        (false, false, false) => ReviewRanking::NotReviewedByVCA,
         _ => {
             // This should never happen, from the source of information a review could be either
             // Excellent or Good or not assessed. It cannot be both and it is considered
@@ -129,7 +129,7 @@ mod tests {
             ReviewRanking::Good => (false, true, false),
             ReviewRanking::Excellent => (true, false, false),
             ReviewRanking::FilteredOut => (false, false, true),
-            ReviewRanking::NA => (false, false, false),
+            ReviewRanking::NotReviewedByVCA => (false, false, false),
         }
     }
 

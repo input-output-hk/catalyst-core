@@ -116,7 +116,7 @@ fn load_tickets_from_reviews(
 ) -> ProposalTickets {
     let is_legacy = proposal_reviews
         .iter()
-        .any(|rev| matches!(rev.score(), ReviewRanking::NA));
+        .any(|rev| matches!(rev.score(), ReviewRanking::NotReviewedByVCA));
 
     if is_legacy {
         return ProposalTickets::Legacy {
@@ -276,7 +276,7 @@ mod tests {
         (0..n_excellent)
             .map(|_| AdvisorReviewRow::dummy(ReviewRanking::Excellent))
             .chain((0..n_good).map(|_| AdvisorReviewRow::dummy(ReviewRanking::Good)))
-            .chain((0..n_na).map(|_| AdvisorReviewRow::dummy(ReviewRanking::NA)))
+            .chain((0..n_na).map(|_| AdvisorReviewRow::dummy(ReviewRanking::NotReviewedByVCA)))
             .collect()
     }
 

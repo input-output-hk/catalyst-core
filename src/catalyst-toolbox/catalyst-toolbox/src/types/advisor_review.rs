@@ -5,7 +5,7 @@ pub enum ReviewRanking {
     Excellent,
     Good,
     FilteredOut,
-    NA, // not reviewed by vCAs
+    NotReviewedByVCA,
 }
 
 impl ReviewRanking {

@@ -1698,8 +1698,10 @@ components:
             In the order as presented in the voters registration.
         reward_address:
           type: string
-          pattern: '[0-9a-f]{64}'
-          description: Hex encoded reward address for this delegation.
+          description: Reward address for this delegation.
+        reward_payable:
+          type: boolean
+          description: flag which reflects does the `reward_address` valid or not, contains it "addrr" or "addrr_test" prefix or not.
         raw_power:
           type: number
           description: Raw total voting power from stake address

@@ -1,20 +1,23 @@
 use catalyst_toolbox::rewards::voters::calc_voter_rewards;
 use catalyst_toolbox::rewards::{Rewards, Threshold};
+use catalyst_toolbox::types::proposal::FullProposalInfo;
+use catalyst_toolbox::utils::csv::dump_to_csv_or_print;
 use clap::Parser;
 use color_eyre::Report;
-use jcli_lib::jcli_lib::block::Common;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::AccountVotes};
+use serde::Serialize;
 use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
-
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]
 pub struct DrepsRewards {
-    #[clap(flatten)]
-    common: Common,
+    /// Path to the output file
+    /// print to stdout if not provided
+    #[clap(long)]
+    output: Option<PathBuf>,
+
     /// Reward (in dollars) to be distributed proportionally to delegated stake with respect to total stake.
     /// The total amount will only be awarded if dreps control all of the stake.
     #[clap(long)]
@@ -46,18 +49,23 @@ pub struct DrepsRewards {
 }
 
 fn write_rewards_results(
-    common: Common,
-    rewards: &BTreeMap<MainnetRewardAddress, Rewards>,
+    output: &Option<PathBuf>,
+    rewards: BTreeMap<MainnetRewardAddress, Rewards>,
 ) -> Result<(), Report> {
-    let writer = common.open_output()?;
-    let header = ["Address", "Reward for the voter (lovelace)"];
-    let mut csv_writer = csv::Writer::from_writer(writer);
-    csv_writer.write_record(header)?;
-
-    for (address, rewards) in rewards.iter() {
-        let record = [address.to_string(), rewards.trunc().to_string()];
-        csv_writer.write_record(&record)?;
+    #[derive(Serialize, Debug)]
+    struct Entry {
+        #[serde(rename = "Address")]
+        address: MainnetRewardAddress,
+        #[serde(rename = "Reward for the voter (lovelace)")]
+        reward: Rewards,
     }
+
+    dump_to_csv_or_print(
+        output,
+        rewards
+            .into_iter()
+            .map(|(address, reward)| Entry { address, reward }),
+    )?;
 
     Ok(())
 }
@@ -65,7 +73,7 @@ fn write_rewards_results(
 impl DrepsRewards {
     pub fn exec(self) -> Result<(), Report> {
         let DrepsRewards {
-            common,
+            output,
             total_rewards,
             snapshot_info_path,
             votes_count_path,
@@ -109,7 +117,7 @@ impl DrepsRewards {
             Rewards::from(total_rewards),
         )?;
 
-        write_rewards_results(common, &results)?;
+        write_rewards_results(&output, results)?;
         Ok(())
     }
 }

@@ -216,7 +216,7 @@ pub fn mixed_rewards_happy_path() {
                 .iter()
                 .map(|x| (x.id, VOTE_THRESHOLD_PER_CHALLENGE as usize))
                 .collect(),
-            proposals.clone(),
+            proposals.clone().into_iter().map(Into::into).collect(),
         )
         .unwrap(),
         TOTAL_REWARD.into(),
@@ -234,7 +234,7 @@ pub fn mixed_rewards_happy_path() {
                 .iter()
                 .map(|x| (x.id, VOTE_THRESHOLD_PER_CHALLENGE as usize))
                 .collect(),
-            proposals,
+            proposals.into_iter().map(Into::into).collect(),
         )
         .unwrap(),
         TOTAL_REWARD.into(),

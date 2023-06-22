@@ -10,12 +10,12 @@ pub type Funds = Decimal;
 pub type Rewards = Decimal;
 pub type VoteCount = HashMap<Identifier, HashSet<Hash>>;
 
+use crate::types::proposal::FullProposalInfo;
 use chain_impl_mockchain::certificate::ExternalProposalId;
 use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 
 #[derive(Debug, Error)]
 pub enum Error {

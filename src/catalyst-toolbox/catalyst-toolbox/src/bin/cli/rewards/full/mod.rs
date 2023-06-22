@@ -1,18 +1,16 @@
-use std::{fs::File, path::Path};
-
 use catalyst_toolbox::{
-    http::HttpClient,
     rewards::proposers::{OutputFormat, ProposerRewards},
+    utils::json_from_file,
 };
 use color_eyre::Result;
 use config::*;
-use serde_json::from_reader;
+use std::path::Path;
 use tracing::info;
 
 mod config;
 
 pub(super) fn full_rewards(path: &Path) -> Result<()> {
-    let config = from_reader(File::open(path)?)?;
+    let config = json_from_file(path)?;
     let Config {
         inputs:
             Inputs {
@@ -47,7 +45,7 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
 
     info!("calculating voter rewards");
     super::voters::voter_rewards(
-        &voter_rewards_output,
+        &Some(voter_rewards_output),
         &vote_count_path,
         &snapshot_path,
         voter_params.vote_threshold,
@@ -80,33 +78,18 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
     )?;
 
     info!("calculating proposer rewards");
-    super::proposers::rewards(
-        &ProposerRewards {
-            output: proposer_rewards_output,
-            block0: block_file,
-            total_stake_threshold: proposer_params.stake_threshold,
-            approval_threshold: proposer_params.approval_threshold,
-            proposals: Some(proposals_path),
-            active_voteplans: Some(active_voteplans),
-            challenges: Some(challenges),
-            committee_keys: Some(committee_keys),
-            excluded_proposals,
-            output_format: OutputFormat::Csv,
-            vit_station_url: "not used".into(),
-        },
-        &PanickingHttpClient,
-    )?;
+    super::proposers::rewards(&ProposerRewards {
+        output: proposer_rewards_output,
+        block0: block_file,
+        total_stake_threshold: proposer_params.stake_threshold,
+        approval_threshold: proposer_params.approval_threshold,
+        proposals: proposals_path,
+        active_voteplans,
+        challenges,
+        committee_keys: Some(committee_keys),
+        excluded_proposals,
+        output_format: OutputFormat::Csv,
+    })?;
 
     Ok(())
-}
-
-struct PanickingHttpClient;
-
-impl HttpClient for PanickingHttpClient {
-    fn get<T>(&self, _path: &str) -> Result<catalyst_toolbox::http::HttpResponse<T>>
-    where
-        T: for<'a> serde::Deserialize<'a>,
-    {
-        unimplemented!("this implementation always panics");
-    }
 }

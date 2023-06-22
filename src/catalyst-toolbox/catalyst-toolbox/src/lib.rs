@@ -11,6 +11,7 @@ pub mod recovery;
 pub mod rewards;
 pub mod stats;
 pub mod testing;
+pub mod types;
 pub mod utils;
 pub mod vca_reviews;
 pub mod vote_check;

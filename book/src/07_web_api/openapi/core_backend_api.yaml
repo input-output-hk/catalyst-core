@@ -41,7 +41,7 @@ tags:
   - name: vit-ss
     description: VIT-SS backward compatibility endpoints
 servers:
-  - url: 'http://localhost:{port}'
+  - url: 'http://localhost:8080'
     description: Local Testing Only
     variables:
       port:
@@ -77,11 +77,13 @@ paths:
     get:
       operationId: healthReady
       summary: readiness of the service to accept incoming requests
-      description: readiness of the service to accept incoming requests
+      description: |
+        readiness of the service to accept incoming requests
       responses:
         '200':
+          description: |
+              Valid response
           content:
-            description: Valid response
             application/json:
               schema:
                 type: boolean
@@ -93,8 +95,8 @@ paths:
       description: liveness of the service
       responses:
         '200':
+          description: Valid response
           content:
-            description: Valid response
             application/json:
               schema:
                 type: boolean
@@ -109,8 +111,8 @@ paths:
         Get list of all currently known past, present and future Voting Events.
       responses:
         '200':
+          description: Valid response
           content:
-            description: Valid response
             application/json:
               schema:
                 description: List of all known Voting Events.
@@ -440,7 +442,7 @@ paths:
                       format: int32
                       description: The ID of this proposal.
                     ballot:
-                      type:
+                      schema:
                         $ref: '#/components/schemas/CatalystV1Ballot'
                   required:
                    - proposal_id
@@ -481,14 +483,14 @@ paths:
                             format: int32
                             description: The ID of this proposal.
                           ballot:
-                            type:
+                            schema:
                               $ref: '#/components/schemas/CatalystV1Ballot'
                         required:
                           - proposal_id
                           - ballot
-                    required:
-                      - objective_id
-                      - ballots
+                  required:
+                    - objective_id
+                    - ballots
   /api/v1/ballot/check:
     post:
       summary: Check Ballot Validity
@@ -1094,12 +1096,6 @@ components:
         - private
         - public
         - cast-private
-      minItems: 1
-      maxItems: 16
-      uniqueItems: true
-      items:
-        type: string
-        minLength: 1
     ObjectiveSupplementalData:
       title: Objective Supplemental Data
       x-stoplight:

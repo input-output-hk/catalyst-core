@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Duration","DurationVisitor","LocalDateTime","LocalDateTimeVisitor","SecondsSinceUnixEpoch","SecondsSinceUnixEpochVisitor","SystemTime","SystemTimeVisitor"]};

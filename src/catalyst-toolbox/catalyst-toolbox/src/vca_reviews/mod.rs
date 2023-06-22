@@ -1,6 +1,6 @@
 use crate::community_advisors::models::AdvisorReviewRow;
+use crate::types::advisor_review::AdvisorReview;
 use crate::utils;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 
 use std::path::Path;
 
@@ -25,7 +25,7 @@ impl AdvisorReviewRow {
             feasibility_note: self.feasibility_note.clone(),
             auditability_rating_given: self.auditability_rating as i32,
             auditability_note: self.auditability_note.clone(),
-            ranking: self.score().into(),
+            ranking: self.score(),
         }
     }
 }

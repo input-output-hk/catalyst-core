@@ -525,7 +525,7 @@
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     types::{
         event::EventId,
-        registration::{Delegation, Delegator, Voter, VoterGroupId, VoterInfo},
+        registration::{Delegation, Delegator, RewardAddress, Voter, VoterGroupId, VoterInfo},
     },
     Error, EventDB,
 };
@@ -757,7 +757,7 @@
 
         <span class="prelude-val">Ok</span>(Delegator {
             raw_power: delegations.iter().map(|delegation| delegation.value).sum(),
-            reward_address: delegation_rows[<span class="number">0</span>].try_get(<span class="string">&quot;reward_address&quot;</span>)<span class="question-mark">?</span>,
+            reward_address: RewardAddress::new(delegation_rows[<span class="number">0</span>].try_get(<span class="string">&quot;reward_address&quot;</span>)<span class="question-mark">?</span>),
             as_at: delegator_snapshot_info
                 .try_get::&lt;<span class="kw">_</span>, NaiveDateTime&gt;(<span class="string">&quot;as_at&quot;</span>)<span class="question-mark">?
                 </span>.and_local_timezone(Utc)
@@ -974,7 +974,7 @@
                         value: <span class="number">100</span>,
                     }
                 ],
-                reward_address: <span class="string">&quot;reward_address_1&quot;</span>.to_string(),
+                reward_address: RewardAddress::new(<span class="string">&quot;addrrreward_address_1&quot;</span>.to_string()),
                 raw_power: <span class="number">240</span>,
                 total_power: <span class="number">1000</span>,
                 as_at: DateTime::&lt;Utc&gt;::from_utc(
@@ -1017,7 +1017,7 @@
                         value: <span class="number">100</span>,
                     }
                 ],
-                reward_address: <span class="string">&quot;reward_address_1&quot;</span>.to_string(),
+                reward_address: RewardAddress::new(<span class="string">&quot;addrrreward_address_1&quot;</span>.to_string()),
                 raw_power: <span class="number">240</span>,
                 total_power: <span class="number">1000</span>,
                 as_at: DateTime::&lt;Utc&gt;::from_utc(

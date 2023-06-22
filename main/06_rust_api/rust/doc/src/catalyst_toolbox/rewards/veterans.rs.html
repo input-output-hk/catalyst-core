@@ -328,11 +328,10 @@
 <a href="#328" id="328">328</a>
 <a href="#329" id="329">329</a>
 <a href="#330" id="330">330</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::community_advisors::models::{
-    ReviewRanking::{<span class="self">self</span>, <span class="kw-2">*</span>},
-    VeteranAdvisorId, VeteranRankingRow,
-};
+<a href="#331" id="331">331</a>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::community_advisors::models::{VeteranAdvisorId, VeteranRankingRow};
 <span class="kw">use </span><span class="kw">crate</span>::rewards::Rewards;
+<span class="kw">use </span><span class="kw">crate</span>::types::advisor_review::ReviewRanking;
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>rust_decimal::{prelude::ToPrimitive, Decimal};
 <span class="kw">use </span>std::borrow::Borrow;
@@ -359,7 +358,10 @@
     <span class="kw">let </span>rankings_majority = Decimal::from(rankings.len()) / Decimal::from(<span class="number">2</span>);
     <span class="kw">let </span>ranks = rankings.iter().counts_by(|r| r.borrow().score());
 
-    <span class="kw">match </span>(ranks.get(<span class="kw-2">&amp;</span>FilteredOut), ranks.get(<span class="kw-2">&amp;</span>Excellent)) {
+    <span class="kw">match </span>(
+        ranks.get(<span class="kw-2">&amp;</span>ReviewRanking::FilteredOut),
+        ranks.get(<span class="kw-2">&amp;</span>ReviewRanking::Excellent),
+    ) {
         (<span class="prelude-val">Some</span>(filtered_out), <span class="kw">_</span>) <span class="kw">if </span>Decimal::from(<span class="kw-2">*</span>filtered_out) &gt;= rankings_majority =&gt; {
             ReviewRanking::FilteredOut
         }

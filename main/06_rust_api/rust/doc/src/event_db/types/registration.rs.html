@@ -124,6 +124,42 @@
 <a href="#124" id="124">124</a>
 <a href="#125" id="125">125</a>
 <a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::utils::serialize_datetime_as_rfc3339;
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>serde::{Deserialize, Serialize};
@@ -162,9 +198,33 @@
 }
 
 <span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>RewardAddress {
+    reward_address: String,
+    reward_payable: bool,
+}
+
+<span class="kw">impl </span>RewardAddress {
+    <span class="kw">const </span>MAINNET_PREFIX: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;addr&quot;</span>;
+    <span class="kw">const </span>TESTNET_PREFIX: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;addr_test&quot;</span>;
+
+    <span class="comment">// validation according CIP-19 https://github.com/cardano-foundation/CIPs/blob/master/CIP-0019/README.md
+    </span><span class="kw">fn </span>cardano_address_check(address: <span class="kw-2">&amp;</span>str) -&gt; bool {
+        address.starts_with(<span class="self">Self</span>::MAINNET_PREFIX) || address.starts_with(<span class="self">Self</span>::TESTNET_PREFIX)
+    }
+
+    <span class="kw">pub fn </span>new(reward_address: String) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            reward_payable: <span class="self">Self</span>::cardano_address_check(<span class="kw-2">&amp;</span>reward_address),
+            reward_address,
+        }
+    }
+}
+
+<span class="attr">#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>Delegator {
     <span class="kw">pub </span>delegations: Vec&lt;Delegation&gt;,
-    <span class="kw">pub </span>reward_address: String,
+    <span class="attr">#[serde(flatten)]
+    </span><span class="kw">pub </span>reward_address: RewardAddress,
     <span class="kw">pub </span>raw_power: i64,
     <span class="kw">pub </span>total_power: i64,
     <span class="attr">#[serde(serialize_with = <span class="string">&quot;serialize_datetime_as_rfc3339&quot;</span>)]
@@ -180,6 +240,17 @@
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span>chrono::NaiveDateTime;
     <span class="kw">use </span>serde_json::json;
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>cardano_address_check_test() {
+        <span class="kw">let </span>mainnet_addrr = <span class="string">&quot;addrr1&quot;</span>;
+        <span class="kw">let </span>testnet_addrr = <span class="string">&quot;addrr_test2&quot;</span>;
+        <span class="kw">let </span>invalid_addrr = <span class="string">&quot;invalid&quot;</span>;
+
+        <span class="macro">assert!</span>(RewardAddress::cardano_address_check(mainnet_addrr));
+        <span class="macro">assert!</span>(RewardAddress::cardano_address_check(testnet_addrr));
+        <span class="macro">assert!</span>(!RewardAddress::cardano_address_check(invalid_addrr));
+    }
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>voter_json_test() {
@@ -226,7 +297,7 @@
                 weight: <span class="number">5</span>,
                 value: <span class="number">100</span>,
             }],
-            reward_address: <span class="string">&quot;reward address 1&quot;</span>.to_string(),
+            reward_address: RewardAddress::new(<span class="string">&quot;reward address 1&quot;</span>.to_string()),
             raw_power: <span class="number">100</span>,
             total_power: <span class="number">1000</span>,
             as_at: DateTime::from_utc(NaiveDateTime::default(), Utc),
@@ -240,6 +311,7 @@
                 {
                     <span class="string">&quot;delegations&quot;</span>: [{<span class="string">&quot;voting_key&quot;</span>: <span class="string">&quot;voter&quot;</span>,<span class="string">&quot;group&quot;</span>: <span class="string">&quot;rep&quot;</span>,<span class="string">&quot;weight&quot;</span>: <span class="number">5</span>,<span class="string">&quot;value&quot;</span>: <span class="number">100</span>}],
                     <span class="string">&quot;reward_address&quot;</span>: <span class="string">&quot;reward address 1&quot;</span>,
+                    <span class="string">&quot;reward_payable&quot;</span>: <span class="bool-val">false</span>,
                     <span class="string">&quot;raw_power&quot;</span>: <span class="number">100</span>,
                     <span class="string">&quot;total_power&quot;</span>: <span class="number">1000</span>,
                     <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,

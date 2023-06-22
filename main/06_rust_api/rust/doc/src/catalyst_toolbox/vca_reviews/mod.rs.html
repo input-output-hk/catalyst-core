@@ -39,8 +39,8 @@
 <a href="#39" id="39">39</a>
 <a href="#40" id="40">40</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::community_advisors::models::AdvisorReviewRow;
+<span class="kw">use </span><span class="kw">crate</span>::types::advisor_review::AdvisorReview;
 <span class="kw">use </span><span class="kw">crate</span>::utils;
-<span class="kw">use </span>vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
 
 <span class="kw">use </span>std::path::Path;
 
@@ -65,7 +65,7 @@
             feasibility_note: <span class="self">self</span>.feasibility_note.clone(),
             auditability_rating_given: <span class="self">self</span>.auditability_rating <span class="kw">as </span>i32,
             auditability_note: <span class="self">self</span>.auditability_note.clone(),
-            ranking: <span class="self">self</span>.score().into(),
+            ranking: <span class="self">self</span>.score(),
         }
     }
 }

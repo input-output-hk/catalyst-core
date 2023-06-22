@@ -299,7 +299,7 @@ INSERT INTO proposal
 VALUES
 
 (
-    0,  -- id
+    423260,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Hard Fork Cafe',  -- title
     'There is a lack a community engagement on twitter and many other social media platforms.',  -- summary
@@ -320,7 +320,7 @@ VALUES
 ,
 
 (
-    1,  -- id
+    423252,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'CARDANO HUB IN CKT',  -- title
     'To facilitate the pace of Blockchain utilization, there is the need to obtain access in institution of higher learning.',  -- summary
@@ -343,7 +343,7 @@ VALUES
 ,
 
 (
-    2,  -- id
+    423227,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'CNFT CON KickOff Party',  -- title
     'Cardano has the stigma of being the "lesser of the fun" blockchain versus Ethereum and Solana when it comes to events and parties on social media such as Twitter.',  -- summary
@@ -364,7 +364,7 @@ VALUES
 ,
 
 (
-    3,  -- id
+    423225,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Maximize Value From Previous Funds',  -- title
     'There is more value that could be extracted from the content we are creating from previous funds. With additional time and resources, content could be built upon and shared with a wider audience.',  -- summary
@@ -385,7 +385,7 @@ VALUES
 ,
 
 (
-    4,  -- id
+    423223,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'DAO Infrastructure Framework (DIF)',  -- title
     'DAO''s are dependent on centralised services from a multitude of closed source providers. Not only does this make them vulnerable to censorship, they''re too complicated to use for ordinary people.',  -- summary
@@ -406,7 +406,7 @@ VALUES
 ,
 
 (
-    5,  -- id
+    423204,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cooperative dApp',  -- title
     'Cooperatives and NGO''s in Africa have for decades suffered from corruption and financial injustice. Only 1% of members receive the majority of the money. There is a lack of transparency and trust.',  -- summary
@@ -427,7 +427,7 @@ VALUES
 ,
 
 (
-    6,  -- id
+    423201,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'PropX DAO :- Property Exchange DAO',  -- title
     'Real Estate is an illiquid asset, which means that trading is a lengthy and bureaucratic process; ownership does not swap hands quickly. Real Estate is reserved to a high ticket sector of the society.',  -- summary
@@ -448,7 +448,7 @@ VALUES
 ,
 
 (
-    7,  -- id
+    423200,  -- id
     (SELECT row_id FROM objective WHERE id=11 AND event=9), -- objective
     'Tutorial on Building a wallet',  -- title
     'Like with all new products there is a fear of the unknown, and Blockfrost is no exception.',  -- summary
@@ -474,7 +474,7 @@ https://t.me/EndubisTestWalletBot', -- relevant experience
 ,
 
 (
-    8,  -- id
+    423195,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Konma x SardaM DAO',  -- title
     'There exists no solution on the Cardano ecosystem, region specific to South-Asia, encouraging the spread of awareness regarding the Cardano blockchain and its implementation of the Haskell language.',  -- summary
@@ -495,7 +495,7 @@ https://t.me/EndubisTestWalletBot', -- relevant experience
 ,
 
 (
-    9,  -- id
+    423190,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ZOOMLOOK Luxury CNFT Platform',  -- title
     'Worldwide adoption of CNFTs among brands and individuals lags significantly behind NFTs on Etherium''s ERC721. The lack of achievement in CNFTs is negatively affecting the price of ADA.',  -- summary
@@ -516,7 +516,7 @@ https://t.me/EndubisTestWalletBot', -- relevant experience
 ,
 
 (
-    10,  -- id
+    423184,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'paoDAO School of Blockchain',  -- title
     'Few solid use cases exist for DAOs and DIDs; education focuses on evaluation and less on learning; blockchain-related curriculum is hard to find and update; few are motivated to participate in upkeep.',  -- summary
@@ -547,7 +547,7 @@ Proposer and PA in Fund 8. Presented in ATH and Gimbalabs.
 ,
 
 (
-    11,  -- id
+    423177,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Legal Consultancy in Ethiopia',  -- title
     'Government offices in Ethiopia are currently releasing statements on the use of crypto without any legal basis. These statements are pushing and scaring people away from the adoption of crypto.',  -- summary
@@ -568,7 +568,7 @@ Proposer and PA in Fund 8. Presented in ATH and Gimbalabs.
 ,
 
 (
-    12,  -- id
+    423166,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'クリエイターをピュアに評価するシステム',  -- title
     'Non-creators receive much rewards than that for creaters. Centrralized system prohibit formal evaluation for creators. But the indivisual creater can not prevent the product from dupe or plagiarism.',  -- summary
@@ -589,7 +589,7 @@ Proposer and PA in Fund 8. Presented in ATH and Gimbalabs.
 ,
 
 (
-    13,  -- id
+    423157,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Amplify Japanese Cardano Content',  -- title
     'Cool things are happening for Cardano in Japan everyday - but reaching audiences outside of the existing community is difficult. Media coverage in general tends to favor speculation over innovation.',  -- summary
@@ -610,7 +610,7 @@ Proposer and PA in Fund 8. Presented in ATH and Gimbalabs.
 ,
 
 (
-    14,  -- id
+    423151,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Fundraising for Impact Initiatives.',  -- title
     'There is no proper fundraising mechanism for impact Initiatives in Cardano Community. Cardanians want to give but have no fun options to do so by buying tickets to fun events',  -- summary
@@ -631,7 +631,7 @@ Proposer and PA in Fund 8. Presented in ATH and Gimbalabs.
 ,
 
 (
-    15,  -- id
+    423145,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano Asia TikTok Channel',  -- title
     'The rapidly increasing Asia community requires that Cardano documents and news be presented in a more reliable, understandable, and effective way in local Asian languages.',  -- summary
@@ -654,7 +654,7 @@ We have a sum of more than 20 years of experience in social media and 3-5 years 
 ,
 
 (
-    16,  -- id
+    423129,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano in Khmer',  -- title
     'Provide translated content taken from official Cardano documentation in the form of Khmer videos about Cardano ecosystem.',  -- summary
@@ -692,7 +692,7 @@ Official Translator for Department of Languages Sri Lanka', -- relevant experien
 ,
 
 (
-    17,  -- id
+    423128,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Gig workers DAO',  -- title
     'Gig work does not come with pensions, sick pay, holiday entitlement or parental leave.',  -- summary
@@ -713,7 +713,7 @@ Official Translator for Department of Languages Sri Lanka', -- relevant experien
 ,
 
 (
-    18,  -- id
+    423125,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Unsung NFT Marketplace with DeFi',  -- title
     'Unsung creatives are challenged with counterfeits, inadequate artwork provenance, extended time to market and inadequate financial services.',  -- summary
@@ -734,7 +734,7 @@ Official Translator for Department of Languages Sri Lanka', -- relevant experien
 ,
 
 (
-    19,  -- id
+    423121,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'The tokenization of real estate',  -- title
     'Particularly during the COVID-19 pandemic, one of the problems of the real estate sector as the dependence on physical meetings to conclude contracts stands out. Procedural difficulties',  -- summary
@@ -759,7 +759,7 @@ Official Translator for Department of Languages Sri Lanka', -- relevant experien
 ,
 
 (
-    20,  -- id
+    423120,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Community Workshop&Travel to France',  -- title
     'Building longstanding relationships and collaborations can be a lot of work. Sometimes it is difficult to get a good sense of community members and the way they work.',  -- summary
@@ -780,7 +780,7 @@ Official Translator for Department of Languages Sri Lanka', -- relevant experien
 ,
 
 (
-    21,  -- id
+    423118,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'US-Kenya Based WOT Remittance Chain',  -- title
     'There does not exist a trust-chain from the migrant community sending remittances to regions where sanctions and flashpoints are common, and fear of intangibility of assets are unacceptable.',  -- summary
@@ -801,7 +801,7 @@ Official Translator for Department of Languages Sri Lanka', -- relevant experien
 ,
 
 (
-    22,  -- id
+    423113,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Rendering and Tokenomics Consultant',  -- title
     'The ecosystem has many projects that require 3d rendering and tokenomics but without proper coordination, these integrations are difficult to achieve',  -- summary
@@ -832,7 +832,7 @@ Blender and general 3d modeling', -- relevant experience
 ,
 
 (
-    23,  -- id
+    423114,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Well-being in Web3',  -- title
     'We’re not speaking about well-being in web3 enough, and we need to. As exciting as everything is, we need to establish clear boundaries for well-being + actively seek to ensure mental/physical health.',  -- summary
@@ -853,7 +853,7 @@ Blender and general 3d modeling', -- relevant experience
 ,
 
 (
-    24,  -- id
+    423110,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano in Laotian',  -- title
     'Provide translated content taken from official Cardano documentation in the form of Laotianvideos about Cardano ecosystem.',  -- summary
@@ -881,7 +881,7 @@ Blender and general 3d modeling', -- relevant experience
 ,
 
 (
-    25,  -- id
+    423109,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Parcel Delivery MVP Testing',  -- title
     'Postal services in African countries are expensive, unreliable, slow, inconvenient, inefficient and even inaccessible to many people according to reports of the Universal Postal Union (UPU).',  -- summary
@@ -902,7 +902,7 @@ Blender and general 3d modeling', -- relevant experience
 ,
 
 (
-    26,  -- id
+    423104,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'CAT\_ID Catalyst SSI',  -- title
     'Decentralized and Distributed Organizations may have many members or participants that move in and out of roles and other organizations.',  -- summary
@@ -930,7 +930,7 @@ www.linkedin.com/in/dominick-garey-878a65117/', -- relevant experience
 ,
 
 (
-    27,  -- id
+    423099,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Catalyst for MBA Students.',  -- title
     'There is a no reliable open fundraising platform for student entrepreneurs nor a business incubator for students to access free resources so they can successfully start and grow their businesses.',  -- summary
@@ -951,7 +951,7 @@ www.linkedin.com/in/dominick-garey-878a65117/', -- relevant experience
 ,
 
 (
-    28,  -- id
+    423096,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Antique Tokenization for Fairness',  -- title
     'Today, the value and information of antiques relies heavily on a few centralized platforms, resulting in limited opportunities to expand the value of antiques, a precious asset to humankind.',  -- summary
@@ -972,7 +972,7 @@ www.linkedin.com/in/dominick-garey-878a65117/', -- relevant experience
 ,
 
 (
-    29,  -- id
+    423094,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Tokenising employment - ERS',  -- title
     '8 out of 10 workers in Africa are involved in informal employment and their contribution to the economy is not measured and valued.',  -- summary
@@ -993,7 +993,7 @@ www.linkedin.com/in/dominick-garey-878a65117/', -- relevant experience
 ,
 
 (
-    30,  -- id
+    423083,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Educating Local Japanese Government',  -- title
     'Local governments in Japan are looking for new and innovative ways to revitalize depopulated areas and serve their aging communities. Cardano and blockchain tech are rarely considered as solutions.',  -- summary
@@ -1014,7 +1014,7 @@ www.linkedin.com/in/dominick-garey-878a65117/', -- relevant experience
 ,
 
 (
-    31,  -- id
+    423080,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Elevate Social Impacts via Cardano',  -- title
     'There are over 20,000 social enterprises in Vietnam yet start-up social enterprises don''t have much financial support to execute their work while Ada holders have lack of trusted platforms to donate.',  -- summary
@@ -1037,7 +1037,7 @@ Two other team members have 2-20 years working in technology industry and social
 ,
 
 (
-    32,  -- id
+    423077,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Global Compliance 200+ Jurisdiction',  -- title
     'Project Catalyst is the largest global digital nation state in history and must address the global legal & financial regulations to have peace of mind and confidence in Catalyst.',  -- summary
@@ -1062,7 +1062,7 @@ Two other team members have 2-20 years working in technology industry and social
 ,
 
 (
-    33,  -- id
+    423076,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Supply dustbin cans in universities',  -- title
     'Due to time these details will be given in the comments',  -- summary
@@ -1083,7 +1083,7 @@ Two other team members have 2-20 years working in technology industry and social
 ,
 
 (
-    34,  -- id
+    423074,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NOMICA Incentive Platform',  -- title
     'The world’s sustainability goals (SDGs, Climate, Green Economy, Finance 4.0) can arguably only be achieved on a global level through highly scalable projects with real, measurable impact.',  -- summary
@@ -1104,7 +1104,7 @@ Two other team members have 2-20 years working in technology industry and social
 ,
 
 (
-    35,  -- id
+    423072,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Messaging Any Address',  -- title
     'Since setting up an address is anonymous, it’s very hard or even impossible to track down the owner of an address and send him/her a message.',  -- summary
@@ -1135,7 +1135,7 @@ The team excels at:
 ,
 
 (
-    36,  -- id
+    423070,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Ada NFT Marketplace for the unsung',  -- title
     'Unsung creatives are challenged with counterfeits, inadequate artwork provenance, extended time to market and inadequate financial services.',  -- summary
@@ -1156,7 +1156,7 @@ The team excels at:
 ,
 
 (
-    37,  -- id
+    423067,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Atala PRISM DID',  -- title
     'Accelerate the adoption of decentralized identities (DIDs) in the Cardano Community with an ID for the Republic of Uzupis.',  -- summary
@@ -1179,7 +1179,7 @@ The team excels at:
 ,
 
 (
-    38,  -- id
+    423065,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Powerchain by Lightency',  -- title
     '* 1.2 billion people in the world are living off-grid
@@ -1204,7 +1204,7 @@ The team excels at:
 ,
 
 (
-    39,  -- id
+    423064,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Ledger Developer Onboarding Course',  -- title
     'Ledger devices can increase the security of Cardano users and projects (through integrations). We want to make it easy for dApps and integrations to add Ledger support to their products.',  -- summary
@@ -1225,7 +1225,7 @@ The team excels at:
 ,
 
 (
-    40,  -- id
+    423055,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Following & Social Discovery Tool',  -- title
     'Almost anyone investing actively in the Cardano ecosystem has experienced a rugpull or scam. And as Cardano grows, it will be even harder to find legit projects to invest in.',  -- summary
@@ -1256,7 +1256,7 @@ The team excels at:
 ,
 
 (
-    41,  -- id
+    423049,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'NFT Guild Operations',  -- title
     'The Cardano NFT community is working in silos on similar initiatives for tools and standards.
@@ -1285,7 +1285,7 @@ Developers, SPOs, artists, NFT project creators, community managers and organise
 ,
 
 (
-    42,  -- id
+    423041,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Innovation Fund Research - Roles',  -- title
     'We lack an overview of interactions between the Catalyst community roles in different funding stages.',  -- summary
@@ -1306,7 +1306,7 @@ Developers, SPOs, artists, NFT project creators, community managers and organise
 ,
 
 (
-    43,  -- id
+    423039,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'DLT360: Securities Law & Tokens',  -- title
     'Token issuance is fundamental for most blockchain projects, communities & companies. However, securities regulation around the world is about to create sweeping obligations, which must be mapped',  -- summary
@@ -1327,7 +1327,7 @@ Developers, SPOs, artists, NFT project creators, community managers and organise
 ,
 
 (
-    44,  -- id
+    423036,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Community Endorsement formalized',  -- title
     'Traditional labor market is shifting to serve the on-demand economy and workforce identity is moving away from traditional CV, but there is no tool or platform available yet to accommodate that shift.',  -- summary
@@ -1348,7 +1348,7 @@ Developers, SPOs, artists, NFT project creators, community managers and organise
 ,
 
 (
-    45,  -- id
+    423032,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Open-Source DAO Framework',  -- title
     'Sustainable DAOs don’t exist, but they should. DAOs are susceptible to eventual centralization and centralized institutions usually become corrupted.',  -- summary
@@ -1370,7 +1370,7 @@ Developers, SPOs, artists, NFT project creators, community managers and organise
 ,
 
 (
-    46,  -- id
+    423030,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Tokenization: Creator Economy',  -- title
     'Crowdsourcing initiatives often have contributors with no remuneration or that do not have the tools to present a unified vision, as well as they see communities getting isolated.',  -- summary
@@ -1391,7 +1391,7 @@ Developers, SPOs, artists, NFT project creators, community managers and organise
 ,
 
 (
-    47,  -- id
+    423029,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Valuation & Tax Reporting Tool',  -- title
     'Keeping track of your wallet(s) value and profit/loss can take a lot of time. And setting up a tax report to comply with your country''s regulations is even more time-consuming.',  -- summary
@@ -1422,7 +1422,7 @@ The team excels at:
 ,
 
 (
-    48,  -- id
+    423028,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Be Love ❤️',  -- title
     'People experiencing homelessness are stereotyped, stigmatized, and face uphill battles gaining stable housing; while Cardano needs streaming content that matches the empathy and love of its community.',  -- summary
@@ -1443,7 +1443,7 @@ The team excels at:
 ,
 
 (
-    49,  -- id
+    423023,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano pre-hub in Philippines',  -- title
     'Cardano lacks strong representation in the Philippines while Goodwall has a strong community in the region.',  -- summary
@@ -1464,7 +1464,7 @@ The team excels at:
 ,
 
 (
-    50,  -- id
+    423021,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Mtidano: NFTrees 4 Erosion Control',  -- title
     'Soil erosion is the cause of the degradation and fear of soil fauna and flora and is therefore one of the key elements of extreme disasters and climate change.',  -- summary
@@ -1494,7 +1494,7 @@ The team excels at:
 ,
 
 (
-    51,  -- id
+    423018,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'DegaFund crowd fundraising system',  -- title
     'In the case of Ethiopia platforms have been subject to fraudulent issues with Gofundme because its accounts are not accessible to Ethiopians and the rest of Africa plus it lacks smart contracts.',  -- summary
@@ -1518,7 +1518,7 @@ The team excels at:
 ,
 
 (
-    52,  -- id
+    423016,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Digital ID for paperless youth',  -- title
     'Millions of youth around the world lack legally recognized identification or don’t have the ability to use it in the digital world.',  -- summary
@@ -1539,7 +1539,7 @@ The team excels at:
 ,
 
 (
-    53,  -- id
+    423010,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Role interaction studies in Cardano',  -- title
     'Voting in the Cardano system needs to be revised, since a significant part of the participants vote randomly, and the largest part of the platform participants do not vote at all.',  -- summary
@@ -1560,7 +1560,7 @@ The team excels at:
 ,
 
 (
-    54,  -- id
+    423007,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PubWeave: Academic Publishing',  -- title
     'The academic publishing industry suffers from a centralization problem. Few journals benefit from the work of millions of scientists who provide their services for free and even pay to publish.',  -- summary
@@ -1596,7 +1596,7 @@ Combined:
 ,
 
 (
-    55,  -- id
+    422999,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Ecosystem Map-Community Wayfinding',  -- title
     'There is a lack of data & visuals to help the community to understand & navigate the Cardano & Catalyst Ecosystem',  -- summary
@@ -1617,7 +1617,7 @@ Combined:
 ,
 
 (
-    56,  -- id
+    422989,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Instant Financial Data Application',  -- title
     'There are 2 main issues we can try to solve.
@@ -1643,7 +1643,7 @@ Our software developer has experience in making and presenting applications.', -
 ,
 
 (
-    57,  -- id
+    422984,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Market making bots on Cardano',  -- title
     'Market making bots are one of the most widely used methods to bring more liquidity to exchanges.
@@ -1666,7 +1666,7 @@ Existing frameworks for trading bots do not interface with decentralized exchang
 ,
 
 (
-    58,  -- id
+    422980,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'support for education',  -- title
     'Nort kivu is one of provinces of DRCongo,to the east. It has an area of 5948km2. It is made up to 6 administratives . For more than decades; this province has been the victim of several atrocities',  -- summary
@@ -1687,7 +1687,7 @@ Existing frameworks for trading bots do not interface with decentralized exchang
 ,
 
 (
-    59,  -- id
+    422947,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'ARTS, COMICS AND NFT IN GABON',  -- title
     '* Crypto and NFT are a novelty in Gabon
@@ -1710,7 +1710,7 @@ Existing frameworks for trading bots do not interface with decentralized exchang
 ,
 
 (
-    60,  -- id
+    422943,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Medium of underrepresented Africans',  -- title
     'Establishing equal opportunity in reaching reliable info for the underrepresented people in Africa, which does not have a strong tech infrastructure, is crucial for the growth of Cardano and bc.',  -- summary
@@ -1731,7 +1731,7 @@ Existing frameworks for trading bots do not interface with decentralized exchang
 ,
 
 (
-    61,  -- id
+    422940,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Wallet Integration',  -- title
     'Goodwall constantly sends out monetary prizes to youth. It’s a burden to send out bank payments internationally and a lot of the fintech options can be cost prohibitive.',  -- summary
@@ -1752,7 +1752,7 @@ Existing frameworks for trading bots do not interface with decentralized exchang
 ,
 
 (
-    62,  -- id
+    422927,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardahub-One Stop Shop for CNFT',  -- title
     'CNFT is exploding. But there is no Smart Contract-based One Stop Shop for everything CNFT on Cardano Blockchain yet.',  -- summary
@@ -1773,7 +1773,7 @@ Existing frameworks for trading bots do not interface with decentralized exchang
 ,
 
 (
-    63,  -- id
+    422900,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Ledger Live Integration #2',  -- title
     'A successful continuation on the Ledger Live - Cardano integration requires experts knowledge & development for a further secure, fast development',  -- summary
@@ -1794,7 +1794,7 @@ Existing frameworks for trading bots do not interface with decentralized exchang
 ,
 
 (
-    64,  -- id
+    422893,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano for Asia - impact ventures',  -- title
     'Cardano can greatly benefit impact entrepreneurs in Asia but there is not much awareness on it and entrepreneurs would need to learn about the potential of blockchain and the Cardano network.',  -- summary
@@ -1815,7 +1815,7 @@ Existing frameworks for trading bots do not interface with decentralized exchang
 ,
 
 (
-    65,  -- id
+    422890,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Uncollateralized crypto loans',  -- title
     'We live in a world where Banks and third parties control which company, institution or individual receives loans.
@@ -1850,7 +1850,7 @@ Wincent is a leading crypto market maker with $3B+ daily volume and 300K+ daily 
 ,
 
 (
-    66,  -- id
+    422883,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     '''What The DAO?'' Twitter Space',  -- title
     'There is no DAO-specific meeting place on Social Media aimed at interviewing significant people in the world of DAOs, geared towards adopting Cardano as the premier “DAO-Space” across all blockchains.',  -- summary
@@ -1880,7 +1880,7 @@ His experience includes:
 ,
 
 (
-    67,  -- id
+    422882,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Add ADA to 1st NFT Marketplace-MENA',  -- title
     'There is no local NFT marketplace supporting local languages and categories to create and sell NFTs using Cardano Blockchain in the MENA region.',  -- summary
@@ -1901,7 +1901,7 @@ His experience includes:
 ,
 
 (
-    68,  -- id
+    422879,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Community CIP Editor: 1 year budget',  -- title
     'Cardano''s rapid growth relative to Ethereum has not yet evolved the same level of comprehensive support for our open (CIP) standards as Ethereum has maintained for its own open (EIP) standards.',  -- summary
@@ -1926,7 +1926,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    69,  -- id
+    422861,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Off-chain SC interaction tooling',  -- title
     'Cardano features many opportunities for the community to participate in on-chain protocols through off-chain components. There are no templates and easily approachable tutorials to develop such tools.',  -- summary
@@ -1947,7 +1947,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    70,  -- id
+    422854,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Virtual Experiences Toolbox',  -- title
     'Existing Cardano NFT marketplaces are static in terms of exhibiting NFTs - simple listings. Users are unable to create 3D virtual experiences within the marketplace and share with the world.',  -- summary
@@ -1968,7 +1968,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    71,  -- id
+    422853,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Tribal DIDs=Indigenous Sovereignty',  -- title
     'Tribal identity systems, in place for millennia, are not yet recognised by states/institutions creating national DIDs, excluding indigenous population’s pre-colonial norms, rules, rights & sovereignty',  -- summary
@@ -1989,7 +1989,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    72,  -- id
+    422843,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Impact monetization 4 entrepreneurs',  -- title
     'Lack of knowledge on needs and practices of using blockchain to value and monetise impact among social entrepreneurs in developing countries.',  -- summary
@@ -2010,7 +2010,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    73,  -- id
+    422842,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano Youth Ambassadors',  -- title
     'Youth in Africa is unaware of Cardano, the blockchain, and the potential to use its application for social impact and a more decentralized future.',  -- summary
@@ -2031,7 +2031,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    74,  -- id
+    422840,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Cardano Commoner: SofiH',  -- title
     'The ecosystem has many projects that require interconnectivity but without cross project collaboration this difficult to achieve',  -- summary
@@ -2057,7 +2057,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    75,  -- id
+    422818,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Unity Game Engine NFT Plugin',  -- title
     'Cardano is not very accessible to Game Developers, there are barely any games running on Cardano and even less Game-Focused tools.',  -- summary
@@ -2078,7 +2078,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    76,  -- id
+    422817,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Challenge Teams Web Portal - CTWP',  -- title
     'Challenge Team (CT) members cannot easily streamline the Proof of Life (POL) process, especially for new CT members to record updates in phases 1, 2 and 3 and fairness in payment claims over CT term.',  -- summary
@@ -2099,7 +2099,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    77,  -- id
+    422803,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano Ladies Hub (CLH)',  -- title
     'Women at the University of Cape Coast want to learn and contribute to the blockchain ecosystem but do not have the means to do that. The Cardano lady''s Hub will offer them the environment to do that.',  -- summary
@@ -2120,7 +2120,7 @@ UNIX/Linux systems integrator, project manager, and software standards architect
 ,
 
 (
-    78,  -- id
+    422762,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Trybbles NFT AR Pets Art & Assets',  -- title
     'Most blockchain games in development target hardcore gamers ignoring the fact that the majority of the audience are casual players and fail to convey the advantages of digital ownership to users.',  -- summary
@@ -2149,7 +2149,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    79,  -- id
+    422747,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Promoting Japanese Content Abroad',  -- title
     'Cool things are happening in the Japanese Cardano Community everyday - but many western audiences are unaware. English coverage of Cardano in Japan tends to favor speculation over community activity.',  -- summary
@@ -2170,7 +2170,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    80,  -- id
+    422745,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano for Self-Care',  -- title
     'The Cardano community often struggle to prioritise their wellbeing. Many want to improve their health, but don’t know where to start.',  -- summary
@@ -2205,7 +2205,7 @@ skilled with web development, wallet integration, smart contracts', -- relevant 
 ,
 
 (
-    81,  -- id
+    422744,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'East Africa Cardano Innovation Hub',  -- title
     'The absence of a Coordination Hub and a space for Cardano enthusiasts to collaborate, it is limiting the growth of Cardano in East Africa',  -- summary
@@ -2232,7 +2232,7 @@ https://www.linkedin.com/in/nebiyu-sultan-30775446', -- relevant experience
 ,
 
 (
-    82,  -- id
+    422741,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Secure off-chain community voting',  -- title
     'Voting protocols with astonishing security properties have long been a topic in cryptography. For Cardano off-chain voting systems no implementations of such perfectly suited systems are available.',  -- summary
@@ -2253,7 +2253,7 @@ https://www.linkedin.com/in/nebiyu-sultan-30775446', -- relevant experience
 ,
 
 (
-    83,  -- id
+    422720,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'LoyaltyProgram Sustainable Projects',  -- title
     'There are no technologies that can provide full traceability and transparency on Loyalty programs. Our solution is focused on supporting Sustainable projects with a need of guaranteeing those aspects.',  -- summary
@@ -2274,7 +2274,7 @@ https://www.linkedin.com/in/nebiyu-sultan-30775446', -- relevant experience
 ,
 
 (
-    84,  -- id
+    422721,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Plutus support for Golang SDK',  -- title
     'Golang serialization library has been funded and completed in previous catalyst rounds. It support Byron and Shelley era, in order to attract developers we need to bring it up to date with Plutus.',  -- summary
@@ -2295,7 +2295,7 @@ https://www.linkedin.com/in/nebiyu-sultan-30775446', -- relevant experience
 ,
 
 (
-    85,  -- id
+    422723,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Konma to bring in TRUTS on Cardano',  -- title
     'Although Cardano has begun its adventure on being the go to place for DAOs and other community related ventures There''s no platform or solution where you can find all these communities in one place.',  -- summary
@@ -2316,7 +2316,7 @@ https://www.linkedin.com/in/nebiyu-sultan-30775446', -- relevant experience
 ,
 
 (
-    86,  -- id
+    422724,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Trybbles NFT AR Pets Development',  -- title
     'Most blockchain games in development:
@@ -2348,7 +2348,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    87,  -- id
+    422712,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Crosschain Minting Solution',  -- title
     'Non-Crypto-Native NFT collectors don''t care about on which chain the NFT is stored. They just want to pay with their wallet and receive the NFT on their current chain.',  -- summary
@@ -2378,7 +2378,7 @@ Patrick is a Computer Science graduate, Stake Pool Operator, Plutus Pioneer and 
 ,
 
 (
-    88,  -- id
+    422708,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Emursive DApp (Metaverse) Builder',  -- title
     'Immature tooling and platforms put building a custom metaverse that uses Plutus smart contracts to manage exchanges of value out of reach of small teams',  -- summary
@@ -2399,7 +2399,7 @@ Patrick is a Computer Science graduate, Stake Pool Operator, Plutus Pioneer and 
 ,
 
 (
-    89,  -- id
+    422707,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Trybbles NFT AR Pets Prototyping',  -- title
     'Most blockchain games in development:
@@ -2431,7 +2431,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    90,  -- id
+    422703,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Cardano for Latinamerican Students',  -- title
     'Low-income students across Latin America are ostracized from global technological innovation such as Cardano blockchain due to underdeveloped educational resources.',  -- summary
@@ -2452,7 +2452,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    91,  -- id
+    422696,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Afro-Asian youth connection',  -- title
     'With the rise of blockchain and global connection, more connection is needed that connects Africa and Asia, specially through ICT & culture. Cardano could help Asian and African youth to collaborate.',  -- summary
@@ -2475,7 +2475,7 @@ Worked with Seeds for the Future in terms of youth empowerment, ICT, and sustain
 ,
 
 (
-    92,  -- id
+    422692,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Adaglass Platform: Deep Dives',  -- title
     'There isn''t a platform for Cardano''s stakeholders to monitor and visualize the performance and growth of the ecosystem, and an investigative tool to help identify issues or opportunities.',  -- summary
@@ -2496,7 +2496,7 @@ Worked with Seeds for the Future in terms of youth empowerment, ICT, and sustain
 ,
 
 (
-    93,  -- id
+    422691,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Nodesound - Music On The Blockchain',  -- title
     'Most songs go entirely unheard and sadly over 90% of music streams going to the top 1% of music creators who earn very little value from their creative work.',  -- summary
@@ -2517,7 +2517,7 @@ Worked with Seeds for the Future in terms of youth empowerment, ICT, and sustain
 ,
 
 (
-    94,  -- id
+    422690,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Mining traceability in a war zone',  -- title
     'The DRC has strategic mining reserves: GOLD, Coltan, cobalt, uranium whose exploitation does not benefit the population following smuggling',  -- summary
@@ -2544,7 +2544,7 @@ Worked with Seeds for the Future in terms of youth empowerment, ICT, and sustain
 ,
 
 (
-    95,  -- id
+    422687,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     '2min English-Vietnamese Crypto Dict',  -- title
     'Nowadays, Pepeole''re too busy to read hard-to-understand technical like blockchain & Cardano. These knowledge are very fragmented & mainly written in English so difficult for Japanese to access.',  -- summary
@@ -2565,7 +2565,7 @@ Worked with Seeds for the Future in terms of youth empowerment, ICT, and sustain
 ,
 
 (
-    96,  -- id
+    422686,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Your Justice: Web3 Reputation Layer',  -- title
     'The world is unfair in many aspects. Lots of interactions are risky, especially on the web: worker - employer/client, dating partners, etc. Cases of fraud, scam, cheating, bullying are very common.',  -- summary
@@ -2586,7 +2586,7 @@ Worked with Seeds for the Future in terms of youth empowerment, ICT, and sustain
 ,
 
 (
-    97,  -- id
+    422676,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Leveraging Cardano Assets',  -- title
     'There is no simple way to borrow against Cardano assets. To realize the value of an asset, one must permanently sell the asset. There must be a service where users can borrow against their equity.',  -- summary
@@ -2607,7 +2607,7 @@ Worked with Seeds for the Future in terms of youth empowerment, ICT, and sustain
 ,
 
 (
-    98,  -- id
+    422660,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Improved Staking & ADA derivatives',  -- title
     'Low active stake pools provide ~30% fewer yields to delegators than those with a higher active stake, making the barrier of entry for new SPOs insurmountable and consequently centralizing the network.',  -- summary
@@ -2628,7 +2628,7 @@ Worked with Seeds for the Future in terms of youth empowerment, ICT, and sustain
 ,
 
 (
-    99,  -- id
+    422655,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Telegram Wallet upgrade',  -- title
     'The Endubis Telegram wallet requires more features in order to onboard a large audience to the Cardano community and the De-Fi world.',  -- summary
@@ -2649,7 +2649,7 @@ Worked with Seeds for the Future in terms of youth empowerment, ICT, and sustain
 ,
 
 (
-    100,  -- id
+    422641,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'CH2O Africa - ADA NFT Charity 🌎',  -- title
     'We want to help provide clean drinking water in Africa 💧.
@@ -2682,7 +2682,7 @@ My father is a Civil Engineer with MS in Water Resources.', -- relevant experien
 ,
 
 (
-    101,  -- id
+    422635,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Crypto collateralized loans',  -- title
     'Users can not borrow against there ada in a non-kyc solution.',  -- summary
@@ -2703,7 +2703,7 @@ My father is a Civil Engineer with MS in Water Resources.', -- relevant experien
 ,
 
 (
-    102,  -- id
+    422632,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Catalyst Streaming Guild',  -- title
     'There is a friction in proposers reaching supporters. A lack of communication and collaborations forces us to build silos.',  -- summary
@@ -2724,7 +2724,7 @@ My father is a Civil Engineer with MS in Water Resources.', -- relevant experien
 ,
 
 (
-    103,  -- id
+    422620,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano Students Hub',  -- title
     'Lack of exposure leaves young Tunisian students and entrepreneurs not able to capitalize on their backgrounds to get introduced to Cardano.',  -- summary
@@ -2745,7 +2745,7 @@ My father is a Civil Engineer with MS in Water Resources.', -- relevant experien
 ,
 
 (
-    104,  -- id
+    422615,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'DEX using Protocol Owned Liquidity!',  -- title
     '2 problems in DEFI
@@ -2782,7 +2782,7 @@ We have 1 corporate advisor with a background in finance and 2 community builder
 ,
 
 (
-    105,  -- id
+    422608,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Books - Book Token Platform',  -- title
     'By 2023, the world will have 1.11 billion people who read eBooks, but none of them own these digital books, and therefore there is no secondary market for eBooks or audiobooks.',  -- summary
@@ -2803,7 +2803,7 @@ We have 1 corporate advisor with a background in finance and 2 community builder
 ,
 
 (
-    106,  -- id
+    422603,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Kelley: Cardano k8s Operators',  -- title
     'Deploying and maintaining Cardano components on Kubernetes clusters is complex and requires a deep understanding of many configuration details.',  -- summary
@@ -2824,7 +2824,7 @@ We have 1 corporate advisor with a background in finance and 2 community builder
 ,
 
 (
-    107,  -- id
+    422599,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Smarthubs=more impact/adoption',  -- title
     'It’s not clear how to use a DAO as the model and collaborative structure for ‘smart’ business development hubs interacting and operating in various countries, sharing data, tools, roles, resources',  -- summary
@@ -2845,7 +2845,7 @@ We have 1 corporate advisor with a background in finance and 2 community builder
 ,
 
 (
-    108,  -- id
+    422598,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Decentralize Impact',  -- title
     'The lack of guidance, support, building and networking opportunities in the Blockchain, Web3 & Crypto communities in Tunisia. These communities are full of talented people, but they are scattered.',  -- summary
@@ -2866,7 +2866,7 @@ We have 1 corporate advisor with a background in finance and 2 community builder
 ,
 
 (
-    109,  -- id
+    422594,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Oneiron: Cardano Sidechain SDK',  -- title
     'To build a Cardano sidechain, a LOT of developer effort is needed. Most developers are not familiar with Plutus or even Haskell, but have experience with JVM-based languages or JavaScript.',  -- summary
@@ -2887,7 +2887,7 @@ We have 1 corporate advisor with a background in finance and 2 community builder
 ,
 
 (
-    110,  -- id
+    422592,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Create YOUR RPG Character with NFTs',  -- title
     'Non-Fungible Tokens (NFTs) need more utility to drive long term engagement. As of yet there is no leading game on Cardano that allows for NFTs to be a character in a 2D Role Playing Game (RPG).',  -- summary
@@ -2908,7 +2908,7 @@ We have 1 corporate advisor with a background in finance and 2 community builder
 ,
 
 (
-    111,  -- id
+    422586,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Local Japanese Government Strategy',  -- title
     'Local governments in Japan are looking for new and innovative ways to revitalize depopulated areas and serve their aging communities. Cardano and blockchain tech are rarely considered as solutions.',  -- summary
@@ -2934,7 +2934,7 @@ Neoculture is a collective of founders, strategists, and technologists working t
 ,
 
 (
-    112,  -- id
+    422582,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Typhon Wallet Mobile App',  -- title
     'A mobile wallet that supports all features and is user-friendly, secure, and fast, connects with Ledger, and Trezor; is a must for users. Cardano lacks mobile wallet options for greater adoption',  -- summary
@@ -2955,7 +2955,7 @@ Neoculture is a collective of founders, strategists, and technologists working t
 ,
 
 (
-    113,  -- id
+    422581,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'JPG DAO: User-First NFT Ecosystem',  -- title
     'The NFT Ecosystems across chains have been growing rapidly, yet marketplaces are mostly run in a centralized fashion without user input or control.',  -- summary
@@ -2976,7 +2976,7 @@ Neoculture is a collective of founders, strategists, and technologists working t
 ,
 
 (
-    114,  -- id
+    422578,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'ADA and DRC''s mobile money exchange',  -- title
     'So far no cryptocurrency offers a conversion to mobile money from the DRC
@@ -3019,7 +3019,7 @@ Kavira Musekwa Lydie : 4 years as Backend Developer', -- relevant experience
 ,
 
 (
-    115,  -- id
+    422572,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'NFT powered Turnkey DAOs',  -- title
     'Cardano at the time of writing this proposal has 56000+ policy IDs that represent collections of different utility, collectability and art with barely any collection having a working on-chain DAO.',  -- summary
@@ -3040,7 +3040,7 @@ Kavira Musekwa Lydie : 4 years as Backend Developer', -- relevant experience
 ,
 
 (
-    116,  -- id
+    422571,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFTs go Mobile',  -- title
     'Over the course of the past 6 months we have consistently seen 50-60% of our traffic coming from mobile devices who can''t trade or mint on the store without the usage of a separate dApp.',  -- summary
@@ -3061,7 +3061,7 @@ Kavira Musekwa Lydie : 4 years as Backend Developer', -- relevant experience
 ,
 
 (
-    117,  -- id
+    422569,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'SaaS3:Permissionless Oracle Network',  -- title
     'There is no decentralised oracle solution that allows to bring real world data easily, instantly and securely onto the blockchain.',  -- summary
@@ -3089,7 +3089,7 @@ Kavira Musekwa Lydie : 4 years as Backend Developer', -- relevant experience
 ,
 
 (
-    118,  -- id
+    422565,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'African Ambassador for CNFTs',  -- title
     'NFTs on Cardano have seen an uptick in trading volume over the past few months, though as per our analytics most of our traffic tends to originate from North America.',  -- summary
@@ -3110,7 +3110,7 @@ Kavira Musekwa Lydie : 4 years as Backend Developer', -- relevant experience
 ,
 
 (
-    119,  -- id
+    422563,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Student and engineers community',  -- title
     'Student entrepreneurs have exciting ideas for starting a business but often face the problem of lack of funds and qualified engineers to help them materialize their ideas and projects.',  -- summary
@@ -3135,7 +3135,7 @@ Akilimali Cizungu Innocent: 5 Years as Full Stack Developer', -- relevant experi
 ,
 
 (
-    120,  -- id
+    422562,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'DAO-NET: Participate to Earn',  -- title
     'How can DAOs incentivize participation without draining their treasury?',  -- summary
@@ -3156,7 +3156,7 @@ Akilimali Cizungu Innocent: 5 Years as Full Stack Developer', -- relevant experi
 ,
 
 (
-    121,  -- id
+    422560,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Food Traceability by Cardano',  -- title
     'The lack of traceability and transparency in agri-food systems leads to problems such as inequitable benefits for small producers, environmental degradation and food integrity concerns.',  -- summary
@@ -3181,7 +3181,7 @@ Entrepreneur, CEO and founder of CropTrace an Ag-tech Startup. I concluded the i
 ,
 
 (
-    122,  -- id
+    422559,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Open Source Auctions Smart Contract',  -- title
     'The Cardano space has been auctioning NFTs since March of 2021 using Discord and other escrow models. While these are easily replicable there is no publicly available smart contract for auctions.',  -- summary
@@ -3202,7 +3202,7 @@ Entrepreneur, CEO and founder of CropTrace an Ag-tech Startup. I concluded the i
 ,
 
 (
-    123,  -- id
+    422553,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'SHiELD Dapp, growing Africa digital',  -- title
     'How do we stop corruption while improving the flow of information, plus productivity of the individual, the government, and the private sector in Africa.',  -- summary
@@ -3223,7 +3223,7 @@ Entrepreneur, CEO and founder of CropTrace an Ag-tech Startup. I concluded the i
 ,
 
 (
-    124,  -- id
+    422550,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Imani Web3 Legal Services Portal',  -- title
     'Legal services for the Web3 Crypto Blockchain space are difficult to navigate. The greatest challenges are determining what services are needed, where to obtain said services, and providers to trust.',  -- summary
@@ -3244,7 +3244,7 @@ Entrepreneur, CEO and founder of CropTrace an Ag-tech Startup. I concluded the i
 ,
 
 (
-    125,  -- id
+    422549,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'JPG DAO: Legal Review',  -- title
     'Across the crypto ecosystem and within Cardano exist a lot of tokens that can be construed as securities under the North-American and European laws raising issues of legitimacy and legality.',  -- summary
@@ -3265,7 +3265,7 @@ Entrepreneur, CEO and founder of CropTrace an Ag-tech Startup. I concluded the i
 ,
 
 (
-    126,  -- id
+    422548,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Earthonomy™ Carbon Offset Platform',  -- title
     'There is currently no platform for end-to-end carbon footprint computation and offsetting that makes use of blockchain to encourage participation, provide transparency, and validate green credentials.',  -- summary
@@ -3286,7 +3286,7 @@ Entrepreneur, CEO and founder of CropTrace an Ag-tech Startup. I concluded the i
 ,
 
 (
-    127,  -- id
+    422545,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFTMarket for Disabled-Dextroverse',  -- title
     'Physically disabled persons (people with paralysis) are not able to include themselves in web 3 communities due to the lack of navigating ability and emotional uncertainty.',  -- summary
@@ -3307,7 +3307,7 @@ Entrepreneur, CEO and founder of CropTrace an Ag-tech Startup. I concluded the i
 ,
 
 (
-    128,  -- id
+    422542,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Help The Poor Come Aboard!',  -- title
     'There are not enough IRL and virtual cross community events for people with little to NO ADA to enter; on-boarding has become aimed at riches over showcasing Cardano.',  -- summary
@@ -3328,7 +3328,7 @@ Entrepreneur, CEO and founder of CropTrace an Ag-tech Startup. I concluded the i
 ,
 
 (
-    129,  -- id
+    422539,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Upgrade Cardano wallet js for Vasil',  -- title
     'Typhonjs is a pure-js Cardano wallet library. With the impending Vasil hard fork, developers will need Vasil compatibility in order to create more efficient smart contracts and DApps.',  -- summary
@@ -3354,7 +3354,7 @@ here is the released library, https://github.com/StricaHQ/typhonjs', -- relevant
 ,
 
 (
-    130,  -- id
+    422538,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Job Board',  -- title
     'NFT projects are businesses that require multiple people to come together to create the artworks, community and handle the technical aspects of minting, but there exists no platform for such hiring.',  -- summary
@@ -3375,7 +3375,7 @@ here is the released library, https://github.com/StricaHQ/typhonjs', -- relevant
 ,
 
 (
-    131,  -- id
+    422534,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'DCOne Crypto for Developers',  -- title
     'Developers need APIs, Webhooks, SDKs...etc to build their products on Cardano platform. We will provide them freely for app developers for quick access to integrate with the Cardano blockchain',  -- summary
@@ -3396,7 +3396,7 @@ here is the released library, https://github.com/StricaHQ/typhonjs', -- relevant
 ,
 
 (
-    132,  -- id
+    422533,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cardano Pilgrimage',  -- title
     'Blockchain is a growing space with communities forming around different chains; many do not look upon Cardano favorably. More often than not it''s due to misinformation and FUD, but it hurts Cardano.',  -- summary
@@ -3422,7 +3422,7 @@ We also operate DRMZ SPO.', -- relevant experience
 ,
 
 (
-    133,  -- id
+    422518,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Distributed Idea Management System',  -- title
     'Finding gaps that you can fill in the Cardano idea space is a difficult process. Current methods favor competition over collaboration. Current solutions aren''t Cardano-focused or free and open source.',  -- summary
@@ -3443,7 +3443,7 @@ We also operate DRMZ SPO.', -- relevant experience
 ,
 
 (
-    134,  -- id
+    422515,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Proof of Accomplishment on Catalyst',  -- title
     'Many projects funded since Fund 1. No one knows re their progress, after funding. Allegations of projects funded but not completed.',  -- summary
@@ -3464,7 +3464,7 @@ We also operate DRMZ SPO.', -- relevant experience
 ,
 
 (
-    135,  -- id
+    422514,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Spend Less Time And Money',  -- title
     'There''s no sufficient data about how general public interacts with Cardano and what''s their knowledge about the ecosystem in general, that makes teams spend time and money to get that data.',  -- summary
@@ -3485,7 +3485,7 @@ We also operate DRMZ SPO.', -- relevant experience
 ,
 
 (
-    136,  -- id
+    422511,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Mediation Training & Certification',  -- title
     'Conflicts within the Cardano community are at large inadequately addressed due to a lack of blockchain-adept dispute resolution specialists.',  -- summary
@@ -3506,7 +3506,7 @@ We also operate DRMZ SPO.', -- relevant experience
 ,
 
 (
-    137,  -- id
+    422510,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano Outreach - China Focus',  -- title
     'Our funded project needs to hire local Chinese speaking developers to promote our educational program to Chinese university and college students.',  -- summary
@@ -3527,7 +3527,7 @@ We also operate DRMZ SPO.', -- relevant experience
 ,
 
 (
-    138,  -- id
+    422504,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Oura v2',  -- title
     'Adoption of the open-source project "Oura" has increased and new feature / issues are being requested. Extra development bandwidth is required to add new features and keep up with code maintenance.',  -- summary
@@ -3548,7 +3548,7 @@ We also operate DRMZ SPO.', -- relevant experience
 ,
 
 (
-    139,  -- id
+    422502,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'EVM DAO Integration',  -- title
     'DAOs operating on the dozens of existing Ethereum Virtual Machine based networks, using Ethereum based tools, have no on ramp for their DAO to shift to the Cardano ecosystem.',  -- summary
@@ -3569,7 +3569,7 @@ We also operate DRMZ SPO.', -- relevant experience
 ,
 
 (
-    140,  -- id
+    422501,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Dripada: Nigeria’s Cardano Hub',  -- title
     'Nigeria despite being on the top list of cryptocurrency users globally are still yet to get familiar with Cardano and it’s unique EUTXO mechanism that is supreme to other EVM based blockchains.',  -- summary
@@ -3595,7 +3595,7 @@ Linkedin: https://www.linkedin.com/in/chiamaka-asouzu-186941235/', -- relevant e
 ,
 
 (
-    141,  -- id
+    422500,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Fracada Addressing Audit',  -- title
     'Fracada is a fractionalized NFT project for Cardano. It was audited thanks to a Catalyst proposal in the previous round and now we need funds to implement the audit',  -- summary
@@ -3616,7 +3616,7 @@ Linkedin: https://www.linkedin.com/in/chiamaka-asouzu-186941235/', -- relevant e
 ,
 
 (
-    142,  -- id
+    422497,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'CardanoOutreach - Africa Focus',  -- title
     'We have difficulty reaching African Developers due to language gaps. We cannot currently meet with most African students and professors to facilitate education and oboarding to the ecosystem.',  -- summary
@@ -3637,7 +3637,7 @@ Linkedin: https://www.linkedin.com/in/chiamaka-asouzu-186941235/', -- relevant e
 ,
 
 (
-    143,  -- id
+    422492,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Copper Seed Safe Token Plugin',  -- title
     'This proposal addresses three problems:
@@ -3662,7 +3662,7 @@ Linkedin: https://www.linkedin.com/in/chiamaka-asouzu-186941235/', -- relevant e
 ,
 
 (
-    144,  -- id
+    422489,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Funding real world Businesses',  -- title
     'It''s hard for businesses and startups to get quick and easy access to funding, impeding many great ideas to be real.',  -- summary
@@ -3683,7 +3683,7 @@ Linkedin: https://www.linkedin.com/in/chiamaka-asouzu-186941235/', -- relevant e
 ,
 
 (
-    145,  -- id
+    422487,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Unified Transport Payment Gateway',  -- title
     'Need for blockchain global standard for Unified Public Transport Payment Gateway allowing secured & fair transactions using smart contracts.',  -- summary
@@ -3708,7 +3708,7 @@ Linkedin: https://www.linkedin.com/in/chiamaka-asouzu-186941235/', -- relevant e
 ,
 
 (
-    146,  -- id
+    422478,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Aiken: Smart Contract Toolchain',  -- title
     'For most developers the Haskell syntax of Plutus is unpalatable or too unfamiliar to hit the ground running. Although Plutus is a great language, this causes enough friction to slow down developers.',  -- summary
@@ -3729,7 +3729,7 @@ Linkedin: https://www.linkedin.com/in/chiamaka-asouzu-186941235/', -- relevant e
 ,
 
 (
-    147,  -- id
+    422465,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PetLove Social Media & Marketplace',  -- title
     'The pandemic resulted to unprecedented movement restrictions in most countries which led people to adopt online pet consultations and shopping. A need to standardize pricing and digitize pet records.',  -- summary
@@ -3750,7 +3750,7 @@ Linkedin: https://www.linkedin.com/in/chiamaka-asouzu-186941235/', -- relevant e
 ,
 
 (
-    148,  -- id
+    422461,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Real Estate Rental Marketplace',  -- title
     'The current renting system is archaic, costly, & driving housing costs up through speculation and lack of transparency.
@@ -3821,7 +3821,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    149,  -- id
+    422457,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'My Identity',  -- title
     'In DRC, more than 160,000 teachers work hard but very often are not on the list of state employees, which causes several disorders (corruption) in the Congolese education system and unbalances',  -- summary
@@ -3842,7 +3842,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    150,  -- id
+    422451,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Immigration Documents on Chain Pt.2',  -- title
     'This is phase two of a Fund 8 project (https://cardano.ideascale.com/c/idea/398633/comments/403972) that develops a working example that translate immigration documents to Atala/PRISM for compliance.',  -- summary
@@ -3863,7 +3863,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    151,  -- id
+    422448,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'P2E: Group Progression System',  -- title
     'There is no product on a Cardano that supports a gamification pipeline of enabling multiple users to earn NFTs while playing together.',  -- summary
@@ -3884,7 +3884,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    152,  -- id
+    422447,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Virtual Convention',  -- title
     'A large part of the Cardano community aren’t able to attend in-person meetups and conferences. There is not enough Cardano representation at these conferences.',  -- summary
@@ -3905,7 +3905,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    153,  -- id
+    422444,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Metaverse Jobs & Gigs',  -- title
     'Players lack strong connections to metaverses, as experiences are superficial and socially shallow. Globally, individuals struggle financially to make ends meet.',  -- summary
@@ -3926,7 +3926,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    154,  -- id
+    422443,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Fiat to NFT Payment Gateway',  -- title
     'There is too much friction for the average new user when purchasing their first NFT, which restricts mainstream adoption of Cardano NFTs.',  -- summary
@@ -3947,7 +3947,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    155,  -- id
+    422439,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Outreach/Education Ghana',  -- title
     'Interest in as well as engagement with the Cardano community and project catalyst is lacking in West Africa but specifically Ghana.',  -- summary
@@ -3968,7 +3968,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    156,  -- id
+    422436,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Assembly of TriState/National SPAC',  -- title
     'There are good Legislators & Elected Officials that lack proper info, teams, & leadership to create a proper bill that wont stifle us. Then some "legislators" want to stifle and destroy our industry.',  -- summary
@@ -3989,7 +3989,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    157,  -- id
+    422434,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'The Platform as a Service for Web3',  -- title
     'The Web3 barrier to entry is too high. The tech is too intimidating, the number of ways to contribute are too low, leaving 1000''s of people on the sidelines trying to get into the game',  -- summary
@@ -4010,7 +4010,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    158,  -- id
+    422432,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Immunify.life HIV clinical Study',  -- title
     '1.4 M with HIV
@@ -4042,7 +4042,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    159,  -- id
+    422429,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Catalyst School Fund 10 Operations',  -- title
     'Proposers, Assessors, Voters and other Catalyst members still struggle to understand how Catalyst works and how to play their roles.',  -- summary
@@ -4063,7 +4063,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    160,  -- id
+    422421,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardopoly Game Expansion',  -- title
     'The Cardano NFT community is missing a platform to utilize NFTs, and engage the community in a real Web3 way. We want to modernize the classic board game experience, utilizing Cardano NFTs.',  -- summary
@@ -4084,7 +4084,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    161,  -- id
+    422419,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'APIs for Private Applications',  -- title
     'Building *Private Applications* using *Zero-Knowledge* *Proof* (zk) is getting a lot of traction in other blockchains. There is no easy way to build private (zk) apps for Cardano.',  -- summary
@@ -4105,7 +4105,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    162,  -- id
+    422416,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Bringing Business to Cardano',  -- title
     'Real world businesses have no easy access to Crypto Funding Capital',  -- summary
@@ -4126,7 +4126,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    163,  -- id
+    422413,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'dMAH - dMetaverse Auction House',  -- title
     'There is no automation, transparent, and honest Auction service to actively find the exact bid winner for an auction and care until the job is done. No one accepts bid deposits in cryptocurrency.',  -- summary
@@ -4149,7 +4149,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    164,  -- id
+    422411,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'International Cyber Genesis',  -- title
     'Cyber real-estate across channels will need to be a real conversation at some point when migrating from ETH to Ada. James Carleton, Unix Guru, spent the last three years building a solution.',  -- summary
@@ -4170,7 +4170,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    165,  -- id
+    422408,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Decentralized Health Info Exchange',  -- title
     'Health Data is highly sensitive. Challenge is how to make health information shareable & interoperable without compromising security and privacy? Existing solutions have more failures than successes.',  -- summary
@@ -4191,7 +4191,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    166,  -- id
+    422405,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Onboard Devs with Impactful Events',  -- title
     'Full of ideas, skill, and talent, Cardano developers don''t find meaningful projects and fruitful collaborations. The developer experience is solitary. World-changing, killer apps never Hello World.',  -- summary
@@ -4212,7 +4212,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    167,  -- id
+    422402,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Enabling privacy for Cardano DeFi',  -- title
     '1. On-chain transactions are visible to everyone, resulting in loss of alpha for investors and erosion of financial privacy and freedoms.
@@ -4234,7 +4234,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    168,  -- id
+    422400,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'On-Chain Tilemaps for Game Worlds',  -- title
     'On-chain storage doesn''t have the capacity to house game worlds. Tilemaps would offer a solution for vast worlds created from mapped pixels allowing them to be fully on-chain without IPFS.',  -- summary
@@ -4261,7 +4261,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    169,  -- id
+    422396,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'DAO-NET: ZKP Sybil Defense Service',  -- title
     'How to create a one-member one-vote style DAO that is resistant to Sybil attacks, requires zero knowledge and is completely decentralized?',  -- summary
@@ -4282,7 +4282,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    170,  -- id
+    422393,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Healthcare Providers Onboarding',  -- title
     'In Africa, many health facilities and providers like clinics, health centers, and doctors are still NOT using Medical Records systems that could make their operations more efficient and productive.',  -- summary
@@ -4303,7 +4303,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    171,  -- id
+    422390,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Decentralized Logistics Dapp',  -- title
     'There is an extreme lack of transparency in transportation cost. Currently the cost is controlled by a few factions of third party logistic conglomerates that control the transportation cost of goods.',  -- summary
@@ -4324,7 +4324,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    172,  -- id
+    422389,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Catalyst Mediation Treasury',  -- title
     'Catalyst has recently faced many conflict situations between community members that were not handled in a good way nor with professional guidance to transform conflict into a positive outcome.',  -- summary
@@ -4345,7 +4345,7 @@ FIU + UCF + UMiami+ Harvard Business', -- relevant experience
 ,
 
 (
-    173,  -- id
+    422388,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'MLabs - Cardano Throughput Solution',  -- title
     'Cardano is a 3rd generation blockchain supporting expressive and secure smart contracts (DApps). Yet, as often noted, Cardano''s eUTXO design poses challenges not least of which is txn throughput.',  -- summary
@@ -4371,7 +4371,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    174,  -- id
+    422381,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Positive Blockchain Database V2',  -- title
     'There is not a user friendly way for people to learn about all the verified impact projects in the blockchain space.',  -- summary
@@ -4392,7 +4392,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    175,  -- id
+    422378,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Medical Records Ownership Protocol',  -- title
     'Who owns a medical record? Who has the rights to access it? Is it the doctors, health facilities, or the patients? This has been an ongoing debate in the health sector.',  -- summary
@@ -4413,7 +4413,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    176,  -- id
+    422372,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'CNGO - DAOs & NGOs working together',  -- title
     'Current methods used to ensure transparency of donor-NGO relationships are time consuming & easily infringed leading to mismanagement of funds & embezzlement without any stakeholder accountability.',  -- summary
@@ -4434,7 +4434,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    177,  -- id
+    422371,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Ada''s Tarot - Great Migration',  -- title
     'The Great Migration from Ethereum to Ada will present issues at times. A proper Tarot reading consistently reveals the ideal path for success no matter the complexity.',  -- summary
@@ -4459,7 +4459,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    178,  -- id
+    422370,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Java SDK to Build Health App',  -- title
     'Building a health app in a blockchain has lots of challenges. Aside from compliance, security, & data privacy, one has to learn blockchain-specific programming language. This makes onboarding harder.',  -- summary
@@ -4480,7 +4480,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    179,  -- id
+    422368,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Rust SDK to Build Health App',  -- title
     'Building a health app in a blockchain has lots of challenges. Aside from compliance, security, & data privacy, one has to learn blockchain-specific programming language. This makes onboarding harder.',  -- summary
@@ -4501,7 +4501,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    180,  -- id
+    422366,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'TiDi Nation - Grow Africa',  -- title
     'There''s a lack of access to resources and education for African student athletes, artists and creatives on monetization, entrepreneurship, and ownership.',  -- summary
@@ -4522,7 +4522,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    181,  -- id
+    422365,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Golang SDK to Build Health App',  -- title
     'Building a health app in a blockchain has lots of challenges. Aside from compliance, security, & data privacy, one has to learn blockchain-specific programming language. This makes onboarding harder.',  -- summary
@@ -4543,7 +4543,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    182,  -- id
+    422364,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Cardano/DAO for Brazilian Companies',  -- title
     'The Brazilian software engineering companies need to be aware of the Cardano Blockchain and DAOs.',  -- summary
@@ -4564,7 +4564,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    183,  -- id
+    422361,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Python SDK to Build Health App',  -- title
     'Building a health app in a blockchain has lots of challenges. Aside from compliance, security, & data privacy, one has to learn blockchain-specific programming language. This makes onboarding harder.',  -- summary
@@ -4585,7 +4585,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    184,  -- id
+    422360,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'ADAO Learning Grant',  -- title
     'There are very few resources available for students to develop practical skills on Cardano. The blockchain is in need of student workers.',  -- summary
@@ -4611,7 +4611,7 @@ As a member of Boss DAO I have been working with ADAO to learn more about runnin
 ,
 
 (
-    185,  -- id
+    422358,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Dolos: Cardano “Data Node”',  -- title
     'Nodes used exclusively as data source for client tools have different requirements than block producers / relays nodes. Many performance / cost optimizations are not currently possible.',  -- summary
@@ -4632,7 +4632,7 @@ As a member of Boss DAO I have been working with ADAO to learn more about runnin
 ,
 
 (
-    186,  -- id
+    422339,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Small-Business Crypto Payments DApp',  -- title
     'Small-business owners and vendors are not crypto-savvy they don’t know how to set-up alternative payments using crypto currency’s.
@@ -4657,7 +4657,7 @@ Project Manager has 17 years’ of experience with mobile apps development.', --
 ,
 
 (
-    187,  -- id
+    422336,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Technical Resource Pool',  -- title
     'There is no Technical Resource Pool where Non-Programmers can access the Programming Talent needed for their proposals to be completed successfully.',  -- summary
@@ -4683,7 +4683,7 @@ Project Management and Team Building. Recruited and managed diverse groups of a
 ,
 
 (
-    188,  -- id
+    422335,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Outreach/Education Paraguay',  -- title
     'A lack of education regarding Cardano''s potential in local Paraguayan communities is hindering the development of the cardano ecosystem in Paraguay',  -- summary
@@ -4712,7 +4712,7 @@ Cardano NYC MeetUp Coordinator', -- relevant experience
 ,
 
 (
-    189,  -- id
+    422332,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PillarWheel''s NFT ARPG Sim Game',  -- title
     'Most ARPG games need constant grinding and attention. Above So Below the Game provides persistent game world mechanics that keeps the game world in constant progress to entertain its audiences!',  -- summary
@@ -4733,7 +4733,7 @@ Cardano NYC MeetUp Coordinator', -- relevant experience
 ,
 
 (
-    190,  -- id
+    422328,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PillarWheel Studios Cardano Apps',  -- title
     'Arkansas and the surrounding area is very remote for brick and mortar game/media development studios, and there is a need for a DAO type studio to compete with ones in Austin, Texas.',  -- summary
@@ -4754,7 +4754,7 @@ Cardano NYC MeetUp Coordinator', -- relevant experience
 ,
 
 (
-    191,  -- id
+    422318,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Rare Bloom Cardano Community Event',  -- title
     'The Cardano community needs a large event for networking, marketing, and education. The events in our industry have a high cost for booths, and are not impactful for projects building on Cardano.',  -- summary
@@ -4795,7 +4795,7 @@ Anthony - Founder of Bloom, Tokhun, and DripDropz.', -- relevant experience
 ,
 
 (
-    192,  -- id
+    422308,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Use & Utility on AR Platforms',  -- title
     'We need more real world uses for NFTs that have actual use and utility.',  -- summary
@@ -4816,7 +4816,7 @@ Anthony - Founder of Bloom, Tokhun, and DripDropz.', -- relevant experience
 ,
 
 (
-    193,  -- id
+    422301,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Dashar Move To Earn On Cardano',  -- title
     'There are limited or no on-chain incentivised fitness apps to motivate individuals to keep up with a fitness routine and track their fitness journey.',  -- summary
@@ -4837,7 +4837,7 @@ Anthony - Founder of Bloom, Tokhun, and DripDropz.', -- relevant experience
 ,
 
 (
-    194,  -- id
+    422297,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'IRI: Cross-Chain Happy Hours',  -- title
     'We need more activities that allow Cardano Community members and general Crypto users to network and learn about the Cardano platform so they can better work together.',  -- summary
@@ -4858,7 +4858,7 @@ Anthony - Founder of Bloom, Tokhun, and DripDropz.', -- relevant experience
 ,
 
 (
-    195,  -- id
+    422296,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'JPG Create: Generate Art + Metadata',  -- title
     'The Cardano NFT Ecosystem is at the point where it is starting to attract creators from other spaces, yet the chain at this time does not have tools that allow for easy onboarding.',  -- summary
@@ -4879,7 +4879,7 @@ Anthony - Founder of Bloom, Tokhun, and DripDropz.', -- relevant experience
 ,
 
 (
-    196,  -- id
+    422294,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'A standard for token verification',  -- title
     'Fake or scam projects are a common cause of concern. Scammers mint fake tokens that mimic tokens from popular and legit projects and trick users into buying them.',  -- summary
@@ -4900,7 +4900,7 @@ Anthony - Founder of Bloom, Tokhun, and DripDropz.', -- relevant experience
 ,
 
 (
-    197,  -- id
+    422291,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Broaden open source wallet options',  -- title
     'With google chrome''s plan to sunset manifest v2 in chrome extensions the Nami wallet project is no longer accepted as a public submission to the chrome extension store.',  -- summary
@@ -4926,7 +4926,7 @@ Anthony - Founder of Bloom, Tokhun, and DripDropz.', -- relevant experience
 ,
 
 (
-    198,  -- id
+    422283,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Japanese Traditional Crafts NFT',  -- title
     'The intrinsic values of NFT were questioned due to the absence of the supporting value . On the other hands, Japanese traditional craft face to crisis of survaival due to decrease of the Craftsman.',  -- summary
@@ -4953,7 +4953,7 @@ Makoto Harada is a CEO of Kittamu Project with 4 projects.', -- relevant experie
 ,
 
 (
-    199,  -- id
+    422273,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'P2P NFT Trading and Offers Market',  -- title
     'There are established NFT marketplaces, but there is a clear lack of P2P personal trading environments facilitating collectors to connect with each other and discover NFT trading opportunities.',  -- summary
@@ -4974,7 +4974,7 @@ Makoto Harada is a CEO of Kittamu Project with 4 projects.', -- relevant experie
 ,
 
 (
-    200,  -- id
+    422263,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Atrium - The Center of Everything',  -- title
     'Cardano needs to simplify its user experience. There are too many cluttered dApps, wallets and data feeds. Users need a simple, elegant, data aggregator for all things Cardano.',  -- summary
@@ -5005,7 +5005,7 @@ Pey - Co-founder of Bloom Pool, Rare Bloom, and Mycelial Gallery. Runs bigpey Yo
 ,
 
 (
-    201,  -- id
+    422251,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Fluent: Bridging TradFi+DeFi',  -- title
     'The lack of a trusted and transparent stablecoin within Cardano has stagnated growth and expansion into critical sector such as DeFi, and even inclusion of TradFi solutions.',  -- summary
@@ -5026,7 +5026,7 @@ Pey - Co-founder of Bloom Pool, Rare Bloom, and Mycelial Gallery. Runs bigpey Yo
 ,
 
 (
-    202,  -- id
+    422250,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Training dReps with Cardano4Climate',  -- title
     'It is hard to understand and learn how to be a good dRep in isolation, there is a lack of community and collaboration in this space to ask questions and learn together to critically look at proposals.',  -- summary
@@ -5047,7 +5047,7 @@ Pey - Co-founder of Bloom Pool, Rare Bloom, and Mycelial Gallery. Runs bigpey Yo
 ,
 
 (
-    203,  -- id
+    422249,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'DAO-NET: Small Developer Funding',  -- title
     'The bureaucratic overhead and long timelines of the Project Catalyst funding are significant hurdles to developers seeking to rapidly create apps requiring only small budgets.',  -- summary
@@ -5068,7 +5068,7 @@ Pey - Co-founder of Bloom Pool, Rare Bloom, and Mycelial Gallery. Runs bigpey Yo
 ,
 
 (
-    204,  -- id
+    422248,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Increase Cardano peer-review papers',  -- title
     'Near nil results when searching for Cardano blockchain topic papers from established and endorsed publishing databases used by most universities or higher education providers'' search engines.',  -- summary
@@ -5089,7 +5089,7 @@ Pey - Co-founder of Bloom Pool, Rare Bloom, and Mycelial Gallery. Runs bigpey Yo
 ,
 
 (
-    205,  -- id
+    422247,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Oxford crypto valley: Cardano house',  -- title
     'Cardano needs more world-class contributors working on protocol public goods. Cardano lacks integration and partnerships with other blockchain protocols, crypto VCs and the associated talent pools.',  -- summary
@@ -5110,7 +5110,7 @@ Pey - Co-founder of Bloom Pool, Rare Bloom, and Mycelial Gallery. Runs bigpey Yo
 ,
 
 (
-    206,  -- id
+    422231,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'TECH-E',  -- title
     'Nelson Mandela “Education is the most powerful weapon which you can use to change the world”
@@ -5135,7 +5135,7 @@ Africa lacks skilled blockchain developers. It necessity today to train develope
 ,
 
 (
-    207,  -- id
+    422229,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'TapTools: All-In-One Platform',  -- title
     'There is no easy to use all-in-one platform on Cardano, thus increasing the barrier to entry.',  -- summary
@@ -5156,7 +5156,7 @@ Africa lacks skilled blockchain developers. It necessity today to train develope
 ,
 
 (
-    208,  -- id
+    422227,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DADF - Disruptive Comm. Application',  -- title
     'A framework for the deployment of digital equity tokens on the Cardano blockchain that has the support of regulators, digital exchanges, companies, lawyers, accountants and investors.',  -- summary
@@ -5177,7 +5177,7 @@ Africa lacks skilled blockchain developers. It necessity today to train develope
 ,
 
 (
-    209,  -- id
+    422219,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Decentralized Social Intelligence',  -- title
     'Social media is broken. There is no transparency or ownership over our own data, leaving us at the mercy of nefarious actors and productized for someone else''s gain.',  -- summary
@@ -5198,7 +5198,7 @@ Africa lacks skilled blockchain developers. It necessity today to train develope
 ,
 
 (
-    210,  -- id
+    422218,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Voteaire Decentralized IDs',  -- title
     'In order for blockchain voting to be relevant to real-world use cases, there must be a way to map wallets to real-world individuals.',  -- summary
@@ -5224,7 +5224,7 @@ We have an Enterprise software development background, we''re stake pool operato
 ,
 
 (
-    211,  -- id
+    422195,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Mentorship Digital Identity DAO',  -- title
     'There are no best practices or frameworks for how mentorship of blockchain startups and projects can best be moved from a centralized model to a DAO.',  -- summary
@@ -5247,7 +5247,7 @@ ProofSpace: extensive full stack dev, proven SSI platform, successful in F7 and 
 ,
 
 (
-    212,  -- id
+    422193,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Open analytics standard for DeFi',  -- title
     'DeFi Apps don''t follow a standard on how API endpoints providing application data should be structured. Developers are required to write customs analysis tools or develop Dapp specific connectors.',  -- summary
@@ -5268,7 +5268,7 @@ ProofSpace: extensive full stack dev, proven SSI platform, successful in F7 and 
 ,
 
 (
-    213,  -- id
+    422190,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Voteaire Escrow Smart Contract',  -- title
     'DAOs based on Cardano lack easy-to-use tools for automatically distributing funds based on a governance vote.',  -- summary
@@ -5294,7 +5294,7 @@ We have an Enterprise software development background, we''re stake pool operato
 ,
 
 (
-    214,  -- id
+    422185,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'ADAwell: Wellbeing DAO',  -- title
     'Wellbeing portals are not reliable & monetize user attention via ads, sponsorships. Today’s health care system focuses on only disease and doesn’t seek a holistic approach or a health optimization.',  -- summary
@@ -5315,7 +5315,7 @@ We have an Enterprise software development background, we''re stake pool operato
 ,
 
 (
-    215,  -- id
+    422182,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Decentralizing Telco for Cardano',  -- title
     'Communication and connectivity are critical to us all, and we must find better ways to improve access and secure individuals'' privacy rights. Simcrypted wants to hand more power back to users.',  -- summary
@@ -5336,7 +5336,7 @@ We have an Enterprise software development background, we''re stake pool operato
 ,
 
 (
-    216,  -- id
+    422173,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Token Staking Platform',  -- title
     'NFT projects lack utility for their holders. Staking is one potential utility they can offer, but It is challenging to implement because it requires specialized technical knowledge.',  -- summary
@@ -5359,7 +5359,7 @@ We have an Enterprise software development background, we''re stake pool operato
 ,
 
 (
-    217,  -- id
+    422171,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Multi-sig Trading Audits & Security',  -- title
     'Tent allows 2 users to trade assets using a multi-sig transaction. We lack security and penetration tests, and code audits done by a third party to better guarantee user and platform security.',  -- summary
@@ -5380,7 +5380,7 @@ We have an Enterprise software development background, we''re stake pool operato
 ,
 
 (
-    218,  -- id
+    422163,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Research on Mentorship Tokenization',  -- title
     'Startup mentorship communities don''t currently have a proven use case for DAOs. There are no best practices or frameworks for how these communities can best be moved from a centralized model to a DAO.',  -- summary
@@ -5401,7 +5401,7 @@ We have an Enterprise software development background, we''re stake pool operato
 ,
 
 (
-    219,  -- id
+    422155,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'CARDANO TO THE EYES OF AFRICA',  -- title
     'PROBLEM:
@@ -5426,7 +5426,7 @@ THE CARDANO TO THE EYES OF AFRICA IS NOT SEEN AS OTHER PROJECT AND AS ITS ECOSY
 ,
 
 (
-    220,  -- id
+    422154,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'EZ-Mint Open Source NFT minting API',  -- title
     'Cardano lacks an Open Source API for NFT minting that anyone can use as a primitive in their dApps.',  -- summary
@@ -5449,7 +5449,7 @@ AppliedBlockchain.com will develop the API and API documentation.', -- relevant 
 ,
 
 (
-    221,  -- id
+    422150,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'LATAM TownHall',  -- title
     'LATAM is very underrepresented in the Decentralization space, but has amazing opportunities to catch up, specially with CARDANO
@@ -5472,7 +5472,7 @@ Sharing, awareness on Cardano and places to meet and collaborate are key',  -- s
 ,
 
 (
-    222,  -- id
+    422147,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Create a dReps'' Equity Resource Hub',  -- title
     'Fairness, particularly in permissionless and diverse communities, doesn’t occur organically. Without proper resources, even the best of dReps may unknowingly disenfranchise its marginalized members.',  -- summary
@@ -5493,7 +5493,7 @@ Sharing, awareness on Cardano and places to meet and collaborate are key',  -- s
 ,
 
 (
-    223,  -- id
+    422135,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'littlefish - Law and the New Order',  -- title
     'Legal frameworks around blockchain are changing everyday, it is difficult for Catalyst earners and organizations like the Littlefish Foundation to know what obligations they are under.',  -- summary
@@ -5514,7 +5514,7 @@ Sharing, awareness on Cardano and places to meet and collaborate are key',  -- s
 ,
 
 (
-    224,  -- id
+    422132,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'A Multi-chain Explorer ft. Cardano',  -- title
     'There are multiple Cardano Explorers present but not one which can support multiple chains all at one place. This could bring in more users to the Cardano Ecosystem from the other chains.',  -- summary
@@ -5535,7 +5535,7 @@ Sharing, awareness on Cardano and places to meet and collaborate are key',  -- s
 ,
 
 (
-    225,  -- id
+    422127,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Lucid - Developing the Easy Way',  -- title
     'Cardano didn''t have a friendly and easy-to-use library for building transactions, interacting with Plutus smart contracts, and building dApps; making it very difficult to attract developers.',  -- summary
@@ -5556,7 +5556,7 @@ Sharing, awareness on Cardano and places to meet and collaborate are key',  -- s
 ,
 
 (
-    226,  -- id
+    422123,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'RemoStart: Africa Job Shadowing',  -- title
     'No African country has met its SDG goal for decent work and economic growth and reduced inequalities. With a teeming youth population, how can we convert her population to talents for economic growth?',  -- summary
@@ -5577,7 +5577,7 @@ Sharing, awareness on Cardano and places to meet and collaborate are key',  -- s
 ,
 
 (
-    227,  -- id
+    422120,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Global Levelling Up of Education CP',  -- title
     'Global education is a mess. Cardano could better integrate tools needed to expand the userbase and interoperability using existing brands with accessible, distributed, life-long learning opportunities',  -- summary
@@ -5598,7 +5598,7 @@ Sharing, awareness on Cardano and places to meet and collaborate are key',  -- s
 ,
 
 (
-    228,  -- id
+    422117,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Legal Listings',  -- title
     'Finding people who have legal and compliance knowledge is costly and inaccessible for new developers and entrepreneurs.',  -- summary
@@ -5631,7 +5631,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    229,  -- id
+    422112,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DAO-NET: Voting Wallet Integration',  -- title
     'DAO-NET currently only allows users to vote on budget and other issues using a centralized website which limits its adoption rate and resilience to attacks.',  -- summary
@@ -5652,7 +5652,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    230,  -- id
+    422104,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Zero to Haskell: Pre-Plutus Program',  -- title
     'According to Plutus Pioneer staff, a very low percentage of students succeed in the program. The stated reason for student dropout is a lack of Haskell foundational knowledge.',  -- summary
@@ -5673,7 +5673,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    231,  -- id
+    422099,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Cardano e-Learning Platform',  -- title
     'There is a demand for diverse developers in the Cardano ecosystem but a lack of free instructional content and learning platforms. Currently available resources are generally only offered in English.',  -- summary
@@ -5694,7 +5694,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    232,  -- id
+    422090,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Lotus Link: Eco-Farm Traceability',  -- title
     'Village communities in Vietnam need infrastructure for sales of local goods—especially in agricultural & heritage-tourism contexts. Authenticity should be provable for eco-products & artisanal crafts.',  -- summary
@@ -5723,7 +5723,7 @@ Research Fellow — Center for Vietnamese Philosophy, Culture & Society', -- rel
 ,
 
 (
-    233,  -- id
+    422087,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Multi-hop swaps for more liquidity',  -- title
     'In the absence of a liquidity pool between token X and Z current Cardano AMM protocols don''t work. However, we could potentially perform a multi-hop swap between token X and Y and token Y and Z.',  -- summary
@@ -5744,7 +5744,7 @@ Research Fellow — Center for Vietnamese Philosophy, Culture & Society', -- rel
 ,
 
 (
-    234,  -- id
+    422081,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Bridgeless atomic cross chain swaps',  -- title
     'In order to transfer assets between Cardano and other blockchains, one needs a lot of steps involving an intermediary, which limits the accessibility of the Cardano ecosystem by the general public.',  -- summary
@@ -5765,7 +5765,7 @@ Research Fellow — Center for Vietnamese Philosophy, Culture & Society', -- rel
 ,
 
 (
-    235,  -- id
+    422079,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Harvesting AirWater for Agriculture',  -- title
     'Is becoming more evident the increase in droughts, as a consequence of global warming, directly affecting the agricultural sector, decreasing productivity and generating economic issues.',  -- summary
@@ -5802,7 +5802,7 @@ Renato Zamudio Malagón: Programmer founder of BOX-S.', -- relevant experience
 ,
 
 (
-    236,  -- id
+    422077,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Microfinance ID Uplink to Banking',  -- title
     'No formal ID system exists in Laos making payments to & from vulnerable rural people difficult. We like to uplink our shared Distributed Ledger Microfinance platform to the formal banking system.',  -- summary
@@ -5823,7 +5823,7 @@ Renato Zamudio Malagón: Programmer founder of BOX-S.', -- relevant experience
 ,
 
 (
-    237,  -- id
+    422075,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Scrutiny System in blockchain',  -- title
     'In several Latin American countries, the computer systems for counting votes are highly manipulable, not very auditable, not very transparent, not very reliable and do not allow citizens to be audited',  -- summary
@@ -5848,7 +5848,7 @@ Renato Zamudio Malagón: Programmer founder of BOX-S.', -- relevant experience
 ,
 
 (
-    238,  -- id
+    422069,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Mobile Multisig Live Asset Trading',  -- title
     'Secure trading is not easily accessible for people limited to mobile devices, forcing them to use insecure trust-based escrows. Mobile accessibility is of utmost importance for ecosystem growth.',  -- summary
@@ -5874,7 +5874,7 @@ We are also the developers of Tent, which has already been used to trade over 3,
 ,
 
 (
-    239,  -- id
+    422068,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Black & PhD: Writing retreat for PC',  -- title
     'Young black entrepreneurs get less business funding than their counterparts. Lack of opportunity for these groups is problematic. Project Catalyst is a great way for Black PhD’s to grow businesses.',  -- summary
@@ -5895,7 +5895,7 @@ We are also the developers of Tent, which has already been used to trade over 3,
 ,
 
 (
-    240,  -- id
+    422058,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Sharing liquidity between DEXs',  -- title
     'On Cardano each DEX uses its own "orderbook". Downsides
@@ -5920,7 +5920,7 @@ We are also the developers of Tent, which has already been used to trade over 3,
 ,
 
 (
-    241,  -- id
+    422053,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Dandelion: Decentralized Web3 APIs',  -- title
     'APIs are a bottleneck to decentralization in Web3 apps. Dandelion provides an alternative to centralized services like Infura and Blockfrost, but it is not yet built to be reliable at scale.',  -- summary
@@ -5941,7 +5941,7 @@ We are also the developers of Tent, which has already been used to trade over 3,
 ,
 
 (
-    242,  -- id
+    422052,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Eon Brands!',  -- title
     'Most NFT projects if we are being honest, have zero to little utility and does not represent anything other than proof of authenticity of an Image.
@@ -5977,7 +5977,7 @@ Founded by a Nigerian Female entrepreneur Obiageli Okafor who is also the CEO of
 ,
 
 (
-    243,  -- id
+    422045,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Login with Cardano Wallet - cAuth',  -- title
     'Cardano doesn’t have a lightweight, autonomous login mechanism.. As a result apps depend on legacy systems to authenticate users, limiting growth and decentralization',  -- summary
@@ -5998,7 +5998,7 @@ Founded by a Nigerian Female entrepreneur Obiageli Okafor who is also the CEO of
 ,
 
 (
-    244,  -- id
+    422043,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Event Calendar on CardanoProjects',  -- title
     'The Cardano ecosystem attracts many developers to build the project, but users do not know the NFT mint schedule, public sale, ISPO ... when to start.',  -- summary
@@ -6019,7 +6019,7 @@ Founded by a Nigerian Female entrepreneur Obiageli Okafor who is also the CEO of
 ,
 
 (
-    245,  -- id
+    422041,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Liquidity Efficient DEX models',  -- title
     'The automated market maker (AMM) model used by many Cardano DEXs is not well suited for  Cardanos eUTXO model. Moreover, it has many downsides like inefficient use of liquidity and impermanent loss.',  -- summary
@@ -6040,7 +6040,7 @@ Founded by a Nigerian Female entrepreneur Obiageli Okafor who is also the CEO of
 ,
 
 (
-    246,  -- id
+    422040,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Catalyst Governance Tooling',  -- title
     'Today''s Catalyst process and tools are not supportive of experiments in process, governance and allocation of funds. Challenge setting lacks continuity and our ecosystem suffers.',  -- summary
@@ -6061,7 +6061,7 @@ Founded by a Nigerian Female entrepreneur Obiageli Okafor who is also the CEO of
 ,
 
 (
-    247,  -- id
+    422035,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Add Junior Developers to Ecosystem',  -- title
     'There is a shortage of qualified developers for Cardano Blockchain worldwide. India has 2 million Developers with only 0.25% on all the Blockchains.',  -- summary
@@ -6084,7 +6084,7 @@ Udai and Narendra trained many Junior developers in their technology leadership 
 ,
 
 (
-    248,  -- id
+    422034,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Educational Hub by CardanoProjects',  -- title
     'Currently, KOLs on social networks still call Cardano a Ghost Chain. We want to build a portal on CardanoProjects.org to educate users in a mainstream way about the Cardano ecosystem.',  -- summary
@@ -6105,7 +6105,7 @@ Udai and Narendra trained many Junior developers in their technology leadership 
 ,
 
 (
-    249,  -- id
+    422031,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Wada Web3 Education DAO Valuation',  -- title
     'Most impact orgs like Wada struggle financially due to improper value capture as an investment vehicle. This leads to unrealized benefits of impact ventures and monetary loss for potential investors',  -- summary
@@ -6126,7 +6126,7 @@ Udai and Narendra trained many Junior developers in their technology leadership 
 ,
 
 (
-    250,  -- id
+    422022,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Proposal Writing Service',  -- title
     'New proposers may lack the knowledge and clarity to start writing compelling proposals.',  -- summary
@@ -6147,7 +6147,7 @@ Udai and Narendra trained many Junior developers in their technology leadership 
 ,
 
 (
-    251,  -- id
+    422018,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'SPOxNFTs: A Decentralization Tool',  -- title
     'Not everyone has the technical knowledge or capabilities to run and manage a Cardano Stake Pool and many SPOs struggle with visibility many times resulting in them having to retire their pools.',  -- summary
@@ -6168,7 +6168,7 @@ Udai and Narendra trained many Junior developers in their technology leadership 
 ,
 
 (
-    252,  -- id
+    422010,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Sifchain Omni-EVM',  -- title
     'There is currently no way to send tokens from Cardano to Cosmos or vice versa. This limits the flow of Cardano-native assets in the blockchain world as a whole.',  -- summary
@@ -6189,7 +6189,7 @@ Udai and Narendra trained many Junior developers in their technology leadership 
 ,
 
 (
-    253,  -- id
+    422005,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Marketing Training for African SPOs',  -- title
     'It''s challenging being a Stake Pool Operator (SPO) let alone the 1st SPO in a country. On top of technical skills, SPOs need entrepreneurial, marketing, and managerial skills to operate sustainably.',  -- summary
@@ -6210,7 +6210,7 @@ Udai and Narendra trained many Junior developers in their technology leadership 
 ,
 
 (
-    254,  -- id
+    422003,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Cardano DAO Dashboard',  -- title
     'There is no easy way for users to understand the state of Cardano DAOs and how decentralized and autonomous an organization is.',  -- summary
@@ -6233,7 +6233,7 @@ Clarity Team: Core contributors to Agora and CTL and building DAO infrastructure
 ,
 
 (
-    255,  -- id
+    422001,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MyUnbox',  -- title
     'There is no ability to combine ‘real world’, positive social interactions with your unique experiences; all while creating a digital (web 3.0) presence in the process.',  -- summary
@@ -6254,7 +6254,7 @@ Clarity Team: Core contributors to Agora and CTL and building DAO infrastructure
 ,
 
 (
-    256,  -- id
+    422000,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Certification and traceability fund',  -- title
     'Agri-food supply chains contribute to 26% greenhouse gasses, use 50% habitable land and 70% of water. Supplychain is responsible for 95% is opaque and often switch supplier destroying effort made.',  -- summary
@@ -6280,7 +6280,7 @@ We are looking for a marketing profile', -- relevant experience
 ,
 
 (
-    257,  -- id
+    421992,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Play2Learn2Earn ADA Makerspace Game',  -- title
     'Learning blockchain development is a lot of hard work, and many of the teaching resources are not fun. Causing people to give up or not try at all.',  -- summary
@@ -6301,7 +6301,7 @@ We are looking for a marketing profile', -- relevant experience
 ,
 
 (
-    258,  -- id
+    421989,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Digirack: Next Gen CNFT Marketplace',  -- title
     'Most CNFTs lack sufficient liquidity making it difficult for users to sell their NFTs and also the Cardano NFT space is flooded with Fake and NFT copycats making it hard to locate high-quality art.',  -- summary
@@ -6327,7 +6327,7 @@ The CEO Shirajuddeen has vast experience working for top organizations like FinT
 ,
 
 (
-    259,  -- id
+    421987,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'DLT360/CC: Building Compliant DAOs',  -- title
     'For projects that want to operate as DAOs there is no easy way to understand the legal & implementation risks and paths forward to operating as a compliant DAO.',  -- summary
@@ -6348,7 +6348,7 @@ The CEO Shirajuddeen has vast experience working for top organizations like FinT
 ,
 
 (
-    260,  -- id
+    421982,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Dynamic mind-brain NFT design',  -- title
     'Basic ID mechanisms, e.g. fingerprints/keys, are ill-suited for accelerating cybersecurity risks and dynamic complex environments
@@ -6371,7 +6371,7 @@ Current NFT design is too simplistic to represent dynamic brain states',  -- sum
 ,
 
 (
-    261,  -- id
+    421973,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'VyFinance DEx and Bar',  -- title
     'Most DApps mint their token, then use this token to distribute rewards to existing holders. This causes a downward trend in token value. Income should be generated not minted and distributed to users.',  -- summary
@@ -6392,7 +6392,7 @@ Current NFT design is too simplistic to represent dynamic brain states',  -- sum
 ,
 
 (
-    262,  -- id
+    421968,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Licensing Remixed Music On-Chain',  -- title
     '1. Most remixes are unofficial, creating revenue leakage for the original Artist and limiting the potential of a remix / mixtape.
@@ -6429,7 +6429,7 @@ Current NFT design is too simplistic to represent dynamic brain states',  -- sum
 ,
 
 (
-    263,  -- id
+    421959,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Outreach/Education Ecuador',  -- title
     'A lack of education regarding Cardano''s potential in local Ecuadorian communities is hindering the development of the cardano ecosystem in Ecuador',  -- summary
@@ -6458,7 +6458,7 @@ Cardano NYC MeetUp Coordinator', -- relevant experience
 ,
 
 (
-    264,  -- id
+    421944,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Building resilient youth',  -- title
     'Youth leaders are not equipped with the tools to deal with the complexity of climate change, emerging economies, and endemic barriers.',  -- summary
@@ -6479,7 +6479,7 @@ Cardano NYC MeetUp Coordinator', -- relevant experience
 ,
 
 (
-    265,  -- id
+    421942,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Professional Cardano NFT Content',  -- title
     'NFT collectors want expert information and analysis about current and upcoming Cardano NFT projects, but don''t know who to trust.',  -- summary
@@ -6505,7 +6505,7 @@ Since November 2021, I''ve been the host of blakeCNFT, a YouTube channel and pod
 ,
 
 (
-    266,  -- id
+    421937,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Adosia Spaceprinter Lite',  -- title
     'The current Spaceprinter requires additional hardware and network expertise that create barriers for some users.',  -- summary
@@ -6526,7 +6526,7 @@ Since November 2021, I''ve been the host of blakeCNFT, a YouTube channel and pod
 ,
 
 (
-    267,  -- id
+    421935,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Investing in Africa',  -- title
     'Africa and the Global South are getting smaller portions of Catalyst funding.',  -- summary
@@ -6547,7 +6547,7 @@ Since November 2021, I''ve been the host of blakeCNFT, a YouTube channel and pod
 ,
 
 (
-    268,  -- id
+    421928,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Adosia Marketplace Updates',  -- title
     'The Adosia Decentralized Manufacturing Marketplace as an MVP requires additional features to continue to provide a world class marketplace to the Cardano Blockchain.',  -- summary
@@ -6568,7 +6568,7 @@ Since November 2021, I''ve been the host of blakeCNFT, a YouTube channel and pod
 ,
 
 (
-    269,  -- id
+    421927,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Mentorship moving beyond borders',  -- title
     'The lack of mentorship is leaving people behind, specifically in Africa and the global South. Cardano does not have a presence as a global, crypto mentor for impact investing.',  -- summary
@@ -6589,7 +6589,7 @@ Since November 2021, I''ve been the host of blakeCNFT, a YouTube channel and pod
 ,
 
 (
-    270,  -- id
+    421924,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Add Senior Developers to Ecosystem',  -- title
     'There is a shortage of qualified senior developers for Cardano Blockchain worldwide. India has 2 million Developers with only 0.25% on all the Blockchains.',  -- summary
@@ -6612,7 +6612,7 @@ Udai and Narendra trained many senior developers in their technology leadership 
 ,
 
 (
-    271,  -- id
+    421908,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DripDropz Open Source Voting Tool',  -- title
     'Proper community led governance on the Cardano blockchain requires a transparent, immutable, secure method to track ballots, record choices, and ensure auditable results.',  -- summary
@@ -6633,7 +6633,7 @@ Udai and Narendra trained many senior developers in their technology leadership 
 ,
 
 (
-    272,  -- id
+    421906,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Accelerator: Cardano Startups',  -- title
     'Developers in emerging markets who want to build on Cardano don''t have the business skills necessary to build and scale their business. They also don''t know that Cardano partners with accelerators.',  -- summary
@@ -6654,7 +6654,7 @@ Udai and Narendra trained many senior developers in their technology leadership 
 ,
 
 (
-    273,  -- id
+    421892,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DripDropz Cardano Mainstreet Suite',  -- title
     'Lack of access to traditional finance services is detrimental to growth. Merchants and consumers in emerging markets lack a frictionless way to perform trustless transactions for goods and services.',  -- summary
@@ -6675,7 +6675,7 @@ Udai and Narendra trained many senior developers in their technology leadership 
 ,
 
 (
-    274,  -- id
+    421888,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Climathon: Blockchain4Climate',  -- title
     'Blockchain for climate action requires multi-disciplinary collaboration across communities: co-creation processes could enhance innovative solutions leveraging blockchain''s transparency.',  -- summary
@@ -6696,7 +6696,7 @@ Udai and Narendra trained many senior developers in their technology leadership 
 ,
 
 (
-    275,  -- id
+    421887,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'COP27 Elevating African Leadership',  -- title
     'COP27 is not inclusive enough resulting in blind decision-making. Cardano does not have a presence at this global event and Africa is the new frontier of blockchain combined with climate solutions.',  -- summary
@@ -6717,7 +6717,7 @@ Udai and Narendra trained many senior developers in their technology leadership 
 ,
 
 (
-    276,  -- id
+    421874,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Social Hub',  -- title
     'There are no tools or services for cardano owner2wallet relationship verification.There is no place where users can talk from their wallets names.You have to trust a human, not a code. That is wrong.',  -- summary
@@ -6753,7 +6753,7 @@ Qualified with:
 ,
 
 (
-    277,  -- id
+    421873,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Cardano Node on AWS - Quick Start',  -- title
     'A lot of individuals and organizations want to build a Cardano node themselves, but the problem is creating services, apps on AWS as network, server, security, and alert system, making the system HA.',  -- summary
@@ -6774,7 +6774,7 @@ Qualified with:
 ,
 
 (
-    278,  -- id
+    421872,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'AdaPulse: Independent Media Outlet',  -- title
     'The need for objective coverage of topics within the Cardano ecosystem is paramount. Research identifying the pros & cons of decision making, products, and solutions in an accurate and timely manner.',  -- summary
@@ -6795,7 +6795,7 @@ Qualified with:
 ,
 
 (
-    279,  -- id
+    421871,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'COMPLETE African Artist On-Boarding',  -- title
     'There is not a well defined process for on-boarding new African artists to Cardano, that includes proper considerations to barriers of entry into the Cardano ecosystem.',  -- summary
@@ -6820,7 +6820,7 @@ Nnadichristabel6- Newest African Artist Joining', -- relevant experience
 ,
 
 (
-    280,  -- id
+    421867,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Aedou - the Language Learning Game',  -- title
     'Learning a new language is either hard or expensive (money & time). Access to educational material & job opportunities is heavily dependent on your language. It''s hard to find language tandems.',  -- summary
@@ -6851,7 +6851,7 @@ Nnadichristabel6- Newest African Artist Joining', -- relevant experience
 ,
 
 (
-    281,  -- id
+    421864,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Universal Chemical Library',  -- title
     'So far, there is no decentralized system that would support distributed R&D of new chemical compounds. Progress in molecular chemistry is slowed down by the cumbersome structure of academic papers.',  -- summary
@@ -6872,7 +6872,7 @@ Nnadichristabel6- Newest African Artist Joining', -- relevant experience
 ,
 
 (
-    282,  -- id
+    421844,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Accelerator: FT Challenge Startups',  -- title
     '200 companies applied to the FT x Cardano Challenge (F7) and a small % of the applications were supported
@@ -6896,7 +6896,7 @@ Nnadichristabel6- Newest African Artist Joining', -- relevant experience
 ,
 
 (
-    283,  -- id
+    421830,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'CIP - Education Financing',  -- title
     'The tokenization of real-world assets in the education sector is still in its infancy and few standards exist.',  -- summary
@@ -6917,7 +6917,7 @@ Nnadichristabel6- Newest African Artist Joining', -- relevant experience
 ,
 
 (
-    284,  -- id
+    421825,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Urban Farmer dApp Phase II',  -- title
     'Food insecurity is a global crisis. Supply chain issues are making the problem more acute. Localizing food production fights this directly.',  -- summary
@@ -6943,7 +6943,7 @@ Learn more at https://resi.works/about-us/', -- relevant experience
 ,
 
 (
-    285,  -- id
+    421822,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'CardanoPress: Governance Plugin',  -- title
     'Technical knowledge is required to create a platform where users can vote on-chain. CardanoPress Governance plugin makes this process easy by integrating web2 features with on-chain voting.',  -- summary
@@ -6969,7 +6969,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    286,  -- id
+    421820,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Catalyst Campus Train',  -- title
     'Most Colleges in Ghana neither teach the ideas of entrepreneurship nor does it provide students with the skills and opportunities they need to effectively gain financial and economic freedom.',  -- summary
@@ -6990,7 +6990,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    287,  -- id
+    421817,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Automated Cardano Testing Pipeline',  -- title
     'When a new version of the Cardano node is released, it is difficult for community members to run basic functional tests on the node in an automated fashion (e.g., transactions, stake pool operation).',  -- summary
@@ -7011,7 +7011,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    288,  -- id
+    421816,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Underprivileged DREPS Campaigning',  -- title
     'We need Dreps representing diverse regions and cultures. Those Dreps living in underprivileged countries will find difficult to achieve saturation, creating inefficiencies in the governance.',  -- summary
@@ -7032,7 +7032,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    289,  -- id
+    421815,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Mini Proposal Workshops',  -- title
     'Proposers don''t have the experience to make their proposals understandable to voters.',  -- summary
@@ -7055,7 +7055,7 @@ Our team has combined experience in team leading, system facilitating, marketing
 ,
 
 (
-    290,  -- id
+    421808,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'DReps Open Debate',  -- title
     'Need of an open space for dReps to address the community',  -- summary
@@ -7076,7 +7076,7 @@ Our team has combined experience in team leading, system facilitating, marketing
 ,
 
 (
-    291,  -- id
+    421807,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Haskell Integration in Wolfram Tech',  -- title
     'At present, Wolfram Research does not have the capability to allow Haskell to directly integrate with Wolfram Language and technologies',  -- summary
@@ -7097,7 +7097,7 @@ Our team has combined experience in team leading, system facilitating, marketing
 ,
 
 (
-    292,  -- id
+    421804,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Empowering Collabs though Hubs',  -- title
     'There aren''t proper digital bridges between different Blockchain Communities to collaborate with one another',  -- summary
@@ -7118,7 +7118,7 @@ Our team has combined experience in team leading, system facilitating, marketing
 ,
 
 (
-    293,  -- id
+    421801,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Work-iDID : Job Experience Tracker',  -- title
     'Contractors for Projects/Business that require to demonstrate experience and references but need to be verifiable, accurate and keep privacy. Without chasing previous colleagues.',  -- summary
@@ -7143,7 +7143,7 @@ Our team has combined experience in team leading, system facilitating, marketing
 ,
 
 (
-    294,  -- id
+    421798,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Workshop 4-days in Angola',  -- title
     'Partnerships with local businesses to sponsor education in blockchain technology, Cardano events, networking with developers and employment opportunities for participants',  -- summary
@@ -7164,7 +7164,7 @@ Our team has combined experience in team leading, system facilitating, marketing
 ,
 
 (
-    295,  -- id
+    421797,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'CardanoPress: NFT Gated Content',  -- title
     'We are seeing NFTs come out with more and more utility making them more desirable. One such use case is gated content on websites. We want to make this easy for any project that wants this use case.',  -- summary
@@ -7190,7 +7190,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    296,  -- id
+    421796,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'RampUp Plutus Devs for Cardano',  -- title
     'Cardano needs urgently new devs for Plutus, but teaching is just the beginning, a complete program with job placement is needed, specially for Catalyst funded proposals that lack resources.',  -- summary
@@ -7211,7 +7211,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    297,  -- id
+    421792,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'littlefish - Redefining Earning',  -- title
     'Earning solutions today limit individuals, take away their freedom in the work space, and chain them to jobs that prevent personal growth and fulfillment in the name of financial safety.',  -- summary
@@ -7232,7 +7232,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    298,  -- id
+    421782,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Catalyst Swarm & SingularityNET',  -- title
     'There is a massive lack of coordination, communication & collaboration between the Cardano & SingularityNET Communities to turn Cardano into the premier blockchain for AI services.',  -- summary
@@ -7253,7 +7253,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    299,  -- id
+    421771,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Decentralized cross-chain OTC',  -- title
     'DAOs and token projects experience issues with attracting liquidity from other chains + often they need a channel to sell their token to a specific buyer in a agreed volume in BTC or stablecoins.',  -- summary
@@ -7274,7 +7274,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    300,  -- id
+    421770,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Fix Web3 rabbit holes',  -- title
     'Web3 can manage transactions decentralized without human intervention, but the computer infrastructure depends on human intervention for maintenance. This induces centralization',  -- summary
@@ -7310,7 +7310,7 @@ Contributor to the Plutus Application Framework', -- relevant experience
 ,
 
 (
-    301,  -- id
+    421769,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Flutter SDK',  -- title
     'Flutter is the fastest growing mobile app developer community but currently there''s no Flutter library support in the Cardano ecosystem.',  -- summary
@@ -7356,7 +7356,7 @@ Plutus Pioneers 3rd Cohort', -- relevant experience
 ,
 
 (
-    302,  -- id
+    421767,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Community Cyber Security Support',  -- title
     'With technology, comes opportunities for bad actors to maliciously take advantage of and scam many individuals. This has always been a large ongoing challenge, and the blockchain space is not immune.',  -- summary
@@ -7380,7 +7380,7 @@ Plutus Pioneers 3rd Cohort', -- relevant experience
 ,
 
 (
-    303,  -- id
+    421753,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'anetaBTC, DAO Infrastructure',  -- title
     'We must have a protocol that unlocks the value of Bitcoin on Cardano to fully optimize Cardano DeFi potential. We must also have open-sourced DAO tools to grow our ecosystem.',  -- summary
@@ -7401,7 +7401,7 @@ Plutus Pioneers 3rd Cohort', -- relevant experience
 ,
 
 (
-    304,  -- id
+    421752,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'SDG Impact-Investment Token',  -- title
     'Investment activity is mainly focused on capital growth, often at the expense of people, society and environment + lack of access to impact & purpose oriented investment and fundraising opportunities',  -- summary
@@ -7422,7 +7422,7 @@ Plutus Pioneers 3rd Cohort', -- relevant experience
 ,
 
 (
-    305,  -- id
+    421750,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Catalyst Swarm - After Town Hall',  -- title
     'There is a lack of open community spaces which provide effective platforms for developers to meet and connect, to share ideas and to find collaborators.',  -- summary
@@ -7443,7 +7443,7 @@ Plutus Pioneers 3rd Cohort', -- relevant experience
 ,
 
 (
-    306,  -- id
+    421742,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Multichain multisig wallet',  -- title
     'Current multisig experience is very cumbersome. Different blockchains implement it in various way. It is hard to keep track of DAO''s/corporate''s/group''s funds when you have assets on multiple chains.',  -- summary
@@ -7464,7 +7464,7 @@ Plutus Pioneers 3rd Cohort', -- relevant experience
 ,
 
 (
-    307,  -- id
+    421737,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'SwarmLabs - Treasury Systems',  -- title
     'There is a lack of tools and services which allows project to establish fully transparent and accessible treasury & account systems',  -- summary
@@ -7487,7 +7487,7 @@ We are an assembly of highly committed, engaged and experienced Catalyst & Carda
 ,
 
 (
-    308,  -- id
+    421734,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'anetaBTC on Cardano and Ergo',  -- title
     'We must have a protocol that unlocks the value of Bitcoin on Cardano to fully optimize Cardano DeFi potential.',  -- summary
@@ -7508,7 +7508,7 @@ We are an assembly of highly committed, engaged and experienced Catalyst & Carda
 ,
 
 (
-    309,  -- id
+    421723,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Proposers’ Hive',  -- title
     'Proposers - funded AND unfunded - lack a community where they can support each other, forge collaboration, promote their work, and solve the issues that affect them in Catalyst.',  -- summary
@@ -7529,7 +7529,7 @@ We are an assembly of highly committed, engaged and experienced Catalyst & Carda
 ,
 
 (
-    310,  -- id
+    421718,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MY DIGITAL LIBRARY',  -- title
     'In a world without libraries, it would be difficult to advance research and knowledge or to preserve for future generations the knowledge and heritage accumulated by humanity.',  -- summary
@@ -7565,7 +7565,7 @@ We are an assembly of highly committed, engaged and experienced Catalyst & Carda
 ,
 
 (
-    311,  -- id
+    421708,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Catalyst Swarm DAO Tools',  -- title
     'The growing Cardano & Catalyst Ecosystems needs innovative & effective ways to engage, motivate and reward community contributions by participating in DAO systems',  -- summary
@@ -7586,7 +7586,7 @@ We are an assembly of highly committed, engaged and experienced Catalyst & Carda
 ,
 
 (
-    312,  -- id
+    421701,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'anetaBTC, decentralized wrapped BTC',  -- title
     'We must have a protocol that unlocks the value of Bitcoin on Cardano to fully optimize Cardano DeFi potential.',  -- summary
@@ -7607,7 +7607,7 @@ We are an assembly of highly committed, engaged and experienced Catalyst & Carda
 ,
 
 (
-    313,  -- id
+    421676,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'RESTful wrapper for Plutus Offchain',  -- title
     'Variations across tools like cardano-cli, serialization libs and Plutus, like in data serialization create difficulty when more than one is present in a dApp stack.',  -- summary
@@ -7628,7 +7628,7 @@ We are an assembly of highly committed, engaged and experienced Catalyst & Carda
 ,
 
 (
-    314,  -- id
+    421675,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Fund Winner Marketing Logos',  -- title
     'Catalyst fund winners do not have ready-made visuals to showcase their win. Catalyst does not make the most of winner’s communication to the outside world.',  -- summary
@@ -7649,7 +7649,7 @@ We are an assembly of highly committed, engaged and experienced Catalyst & Carda
 ,
 
 (
-    315,  -- id
+    421674,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Transaction Editor post Vasil HF',  -- title
     'The transaction editor supports the Alonzo Hard Fork yet with the newest features coming with Vasil it requires many updates.',  -- summary
@@ -7670,7 +7670,7 @@ We are an assembly of highly committed, engaged and experienced Catalyst & Carda
 ,
 
 (
-    316,  -- id
+    421671,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'KudoProject',  -- title
     'Project Management is key to success for many organizations and yet the statistics around project management are far from stellar.
@@ -7696,7 +7696,7 @@ KudoProject aims to move the needle in the right direction.',  -- summary
 ,
 
 (
-    317,  -- id
+    421670,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Hotel booking on Cardano',  -- title
     'Online travel agents (OTA, i.e. Expedia.com) are not using blockchain technology and controlling all traveler info.',  -- summary
@@ -7717,7 +7717,7 @@ KudoProject aims to move the needle in the right direction.',  -- summary
 ,
 
 (
-    318,  -- id
+    421661,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Spectrum.Network | Layer 2 for DeFi',  -- title
     'There''s no direct access to the liquidity of other blockchains for dApps. Moreover, there''s no decentralized way to transfer liquidity across different DeFi protocols. CEX is the only tool.',  -- summary
@@ -7738,7 +7738,7 @@ KudoProject aims to move the needle in the right direction.',  -- summary
 ,
 
 (
-    319,  -- id
+    421655,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Ecosystem of Hotels on Cardano',  -- title
     'Hotels struggle to attract travelers to their dedicated booking page and travelers have no control over personal data',  -- summary
@@ -7759,7 +7759,7 @@ KudoProject aims to move the needle in the right direction.',  -- summary
 ,
 
 (
-    320,  -- id
+    421654,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Crypto Tik Tok Channel for Youth',  -- title
     'Knowledge about Blockchain and Crypto is quite novel and confusing for young people. Build a TikTok channel to help them to easily access and participate in both Blockchain, Crypto as well as Cardano.',  -- summary
@@ -7782,7 +7782,7 @@ KudoProject aims to move the needle in the right direction.',  -- summary
 ,
 
 (
-    321,  -- id
+    421637,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'The Sustainable Goals Token',  -- title
     'A key challenge in the WEB 3 space is that there is not a user-friendly, transparent way to invest towards impact driven businesses and track/verify their impact for support or through investments.',  -- summary
@@ -7803,7 +7803,7 @@ KudoProject aims to move the needle in the right direction.',  -- summary
 ,
 
 (
-    322,  -- id
+    421627,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'CNFTacademy translation',  -- title
     'It is not easy to find good Japanese and Chinese dev courses for Cardano developers',  -- summary
@@ -7837,7 +7837,7 @@ And speaks Italian, Spanish, English and would need the support of the community
 ,
 
 (
-    323,  -- id
+    421617,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'CNFTacademy Genesis',  -- title
     'It is hard for developers to find content up to date and material in order to learn step by step how to code in Cardano',  -- summary
@@ -7866,7 +7866,7 @@ And speaks Italian, Spanish, English and would need the support of the community
 ,
 
 (
-    324,  -- id
+    421614,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'African Journalists - AJEOT 2022',  -- title
     'How do we build competent journalists in sub-saharan Africa to influence policy debate and set the right tone for blockchain discourse and policy adoption?',  -- summary
@@ -7887,7 +7887,7 @@ And speaks Italian, Spanish, English and would need the support of the community
 ,
 
 (
-    325,  -- id
+    421612,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'CardanoPress: ISPO Dashboard',  -- title
     'ISPOs are a popular and unique way of raising funds on Cardano but require technical setup and knowledge to query user staking data and calculate against it for rewards & distribution.',  -- summary
@@ -7913,7 +7913,7 @@ Our BETA version has been released with a live version being used for the GoKey 
 ,
 
 (
-    326,  -- id
+    421609,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Trust-less non-custodial L2 NFT DEX',  -- title
     'Although some first DEXes are emerging, the Cardano ecosystem is lacking a fully trust-less, non-custodial off-chain and open-source NFT marketplace.',  -- summary
@@ -7934,7 +7934,7 @@ Our BETA version has been released with a live version being used for the GoKey 
 ,
 
 (
-    327,  -- id
+    421608,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Multi-chain token bridge',  -- title
     'Cardano, like most blockchains, is currently isolated and only few solutions for bridges exist. Existing solutions are not extendable to new chains or require trust in its operators (can get hacked).',  -- summary
@@ -7955,7 +7955,7 @@ Our BETA version has been released with a live version being used for the GoKey 
 ,
 
 (
-    328,  -- id
+    421607,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Onboarded companies playbook',  -- title
     'New funded companies, face accounting and community communication challenges to be aligned with their normal operation. Catalyst does not have an available/ relevant source of information about it.',  -- summary
@@ -7976,7 +7976,7 @@ Our BETA version has been released with a live version being used for the GoKey 
 ,
 
 (
-    329,  -- id
+    421604,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'FluidTokens Protocol Security Audit',  -- title
     'FluidTokens is the first open Decentralized Lending platform that allows anyone to request ADA using his/her NFTs or tokens. Aditing the v2 of the Smart Contract is important to protect the community',  -- summary
@@ -8009,7 +8009,7 @@ And we are collaborating with GeniusX as partner and Canonical as Auditor', -- r
 ,
 
 (
-    330,  -- id
+    421602,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Chatbot AI for Project Catalyst',  -- title
     'The information involved in Project Catalyst is continuously updated and disseminated through many different channels and media, making it hard for users to find the neat info when needed.',  -- summary
@@ -8039,7 +8039,7 @@ Co-dreamer at Lidonation & developer behind Lido''s catalyst research tool with 
 ,
 
 (
-    331,  -- id
+    421586,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'EnDAOment : Endowment Framework',  -- title
     'DAOs lack tooling and legal clarity for managing their treasury, specifically endowment funds generating staking yield.',  -- summary
@@ -8060,7 +8060,7 @@ Co-dreamer at Lidonation & developer behind Lido''s catalyst research tool with 
 ,
 
 (
-    332,  -- id
+    421580,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Impact Measurement of SPOs',  -- title
     'A key challenge with funded proposals is to track project progress + effectiveness with clear impact measurements, especially for Sustainable Development Goals (SDGs).',  -- summary
@@ -8081,7 +8081,7 @@ Co-dreamer at Lidonation & developer behind Lido''s catalyst research tool with 
 ,
 
 (
-    333,  -- id
+    421574,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Impact Measurement For Businesses',  -- title
     'A key challenge with funded proposals and companies building on Cardano is to track project progress + effectiveness with clear impact measurements, especially for Sustainable Development Goals SDGs',  -- summary
@@ -8102,7 +8102,7 @@ Co-dreamer at Lidonation & developer behind Lido''s catalyst research tool with 
 ,
 
 (
-    334,  -- id
+    421571,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Fractionalized NFTs with Marlowe',  -- title
     'Currently, there are no audited solutions for a Cardano user to fractionalize an NFT and current solutions require some Programming Knowledge.',  -- summary
@@ -8129,7 +8129,7 @@ Gamechanger Wallet Development', -- relevant experience
 ,
 
 (
-    335,  -- id
+    421569,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Blockchain Knowledge Videos',  -- title
     'There are very few videos about blockchain technology knowledge in Vietnamese. This makes a lot of investors in Vietnam not really understand the technology of blockchain and Cardano.',  -- summary
@@ -8156,7 +8156,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    336,  -- id
+    421568,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'FluidTokens legal entity',  -- title
     'FluidTokens aims to become a legally registered DAO for the users benefit, establishing itself as a legal entity in Switzerland. The fixed cost is 30.000$ plus additional annual costs',  -- summary
@@ -8177,7 +8177,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    337,  -- id
+    421562,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'dRep Interview Channel',  -- title
     'A lot of people don''t know about dRep
@@ -8208,7 +8208,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    338,  -- id
+    421555,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Developers Reward program DEV$',  -- title
     'Developers are not incentivized to work with Cardano technology, there is no reward for choosing to focus on this technology. No monetary incentive compensation is offered to use Haskell and Plutus.',  -- summary
@@ -8229,7 +8229,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    339,  -- id
+    421554,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'References for dRep',  -- title
     'dRep are the people who have a great influence on the community . But many dRep do not have enough knowledge, experience and time to fully assess the proposals in different challenges.',  -- summary
@@ -8256,7 +8256,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    340,  -- id
+    421543,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     '1st Traceable RewardCurrency FLORAS',  -- title
     'We are building a reward currency (FLORAS) to be spent only on Sustainable Projects. We need a smart contract to trace issuing & spending. Solidity is our solution but is too expensive per transaction',  -- summary
@@ -8277,7 +8277,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    341,  -- id
+    421540,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Atala Integration with Milkomeda',  -- title
     'Atala should be accessible to everyone. However, it is not integrated with Milkomeda and is affecting the adoption of Atala and Milkomeda. 日本語',  -- summary
@@ -8298,7 +8298,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    342,  -- id
+    421537,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'AEROS Universal AirMile BasedOn ADA',  -- title
     'Airmiles are the biggest currency in the world with 10 Trillion outstanding miles and 500B issued annually. Miles depreciate over time and are difficult to track and redeem frustrating 300M members.',  -- summary
@@ -8319,7 +8319,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    343,  -- id
+    421535,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'sustainable usage of energy',  -- title
     'high electricity tariffs due to high consumption of electricity as a result of too much leakages in wiring systems of 90percent of homes and public places in the country.',  -- summary
@@ -8340,7 +8340,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    344,  -- id
+    421534,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Poolpeek Stake Pool Pledge Tracker',  -- title
     'Within all blockchain there are metrics that people turn to for confidence and one such stat we would like to gather is the total pledge / holding of all the cardano stake pool operators.',  -- summary
@@ -8361,7 +8361,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    345,  -- id
+    421532,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Rescuing Rural Areas Architecture',  -- title
     'Low Architectural living standards  in the andean plateau of Chimborazo,  Ecuador.',  -- summary
@@ -8382,7 +8382,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    346,  -- id
+    421507,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Launching Landano on Mainnet',  -- title
     'Landano is a ground-breaking RealFi dApp that notarizes traditional land rights, enabling unbanked Africans to leverage DeFi opportunities. We need to take the final step from Testnet MVP to Mainnet.',  -- summary
@@ -8403,7 +8403,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    347,  -- id
+    421506,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'CardanoHTX Developer Hub',  -- title
     'Houston is a major economic center with world class industries, major universities, and growing networks for Lighting and Ethereum but lacks a community for Cardano to support development.',  -- summary
@@ -8424,7 +8424,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    348,  -- id
+    421502,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Proposals Mentors Marketplace - 2',  -- title
     'Catalyst is hard, generate a good proposal, get it well ranked and voted could be a very daunting challenge, producing frustration, good people left the community and great ideas to become overlooked',  -- summary
@@ -8445,7 +8445,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    349,  -- id
+    421486,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'An open source book on Cardano',  -- title
     'Comprehensive instructional resources on Plutus that don''t require prior functional programming experience are limited and such resources are almost non-existent for Spanish speakers.',  -- summary
@@ -8466,7 +8466,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    350,  -- id
+    421479,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Youth Block Resource Development',  -- title
     'Schools are failing to equip youth with the skills to access networks, navigate, and flourish in a globalized digital economy. An education for sustainable development Cardano Youth program is absent.',  -- summary
@@ -8487,7 +8487,7 @@ We have the experience of sharing a lot of knowledge on the zoom meeting for the
 ,
 
 (
-    351,  -- id
+    421477,  -- id
     (SELECT row_id FROM objective WHERE id=11 AND event=9), -- objective
     'Watch Wallet for Cardano',  -- title
     'There is currently no Cardano watch wallet and open UI kit for developed mobile and watch wallets to help build applications on Blockfrost.
@@ -8510,7 +8510,7 @@ https://youtu.be/E2NWEHySFZI',  -- summary
 ,
 
 (
-    352,  -- id
+    421465,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Community Managed Proposal System',  -- title
     'Developers have expressed the need to move from Idealscale to a Community Managed System.
@@ -8541,7 +8541,7 @@ Project Management and Team Building. Recruited and managed diverse groups of a
 ,
 
 (
-    353,  -- id
+    421464,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'ADAO: Comprehensive DAO''s Course',  -- title
     'There’s a lack of educational DAO content within the Cardano ecosystem.',  -- summary
@@ -8567,7 +8567,7 @@ The Blockchain Learning Center(BLC) is working towards developing educational re
 ,
 
 (
-    354,  -- id
+    421458,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Cardano EVM Education Concierge',  -- title
     'If we want to make it easy and fast for dApps and other projects to expand or completely move from Ethereum to Cardano, we have to build this process through educational and informative content.',  -- summary
@@ -8593,7 +8593,7 @@ Cristian Amaral - tech copywriter, 10 years of experience in content marketing. 
 ,
 
 (
-    355,  -- id
+    421446,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano Japan Brand Dev Initiative',  -- title
     'Need to develop more materials (fact sheets, bios, project intros, case studies, etc.) for media in Japan.
@@ -8616,7 +8616,7 @@ Opportunities to expand to an influencer management program with industry, gov''
 ,
 
 (
-    356,  -- id
+    421444,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Brazilian Community DAO',  -- title
     'The Brazilian community needs a DAO to act independently on day-to-day pain points, as well as get a first glimpse of how to govern and engage as a DAO.',  -- summary
@@ -8642,7 +8642,7 @@ Cristian Amaral - tech copywriter, 10 years of experience in content marketing. 
 ,
 
 (
-    357,  -- id
+    421443,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Stake Pool Keys in libcardano',  -- title
     'The Cardano ecosystem has a new C++ library that exposes Cardano to one of the largest developer communities; however, the library does not yet provide stake pool cryptographic functionalities.',  -- summary
@@ -8663,7 +8663,7 @@ Cristian Amaral - tech copywriter, 10 years of experience in content marketing. 
 ,
 
 (
-    358,  -- id
+    421410,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Almagua Social DAO Project',  -- title
     'In Colombia, a platform of initiatives is needed that encourages projects for the communities',  -- summary
@@ -8693,7 +8693,7 @@ https://www.linkedin.com/in/sergio-gonzalez-89245358/', -- relevant experience
 ,
 
 (
-    359,  -- id
+    421401,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     '🇻🇳 Cardano Catalyst Student VSC2O',  -- title
     '*Vietnamese students'' lack of Blockchain knowledge and approaches to funding organisation is an obstacle that prevents them from developing projects, research and start-ups.*',  -- summary
@@ -8716,7 +8716,7 @@ Project lead of VSC2O, experienced CA/PA in Catalyst, community member of Cardan
 ,
 
 (
-    360,  -- id
+    421376,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MLabs - Cardano DApp Schemas',  -- title
     'Lack of a language-agnostic mechanism to specify the types used in Cardano Dapps reduces cross-language interoperability and increases the time spent on connecting on-chain, off-chain, and analytics.',  -- summary
@@ -8737,7 +8737,7 @@ Project lead of VSC2O, experienced CA/PA in Catalyst, community member of Cardan
 ,
 
 (
-    361,  -- id
+    421375,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cross-Chain NFT Music Player',  -- title
     'Music NFTs are not connected to Cardano from other blockchains like Ethereum, Polygon, and Harmony One.',  -- summary
@@ -8762,7 +8762,7 @@ Nhan Nguyen & Tuan Pham are Software Engineers for (https://www.uac.edu.au/) & (
 ,
 
 (
-    362,  -- id
+    421356,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Exhibit Blockchain BIT in RIO 22 BR',  -- title
     'Only a few Brazilian companies know Cardano as a main Blockchain. Difficulty in adopting Cardano (ADA) in the real business world and show use cases about the cardano ecosystem.',  -- summary
@@ -8783,7 +8783,7 @@ Nhan Nguyen & Tuan Pham are Software Engineers for (https://www.uac.edu.au/) & (
 ,
 
 (
-    363,  -- id
+    421355,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Film Distribution Dapp&Showcase',  -- title
     'The film industry could be a very powerful ally in the mainstream adoption of blockchain tech, but they are understandably reluctant.
@@ -8814,7 +8814,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    364,  -- id
+    421345,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Learn to Earn Cardano Ecosystem',  -- title
     'Lack of places to collect & update information and knowledge about the Cardano ecosystem on a regular, complete, accurate basis for the community of developers and investors who do not speak English.',  -- summary
@@ -8835,7 +8835,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    365,  -- id
+    421331,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Cardano for STEM Brazilian students',  -- title
     'There is a lack of courses on blockchain in Brazilian Universities leaving our students out of these technological advances. Most educational contents are in English, but Brazilians speak Portuguese.',  -- summary
@@ -8856,7 +8856,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    366,  -- id
+    421330,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano Academy GH',  -- title
     'There is limited knowledge and information about the Cardano ecosystem,Blockchain technology, cryptocurrency (ada), smart contracts and the Metaverse among students in Basic schools in Ghana.',  -- summary
@@ -8877,7 +8877,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    367,  -- id
+    421326,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Catalyst Swarm Operations',  -- title
     'The Catalyst Community needs open spaces to network, connect ideas and projects, and participate in Catalyst governance.',  -- summary
@@ -8898,7 +8898,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    368,  -- id
+    421296,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Cardano Student Learning Platform',  -- title
     'A large percentage of students in my school and other tertiary Institutions are not aware of Cardano blockchain and project catalyst. Some students have great excellent ideas but no knowledge about it',  -- summary
@@ -8919,7 +8919,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    369,  -- id
+    421294,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Event CryptoHouse of Commons Brazil',  -- title
     'Only a few Brazilian companies know Cardano as a main Blockchain. Difficulty in adopting Cardano (ADA) in the real business world. Brazilians bought almost $4.2 billion in crypto assets in 2021.',  -- summary
@@ -8940,7 +8940,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    370,  -- id
+    421280,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Gov3 - DAO Delegation Dashboard',  -- title
     'Efficiency in DAO operations is achieved by delegating decision-making power to dedicated working groups. Current tools do not provide sufficient delegation monitoring & management capabilities.',  -- summary
@@ -8963,7 +8963,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    371,  -- id
+    421277,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Layer 2 Advanced Architecture',  -- title
     'Cardano NEEDS a cutting edge layer 2 data solution that will handle large volumes of, and high rates of, irregular and complex data.',  -- summary
@@ -8984,7 +8984,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    372,  -- id
+    421273,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Verifiable Creds in Cmrt Contracts',  -- title
     'The VC ecosystem is clunky and missing parts of a broader utility landscape. While use is promising for employers, edu institutions, and VC owners, structure and governance concerns constrain use.',  -- summary
@@ -9005,7 +9005,7 @@ Very active in the Cardano NFT space since February 2021.', -- relevant experien
 ,
 
 (
-    373,  -- id
+    421270,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Ticketing system in Africa',  -- title
     'Falsification - fraud
@@ -9028,7 +9028,7 @@ Currently the classic production of concert, show or soccer tickets allows platf
 ,
 
 (
-    374,  -- id
+    421263,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'L-Earning Bazaar: Web3 Integration',  -- title
     'There is no comprehensive education platform on Cardano that combines a rewards structure. It is imperative to build a platform to bring educational materials to a wider audience. 日本語',  -- summary
@@ -9055,7 +9055,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    375,  -- id
+    421256,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardanonization of town halls',  -- title
     'Administrative slowness
@@ -9080,7 +9080,7 @@ In Africa, city administrator have great difficulty receiving or recovering thei
 ,
 
 (
-    376,  -- id
+    421248,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano Catalyst TV - Ideas Sharing',  -- title
     'New and funded proposals have no source or platform to communicate with the community properly if they have new ideas or would like to update their proposals'' progress for the community',  -- summary
@@ -9101,7 +9101,7 @@ In Africa, city administrator have great difficulty receiving or recovering thei
 ,
 
 (
-    377,  -- id
+    421242,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'CrossChain Blockchain4Good Research',  -- title
     'Connecting UN frameworks like the SDGs to Proposals require analyses + evaluation. Support our research work in Fund 9 as in Fund 6, 7 and 8. Comparative cross chain research is lacking.',  -- summary
@@ -9122,7 +9122,7 @@ In Africa, city administrator have great difficulty receiving or recovering thei
 ,
 
 (
-    378,  -- id
+    421223,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Catalyst HeartBeat',  -- title
     'Long form content requires too much time and energy to digest for Catalyst Contributors. Keeping up is NOT an option. Collaboration, Self-Marketing & Reach are of top priority to Proposing Projects.',  -- summary
@@ -9147,7 +9147,7 @@ Quasar - Network & Facilitation Skill, CCv3 GAH Representative', -- relevant exp
 ,
 
 (
-    379,  -- id
+    421218,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Community validation Dapp',  -- title
     'Existing carbon credit certification is non-transparent, centralized and extremely expensive and exclude smallholder carbon removal projects.',  -- summary
@@ -9168,7 +9168,7 @@ Quasar - Network & Facilitation Skill, CCv3 GAH Representative', -- relevant exp
 ,
 
 (
-    380,  -- id
+    421215,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'The Developer List',  -- title
     'It is hard to find
@@ -9204,7 +9204,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    381,  -- id
+    421204,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'dRep Awareness Creation',  -- title
     '* Low participation rate in catalyst voting.
@@ -9227,7 +9227,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    382,  -- id
+    421197,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Africa Stakepool Alliance',  -- title
     'Africa is the world''s youngest continent with 60% of the population below 25 years old. A Stakepool Alliance supporting single SPOs in Africa to promote decentralization of the network is lacking.',  -- summary
@@ -9248,7 +9248,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    383,  -- id
+    421194,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Buy food & make an impact',  -- title
     'Agriculture supply chains lack transparency and traceability, with no direct incentives or rewards for farmers to produce healthy and environmentally friendly products.',  -- summary
@@ -9269,7 +9269,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    384,  -- id
+    421175,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Earthtrust decentralized validation',  -- title
     'No transparent, scalable and comparable way to understand the health of land which impact efficiency of areas such as supply chains, certification, micro finance, and nature conservation applications.',  -- summary
@@ -9290,7 +9290,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    385,  -- id
+    421173,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Web3 Marketing Campaigns Platform',  -- title
     'You no longer need to use tools like Google forms, spreadsheets or any other that doesn''t connect to the Cardano Blockchain for your launches, whitelists, marketing campaigns and capture of users.',  -- summary
@@ -9311,7 +9311,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    386,  -- id
+    421171,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Asia Stakepool Alliance',  -- title
     'Asia has +50% of the global population + the most populated cities globally. A Stakepool Alliance to support single SPOs in Asia to promote greater decentralization of the Cardano network is lacking.',  -- summary
@@ -9332,7 +9332,7 @@ Have been part of accelerator : Techstars-Barclays Accelerator, SOSV Accelerator
 ,
 
 (
-    387,  -- id
+    421169,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Opportunity Summit',  -- title
     'Tertiary students in Ghana remain unware of the potential and opportunities of blockchain technology. Therefore, how can we educate and onboard them into the Cardano ecosystem?',  -- summary
@@ -9355,7 +9355,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    388,  -- id
+    421147,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Farmer carbon credit validation',  -- title
     'Smallholder farmers does not get compensated for implementing carbon removal practices, 100s of millions of farmers are left out of the multi billion carbon market',  -- summary
@@ -9376,7 +9376,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    389,  -- id
+    421139,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'For Cardano, Accountants & Lawyersl',  -- title
     'PA 4% growth in accounting demand is expected by 2030, a surge in the global shrinkage of accountants and lawyers, and the Cardano community will struggle to grow.',  -- summary
@@ -9397,7 +9397,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    390,  -- id
+    421132,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardojo: Cardano in Asia',  -- title
     'Asia has some of the highest NFT adoption rates in the world: Philippines, Thailand and Malaysia are the top 3, yet Cardano’s presence and exposure to Cardano NFTS is largely disproportionate.',  -- summary
@@ -9418,7 +9418,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    391,  -- id
+    421124,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano4Climate East Asia',  -- title
     'While climate change is an increasing risk for East Asia today there is no specific community platform supporting initiatives to promote climate resilience into everyday activities',  -- summary
@@ -9439,7 +9439,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    392,  -- id
+    421119,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Gamefi Infrastructure Restore2Earn',  -- title
     'Current carbon markets are trying to solve our environmental problems. The fines & incentives are too low, the regulations are enforced & what happens naturally? - companies are looking for loopholes!',  -- summary
@@ -9460,7 +9460,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    393,  -- id
+    421110,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Connecting KYC to Tokens',  -- title
     'KYC verifications can slow down our business activities',  -- summary
@@ -9481,7 +9481,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    394,  -- id
+    421103,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Asset ScamList',  -- title
     'Today, with more than 5,000,000 assets created on the cardano network, we also have a proliferation of copies, imitations that aim to deceive users.',  -- summary
@@ -9502,7 +9502,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    395,  -- id
+    421074,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano For Ugandan Universities',  -- title
     'Blockchain projects are ideal for final year university projects, this requires an open source platform and Cardano should be our choice.',  -- summary
@@ -9523,7 +9523,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    396,  -- id
+    421067,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Vaccines and Family Medical Record',  -- title
     'The problem of treatment and care taking into account hereditary factors of patients, vaccination and maternity. Reduction in infant mortality and inappropriate treatment',  -- summary
@@ -9544,7 +9544,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    397,  -- id
+    421065,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Homeless Hub Hackathon',  -- title
     'dApp developers often fail to create products led by the user, with real-world impact in mind. And ordinary people, especially those facing homelessness, don’t understand what a dApp can do for them.',  -- summary
@@ -9565,7 +9565,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    398,  -- id
+    421063,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'WeCare: Unlocking Human Finance',  -- title
     'The global non profit industry has brought millions out of poverty,but has also been prone to corruption. The lack of traceability and transparency has made the industry unsustainable.',  -- summary
@@ -9586,7 +9586,7 @@ Fund 7 and Fund 8 Community Advisors and proposer with one funded project.', -- 
 ,
 
 (
-    399,  -- id
+    421050,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Open dApp Framework',  -- title
     'There is no general framework for a decentralized project management dApp.',  -- summary
@@ -9609,7 +9609,7 @@ Tevo Saks and Stephen Whitenstall are founding Swarm members and have worked tog
 ,
 
 (
-    400,  -- id
+    421042,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'let''s make it professional',  -- title
     'We see every day the new projects fighting the FUD on the community chats up to levels were the FUD makes a project almost fail. it is time to have a professional way of communicating with communities',  -- summary
@@ -9630,7 +9630,7 @@ Tevo Saks and Stephen Whitenstall are founding Swarm members and have worked tog
 ,
 
 (
-    401,  -- id
+    421014,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Model ICT Hub',  -- title
     'How can we motivate young students in the North East region of Ghana to get educated in the present and coming technologies?',  -- summary
@@ -9651,7 +9651,7 @@ Tevo Saks and Stephen Whitenstall are founding Swarm members and have worked tog
 ,
 
 (
-    402,  -- id
+    421010,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano in Burmese',  -- title
     'Lack of official Burmese content . Thus Burmese speakers cannot learn in their native language. There are 51 million speakers globally',  -- summary
@@ -9689,7 +9689,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    403,  -- id
+    421009,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Structuring Employee Token Options',  -- title
     'Offering Employee''s Company tokens as an incentive tool can cause high tax costs on the employees & the company''s side – there is no optimal distribution solution in the market yet.',  -- summary
@@ -9710,7 +9710,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    404,  -- id
+    420989,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'dLiber8',  -- title
     'DAOs make decisions.
@@ -9744,7 +9744,7 @@ We deliver meaningful games on platforms ranging from coin-op arcade machines to
 ,
 
 (
-    405,  -- id
+    420980,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'cexplorer.io - cardano explorer',  -- title
     'Diversity and enough different and independent tools for developers is the basis for a successful chain. Web-explorers are one of basics.',  -- summary
@@ -9767,7 +9767,7 @@ We deliver meaningful games on platforms ranging from coin-op arcade machines to
 ,
 
 (
-    406,  -- id
+    420977,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Discord Community Manager',  -- title
     '> Discord Communities cannot query or display on-chain data within the app. No way to reward users for on-chain interaction. No way to verify wallet ownership.',  -- summary
@@ -9795,7 +9795,7 @@ We deliver meaningful games on platforms ranging from coin-op arcade machines to
 ,
 
 (
-    407,  -- id
+    420952,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Raise Vietnam awareness on Cardano',  -- title
     'Just 6.1% of Vietnam’s population know about blockchain & Cardano. 94% left don’t understand, misunderstand, even averse because of being scammed. There''s not many public events on the issues.',  -- summary
@@ -9816,7 +9816,7 @@ We deliver meaningful games on platforms ranging from coin-op arcade machines to
 ,
 
 (
-    408,  -- id
+    420950,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Blockchain Educational dApp',  -- title
     'Limited education and propagation of the blockchain industry as a long-term investment option amongst the youth in Ghana.',  -- summary
@@ -9837,7 +9837,7 @@ We deliver meaningful games on platforms ranging from coin-op arcade machines to
 ,
 
 (
-    409,  -- id
+    420946,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Unreal Engine on Cardano Community',  -- title
     '> Unreal Developers desiring Cardano adoption are few & isolated.
@@ -9867,7 +9867,7 @@ We deliver meaningful games on platforms ranging from coin-op arcade machines to
 ,
 
 (
-    410,  -- id
+    420944,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Catalyst Proposal Assistant [SDA]',  -- title
     'Cardano Catalyst has a linear, siloed proposal writing and assessing process, resulting in a non-collaborative workflow.',  -- summary
@@ -9888,7 +9888,7 @@ We deliver meaningful games on platforms ranging from coin-op arcade machines to
 ,
 
 (
-    411,  -- id
+    420924,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Lokole and Cardano Integration',  -- title
     'Do you know that 33.8% of the world population cannot access crypto currency, because they are not connected to the internet and all the software applications and hardware are made for the connected?',  -- summary
@@ -9909,7 +9909,7 @@ We deliver meaningful games on platforms ranging from coin-op arcade machines to
 ,
 
 (
-    412,  -- id
+    420916,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Caricatures 4 Africa',  -- title
     'There is not enough creative and amusing ways to promote Cardano and Catalyst to the African community',  -- summary
@@ -9936,7 +9936,7 @@ United Caricature', -- relevant experience
 ,
 
 (
-    413,  -- id
+    420911,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Caricatures for Migration',  -- title
     'We are missing some creative ways to reach out to the Ethereum community and onboard them to Cardano',  -- summary
@@ -9963,7 +9963,7 @@ United Caricature', -- relevant experience
 ,
 
 (
-    414,  -- id
+    420910,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'DAO for multi-asset NFT',  -- title
     'Most of the NFTs on the market are single-asset NFTs (each NFT represents only one digital asset)
@@ -9990,7 +9990,7 @@ We already have more than 50,000 users on our services', -- relevant experience
 ,
 
 (
-    415,  -- id
+    420909,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Dyor Better With Dexplore Analytics',  -- title
     'Cardano lacks a dedicated Asset Tracking & Analytics Dapp to help the community make proper research about Cardano native tokens, displaying necessary details about each token in a simple interface.',  -- summary
@@ -10011,7 +10011,7 @@ We already have more than 50,000 users on our services', -- relevant experience
 ,
 
 (
-    416,  -- id
+    420904,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT 2.0 Platform (Dynamic NFT)',  -- title
     'Current NFT holders "do not actually own the NFT". Because NFT information is still stored on a centralized server.
@@ -10038,7 +10038,7 @@ We already have more than 50,000 users on our services', -- relevant experience
 ,
 
 (
-    417,  -- id
+    420900,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT renting(by Lending Pond)',  -- title
     'Cardano still lacks the NFT infrastructure to support play to earn games, NFT breeding, and NFT borrowing.',  -- summary
@@ -10061,7 +10061,7 @@ Lending Pond is Cardano''s largest and most active lending platform.', -- releva
 ,
 
 (
-    418,  -- id
+    420897,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'NFT Game Marketplace Cross-Chain',  -- title
     'Cardano doesn''t have a real marketplace for Gamefi on Cardano yet
@@ -10088,7 +10088,7 @@ Paditech: A company with more than 150 developers specializing in providing soft
 ,
 
 (
-    419,  -- id
+    420895,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Automated Bug-finding for Plutus',  -- title
     'Double-satisfaction bugs, clone script attacks – the same vulnerabilities repeat in Plutus contracts. We will build a tool that automatically finds subtle instances of common bugs.',  -- summary
@@ -10109,7 +10109,7 @@ Paditech: A company with more than 150 developers specializing in providing soft
 ,
 
 (
-    420,  -- id
+    420891,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'United Caricature 2',  -- title
     'There is not enough creative ways that connect between chains and unite them to grow mass adoption',  -- summary
@@ -10136,7 +10136,7 @@ United Caricature', -- relevant experience
 ,
 
 (
-    421,  -- id
+    420887,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Game Play and Earn from EVM Network',  -- title
     'NFT game is one of the Dapps with the largest number of transactions on blockchains today. Most NFT games and gamers are now on EVM platforms such as Binance Smart Chain or Ethereum.',  -- summary
@@ -10161,7 +10161,7 @@ Trustkey: Provide Blockchain Super Application, Blockchain Social Network, Secur
 ,
 
 (
-    422,  -- id
+    420866,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'C.S.E.R.DEFI',  -- title
     'How can all Blockchains minimize potential staff & bad players predatory practices against vulnerable Senior Citizens globally with resulting bad press and potential government regulation pressures?',  -- summary
@@ -10182,7 +10182,7 @@ Trustkey: Provide Blockchain Super Application, Blockchain Social Network, Secur
 ,
 
 (
-    423,  -- id
+    420833,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Supply Chain 4 Legal Cannabis/Hemp',  -- title
     'Legal cannabis is highly regulated and susceptible to counterfeiting. The industry suffers from lack of trust, quality certification, quality verification & transparency from seed 2 sale.',  -- summary
@@ -10203,7 +10203,7 @@ Trustkey: Provide Blockchain Super Application, Blockchain Social Network, Secur
 ,
 
 (
-    424,  -- id
+    420829,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'AFRICA BLOCKCHAIN YOUTH AMBASSADORS',  -- title
     'Development, deployment and adoption of blockchain in Africa continue to encounter challenges such as inadequate skillset, negative public perception, varying level of blockchain literacy.',  -- summary
@@ -10224,7 +10224,7 @@ Trustkey: Provide Blockchain Super Application, Blockchain Social Network, Secur
 ,
 
 (
-    425,  -- id
+    420827,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'L-Earning Bazaar: Platform Building',  -- title
     'There is no comprehensive education platform on Cardano that combines a rewards structure. It is imperative to build a platform to bring educational materials to a wider audience. 日本語',  -- summary
@@ -10251,7 +10251,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    426,  -- id
+    420823,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Trust & Transparent News Portal',  -- title
     'The main challenges come up and most facing by growth and development country are trust and transparent journalism information which free from propaganda, hatespeech, false information, etc.',  -- summary
@@ -10277,7 +10277,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    427,  -- id
+    420813,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'CarPool Onboard & Learning Platform',  -- title
     'Global market conditions are driving millions of people to hastily seek investment in blockchain & crypto w/ little knowledge of fundamental values, principles, purpose, and wallet & asset security.',  -- summary
@@ -10298,7 +10298,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    428,  -- id
+    420812,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'TaChiKu: Deepfake NFTs',  -- title
     'https://www.youtube.com/embed/uJMtQHcT1as  
@@ -10323,7 +10323,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    429,  -- id
+    420794,  -- id
     (SELECT row_id FROM objective WHERE id=11 AND event=9), -- objective
     'Unreal Engine Integration',  -- title
     '> Interest in blockchain is growing, yet Unreal lacks Cardano integration. 
@@ -10354,7 +10354,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    430,  -- id
+    420791,  -- id
     (SELECT row_id FROM objective WHERE id=11 AND event=9), -- objective
     'MLabs - CTL Blockfrost Backend',  -- title
     'Making Blockfrost easily accessible to dApp developers as the default, regardless of all other technical choices, will help Blockfrost adoption grow first and foremost.',  -- summary
@@ -10375,7 +10375,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    431,  -- id
+    420784,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Self-Hosted Full Node for End Users',  -- title
     'A strong community of users running full nodes is pivotal to the security/trust of a protocol. It should be easy and simple for users to verify their own transactions.',  -- summary
@@ -10396,7 +10396,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    432,  -- id
+    420778,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'MLabs - Dev Documentation Drive',  -- title
     'In Cardano''s growing ecosystem, we''ve seen an explosion of tools and techniques for building smart contracts. Developers can and will move much faster if equipped with excellent guides and examples.',  -- summary
@@ -10417,7 +10417,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    433,  -- id
+    420774,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'CEVI - INFO HUB FOR VN (EN)',  -- title
     'Continue to develop an information hub CEVI to provide basic knowledge,update and analyze information about Crypto in general,especially focusing on the Cardano platform for the Vietnamese community.',  -- summary
@@ -10440,7 +10440,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    434,  -- id
+    420765,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Store Builder',  -- title
     'Artists have the gift and ability to create artwork but not websites to commercialize their art, and they struggle to find the right person to develop a customized website to represent them.',  -- summary
@@ -10461,7 +10461,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    435,  -- id
+    420741,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Inukshuk HealthDigital Identity',  -- title
     'The problems of a DID for healthcare are limited by national jurisdiction for its issuance and verification. Individuals DID’s need to be conformable to standards for clinical trials.',  -- summary
@@ -10482,7 +10482,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    436,  -- id
+    420735,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Inukshuk Clinical Smart Contracts',  -- title
     'The development of standards-based Smart Contracts for Clinical Trials. The Plutus Smart Contracts based in the Cardano model has yet to formally provide the standards required for such approaches.',  -- summary
@@ -10503,7 +10503,7 @@ R. Goto: Business Development & Africa VC, 10yr.', -- relevant experience
 ,
 
 (
-    437,  -- id
+    420727,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Inukshuk Healthdata Wallet',  -- title
     'Within 3 year, 75% of clinical trials will be patient-centric, decentralized clinical trials. 
@@ -10526,7 +10526,7 @@ This requiress an integrated platform. Personal DataWallets on Cardano are the b
 ,
 
 (
-    438,  -- id
+    420716,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Rent DApp',  -- title
     'How can we have a credible accommodation seeking platform to eliminate fraudsters, middlemen in the real estate sector while reducing the high cost of accommodation for all class of persons?',  -- summary
@@ -10547,7 +10547,7 @@ This requiress an integrated platform. Personal DataWallets on Cardano are the b
 ,
 
 (
-    439,  -- id
+    420676,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADAGram- Decentralized Social Media',  -- title
     'Current social media sites are deceptive and harvest our data for commercial third-party use. The mechanisms which promote and censor content is opaque at best. Content creators are not fully rewards',  -- summary
@@ -10568,7 +10568,7 @@ This requiress an integrated platform. Personal DataWallets on Cardano are the b
 ,
 
 (
-    440,  -- id
+    420670,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Custom AI tools & growth paths',  -- title
     'As individuals and teams head into web3, appropriate tools for human growth, organization, and development are missing.',  -- summary
@@ -10589,7 +10589,7 @@ This requiress an integrated platform. Personal DataWallets on Cardano are the b
 ,
 
 (
-    441,  -- id
+    420652,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Transactions for Bank credits score',  -- title
     'The determination of the solvency of customers for obtaining bank credit does not yet take into consideration the various operations (transactions of all kinds) carried out on blockchains.',  -- summary
@@ -10610,7 +10610,7 @@ This requiress an integrated platform. Personal DataWallets on Cardano are the b
 ,
 
 (
-    442,  -- id
+    420635,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Amazon Cardano Store',  -- title
     'There is no adoption of blockchain solutions on Amazon. In addition, computer products in the local market are two to three times more expensive than the value practiced in the international market.',  -- summary
@@ -10631,7 +10631,7 @@ This requiress an integrated platform. Personal DataWallets on Cardano are the b
 ,
 
 (
-    443,  -- id
+    420625,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Verify2Earn',  -- title
     'There are not enough tokenomics models which focus on advancing SDGs through tokenizing and incentivizing behavioural change.',  -- summary
@@ -10662,7 +10662,7 @@ Clients include large US crypto mining companies and leading European crypto exc
 ,
 
 (
-    444,  -- id
+    420604,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'There''s no We without Me',  -- title
     'The widespread theft and counterfeiting of Name-Image-Likeness assets of athletes must be stopped, while enhancing their ability to monetize their digital identity and personal brand through tokens.',  -- summary
@@ -10683,7 +10683,7 @@ Clients include large US crypto mining companies and leading European crypto exc
 ,
 
 (
-    445,  -- id
+    420594,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Projects Analytics Supertool',  -- title
     'Most CNFT projects have failed to deliver at large scale:
@@ -10714,7 +10714,7 @@ ii) CNFTs with IP to build on top of it.',  -- summary
 ,
 
 (
-    446,  -- id
+    420588,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PLUTUS.ART: NEW KIND OF MARKETPLACE',  -- title
     'There is a lack of innovation in what marketplaces do in the Cardano ecosystem. They do the same thing only with different UI.There is not enough competition with only 2 marketplaces leading all sales',  -- summary
@@ -10735,7 +10735,7 @@ ii) CNFTs with IP to build on top of it.',  -- summary
 ,
 
 (
-    447,  -- id
+    420563,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Onboarding Musicians From Asia',  -- title
     'There is a major absence of users from East Asia on Cardano in the music community.',  -- summary
@@ -10760,7 +10760,7 @@ Nhan Nguyen & Tuan Pham are Software Engineers for uac.edu.au & CEO/Backend Deb 
 ,
 
 (
-    448,  -- id
+    420553,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Digitalization of town halls',  -- title
     'In Senegal,city administrators have great difficulty receiving or recovering their administrative documents in the event of an emergency or in the event of need without having to travel',  -- summary
@@ -10781,7 +10781,7 @@ Nhan Nguyen & Tuan Pham are Software Engineers for uac.edu.au & CEO/Backend Deb 
 ,
 
 (
-    449,  -- id
+    420551,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'WIMS Cardano Girls Education',  -- title
     'Girl education in Africa is very low due to poverty, cultural gender preferences, religious beliefs and due to lack of resources. Cardano lacks firm roots in Africa and worse lacks utility value.',  -- summary
@@ -10802,7 +10802,7 @@ Nhan Nguyen & Tuan Pham are Software Engineers for uac.edu.au & CEO/Backend Deb 
 ,
 
 (
-    450,  -- id
+    420545,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Legal & Financial Consulting Hub',  -- title
     'Currently Funded Proposals need the advise about the legal and finance & accounting. However, there is lacking of financial and legal experts who have knowledge and practical experience on blockchain.',  -- summary
@@ -10823,7 +10823,7 @@ Nhan Nguyen & Tuan Pham are Software Engineers for uac.edu.au & CEO/Backend Deb 
 ,
 
 (
-    451,  -- id
+    420538,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Bashoswap - non-batching AMM DEX',  -- title
     'Cardano DEXs currently use ‘batching’ transactions to allow reasonable throughput. These transaction batching solutions introduce latency and extractable value problems. We can do better.',  -- summary
@@ -10844,7 +10844,7 @@ Nhan Nguyen & Tuan Pham are Software Engineers for uac.edu.au & CEO/Backend Deb 
 ,
 
 (
-    452,  -- id
+    420525,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Crypto and blockchain adoption',  -- title
     'For Africa, cryptos and the blcockchain represent a great financial opportunity. But users lack tools to buy, sell, exchange, learn, build... Tools adapted to our realities for easy,healthy adoption.',  -- summary
@@ -10865,7 +10865,7 @@ Nhan Nguyen & Tuan Pham are Software Engineers for uac.edu.au & CEO/Backend Deb 
 ,
 
 (
-    453,  -- id
+    420496,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano ERP - Grow Africa',  -- title
     'Cardano needs more developers from Africa participating in Emurgo Academy training and developing enterprise-grade products on the Cardano blockchain.',  -- summary
@@ -10891,7 +10891,7 @@ Note: Our African team developers have asked that their CVs not be published pen
 ,
 
 (
-    454,  -- id
+    420456,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'TosiDrop DAO Governance Platform',  -- title
     'DAOs rely on a governance and voting mechanism to allow community members to contribute to the direction of a protocol. TosiDrop is implementing a seamless on-chain voting mechanism.',  -- summary
@@ -10912,7 +10912,7 @@ Note: Our African team developers have asked that their CVs not be published pen
 ,
 
 (
-    455,  -- id
+    420410,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Custom Jewelry NFT Certificates',  -- title
     'Mint NFTs for Custom-designed Jewelry pieces with an image of the 3d model and metadata of traits. Keep track of rarity when designing and afterward. Trade NFTs as Jewelry',  -- summary
@@ -10933,7 +10933,7 @@ Note: Our African team developers have asked that their CVs not be published pen
 ,
 
 (
-    456,  -- id
+    420396,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Singular- Mobile-Centric DeFi App',  -- title
     'Singular’s mission is to democratize DeFi and First-Class financial tools for the underbanked in Asia. We believe anyone with a smartphone should have access to invest and participate in a Web3 world',  -- summary
@@ -10954,7 +10954,7 @@ Note: Our African team developers have asked that their CVs not be published pen
 ,
 
 (
-    457,  -- id
+    420395,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'MeetProposer-Bright Up Dev''s Ideas',  -- title
     'Many developers have high-value ideas but aren''t good at building them or promoting them to the community, so their proposals don''t receive high PA scores and are not being funded.',  -- summary
@@ -10975,7 +10975,7 @@ Note: Our African team developers have asked that their CVs not be published pen
 ,
 
 (
-    458,  -- id
+    420390,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'LATAM Legal and Regulatory MindMap',  -- title
     'There is no practical tool containing the legal and regulatory framework by country to provide clarity for non-lawyer users.',  -- summary
@@ -10996,7 +10996,7 @@ Note: Our African team developers have asked that their CVs not be published pen
 ,
 
 (
-    459,  -- id
+    420385,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT machine learning evaulation',  -- title
     'NFT buyers, sellers, lenders, and borrowers need to have the necessary tools and evaluation tools to make educated decisions on selling, lending, buying, and borrowing on NFTs.',  -- summary
@@ -11017,7 +11017,7 @@ Note: Our African team developers have asked that their CVs not be published pen
 ,
 
 (
-    460,  -- id
+    420382,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'HAZELnet.io Community Integration',  -- title
     'To achieve widespread adoption of blockchain technology, it needs to be seamlessly & securely integrated into our current web communities and social media. There is currently no such tool on Cardano.',  -- summary
@@ -11038,7 +11038,7 @@ Note: Our African team developers have asked that their CVs not be published pen
 ,
 
 (
-    461,  -- id
+    420380,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano in Sinhala',  -- title
     'Lack of official Sinhala content . Thus Sinhala speakers cannot learn in their native language. There are 25 million speakers globally',  -- summary
@@ -11074,7 +11074,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    462,  -- id
+    420373,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Fetachain - IIoT Cardano Framework',  -- title
     'Customers have difficulty verifying the quality, source, and freshness of the product from food manufacturers, without centralized certifications & entities. A traceability infrastructure is lacking.',  -- summary
@@ -11095,7 +11095,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    463,  -- id
+    420359,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'NFT Non-Profit Organizations (NPOs)',  -- title
     'NFTs can establish new standards for the accountability of Non-Profit Organizations (NPOs). Gender Unicorns aims to be the first registered NFT-NPO to serve ESG goals via a new NFT economy',  -- summary
@@ -11116,7 +11116,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    464,  -- id
+    420355,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Cardapper - YouTube C-Dev Channel',  -- title
     'No YouTube channel to consistently post Cardano Development Tutorials that new developers can watch and learn for free.',  -- summary
@@ -11137,7 +11137,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    465,  -- id
+    420354,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Lokole to Grow Africa Grow Cardano',  -- title
     'It is very difficult to grow Africa grow Cardano efficiently because less than 43% of the African population is connected to the internet and the majority of the people do not have electricity.',  -- summary
@@ -11163,7 +11163,7 @@ A Group of Open Source developers, software engineers, coders and electronic tec
 ,
 
 (
-    466,  -- id
+    420320,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Start Guide',  -- title
     'There is still a high barrier to entry for newcomers and casual users to get involved with Dapps and DeFi on Cardano. Even many existing holders and traders lack confidence for self-custody.',  -- summary
@@ -11184,7 +11184,7 @@ A Group of Open Source developers, software engineers, coders and electronic tec
 ,
 
 (
-    467,  -- id
+    420273,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Blockchain Education Masterclass',  -- title
     'Education is key to adoption and use of a service. How can we educate students in Northern Ghana and beyond about Cardano Ecosystem and its benefits?',  -- summary
@@ -11205,7 +11205,7 @@ A Group of Open Source developers, software engineers, coders and electronic tec
 ,
 
 (
-    468,  -- id
+    420268,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Decentralized Journalism Protocol',  -- title
     'News articles suffer from broken links, article versioning lacks transparency, profit models value hyperbole over facts, and the lack of a neutral third party review decreases trust in news.',  -- summary
@@ -11226,7 +11226,7 @@ A Group of Open Source developers, software engineers, coders and electronic tec
 ,
 
 (
-    469,  -- id
+    420262,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Eastern Hemisphere dRep TownHall',  -- title
     'Participating as a dRep is difficult when you live in a different time zone and when English is not your main language.',  -- summary
@@ -11247,7 +11247,7 @@ A Group of Open Source developers, software engineers, coders and electronic tec
 ,
 
 (
-    470,  -- id
+    420235,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Gateway of blockchain-Learn to earn',  -- title
     'Students are mostly motivated by incentivized Learning system. Therefore, how do we provide a learn to earn platform that would help onboard them into the Cardano ecosystem.',  -- summary
@@ -11272,7 +11272,7 @@ in Ghana.', -- relevant experience
 ,
 
 (
-    471,  -- id
+    420233,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Establish Coin Media',  -- title
     'The mainstream media provide content and report on bad news in crypto ecosystems. How do we tell our story and present the amazing real-world impact made in the Cardano ecosystem?',  -- summary
@@ -11293,7 +11293,7 @@ in Ghana.', -- relevant experience
 ,
 
 (
-    472,  -- id
+    420226,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'AI Blockchain Activity DApp 🚀',  -- title
     '* Activity, mobility & transportation companies are disconnected.
@@ -11329,7 +11329,7 @@ in Ghana.', -- relevant experience
 ,
 
 (
-    473,  -- id
+    420216,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Education impact and monetization',  -- title
     'Education NGOs in developing countries have difficulties finding investors and donors, despite their effective actions in promoting quality education and social justice for low-income students.',  -- summary
@@ -11352,7 +11352,7 @@ F7 + F8 funded proposals, PA, vPA, CT, member of the Catalyst Community.', -- re
 ,
 
 (
-    474,  -- id
+    420210,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cannabis & Hemp Grading App',  -- title
     'Grading & quality verification of cannabis is an arduous manual process that must be done in the field for accuracy. Data is ar risk of manipulation. Gathering data at scale & publishing is difficult',  -- summary
@@ -11373,7 +11373,7 @@ F7 + F8 funded proposals, PA, vPA, CT, member of the Catalyst Community.', -- re
 ,
 
 (
-    475,  -- id
+    420202,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADABET.iO |Sports Betting MobileApp',  -- title
     'Lack of sports betting applications developed on the blockchain platform, many bookmakers'' apps lack transparency and do not guarantee that bettors’ reputation, property, and identity are compromised.',  -- summary
@@ -11394,7 +11394,7 @@ F7 + F8 funded proposals, PA, vPA, CT, member of the Catalyst Community.', -- re
 ,
 
 (
-    476,  -- id
+    420196,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Connecting Tabletop Games & Cardano',  -- title
     'Tabletop gaming and the physical collectible market is a prime target for integration with Cardano. This is an untapped market for Cardano.',  -- summary
@@ -11430,7 +11430,7 @@ https://www.linkedin.com/in/lisa-lee-9822821aa/', -- relevant experience
 ,
 
 (
-    477,  -- id
+    420194,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PRISM credentials for the web',  -- title
     'Distinguishing trustworthy websites and projects from shady ones is a challenge — especially in crypto. We need some way to share our credentials and endorsements on the web and make them verifiable.',  -- summary
@@ -11451,7 +11451,7 @@ https://www.linkedin.com/in/lisa-lee-9822821aa/', -- relevant experience
 ,
 
 (
-    478,  -- id
+    420186,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'LitterWeek Competition for schools',  -- title
     'OpenLitterMap works but it is too academic. Society needs a better way to get started with citizen science.',  -- summary
@@ -11472,7 +11472,7 @@ https://www.linkedin.com/in/lisa-lee-9822821aa/', -- relevant experience
 ,
 
 (
-    479,  -- id
+    420176,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'NFT Bridge to & from Cardano',  -- title
     'At the moment, there''s no reliable way to transfer NFTs to or from Cardano.
@@ -11507,7 +11507,7 @@ We''ve written a JS library for embedding the bridge in dApps & Marketplaces.', 
 ,
 
 (
-    480,  -- id
+    420151,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Zero Citizen - Net Zero Rewards',  -- title
     'There is a lack of economical incentivisation and drive to push people and companies towards a Net Zero future, despite the world not being on track to meet the climate change targets.',  -- summary
@@ -11533,7 +11533,7 @@ We''ve written a JS library for embedding the bridge in dApps & Marketplaces.', 
 ,
 
 (
-    481,  -- id
+    420147,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Transaction Editor Hardware wallet',  -- title
     'The transaction editor has no secure key management and key storage, all keys are on the filesystem. Users improvise safety by working on air-gapped machines.',  -- summary
@@ -11554,7 +11554,7 @@ We''ve written a JS library for embedding the bridge in dApps & Marketplaces.', 
 ,
 
 (
-    482,  -- id
+    420146,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'World of Pirates',  -- title
     'Most gamers have no idea what Cardano Blockchain is and are not aware of the games on Cardano.',  -- summary
@@ -11577,7 +11577,7 @@ Currently, we are able to bootstrap ourselves part-time and now we are looking f
 ,
 
 (
-    483,  -- id
+    420145,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'OxBAT Conference Oxford University',  -- title
     'Interdisciplinary exchange between academia, industry, and its participants is lacking, also in the NFT space. Students often don''t have access to future peers and are left alone on their path.',  -- summary
@@ -11603,7 +11603,7 @@ Mateja Sela: CEO, product lead and full-stack developer Artano; engaged with CNF
 ,
 
 (
-    484,  -- id
+    420132,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'NFT Fractionalization System',  -- title
     'Being able to directly own DAO treasury NFT assets requires a system that enables members to participate in a fair and representative distribution mechanism that currently doesn''t exist.',  -- summary
@@ -11624,7 +11624,7 @@ Mateja Sela: CEO, product lead and full-stack developer Artano; engaged with CNF
 ,
 
 (
-    485,  -- id
+    420109,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Governance Services Guild tools',  -- title
     'Cardano lacks training in the implementation of distributed collaboration tools for governance that are open source, inclusive and adaptable to a variety of community intentions and actions.',  -- summary
@@ -11645,7 +11645,7 @@ Mateja Sela: CEO, product lead and full-stack developer Artano; engaged with CNF
 ,
 
 (
-    486,  -- id
+    420106,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Governance Services Guild',  -- title
     'Cardano and Catalyst lack flexible governance support services for the ecosystem, including those related to products and integrations.',  -- summary
@@ -11666,7 +11666,7 @@ Mateja Sela: CEO, product lead and full-stack developer Artano; engaged with CNF
 ,
 
 (
-    487,  -- id
+    420098,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'KYC Registry Network',  -- title
     'Know-Your-Customer is a stumbling block within the crypto space. Many regulators requires it without offering it',  -- summary
@@ -11693,7 +11693,7 @@ Mateja Sela: CEO, product lead and full-stack developer Artano; engaged with CNF
 ,
 
 (
-    488,  -- id
+    420087,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MASCOT GALLERY',  -- title
     'People in the real world can have their own talismans that can bring luck and improve well-being.Our team decides that members of the Cardano ecosystem should also be able to have their own mascots',  -- summary
@@ -11714,7 +11714,7 @@ Mateja Sela: CEO, product lead and full-stack developer Artano; engaged with CNF
 ,
 
 (
-    489,  -- id
+    420084,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Catalyst GPS and Blockchain4Good',  -- title
     'Blockchain4Good is a growing collective of projects with their own engaged and motivated communities. We need support in effective collaboration management to organize community intentions and actions',  -- summary
@@ -11735,7 +11735,7 @@ Mateja Sela: CEO, product lead and full-stack developer Artano; engaged with CNF
 ,
 
 (
-    490,  -- id
+    420078,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Gender Unicorns CFNT Card Game',  -- title
     'The Cardano Ecosystem lacks a project that aims for true gender diversity and equality and supports LGBTQA+ rights. Moreover, the ecosystem needs more community-focused blockchain strategy games.',  -- summary
@@ -11756,7 +11756,7 @@ Mateja Sela: CEO, product lead and full-stack developer Artano; engaged with CNF
 ,
 
 (
-    491,  -- id
+    420039,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Quality Assurance of Organic Foods',  -- title
     'Japan uses the most pesticides in the world, but these chemicals are used to increase the profits of the petrochemical industry. And the health hazards of these chemicals have not been disclosed.',  -- summary
@@ -11777,7 +11777,7 @@ Mateja Sela: CEO, product lead and full-stack developer Artano; engaged with CNF
 ,
 
 (
-    492,  -- id
+    420032,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Africa Short Films with Cardano',  -- title
     'How do we inspire the average person to align themselves with Cardano''s mission while bringing clarity to what Cardano is doing in Africa.',  -- summary
@@ -11808,7 +11808,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    493,  -- id
+    420021,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Algae Token a Sustainable Future',  -- title
     'Few projects on the Cardano ecosystem provide real-world solution to humanities Food, Fuel and Environmental problems. These must be addressed by environmentally and economically sustainable projects.',  -- summary
@@ -11829,7 +11829,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    494,  -- id
+    420008,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'On-chain reputation',  -- title
     '“Social media influencers are routinely paid by scammers to help them pump and dump new tokens on the back of pure speculation”',  -- summary
@@ -11850,7 +11850,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    495,  -- id
+    419979,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Swapping Application',  -- title
     'The current method of exchanging native assets and NFTs relies on payment in the base currency ADA. We propose a solution that allows direct swaps of NFTs and tokens for other NFTs and tokens.',  -- summary
@@ -11871,7 +11871,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    496,  -- id
+    419964,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Evescale Devs on Cardano',  -- title
     'Japanese developers of the Everscale Blockchain and Japanese Cardano community see Gimbalabs'' Plutus PBL as a good tool to learn how to develop in Cardano. However, it is only available in English.',  -- summary
@@ -11897,7 +11897,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    497,  -- id
+    419950,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Global Cannabis Listing Platform',  -- title
     'Licensed operators (buyers/sellers) of cannabis and hemp do not have a reliable consolidated marketplace to connect & regularly complete transactions efficiently with a high level of trust.',  -- summary
@@ -11918,7 +11918,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    498,  -- id
+    419946,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'BLOCKTRUST identity wallet (PRISM)',  -- title
     'With numerous funded *PRISM* projects underway, we are still missing a key piece of infrastructure in the form of an identity wallet for the browser. We need to be able to connect our digital identities',  -- summary
@@ -11939,7 +11939,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    499,  -- id
+    419939,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'SToR Token - Web 3.0/smart contract',  -- title
     '•Commercial Real Estate is highly desired investment vehicle that lacks transparency and has a need for intermediaries
@@ -11968,7 +11968,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    500,  -- id
+    419938,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Catalyst For Full-Time Speculators',  -- title
     'A lot of speculators and freelancers they have a lot of time, but they don''t know about Catalyst''s Funding campaign and huge opportunities in technology platforms.',  -- summary
@@ -11989,7 +11989,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    501,  -- id
+    419934,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Track Wallets: Notify Mint/Buy NFTs',  -- title
     'Difficulty following, keeping up to date and tracking favorite wallet addresses with NFTs Minted, Bought and Sold on the Cardano blockchain in a simple way, in real time and receiving notifications.',  -- summary
@@ -12010,7 +12010,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    502,  -- id
+    419933,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'TosiDrop dApp and Audit',  -- title
     'There is currently not a dApp that allows projects to distribute tokens in a permissionless manner via smart contracts. With TosiDrop, anyone can distribute their tokens entirely on smart contracts.',  -- summary
@@ -12031,7 +12031,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    503,  -- id
+    419925,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Delaware DAO',  -- title
     'The Delaware Canal State Park in Pennsylvania is underfunded, overgrown, and outdated; in need of a source of revenue to maintain and improve its water flow and function.',  -- summary
@@ -12052,7 +12052,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    504,  -- id
+    419922,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Web3 NFT Tokengated for eCommerces',  -- title
     'Unlock the super powers of Web3 to online stores and e-commerce with no-code (plug/play). Enabling stores to make online brand experiences more unique for products/discounts with the power of the NFTs',  -- summary
@@ -12073,7 +12073,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    505,  -- id
+    419917,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADAO - Plutus Token Vesting DApp',  -- title
     'Many teams use vesting schedules to allocate project tokens. Currently, there is no easy and secure way to automate or audit this process.',  -- summary
@@ -12094,7 +12094,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    506,  -- id
+    419898,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Driving Adoption via Travel D''Apps',  -- title
     'Hello everyone! Cardano needs more real world use cases, if it is to gain real world adoption. Innovating in one of the largest sectors - Travel & Tourism, we are that real world use case!',  -- summary
@@ -12115,7 +12115,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    507,  -- id
+    419889,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Inspiring Ladies Colloquim',  -- title
     'Most young female youth are not aware of the Cardano blockchain technology and its opportunity in Africa.',  -- summary
@@ -12136,7 +12136,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    508,  -- id
+    419883,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Virtual Assistant',  -- title
     'One major problem in the blockchain ecosystem is that the females are being left behind in these innovation steps. How do we build female competence to participate in the Cardano ecosystem?',  -- summary
@@ -12157,7 +12157,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    509,  -- id
+    419876,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'CARDANO''S FIRST CONCERT IN AFRICA!',  -- title
     'Blockchain/Web3 can be confusing to the average person so this is a barrier, but there are huge benefits for the youth in African to get involved with Project Catalyst/Cardano ecosystem. *How?* Music.',  -- summary
@@ -12178,7 +12178,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    510,  -- id
+    419863,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'CatalystTalk: Grow Vietnamese Devs',  -- title
     'Vietnam has a team of potential developers and lots of ideas. However, many ideas remain unrealized due to a lack of funds to implement and a lack of accessibility and understanding of Catalyst.',  -- summary
@@ -12199,7 +12199,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    511,  -- id
+    419851,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Legal and Financial Standards',  -- title
     'There is insufficient legal direction for aspiring decentralised, globally distributed sustainable business'' models on the Cardano blockchain.',  -- summary
@@ -12220,7 +12220,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    512,  -- id
+    419840,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Growing Cardano Global Presence',  -- title
     'Cardano is heavily under radar and not supported by many of the well-known analytics brands such as CryptoSlam, Bubble Maps, icy.tools etc. due to that Cardano is losing potentially millions of eyes.',  -- summary
@@ -12241,7 +12241,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    513,  -- id
+    419838,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Data Public API',  -- title
     'A lot of upcoming apps, wallets and marketplaces rely on collection stats/NFT data, however it is time consuming to gather and maintain it.',  -- summary
@@ -12262,7 +12262,7 @@ For more info check out https://www.afailedartist.com/
 ,
 
 (
-    514,  -- id
+    419831,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Boosting Cardano In South Africa',  -- title
     'The evolution of the Cardano ecosystem and the project catalyst in the African region is moderate but is barely adopted in South Africa. Thus, it requires boosting.',  -- summary
@@ -12285,7 +12285,7 @@ The beautiful images in the attachment section of the proposal confirm our exper
 ,
 
 (
-    515,  -- id
+    419818,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'On Chain NFT Notifications',  -- title
     'There is no platform to send messages on chain or a chain verifiable way to verify announcements on upcoming / existing projects.',  -- summary
@@ -12306,7 +12306,7 @@ The beautiful images in the attachment section of the proposal confirm our exper
 ,
 
 (
-    516,  -- id
+    419813,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Catalyst Ticker on Twitter',  -- title
     'There are many resources for Catalyst, but not a simple Ticker that provides the most important information. Communication is important, and it needs to be enhanced for better overviews and less FOMO.',  -- summary
@@ -12327,7 +12327,7 @@ The beautiful images in the attachment section of the proposal confirm our exper
 ,
 
 (
-    517,  -- id
+    419782,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Optim Finance - Liquidity Bonds',  -- title
     'Cardano struggles to properly support small SPOs. Optim’s Liquidity Bond Market addresses this by allowing anyone to borrow and lend ADA delegation. While near complete, a few milestones remain.',  -- summary
@@ -12355,7 +12355,7 @@ Team members formerly of Minswap, Seabug, and IOHK contractors', -- relevant exp
 ,
 
 (
-    518,  -- id
+    419779,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MentalHealth = Wealth: heal2earn.io',  -- title
     'Stressed? You are not alone - many people are facing Mental issues!
@@ -12394,7 +12394,7 @@ Then a catalyst arrived...',  -- summary
 ,
 
 (
-    519,  -- id
+    419756,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'ADAO Open Source Development',  -- title
     'Fund ADAO open source! ADAO''s Community of over 3,000 members and 20 + Core contributors have been steadily contributing to and incentivizing contributions to open source development on Cardano.',  -- summary
@@ -12415,7 +12415,7 @@ Then a catalyst arrived...',  -- summary
 ,
 
 (
-    520,  -- id
+    419745,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Onboard New Hispanic Ethereum Users',  -- title
     'Misinformation and disinformation regarding Cardano in Ethereum communities, as well as lack of quality educational material in Spanish, creates barriers of entry to new Hispanic users and developers.',  -- summary
@@ -12436,7 +12436,7 @@ Then a catalyst arrived...',  -- summary
 ,
 
 (
-    521,  -- id
+    419731,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Interview Cardano=Know Our Builders',  -- title
     'There is no catalogue of in-depth interviewed articles giving voice to the builders in Cardano that offer readers a unique view into the ecosystem and a place where collaborators can be found.',  -- summary
@@ -12462,7 +12462,7 @@ Darlington: 14+ yrs exp. in Software & Cloud Engineering, Blockchain development
 ,
 
 (
-    522,  -- id
+    419724,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Open Source Wallet Messaging App',  -- title
     'Our web3 wallets are fast becoming our identities and we need to be able to communicate with our new web3 identities.',  -- summary
@@ -12506,7 +12506,7 @@ Srinivas Vijayakumar
 ,
 
 (
-    523,  -- id
+    419723,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'CARDANO TV (24hs Live) Corporate TV',  -- title
     'Where to follow news and video content in DIGITAL ONLINE TV format, with a 24-hour schedule, exclusively dedicated to coverage of the Cardano ecosystem and projects developed on its blockchain.',  -- summary
@@ -12527,7 +12527,7 @@ Srinivas Vijayakumar
 ,
 
 (
-    524,  -- id
+    419716,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'SPOs Impact Dashboard',  -- title
     'SPOs channelling part of their staking rewards to support social enterprise projects and environmental causes need powerful tools to measure and display the positive impact of their operations.',  -- summary
@@ -12558,7 +12558,7 @@ Composed of experts in blockchain, carbon finance and sustainability.', -- relev
 ,
 
 (
-    525,  -- id
+    419701,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Stray Dogs Raising Adopt Platform',  -- title
     'Due to the economic downturn and space constraints, more and more dogs are being abandoned and few people are adopting or donating to dog shelters.',  -- summary
@@ -12585,7 +12585,7 @@ Hosts Cardano Hubs in Taiwan and Australia', -- relevant experience
 ,
 
 (
-    526,  -- id
+    419696,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Cardano-Crystal Legal Operations',  -- title
     'In Venezuela there is an entity that regulates the activities to operate in a Blockchain, through registration and licensing, these are necessary to promote the massive adoption of the Cardano network',  -- summary
@@ -12606,7 +12606,7 @@ Hosts Cardano Hubs in Taiwan and Australia', -- relevant experience
 ,
 
 (
-    527,  -- id
+    419685,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Professional close-out video report',  -- title
     'Every project has to create a final report. Despite the effort, the message is long and badly recorded on web cameras. Usually doesn''t have the outreach even though the project is great.',  -- summary
@@ -12629,7 +12629,7 @@ Documentary filmmaker and editor with 16 years of experience, works for TV & fil
 ,
 
 (
-    528,  -- id
+    419676,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'projectNEWM Marketplace Creation',  -- title
     'The Cardano Ecosystem is missing out on real world asset tokenized marketplace - especially for music IP rights.',  -- summary
@@ -12650,7 +12650,7 @@ Documentary filmmaker and editor with 16 years of experience, works for TV & fil
 ,
 
 (
-    529,  -- id
+    419671,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'United Nations Blockchain4Impact',  -- title
     'The United Nations lack understanding on how blockchain can be used for achieving the SDGs and how to build partnerships with blockchain communities and startups.',  -- summary
@@ -12671,7 +12671,7 @@ Documentary filmmaker and editor with 16 years of experience, works for TV & fil
 ,
 
 (
-    530,  -- id
+    419660,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Anti-Phishing Chrome Extension',  -- title
     'Just like every other blockchain community, the Cardano community is plagued with numerous scammers constantly looking to exploit innocent members of the community for their ADA or assets.',  -- summary
@@ -12692,7 +12692,7 @@ Documentary filmmaker and editor with 16 years of experience, works for TV & fil
 ,
 
 (
-    531,  -- id
+    419658,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'BLAGO - Global Paradigm Shift',  -- title
     'I don''t want to die in war, I don''t want to be a slave, I don''t want to live in poverty, I don''t want to endure deception.',  -- summary
@@ -12713,7 +12713,7 @@ Documentary filmmaker and editor with 16 years of experience, works for TV & fil
 ,
 
 (
-    532,  -- id
+    419656,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'TosiDrop Cross-chain Development',  -- title
     'Wide token distribution is fundamental for successful community-driven projects and decentralization. It is difficult, however, for projects to widely distribute tokens on both Cardano and Ergo.',  -- summary
@@ -12734,7 +12734,7 @@ Documentary filmmaker and editor with 16 years of experience, works for TV & fil
 ,
 
 (
-    533,  -- id
+    419644,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Ethereum and Cardano Web3 Wallet',  -- title
     'The ‘Ethereum x Cardano’ cross-chain user experience (especially asset migration) is complicated due to the fact that users need to use at least 2 wallets and several different tools.',  -- summary
@@ -12755,7 +12755,7 @@ Documentary filmmaker and editor with 16 years of experience, works for TV & fil
 ,
 
 (
-    534,  -- id
+    419640,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Project Verify',  -- title
     'Cardano scan and other tools are hard to use for new\average users. Seconded no platform shows users what red flags to look for in a NFT project or tokens.',  -- summary
@@ -12776,7 +12776,7 @@ Documentary filmmaker and editor with 16 years of experience, works for TV & fil
 ,
 
 (
-    535,  -- id
+    419592,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cardano Events Barcelona',  -- title
     'Cardano has a reputation for being, an unwelcoming and closed ecosystem. This perception means other chains are chosen over Cardano to launch projects.',  -- summary
@@ -12802,7 +12802,7 @@ The team has over 20 years of organising events in Barcelona.', -- relevant expe
 ,
 
 (
-    536,  -- id
+    419576,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Documenting Human Rights Evidence',  -- title
     'The documentary evidence of the genocidal human rights crimes against the Rohingya are at risk of being lost or destroyed.',  -- summary
@@ -12823,7 +12823,7 @@ The team has over 20 years of organising events in Barcelona.', -- relevant expe
 ,
 
 (
-    537,  -- id
+    419575,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'WAL-CLI Issue Credential Protocol',  -- title
     'The issue credential protocol required to issue credentials from WAL-CLI instances to RootsWallet App needs to be implemented.',  -- summary
@@ -12844,7 +12844,7 @@ The team has over 20 years of organising events in Barcelona.', -- relevant expe
 ,
 
 (
-    538,  -- id
+    419570,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'WAL-API Identity Wallet Service',  -- title
     'WAL-CLI is a great tool, but it can be of greater utility for the developer community if it is expanded into an Identity wallet API service.',  -- summary
@@ -12865,7 +12865,7 @@ The team has over 20 years of organising events in Barcelona.', -- relevant expe
 ,
 
 (
-    539,  -- id
+    419564,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Blockchain for Contracts: Indonesia',  -- title
     'Today original legal contracts are stored in physical safes at notary offices which represent a single point of failure. Contract process is paper based and manual. Hard to keep track of contracts.',  -- summary
@@ -12886,7 +12886,7 @@ The team has over 20 years of organising events in Barcelona.', -- relevant expe
 ,
 
 (
-    540,  -- id
+    419556,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Battle Borgz P2E Game - Phase 2',  -- title
     'The traditional relationship between game developers and players is one-sided.  There needs to be more legitimate benefits for players.',  -- summary
@@ -12913,7 +12913,7 @@ Team leadership and supervision.', -- relevant experience
 ,
 
 (
-    541,  -- id
+    419517,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'CARDANO CLIMATHON',  -- title
     'Although Latin America is home to many talented technology professionals and programmers, it still lags behind other regions in terms of environmental awareness.',  -- summary
@@ -12936,7 +12936,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    542,  -- id
+    419513,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ESG Reporting Mechanism',  -- title
     'There is no blockchain ESG (Environmental, Social and Governance) reporting mechanism that validates business proposal, to track carbon credits, environmental impacts, and equality in governance.',  -- summary
@@ -12957,7 +12957,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    543,  -- id
+    419512,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Develop a Product and Services DAO',  -- title
     'There are currently no DAO''s that provide services and physical products on the Cardano Blockchain',  -- summary
@@ -12978,7 +12978,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    544,  -- id
+    419511,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Sustainable Ecosystem Hub',  -- title
     'The community generally lack education on alternative options for positive choices on Cardano that have a positive impact on health and the environment',  -- summary
@@ -12999,7 +12999,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    545,  -- id
+    419509,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Profitable Product Integration',  -- title
     'There is a lack of real-world product integration with blockchain technology and Dapps. Blockchain systems can provide a broad customer base not limited by borders',  -- summary
@@ -13020,7 +13020,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    546,  -- id
+    419493,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano4Climate Africa',  -- title
     'While climate change is probably the biggest risk for Africa today there is no community platform focused to support Africa related initiatives promoting climate resilience into everyday activities',  -- summary
@@ -13041,7 +13041,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    547,  -- id
+    419492,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'LATAM TRANSLATION HOUSE',  -- title
     'Access to Cardano for 600 million people is not improved if LATAM members in the Catalyst ecosystem are not well served with fast and reliable access to Catalyst documentation in their own language.',  -- summary
@@ -13062,7 +13062,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    548,  -- id
+    419487,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Supply chain transparency -FTs+NFTs',  -- title
     'Damaging sourcing methods are the norm in the fashion industry. Human lives and natural resources are destroyed for the sake of cheap clothes. Without increased transparency, things will never change.',  -- summary
@@ -13083,7 +13083,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    549,  -- id
+    419483,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Funding Categories Analysis',  -- title
     'The challenge setting process needed thorough analysis to make suggestions on how to improve funding categorisation within Catalyst',  -- summary
@@ -13104,7 +13104,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    550,  -- id
+    419477,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Cardano Catalyst Schooling',  -- title
     'Most of my peer students are not aware of Cardano blockchain and project catalyst so they can not access project catalyst opportunities. Most of peers are intelligent but idle at home after school.',  -- summary
@@ -13125,7 +13125,7 @@ Ke Hua Yang-Cardano Summit 2021 and Hackathon 2022. ADA SOLAR. Community Manager
 ,
 
 (
-    551,  -- id
+    419464,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'AdaQuest Brand Awareness campaign',  -- title
     'AdaQuest needs more public awareness!
@@ -13155,7 +13155,7 @@ LinkedIn: https://tinyurl.com/yc74rm4p', -- relevant experience
 ,
 
 (
-    552,  -- id
+    419463,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'AdaQuest DCrawler Vertical Slice',  -- title
     'Bringing Mass Adoption to Cardano is our main goal. Currently, there are no AAA games on the horizon that would tackle this challenge within our ecosystem. Setting up such a project needs experience!',  -- summary
@@ -13201,7 +13201,7 @@ More info: https://ada-quest.com/about', -- relevant experience
 ,
 
 (
-    553,  -- id
+    419449,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Seniors Ideate',  -- title
     'New technology is usually targeted at the youth. Seniors are left out although they have the brainpower and free time to ideate and develop projects to improve the communities they live in',  -- summary
@@ -13222,7 +13222,7 @@ More info: https://ada-quest.com/about', -- relevant experience
 ,
 
 (
-    554,  -- id
+    419448,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Koios - Side-chain & Chain Analysis',  -- title
     'There are 3 additional components not yet developed which can drastically improve Koios:
@@ -13247,7 +13247,7 @@ More info: https://ada-quest.com/about', -- relevant experience
 ,
 
 (
-    555,  -- id
+    419444,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Glow on the PAB',  -- title
     'Cardano lacks a smooth Dev-experience: some tools are powerful, but very hard to use.
@@ -13278,7 +13278,7 @@ We also delivered tech for other blockchain entities such as Filecoin, Harmony O
 ,
 
 (
-    556,  -- id
+    419441,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Agricultural CO2 capture Unit',  -- title
     'The burning of fossil fuels, the main emitter of carbon dioxide (CO2) in the atmosphere, is a component of greenhouse gases (GEI), the main cause of climate change.',  -- summary
@@ -13301,7 +13301,7 @@ Arturo: Industrial Engineer 6 years of experience in serial production systems, 
 ,
 
 (
-    557,  -- id
+    419432,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Trading Tent: Multi-language',  -- title
     'Tent was created to be a universal tool that anyone could utilize to safely trade Native Cardano Assets. For now, the product has been implemented in English, leaving non-English speakers vulnerable.',  -- summary
@@ -13322,7 +13322,7 @@ Arturo: Industrial Engineer 6 years of experience in serial production systems, 
 ,
 
 (
-    558,  -- id
+    419421,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PRISM analytics platform',  -- title
     'There is no insight into the usage statistics of *Atala PRISM*: How many DIDs and Verifiable Credentials (VC) are currently deployed on testnet / mainnet? How are VC used in Ethiopia, by DISH or others?',  -- summary
@@ -13343,7 +13343,7 @@ Arturo: Industrial Engineer 6 years of experience in serial production systems, 
 ,
 
 (
-    559,  -- id
+    419418,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Support CNFT Jungle',  -- title
     'CNFT Jungle is a project ran by two people for the community and operating costs of 5000$/month are paid from our own pocket. With public API offering to apps the server costs are increasing.',  -- summary
@@ -13364,7 +13364,7 @@ Arturo: Industrial Engineer 6 years of experience in serial production systems, 
 ,
 
 (
-    560,  -- id
+    419413,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cardano SSI Contributors - Season 2',  -- title
     'There is no Cardano/Prism/Catalyst open source identity project contributing to SSI standards interop/portability discussions except RootsID. The SSI community needs to know about Cardano identity.',  -- summary
@@ -13387,7 +13387,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    561,  -- id
+    419409,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Discord Social Credential',  -- title
     'Discord is widely used in the Cardano and Catalyst community. On the other side, ATALA Prism DIDs are taking momentum on many projects. How can those identities be linked together?',  -- summary
@@ -13408,7 +13408,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    562,  -- id
+    419407,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'RootsWallet - User Feedback Updates',  -- title
     'Identity Wallets are not intuitive for new users. The godfather of SSI, Drummond Reed, says that the UX of identity wallets will be the tipping point for SSI going mainstream.',  -- summary
@@ -13429,7 +13429,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    563,  -- id
+    419400,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'RootsId Verifiable Credential',  -- title
     'Verifiable Credentials are a key component for interoperability across Self Sovereign Identity systems, within Cardano and abroad. However, ATALA Prism does not define any specific VC format.',  -- summary
@@ -13450,7 +13450,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    564,  -- id
+    419399,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Cardano4Charities',  -- title
     'Every day, more financial power is transferred from the traditional fiat rails into the cryptoverse. Currently, many use-cases for money are not available for crypto users, e.g. donations to NGOs.',  -- summary
@@ -13471,7 +13471,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    565,  -- id
+    419397,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'KERI bridge for Cardano',  -- title
     'KERI is a breakthrough technology considered to be the first truly decentralized identity system that is ledger-portable. Can Cardano be the first KERI Witness network on a major blockchain?',  -- summary
@@ -13492,7 +13492,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    566,  -- id
+    419387,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'RootsWallet - Aries JS',  -- title
     'Hyperledger Aires is the most adopted framework for Identity projects. RootsID already delivered backend agents based on it, however RootsWallet, our mobile identity wallet, does not support it yet.',  -- summary
@@ -13513,7 +13513,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    567,  -- id
+    419380,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'RootsWallet - iPhone version',  -- title
     'RootsWallet, the open source identity wallet for ATALA Prism is available for Android due to limitations on Prism SDK. A new Javascript Prism SDK that is coming soon will allow an iPhone version.',  -- summary
@@ -13534,7 +13534,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    568,  -- id
+    419367,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Developers Hackaton Stories',  -- title
     'The Cardano community through his developers is transforming the world and yet the world is still largely unaware. Much of the work we are doing is still unseen outside of the Cardano community.',  -- summary
@@ -13555,7 +13555,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    569,  -- id
+    419340,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Tokenized tech indie drama film',  -- title
     'Indie film makers have a hard time financing their film projects especially if these are not exactly viewed as commercially viable. The film can be a vehicle to show that Cardano can tokenize assets.',  -- summary
@@ -13576,7 +13576,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    570,  -- id
+    419336,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DOON: Decentralized News Platform',  -- title
     'The news media industry is in a crisis of trust: Lack of reader trust, fake news, censorship, unfair distribution of power and profits, and insufficient monetization for content creators.',  -- summary
@@ -13597,7 +13597,7 @@ This is season 2 of Lance engaging SSI standards communities at Trust over IP, D
 ,
 
 (
-    571,  -- id
+    419324,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Proof of Impact NFTs for SPOs',  -- title
     'SPOs focusing on creating positive social and environmental impact struggle to attract delegators, and to keep them engaged.',  -- summary
@@ -13633,7 +13633,7 @@ External NFT expert', -- relevant experience
 ,
 
 (
-    572,  -- id
+    419295,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Promoting Cardano for Impact',  -- title
     'SDG Blockchain projects are not fully recognized outside of the Blockchain ecosystem. A disconnect between the Blockchain and the Impact industry is holding back credibility and scaling potential.',  -- summary
@@ -13654,7 +13654,7 @@ External NFT expert', -- relevant experience
 ,
 
 (
-    573,  -- id
+    419267,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'C4S-Educating Seniors as DReps',  -- title
     'Seniors are often overlooked & not educated into new systems yet have life knowledge and experience. How can Cardano educate Seniors to take part of the DRepp process either as a team or solo DRep?',  -- summary
@@ -13675,7 +13675,7 @@ External NFT expert', -- relevant experience
 ,
 
 (
-    574,  -- id
+    419242,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Ubuntu Crypto Use Map DAO',  -- title
     'Africa is a target for most innovative businesses that are integrating crypto use. How do we easily locate businesses adopting crypto use in Africa?',  -- summary
@@ -13696,7 +13696,7 @@ External NFT expert', -- relevant experience
 ,
 
 (
-    575,  -- id
+    419241,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'More secure cross-chain solutions',  -- title
     'The problem is that cross-chain security issues still occur frequently, and users are concerned about the safety of cross-chain assets.',  -- summary
@@ -13723,7 +13723,7 @@ External NFT expert', -- relevant experience
 ,
 
 (
-    576,  -- id
+    419221,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano Guide - A one-stop guide',  -- title
     'Confused about where to begin with Cardano? This proposal provides a one-stop guide for those new to Cardano World.',  -- summary
@@ -13760,7 +13760,7 @@ Hoang Nguyen
 ,
 
 (
-    577,  -- id
+    419213,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Secure Offline Portfolio for crypto',  -- title
     'Most portfolio managers for cryptocurrencies store information on servers or in the cloud. This does not ensure confidentiality and data can be shared with third parties.',  -- summary
@@ -13781,7 +13781,7 @@ Hoang Nguyen
 ,
 
 (
-    578,  -- id
+    419179,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Lokole Digital Library Monetization',  -- title
     'We have built and implemented a multi-purpose server device to give the unconnected to internet communities access to the digital applications, but lacks a demonstrating / monetizing impact tool.',  -- summary
@@ -13802,7 +13802,7 @@ Hoang Nguyen
 ,
 
 (
-    579,  -- id
+    419171,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Catalyst SDK dRep support',  -- title
     'Cardano will be introducing dRep support for Catalyst. However, at the moment, there is no SDK for wallets and projects to implement dRep support',  -- summary
@@ -13823,7 +13823,7 @@ Hoang Nguyen
 ,
 
 (
-    580,  -- id
+    419168,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Cardano carbon offset dapp',  -- title
     'Blockchain projects are known by not being eco friendly. Cardano is a PoS that manages energy much better than Bitcoin and other PoW solutions but it is not zero.',  -- summary
@@ -13844,7 +13844,7 @@ Hoang Nguyen
 ,
 
 (
-    581,  -- id
+    419167,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Accelerator batch #3',  -- title
     'Grow an ecosystem is hard even harder is doing it in a speedy manner. Some startups that are already in Ethereum need convincing and mentoring to join the ecosystem and growth fast.',  -- summary
@@ -13871,7 +13871,7 @@ Hoang Nguyen
 ,
 
 (
-    582,  -- id
+    419165,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Solve asset fractionalization',  -- title
     'Multiple bridges connected to Milkomeda and Cardano result in the creation of multiple assets (derivatives) which fragment liquidity (of the same asset e.g. USDC) and impact UX in protocols.',  -- summary
@@ -13892,7 +13892,7 @@ Hoang Nguyen
 ,
 
 (
-    583,  -- id
+    419164,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'WalletConnect for Cardano',  -- title
     'WalletConnect is a standard to connect mobile wallets to desktop dApps without having the private key leave the mobile app. It is integrated by many dApps, but does not support Cardano currently',  -- summary
@@ -13913,7 +13913,7 @@ Hoang Nguyen
 ,
 
 (
-    584,  -- id
+    419161,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Cardano Wallet OneBox',  -- title
     'Currently, if you want to deploy your own light wallet or similar application, there is no single tool that you can use. Instead, you can have to figure out how to deploy and combine multiple tools',  -- summary
@@ -13934,7 +13934,7 @@ Hoang Nguyen
 ,
 
 (
-    585,  -- id
+    419160,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'cip25 (NFT) Rust & WASM library',  -- title
     'CIP25, the NFT standard for Cardano, currently does not have an open source Rust, WASM or Typescript library to parse the on-chain metadata. Instead, users simply use a JSON representation of its data',  -- summary
@@ -13955,7 +13955,7 @@ Hoang Nguyen
 ,
 
 (
-    586,  -- id
+    419159,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Carp over-budget + maintenance',  -- title
     'Carp is a more flexible alternative to the cardano-db-sync tool that was created as the result of a previously funded Catalyst proposal. However, it ended up being over-budget',  -- summary
@@ -13976,7 +13976,7 @@ Hoang Nguyen
 ,
 
 (
-    587,  -- id
+    419158,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Rust SDK fix critical CBOR encoding',  -- title
     'Cardano uses a encoding scheme called CBOR that supports multiple ways of encoding the same data. No Rust library supports all possible encodings of data which has caused multiple critical issues',  -- summary
@@ -13997,7 +13997,7 @@ Hoang Nguyen
 ,
 
 (
-    588,  -- id
+    419154,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Fast reindexable data format',  -- title
     'Currently no efficient tooling exists for storing the blocks persistently with fast indexing and fast distribution. For example, an empty indexer on Oura will still take ~300s/epoch',  -- summary
@@ -14018,7 +14018,7 @@ Hoang Nguyen
 ,
 
 (
-    589,  -- id
+    419153,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'dcSpark (the company iteslf)',  -- title
     'dcSpark & related entities currently have about 40 employees. Our size is what has allowed us to build so many protocols in parallel, but also requires a certain amount of funding every Catalyst round',  -- summary
@@ -14039,7 +14039,7 @@ Hoang Nguyen
 ,
 
 (
-    590,  -- id
+    419151,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Milkomeda Djed',  -- title
     'Djed, the stablecoin protocol, does not require the UTXO model and can also be deployed on accounting (ex: EVM) blockchains too well. This may help users & devs understanding and bring new ideas.',  -- summary
@@ -14060,7 +14060,7 @@ Hoang Nguyen
 ,
 
 (
-    591,  -- id
+    419150,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Milkomeda Game #2',  -- title
     'Currently, most blockchain-based games are not actually running on-chain. Instead, they run on centralized servers and the only blockchain component are NFTs and tokens used by the game',  -- summary
@@ -14081,7 +14081,7 @@ Hoang Nguyen
 ,
 
 (
-    592,  -- id
+    419149,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Liquid staking for Milkomeda / L2s',  -- title
     'Although we need to encourage moving computation to L2s to scale, currently doing so will cause you to lose your staking rewards making it hard to convince users to migrate',  -- summary
@@ -14102,7 +14102,7 @@ Hoang Nguyen
 ,
 
 (
-    593,  -- id
+    419145,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Ubuntu Informal Biz Credit DApp',  -- title
     'Lack of access to financial credit is deepening the woes of informal businesses in Africa due to a lack of collateral. How can we provide credit to businesses in the informal sector?',  -- summary
@@ -14123,7 +14123,7 @@ Hoang Nguyen
 ,
 
 (
-    594,  -- id
+    419137,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Reskilling and Rewarding Refugees',  -- title
     'Rohingya and other refugees lack formal education and financial access in Malaysia, leading to social exclusion.',  -- summary
@@ -14144,7 +14144,7 @@ Hoang Nguyen
 ,
 
 (
-    595,  -- id
+    419132,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Carbonno Verifiable Carbon Platform',  -- title
     'Traditional web2 and emerging web3 approaches do not offer an easy-to-use way of buying/selling verifiable carbon credits, more often carbon fingerprints are limited to reforestation projects only.',  -- summary
@@ -14165,7 +14165,7 @@ Hoang Nguyen
 ,
 
 (
-    596,  -- id
+    419112,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Virtual Hackathon for Dev Education',  -- title
     'There is a shortage of developers developing on Cardano globally, specifically the Asian region, and there is still a lot of room for builders to build products in the Cardano ecosystem.',  -- summary
@@ -14186,7 +14186,7 @@ Hoang Nguyen
 ,
 
 (
-    597,  -- id
+    419098,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Fractal Fuzion Integrations',  -- title
     'Fractal Fuzion lacks resources to develop our projects integrations into existing Cardano infrastructure. Bespoke technological innovations are required to improve Cardano end user experience.',  -- summary
@@ -14207,7 +14207,7 @@ Hoang Nguyen
 ,
 
 (
-    598,  -- id
+    419097,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Impact NFTs for the Homeless: SOTB',  -- title
     'Los Angeles has the highest homeless rate in the U.S. and has the second-largest homeless population. The city is facing a multifaceted humanitarian crisis that has many potential solutions.',  -- summary
@@ -14228,7 +14228,7 @@ Hoang Nguyen
 ,
 
 (
-    599,  -- id
+    419088,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'The Alexandria Project Web3 Library',  -- title
     'Human Knowledge is important and should be backed up on the Cardano Blockchain, there are no decentralized WEB 3 Library solutions. Censorship threatens to stifle the progress of human innovation.',  -- summary
@@ -14254,7 +14254,7 @@ Fractal Fuzion is a CNFT creator, Stake pool operator, Shill-A-mania Champion, C
 ,
 
 (
-    600,  -- id
+    419066,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Dev-focused Learn-and-Earn Quests',  -- title
     'There is a shortage of developers developing on Cardano globally, specifically Asia, and there is still a lot of room for improvement in top-level developer acquisition for the Cardano ecosystem.',  -- summary
@@ -14275,7 +14275,7 @@ Fractal Fuzion is a CNFT creator, Stake pool operator, Shill-A-mania Champion, C
 ,
 
 (
-    601,  -- id
+    419058,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Web3 Education DAO by Wada',  -- title
     'Without accessible DAO tools on Cardano, Wada’s education, outreach and onboarding success in Africa has been a manual process. Lack of scalable organizing tools, limits quality, growth and inclusion',  -- summary
@@ -14296,7 +14296,7 @@ Fractal Fuzion is a CNFT creator, Stake pool operator, Shill-A-mania Champion, C
 ,
 
 (
-    602,  -- id
+    419028,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Antiques: The Ideal Blockchain Mkt',  -- title
     'Widespread blockchain adaptation is waiting for someone to uncover and unlock the “GUI moment” that launched personal computers. Antiques is the puzzle. Cardano has the key. We just need to find it.',  -- summary
@@ -14317,7 +14317,7 @@ Fractal Fuzion is a CNFT creator, Stake pool operator, Shill-A-mania Champion, C
 ,
 
 (
-    603,  -- id
+    419020,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Non-Fungible Collectables',  -- title
     'Trading collectable items through traditional avenues is costly, time-consuming and illiquid.',  -- summary
@@ -14353,7 +14353,7 @@ Coin expert, founder of auction house, UI/UX designer, media production, Haskell
 ,
 
 (
-    604,  -- id
+    419016,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Better Cardano Blockchain Insights',  -- title
     'There is a need in our ecosystem for a project that offers clear data about the Cardano''s blockchain health and growth, benefiting a wide array of people, from investors to dApp developers.',  -- summary
@@ -14374,7 +14374,7 @@ Coin expert, founder of auction house, UI/UX designer, media production, Haskell
 ,
 
 (
-    605,  -- id
+    419013,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano For Musicians',  -- title
     'new artists need all the attention and word of mouth spread possible Goal is to create and supply music potential visual artwork, cnfts and the idea of Cardano to new artists/organizations globally',  -- summary
@@ -14395,7 +14395,7 @@ Coin expert, founder of auction house, UI/UX designer, media production, Haskell
 ,
 
 (
-    606,  -- id
+    419012,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'KYC Solution',  -- title
     'If an artist isn''t registered with a performance rights organization/we cant identify the identity of said artists, there is no way to confirm ownership over the Intellectual property rights.',  -- summary
@@ -14416,7 +14416,7 @@ Coin expert, founder of auction house, UI/UX designer, media production, Haskell
 ,
 
 (
-    607,  -- id
+    419009,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Private NFT Gates - Revelar',  -- title
     'Projects, particularly game developers, don’t have a way to protect the consumption of public IPFS media enclosed in NFTs.',  -- summary
@@ -14437,7 +14437,7 @@ Coin expert, founder of auction house, UI/UX designer, media production, Haskell
 ,
 
 (
-    608,  -- id
+    418992,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Fiat Payments for NFTs - Revelar',  -- title
     'Buying a Cardano NFT requires several steps to acquire ADA before a potential buyer can buy. This limits accessibility beyond ADA holders.',  -- summary
@@ -14458,7 +14458,7 @@ Coin expert, founder of auction house, UI/UX designer, media production, Haskell
 ,
 
 (
-    609,  -- id
+    418985,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Open Source Citizen Science Apps',  -- title
     'About 1 billion people have been equipped with a data collection device, but there is little experimentation being done with platforms and tokenomics.',  -- summary
@@ -14483,7 +14483,7 @@ Also have dozens of other projects that need to be developed and tokenised follo
 ,
 
 (
-    610,  -- id
+    418964,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Smart contract enabled fiat-on-ramp',  -- title
     'Currently anyone who wants to use smart contracts on Cardano must own some ADA in order to interact with it. This creates an enormous barrier which stops many users from using a dapp.',  -- summary
@@ -14504,7 +14504,7 @@ Also have dozens of other projects that need to be developed and tokenised follo
 ,
 
 (
-    611,  -- id
+    418958,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano loyalty systems for Dapps',  -- title
     '* multi-currency, fragmented point collections, and some points never being redeemed.
@@ -14526,7 +14526,7 @@ Also have dozens of other projects that need to be developed and tokenised follo
 ,
 
 (
-    612,  -- id
+    418957,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Empower thru Project Based Learning',  -- title
     'There are not enough project based learning (PBL) formats available for DEVs to become blockchain DEVs and deliver on the work ahead.',  -- summary
@@ -14547,7 +14547,7 @@ Also have dozens of other projects that need to be developed and tokenised follo
 ,
 
 (
-    613,  -- id
+    418954,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Onboarding African Musicians to ADA',  -- title
     'There is no easy path for Musicians in Africa to be onboarded to Cardano with Web 3.0.',  -- summary
@@ -14573,7 +14573,7 @@ DM Recordings - A record label with South African artists. Through us, they''ll 
 ,
 
 (
-    614,  -- id
+    418944,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'The Story Bank',  -- title
     'Indigenious wisdom is being lost at an alarming rate in both Africa and further afield. Local communities lack the access to the technology that could help preserve their stories.',  -- summary
@@ -14594,7 +14594,7 @@ DM Recordings - A record label with South African artists. Through us, they''ll 
 ,
 
 (
-    615,  -- id
+    418933,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'everCrypt DAO|Basic Income Protocol',  -- title
     'Climate change & COVID-19 continue to impact populations around the world, compounding existing inequalities & insecurities, while producing new economic, political, social and environmental fissures.',  -- summary
@@ -14617,7 +14617,7 @@ https://www.linkedin.com/in/abhiroop-sharma/', -- relevant experience
 ,
 
 (
-    616,  -- id
+    418922,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Catalyst for Student in Vietnam',  -- title
     'Blockchain application for buying and selling sports tickets',  -- summary
@@ -14638,7 +14638,7 @@ https://www.linkedin.com/in/abhiroop-sharma/', -- relevant experience
 ,
 
 (
-    617,  -- id
+    418904,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Ancient Peoples DCCG Game',  -- title
     'Cardano adoption is overly reliant on lending, borrowing, and yield farming.
@@ -14663,7 +14663,7 @@ Collectible Card Games are a large % of gaming market cap, but Pay-to-win is unf
 ,
 
 (
-    618,  -- id
+    418897,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Dashboard of Impact Tools',  -- title
     'There is not a dashboard of tools that exist in the Cardano ecosystem that impact driven projects can use to learn about their options.',  -- summary
@@ -14684,7 +14684,7 @@ Collectible Card Games are a large % of gaming market cap, but Pay-to-win is unf
 ,
 
 (
-    619,  -- id
+    418881,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Translate Eternl',  -- title
     'Without support for Asian languages in Eternl, we exclude ~1.45b non-English speakers from the Cardano system. While Asia accounts for 52% of global growth in tech-company revenues in the last decade.',  -- summary
@@ -14705,7 +14705,7 @@ Collectible Card Games are a large % of gaming market cap, but Pay-to-win is unf
 ,
 
 (
-    620,  -- id
+    418849,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Catalyst tournament',  -- title
     'Business students are unaware of blockchain, they have a lot of business ideas but they do not know how to realize them',  -- summary
@@ -14738,7 +14738,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    621,  -- id
+    418845,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Ubuntu Informal Biz Reg& Accounting',  -- title
     'Informal Businesses (Biz) dominate Africa''s economy, yet are financially excluded, how do we provide identity & financial inclusiveness for informal biz (SMEs) in Africa?',  -- summary
@@ -14759,7 +14759,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    622,  -- id
+    418844,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Treasury Guild Advisory Service',  -- title
     'Funded proposers have difficulty managing their budgets effectively and documenting their transactions transparently. There is no project management support available. This impacts proposal delivery.',  -- summary
@@ -14780,7 +14780,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    623,  -- id
+    418841,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Evolve Eternl',  -- title
     'Eternl’s feature-rich user interface is complex, and inexperienced users in particular have a hard time getting started. And a growing Cardano user base forces us to optimize every aspect of Eternl.',  -- summary
@@ -14806,7 +14806,7 @@ We’ve built a feature-rich multi-platform Cardano light wallet which serves ar
 ,
 
 (
-    624,  -- id
+    418840,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Disrupting Fake News',  -- title
     'Fake news and misinformation plague all societies. There is no accountability. There are no solutions and the problem is only growing. At JulianX, we want to help solve this problem',  -- summary
@@ -14827,7 +14827,7 @@ We’ve built a feature-rich multi-platform Cardano light wallet which serves ar
 ,
 
 (
-    625,  -- id
+    418833,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Monitoring tools for SPO',  -- title
     'Most SPOs use gLiveView to track the node status (requires access to the command line) or prometheus/graphana, where is lack of essencial data',  -- summary
@@ -14848,7 +14848,7 @@ We’ve built a feature-rich multi-platform Cardano light wallet which serves ar
 ,
 
 (
-    626,  -- id
+    418819,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Employment Credentials in Tanzania',  -- title
     'Zanzibar and the wider Tanzania is becoming one of the hotspots for blockchain implementation through IOG and World Mobile, but this potential of people with DID''s is only barely exploited',  -- summary
@@ -14874,7 +14874,7 @@ We’ve built a feature-rich multi-platform Cardano light wallet which serves ar
 ,
 
 (
-    627,  -- id
+    418806,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'TADAStake - A Distribution Platform',  -- title
     '60% of SPOs have not had a chance to sign a block. This issue wastes resources and consumes significant amounts of electricity yearly. We aim to build a platform to improve their block signing ability',  -- summary
@@ -14901,7 +14901,7 @@ Hoang Nguyen: 5 years of experience in Graphic Design, UX/UI Design', -- relevan
 ,
 
 (
-    628,  -- id
+    418798,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cardano for Impact Investors',  -- title
     'SDG relevant Blockchain projects are not yet connected with the Impact Investment industry. There is no access to impact finance yet, across chains, and the sector is missing trust and credibility.',  -- summary
@@ -14922,7 +14922,7 @@ Hoang Nguyen: 5 years of experience in Graphic Design, UX/UI Design', -- relevan
 ,
 
 (
-    629,  -- id
+    418796,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MiFi: Where mining meets finance',  -- title
     'Crypto mining’s complexity & high investment leave retail investors out of the game.  
@@ -14945,7 +14945,7 @@ Lack of a safe and profitable protocol that connects defi and physical assets.',
 ,
 
 (
-    630,  -- id
+    418795,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Catalyst for Student in Vietnam',  -- title
     'In Vietnam, the tendency of students to learn about blockchain and cryptocurrencies is increasing. However, Cardano generally and Catalyst, in particular, are still new and unknown to many students.',  -- summary
@@ -14966,7 +14966,7 @@ Lack of a safe and profitable protocol that connects defi and physical assets.',
 ,
 
 (
-    631,  -- id
+    418781,  -- id
     (SELECT row_id FROM objective WHERE id=11 AND event=9), -- objective
     'Cardano Script Explorer 🔎📜',  -- title
     'There is currently no Cardano Blockchain Explorer, that focuses on script data.',  -- summary
@@ -14989,7 +14989,7 @@ I have sufficient Experience as a full stack Developer.', -- relevant experience
 ,
 
 (
-    632,  -- id
+    418778,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Enable Eternl',  -- title
     'Without reliable funding, the ongoing operation of the Eternl wallet is at risk. Running costs of $15000/month are draining Eternl''s reserves because we do not yet have reliable funding.',  -- summary
@@ -15010,7 +15010,7 @@ I have sufficient Experience as a full stack Developer.', -- relevant experience
 ,
 
 (
-    633,  -- id
+    418772,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     '“Cardania” educative board game',  -- title
     'Despite all the blockchain education initiatives, there are no mechanisms to bring this knowledge to people with no technical backgrounds.',  -- summary
@@ -15033,7 +15033,7 @@ Systems engineer of Ecuadorian nationality with +12 years of experience in the v
 ,
 
 (
-    634,  -- id
+    418759,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADA Bug Bounty Website',  -- title
     'There is no central place a Cardano project can post for community help. This site is a gateway to solving project needs with the rest of the community, ultimately resulting in higher quality dApps.',  -- summary
@@ -15054,7 +15054,7 @@ Systems engineer of Ecuadorian nationality with +12 years of experience in the v
 ,
 
 (
-    635,  -- id
+    418751,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Plutus Lottery ADA Game',  -- title
     'There are not enough developers in Africa working on projects related to the Cardano Ecosystem.',  -- summary
@@ -15081,7 +15081,7 @@ Canonical Company', -- relevant experience
 ,
 
 (
-    636,  -- id
+    418748,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'dRep easy find potential proposals',  -- title
     'Lack of a comprehensive support tool makes it easy for dReps to find potential recommendations.',  -- summary
@@ -15104,7 +15104,7 @@ Canonical Company', -- relevant experience
 ,
 
 (
-    637,  -- id
+    418735,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Helps you keep ADA longer',  -- title
     'Investors are dominated by emotions too much in investment and easily psychologically fluctuate by negative and positive news every day.Helps you keep ADA longer.',  -- summary
@@ -15126,7 +15126,7 @@ Canonical Company', -- relevant experience
 ,
 
 (
-    638,  -- id
+    418728,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Web ADA Info Community In Bahasa',  -- title
     'How do Indonesians and the Cardano community find reliable and contributing Cardano information on the web?',  -- summary
@@ -15147,7 +15147,7 @@ Canonical Company', -- relevant experience
 ,
 
 (
-    639,  -- id
+    418725,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'UTXO Optimizer and Scheduler',  -- title
     'Concurrency with UTXOs is a tricky problem that is difficult to solve and adds to transaction load unnecessarily.',  -- summary
@@ -15168,7 +15168,7 @@ Canonical Company', -- relevant experience
 ,
 
 (
-    640,  -- id
+    418706,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'MCA: A Model School in SA - Part II',  -- title
     'Utilization and adoption of the Cardano protocol is extremely challenging for faculty and students in SA with limited computer experience and inadequate internet connectivity.',  -- summary
@@ -15199,7 +15199,7 @@ Austin Rettig, co-founder & CFO of startup', -- relevant experience
 ,
 
 (
-    641,  -- id
+    418696,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Innovatio Cross-Chain ADA-AVAX-DOT',  -- title
     'The technism of Cardano smart contracts, with Haskell/Plutus, doesn''t attract most developers and entrepreneurs under Solidity standards, making adoption and cross-chain collaborations more difficult.',  -- summary
@@ -15220,7 +15220,7 @@ Austin Rettig, co-founder & CFO of startup', -- relevant experience
 ,
 
 (
-    642,  -- id
+    418686,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'FML : P2P sync licensing protocol',  -- title
     'Musicians have to navigate an expensive, slow, and antiquated music industry in order to license and synchronize their music to adverts, film, social media, video games, and the metaverse.',  -- summary
@@ -15246,7 +15246,7 @@ Our MVP has already onboarded 12 musicians, 33 albums, and 222 songs. We have is
 ,
 
 (
-    643,  -- id
+    418607,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Multisig wallet with fiat on-ramp',  -- title
     'Two key obstacles to the mass adoption of Cardano are the inability for users to directly fund their wallets by credit card and the lack of multisig wallet functionality for shared treasuries.',  -- summary
@@ -15267,7 +15267,7 @@ Our MVP has already onboarded 12 musicians, 33 albums, and 222 songs. We have is
 ,
 
 (
-    644,  -- id
+    418590,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'littlefish - Ocean Organizations',  -- title
     'Up-to-date, detailed information on building decentralized organizations is hard to come by, often hidden deep within a DAO. Opportunities to learn and to collaborate never materialize.',  -- summary
@@ -15288,7 +15288,7 @@ Our MVP has already onboarded 12 musicians, 33 albums, and 222 songs. We have is
 ,
 
 (
-    645,  -- id
+    418587,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     '360 virtual classrooms for museums',  -- title
     'Argentina public schools cannot afford admission tickets to the museums and other buildings of educational interest and, at the same time, museums can´t afford the cost of virtual tours.',  -- summary
@@ -15309,7 +15309,7 @@ Our MVP has already onboarded 12 musicians, 33 albums, and 222 songs. We have is
 ,
 
 (
-    646,  -- id
+    418576,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'OUTGOING (Let''s go places)',  -- title
     'Lack of a secure & a reliable local online marketplace in Tanzania creates a wide range of opportunities.',  -- summary
@@ -15340,7 +15340,7 @@ I was the voted winner of the logo submission challenge.', -- relevant experienc
 ,
 
 (
-    647,  -- id
+    418564,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'App-to-Cardano Wallet Open Protocol',  -- title
     'No way for mobile apps to sign transactions with some datum without entering a private key (which is not user-friendly and insecure).',  -- summary
@@ -15361,7 +15361,7 @@ I was the voted winner of the logo submission challenge.', -- relevant experienc
 ,
 
 (
-    648,  -- id
+    418563,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'littlefish - Ocean Technologies',  -- title
     'Up-to-date, detailed information on cross-chain solutions, DAO enabling tools, and other technologies is difficult to reach. Opportunities to learn from others and collaborate never materialize.',  -- summary
@@ -15382,7 +15382,7 @@ I was the voted winner of the logo submission challenge.', -- relevant experienc
 ,
 
 (
-    649,  -- id
+    418558,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DeFi and NFT dashboard for Cardano',  -- title
     '* Cardano ecosystem is a vast land, but it''s tough for users to find all opportunities and track their portfolio
@@ -15405,7 +15405,7 @@ I was the voted winner of the logo submission challenge.', -- relevant experienc
 ,
 
 (
-    650,  -- id
+    418557,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'littlefish - Tools of DAO Work',  -- title
     'Staying on top of developments in decentralized technology like wallets, smart contracts, DAO platforms, and other enabling technologies like digital work tools is difficult.',  -- summary
@@ -15426,7 +15426,7 @@ I was the voted winner of the logo submission challenge.', -- relevant experienc
 ,
 
 (
-    651,  -- id
+    418526,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'One Crypto Pass',  -- title
     'https://youtu.be/bziQe89lHLU  
@@ -15456,7 +15456,7 @@ But how can your seed phrases be kept safe? How will we onboard the next billion
 ,
 
 (
-    652,  -- id
+    418524,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Quideos smart-contract',  -- title
     'Multinationals in the commodity industry allow the supply of raw commodities or finished products. All this information remains centralized and create an unbalance distribution of value.',  -- summary
@@ -15477,7 +15477,7 @@ But how can your seed phrases be kept safe? How will we onboard the next billion
 ,
 
 (
-    653,  -- id
+    418505,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Bring NFT To Life',  -- title
     'Very few projects on Cardano bring NFT to life and provide real value to its owners.',  -- summary
@@ -15500,7 +15500,7 @@ But how can your seed phrases be kept safe? How will we onboard the next billion
 ,
 
 (
-    654,  -- id
+    418502,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Automated funding 4 funded projects',  -- title
     'Funded projects currently lack the tools to support financial Implementations. Each project has a different tool and executes in a different way. These tools are often used manually by project manager',  -- summary
@@ -15521,7 +15521,7 @@ But how can your seed phrases be kept safe? How will we onboard the next billion
 ,
 
 (
-    655,  -- id
+    418497,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Visio: Cardano NFT Analytics Tools',  -- title
     'NFT adoption is a huge driver for blockchain growth. Unfortunately, Cardano does not have proper high-speed analytics platforms like in Ethereum to support it''s NFT user base.',  -- summary
@@ -15546,7 +15546,7 @@ But how can your seed phrases be kept safe? How will we onboard the next billion
 ,
 
 (
-    656,  -- id
+    418484,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Catalyst Events 4 Vietnam Students',  -- title
     'Many Vietnam University students are unaware of Project Catalyst''s funding campaigns and the opportunities which are existing.',  -- summary
@@ -15567,7 +15567,7 @@ But how can your seed phrases be kept safe? How will we onboard the next billion
 ,
 
 (
-    657,  -- id
+    418462,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Promoting Cardano in the highland',  -- title
     'The highland children do not have the concept of coin investment or blockchain career, bringing this concept to them helps them have ambitions to develop themselves and the community where they live.',  -- summary
@@ -15588,7 +15588,7 @@ But how can your seed phrases be kept safe? How will we onboard the next billion
 ,
 
 (
-    658,  -- id
+    418458,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Imperator - Secure, Imperative SCs',  -- title
     'Many programmers are unfamiliar with functional programming languages like Haskell/Plutus. Program analysis tools focus on imperative languages. Let''s develop a secure, imperative SC language!',  -- summary
@@ -15609,7 +15609,7 @@ But how can your seed phrases be kept safe? How will we onboard the next billion
 ,
 
 (
-    659,  -- id
+    418450,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Bonding native assets to NFTs',  -- title
     'Projects like Yuga Lab''s ApeCoin have demonstrated the value of bonding native assets (coins) to existing NFTs. This should be an on-demand service, available to any Cardano project.',  -- summary
@@ -15630,7 +15630,7 @@ But how can your seed phrases be kept safe? How will we onboard the next billion
 ,
 
 (
-    660,  -- id
+    418445,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Student Startup escrow (SSE)',  -- title
     'Students have limited amount of funds and can not risk being scammed by developers and freelancers. There needs to be an consumer protection when young startups outsource jobs and goods.',  -- summary
@@ -15653,7 +15653,7 @@ Team of 6(3 of which are students) with three haskell devs with 10 plus years in
 ,
 
 (
-    661,  -- id
+    418397,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Wada Internships->African Students',  -- title
     'A growing number of Catalyst projects require support, but may not have the funding or requirements for a full-time hire.
@@ -15679,7 +15679,7 @@ Team of 6(3 of which are students) with three haskell devs with 10 plus years in
 ,
 
 (
-    662,  -- id
+    418386,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Decentralized Newsletter Service',  -- title
     'Newsletter services are centralized and beholden to parties who are interested in censuring certain information. This discourages independent media and open information.',  -- summary
@@ -15700,7 +15700,7 @@ Team of 6(3 of which are students) with three haskell devs with 10 plus years in
 ,
 
 (
-    663,  -- id
+    418385,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Enabling microgrid transactions',  -- title
     'We must utilise 100% of renewable energy made. Micro-production of electricity will become very important. Africa has huge potential for micro-solar but not the grid infrastructure: creating waste.',  -- summary
@@ -15726,7 +15726,7 @@ You can see the full profiles of the team on our website: SurplusMap.com', -- re
 ,
 
 (
-    664,  -- id
+    418376,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano and Agri Value Chain',  -- title
     'African Agriculture is late regarding blockchain technology information and payment system integration, especially in the Ghanaian Agricultural world.',  -- summary
@@ -15747,7 +15747,7 @@ You can see the full profiles of the team on our website: SurplusMap.com', -- re
 ,
 
 (
-    665,  -- id
+    418348,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Educational Content in Human Terms',  -- title
     'There is very little non-technical content that explains blockchain and Cardano in human language and without being BORING! This leads normal users into the arms of shady social media influencers.',  -- summary
@@ -15773,7 +15773,7 @@ Besides the content I write as Flantoshi, I’m a content writer. I’ve also wr
 ,
 
 (
-    666,  -- id
+    418345,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Plutus for Nigerian Universities',  -- title
     'Nigerian computer science degrees fall short of the requirements to solve current blockchain problems. An opportunity for a solution arises.',  -- summary
@@ -15797,7 +15797,7 @@ Besides the content I write as Flantoshi, I’m a content writer. I’ve also wr
 ,
 
 (
-    667,  -- id
+    418343,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Crypto Blockchain Talents Platform',  -- title
     'Where to find and contact talents and professionals with high technical skills in blockchain, DeFi, Crypto, Web3, Smart Contracts, NFTs, Metaverse and many programming languages used in blockchain.',  -- summary
@@ -15818,7 +15818,7 @@ Besides the content I write as Flantoshi, I’m a content writer. I’ve also wr
 ,
 
 (
-    668,  -- id
+    418340,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DeFi Dashboard Trackr DEX Portfolio',  -- title
     'Investors in Decentralized Finance (DeFi) find it difficult to track & manage their investment portfolio in an automated way on many Decentralized Exchanges DEXs, tokens pairs, pools and yield farms.',  -- summary
@@ -15839,7 +15839,7 @@ Besides the content I write as Flantoshi, I’m a content writer. I’ve also wr
 ,
 
 (
-    669,  -- id
+    418338,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Cardano Brazil Meetup Hub Students',  -- title
     'The Cardano community in Brazil is growing rapidly and we need to bring hybrid events to support and interact with our crypto community and college students and universities of Brazil.',  -- summary
@@ -15860,7 +15860,7 @@ Besides the content I write as Flantoshi, I’m a content writer. I’ve also wr
 ,
 
 (
-    670,  -- id
+    418334,  -- id
     (SELECT row_id FROM objective WHERE id=11 AND event=9), -- objective
     'Digital Twin platform',  -- title
     'Blockchain improves supplychain traceability and transparency and keep immutable records. Current solutions come with high cost (100 to $1500 a month), high complexity of deployment and development.',  -- summary
@@ -15883,7 +15883,7 @@ Evonne : UX / UI Development', -- relevant experience
 ,
 
 (
-    671,  -- id
+    418320,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'BORA: Empower Tomorrow’s Leaders',  -- title
     'Thousands of students are excluded from education because they cannot access student loans (funding) due to a lack of a credit record and/or lack of access to funding.',  -- summary
@@ -15912,7 +15912,7 @@ Robert Kabega - 20 years of experience in promotion', -- relevant experience
 ,
 
 (
-    672,  -- id
+    418308,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'EcoCashew.com & partnerships',  -- title
     'People & potential partners are not aware of the EcoCashew ECO Fair Trade Project in West Africa. A sustainable cashew project that aims to bring Cashew Processing to the Cashew Farmers.',  -- summary
@@ -15939,7 +15939,7 @@ See whitepaper link below for the complete team', -- relevant experience
 ,
 
 (
-    673,  -- id
+    418305,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'North Africa Cardano Community Hub',  -- title
     'Most North Africans (Morocco, Algeria, Mauritania, Tunisia, Libya, Egypt, Sudan) native language is Arabic, many speak french but most Cardano materials are in English.',  -- summary
@@ -15962,7 +15962,7 @@ IT and Blockchain enthusiasts. Arabic, French and English speakers.', -- relevan
 ,
 
 (
-    674,  -- id
+    418298,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'SharedLink - Fundraising for NGOs',  -- title
     'There is currently no blockchain-based solution to provide fundraising and yield optimization dedicated to NGOs that defend human rights and protect the world in which all of us are living.',  -- summary
@@ -15993,7 +15993,7 @@ I had the idea of leveraging micro-transaction for humanitarian purposes back in
 ,
 
 (
-    675,  -- id
+    418297,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Empowering African Farmers with NFT',  -- title
     'Cashew and other Farmers financial hardship in Africa. Crops are often transported to neighbour countries before exported to Europe/USA. 
@@ -16016,7 +16016,7 @@ often Consumers are mis-informed where products come from.',  -- summary
 ,
 
 (
-    676,  -- id
+    418286,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Blueprint for Investment Funds',  -- title
     'Managing money for others without a special license is illegal in many jurisdictions. A legal structure is needed to avoid fines and create conditions for conflict resolution',  -- summary
@@ -16037,7 +16037,7 @@ often Consumers are mis-informed where products come from.',  -- summary
 ,
 
 (
-    677,  -- id
+    418257,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Nurturing Roots in Africa',  -- title
     'Wada hubs are off to a great start, but are not yet able to fully self sustain themselves. The next level of support is needed to continue their 3 year path to financial independence.',  -- summary
@@ -16067,7 +16067,7 @@ First Year Hubs: Nigeria, DRC (2 locations Goma and Kinshasa), Ghana (North)', -
 ,
 
 (
-    678,  -- id
+    418255,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Tokenizing Income Share - Use Cases',  -- title
     'Access to tertiary education (post-secondary school) responding to labor market needs is limited and lacks appropriate financing mechanisms.',  -- summary
@@ -16088,7 +16088,7 @@ First Year Hubs: Nigeria, DRC (2 locations Goma and Kinshasa), Ghana (North)', -
 ,
 
 (
-    679,  -- id
+    418254,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Tokenizing Income Share - PoC',  -- title
     'Access to tertiary education responding to labor market need is limited and lacks appropriate financing mechanisms.',  -- summary
@@ -16109,7 +16109,7 @@ First Year Hubs: Nigeria, DRC (2 locations Goma and Kinshasa), Ghana (North)', -
 ,
 
 (
-    680,  -- id
+    418252,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Swahili Learn to Earn',  -- title
     'Vast numbers of native Swahili-speakers in Africa will not learn about Cardano or use Blockchain tools unless there is engaging educational content in a familiar language & clear incentives to learn.',  -- summary
@@ -16134,7 +16134,7 @@ Darlington brings 14+ yrs exp. in Software & Cloud Engineering, Blockchain devel
 ,
 
 (
-    681,  -- id
+    418245,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Beam - GPS based Assets',  -- title
     'Lack of a system to transfer NFTs placed at GPS coordinates as a reward for participating in community events and encouraging healthy behavior',  -- summary
@@ -16155,7 +16155,7 @@ Darlington brings 14+ yrs exp. in Software & Cloud Engineering, Blockchain devel
 ,
 
 (
-    682,  -- id
+    418243,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Cardano NFT Agency',  -- title
     'The perceived difficulty in using Cardano blockchain because of the coding language is the main barrier of entry that limits new users choosing Cardano.',  -- summary
@@ -16176,7 +16176,7 @@ Darlington brings 14+ yrs exp. in Software & Cloud Engineering, Blockchain devel
 ,
 
 (
-    683,  -- id
+    418235,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Catalyst+DAOstack Open Space',  -- title
     'Many blockchain projects are located in Israel, which is known as the "start up nation", but lack of awareness to Cardano limits the potential for collaboration with the local community.',  -- summary
@@ -16199,7 +16199,7 @@ Arava: DAOstack community manager for the last two years.', -- relevant experien
 ,
 
 (
-    684,  -- id
+    418220,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cross-Chain Catalyst Women Activity',  -- title
     'How do we ensure Cardano is leading the way for blockchains to meet the UN’s SDG goal for gender equity?',  -- summary
@@ -16220,7 +16220,7 @@ Arava: DAOstack community manager for the last two years.', -- relevant experien
 ,
 
 (
-    685,  -- id
+    418219,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Growing Web3 Mentorship Pool',  -- title
     'Blockchain communities operate in silos. How can we form meaningful connections across blockchains and web3 communities to promote greater collaboration?',  -- summary
@@ -16241,7 +16241,7 @@ Arava: DAOstack community manager for the last two years.', -- relevant experien
 ,
 
 (
-    686,  -- id
+    418218,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Social network for deep connections',  -- title
     'Mentorship is well known as a way to fast-track progress, but not enough people have mentors. How can we give more people access to the rich learning experience of mentorship on an ongoing basis?',  -- summary
@@ -16262,7 +16262,7 @@ Arava: DAOstack community manager for the last two years.', -- relevant experien
 ,
 
 (
-    687,  -- id
+    418217,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Agricultural sustainability index',  -- title
     'Current problem is the lack of transparency and verification of in-field sustainability in the smallholder agricultural value chain.',  -- summary
@@ -16283,7 +16283,7 @@ Arava: DAOstack community manager for the last two years.', -- relevant experien
 ,
 
 (
-    688,  -- id
+    418215,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardax DEX Plutarch Code Audit',  -- title
     'There is currently no DEX written in Plutarch with a full on-chain audit done an experienced external auditor.',  -- summary
@@ -16304,7 +16304,7 @@ Arava: DAOstack community manager for the last two years.', -- relevant experien
 ,
 
 (
-    689,  -- id
+    418206,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'CardanoPress: Docs for the Builders',  -- title
     'Not everyone is an experienced developer that can pick up code to start building, but we are seeing more projects entering the space at this level of experience. Docs and tutorials will help!',  -- summary
@@ -16330,7 +16330,7 @@ The team have been writing and creating helpful tutorials for the Cardano commun
 ,
 
 (
-    690,  -- id
+    418205,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Co-design Social Appstore MVP [SDA]',  -- title
     '60% of millennial and Gen Z customers now want to change their buying habits to protect the planet [1], but 61% of brands do not use personal and collective wellbeing in their propositions. [2]',  -- summary
@@ -16351,7 +16351,7 @@ The team have been writing and creating helpful tutorials for the Cardano commun
 ,
 
 (
-    691,  -- id
+    418201,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Scoring Social/Environmental Impact',  -- title
     'Many contribute their time to impact projects but their contributions are not well recognized or rewarded. This also discourages some people to contribute their time to social/environmental causes.日本語',  -- summary
@@ -16372,7 +16372,7 @@ The team have been writing and creating helpful tutorials for the Cardano commun
 ,
 
 (
-    692,  -- id
+    418198,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Liquidity-less peer to peer DEX',  -- title
     'Trading tokens on DEXs incurs high slippage unless projects have large liquidity pools. Smaller teams are not always able to provide this. Users need a way to trade peer to peer without AMM Liquidity.',  -- summary
@@ -16393,7 +16393,7 @@ The team have been writing and creating helpful tutorials for the Cardano commun
 ,
 
 (
-    693,  -- id
+    418195,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Learning token engineering elements',  -- title
     'Tokens let you design economic systems with complex incentives but understanding how to engineer these systems is shrouded in mathematics.',  -- summary
@@ -16414,7 +16414,7 @@ The team have been writing and creating helpful tutorials for the Cardano commun
 ,
 
 (
-    694,  -- id
+    418146,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Buy Ada with M-PESA',  -- title
     'A large number of Kenyans have heard about crypto but, currently there is no easy way for new users to get started with buying crypto. Most options are global exchanges with difficult KYC processes.',  -- summary
@@ -16455,7 +16455,7 @@ Team member 3:
 ,
 
 (
-    695,  -- id
+    418120,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Thesis on Catalyst Decentralized VC',  -- title
     'Student entrepreneurs in universities, specially in developing countries, when evaluating possibilities for funding have a limited scope to apply for, and are unaware of new alternatives.',  -- summary
@@ -16476,7 +16476,7 @@ Team member 3:
 ,
 
 (
-    696,  -- id
+    418104,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Cardano Stand @ PROMOTE Conf 2024',  -- title
     'Cardano is missing a great opportunity to gain exposure at a high profile developers and entrepreneurs event happening in Cameroon every two years and involving 700+ enterprises from all sectors.',  -- summary
@@ -16503,7 +16503,7 @@ Team member 3:
 ,
 
 (
-    697,  -- id
+    418098,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Cardano developer courseware in Uni',  -- title
     'University students are the future developer of blockchain but these developers can''t afford formal basic and blockchain programming courses.',  -- summary
@@ -16524,7 +16524,7 @@ Team member 3:
 ,
 
 (
-    698,  -- id
+    418092,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DAPP FOR TECH REPAIR (REPAIR ME)',  -- title
     'In Ghana, there is the lack of access to tech repair specialist in part of the country. Therefore, how do we make tech repairers accessible to individuals for easy repair of damaged devices.',  -- summary
@@ -16547,7 +16547,7 @@ Fund 7 and fund 8 Community Advisors, a proposer with one funded catalyst projec
 ,
 
 (
-    699,  -- id
+    418088,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Online Makerspace',  -- title
     'There are no platform that puts the Maker in the front seat around their ideas, or what a product have been used for after it is sold.',  -- summary
@@ -16579,7 +16579,7 @@ Current team;
 ,
 
 (
-    700,  -- id
+    418085,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT for DRC Fauna and Flora',  -- title
     'Some endangered animals should be protected by all of us because the stability of our ecosystem depends on them.
@@ -16602,7 +16602,7 @@ Seriously endangered species such as: Giraffe, Elephant, Bonobos, PANGOLINS, etc
 ,
 
 (
-    701,  -- id
+    418068,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Attract ETH NFT Projects & Talent',  -- title
     'How do we get the interest of artists & developers planning to release NFT projects on ETH and onboard them smoothly to Cardano?',  -- summary
@@ -16635,7 +16635,7 @@ Core members of the Cardano NFT-Guild.', -- relevant experience
 ,
 
 (
-    702,  -- id
+    418047,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Littercoin: Mass Adoption',  -- title
     'Litter and plastic pollution are global problems. Crowdsourcing data can help fix this, but data collection tools, visualisations and incentives remain significantly underdeveloped.',  -- summary
@@ -16656,7 +16656,7 @@ Core members of the Cardano NFT-Guild.', -- relevant experience
 ,
 
 (
-    703,  -- id
+    418015,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Launch Social Design Academy [SDA]',  -- title
     'DAOs & Brands continue to focus on functional product & service delivery, it''s important, but 61% of customers [1] are seeking more personal and collective benefits to enhance their wellbeing.',  -- summary
@@ -16677,7 +16677,7 @@ Core members of the Cardano NFT-Guild.', -- relevant experience
 ,
 
 (
-    704,  -- id
+    418010,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'of Nectar: Social Trials',  -- title
     'Lack of aggregation and utilization of structured data on human processes for the fiscal and physiological benefit of each individual in society which detriments the use of AI in studying humans.',  -- summary
@@ -16707,7 +16707,7 @@ Experience includes quant research for large global corporations that where adva
 ,
 
 (
-    705,  -- id
+    417999,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Swap Infrastructure Templates 2',  -- title
     'Often the seller of a Cardano NFT does so to purchase another NFT from the same collection. This results in unnecessary fees & lost opportunities.',  -- summary
@@ -16742,7 +16742,7 @@ Experienced devs from CENT.', -- relevant experience
 ,
 
 (
-    706,  -- id
+    417980,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Build a Court System Oracle',  -- title
     'Businesses are reluctant to automate their agreements using smart contracts because they would not be able to enforce their legal rights in court. Devs are losing out on this opportunity.',  -- summary
@@ -16773,7 +16773,7 @@ Experienced devs from CENT.', -- relevant experience
 ,
 
 (
-    707,  -- id
+    417978,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Get PAYDA',  -- title
     'Sending funds is sometimes scary. It involves copy/pasting addresses or manually sending addresses for others to type in on websites.',  -- summary
@@ -16794,7 +16794,7 @@ Experienced devs from CENT.', -- relevant experience
 ,
 
 (
-    708,  -- id
+    417974,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'It is not straight forward for non-',  -- title
     'It is not straight forward for non-English speaking users to onboard into the Cardano ecosystem.',  -- summary
@@ -16815,7 +16815,7 @@ Experienced devs from CENT.', -- relevant experience
 ,
 
 (
-    709,  -- id
+    417973,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Translate Pool Peek Mobile: Swahili',  -- title
     'It is not straight forward for non-English speaking users to onboard into the Cardano ecosystem.',  -- summary
@@ -16836,7 +16836,7 @@ Experienced devs from CENT.', -- relevant experience
 ,
 
 (
-    710,  -- id
+    417971,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Defipronto: Cardano IDO Launchpad',  -- title
     'Cardano''s fast growing ecosystem has given rise to new tokens being minted and most being sold to the cardano community. Most project founders don''t have a trusted IDO platform to launch their ideas.',  -- summary
@@ -16859,7 +16859,7 @@ Mili Sac: Co-Founder', -- relevant experience
 ,
 
 (
-    711,  -- id
+    417970,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Open Source NFT Analytics Platform',  -- title
     'Lack of NFT analytics APIs that can be integrated into any NFT-based platform on Cardano.',  -- summary
@@ -16903,7 +16903,7 @@ Srinivas Vijayakumar
 ,
 
 (
-    712,  -- id
+    417956,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADAO - RoundTable v2: Staking +',  -- title
     'RoundTable currently lacks the ability to stake and un-stake a multi-sig wallet, withdraw staking rewards, send all assets, display asset thumbnails and asset selection, display decimals and more.',  -- summary
@@ -16924,7 +16924,7 @@ Srinivas Vijayakumar
 ,
 
 (
-    713,  -- id
+    417955,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Catalyst Research & Voter Tool',  -- title
     'Catalyst generates massive data siloed in zoom chats, discord, spreadsheets, & on Ideascale SAAS product, limiting the community''s ability to learn from the talent and wisdom within Catalyst.',  -- summary
@@ -16955,7 +16955,7 @@ Stephanie is a trained teacher, experienced blockchain writer & educator.', -- r
 ,
 
 (
-    714,  -- id
+    417947,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano & Catalyst data Web Embeds',  -- title
     'There''s currently no way to embed rich charts and live Cardano data on websites. Teams have to host and recreate the same data visualizations or use static screenshots to tell stories.',  -- summary
@@ -16981,7 +16981,7 @@ James is a co-founder at Gimbalabs and is currently focused on creating tools th
 ,
 
 (
-    715,  -- id
+    417936,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardalonia, A Metaverse On Cardano',  -- title
     'The Metaverse Ecosystem On Cardano is still untapped',  -- summary
@@ -17002,7 +17002,7 @@ James is a co-founder at Gimbalabs and is currently focused on creating tools th
 ,
 
 (
-    716,  -- id
+    417900,  -- id
     (SELECT row_id FROM objective WHERE id=11 AND event=9), -- objective
     'CardanoPress, A Plugin for Builders',  -- title
     'To build with an API such as Blockfrost, you need to understand frontend development, REST APIs, Cardano transactions and more technical web development capabilities. This is a barrier to adoption.',  -- summary
@@ -17028,7 +17028,7 @@ Recently, we''ve delivered WordPress/Cardano solutions for projects building on 
 ,
 
 (
-    717,  -- id
+    417887,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Blockchain Surveys for DAOs & More',  -- title
     'There''s no user-friendly, on-chain mechanism for DAOs, researchers, marketing teams, etc. to ask their communities questions, conduct voting, and help make group decisions.',  -- summary
@@ -17054,7 +17054,7 @@ Darlington has 14+ years of software and cloud system engineering experience. St
 ,
 
 (
-    718,  -- id
+    417884,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Sustainable Coffee to Earn 🌍☕️✍️',  -- title
     'By 2050, global coffee production will be halved. It is due to the decline in cultivated areas due to global warming and the inadequate monetization of producers in Africa. This is not sustainable.',  -- summary
@@ -17077,7 +17077,7 @@ The coffee value chain from production to cup is being verified at an coffee sta
 ,
 
 (
-    719,  -- id
+    417836,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Portfolio & Tax reporting tool',  -- title
     'NFT Tracking and Tax Reporting can be very complex & time-consuming',  -- summary
@@ -17098,7 +17098,7 @@ The coffee value chain from production to cup is being verified at an coffee sta
 ,
 
 (
-    720,  -- id
+    417828,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Scale-UP Hubs'' Legal Framework',  -- title
     'Startups often have difficulty ensuring they are doing everything necessary to stay legally and financially organized.',  -- summary
@@ -17124,7 +17124,7 @@ Network of Hubs throughout Africa.', -- relevant experience
 ,
 
 (
-    721,  -- id
+    417800,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Environmental Oracle',  -- title
     'Monitoring and verification of carbon capture, regenerative agriculture and ecological restoration projects is difficult, unreliable and expensive',  -- summary
@@ -17151,7 +17151,7 @@ Network of Hubs throughout Africa.', -- relevant experience
 ,
 
 (
-    722,  -- id
+    417784,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Social Mobile NFT Game - Alpha',  -- title
     'Simple but essential low-hanging fruit use cases are underused to expose
@@ -17176,7 +17176,7 @@ gamers to the ecosystem. Particularly mobile and social games. Blockchain games 
 ,
 
 (
-    723,  -- id
+    417770,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADATOMS Science & DeFi FREE Ed.',  -- title
     'Most of the crypto and blockchain community is lacking the basic scientific, logic and Financial knowledge and abilities to have a healthy participation in the Cardano network. Education is the basis.',  -- summary
@@ -17197,7 +17197,7 @@ gamers to the ecosystem. Particularly mobile and social games. Blockchain games 
 ,
 
 (
-    724,  -- id
+    417704,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Ads Platform SSP & DSP with Cardano',  -- title
     'There is a few advertising platform using Blockchain in Globe especially in Indonesia. The main issue
@@ -17222,7 +17222,7 @@ In my experience, I gained Product Management knowledge with more than 5 years e
 ,
 
 (
-    725,  -- id
+    417700,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'CNFT Community in Asian Community',  -- title
     'The non-English speaking community has difficulty gathering information about CNFT, which is attracting a lot of interest. 日本語',  -- summary
@@ -17243,7 +17243,7 @@ In my experience, I gained Product Management knowledge with more than 5 years e
 ,
 
 (
-    726,  -- id
+    417693,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'V2target-Dual target for ADA holder',  -- title
     'Many people staking ADA for passive income but still want to increase their assets when the market fluctuates. However, withdrawing from the wallet to the exchange, from the exchange....',  -- summary
@@ -17264,7 +17264,7 @@ In my experience, I gained Product Management knowledge with more than 5 years e
 ,
 
 (
-    727,  -- id
+    417662,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Student Control System',  -- title
     'The educational institutions contemplate a deficiency in terms of student admission, continuation and graduation, since the administrative process in most of them is carried out manually.',  -- summary
@@ -17287,7 +17287,7 @@ Relational database management; project management; web services configuration, 
 ,
 
 (
-    728,  -- id
+    417658,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Cardano NYC 🤝 ETH NYC Communities',  -- title
     'New York City serves as an influential hub for the crypto community (locally and globally) yet Ethereum''s ecosystem takes the center stage while new/old crypto folk ignore Cardano''s growing ecosystem.',  -- summary
@@ -17312,7 +17312,7 @@ Relational database management; project management; web services configuration, 
 ,
 
 (
-    729,  -- id
+    417656,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Wolfram Cardano Ent. Private Cloud',  -- title
     'Enterprises want to build Cardano applications but do not have the infrastructure to get started.',  -- summary
@@ -17333,7 +17333,7 @@ Relational database management; project management; web services configuration, 
 ,
 
 (
-    730,  -- id
+    417654,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Cardano ERP for Catalyst',  -- title
     'There is currently no intelligent, open-source Cardano-native accounting/auditing system.',  -- summary
@@ -17359,7 +17359,7 @@ Please see developer team CVs at our linked website.', -- relevant experience
 ,
 
 (
-    731,  -- id
+    417653,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano ERP - Grow Asia',  -- title
     'Cardano needs more developers from Asia participating in Emurgo Academy training and developing enterprise-grade products on the Cardano blockchain.',  -- summary
@@ -17380,7 +17380,7 @@ Please see developer team CVs at our linked website.', -- relevant experience
 ,
 
 (
-    732,  -- id
+    417652,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano ERP - Main Project',  -- title
     'There is no intelligent, open-source, Cardano-native ERP system to provide for seamless integration of, and optimized standard user experience for, business, enterprise, and government focused dApps.',  -- summary
@@ -17406,7 +17406,7 @@ Please see core team CVs at our linked website.', -- relevant experience
 ,
 
 (
-    733,  -- id
+    417628,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'ArtSuite Cardano Course Bangladesh',  -- title
     'Cardano is not very well known in Bangladesh despite a rising population of 165m people and 19.5m people in the capital city Dhaka, the 9th most populated city in the world.',  -- summary
@@ -17431,7 +17431,7 @@ Team Hotel Ginebra BCN, operator stakepool HOTEL.', -- relevant experience
 ,
 
 (
-    734,  -- id
+    417615,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'ETH NFT Artists->Cardano workshops',  -- title
     'Despite relatively expensive and higher fees than Cardano + greater negative environmental impacts, Ethereum has the largest NFT market size. Incentivising Ethereum artists to use Cardano is key.',  -- summary
@@ -17456,7 +17456,7 @@ Artists of other NFT chains were invited to a 1 on 1 where we helped them create
 ,
 
 (
-    735,  -- id
+    417614,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'System to manage patient care',  -- title
     'The idea is to use blockchain to allow patients and doctors to relate directly to each other and close deals, without there being a central entity managing the care service.',  -- summary
@@ -17477,7 +17477,7 @@ Artists of other NFT chains were invited to a 1 on 1 where we helped them create
 ,
 
 (
-    736,  -- id
+    417582,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'HIre ArtSuite Coordinator in Africa',  -- title
     'Artists in Africa have little exposure globally. Web 3.0, NFT and digital economy livelihoods aren’t easily accessible nor comprehended.',  -- summary
@@ -17504,7 +17504,7 @@ A Cardano Hotel Ginebra team production', -- relevant experience
 ,
 
 (
-    737,  -- id
+    417579,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'EDUCATE SENEGAL INNOVATORS - DI/FI',  -- title
     'Young Senegalese regenerative innovators need to learn about intellectual property and digital and financial identity-building, towards using a new monetisation model linking ADA with Financial Tech.',  -- summary
@@ -17525,7 +17525,7 @@ A Cardano Hotel Ginebra team production', -- relevant experience
 ,
 
 (
-    738,  -- id
+    417574,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Smart Contract Audit projectNEWM',  -- title
     'if we are to facilitate 1 trillion dollars of value via IP rights we need to make sure that the underlying tech is sound. Best practices include auditing of code.',  -- summary
@@ -17546,7 +17546,7 @@ A Cardano Hotel Ginebra team production', -- relevant experience
 ,
 
 (
-    739,  -- id
+    417570,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Kogmios Open Source Doc/Dev/Support',  -- title
     'There exists a limiting number of ways to interact directly with the Cardano blockchain in a high-performance way.',  -- summary
@@ -17567,7 +17567,7 @@ A Cardano Hotel Ginebra team production', -- relevant experience
 ,
 
 (
-    740,  -- id
+    417569,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Wallet Dapp Connector Integration',  -- title
     'All dapps need to have easy connection to all third party non-custodial wallets. While CIP-30 exists, implementing an easy to use layer on top of this with React would be useful to other dev teams.',  -- summary
@@ -17588,7 +17588,7 @@ A Cardano Hotel Ginebra team production', -- relevant experience
 ,
 
 (
-    741,  -- id
+    417566,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Digital Identity Integration',  -- title
     'Disputes might arise among artist in reference to intellectual honesty. There must be a connection between real world identity and wallet addresses for effective legal recourse.',  -- summary
@@ -17609,7 +17609,7 @@ A Cardano Hotel Ginebra team production', -- relevant experience
 ,
 
 (
-    742,  -- id
+    417554,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'linkslist - decentralised bio site',  -- title
     'There are no web3 bio links website... We aim to change that with creating a bio links website powered by Cardano and decentralised storage.',  -- summary
@@ -17635,7 +17635,7 @@ My aim here is to utilise my web and cardano experince.', -- relevant experience
 ,
 
 (
-    743,  -- id
+    417546,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Cardano Code Camp - Pay To Learn',  -- title
     'The current Cardano developer training experience is sub-par fragmented, & incomplete. There is currently no central hub or process for aspiring Cardano developers to go.',  -- summary
@@ -17675,7 +17675,7 @@ I suggest we combine our efforts to focus on a common goal of providing a great 
 ,
 
 (
-    744,  -- id
+    417537,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Hackathon and Internship Program',  -- title
     'Over 90% of African businesses are SMEs and cannot afford traditional business protection through a lawyer. This factor puts them at risk of losses in case of contract breaches and non-commitment.',  -- summary
@@ -17696,7 +17696,7 @@ I suggest we combine our efforts to focus on a common goal of providing a great 
 ,
 
 (
-    745,  -- id
+    417523,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Help2HEALTH ramping Up to 2B People',  -- title
     'Need to translate Help2Health to English & Portuguese to start the internationalization process to make available health care Cardano Smart Contracts and Ada way of payment to +2 Billion people',  -- summary
@@ -17723,7 +17723,7 @@ Help2Health have been selected in FUND8 in the Business Solution category https:
 ,
 
 (
-    746,  -- id
+    417500,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano General Help Desk',  -- title
     'Many users coming from other chains and longtime ADA holders getting started with DeFi on Cardano encounter questions and problems and lack resources or knowledge needed to find solutions on their own',  -- summary
@@ -17744,7 +17744,7 @@ Help2Health have been selected in FUND8 in the Business Solution category https:
 ,
 
 (
-    747,  -- id
+    417497,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'REiD Real electronic identification',  -- title
     'Our data should be safe and easily accessible to the end user. Consumers reported losing more than $5.8 billion to fraud in 2021 . Corporations profit & Government does nothing.',  -- summary
@@ -17765,7 +17765,7 @@ Help2Health have been selected in FUND8 in the Business Solution category https:
 ,
 
 (
-    748,  -- id
+    417475,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ZiberBugs Playable Prototype',  -- title
     'The Cardano ecosystem lacks a top-tier, entertaining play to earn game, and having one would potentially bring thousands or even millions of new people to Cardano, many of them from Ethereum.',  -- summary
@@ -17786,7 +17786,7 @@ Help2Health have been selected in FUND8 in the Business Solution category https:
 ,
 
 (
-    749,  -- id
+    417455,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     '2 minutes Crypto Dict for Japanese',  -- title
     'Nowadays, Pepeole''re too busy to read hard-to-understand technical like blockchain & Cardano. These knowledge are very fragmented & mainly written in English so difficult for Japanese to access.',  -- summary
@@ -17807,7 +17807,7 @@ Help2Health have been selected in FUND8 in the Business Solution category https:
 ,
 
 (
-    750,  -- id
+    417412,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Anonymity & data control w ZEKE (3)',  -- title
     'Today, companies track you, collect your data and (mis)use it commercially. You have no control/benefit from it, although you own your data. There is a clear lack of trust between people and brands.',  -- summary
@@ -17828,7 +17828,7 @@ Help2Health have been selected in FUND8 in the Business Solution category https:
 ,
 
 (
-    751,  -- id
+    417406,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Taxir | Bringing Blockchain to MENA',  -- title
     'We recognize a High Potential / Low Adoption paradox regarding blockchain in MENA (Middle East and North Africa). Adoption has been stagnant and use cases are narrow qualitatively and quantitatively.',  -- summary
@@ -17849,7 +17849,7 @@ Help2Health have been selected in FUND8 in the Business Solution category https:
 ,
 
 (
-    752,  -- id
+    417402,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Tanzania Cardano Think Tank',  -- title
     'Lack of legal support to Funded proposals and Cardano ecosystem in Tanzania.',  -- summary
@@ -17872,7 +17872,7 @@ Help2Health have been selected in FUND8 in the Business Solution category https:
 ,
 
 (
-    753,  -- id
+    417400,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Scaling ArtSuite NFT4Good Platform',  -- title
     'The Cardano total NFT sales volume = ₳372,453,500 ADA. 
@@ -17899,7 +17899,7 @@ Management team of Hotel Ginebra Barcelona, stakepool operator HOTEL.', -- relev
 ,
 
 (
-    754,  -- id
+    417395,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Wolfram UTxO History&Collaboration',  -- title
     'UTXO chains need to accelerate their collaborative efforts and remember their common origins',  -- summary
@@ -17920,7 +17920,7 @@ Management team of Hotel Ginebra Barcelona, stakepool operator HOTEL.', -- relev
 ,
 
 (
-    755,  -- id
+    417392,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano needs Math Teachers',  -- title
     'Object oriented programming is commonly used in normal programming',  -- summary
@@ -17943,7 +17943,7 @@ Anne: Microsoft in Education global training Partner, Microsoft Certified Educat
 ,
 
 (
-    756,  -- id
+    417366,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'YouTube educational video in Bahasa',  -- title
     'Cardano have great potential and need promotion to bring more mass adoption at Indonesia, where people already aware about blockchain but lack of awareness on Cardano and it''s Ecosystem.',  -- summary
@@ -17964,7 +17964,7 @@ Anne: Microsoft in Education global training Partner, Microsoft Certified Educat
 ,
 
 (
-    757,  -- id
+    417364,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Vcoincheck-Share(Knowledge) to earn',  -- title
     'There are many projects related to knowledge sharing but do not create two-way interaction, education and lack of vision to build a diverse educational platform or product...',  -- summary
@@ -17987,7 +17987,7 @@ Our team Vcoincheck.io, funded proposers of 5 proposal (fund7 and 8), big SPO, a
 ,
 
 (
-    758,  -- id
+    417356,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Vcoincheck Library (Phase 2)',  -- title
     'Knowledge and news about Cardano are mostly in English,it is difficult to reach Japanese community, affecting the expansion of Cardano...
@@ -18010,7 +18010,7 @@ Knowledge about Cardano and blockchain are very large',  -- summary
 ,
 
 (
-    759,  -- id
+    417352,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Refer to earn system for SPOs',  -- title
     'Many stake pools retire due to lack of delegators. Most stake pools operators have technical skills to run a stake pool, but lack the marketing skills required to attract Delegators.',  -- summary
@@ -18052,7 +18052,7 @@ Walker
 ,
 
 (
-    760,  -- id
+    417350,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFTs + smart legal contracts',  -- title
     'IP Infringement is a big issue today. Take film tourism for example, over half the listings on sites like GetYourGuide do not give anything back to the original IP holders. We need a better solution.',  -- summary
@@ -18075,7 +18075,7 @@ Bryan Yap - Worked as a developer (7+ years). Worked on blockchain side-projects
 ,
 
 (
-    761,  -- id
+    417332,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'ALOHA for Cardano',  -- title
     'Many Business students have a lot of ideas but they lack tech knowledge how to develop them',  -- summary
@@ -18108,7 +18108,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    762,  -- id
+    417329,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'The ArtSuite Multi-Chain NFT Events',  -- title
     'Lack of a Cardano focused, hosted and structured events programme introducing artists, and catalysing multi chain and interoperable collaboration among NFT artists of all chains.',  -- summary
@@ -18131,7 +18131,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    763,  -- id
+    417327,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Japanese support for wallets',  -- title
     'The major lightweight wallets for Cardano are missing Japanese language support',  -- summary
@@ -18152,7 +18152,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    764,  -- id
+    417325,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano Hub In East Africa',  -- title
     'Low active engagement and contribution from Eastern Africa region in Catalyst and Cardano ecosystem. To mention a few reasons could be language barrier and difference in timezone for online meetups.',  -- summary
@@ -18173,7 +18173,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    765,  -- id
+    417318,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'LetsWork platform on Cardano',  -- title
     'Most of the job search sites today are based on the mechanism: Hirer-Broker- Freelancer. The broker in the middle receives a commission',  -- summary
@@ -18194,7 +18194,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    766,  -- id
+    417311,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano in Tamil',  -- title
     'Lack of official Tamil content . Thus Tamil speakers cannot learn in their native language. There are 75 million speakers around the world.',  -- summary
@@ -18230,7 +18230,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    767,  -- id
+    417310,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'A better data source owned by you',  -- title
     'The current marketing & customer relationship paradigm is dying because it serves data brokers and brands who abuse our trust and personal data. It''s based on surveillance & guesswork. And it’s dying.',  -- summary
@@ -18251,7 +18251,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    768,  -- id
+    417309,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Find your Way Route Optimizer App',  -- title
     'Complex route planning , optimization to minimize costs of vehicles picking up from multiple locations and delivering to beneficiaries.',  -- summary
@@ -18272,7 +18272,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    769,  -- id
+    417305,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Impact Creating NFTs for Causes',  -- title
     'There is no NFT marketplace dedicated to NFTs with Social and Environmental Impacts. Socially, Conscious creators have no dedicated market',  -- summary
@@ -18293,7 +18293,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    770,  -- id
+    417302,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Profila privacy ledger - 3dP access',  -- title
     'People can control the (use of) their data (online and offline) via a set of (legal) data rights. However, people don''t know how to use/exercise them to their advantage',  -- summary
@@ -18314,7 +18314,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    771,  -- id
+    417299,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Delivery Tracking via NFTs',  -- title
     'Good food goes in garbage. It adds to landfills, and CO2. Hungry people who could eat the food have no access. There''s no way to track it.',  -- summary
@@ -18335,7 +18335,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    772,  -- id
+    417297,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT 4 customer feedback - creators',  -- title
     'Today, customer feedback is unreliable. Often public & shaming (-), it doesn''t show accurate (overall) customers'' sentiment to a brand. What if customer-created content could be private + compensated?',  -- summary
@@ -18356,7 +18356,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    773,  -- id
+    417296,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Native Token Incentivize Onboarding',  -- title
     'No incentive for people to act as influencers and promoters for Catalyst. Unless they have a proposal they aren''t motivated to evangelize.',  -- summary
@@ -18377,7 +18377,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    774,  -- id
+    417294,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Onboarding Sri Lanka',  -- title
     'Sri Lanka is completely unaware of Cardano, and more so about Catalyst. There are a few with ADA but no awareness of Catalyst benefits.',  -- summary
@@ -18398,7 +18398,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    775,  -- id
+    417289,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Coaching Transforms your Life App',  -- title
     'There are no coaching resources on Catalyst community and no way to track them',  -- summary
@@ -18419,7 +18419,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    776,  -- id
+    417282,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Coaching for Catalyst Members',  -- title
     'There are no coaching resources on Catalyst community. The benefits of coaching, to evoke awareness and create powerful breakthroughs has not been made available in Catalyst until now.',  -- summary
@@ -18440,7 +18440,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    777,  -- id
+    417277,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Onboarding East Asia Today',  -- title
     'Despite a population of billions, East Asia is underrepresented in Catalyst due to a lack of localized content and Town Hall participation.',  -- summary
@@ -18461,7 +18461,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    778,  -- id
+    417270,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Control your data - PRISM (extra)',  -- title
     'Today, companies collect and use your data and (mis)use it for their benefit, targeting you at their discretion. However, People should control the use of their personal data and get benefit from it.',  -- summary
@@ -18482,7 +18482,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    779,  -- id
+    417268,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano Bridges in Japanese',  -- title
     'Japan has a large Cardano community, but the major Cardano bridges do not yet have any Japanese localization. This limits the Japan community''s ability to access these parts of the ecosystem.',  -- summary
@@ -18503,7 +18503,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    780,  -- id
+    417265,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Connecting Asian Voter and Proposer',  -- title
     'Language barriers and cultural differences creates a lack of trust on sources to rely on before and during the voting period.',  -- summary
@@ -18524,7 +18524,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    781,  -- id
+    417263,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Eastern Town Hall Team Operation',  -- title
     'Participating in Catalyst is difficult when you live in the Eastern Hemisphere Time zones where English is not the main language.',  -- summary
@@ -18545,7 +18545,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    782,  -- id
+    417262,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Onboard Freelancers to any projects',  -- title
     'We cannot afford to hire full time staff but must rely on freelancers to fulfill the various roles of our social and charitable projects',  -- summary
@@ -18566,7 +18566,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    783,  -- id
+    417260,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'HealthFI X Cardano - Move to Plant',  -- title
     'Forest cover in Vietnam is decreasing yearly, climate change is becoming more extreme, and environmental protection events are still ineffective in raising awareness due to a lack of transparency.',  -- summary
@@ -18587,7 +18587,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    784,  -- id
+    417258,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'BEST WAY TO ATTRACT REAL GAMERS',  -- title
     'Not just real gamers hate on-chained games, but we also have no sustainable, long-term way to attract - educate - convince them to try our good games.',  -- summary
@@ -18609,7 +18609,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    785,  -- id
+    417249,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NOW! NFT GAME NO MORE BORED!!!',  -- title
     'Apparently, all the current NFT games failed to attract gamers in the mainstream gaming industry due to the lack of entertainment and terrible gameplay.',  -- summary
@@ -18631,7 +18631,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    786,  -- id
+    417248,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'WALLET ADD-ONS FOR GAME ENGINE',  -- title
     'There is no wallet add-on for the game engine client in Cardano that suits the requirement of Miverse in long-term development.',  -- summary
@@ -18653,7 +18653,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    787,  -- id
+    417247,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'FIRST-EVER MULTI-CREATURE METAVERSE',  -- title
     'Real gamers have bad prejudice toward gamefi! People think that gamers like NFT game but the fact is we can''t get a single penny from them.',  -- summary
@@ -18675,7 +18675,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    788,  -- id
+    417243,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MULTIPLE THE VALUE OF $220B MARKET',  -- title
     'Definitely, current NFT games CAN NOT take a penny from $220B market of nearly 4B players in the mainstream gaming industry because of their hate and wrong bias toward gamefi.',  -- summary
@@ -18697,7 +18697,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    789,  -- id
+    417223,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Goguenheim: Renaissance on Cardano',  -- title
     'Cardano boasts of the most secure/eco-friendly blockchain for art-based NFTs and yet has been unable to attract a culture of high quality artworks and artists to its ecosystem, from Ethereum.',  -- summary
@@ -18720,7 +18720,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    790,  -- id
+    417215,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Ethereum2Cardano Builder Dictionary',  -- title
     'There is no quick reference guide or cheat sheet specifically geared towards helping migrating Ethereum developers understand Cardano terminology.',  -- summary
@@ -18741,7 +18741,7 @@ Over 30 years experience in Ministry of Languages as Official Languages translat
 ,
 
 (
-    791,  -- id
+    417208,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Fundraising solutions in Argentina',  -- title
     'Many projects that raise large sums of funding require various channels to legally use the funds in Argentina',  -- summary
@@ -18766,7 +18766,7 @@ ADA SOLAR Project Manager, Experienced Project manager who has served as executi
 ,
 
 (
-    792,  -- id
+    417204,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'UPDEV CHALLENGE',  -- title
     'African tech entrepreneurs don''t have enough support on their projects to get involved in the Cardano blockchain',  -- summary
@@ -18787,7 +18787,7 @@ ADA SOLAR Project Manager, Experienced Project manager who has served as executi
 ,
 
 (
-    793,  -- id
+    417203,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Citizen Assemblies for Democracy',  -- title
     'Lack of effective democratic participatory methods, whereby citizens can debate and influence the decisions of governments and parliaments, results in oppression, corruption and exploitation.',  -- summary
@@ -18808,7 +18808,7 @@ ADA SOLAR Project Manager, Experienced Project manager who has served as executi
 ,
 
 (
-    794,  -- id
+    417200,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADA SOLAR PLATFORM',  -- title
     'Solar Power Plants are traditionally centralized and controlled by a small number of large companies.',  -- summary
@@ -18829,7 +18829,7 @@ ADA SOLAR Project Manager, Experienced Project manager who has served as executi
 ,
 
 (
-    795,  -- id
+    417197,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     '5 Loaves 2 Fish Feed The Hungry App',  -- title
     'Good food goes in garbage. It adds to landfills, and CO2. Hungry people who could eat the food have no access. There''s no way to track it.',  -- summary
@@ -18850,7 +18850,7 @@ ADA SOLAR Project Manager, Experienced Project manager who has served as executi
 ,
 
 (
-    796,  -- id
+    417193,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'OpenSource for Sustainable DAOs',  -- title
     'Some DAOs can have a hard time to become sustainable and to improve this we need open source tools that can generate extra revenue.',  -- summary
@@ -18883,7 +18883,7 @@ Full Stack Dev with 7 years of experience and CTO at Cardano Warriors', -- relev
 ,
 
 (
-    797,  -- id
+    417189,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Regenerate Yem (Ethiopia)',  -- title
     'In Ethiopian highlands, population explosion and mis/over-use of the ecosystem have caused acute resource and food insecurity leading to conflicts and threatening widespread famine.',  -- summary
@@ -18919,7 +18919,7 @@ Kevin: nftseed, Permaculture designer HOPEthiopia, 10+ yrs in software dev, apps
 ,
 
 (
-    798,  -- id
+    417176,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Attracting New Developers',  -- title
     'Developers are unaware of the possibility of being remunerated by a decentralized fund. Besides, they are not being motivated to engage in an ecosystem where their code can also have social impact.',  -- summary
@@ -18945,7 +18945,7 @@ Cristian Amaral - tech copywriter, 10 years of experience in content marketing. 
 ,
 
 (
-    799,  -- id
+    417168,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'HEALTHFI - Healthcare Metaverse',  -- title
     'Deterioration of health after the pandemic, lack of motivation to do exercise, and decentralized personal data make the training ineffective.',  -- summary
@@ -18966,7 +18966,7 @@ Cristian Amaral - tech copywriter, 10 years of experience in content marketing. 
 ,
 
 (
-    800,  -- id
+    417166,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Condense PA/VPA Into New dRep Role?',  -- title
     'PA/VPAs are redundant roles now with the new dRep role?',  -- summary
@@ -18987,7 +18987,7 @@ Cristian Amaral - tech copywriter, 10 years of experience in content marketing. 
 ,
 
 (
-    801,  -- id
+    417156,  -- id
     (SELECT row_id FROM objective WHERE id=11 AND event=9), -- objective
     'Google Search Blockfrost',  -- title
     'Blockfrost needs to be better known among devs, as does Ethereum''s Infura, for example. One of the ways to achieve this goal is the production of SEO-oriented educational content.',  -- summary
@@ -19013,7 +19013,7 @@ Cristian Amaral - tech copywriter, 10 years of experience in content marketing. 
 ,
 
 (
-    802,  -- id
+    417142,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Business Strategy for African Proj.',  -- title
     'African community projects need more guidance to match the goals of growing Cardano in Africa and they will have a hard time finding time from experienced community members to leverage their projects.',  -- summary
@@ -19039,7 +19039,7 @@ About my History in Cardano', -- relevant experience
 ,
 
 (
-    803,  -- id
+    417139,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADAO- NFT Fractionalization Dapp',  -- title
     'There is no open and accessible interface where non-developers can interact with and leverage the Fracada v2 Smart Contracts.',  -- summary
@@ -19060,7 +19060,7 @@ About my History in Cardano', -- relevant experience
 ,
 
 (
-    804,  -- id
+    417137,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Your Mentor and Record Keeper',  -- title
     'Think of you, or your children; and the way you store all your school-related achievements & skills. 
@@ -19083,7 +19083,7 @@ Its everywhere, from papers to emails, to diplomas and pictures, and some are al
 ,
 
 (
-    805,  -- id
+    417130,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'CNFT Marketplace for 3D materials',  -- title
     'The market for game materials (3D models, etc.) is underdeveloped these days.
@@ -19110,7 +19110,7 @@ I thought that the combination of materials and the NFT business could create ne
 ,
 
 (
-    806,  -- id
+    417129,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Smart Contract Job Facilitation',  -- title
     'There is usually very little trust between parties when a working agreement is initially started.',  -- summary
@@ -19131,7 +19131,7 @@ I thought that the combination of materials and the NFT business could create ne
 ,
 
 (
-    807,  -- id
+    417123,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Job & Event Center (Woolly Map)',  -- title
     'There is not a definitive spot to go in the Cardano ecosystem that enables people the ability to act instantly on events/jobs that are going on.',  -- summary
@@ -19152,7 +19152,7 @@ I thought that the combination of materials and the NFT business could create ne
 ,
 
 (
-    808,  -- id
+    417122,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Smart Card Hardware Wallet',  -- title
     'There is no card-type hardware wallet compatible with Cardano in the world yet. A hardware wallet that fits in a wallet and can be used by the user via fingerprint authentication opens up apps.',  -- summary
@@ -19184,7 +19184,7 @@ We also have partnerships with various global electronics companies.', -- releva
 ,
 
 (
-    809,  -- id
+    417121,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'IoT/M2M Oracle Platform Development',  -- title
     'Smart contract oracles are essential for more innovative systems.
@@ -19209,7 +19209,7 @@ We also have partnerships with various global electronics companies.', -- releva
 ,
 
 (
-    810,  -- id
+    417115,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Create Local/Online Job Fair System',  -- title
     'There is no representation from Cardano to grant students internships and full-time opportunities.',  -- summary
@@ -19230,7 +19230,7 @@ We also have partnerships with various global electronics companies.', -- releva
 ,
 
 (
-    811,  -- id
+    417108,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'STUDENTS TAKING THE PLUTUS PLB',  -- title
     'Hundreds of students wander through the Cardano ecosystem without finding the methodology that provides them with practical development skills.  Over time, the number will increase.',  -- summary
@@ -19251,7 +19251,7 @@ We also have partnerships with various global electronics companies.', -- releva
 ,
 
 (
-    812,  -- id
+    417091,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'GIMBALABS TREASURY FOR TUTORS',  -- title
     'Members of Gimbalabs are offering mentoring services to new students without financial recognition for their hours of work.',  -- summary
@@ -19272,7 +19272,7 @@ We also have partnerships with various global electronics companies.', -- releva
 ,
 
 (
-    813,  -- id
+    417081,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Video tutorial for cardano-tools.io',  -- title
     'Creators and artists which are new to the cardano ecosystem have a lack on understanding the protocoll, it''s characteristics and how native tokens work on cardano.',  -- summary
@@ -19293,7 +19293,7 @@ We also have partnerships with various global electronics companies.', -- releva
 ,
 
 (
-    814,  -- id
+    417062,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Flooftopia: Korean Translation',  -- title
     'Currently, there is a need to raise awareness & provide accessibility to CNFT gaming projects in East Asia. As the interest continues to grow, is paramount that we remove any language barriers.',  -- summary
@@ -19353,7 +19353,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    815,  -- id
+    417057,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Flooftopia: Vietnamese Translation',  -- title
     'Currently, there is a need to raise awareness & provide accessibility to CNFT gaming projects in East Asia. As the interest continues to grow, is paramount that we remove any language barriers.',  -- summary
@@ -19413,7 +19413,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    816,  -- id
+    417049,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'SharpDAO - DAO Tooling for Cardano',  -- title
     'Currently the Cardano community has a lack of tools that help people create and manage DAOs.',  -- summary
@@ -19448,7 +19448,7 @@ We all have been building on Cardano since the Mary Era when metadata was introd
 ,
 
 (
-    817,  -- id
+    417043,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DeFi Access from Mobile Devices',  -- title
     'Provide user-friendly access to DeFi services directly from mobile devices, boosting financial health sovereignty.',  -- summary
@@ -19469,7 +19469,7 @@ We all have been building on Cardano since the Mary Era when metadata was introd
 ,
 
 (
-    818,  -- id
+    417033,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Flooftopia: Japanese Translation',  -- title
     'Currently, there is a need to raise awareness & provide accessibility to CNFT gaming projects in East Asia. As the interest continues to grow, is paramount that we remove any language barriers.',  -- summary
@@ -19529,7 +19529,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    819,  -- id
+    417021,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'The DAM Marketplace',  -- title
     'Web2 traps us with marginally-personalized experiences, wasting our time in searching for (and often missing) the experiences we truly value.',  -- summary
@@ -19550,7 +19550,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    820,  -- id
+    417018,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Courses & Education Crypto MKTPLACE',  -- title
     'Find all courses and training related to the crypto ecosystem such as: Blockchain, Crypto, Programming, DeFi, NFTs, Pools, Linux, and etc.',  -- summary
@@ -19571,7 +19571,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    821,  -- id
+    417012,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Keeping Up with Cardano: 100 videos',  -- title
     'People find it difficult to understand the potential of projects by reading whitepapers and websites, with unfriendly technical terms used. The terms used are very technical and not easy to access.',  -- summary
@@ -19592,7 +19592,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    822,  -- id
+    417004,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Creation of a registered company',  -- title
     'The legal and fiscal framework of funded Catalyst projects is sometimes challenging in local jurisdictions. This exposes project owners (and perspective clients) to potentially damaging risk.',  -- summary
@@ -19620,7 +19620,7 @@ We both are intimately familiar with the Cardano Ecosystem and run 2 independent
 ,
 
 (
-    823,  -- id
+    417002,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Datapods - Reclaim Your Data.',  -- title
     'Big tech has too much control about personal data.
@@ -19650,7 +19650,7 @@ We are a young and driven startup team with a passion for crypto looking to enab
 ,
 
 (
-    824,  -- id
+    416997,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Keyword Coin Price Widget for Sites',  -- title
     'Know the real-time price of a coin or token in a news keyword, without having to go to external sites like Coinmarketcap or Coingecko, making reading fluid & without reading interruptions/distractions',  -- summary
@@ -19671,7 +19671,7 @@ We are a young and driven startup team with a passion for crypto looking to enab
 ,
 
 (
-    825,  -- id
+    416992,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Parcel Delivery dApp [MVP only]',  -- title
     'Postal services in African countries are expensive, unreliable, slow, inconvenient, inefficient and even inaccessible to many people according to reports of the Universal Postal Union (UPU).',  -- summary
@@ -19692,7 +19692,7 @@ We are a young and driven startup team with a passion for crypto looking to enab
 ,
 
 (
-    826,  -- id
+    416991,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'All-in-One Link for Web3 Projects',  -- title
     'An "all in one" link platform designed to meet the needs of Web3, NFT and Tokens projects. That interacts with the functionality, scalability, security and power of the Cardano blockchain.',  -- summary
@@ -19713,7 +19713,7 @@ We are a young and driven startup team with a passion for crypto looking to enab
 ,
 
 (
-    827,  -- id
+    416989,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'ISIG-GOMA Cardano Hub',  -- title
     'Students in Africa and especially those in the DRC (French speaking) are lagging
@@ -19745,7 +19745,7 @@ Wada Cameroon Hub support with technical training and coordination', -- relevant
 ,
 
 (
-    828,  -- id
+    416986,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Flooftopia: Chinese Translation',  -- title
     'Currently, there is a need to raise awareness & provide accessibility to CNFT gaming projects in East Asia. As the interest continues to grow, is paramount that we remove any language barriers.',  -- summary
@@ -19805,7 +19805,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    829,  -- id
+    416983,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Investor Network Community Platform',  -- title
     'Difficulty finding, in a structured, organized and reliable way, people to invest and raise capital for your startup or blockchain project.',  -- summary
@@ -19826,7 +19826,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    830,  -- id
+    416954,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'IRONSKY NFT GAME | Build on Mobile',  -- title
     'The Cardano ecosystem has few NFT games, not keeping up with Metaverse trends, and will lose its competitiveness with other crypto ecosystems, with very few games on Cardano for ADA holders to join in',  -- summary
@@ -19847,7 +19847,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    831,  -- id
+    416944,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cross-Chain Card Game',  -- title
     'Existing "on-chain" games lack interoperability and limit players to using a single block-chain.',  -- summary
@@ -19868,7 +19868,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    832,  -- id
+    416933,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Scalus – Scala to Plutus compiler',  -- title
     'Writing DApps in Haskell has some drawbacks: 
@@ -19899,7 +19899,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    833,  -- id
+    416918,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Mehen: USDM State Regulatory Fees',  -- title
     'Cardano needs a fiat-backed stable coin that can be directly converted into fiat 1:1 as an alternative to algorithmic stable coins, and to support those who prefer or need a direct-to-fiat bridge.',  -- summary
@@ -19930,7 +19930,7 @@ MBA, Economics, Quantitative Finance', -- relevant experience
 ,
 
 (
-    834,  -- id
+    416917,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Mehen: Onboarding Assistance',  -- title
     'There are high barriers to entry in the stable coin market for the unbanked/underbanked. Fiat-backed stable coins present a chicken & egg dilemma for creators in underdeveloped parts of the world.',  -- summary
@@ -19951,7 +19951,7 @@ MBA, Economics, Quantitative Finance', -- relevant experience
 ,
 
 (
-    835,  -- id
+    416902,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Mehen: Fiat-backed Stablecoin USDM',  -- title
     'Cardano DeFi adoption is slow due to no stablecoin diversity. Cardano only has algorithmic stablecoins and needs a fiat-backed option for those who prefer that or need a direct-to-fiat bridge.',  -- summary
@@ -19982,7 +19982,7 @@ Dev team includes: Drasil, Lidonation', -- relevant experience
 ,
 
 (
-    836,  -- id
+    416880,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'More Developers on Cardano',  -- title
     'The developer community in East Africa still needs to be built, incentivized and motivated to build on Cardano.',  -- summary
@@ -20003,7 +20003,7 @@ Dev team includes: Drasil, Lidonation', -- relevant experience
 ,
 
 (
-    837,  -- id
+    416830,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Koios Extensions - Utilities, Bots',  -- title
     'Blockchain data often requires similar tasks among builders leading to duplicated work. Meanwhile, the end-users struggle to query complete raw data from the blockchain.',  -- summary
@@ -20025,7 +20025,7 @@ Dev team includes: Drasil, Lidonation', -- relevant experience
 ,
 
 (
-    838,  -- id
+    416801,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'AMA with Cross-Chain Communities',  -- title
     'There are many chains, but they build their own chain independently. We need to increase communication, coordination & collaboration between chains in Indonesia, so that we could learn from each other',  -- summary
@@ -20046,7 +20046,7 @@ Dev team includes: Drasil, Lidonation', -- relevant experience
 ,
 
 (
-    839,  -- id
+    416795,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Dynamic NFT-based reputation model',  -- title
     'Trusting pseudonymous users identified only by a wallet address and assets/on-chain history is problematic in the blockchain space. Off-chain whitelists require a lot of work and are non-transitive.',  -- summary
@@ -20069,7 +20069,7 @@ Iagon’s been focusing on decentralized networks since 2017.', -- relevant expe
 ,
 
 (
-    840,  -- id
+    416790,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Dandelion Community Service',  -- title
     'Deploying and maintaining Cardano API services is a challenging task to tackle for newcomers and small teams that want to try, prototype and build on Cardano.',  -- summary
@@ -20090,7 +20090,7 @@ Iagon’s been focusing on decentralized networks since 2017.', -- relevant expe
 ,
 
 (
-    841,  -- id
+    416770,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'C64 Wallet - Extension Tool',  -- title
     'Modular wallet extension that provides a sovereign, customized experience for users and devs by supporting internal original tools and interacting with web3 platforms.',  -- summary
@@ -20111,7 +20111,7 @@ Iagon’s been focusing on decentralized networks since 2017.', -- relevant expe
 ,
 
 (
-    842,  -- id
+    416766,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Automatic cross-chain token bridge',  -- title
     'For the Iagon token bridge, the current process has to be split into two manual steps (instead of automatic): Ethereum to Milkomeda and Milkomeda to Cardano, which is not an ideal user experience.',  -- summary
@@ -20132,7 +20132,7 @@ Iagon’s been focusing on decentralized networks since 2017.', -- relevant expe
 ,
 
 (
-    843,  -- id
+    416757,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Open Vesting Tool - Unvest',  -- title
     'Token vesting is a vital component in the fundraising toolkit.
@@ -20160,7 +20160,7 @@ Current existing options are closed and proprietary.',  -- summary
 ,
 
 (
-    844,  -- id
+    416745,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Powered Pay-Wall System',  -- title
     'How can we ensure Cardano NFTs create real-world business value? Jpeg images of animated monkeys are all cool, but the real long-term value is in creating lucrative business opportunities.',  -- summary
@@ -20181,7 +20181,7 @@ Current existing options are closed and proprietary.',  -- summary
 ,
 
 (
-    845,  -- id
+    416743,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Rarety.io : No-Code NFT Launchpad',  -- title
     'NFT artists and projects facing multiple technical barriers to deploying and managing their projects on Cardano. They have to rely on a third-party API service or a costly developer.',  -- summary
@@ -20202,7 +20202,7 @@ Current existing options are closed and proprietary.',  -- summary
 ,
 
 (
-    846,  -- id
+    416737,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Documentary on Cardano''s governance',  -- title
     'Few people are aware of the potential of blockchain governance',  -- summary
@@ -20223,7 +20223,7 @@ Current existing options are closed and proprietary.',  -- summary
 ,
 
 (
-    847,  -- id
+    416735,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'BitFins Cross-Chain NFT Aquariums',  -- title
     'Many projects developing in the NFT space lack a utility that can connect to the traditional world and the world becoming more digital means a need for bridging that gap is arising in many forms.',  -- summary
@@ -20254,7 +20254,7 @@ Brett Raymer (Marketing & Expansion) - Over 20 years in the aquarium industry, P
 ,
 
 (
-    848,  -- id
+    416730,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Decentralized Next-Gen Edge AI',  -- title
     'AI has proven its adeptness in real-world scenarios but is exploitatively dangerous at the hands of big tech giants. Centralization is a big threat to user-centric, privacy-preserving next-gen edge AI',  -- summary
@@ -20275,7 +20275,7 @@ Brett Raymer (Marketing & Expansion) - Over 20 years in the aquarium industry, P
 ,
 
 (
-    849,  -- id
+    416699,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'CNFT Alliance: Vietnamese Community',  -- title
     'There is a need to raise awareness of and provide accessibility to CNFT projects in East Asia. Therefore, it is paramount that language does not deter people from being involved within NFT projects.',  -- summary
@@ -20340,7 +20340,7 @@ SFX: Rudi
 ,
 
 (
-    850,  -- id
+    416694,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'CNFT Alliance: Korean Community!',  -- title
     'There is a need to raise awareness of and provide accessibility to CNFT projects in East Asia. Therefore, it is paramount that language does not deter people from being involved within NFT projects.',  -- summary
@@ -20405,7 +20405,7 @@ SFX: Rudi
 ,
 
 (
-    851,  -- id
+    416691,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'CNFT Alliance: Chinese Community!',  -- title
     'There is a need to raise awareness of and provide accessibility to CNFT projects in East Asia. Therefore, it is paramount that language does not deter people from being involved within NFT projects.',  -- summary
@@ -20470,7 +20470,7 @@ SFX: Rudi
 ,
 
 (
-    852,  -- id
+    416688,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'CNFT Alliance: Japanese Community!',  -- title
     'There is a need to raise awareness of and provide accessibility to CNFT projects in East Asia. Therefore, it is paramount that language does not deter people from being involved within NFT projects.',  -- summary
@@ -20535,7 +20535,7 @@ SFX: Rudi
 ,
 
 (
-    853,  -- id
+    416681,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Handle Personalization | ADA Handle',  -- title
     'Handle owners have expressed the need to include personalized data onto their Handles in order to create a customized user experience when interacting with Cardano DApps, projects and wallets.',  -- summary
@@ -20583,7 +20583,7 @@ Co-Founder at ADA Handle.', -- relevant experience
 ,
 
 (
-    854,  -- id
+    416678,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'subHandles | ADA Handle',  -- title
     'Organizations presently need to purchase multiple unrelated root ADA Handles in order to organize different payment addresses and have zero guarantee that all the related Handles will be available.',  -- summary
@@ -20631,7 +20631,7 @@ Co-Founder at ADA Handle.', -- relevant experience
 ,
 
 (
-    855,  -- id
+    416660,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano 101 Course - Kaizen Crypto',  -- title
     'A lot of Cardano content is not structured to onboard new users. Many Youtube videos are focused more on price than on education. Many people coming into the space are not familiar with basic skills.',  -- summary
@@ -20654,7 +20654,7 @@ Pritesh has been a member of the Cardano ecosystem since 2017 and began creating
 ,
 
 (
-    856,  -- id
+    416656,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Stay Updated With Cardano Events',  -- title
     'It has become nearly impossible to keep track of all the developments taking place for each project building on Cardano. How do users find out what''s taking place?',  -- summary
@@ -20675,7 +20675,7 @@ Pritesh has been a member of the Cardano ecosystem since 2017 and began creating
 ,
 
 (
-    857,  -- id
+    416653,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano NFT Gaming - Lovelace Saga!',  -- title
     'Traditional gaming doesn''t allow users to own their in-game assets. Users can spend thousands of hours playing and don''t have any control over their playable items.',  -- summary
@@ -20696,7 +20696,7 @@ Pritesh has been a member of the Cardano ecosystem since 2017 and began creating
 ,
 
 (
-    858,  -- id
+    416645,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Catalyst Dashboard Innovatio Tribe',  -- title
     'Catalyst members do not have many spaces to discuss timely issues that arise in each fund, such as receiving feedback on proposals, finding potential collaborations or how to address challenges.',  -- summary
@@ -20717,7 +20717,7 @@ Pritesh has been a member of the Cardano ecosystem since 2017 and began creating
 ,
 
 (
-    859,  -- id
+    416641,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'InnovatioFounder KYC & AML Process',  -- title
     'The Innovatio Founder needs to comply with EU KYC & AML regulations to offer his crowdfunding service to European users and link on-chain transactions to real identities.',  -- summary
@@ -20738,7 +20738,7 @@ Pritesh has been a member of the Cardano ecosystem since 2017 and began creating
 ,
 
 (
-    860,  -- id
+    416638,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Online tools for generative artists',  -- title
     'The challenge of building a generative art collection on Cardano is significant.
@@ -20769,7 +20769,7 @@ Learning blockchain technology acts as a barrier to entry for existing artists a
 ,
 
 (
-    861,  -- id
+    416627,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'China Info Hub Continued',  -- title
     'The Cardano community leans heavily toward North America and Europe. Growth in Asia needs support from the community.
@@ -20805,7 +20805,7 @@ Facilitated the growth of the Chinese-speaking communities of Minswap, Genius Yi
 ,
 
 (
-    862,  -- id
+    416611,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'LearnerShape SkillsGraph v2',  -- title
     'There is no effective and widespread skills management and authentication solution for Web 3, and leading current applications are proprietary',  -- summary
@@ -20826,7 +20826,7 @@ Facilitated the growth of the Chinese-speaking communities of Minswap, Genius Yi
 ,
 
 (
-    863,  -- id
+    416610,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'East Asia Artistic Grant Proposal',  -- title
     'Financial security for East Asian artists can be incredibly challenging, especially at the beginning of their career and often they lack material and technical support to pursue their artistic goals',  -- summary
@@ -20847,7 +20847,7 @@ Facilitated the growth of the Chinese-speaking communities of Minswap, Genius Yi
 ,
 
 (
-    864,  -- id
+    416563,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT BATTLE ROYAL GAME ON CARDANO',  -- title
     'The blossoming NFT technology has seen poor adoption globally. The space demands easier ways for blockchain enthusisasts to own NFTs',  -- summary
@@ -20871,7 +20871,7 @@ Facilitated the growth of the Chinese-speaking communities of Minswap, Genius Yi
 ,
 
 (
-    865,  -- id
+    416549,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Munchy Go Delivery Food dApp DAO',  -- title
     'Stakeholders on traditional business models, don''t have any impact on management in the ecosystems they live in. Building DAO food delivery app! We want to streamline decentralize management.',  -- summary
@@ -20894,7 +20894,7 @@ Ricardo Parro Co-founder, 10 years as CTO, 2 successful exits, one of the exits 
 ,
 
 (
-    866,  -- id
+    416545,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     '"Munchy Go" Delivery Food dApp DAO',  -- title
     'We Munchy Go Delivery Food dApp, want to cut costs for restaurants, increase couriers pay and save user pockets, on average restaurants pay to delivery food apps 20% to 30% fees.',  -- summary
@@ -20917,7 +20917,7 @@ Ricardo Parro Co-founder, 10 years as CTO, 2 successful exits, one of the exits 
 ,
 
 (
-    867,  -- id
+    416543,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano Community Center Cape Town',  -- title
     'South Africa has no real-world education and training venues bringing South Africans together to learn and develop with Cardano, yet South Africa is the 3rd largest economy in Africa.',  -- summary
@@ -20938,7 +20938,7 @@ Ricardo Parro Co-founder, 10 years as CTO, 2 successful exits, one of the exits 
 ,
 
 (
-    868,  -- id
+    416529,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Create Value For Screenplay Writers',  -- title
     'For 100 years the film industry has been run by middlemen. and agencies. This has significantly tapered the income and creative freedoms of screenplay writers.',  -- summary
@@ -20961,7 +20961,7 @@ Ricardo Parro Co-founder, 10 years as CTO, 2 successful exits, one of the exits 
 ,
 
 (
-    869,  -- id
+    416517,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Scalable Open Innovation Ledger',  -- title
     'People spend lots of time arguing over everything on the internet, but important discussions get drowned in meaningless chatter or are siloed behind patents and paywals in academia / corporations.',  -- summary
@@ -20982,7 +20982,7 @@ Ricardo Parro Co-founder, 10 years as CTO, 2 successful exits, one of the exits 
 ,
 
 (
-    870,  -- id
+    416513,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Cardano Lawyer (EU-region)',  -- title
     'Many of the activities and novel products by proposers on Cardano/Catalyst fall under existing regulations. It is not easy for startups to access this knowledge or expertise + costly.',  -- summary
@@ -21003,7 +21003,7 @@ Ricardo Parro Co-founder, 10 years as CTO, 2 successful exits, one of the exits 
 ,
 
 (
-    871,  -- id
+    416507,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'AI lawyer on Cardano - Profila/HSLU',  -- title
     'Your offline/online personal & business life is governed by laws & contracts you have to accept but don''t understand, which have real consequences. Today, you lack access to legal knowledge/lawyers.',  -- summary
@@ -21024,7 +21024,7 @@ Ricardo Parro Co-founder, 10 years as CTO, 2 successful exits, one of the exits 
 ,
 
 (
-    872,  -- id
+    416502,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'SOIL: OriginTrail / Ontochain (DKG)',  -- title
     'A Decentralized Knowledge Graph is being developed by Origintrail, with integrations with Ethereum, Gnosis, Polygon, and recently Polkadot. Cardano should also be supported.',  -- summary
@@ -21050,7 +21050,7 @@ I have little experience with EVM or DKG, but will probably need this to impleme
 ,
 
 (
-    873,  -- id
+    416479,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Haskell for beginners in Vietnamese',  -- title
     'Haskell is freaking hard to learn! And even harder for beginner in Vietnam to feel it.',  -- summary
@@ -21077,7 +21077,7 @@ Cardano pool operator (ticket AHA retired).', -- relevant experience
 ,
 
 (
-    874,  -- id
+    416470,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'United Media BlockChain Community',  -- title
     'The problem that United Media is here to fix is the lack of production, content creation, and documenting the crypto community. Bringing the point of views of those who are working on the blockchain',  -- summary
@@ -21098,7 +21098,7 @@ Cardano pool operator (ticket AHA retired).', -- relevant experience
 ,
 
 (
-    875,  -- id
+    416467,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Get incentivised for contributing',  -- title
     'Developers who contribute either in open source/private projects want to get incentivized in either financial (ADA) or career advancement (Skills NFT).',  -- summary
@@ -21128,7 +21128,7 @@ Co-founder: https://www.linkedin.com/in/ongweiyee/', -- relevant experience
 ,
 
 (
-    876,  -- id
+    416455,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Service Marketplace for Japan, VN',  -- title
     'Lacking a place to gather skilled people able to supply support services for unskilled proposers and PAs with a reasonable cost, especially, in non-English speaking communities like Japan and Vietnam.',  -- summary
@@ -21149,7 +21149,7 @@ Co-founder: https://www.linkedin.com/in/ongweiyee/', -- relevant experience
 ,
 
 (
-    877,  -- id
+    416451,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Web3 Onboarding DAO',  -- title
     'The crypto industry onboarding can be overwhelming for most people. Access to grants is a great way to learn and experiment in this field. Most spanish speaker people don''t know how to approach this',  -- summary
@@ -21170,7 +21170,7 @@ Co-founder: https://www.linkedin.com/in/ongweiyee/', -- relevant experience
 ,
 
 (
-    878,  -- id
+    416435,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     '5-6 lang Short Explainer Animations',  -- title
     'The world is crowded with junk content, we need quality content to stand out, and spark the conversation.',  -- summary
@@ -21191,7 +21191,7 @@ Co-founder: https://www.linkedin.com/in/ongweiyee/', -- relevant experience
 ,
 
 (
-    879,  -- id
+    416409,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Supporting LATAM''s dReps',  -- title
     'Many LATAM dReps will have difficulties in carrying out their task due to the gap between their native language and English, resulting in under-representation.',  -- summary
@@ -21212,7 +21212,7 @@ Co-founder: https://www.linkedin.com/in/ongweiyee/', -- relevant experience
 ,
 
 (
-    880,  -- id
+    416389,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'KemiLand MVP - The Royal Palace',  -- title
     'Ancient Civilizations sightseeing requires a budget for travel, accommodation, etc and time travel is not yet invented.😁',  -- summary
@@ -21233,7 +21233,7 @@ Co-founder: https://www.linkedin.com/in/ongweiyee/', -- relevant experience
 ,
 
 (
-    881,  -- id
+    416383,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     '(cardano-go) A Golang package',  -- title
     'There is no a comprehensive Go package to help developers build on Cardano.',  -- summary
@@ -21256,7 +21256,7 @@ Backend developer with 3+ years of experience. mostly worked with Golang and Nod
 ,
 
 (
-    882,  -- id
+    416375,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Catalyst Resources in WaZoBia',  -- title
     'More than half of Nigeria''s 200million people are connected to the internet. However, 70% of the entire population is living in abject poverty. The internet can be a tool to lift them out of poverty.',  -- summary
@@ -21277,7 +21277,7 @@ Backend developer with 3+ years of experience. mostly worked with Golang and Nod
 ,
 
 (
-    883,  -- id
+    416363,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cross-Chain NFT Cultivation Events',  -- title
     'South African artists lack much-needed guidance to understand and create NFT art on the Blockchain and how to join the digital ecosystem.',  -- summary
@@ -21298,7 +21298,7 @@ Backend developer with 3+ years of experience. mostly worked with Golang and Nod
 ,
 
 (
-    884,  -- id
+    416361,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'W3:RIDE : The future of cycling',  -- title
     'Traditional web2 fitness platforms are centralized with self-serving designs that prevent broader community engagement outside of specific company ecosystems.',  -- summary
@@ -21319,7 +21319,7 @@ Backend developer with 3+ years of experience. mostly worked with Golang and Nod
 ,
 
 (
-    885,  -- id
+    416344,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Financial Implementation Blockchain',  -- title
     'Indonesians are not yet aware of the existence of *Blockchain* function which can be very helpful for the business process for efficiency and cost reduction. Education and apps will be very helpful.',  -- summary
@@ -21340,7 +21340,7 @@ Backend developer with 3+ years of experience. mostly worked with Golang and Nod
 ,
 
 (
-    886,  -- id
+    416321,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Env. impact certification protocol',  -- title
     'Current carbon markets address 30% of the needed solutions; industrial carbon-negative projects can’t access certification and monetization of their impact because it is expensive and time consuming.',  -- summary
@@ -21363,7 +21363,7 @@ Working alongside Smart Chain, specialized in Web3 consulting & services.', -- r
 ,
 
 (
-    887,  -- id
+    416276,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Everyone Start With More 👏',  -- title
     'I ran out of 👏 to give. The Popularity ranking in Ideascale is wrong and sorts based on who put up a proposal first. dReps need accurate, accessible measurement of community sentiment.',  -- summary
@@ -21384,7 +21384,7 @@ Working alongside Smart Chain, specialized in Web3 consulting & services.', -- r
 ,
 
 (
-    888,  -- id
+    416274,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Music Marketplace',  -- title
     'There is huge demand for a NFT Marketplace catering to music and audio while onboarding independent musicians from Web 2.0.',  -- summary
@@ -21409,7 +21409,7 @@ Nhan Nguyen & Tuan Pham are Software Engineers for (https://www.uac.edu.au/) & (
 ,
 
 (
-    889,  -- id
+    416231,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Flooftopia: NFT Interoperability',  -- title
     'Cardano is a 3rd generation crypto that with a core value of interoperability, and only recently have a few projects embraced this quality. This core value needs to be expanded upon.',  -- summary
@@ -21466,7 +21466,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    890,  -- id
+    416196,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Beyond Text Proposals',  -- title
     'Proposals are currently walls of text that most people don’t want to read.',  -- summary
@@ -21487,7 +21487,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    891,  -- id
+    416192,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Like Kahoot - Quiz and bet with ADA',  -- title
     'Engaging in e-learning content is hard.
@@ -21526,7 +21526,7 @@ Proposals funded on Fund 7 and 8.', -- relevant experience
 ,
 
 (
-    892,  -- id
+    416191,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Learn-to-Earn Open Source Tooling',  -- title
     'Currently there are no Plutus Smart Contract references or blueprints for eLearning platforms seeking to implement Learn2Earn mechanics using Blockchain.',  -- summary
@@ -21547,7 +21547,7 @@ Proposals funded on Fund 7 and 8.', -- relevant experience
 ,
 
 (
-    893,  -- id
+    416182,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'e-Learning DAO,Revenue share policy',  -- title
     'Content and course creators are poorly paid.
@@ -21582,7 +21582,7 @@ Proposals funded on Fund 7 and 8.', -- relevant experience
 ,
 
 (
-    894,  -- id
+    416132,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Open Smart Contract Library',  -- title
     'Many developers like learning from examples, but they are hard to find for Plutus smart contracts.',  -- summary
@@ -21603,7 +21603,7 @@ Proposals funded on Fund 7 and 8.', -- relevant experience
 ,
 
 (
-    895,  -- id
+    416125,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'CNFT Alliance DAO & Launchpad',  -- title
     'Currently, there are multiple segmented DAOs within the Cardano ecosystem that cover specific projects, but there isn''t a DAO or launchpad that covers a sector of the ecosystem.',  -- summary
@@ -21668,7 +21668,7 @@ SFX: Rudi
 ,
 
 (
-    896,  -- id
+    416115,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Open Standards Library',  -- title
     'Metadata standards are an important aspect of smart contract development, yet there is no easy way to use or design them.',  -- summary
@@ -21689,7 +21689,7 @@ SFX: Rudi
 ,
 
 (
-    897,  -- id
+    416112,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Decentralized Escrow for Remote Job',  -- title
     'Direct contracts between employers and remote developers may lead to disputes. However, centralized escrow services can be expensive and their decisions may be arbitrary. 日本語',  -- summary
@@ -21710,7 +21710,7 @@ SFX: Rudi
 ,
 
 (
-    898,  -- id
+    415976,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Indico: Knowledge Brokering',  -- title
     'Cardano''s community has a great deal of knowledge that remains unshared. There is no clear, safe, and easy way to share this knowledge, resulting in a lack of efficient collaboration.',  -- summary
@@ -21731,7 +21731,7 @@ SFX: Rudi
 ,
 
 (
-    899,  -- id
+    415924,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Onboarding Pikes Malawi Community',  -- title
     'Community leaders like Pike, an environmental warrior from Malawi, can be funded through the Cardano ecosystem but knowledge barriers prevent them from using blockchains and Cardano.',  -- summary
@@ -21752,7 +21752,7 @@ SFX: Rudi
 ,
 
 (
-    900,  -- id
+    415895,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Zero Knowledge Ads by Profila (1/4)',  -- title
     'Today, companies serve Ads based on inference data and third party profiling data/cookies which are collected by tracking you. This tracking model is becoming illegal and sacrifices users'' privacy.',  -- summary
@@ -21773,7 +21773,7 @@ SFX: Rudi
 ,
 
 (
-    901,  -- id
+    415815,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Education on DAOs',  -- title
     'To build a descentralized solutions for the Cardano ecosystem are needed builders that understand the complexity of designing and running a DAO, today that knowledge is not widely available.',  -- summary
@@ -21794,7 +21794,7 @@ SFX: Rudi
 ,
 
 (
-    902,  -- id
+    415781,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'ADA Web3 Wallet Integration Package',  -- title
     'At the moment, there is no convenient package that developers on Cardano can use to integrate their dApp with the various browser-based ADA wallets.',  -- summary
@@ -21815,7 +21815,7 @@ SFX: Rudi
 ,
 
 (
-    903,  -- id
+    415748,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'e-Learning DAO, Builds the platform',  -- title
     'Ed-Tech giants (like Coursera) monopolised the e-Learning market, pay poorly instructors and pollute the ecosystem with cheap materials with little pedagogical quality. No space for fair competition.',  -- summary
@@ -21846,7 +21846,7 @@ Proposals funded on Fund 7 and 8.', -- relevant experience
 ,
 
 (
-    904,  -- id
+    415725,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Crypto banking & Payment Processing',  -- title
     'Accepting ADA payment and Cardano-based stable coin is not possible due to the lack of payment integration and processing service.',  -- summary
@@ -21867,7 +21867,7 @@ Proposals funded on Fund 7 and 8.', -- relevant experience
 ,
 
 (
-    905,  -- id
+    415707,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Learning Dynamic Models',  -- title
     'Dynamic models are essential for trading, weather, video, and many other applications, but do not yet exist on key marketplaces such as SingularityNET.',  -- summary
@@ -21888,7 +21888,7 @@ Proposals funded on Fund 7 and 8.', -- relevant experience
 ,
 
 (
-    906,  -- id
+    415697,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Token Maker + GoFunNFT',  -- title
     'Using tokens to access content/services or subscriptions requires creating your code to issue/manage/send tokens. Larger projects require UTxOs optimization for the continuous issuance of tokens.',  -- summary
@@ -21909,7 +21909,7 @@ Proposals funded on Fund 7 and 8.', -- relevant experience
 ,
 
 (
-    907,  -- id
+    415658,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'MultiSwap (X-Chain Swaps by Ferrum)',  -- title
     'Secure multi-chain aggregators, interoperability protocols, & cross-chain swapping platforms connecting L1 solutions to both eUTXO and EVM compatible networks are non-existent in todays landscape.',  -- summary
@@ -21930,7 +21930,7 @@ Proposals funded on Fund 7 and 8.', -- relevant experience
 ,
 
 (
-    908,  -- id
+    415644,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Legal Compliance Support (EN/ES)',  -- title
     'Proponents need a compliance strategy to have procedures and best practices in place to identify and classify the operational and legal risks they face and establish internal mechanisms to prevent.',  -- summary
@@ -21953,7 +21953,7 @@ https://www.linkedin.com/in/carlos-eduardo-gonz%C3%A1lez-fern%C3%A1ndez-23b27055
 ,
 
 (
-    909,  -- id
+    415632,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Cardano developer club in Uni',  -- title
     'IT students - developer resources are currently lacking an environment (Lab, exercise, reference document, hackathon..) to practice and experience building dApps on the blockchain platform',  -- summary
@@ -21974,7 +21974,7 @@ https://www.linkedin.com/in/carlos-eduardo-gonz%C3%A1lez-fern%C3%A1ndez-23b27055
 ,
 
 (
-    910,  -- id
+    415582,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano Incredible Race 2022',  -- title
     'Cardano Community in Vietnam is lacking of social events. We need to make Cardano community more visible and create impact to new people.',  -- summary
@@ -21995,7 +21995,7 @@ https://www.linkedin.com/in/carlos-eduardo-gonz%C3%A1lez-fern%C3%A1ndez-23b27055
 ,
 
 (
-    911,  -- id
+    415503,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Conkis ~ Multiplayer strategy game',  -- title
     'Cardano does not have successful video games adapted to the masses. NFTs and crypto are usually terms that make the average gamer think they will get scammed, so they refuse to play.',  -- summary
@@ -22021,7 +22021,7 @@ More info: conkis.com', -- relevant experience
 ,
 
 (
-    912,  -- id
+    415486,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Social Images: Stock Photos as CNFT',  -- title
     'Content creators are looking for authentic, creative and real time stock images that can be found in social media, but social media content is not accessible, no easy way to purchase it.',  -- summary
@@ -22044,7 +22044,7 @@ Amit: Awarded TV & Film Maker. Managed promo departments for Israeli biggest TV 
 ,
 
 (
-    913,  -- id
+    415367,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Mentoring Program',  -- title
     'Catalyst Newcomers can have a hard time on boarding and navigating the Cardano space, because the Ecosystem is complex and it is not always clear whom you should talk to.',  -- summary
@@ -22065,7 +22065,7 @@ Amit: Awarded TV & Film Maker. Managed promo departments for Israeli biggest TV 
 ,
 
 (
-    914,  -- id
+    415326,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Cardano Catalyst TV',  -- title
     'Voters do not have time to read and comprehend the insights of all proposals worth voting on, and proposers lack the credibility and reputability to reach voters as well as marketing means',  -- summary
@@ -22086,7 +22086,7 @@ Amit: Awarded TV & Film Maker. Managed promo departments for Israeli biggest TV 
 ,
 
 (
-    915,  -- id
+    415204,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Cardano Learn to Earn for Devs',  -- title
     'The learning curve for Cardano Developers is very steep. Many want to learn but are severely limited by time, resources, and willpower.',  -- summary
@@ -22122,7 +22122,7 @@ Founding Proposer of Cardano Hub Buenos Aires (F6)', -- relevant experience
 ,
 
 (
-    916,  -- id
+    415197,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'The Open Source Cardano Lottery',  -- title
     'Cardano Green and Social Good projects need alternative fundraising options and the Cardano ecosystem needs more high quality open source projects.',  -- summary
@@ -22143,7 +22143,7 @@ Founding Proposer of Cardano Hub Buenos Aires (F6)', -- relevant experience
 ,
 
 (
-    917,  -- id
+    415174,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ZeroPool Screener',  -- title
     'Many zero or low funded pools have little visibility, thus little chance of growing.',  -- summary
@@ -22164,7 +22164,7 @@ Founding Proposer of Cardano Hub Buenos Aires (F6)', -- relevant experience
 ,
 
 (
-    918,  -- id
+    415171,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'FT Smart Contracts for Marketplaces',  -- title
     'NFTs are driving user engagement and adoption of Cardano, yet the only asset being used to facilitate these trades is ADA.
@@ -22193,7 +22193,7 @@ MLabs contributes to our development activity', -- relevant experience
 ,
 
 (
-    919,  -- id
+    415157,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Tellus2 – Gamifying Sustainability',  -- title
     'Negative human environment interaction and climate change is continuing, partly due to people making the wrong choices.
@@ -22231,7 +22231,7 @@ Linus Hansson Marketing and Partnerships – Journalist/Media working experience
 ,
 
 (
-    920,  -- id
+    415153,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Rythmeet:P2P music network platform',  -- title
     'Music is not accessible to all and Cardano lacks attracting people from outside the crypto bubble',  -- summary
@@ -22257,7 +22257,7 @@ Team: More than 40 years cumulated in software development and project managemen
 ,
 
 (
-    921,  -- id
+    415152,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Perma-music rmNFT Marketplace',  -- title
     'Musicians and Cardano lack a versatile music marketplace which permanently locks original files and gives musicians access to this market',  -- summary
@@ -22280,7 +22280,7 @@ Team: More than 40 years cumulated in software development and project managemen
 ,
 
 (
-    922,  -- id
+    415142,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'P2P Marketmaker Money Transfer',  -- title
     'Remittance fees averaging from 8.2% to 15% of the transfer amount is charged for transfers to Sub-Saharan Africa. Crypto adoption is also impacted as on-off ramps to fiat require some money transfer.',  -- summary
@@ -22303,7 +22303,7 @@ Ekival is live on Testnet and we have a combined experience of over 40 years.', 
 ,
 
 (
-    923,  -- id
+    415125,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Fluxus: NFT & Gaming Alliance',  -- title
     'As the ecosystem of dApps, tokens, and NFTs continue to grow, there is going to be a need for groups to be built to provide decentralized structure to the ecosystem.',  -- summary
@@ -22368,7 +22368,7 @@ SFX: Rudi
 ,
 
 (
-    924,  -- id
+    415122,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Creating NFTs & Gaming Cross Chain!',  -- title
     'The current problem is that there aren''t any great methods or groups facilitating of interoperability of NFT ecosystems between the Cardano and other blockchains!',  -- summary
@@ -22433,7 +22433,7 @@ SFX: Rudi
 ,
 
 (
-    925,  -- id
+    415114,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'LAMO-DecentralizedEducationPlatform',  -- title
     'Learners often get bored when learning on existing platforms because of low motivation to complete or drop out/extend planned time. Content creators also face challenges to produce creative courses.',  -- summary
@@ -22454,7 +22454,7 @@ SFX: Rudi
 ,
 
 (
-    926,  -- id
+    415110,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NGO Impact Data Collection App',  -- title
     'Most NGOs do not know the impact of their work because data collection is expensive, onerous, and time-consuming. Similarly, the sector lacks transparency over the impact it has.',  -- summary
@@ -22475,7 +22475,7 @@ SFX: Rudi
 ,
 
 (
-    927,  -- id
+    415100,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Eco Friendly Online Apparel Store',  -- title
     'There is no online store where ADA can be used to purchase sustainable apparel and merchandise that depicts the native tokens, NFTs, Dapps and websites built on top of the Cardano blockchain.',  -- summary
@@ -22496,7 +22496,7 @@ SFX: Rudi
 ,
 
 (
-    928,  -- id
+    415094,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Pay&Rate Reputation System',  -- title
     'Reputation system is an essential component for e-marketplaces to facilitate business transactions and fostering honest behavior. Cardano lacks a decentralized reputation system for e-marketplaces.',  -- summary
@@ -22521,7 +22521,7 @@ I am also an intern from MLabs focusing on smart contract testing and auditing.'
 ,
 
 (
-    929,  -- id
+    415062,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Period Health app',  -- title
     'Quality data for studying health for People with Period (PWP) are missing and are much needed to support medical research, policy changes and while factoring in gender equality and specificity.',  -- summary
@@ -22542,7 +22542,7 @@ I am also an intern from MLabs focusing on smart contract testing and auditing.'
 ,
 
 (
-    930,  -- id
+    415053,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Onboard Tanzania Universities',  -- title
     'How to empower students to other opportunities prior to their educational impediments purpose of improving their soft skills after completion of their studies.',  -- summary
@@ -22563,7 +22563,7 @@ I am also an intern from MLabs focusing on smart contract testing and auditing.'
 ,
 
 (
-    931,  -- id
+    415035,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Support dRep Japan and Vietnam',  -- title
     'The dReps in the non-native English community like Japan and Vietnam have difficulty reading and understanding meeting documents, announcements, and communications from Catalyst, Cardano.',  -- summary
@@ -22584,7 +22584,7 @@ I am also an intern from MLabs focusing on smart contract testing and auditing.'
 ,
 
 (
-    932,  -- id
+    415017,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Gamers DID - Trust Built by Gaming',  -- title
     'Cheating is a big issue in gaming and negatively impacts the player''s experience. This problem will be exacerbated with the rise of play-to-earn as cheaters have more incentive now than ever.',  -- summary
@@ -22610,7 +22610,7 @@ ProofSpace has extensive full stack dev, product and ops experience. PRISM & Ind
 ,
 
 (
-    933,  -- id
+    415015,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Returning Trust To Global Donations',  -- title
     'Current methods used to ensure transparency of donor-NGO relationships are time consuming & easily infringed leading to mismanagement of funds & embezzlement without any stakeholder accountability.',  -- summary
@@ -22633,7 +22633,7 @@ We are passionate about finding solutions to critical problems in the crypto spa
 ,
 
 (
-    934,  -- id
+    415013,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PlayerMint: Web 3.0 Arcade',  -- title
     'Gamers don''t have an easy way to interact with crypto that is catered towards the games they are already playing. These same gamers also lack an easy way to montize their gameplay performance.',  -- summary
@@ -22659,7 +22659,7 @@ MLabs contributes to our development activity.', -- relevant experience
 ,
 
 (
-    935,  -- id
+    415012,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Smart Contract Library - Phase 1',  -- title
     'Cardano lacks an open source library of smart contracts that developers can use for rapid prototyping.',  -- summary
@@ -22680,7 +22680,7 @@ MLabs contributes to our development activity.', -- relevant experience
 ,
 
 (
-    936,  -- id
+    414985,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'dRep Education Book Club',  -- title
     'IOG has recommended some books for dReps to read. It’s hard to get motivated to read books, and often harder to fully comprehend on one’s own. We benefit from a facilitated way to learn the material.',  -- summary
@@ -22701,7 +22701,7 @@ MLabs contributes to our development activity.', -- relevant experience
 ,
 
 (
-    937,  -- id
+    414982,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'littlefish - Ikigai in Community',  -- title
     'Participants of digital communities lack visibility on each other. Individuals'' interests, skills, and wants are not visible to others. This slows down collaboration in decentralized work.',  -- summary
@@ -22722,7 +22722,7 @@ MLabs contributes to our development activity.', -- relevant experience
 ,
 
 (
-    938,  -- id
+    414972,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Reduce NFT scam risks at Cardano',  -- title
     'Creators can''t keep up with unfair players who exploit ideas and art to scam money from NFT communities. As a result, money is flowing away from creators, communities, and the ecosystem as a whole.',  -- summary
@@ -22757,7 +22757,7 @@ https://checknft.io/', -- relevant experience
 ,
 
 (
-    939,  -- id
+    414969,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'dRep tool for non-English speakers',  -- title
     'The busy dReps in non-English communities don''t have enough time and language skills to select and vote on the right proposals. This affects the efficiency of voting delegation.',  -- summary
@@ -22778,7 +22778,7 @@ https://checknft.io/', -- relevant experience
 ,
 
 (
-    940,  -- id
+    414957,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Ethereum''s NFT Gateway to Cardano!',  -- title
     'The current problem is that there aren''t any great methods or groups facilitating of interoperability of NFT ecosystems between the Cardano and Ethereum blockchains!',  -- summary
@@ -22851,7 +22851,7 @@ SFX: Rudi
 ,
 
 (
-    941,  -- id
+    414953,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Daedalus Turbo - 10x Quicker Sync',  -- title
     'Daedalus, the decentralized Cardano wallet, is painfully slow, taking a whole day to sync initially and hours to resync when used only occasionally - an unfavorable impression of Cardano for new users',  -- summary
@@ -22872,7 +22872,7 @@ SFX: Rudi
 ,
 
 (
-    942,  -- id
+    414945,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'METAIN: Asset backed NFTs/New trend',  -- title
     'Real Estate investment using crypto is largely unaffordable and unregulated. Asset-backed NFT can solve the problem but it requires a lot of work and trustworthy parties to implement. Case study',  -- summary
@@ -22893,7 +22893,7 @@ SFX: Rudi
 ,
 
 (
-    943,  -- id
+    414939,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Growing The African Tertiary Sector',  -- title
     'The Cardano ecosystem and Project Catalyst are gradually evolving in Africa. However, the adoption rate in the African tertiary sector is very minimal and thus needs to be uplifted, but how?',  -- summary
@@ -22916,7 +22916,7 @@ SFX: Rudi
 ,
 
 (
-    944,  -- id
+    414918,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Dragon Warriors: Metaverse TCG',  -- title
     'Dragon Warrior is a metaverse project that combines deck-building roguelike, TCG, and Blockchain. It''s primarily about survival, collecting cards, and building a powerful deck to wipe out foes.',  -- summary
@@ -22937,7 +22937,7 @@ SFX: Rudi
 ,
 
 (
-    945,  -- id
+    414907,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'd-Cargo: Decentralized Cargo',  -- title
     'Trucks in Cameroon are most often loaded for only one leg of their round trip journey. They exist no platform to connect them to potential customers. This is economically inefficient.',  -- summary
@@ -22964,7 +22964,7 @@ SFX: Rudi
 ,
 
 (
-    946,  -- id
+    414903,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MediKamRecord: DoctaApp',  -- title
     'Medical record data management in Cameroon is broken, centralized, and exploitative. It is often paper based making it subject to damages, hardly distributable and restrained access.',  -- summary
@@ -22985,7 +22985,7 @@ SFX: Rudi
 ,
 
 (
-    947,  -- id
+    414899,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Vietnamese Haskell Course',  -- title
     'Haskell is the base programing language of Cardano''s Smart Contracts. A lot of developers are very interested in building projects on Cardano but there are not any Haskell courses in Vietnamese',  -- summary
@@ -23009,7 +23009,7 @@ SFX: Rudi
 ,
 
 (
-    948,  -- id
+    414898,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Haskell Book Vietnamese Translation',  -- title
     'Cardano''s Smart Contract is built on Haskell. But there is no book or document about Haskell for developers in Vietnamese. It is a big barrier for developers in Vietnam to build Dapps on Cardano',  -- summary
@@ -23034,7 +23034,7 @@ SFX: Rudi
 ,
 
 (
-    949,  -- id
+    414896,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Haskell Course For Developers',  -- title
     'There are many developers who really want to write smart contracts and build projects on Cardano. But Haskell is a big barrier for developers from comparative programming languages.',  -- summary
@@ -23058,7 +23058,7 @@ SFX: Rudi
 ,
 
 (
-    950,  -- id
+    414894,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'KodiaCoin: Mbongo=>Nzimbu paradigm',  -- title
     'Most tokens use production and distribution models based on the scarcity paradigm typical of the Western context. Deep ancestral Africa has an alternative!',  -- summary
@@ -23083,7 +23083,7 @@ SFX: Rudi
 ,
 
 (
-    951,  -- id
+    414892,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Katiopa NFArt - NFCraft Marketplace',  -- title
     'Africa is late in leveraging opportunities offered by NFTs to implement strategies to address some of its deepest unresolved issues facing the continent in 3 main areas
@@ -23112,7 +23112,7 @@ SFX: Rudi
 ,
 
 (
-    952,  -- id
+    414890,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFBooks: a Pan-African NFT library',  -- title
     'In Africa, access to books and ebooks is severely limited. Numerous factors are at play against mass adoption of a reading culture which negatively affect all involved parties (authors, readers, etc).',  -- summary
@@ -23138,7 +23138,7 @@ SFX: Rudi
 ,
 
 (
-    953,  -- id
+    414884,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Nature conscious transactions ❤﻿',  -- title
     'Currently our consciousness is dominated by economy. 🌍',  -- summary
@@ -23161,7 +23161,7 @@ Read more here: https://www.linkedin.com/in/hennom/', -- relevant experience
 ,
 
 (
-    954,  -- id
+    414876,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Startverse: Marketplace Portal',  -- title
     'Everyone has dreams of success and happiness, but they don''t have money to build their dreams. STARTVERSE is a metaverse, where everyone can build their real startups with minimum spending.',  -- summary
@@ -23182,7 +23182,7 @@ Read more here: https://www.linkedin.com/in/hennom/', -- relevant experience
 ,
 
 (
-    955,  -- id
+    414874,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'Tre Viet - VN support channel',  -- title
     'Cardano Vietnam community needs a trust worthy place to discuss, update, look up and analyze information about all projects on the Cardano, and provide technical support in time.',  -- summary
@@ -23205,7 +23205,7 @@ Telegram channel has been operating for 5+ months, a total of nearly 600 users, 
 ,
 
 (
-    956,  -- id
+    414872,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Startverse-Metaverse for Startups',  -- title
     'Everyone has dreams of success and happiness, but they don''t have money to build their dreams. STARTVERSE is a metaverse, where everyone can build their real startups with minimum spending.',  -- summary
@@ -23226,7 +23226,7 @@ Telegram channel has been operating for 5+ months, a total of nearly 600 users, 
 ,
 
 (
-    957,  -- id
+    414825,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Katiopa women: The pioneers of DeFi',  -- title
     'Women are the designers & implementers of local community-run DeFi solutions in the African context. There is a need to provide them with tools to translate all that knowledge onto the Blockchain.',  -- summary
@@ -23248,7 +23248,7 @@ Telegram channel has been operating for 5+ months, a total of nearly 600 users, 
 ,
 
 (
-    958,  -- id
+    414813,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Haskell-Plutus-Atala => French Devs',  -- title
     'Plutus uses advanced notions of Haskell which added to the lack of material in French, makes it really difficult for the French Dev community to join the Cardano ecosystem hence learn Haskell-Plutus.',  -- summary
@@ -23273,7 +23273,7 @@ Telegram channel has been operating for 5+ months, a total of nearly 600 users, 
 ,
 
 (
-    959,  -- id
+    414809,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ALGAE RHYTHM to save the biospheres',  -- title
     'The accumulation of CO2 emission doesn''t allow the environment to produce O2 naturally as before, as a result biospheres are collapsing. Healing and feeding needs to happen simultaneously.',  -- summary
@@ -23311,7 +23311,7 @@ LINKTREE', -- relevant experience
 ,
 
 (
-    960,  -- id
+    414806,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'SSI from ancestral African Lenses',  -- title
     'The notion of Identity is deeply ingrained in the initiatory journey of ancestral Africa communities. No solutions out there come close to incorporating the African perspective on this notion.',  -- summary
@@ -23338,7 +23338,7 @@ LINKTREE', -- relevant experience
 ,
 
 (
-    961,  -- id
+    414802,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Mobile Money Bridge & DEX',  -- title
     'Ada adoption in Cameroon is significantly hindered by the fact that there is no exchange currently supporting easy transfer to local currency or mobile money except for scamming ones.',  -- summary
@@ -23359,7 +23359,7 @@ LINKTREE', -- relevant experience
 ,
 
 (
-    962,  -- id
+    414795,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Valuation Public API',  -- title
     'NFT Valuation is very complex with risky outcomes, it requires multiple data points which are complicated to gather without having an already set database in place',  -- summary
@@ -23380,7 +23380,7 @@ LINKTREE', -- relevant experience
 ,
 
 (
-    963,  -- id
+    414760,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'TREASURE CHAIN - An NFT Art Network',  -- title
     'Cardano needs games that are timeless, adaptable, customizable, and collaborative. Most games now have limited game play and have a specific art style that does not appeal to a wide audience.',  -- summary
@@ -23401,7 +23401,7 @@ LINKTREE', -- relevant experience
 ,
 
 (
-    964,  -- id
+    414729,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'littlefish - Shaping Action',  -- title
     'In decentralized work, visibility to contributions is low, information doesn’t spread effectively. Action doesn’t align with common goals.',  -- summary
@@ -23422,7 +23422,7 @@ LINKTREE', -- relevant experience
 ,
 
 (
-    965,  -- id
+    414720,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Developer Portal - Built on Cardano',  -- title
     'There is no comprehensive library of the tools and educational resources available for developers looking to join Cardano.',  -- summary
@@ -23447,7 +23447,7 @@ Gabriel - 5 years developing and engineering experience.', -- relevant experienc
 ,
 
 (
-    966,  -- id
+    414716,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'University Design Team',  -- title
     'Queen''s University, a prominent engineering school in Canada known for its plethora of student-run design teams, does not have a blockchain based design team and are missing this opportunity.',  -- summary
@@ -23480,7 +23480,7 @@ Three years of University working on other design teams.', -- relevant experienc
 ,
 
 (
-    967,  -- id
+    414712,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'MAYZ: Cardano Cross-Chain Index',  -- title
     'The vast majority of crypto users don''t have direct exposure to Cardano. Managing a well-diversified portfolio in a different ecosystem can be both time consuming and risky.',  -- summary
@@ -23511,7 +23511,7 @@ Creators of "Bitcoin Para Todos" Spanish Podcast.', -- relevant experience
 ,
 
 (
-    968,  -- id
+    414705,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'CLAP for impactful research',  -- title
     'Social enterprise related projects tend to struggle when it comes to raising funding for important issues and this can affect their well-being as well as subsequent motivation to continue.',  -- summary
@@ -23532,7 +23532,7 @@ Creators of "Bitcoin Para Todos" Spanish Podcast.', -- relevant experience
 ,
 
 (
-    969,  -- id
+    414699,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cardano Africa SmartFarming DApp',  -- title
     'Lack of efficiency in coffee farming. Africa''s potential Coffee production is not being met. We have a bounty of raw materials but production output is low. Miscommunication farmer owners/managers',  -- summary
@@ -23553,7 +23553,7 @@ Creators of "Bitcoin Para Todos" Spanish Podcast.', -- relevant experience
 ,
 
 (
-    970,  -- id
+    414687,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Digital Assisted Midwifery',  -- title
     'Midwives could worldwide prevent 80% of deaths related to pregnancy.
@@ -23580,7 +23580,7 @@ Loving parents.', -- relevant experience
 ,
 
 (
-    971,  -- id
+    414684,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MineFreeUkraine',  -- title
     '300,000 sq. km of Ukrainian land are contaminated by mines and explosives terrorising population, impeding socio-economic recovery and threatening global food security',  -- summary
@@ -23607,7 +23607,7 @@ Endorsement of Ukrainian authorities and major international demining action org
 ,
 
 (
-    972,  -- id
+    414661,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Ghana Youth Onboarding Outreach 2',  -- title
     'Most of the productive youth in Ghana are not aware of blockchain technology and its opportunities. Cardano project catalyst education can bring adoption and scale up through their wild ideas.',  -- summary
@@ -23628,7 +23628,7 @@ Endorsement of Ukrainian authorities and major international demining action org
 ,
 
 (
-    973,  -- id
+    414647,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Metera: Impactful Token Portfolios',  -- title
     'Earth''s climate faces dramatic deterioration in the absence of collective intervention. Yet, impact initiatives face many challenges and disingenuous projects "greenwash" for marketing purposes.',  -- summary
@@ -23649,7 +23649,7 @@ Endorsement of Ukrainian authorities and major international demining action org
 ,
 
 (
-    974,  -- id
+    414624,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Employment Credentials on PRISM',  -- title
     'Thousands of Ethiopian businesses hire wrong employees daily because of un-transparent and unverifiable work history and qualifications',  -- summary
@@ -23675,7 +23675,7 @@ ProofSpace is experienced in PRISM which is integrated into their ID platform', 
 ,
 
 (
-    975,  -- id
+    414614,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Creatives Migrating Campaign',  -- title
     'Many creatives, galleries and museums haven''t had the chance to explore the Cardano blockchain. There is no unified marketing effort to try to onboard them, and messaging hasn''t scaled yet.',  -- summary
@@ -23706,7 +23706,7 @@ Made important strategic partnerships with key advertising agencies.', -- releva
 ,
 
 (
-    976,  -- id
+    414552,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Token Gating on Cardano with CNFTs',  -- title
     'Cardano doesn''t have a framework that makes it easy to implement Token Gating to provide access control and personalized user experiences to visitors to websites and DApps',  -- summary
@@ -23727,7 +23727,7 @@ Made important strategic partnerships with key advertising agencies.', -- releva
 ,
 
 (
-    977,  -- id
+    414515,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Students for Blockchain',  -- title
     'There is still not enough students aware and knowledgeable about blockchain technology',  -- summary
@@ -23760,7 +23760,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    978,  -- id
+    414506,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'International students for Cardano',  -- title
     'Many Business students have a lot of ideas but they lack tech knowledge how to develop them',  -- summary
@@ -23793,7 +23793,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    979,  -- id
+    414491,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'DAO DAO! (sing song, like: tä-ˈdä!)',  -- title
     'Ensure you say what is wrong. --> DAO: 1) Decentralized 2) Autonomous 3) Organization has no TRUE definition: <3...Has anyone used community created DAO tools to make a DAO of One person on Cardano?',  -- summary
@@ -23814,7 +23814,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    980,  -- id
+    414488,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Prediction markets on Cardano',  -- title
     'Prediction markets let people buy/sell shares in the outcomes of future events,with the share price indicating the odds & acting as an important signal.We don''t have any prediction markets on Cardano.',  -- summary
@@ -23835,7 +23835,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    981,  -- id
+    414477,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADA to Mobile Money App',  -- title
     'Many Africans refuse to receive ADA cryptocurrency because of the difficulties they face in exchanging ADA into a locally used currency.',  -- summary
@@ -23856,7 +23856,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    982,  -- id
+    414473,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Info/ Mentorship Centre',  -- title
     'Cardano/Catalyst related materials are not localized in the African context, also access are not readily available to majority. The teaming unemployed youth continue to add to social vices.',  -- summary
@@ -23877,7 +23877,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    983,  -- id
+    414468,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'The Africa Catalyst School',  -- title
     'Africa is not actively engaged in Cardano programs/activities of the Catalyst School. Africa oriented platform will drive up participation.',  -- summary
@@ -23898,7 +23898,7 @@ www.sustainableADA.com', -- relevant experience
 ,
 
 (
-    984,  -- id
+    414465,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Accounting Reporting France',  -- title
     'As a full-time Cardano/Catalyst, facing a major challenge in declaring income and managing the reporting process with multi-project engagement.',  -- summary
@@ -23921,7 +23921,7 @@ Also has good knowledge of accounting and legal procedures.', -- relevant experi
 ,
 
 (
-    985,  -- id
+    414464,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Catalyst Africa Town Hall (CATH)',  -- title
     'Participating in Catalyst is difficult and quite challenging when you live in the Africa where English is not the main language for most descents.',  -- summary
@@ -23942,7 +23942,7 @@ Also has good knowledge of accounting and legal procedures.', -- relevant experi
 ,
 
 (
-    986,  -- id
+    414462,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Community Consensus Certifications',  -- title
     'Currently it''s hard to understand a developer''s Cardano skills without being a skilled developer yourself. We need a certification framework to lower barriers for businesses to hire teams.',  -- summary
@@ -23968,7 +23968,7 @@ In the Cardano space I have run a number of successful projects and collaborate 
 ,
 
 (
-    987,  -- id
+    414457,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Forest - blocktree.asia',  -- title
     'In Vietnam, most people know about crypto, they have limited understanding about other applications of blockchain ie non-fungible token.',  -- summary
@@ -23989,7 +23989,7 @@ In the Cardano space I have run a number of successful projects and collaborate 
 ,
 
 (
-    988,  -- id
+    414441,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Impact lending for the unbanked',  -- title
     'Financial services for 1.7 billion adults who are unbanked are limited. Microfinance’s interest rate (global average: 35%) is much higher than that of bank credit (10.31%). 日本語',  -- summary
@@ -24010,7 +24010,7 @@ In the Cardano space I have run a number of successful projects and collaborate 
 ,
 
 (
-    989,  -- id
+    414440,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Project Catalyst... for Musicians',  -- title
     'Musicians need money to make music; the most talented sign the rights to their art away to major labels. Large SPOs are a centralizing force; smaller ones struggle to win delegators.',  -- summary
@@ -24031,7 +24031,7 @@ In the Cardano space I have run a number of successful projects and collaborate 
 ,
 
 (
-    990,  -- id
+    414428,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano NO MORE Plastic Straws |C4O',  -- title
     'Too many animals, marine life are victims and hurt by plastic straws, plastic waste entering the ocean, the environment is affected. Does Cardano know that? How does Cardano act to solve this problem?',  -- summary
@@ -24052,7 +24052,7 @@ In the Cardano space I have run a number of successful projects and collaborate 
 ,
 
 (
-    991,  -- id
+    414427,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Legal & Accounting Marketplace',  -- title
     'It''s hard to know what we can / cannot do legally speaking with projects. Its hard to find domain expert legal or accounting professionals to assist with this process, which create a barrier to entry.',  -- summary
@@ -24078,7 +24078,7 @@ In the Cardano space I have run a number of successful projects and collaborate 
 ,
 
 (
-    992,  -- id
+    414416,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DCOne Crypto',  -- title
     'The community needs a place to update project information in the most official and convenient way about projects on Cardano',  -- summary
@@ -24099,7 +24099,7 @@ In the Cardano space I have run a number of successful projects and collaborate 
 ,
 
 (
-    993,  -- id
+    414407,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     '💧 Democracy Means Everyone is dRep',  -- title
     'https://docs.google.com/forms/d/e/1FAIpQLSfPSb\_cDlIxN6cnnbOrJN\_oxDBmxB3kENbsE\_\_pmMAw8yJk0w/viewform',  -- summary
@@ -24120,7 +24120,7 @@ In the Cardano space I have run a number of successful projects and collaborate 
 ,
 
 (
-    994,  -- id
+    414405,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Stonerz Club + Integrations',  -- title
     'The Cardano Stonerz Club needs to scale up our operations and product integrations within Cardano, we currently lack organizational structure, and are currently operating on centralized platforms.',  -- summary
@@ -24151,7 +24151,7 @@ Members of the club are representing Worldwide.', -- relevant experience
 ,
 
 (
-    995,  -- id
+    414400,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Nodes as a Service',  -- title
     'Non-technical and/or non-committal users cannot easily engage at the node operator level without significant upfront time and cost.',  -- summary
@@ -24172,7 +24172,7 @@ Members of the club are representing Worldwide.', -- relevant experience
 ,
 
 (
-    996,  -- id
+    414393,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'DREP Marketing Blitz - Decentralize',  -- title
     'Many Cardano users are unaware of project catalyst, how to be an informed voter, and the dRep role specifically. There is not enough Marketing. Lets fix it',  -- summary
@@ -24193,7 +24193,7 @@ Members of the club are representing Worldwide.', -- relevant experience
 ,
 
 (
-    997,  -- id
+    414389,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'CARDANO FRENCH COMMUNITY IN DRC',  -- title
     'Projects developed in French-speaking African countries lack information on blockchain technology in general.',  -- summary
@@ -24214,7 +24214,7 @@ Members of the club are representing Worldwide.', -- relevant experience
 ,
 
 (
-    998,  -- id
+    414384,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Eth Rehab - Recovery with Cardano!',  -- title
     'Ethereum users may not understand they need to be rehabilitated. Eth Rehab is needed to serve as an educational resource for a smooth transition to Cardano from eth, because eth users deserve better.',  -- summary
@@ -24235,7 +24235,7 @@ Members of the club are representing Worldwide.', -- relevant experience
 ,
 
 (
-    999,  -- id
+    414381,  -- id
     (SELECT row_id FROM objective WHERE id=11 AND event=9), -- objective
     'A Verify and Pay System',  -- title
     'Blockfrost.IO does not experience adoption because there is no way for one to pay out many people for authentic work through blockchain based on x, y and z adjustable factors.',  -- summary
@@ -24275,7 +24275,7 @@ B.A. Organizational Leadership, Texas A & M
 ,
 
 (
-    1000,  -- id
+    414379,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADIUVAT: Find your place',  -- title
     'The typical user has become used to a sedentary lifestyle. His debt has grown and due to this as well as inflation and scarcity of resources he is stuck at home and unable to go anywhere.',  -- summary
@@ -24296,7 +24296,7 @@ B.A. Organizational Leadership, Texas A & M
 ,
 
 (
-    1001,  -- id
+    414374,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Olympics–Shots promotion platform',  -- title
     'Platform for promotion of locations, brands, specialties, incl. food, craft products, arts, history related to the scene where high resonance events take place. Video, picture, comic art used as media',  -- summary
@@ -24317,7 +24317,7 @@ B.A. Organizational Leadership, Texas A & M
 ,
 
 (
-    1002,  -- id
+    414369,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'TIP For Collaboration',  -- title
     'An explosion of protocols, DApps, DEXs, NFTs and other artifacts of blockchain has led to an expanded attack surface for threat actors seeking to capitalize on victims in these ecosystems.',  -- summary
@@ -24338,7 +24338,7 @@ B.A. Organizational Leadership, Texas A & M
 ,
 
 (
-    1003,  -- id
+    414367,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Recognize Impact through DIDs',  -- title
     'There is no impact score system that visualizes and attributes social & environmental impact to decentralized identities.日本語',  -- summary
@@ -24359,7 +24359,7 @@ B.A. Organizational Leadership, Texas A & M
 ,
 
 (
-    1004,  -- id
+    414357,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Search Engine on Cardano',  -- title
     'Currently, Cardano applications are search-able based on token policy ID and name and do not search based on metadata characteristics specific to NFTs.',  -- summary
@@ -24385,7 +24385,7 @@ B.A. Organizational Leadership, Texas A & M
 ,
 
 (
-    1005,  -- id
+    414340,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Asset Management ⛓💎',  -- title
     'Many conventional banking services are not on the Blockchain, so I want to set up an Asset management service.',  -- summary
@@ -24410,7 +24410,7 @@ In this context I also took part in the Plutus Pioneers.', -- relevant experienc
 ,
 
 (
-    1006,  -- id
+    414322,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Digital Voter ID',  -- title
     'Citizens of the world face wide scale voter fraud on a level we have never seen before. This issue stems from the fact that people are forced to trust, instead of verify, when sending in a ballot.',  -- summary
@@ -24431,7 +24431,7 @@ In this context I also took part in the Plutus Pioneers.', -- relevant experienc
 ,
 
 (
-    1007,  -- id
+    414321,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Rewards for Community Contributors',  -- title
     'There are a lot of people who are producing Cardano content in Vietnam. Why not merge ideas to have an official page contributed by the community',  -- summary
@@ -24457,7 +24457,7 @@ In this context I also took part in the Plutus Pioneers.', -- relevant experienc
 ,
 
 (
-    1008,  -- id
+    414289,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'DecentralizeMusic.com',  -- title
     'There is no solution for addressing all aspects of music commerce. From royalties & live streaming to minting music NFTs on the Cardano blockchain. Artists also need a guide into web3 adoption.',  -- summary
@@ -24478,7 +24478,7 @@ In this context I also took part in the Plutus Pioneers.', -- relevant experienc
 ,
 
 (
-    1009,  -- id
+    414286,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Build-an-NFT Functionality!',  -- title
     'Currently, there are limited ways and interactions with regards to minting and releasing NFT projects. Right now, the options are limited to NFT Marketplace or grab-bag models of distribution.',  -- summary
@@ -24509,7 +24509,7 @@ Marketing: Conward
 ,
 
 (
-    1010,  -- id
+    414282,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Cardano for Africa',  -- title
     'Africa is a developing continent where ambitious students with innovative business ideas yet with funds shortage are yearning to dive in the blockchain domain yet struggling to find opportunities.',  -- summary
@@ -24530,7 +24530,7 @@ Marketing: Conward
 ,
 
 (
-    1011,  -- id
+    414277,  -- id
     (SELECT row_id FROM objective WHERE id=9 AND event=9), -- objective
     'Multilingual dRep Resources',  -- title
     'There are no enough dRep resources which serve as a starting point for new members and existing members in multiple languages. These are lacking resources to provide active engagement contribution.',  -- summary
@@ -24551,7 +24551,7 @@ Marketing: Conward
 ,
 
 (
-    1012,  -- id
+    414276,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Cardano Tunisia',  -- title
     'Tunisia is a developing country where ambitious students with innovative business ideas yet with funds shortage are yearning to dive in the blockchain domain yet struggling to find opportunities.',  -- summary
@@ -24572,7 +24572,7 @@ Marketing: Conward
 ,
 
 (
-    1013,  -- id
+    414271,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Cardano for MENA',  -- title
     'The MENA region is under-represented in the domain of technology due to inaccessibility of information in arabic and the fund shortage which hinders students from developing innovative business ideas',  -- summary
@@ -24593,7 +24593,7 @@ Marketing: Conward
 ,
 
 (
-    1014,  -- id
+    414265,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Pure-Vue: Vue to PureScript bridge',  -- title
     'The entry barrier to build quality dapps on Cardano is high, one of the reasons are the missing of familiar frameworks for majority of the web-developers.',  -- summary
@@ -24614,7 +24614,7 @@ Marketing: Conward
 ,
 
 (
-    1015,  -- id
+    414263,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Minimizing Risk in the NFT Market!',  -- title
     'With the NFT market growing, scams such as rug-pulls are becoming increasingly common. If we want to grow the Cardano NFT market and bring the public into this space, these risks need to be mitigated.',  -- summary
@@ -24687,7 +24687,7 @@ SFX: Rudi
 ,
 
 (
-    1016,  -- id
+    414261,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Clarity DAO Incubator',  -- title
     'Creating and managing a DAO requires a wide variety of expertise ranging from distributed team management, tokenomics design, marketing, and more. This expertise not easily accessible to new DAOs.',  -- summary
@@ -24708,7 +24708,7 @@ SFX: Rudi
 ,
 
 (
-    1017,  -- id
+    414258,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Enable any webapps to use PRISM',  -- title
     'There is a lot of interest in Atala PRISM becoming mainstream, but there is no simple way to use PRISM on the web
@@ -24734,7 +24734,7 @@ A lot of work is required for any web app to integrate PRISM, discouraging most 
 ,
 
 (
-    1018,  -- id
+    414257,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Clarity DAO Infrastructure',  -- title
     'There is not an existing solution on Cardano that enables non technical DAO creation, DAO proposal/treasury management, and DAO governance participation.',  -- summary
@@ -24755,7 +24755,7 @@ A lot of work is required for any web app to integrate PRISM, discouraging most 
 ,
 
 (
-    1019,  -- id
+    414255,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PeakChain Uber on Cardano',  -- title
     'Ridesharing apps, such as Uber, are exploding in popularity worldwide, being used by millions of people. Still, the data sent from all apps is still controlled by centralized institutes.',  -- summary
@@ -24779,7 +24779,7 @@ A lot of work is required for any web app to integrate PRISM, discouraging most 
 ,
 
 (
-    1020,  -- id
+    414251,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'token system for the world of work',  -- title
     'Worldwide, there is still no ecosystem that creates incentives, creates conditions in which the world of work is valued and promoted.',  -- summary
@@ -24800,7 +24800,7 @@ A lot of work is required for any web app to integrate PRISM, discouraging most 
 ,
 
 (
-    1021,  -- id
+    414249,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PeakChain Cardano Car Wallet Device',  -- title
     'At the moment, no hardware devices allow cars to securely communicate with the Cardano blockchain, transmit sensitive data, as well as manage a wallet.',  -- summary
@@ -24824,7 +24824,7 @@ A lot of work is required for any web app to integrate PRISM, discouraging most 
 ,
 
 (
-    1022,  -- id
+    414246,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Job board cardajobs',  -- title
     'There are many open positions in the world that cannot be filled. In addition, many people who are unemployed are looking for the right job.',  -- summary
@@ -24847,7 +24847,7 @@ A lot of work is required for any web app to integrate PRISM, discouraging most 
 ,
 
 (
-    1023,  -- id
+    414243,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Mainline Evangelist dApp',  -- title
     'Cardano projects have a hard time building, managing, and driving their community to get sustained, positive engagement on social that builds their brand.',  -- summary
@@ -24868,7 +24868,7 @@ A lot of work is required for any web app to integrate PRISM, discouraging most 
 ,
 
 (
-    1024,  -- id
+    414238,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Bringing MMORPG Gaming to Cardano!',  -- title
     'Currently, there are no large scale blockchain games that target non-crypto users within the MMORPG genre. This is a large market of digital natives that are not being brought into the Cardano space.',  -- summary
@@ -24928,7 +24928,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    1025,  -- id
+    414237,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'legal implementation in COLOMBIA',  -- title
     'The legal difficulties that companies related to cryptocurrencies have in Colombia',  -- summary
@@ -24949,7 +24949,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    1026,  -- id
+    414234,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Submit API in Golang',  -- title
     'Cardano currently falls short on attracting developers from the Golang community for writing off-chain code due to its reputation as being Haskell only',  -- summary
@@ -24970,7 +24970,7 @@ Strategic Advisor: Marcin
 ,
 
 (
-    1027,  -- id
+    414232,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ProofSpace x Argus - IDs 4 NFTs',  -- title
     'There''s no scalable, high assurance way to verify whether NFT projects are legitimate. And as a result, NFT market participants and artists suffer losses from NFT scams and plagiarized NFTs.',  -- summary
@@ -24996,7 +24996,7 @@ ProofSpace has extensive full stack dev, product and ops experience. PRISM & Ind
 ,
 
 (
-    1028,  -- id
+    414229,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Sub-Sahara Africa (Cardano Mission)',  -- title
     'The Cardano mission continues as initiatives in Africa to gain momentum, however, policy makers and market shareholders have not yet identify the potentials of Cardano Blockchain Technology.',  -- summary
@@ -25017,7 +25017,7 @@ ProofSpace has extensive full stack dev, product and ops experience. PRISM & Ind
 ,
 
 (
-    1029,  -- id
+    414227,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'OMIMIMO - The Pure Water Game',  -- title
     'We all need pure water to survive and the OMIMIMO game protects nature and pure water while gaining knowledge and having fun through NFT''s. To protect the wildlife biome and create awareness on earth.',  -- summary
@@ -25053,7 +25053,7 @@ ProofSpace has extensive full stack dev, product and ops experience. PRISM & Ind
 ,
 
 (
-    1030,  -- id
+    414220,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Erdős (An AirBnB Competitor)',  -- title
     'The online marketplace for lodging is dominated by a handful of competitors using fiat money for transactions. This results in high rental rates for both hosts and customers.',  -- summary
@@ -25074,7 +25074,7 @@ ProofSpace has extensive full stack dev, product and ops experience. PRISM & Ind
 ,
 
 (
-    1031,  -- id
+    414216,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PeakChain Fleet Management Platform',  -- title
     'Connected vehicles require enhanced layers of security and data privacy. Current fleet management solutions are centralized platforms.',  -- summary
@@ -25098,7 +25098,7 @@ ProofSpace has extensive full stack dev, product and ops experience. PRISM & Ind
 ,
 
 (
-    1032,  -- id
+    414213,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Global Collaboration Platform',  -- title
     'Our Catalyst community lacks the means to tap the enormous potential skills and experience in our global multilingual community. This limits our capacity for collaboration in solving our problems.',  -- summary
@@ -25127,7 +25127,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1033,  -- id
+    414210,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Cardano Peer Education',  -- title
     'Many Business and Engineering students got brilliant ideas to impact their society but there is no funding opportunities for these students, therefore Project Catalyst would be ideal.',  -- summary
@@ -25148,7 +25148,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1034,  -- id
+    414203,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ANIMETA | Anime Museum Metaverse',  -- title
     'The demand for digitizing an Anime world is huge to NFT, Anime resources of artists are being shared without benefit by centralized platforms. Anime assets and ownership of artists are not guaranteed.',  -- summary
@@ -25169,7 +25169,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1035,  -- id
+    414201,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Advanced Cardano NFT Search Engine',  -- title
     'Cardano lacks any advanced, ecosystem-wide, NFT search and discovery tools. This makes NFT markets inefficient, limiting adoption and reducing market liquidity.',  -- summary
@@ -25190,7 +25190,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1036,  -- id
+    414199,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'PeakChain Car-Sharing Platform',  -- title
     'Connected vehicles require enhanced layers of security and data privacy. Current car-sharing solutions are centralized platforms.',  -- summary
@@ -25214,7 +25214,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1037,  -- id
+    414195,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Ouroboros network (NtC) in Golang',  -- title
     'The Cardano ecosystem lacks a robust Golang library for communicating with a Cardano node, excluding a large pool of developers.',  -- summary
@@ -25235,7 +25235,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1038,  -- id
+    414185,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano Sharks',  -- title
     'There are few real world utilities that can be directly impacted by the blockchain. There are projects online, however when it comes to businesses that operate in the physical world we are lacking.',  -- summary
@@ -25256,7 +25256,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1039,  -- id
+    414170,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cardano/Ethereum NFT Ecosystems Map',  -- title
     'We lack visual tools and research on the relationships between the Ethereum and Cardano NFT Ecosystems. What''s similar between them? Which projects are most innovative? Where do we go from here?',  -- summary
@@ -25277,7 +25277,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1040,  -- id
+    414167,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Micro Loan DAO for Sustainable SMEs',  -- title
     'Small & Medium Sized Enterprises often lack the financial capital, technology, and knowledge to implement sustainability initiatives, which is a vital issue, as they make up 92% of businesses globally',  -- summary
@@ -25302,7 +25302,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1041,  -- id
+    414165,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'Cross-Chain Fake NFT Protection',  -- title
     'Ethereum''s NFT ecosystem is struggling from a lack of trust due to plagiarism, counterfeits and scams, and Cardano''s NFT ecosystem is starting to experience more of these same problems.',  -- summary
@@ -25323,7 +25323,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1042,  -- id
+    414144,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     '(plu-ts) full Typescript off-chain',  -- title
     'at the moment few options are available to write off-chain code, all with important drawbacks, and none supporting ts (or js) directly, which in many cases higher the learning curve.',  -- summary
@@ -25347,7 +25347,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1043,  -- id
+    414140,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ADABET.iO | Cardano Betting DApp',  -- title
     'Currently, most of the profits belong to the bookmaker and there is a lack of transparency, the rights, assets of the bettors are violated by the unreliable centralized traditional betting platforms.',  -- summary
@@ -25368,7 +25368,7 @@ Michael Avis: 15yrs Director of HYPE Innovation Business Development', -- releva
 ,
 
 (
-    1044,  -- id
+    414139,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'StablePay - replace StableCoins',  -- title
     'Most contractual payments stay denominated in fiat currencies. We need a payment solution denominating payments in fiat, but without financial risks of StableCoins.',  -- summary
@@ -25394,7 +25394,7 @@ We feel competent in the area of decreasing risks for such a payment solution.',
 ,
 
 (
-    1045,  -- id
+    414127,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Impact Staking: STaaS for Good',  -- title
     'How can Cardano help businesses meet social and environmental impact goals?',  -- summary
@@ -25420,7 +25420,7 @@ Business Development Lead - Attorney; marketing and business strategies consulta
 ,
 
 (
-    1046,  -- id
+    414126,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Outreach, Education & Collaboration',  -- title
     'A lack of education regarding Cardano''s potential is hindering the development of social and ecologically sustainable use cases in Vienna',  -- summary
@@ -25449,7 +25449,7 @@ Urban Sustainability Lecturer at the University of Vienna
 ,
 
 (
-    1047,  -- id
+    414118,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'ProofOfHumanity KYC on Atala Prism',  -- title
     'Atala Prism—coupled with Roots ID—could benefit from a number of proof of humanity KYC solutions that add to a self-sovereign identity and enable true democracy (one person / one vote) within Cardano',  -- summary
@@ -25480,7 +25480,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1048,  -- id
+    414117,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'JUS - More DIDs = More DAOs',  -- title
     'For DAO''s to scale and have a global impact, decentralized ID solutions need mainstream adoption.',  -- summary
@@ -25503,7 +25503,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1049,  -- id
+    414114,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'DAO Turn Key Deployment',  -- title
     'Lots of projects are currently building on Cardano but have to fund their own UI development, service & tool integration and more',  -- summary
@@ -25524,7 +25524,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1050,  -- id
+    414111,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Plutus Video Sub for Vietnam Devs',  -- title
     'The scarcity of documentation on the Plutus programming language in Vietnamese makes it difficult for talented developers in Vietnam to access Cardano''s resources.',  -- summary
@@ -25545,7 +25545,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1051,  -- id
+    414109,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'TV Series ft. Cardano: awo.AI',  -- title
     'There''s a lack of compelling and entertaining media projects to educate African audiences about Web3, Cardano and Project Catalyst.',  -- summary
@@ -25566,7 +25566,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1052,  -- id
+    414104,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardafolio.com your yield portfolio',  -- title
     'Right now we have several DEX and dApps running on Cardano (and Milkomeda), however reading them all in a single place is not that simple, and keeping track makes us use a google sheet or similar.',  -- summary
@@ -25587,7 +25587,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1053,  -- id
+    414103,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'plu-ts Typescript smart-contracts',  -- title
     'Currently smart contract creation is limited to the haskell programming language; limiting potential of smart contracts that do need to be created on-the-fly by a PAB',  -- summary
@@ -25611,7 +25611,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1054,  -- id
+    414100,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'JUS: Decentralized On-Ramp + Credit',  -- title
     'In countries with high inflation, many are still economically marginalised, undocumented and unable to access banking systems- let alone Web 3.0',  -- summary
@@ -25634,7 +25634,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1055,  -- id
+    414099,  -- id
     (SELECT row_id FROM objective WHERE id=10 AND event=9), -- objective
     'CardanoTalk for Vietnamese',  -- title
     'Cardano users in Vietnam are looking forward to more talk shows so they can stay up to date with the news and get their questions answered about Cardano.',  -- summary
@@ -25655,7 +25655,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1056,  -- id
+    414095,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'Web3 Legal Hub',  -- title
     'Projects can’t find adequate legal support because not enough lawyers trained to support Web3, and Web3-friendly lawyers are difficult to locate.',  -- summary
@@ -25676,7 +25676,7 @@ Jude Tan Blockchain test cross-chain KYC/NFT', -- relevant experience
 ,
 
 (
-    1057,  -- id
+    414088,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Marlowe Course for Vietnam Devs',  -- title
     'Developers in Vietnam are difficulty with Haskell, and Plutus programming languages, so it is challenging to start with building an application that integrates with Blockchain Cardano.',  -- summary
@@ -25701,7 +25701,7 @@ Has more than 20 years of teaching experience.', -- relevant experience
 ,
 
 (
-    1058,  -- id
+    414087,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'JUS: Decentralized Onramp + Credit',  -- title
     'In countries with high inflation, many are still economically marginalised, undocumented and unable to access banking systems- let alone Web 3.0',  -- summary
@@ -25724,7 +25724,7 @@ Has more than 20 years of teaching experience.', -- relevant experience
 ,
 
 (
-    1059,  -- id
+    414086,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'MLabs - Apropos for Property Tests',  -- title
     'Property tests help ensure mission-critical dApps don’t contain vulnerabilities. However, writing tests to check every contract permutation and edge-case state is exhausting if not wholly impossible.',  -- summary
@@ -25750,7 +25750,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    1060,  -- id
+    414076,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Blockchain Course for Vietnam Devs',  -- title
     'The majority of developers in Vietnam are not familiar with blockchain or are not right understand of blockchain and its importance roles to the real world.',  -- summary
@@ -25771,7 +25771,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    1061,  -- id
+    414071,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'TokenPerkz: Unlockable Utility Hub',  -- title
     'Enterprises have a high entry point for providing custom content and features to holders of tokens, in a secure way.',  -- summary
@@ -25803,7 +25803,7 @@ Kiel Abraham: Full stack developer.', -- relevant experience
 ,
 
 (
-    1062,  -- id
+    414068,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Tangent - Redeemable NFTs Launchpad',  -- title
     'Using NFTs to tokenize assets is an exciting new area of NFT utility. However in Cardano there exists no dapp that specializes in funding and most importantly the process of redeeming such NFTs.',  -- summary
@@ -25824,7 +25824,7 @@ Kiel Abraham: Full stack developer.', -- relevant experience
 ,
 
 (
-    1063,  -- id
+    414067,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'AdaStamp: signing, workflows',  -- title
     'We need an easy way to upload legal documents in a distributed, decentralized way, sign them by involved parties in a controlled and secure manner, and then store them and share with involved parties.',  -- summary
@@ -25852,7 +25852,7 @@ The [StreamCardano.com](https://streamcardano.com) project was accepted in Fund8
 ,
 
 (
-    1064,  -- id
+    414065,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'MLabs - Plutarch v2',  -- title
     'Plutarch v1 greatly reduces the requirements of implementing stateful dApps (DeFi). Yet, expanded functionality is needed for Cardano devs/auditors to fully leverage the dramatic gains of this eDSL.',  -- summary
@@ -25878,7 +25878,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    1065,  -- id
+    414063,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'CatalystCon 22 - Africa Spotlight',  -- title
     'Africa exists at the heart of Cardano''s global adoption strategy, yet there is lack of visibility of the African success stories to come out of Catalyst since its inception.',  -- summary
@@ -25899,7 +25899,7 @@ Moreover, our engineers are committed to open-source tooling for the Cardano eco
 ,
 
 (
-    1066,  -- id
+    414059,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Adacheems:Optimize the value of NFT',  -- title
     'The other NFTs on the Market is too wasteful to just be on display. We bring an NFT world that includes economy, real-world connectivity, and stronger interactions for owners.',  -- summary
@@ -25932,7 +25932,7 @@ CEO: Mr. Teddy
 ,
 
 (
-    1067,  -- id
+    414056,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'NFT Farming on Cardano with Tangent',  -- title
     'Non-Fungible Tokens (NFTs) need more utility to drive long term engagement. As of yet there is no leading platform on Cardano that allows for NFTs to be staked and farmed in DeFi smart contracts.',  -- summary
@@ -25953,7 +25953,7 @@ CEO: Mr. Teddy
 ,
 
 (
-    1068,  -- id
+    414055,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Collab Platform for DAO Operations',  -- title
     'We are now connected in groups far larger than our ability to think and coordinate with the traditional in-person means for of collaboration.',  -- summary
@@ -25982,7 +25982,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1069,  -- id
+    414052,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Cryptocurrency Exchange',  -- title
     'Buying ADA in most African countries is challenging due to the lack of exchange that supports trading in fiat currency.',  -- summary
@@ -26003,7 +26003,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1070,  -- id
+    414050,  -- id
     (SELECT row_id FROM objective WHERE id=8 AND event=9), -- objective
     'Scale-up Africa’s Community Hubs',  -- title
     'Community hubs in Africa are often seen as charitable causes as the value they deliver can be hard to quantify, and they may lack expertise in delivering focused commercial growth',  -- summary
@@ -26024,7 +26024,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1071,  -- id
+    414047,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'HONEYBEES ON BLOCKCHAIN',  -- title
     'Honeybees are in decline on a global scale due to human activity without getting the economic recognition they deserve, while beekeepers are struggling to sustain honeybee population.',  -- summary
@@ -26045,7 +26045,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1072,  -- id
+    414045,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'CDA DeFi Education',  -- title
     'Cardano''s eUTXO ledger is robust but its unique architecture implies a steep learning curve. DeFi participants require educational resources to see how Cardano can work for them over other chains.',  -- summary
@@ -26066,7 +26066,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1073,  -- id
+    414032,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'EternalSwap - Perpetual Swaps dApp',  -- title
     'Cardano''s DeFi ecosystem is rapidly growing. However, it lacks several advanced trading vehicles such as perpetual contracts.',  -- summary
@@ -26087,7 +26087,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1074,  -- id
+    414027,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Wada Academy for Haskell Devs',  -- title
     'There is a shortage of online courses targeted at Haskell developers with a focus on building with Cardano.',  -- summary
@@ -26108,7 +26108,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1075,  -- id
+    414025,  -- id
     (SELECT row_id FROM objective WHERE id=7 AND event=9), -- objective
     'Bringing Cardano to Cambridge',  -- title
     'Cambridge is a global technology and pharmaceutical cluster including a top ten global university and thriving VC community. As yet Cardano has little consistent presence in this pivotal community',  -- summary
@@ -26129,7 +26129,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1076,  -- id
+    414020,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'Making developers into businesses',  -- title
     'Most tech entrepreneurs are skilled in development but not business startup or growth, and need support to get from funding to flying – getting money in and products out',  -- summary
@@ -26150,7 +26150,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1077,  -- id
+    414021,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Measuring business impact w Cardano',  -- title
     'Current impact value and monetization can be measured with the Edify full value impact tool but it is xlsx based and does not bring any advantage to Cardano or Cardashift.  Yet.',  -- summary
@@ -26171,7 +26171,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1078,  -- id
+    414017,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'MLabs - Embedano (Embedded Devices)',  -- title
     'To fully decentralize, the hardware needed to interact with Cardano should be minimal. Though some Cardano projects use embedded systems, best practices are underdeveloped.',  -- summary
@@ -26192,7 +26192,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1079,  -- id
+    414008,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'ATALA Prism zKP + Hyperledger Aries',  -- title
     'ATALA Prism and RootsID don''t support zero-Knowledge Proofs and Predicates and are currently not interoperable with Hyperledger Aries or W3C OBv3. Prism is only on Testnet. Let''s get ATALA on Mainnet.',  -- summary
@@ -26213,7 +26213,7 @@ Multinational Collaboration Platform Design', -- relevant experience
 ,
 
 (
-    1080,  -- id
+    414002,  -- id
     (SELECT row_id FROM objective WHERE id=1 AND event=9), -- objective
     'BigBucs- Crypto Cashback Platform',  -- title
     'The Cardano ecosystem has avenues of having e-commerce platforms associated to the blockchain. An incentivizing factor which drives individuals to use ADA pay or e-commerce sites on these platforms.',  -- summary
@@ -26236,7 +26236,7 @@ The team also consists of experts in various factions such as legal, governance,
 ,
 
 (
-    1081,  -- id
+    414001,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'OpenSource MetaMask<=>₳ Integration',  -- title
     'Metamask is the most popular Web3 wallet and Cardano dApps don''t have an easy and an Open-Source plug-in that they can easily add to their website to receive, send, and fund user activities using ETH.',  -- summary
@@ -26257,7 +26257,7 @@ The team also consists of experts in various factions such as legal, governance,
 ,
 
 (
-    1082,  -- id
+    414000,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'SPO Learning Support Community DAO',  -- title
     'Cardano needs SPOs to provide a resilient, high-availability network to attract DAO creators. SPOs are mission critical - their ability to flourish is equally critical. But they have little support.',  -- summary
@@ -26280,7 +26280,7 @@ The members in our ongoing SPO scale up programme have deep technical expe
 ,
 
 (
-    1083,  -- id
+    413998,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Plural Voting and Identity for DAOs',  -- title
     'DAOs in & out of Cardano don''t have access to more advanced voting systems with Sybil resistance and resort to 1-coin-1-vote that doesn''t always resolve in optimal decisions, funding, & collaboration.',  -- summary
@@ -26301,7 +26301,7 @@ The members in our ongoing SPO scale up programme have deep technical expe
 ,
 
 (
-    1084,  -- id
+    413992,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     '500+ ₳Community Sent to Conferences',  -- title
     'As a new Cardano dApp with a lot of hustle & desire to grow quickly, we lack go-to-market resources to send this community to conferences and 100x user adoption & revenue in the next couple of months.',  -- summary
@@ -26322,7 +26322,7 @@ The members in our ongoing SPO scale up programme have deep technical expe
 ,
 
 (
-    1085,  -- id
+    413990,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Wada Product Integrations',  -- title
     'A lack of integration between dApps and products means that projects are often working in silos.
@@ -26348,7 +26348,7 @@ These projects miss out on the benefit of shared user bases and seamless user ex
 ,
 
 (
-    1086,  -- id
+    413989,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'C4S-Cardano4Seniors Incubator',  -- title
     'There are 2 billion Seniors age 55 plus which will double in 10 years. This niche market has unique market needs. How can Cardano establish itself as the go to Block Chain for 4 billion Seniors?',  -- summary
@@ -26369,7 +26369,7 @@ These projects miss out on the benefit of shared user bases and seamless user ex
 ,
 
 (
-    1087,  -- id
+    413981,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Haskell Bootcamp TPG X KONMA',  -- title
     'As of May 2021, Haskell was the 28th most popular programming language by Google searches for tutorials, but made up less than 1% of active users on the GitHub source code repository.',  -- summary
@@ -26390,7 +26390,7 @@ These projects miss out on the benefit of shared user bases and seamless user ex
 ,
 
 (
-    1088,  -- id
+    413980,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Cardano for Seniors SPO',  -- title
     'Cardano for Seniors as a platform for educating Seniors about Cryptocurrency, Defi and Cardano with emphasis on Risk Management needs to become a self-sustaining ecosystem with a community token & DAO',  -- summary
@@ -26411,7 +26411,7 @@ These projects miss out on the benefit of shared user bases and seamless user ex
 ,
 
 (
-    1089,  -- id
+    413977,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Sequestering farming CO2 dApp',  -- title
     'Agricultural business leaders need to prove that they have carbon negative farming methods but don’t have the tools to PROVE the sequestration of carbon.',  -- summary
@@ -26434,7 +26434,7 @@ F7/8 proposal winners', -- relevant experience
 ,
 
 (
-    1090,  -- id
+    413976,  -- id
     (SELECT row_id FROM objective WHERE id=12 AND event=9), -- objective
     'Harithakanthi-Green Initiative',  -- title
     'Polluting industries grow and earn, while environmentalists and people who volunteer for such work get nothing in return. The climate is changing, but why aren’t we? How can we become action takers?',  -- summary
@@ -26455,7 +26455,7 @@ F7/8 proposal winners', -- relevant experience
 ,
 
 (
-    1091,  -- id
+    413974,  -- id
     (SELECT row_id FROM objective WHERE id=6 AND event=9), -- objective
     'Cardano-Polkadot Oracle Bridge',  -- title
     'There are no oracles in Cardano ecosystem to support cross chain interaction b/w Cardano and Polkadot ecosystem.',  -- summary
@@ -26483,7 +26483,7 @@ F7/8 proposal winners', -- relevant experience
 ,
 
 (
-    1092,  -- id
+    413967,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'KodeKlash Hackathon',  -- title
     'Although Cardano has risen up to an established smart contract platform, the free developer cohort is still lagging behind. there is lack of awareness on haskells capabilities to the web3 ecosystem.',  -- summary
@@ -26504,7 +26504,7 @@ F7/8 proposal winners', -- relevant experience
 ,
 
 (
-    1093,  -- id
+    413964,  -- id
     (SELECT row_id FROM objective WHERE id=5 AND event=9), -- objective
     'No Code Smart Contract Indexer',  -- title
     'To visualize real time data on a Smart Contract it is not quite easy. It requires Tech Knowledge on how to fetch data, store them and keep getting them updated and costs a lot for the business.',  -- summary
@@ -26525,7 +26525,7 @@ F7/8 proposal winners', -- relevant experience
 ,
 
 (
-    1094,  -- id
+    413963,  -- id
     (SELECT row_id FROM objective WHERE id=4 AND event=9), -- objective
     'LawFinDAO :) - $LAWL',  -- title
     'A key challenge for many proposed projects is the implementation of legal and financial frameworks. This stalls the project from moving forward and the new proposers have no support system in place.',  -- summary
@@ -26546,7 +26546,7 @@ F7/8 proposal winners', -- relevant experience
 ,
 
 (
-    1095,  -- id
+    413962,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'C4S - Cardano for Seniors Hub',  -- title
     'You know, live with or are a Senior. How does Cardano attract, educate and onboard a 2 billion niche demographic, rich with talent & liquid assets, that spans all human parameters while doing good?',  -- summary
@@ -26567,7 +26567,7 @@ F7/8 proposal winners', -- relevant experience
 ,
 
 (
-    1096,  -- id
+    413960,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'GameFan-Gaming & Esports Fandom',  -- title
     'Fans do not necessarily have access to their idols, No revenue stream for Pro-athletes & teams other than sponsorships, Highlight content that hasn''t been monetized , lack of gaming communities on ada',  -- summary
@@ -26590,7 +26590,7 @@ detailed info of team provided below', -- relevant experience
 ,
 
 (
-    1097,  -- id
+    413958,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Synthetic Asset Marketplace',  -- title
     'You can not trade real world assets using crypto. DeFi traders want to invest into real world assets but either can''t or don''t want to convert crypto in fiat.',  -- summary
@@ -26621,7 +26621,7 @@ detailed info of team provided below', -- relevant experience
 ,
 
 (
-    1098,  -- id
+    413956,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'KonmaDAO - A DAO of DAOs',  -- title
     'While Cardano provides a great space for hosting DAOs, community members and new entrants are unaware of the Cardano ecosystem, dev support, tools & resources etc.',  -- summary
@@ -26642,7 +26642,7 @@ detailed info of team provided below', -- relevant experience
 ,
 
 (
-    1099,  -- id
+    413955,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'API Datapoints & Notification Frame',  -- title
     'Decoding Blockchain Data is tough, through Unmarshal''s Data Endpoints for Dapp builders to get quick, easy, seamless and simplified Cardano On-chain data. APIs, Notification and web sockets.',  -- summary
@@ -26677,7 +26677,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1100,  -- id
+    413950,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'C4S-Cardano4Seniors-Animation',  -- title
     'Seniors need education about Defi, Cryptocurrency & Cardano with an Emphasis on Risk Management. How do we accomplish this - GLOBALLY?',  -- summary
@@ -26698,7 +26698,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1101,  -- id
+    413942,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Startup Launchpad & Crowdfunding',  -- title
     'ICOs are a common way of funding projects in the blockchain industry. However, Africa is missing this opportunity due to the absence of a crowdfunding platform that focuses on Africa-based startups.',  -- summary
@@ -26719,7 +26719,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1102,  -- id
+    413938,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'ARTIFICIAL INTELLIGENCE ML/Dapps',  -- title
     'The confluence of AI & blockchain creates a trustworthy technology-enabled decision-making system. Blockchains provide frictionless information access to AI models and help to make accurate decisions.',  -- summary
@@ -26740,7 +26740,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1103,  -- id
+    413936,  -- id
     (SELECT row_id FROM objective WHERE id=2 AND event=9), -- objective
     'Cardano Community Hubs DAO &cDDK',  -- title
     'Hello Dear Reader! Cardano doesn''t offer full guidance & framework tools for the creation & operation of DAOs on Cardano. Hubs don''t realise the amazing DAO opportunity to self-fund a real business.',  -- summary
@@ -26761,7 +26761,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1104,  -- id
+    413931,  -- id
     (SELECT row_id FROM objective WHERE id=3 AND event=9), -- objective
     'Building Profitable Cardano Hubs',  -- title
     'Welcome Dear Reader! Cardano is not seen as *the* “Blockchain for Business”, it should be! Cardano Community Hubs should be attracting businesses to us & *making a profit* to sustain themselves long-term',  -- summary
@@ -26782,7 +26782,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1105,  -- id
+    423261,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'FIFA World Cup 2022',  -- title
     'How can the community unite around the World Cup to increase the reach and awareness of Cardano?',  -- summary
@@ -26803,7 +26803,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1106,  -- id
+    423249,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'HYDRA OPEN FOR BUSINESS',  -- title
     'Which business models on Cardano benefit by adopting Hydra to overcome scalability challenges, and how should solutions be designed, or what is needed to make implementation easy for developers?',  -- summary
@@ -26824,7 +26824,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1107,  -- id
+    423239,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'CARDANO FOR SCALA SUPERSTARS',  -- title
     'How can we reduce the knowledge gaps between engineering communities such as Scala and Haskell and drive new developer communities towards exploring blockchain research and development?',  -- summary
@@ -26845,7 +26845,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1108,  -- id
+    423220,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'CARDANO JS SDK: A Builder’s Journey',  -- title
     'What is necessary to realise a community-driven platform that showcases the tools being built and helps accelerate developer acquisition?',  -- summary
@@ -26866,7 +26866,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1109,  -- id
+    423218,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'PLUTUS 100x GAINS FOR TIME-TO-dAPP',  -- title
     'How can we make the developer experience of building dApps using Plutus 100x more seamless to set up, inclusive, and scalable?',  -- summary
@@ -26887,7 +26887,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1110,  -- id
+    423211,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'MARLOWE OPEN TOOLS & USE CASES',  -- title
     'How do we create no-code or low-code tooling that vastly broadens the use and adoption of smart contracts in the real world?',  -- summary
@@ -26908,7 +26908,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1111,  -- id
+    422584,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Elevate the Metaverse with RealFi',  -- title
     'How can we leverage the Metaverse to create engaging experiences that help real people with real finance (RealFi) while making crypto more user-friendly and give it better UX?',  -- summary
@@ -26929,7 +26929,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1112,  -- id
+    422540,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Developer Ecosystem - The Evolution',  -- title
     'How do we equip and support developers with tools and working infrastructure? How do we make Cardano their first choice when it comes to building dApps, innovating and collaborating?',  -- summary
@@ -26950,7 +26950,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1113,  -- id
+    422445,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Startups & Onboarding for Students',  -- title
     'How can we support student blockchain startups through Catalyst? And how can I increase the number of student Catalyst proposers and blockchain engineers?',  -- summary
@@ -26971,7 +26971,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1114,  -- id
+    422412,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Atala PRISM: Launch Ecosystems🚀',  -- title
     'Can we bring together stakeholders to accelerate adoption and product-market-fit?',  -- summary
@@ -26992,7 +26992,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1115,  -- id
+    422355,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Regeneration: Opportunity 4 Cardano',  -- title
     'What regenerative solutions and use cases will seed and grow Cardano adoption in 2022 and beyond?',  -- summary
@@ -27013,7 +27013,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1116,  -- id
+    422276,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Cardano Global Marketing Campaign',  -- title
     'How can we improve the current marketing efforts of the Cardano blockchain to place itself at the go-to solution for anyone who is interested in stepping into the web 3 space?',  -- summary
@@ -27034,7 +27034,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1117,  -- id
+    422204,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Miscellaneous Challenge',  -- title
     'How does Cardano & the Catalyst Community create a space for ideas, projects and outlier concepts that do not fit into any of the other current Challenges or is there a round hole for a square peg?',  -- summary
@@ -27055,7 +27055,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1118,  -- id
+    421868,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Challenge & Scouted for Students🎓',  -- title
     'How can we provide Student Entrepreneurs with a place to appeal their ideas to the world and an opportunity to connect with Engineers?',  -- summary
@@ -27076,7 +27076,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1119,  -- id
+    421826,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Entrepreneurship Challenge',  -- title
     'How might we encourage impact companies and entrepreneurs to build use cases on Cardano in the next 6 months?',  -- summary
@@ -27097,7 +27097,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1120,  -- id
+    421545,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Grow Vietnam, Grow Cardano',  -- title
     'How can we make the Vietnamese community adopt Cardano and connect with the Catalyst community?',  -- summary
@@ -27118,7 +27118,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1121,  -- id
+    421514,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Supporting Local Communities',  -- title
     'How do we support the development of Cardano Communities in localities with booming blockchain industries?',  -- summary
@@ -27139,7 +27139,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1122,  -- id
+    421390,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Lace Live Demonstrations',  -- title
     'How can we promote mass adoption of Lace wallet?',  -- summary
@@ -27160,7 +27160,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1123,  -- id
+    421335,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'OSDE: Open Source Dev Ecosystem',  -- title
     'Can we build a *community-owned* Open-Source Ecosystem that’s *commercially viable* to *drive growth*, *increase opportunities*, and *increase project visibility* for the whole Cardano Community?',  -- summary
@@ -27181,7 +27181,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1124,  -- id
+    420957,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Education| Sustainability |Cardano',  -- title
     'How do we accelerate progress on transformative education + education for sustainable development, and equitably enable and empower individuals globally to access opportunities to thrive and flourish?',  -- summary
@@ -27202,7 +27202,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1125,  -- id
+    420610,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Improve User Experience on Cardano',  -- title
     'How do we Educate, Entertain, and Excite our community? Can we build experiences that users don''t want to live without, that they control?',  -- summary
@@ -27223,7 +27223,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1126,  -- id
+    420431,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'DAOs <3 Cardano',  -- title
     'How can we make Cardano the go-to choice for building DAOs? What tools can we provide to enable effective DAO''s Creation & Operation',  -- summary
@@ -27244,7 +27244,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1127,  -- id
+    419498,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Building on NMKR',  -- title
     'How can we make the Cardano NFT ecosystem more accessible by creating tools that implement the NMKR Dev API?',  -- summary
@@ -27265,7 +27265,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1128,  -- id
+    419226,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Cardano support for Latin America',  -- title
     'Mass adoption requires a global view. Initiatives that focus on emerging economies such as Latin America are key to exponential engagement',  -- summary
@@ -27286,7 +27286,7 @@ Total Dapps using Unmarshal services: 1000+', -- relevant experience
 ,
 
 (
-    1129,  -- id
+    419157,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Grow Arabia, Grow Cardano',  -- title
     'How do we help expand and grow the Cardano users in the Arabic speaking
@@ -27309,7 +27309,7 @@ nations?',  -- summary
 ,
 
 (
-    1130,  -- id
+    419032,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'The Newbie Challenge Setting',  -- title
     'How can we create a space where projects that have never been funded before can compete without having to go against veteran projects with more experience?',  -- summary
@@ -27330,7 +27330,7 @@ nations?',  -- summary
 ,
 
 (
-    1131,  -- id
+    418768,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Legal & Financial Implementations',  -- title
     'How can we build effective solutions to explore and provide legal & financial services and support to funded Proposers?',  -- summary
@@ -27351,7 +27351,7 @@ nations?',  -- summary
 ,
 
 (
-    1132,  -- id
+    418533,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'dRep improvement and onboarding',  -- title
     'How do you achieve "(1) diverse and many dRep participation + (2) easy and proper voter delegation?"',  -- summary
@@ -27372,7 +27372,7 @@ nations?',  -- summary
 ,
 
 (
-    1133,  -- id
+    418440,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'African Digital Banks Network',  -- title
     'How do we on-board the unbanked without offering financial services?
@@ -27397,7 +27397,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1134,  -- id
+    417910,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'NFT Community & Ecosystem',  -- title
     'How can we support effective and impactful projects and initiatives to build for and grow the NFT Ecosystem and Community?',  -- summary
@@ -27418,7 +27418,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1135,  -- id
+    417629,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Challenge Teams Process Updates',  -- title
     'Catalyst has run Challenges in fund 7&8. After iterations and two rounds of Leading Dapps and Integrations I have revised a process to make challenge teams more effective at their overall goal.',  -- summary
@@ -27439,7 +27439,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1136,  -- id
+    417578,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     '$195 MILLION TVL HACK AVOIDED',  -- title
     'How might we distribute security audits to the edges of Cardano’s ecosystem in innovative ways?',  -- summary
@@ -27460,7 +27460,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1137,  -- id
+    417515,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'ADA-Architecture',  -- title
     'How do we improve our build environment by empowering Architects to share their work it is meant to be represented and better understood by allowing to be consumed as a product?',  -- summary
@@ -27481,7 +27481,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1138,  -- id
+    417316,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Grow E. Hemisphere, Grow Cardano',  -- title
     'How do we grow the Cardano ecosystem in Eastern Hemisphere in an inclusive and supportive way? The same way we do in Africa, focused initiatives!',  -- summary
@@ -27502,7 +27502,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1139,  -- id
+    417284,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Empower Vietnam Cardano Community',  -- title
     '* How can we accelerate the development and adoption of Cardano in Viet Nam?
@@ -27524,7 +27524,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1140,  -- id
+    417104,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'DEVELOPING COUNTRIES UNITED',  -- title
     'Time to make an experiment: let''s provide support by socioeconomic conditions rather than by geographic location.That''s one of Cardano''s original purposes: to provide support to developing countries.',  -- summary
@@ -27545,7 +27545,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1141,  -- id
+    417048,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Climate Change: THE Challenge',  -- title
     'Climate Change is humanity''s greatest challenge going forward. How will Cardano contribute to solving this wicked problem?',  -- summary
@@ -27566,7 +27566,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1142,  -- id
+    416449,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Social and Business Development',  -- title
     'How to increase the impact of Cardano Blockchain on real society and business?',  -- summary
@@ -27587,7 +27587,7 @@ How can DAOs raise this capital?',  -- summary
 ,
 
 (
-    1143,  -- id
+    416448,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Accelerate Women on Cardano ECO',  -- title
     'How do we grow the number of Women on Cardano globally?
@@ -27613,7 +27613,7 @@ In the next 24 months, how will we inspire and support women to join the Cardano
 ,
 
 (
-    1144,  -- id
+    416291,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Catalyst Built AI Art Generator 🌅',  -- title
     'Can Project Catalyst collectively build the best AI Art Generator native to Cardano for everyone in the community to use? Can Project Catalyst collaborate and grow with this DAO tool?',  -- summary
@@ -27634,7 +27634,7 @@ In the next 24 months, how will we inspire and support women to join the Cardano
 ,
 
 (
-    1145,  -- id
+    415716,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Grow LatinAmerica, Grow Cardano',  -- title
     'How do we increase Cardano adoption on our countries?',  -- summary
@@ -27655,7 +27655,7 @@ In the next 24 months, how will we inspire and support women to join the Cardano
 ,
 
 (
-    1146,  -- id
+    415010,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Gamers On-Chained',  -- title
     'What blockchain gaming applications and infrastructure can be built to achieve mass adoption of Cardano?',  -- summary
@@ -27676,7 +27676,7 @@ In the next 24 months, how will we inspire and support women to join the Cardano
 ,
 
 (
-    1147,  -- id
+    414858,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Cardano and Agriculture',  -- title
     'What are the potential issues in the Agri-food industry that could be addressed using the Cardano blockchain technology?',  -- summary
@@ -27697,7 +27697,7 @@ In the next 24 months, how will we inspire and support women to join the Cardano
 ,
 
 (
-    1148,  -- id
+    414848,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Cardano Open Source Hall of Fame',  -- title
     'How do we reward great Cardano open source contributors, acknowledge their impact and encourage others to do the same.',  -- summary
@@ -27718,7 +27718,7 @@ In the next 24 months, how will we inspire and support women to join the Cardano
 ,
 
 (
-    1149,  -- id
+    414706,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Global Health Care on Cardano',  -- title
     'How could the global healthcare community leverage Cardano tech to provide better pharma R&D & global access to life-saving medications?',  -- summary
@@ -27739,7 +27739,7 @@ In the next 24 months, how will we inspire and support women to join the Cardano
 ,
 
 (
-    1150,  -- id
+    414641,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'NPOs/NGOs Integration & Solution',  -- title
     'How can NPOs/NGOs optimize Cardano for project management, reporting, M&E and income generation for project implementation to transform more lives?
@@ -27765,7 +27765,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1151,  -- id
+    414562,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Funding Categories Full Fund',  -- title
     'How can we improve funding categorisation in Catalyst by using more effective approaches like funding categories?',  -- summary
@@ -27786,7 +27786,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1152,  -- id
+    414318,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Cardano Contributors',  -- title
     'What full time contributors can be funded to help support and improve the Cardano ecosystem?',  -- summary
@@ -27807,7 +27807,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1153,  -- id
+    414316,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Catalyst Contributors',  -- title
     'What full time contributors can be funded to help support, build and grow the Catalyst ecosystem?',  -- summary
@@ -27828,7 +27828,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1154,  -- id
+    414314,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Film & media',  -- title
     'Global entertainment+media market = $2 trillion. A decentralized FAM network to produce quality Cardano community media is vital yet absent.',  -- summary
@@ -27849,7 +27849,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1155,  -- id
+    414313,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Nurturing Ideas & Teams',  -- title
     'How can we support new ideas and teams that form and bring new innovations and support the ecosystem?',  -- summary
@@ -27870,7 +27870,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1156,  -- id
+    414312,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Scale-UP Cardano Community Hubs',  -- title
     'How do we encourage Local Hubs to drive adoption and awareness of Cardano? How do we ensure they are optimizing and scaling efficiently?',  -- summary
@@ -27891,7 +27891,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1157,  -- id
+    414308,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Development & Infrastructure',  -- title
     'What research, tools or software can improve the developer ecosystem or infrastructure to make it easier to build and scale on the Cardano blockchain?',  -- summary
@@ -27912,7 +27912,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1158,  -- id
+    414304,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Governance & Identity',  -- title
     'What tools, processes and research will improve how we integrate governance or identity solutions both in Catalyst and the wider Cardano ecosystem?',  -- summary
@@ -27933,7 +27933,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1159,  -- id
+    414299,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Products & Integrations',  -- title
     'What products and integrations can be developed or improved that will offer more use cases to the Cardano ecosystem that are high impact and drive more adoption?',  -- summary
@@ -27954,7 +27954,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1160,  -- id
+    414292,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Community & Outreach',  -- title
     'How can we engage the community, do outreach that brings more people into the ecosystem and support collaborations with external people and organisations.',  -- summary
@@ -27975,7 +27975,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1161,  -- id
+    414208,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Cardano for Seniors Outreach',  -- title
     'How does Cardano provide a Safe environment for 2 billion Seniors Globally to engage with DeFi and Cardano. What services can be provided or developed that can fill the needs of this Niche Market?',  -- summary
@@ -27996,7 +27996,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1162,  -- id
+    414105,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'SPO Tools & Community Projects',  -- title
     'How can we support effective and impactful projects and initiatives to build and support the SPO Ecosystem and Community?',  -- summary
@@ -28017,7 +28017,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1163,  -- id
+    414030,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Grow Africa, Grow Cardano',  -- title
     'How do we continue to seed and grow Cardano adoption in 2022 and beyond?',  -- summary
@@ -28038,7 +28038,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1164,  -- id
+    413996,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     '1000 Universities Global Outreach',  -- title
     'How to broaden the Cardano adoption by engaging universities and colleges directly and to enable not only tech-savvy students but all communities for a grassroot level blockchain movement?',  -- summary
@@ -28059,7 +28059,7 @@ NPOs /NGOs are the drivers of development in Africa',  -- summary
 ,
 
 (
-    1165,  -- id
+    413991,  -- id
     (SELECT row_id FROM objective WHERE id=13 AND event=9), -- objective
     'Grow South Asia Grow Cardano',  -- title
     'How can we bring participation from the population-dense and diverse ecosystem of South Asia by creating awareness and ease of onboarding?',  -- summary

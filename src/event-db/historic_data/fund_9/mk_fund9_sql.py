@@ -274,7 +274,7 @@ def proposals_table(con: sqlite3.Connection) -> str:
 
         all_proposals += f"""
 (
-    {id},  -- id
+    {proposal_id},  -- id
     {challenge_id}, -- objective
     '{proposal_title}',  -- title
     '{proposal_summary}',  -- summary

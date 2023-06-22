@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["serialize_datetime_as_rfc3339","serialize_option_datetime_as_rfc3339"]};

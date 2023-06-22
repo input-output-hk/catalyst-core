@@ -44,6 +44,7 @@ pub struct FullProposalInfo {
     pub group_id: String,
 }
 
+#[cfg(any(test, feature = "test-api"))]
 impl From<vit_servicing_station_lib::db::models::proposals::FullProposalInfo> for FullProposalInfo {
     fn from(val: vit_servicing_station_lib::db::models::proposals::FullProposalInfo) -> Self {
         Self {

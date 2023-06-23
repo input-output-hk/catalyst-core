@@ -91,8 +91,8 @@ services:
       ### SNAPSHOT TOOL DATA IMPORTER
       - SNAPSHOT_INTERVAL_SECONDS=1800
       - SNAPSHOT_OUTPUT_DIR=/tmp/snapshot-output
-      - SNAPSHOT_NETWORK_ID=testnet
-      - DBSYNC_URL=postgres://CHANGE_ME
+      - SNAPSHOT_NETWORK_IDS=testnet
+      - TESTNET_DBSYNC_URL=postgres://CHANGE_ME
       - GVC_API_URL=https://CHANGE_ME
     volumes:
       - leader0_store:/node_storage

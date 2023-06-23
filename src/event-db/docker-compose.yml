@@ -1,5 +1,5 @@
 version: "3"
-
+name: event_db
 services:
   postgres:
     image: postgres:14

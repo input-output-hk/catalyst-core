@@ -1,6 +1,7 @@
 """Snapshot importer CLI commands."""
 
 import asyncio
+from typing import List
 import typer
 
 from ideascale_importer.snapshot_importer import Importer
@@ -13,14 +14,13 @@ app = typer.Typer(add_completion=False)
 @app.command(name="import")
 def import_snapshot(
     event_id: int = typer.Option(..., help="Database event id to link all snapshot data to"),
-    database_url: str = typer.Option(..., envvar="EVENTDB_URL", help="URL of the Postgres database in which to import the data to"),
+    eventdb_url: str = typer.Option(..., envvar="EVENTDB_URL", help="URL of the Postgres database in which to import the data to"),
     output_dir: str = typer.Option(..., envvar="SNAPSHOT_OUTPUT_DIR", help="Output directory for generated files"),
-    network_id: str = typer.Option(
+    network_ids: List[str] = typer.Option(
         ...,
-        envvar="SNAPSHOT_NETWORK_ID",
+        envvar="SNAPSHOT_NETWORK_IDS",
         help="Network id to pass as parameter to snapshot_tool",
     ),
-    dbsync_url: str = typer.Option(..., envvar="DBSYNC_URL", help="URL of the DBSync database in which to import the data to"),
     snapshot_tool_path: str = typer.Option(default="snapshot_tool", envvar="SNAPSHOT_TOOL_PATH", help="Path to the snapshot tool"),
     catalyst_toolbox_path: str = typer.Option(
         default="catalyst-toolbox", envvar="CATALYST_TOOLBOX_PATH", help="Path to the catalyst-toolbox"
@@ -57,11 +57,10 @@ def import_snapshot(
 
     async def inner():
         importer = Importer(
-            database_url=database_url,
+            eventdb_url=eventdb_url,
             event_id=event_id,
             output_dir=output_dir,
-            network_id=network_id,
-            dbsync_url=dbsync_url,
+            network_ids=network_ids,
             snapshot_tool_path=snapshot_tool_path,
             catalyst_toolbox_path=catalyst_toolbox_path,
             gvc_api_url=gvc_api_url,

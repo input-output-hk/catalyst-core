@@ -296,11 +296,8 @@
 <a href="#296" id="296">296</a>
 <a href="#297" id="297">297</a>
 <a href="#298" id="298">298</a>
-<a href="#299" id="299">299</a>
-<a href="#300" id="300">300</a>
-<a href="#301" id="301">301</a>
-</pre><pre class="rust"><code><span class="kw">use </span>std::collections::{HashMap, HashSet};
-
+</pre><pre class="rust"><code><span class="kw">use </span><span class="self">self</span>::{io::vecs_to_maps, types::NotFundedReason};
+<span class="kw">use </span><span class="kw">crate</span>::types::{challenge::Challenge, proposal::Proposal};
 <span class="kw">use </span>chain_impl_mockchain::value::Value;
 <span class="kw">use </span>color_eyre::{
     eyre::{bail, eyre},
@@ -313,13 +310,10 @@
         Address, Block0Configuration, Initial, Tally, VotePlanStatus, VoteProposalStatus,
     },
 };
+<span class="kw">use </span>std::collections::{HashMap, HashSet};
 <span class="kw">use </span>tracing::debug;
-<span class="kw">use </span>vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
-
 <span class="kw">pub use </span>types::<span class="kw-2">*</span>;
 <span class="kw">pub use </span>util::build_path_for_challenge;
-
-<span class="kw">use </span><span class="self">self</span>::{io::vecs_to_maps, types::NotFundedReason};
 
 <span class="kw">pub mod </span>io;
 <span class="kw">mod </span>types;

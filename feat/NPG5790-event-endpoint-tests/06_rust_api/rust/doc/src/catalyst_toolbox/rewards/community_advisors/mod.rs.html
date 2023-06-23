@@ -423,7 +423,7 @@
 </pre><pre class="rust"><code><span class="kw">mod </span>funding;
 <span class="kw">mod </span>lottery;
 
-<span class="kw">use </span><span class="kw">crate</span>::community_advisors::models::{AdvisorReviewRow, ReviewRanking};
+<span class="kw">use crate</span>::{community_advisors::models::AdvisorReviewRow, types::advisor_review::ReviewRanking};
 <span class="kw">use </span>lottery::{CasWinnings, TicketsDistribution};
 <span class="kw">use </span>rand::{Rng, SeedableRng};
 <span class="kw">use </span>rand_chacha::{ChaCha8Rng, ChaChaRng};
@@ -538,7 +538,7 @@
 ) -&gt; ProposalTickets {
     <span class="kw">let </span>is_legacy = proposal_reviews
         .iter()
-        .any(|rev| <span class="macro">matches!</span>(rev.score(), ReviewRanking::NA));
+        .any(|rev| <span class="macro">matches!</span>(rev.score(), ReviewRanking::NotReviewedByVCA));
 
     <span class="kw">if </span>is_legacy {
         <span class="kw">return </span>ProposalTickets::Legacy {
@@ -698,7 +698,7 @@
         (<span class="number">0</span>..n_excellent)
             .map(|<span class="kw">_</span>| AdvisorReviewRow::dummy(ReviewRanking::Excellent))
             .chain((<span class="number">0</span>..n_good).map(|<span class="kw">_</span>| AdvisorReviewRow::dummy(ReviewRanking::Good)))
-            .chain((<span class="number">0</span>..n_na).map(|<span class="kw">_</span>| AdvisorReviewRow::dummy(ReviewRanking::NA)))
+            .chain((<span class="number">0</span>..n_na).map(|<span class="kw">_</span>| AdvisorReviewRow::dummy(ReviewRanking::NotReviewedByVCA)))
             .collect()
     }
 

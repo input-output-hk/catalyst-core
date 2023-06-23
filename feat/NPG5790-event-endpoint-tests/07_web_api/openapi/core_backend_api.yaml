@@ -41,7 +41,7 @@ tags:
   - name: vit-ss
     description: VIT-SS backward compatibility endpoints
 servers:
-  - url: 'http://localhost:{port}'
+  - url: 'http://localhost:8080'
     description: Local Testing Only
     variables:
       port:
@@ -77,11 +77,13 @@ paths:
     get:
       operationId: healthReady
       summary: readiness of the service to accept incoming requests
-      description: readiness of the service to accept incoming requests
+      description: |
+        readiness of the service to accept incoming requests
       responses:
         '200':
+          description: |
+              Valid response
           content:
-            description: Valid response
             application/json:
               schema:
                 type: boolean
@@ -93,8 +95,8 @@ paths:
       description: liveness of the service
       responses:
         '200':
+          description: Valid response
           content:
-            description: Valid response
             application/json:
               schema:
                 type: boolean
@@ -109,8 +111,8 @@ paths:
         Get list of all currently known past, present and future Voting Events.
       responses:
         '200':
+          description: Valid response
           content:
-            description: Valid response
             application/json:
               schema:
                 description: List of all known Voting Events.
@@ -331,7 +333,7 @@ paths:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/total'
     parameters: []
-  /api/v1/registration/voter/{vkey}:
+  /api/v1/registration/voter/{vkey}?event_id={eid}&with_delegators={flag}:
     parameters:
       - name: vkey
         in: path
@@ -339,6 +341,13 @@ paths:
         schema:
           type: string
         description: A Voting Key.
+      - $ref: '#/components/parameters/event_id_filter'
+      - name: with_delegators
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Flag to include delegators list in the response.
     get:
       operationId: getVoterInfo
       summary: Get voter's info by voting key
@@ -346,7 +355,8 @@ paths:
         - registration
       description: |
         Get voter's registration and voting power by their voting key.\
-        If the `eid` query parameter is omitted, then the latest voting power is retrieved.
+        If the `event_id` query parameter is omitted, then the latest voting power is retrieved.
+        If the `with_delegators` query parameter is ommitted, then `delegator_addresses` field of `VoterInfo` type does not provided.
       responses:
         '200':
           description: Success
@@ -358,11 +368,10 @@ paths:
           description: There is an error with the request.
         '404':
           description: Voting Key not found for requested event.
-      parameters:
-        - $ref: '#/components/parameters/event_id_filter'
-  /api/v1/registration/delegations/{sp_key}:
+  /api/v1/registration/delegations/{sp_key}?event_id={eid}:
     parameters:
       - $ref: '#/components/parameters/stake_public_key'
+      - $ref: '#/components/parameters/event_id_filter'
     get:
       operationId: getDelegatorInfo
       summary: Get voters info by stake public key
@@ -382,8 +391,6 @@ paths:
           description: An error occurred
         '404':
           description: Stake Address for the event was not found in the snapshot.
-      parameters:
-        - $ref: '#/components/parameters/event_id_filter'
   /api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/ballot:
     parameters:
       - $ref: '#/components/parameters/event_id'
@@ -435,7 +442,7 @@ paths:
                       format: int32
                       description: The ID of this proposal.
                     ballot:
-                      type:
+                      schema:
                         $ref: '#/components/schemas/CatalystV1Ballot'
                   required:
                    - proposal_id
@@ -476,14 +483,14 @@ paths:
                             format: int32
                             description: The ID of this proposal.
                           ballot:
-                            type:
+                            schema:
                               $ref: '#/components/schemas/CatalystV1Ballot'
                         required:
                           - proposal_id
                           - ballot
-                    required:
-                      - objective_id
-                      - ballots
+                  required:
+                    - objective_id
+                    - ballots
   /api/v1/ballot/check:
     post:
       summary: Check Ballot Validity
@@ -1089,12 +1096,6 @@ components:
         - private
         - public
         - cast-private
-      minItems: 1
-      maxItems: 16
-      uniqueItems: true
-      items:
-        type: string
-        minLength: 1
     ObjectiveSupplementalData:
       title: Objective Supplemental Data
       x-stoplight:
@@ -1613,6 +1614,14 @@ components:
           format: float
           minimum: 0
           maximum: 100
+        delegator_addresses:
+          description: |-
+            List of stake public key addresses which delegated to this voting key.
+          type: array
+          items:
+            type: string
+            pattern: '[0-9a-f]{64}'
+            description: Hex string of stake public key address.
       required:
         - voting_power
         - voting_group
@@ -1687,6 +1696,12 @@ components:
           description: |-
             List off delegations made by this stake address.
             In the order as presented in the voters registration.
+        reward_address:
+          type: string
+          description: Reward address for this delegation.
+        reward_payable:
+          type: boolean
+          description: flag which reflects does the `reward_address` valid or not, contains it "addrr" or "addrr_test" prefix or not.
         raw_power:
           type: number
           description: Raw total voting power from stake address
@@ -1831,7 +1846,7 @@ components:
         type: string
       description: Stake Public key
     event_id_filter:
-      name: eid
+      name: event_id
       in: query
       required: false
       schema:

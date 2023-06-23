@@ -13,7 +13,7 @@ install-chef:
 # Prepares the local cache
 prepare-cache:
     FROM +install-chef
-    COPY --dir src Cargo.lock Cargo.toml .
+    COPY --dir src tests Cargo.lock Cargo.toml .
     RUN cargo chef prepare
     SAVE ARTIFACT recipe.json
     SAVE IMAGE --cache-hint

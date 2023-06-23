@@ -49,7 +49,7 @@ builder:
         libsqlite3-dev \
         protobuf-compiler
     RUN rustup component add rustfmt
-    COPY --dir src Cargo.lock Cargo.toml .
+    COPY --dir src tests Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target
     SAVE ARTIFACT src

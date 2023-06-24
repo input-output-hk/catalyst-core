@@ -33,12 +33,11 @@
 # IDEASCALE_CONFIG_PATH - Path to JSON config file for IdeaScale importer
 #
 # ### DBSYNC SNAPSHOT DATA IMPORTER
-# DBSYNC_URL - URL for DBSync database
 # SNAPSHOT_TOOL_PATH - Path to snapshot tool executable (optional). Defaults to 'snapshot_tool'
 # CATALYST_TOOLBOX_PATH - Path to toolbox executable (optional). Defaults to 'catalyst-toolbox'
 # GVC_API_URL - URL for GVC
 # SNAPSHOT_OUTPUT_DIR - Path to directory where snapshot data will be stored
-# SNAPSHOT_NETWORK_ID - Network ID for snapshot data. Possible values are 'mainnet' and 'testnet'
+# SNAPSHOT_NETWORK_IDS - Network IDs (separated by space) for snapshot data. Possible values are 'mainnet' and 'testnet'.
 # SNAPSHOT_INTERVAL_SECONDS - Interval in seconds for snapshot data (optional)
 # ---------------------------------------------------------------
 
@@ -111,10 +110,11 @@ if [ "$HOSTNAME" = "leader0" ]; then
         "IDEASCALE_STAGE_ID"
         "IDEASCALE_API_URL"
         "IDEASCALE_CONFIG_PATH"
-        "DBSYNC_URL"
+        #"TESTNET_DBSYNC_URL"
+        #"MAINNET_DBSYNC_URL"
         "GVC_API_URL"
         "SNAPSHOT_OUTPUT_DIR"
-        "SNAPSHOT_NETWORK_ID"
+        "SNAPSHOT_NETWORK_IDS"
     )
     check_env_vars "${LEADER0_ENV[@]}"
 

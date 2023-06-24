@@ -22,8 +22,7 @@ Common to IdeaScale and DBSync snapshots:
 
 * `SNAPSHOT_CONFIG_PATH` - Path to the command configuration file.
 * `SNAPSHOT_OUTPUT_DIR`- Path to directory where DBSync snapshot output is written.
-* `SNAPSHOT_NETWORK_ID` - Defines 'mainnet' or 'testnet'.
-* `DBSYNC_URL` - URL to DBSync.
+* `SNAPSHOT_NETWORK_IDS` - Defines 'mainnet' and/or 'testnet'.
 * `SNAPSHOT_TOOL_PATH` - Path to the snapshot_tool executable (optional).
 * `CATALYST_TOOLBOX_PATH` - Path to the catalyst-toolbox executable (optional).
 
@@ -76,20 +75,22 @@ class ExternalDataImporter:
 
         This command requires the following environment variables to work:
 
-        * `EVENTDB_URL` sets `--database-url`.
+        * `EVENTDB_URL` sets `--eventdb-url`.
         * `SNAPSHOT_OUTPUT_DIR` sets `--output-dir`.
-        * `SNAPSHOT_NETWORK_ID` sets `--network-id`.
-        * `DBSYNC_URL` sets `--dbsync-url`.
+        * `SNAPSHOT_NETWORK_IDS` sets `--network-ids`.
         * `SNAPSHOT_TOOL_PATH` sets `--snapshot-tool-path` (optional).
         * `CATALYST_TOOLBOX_PATH` sets `--catalyst-toolbox-path` (optional).
         """
+        # Parse network IDs from the env var using the
+        # same format that the DBSync snapshot importer CLI expects.
+        network_ids = [id.strip() for id in os.environ["SNAPSHOT_NETWORK_IDS"].split(" ")]
+
         logger.info(f"Importing snapshot data for event {event_id}")
         importer = DBSyncImporter(
-            database_url=os.environ["EVENTDB_URL"],
+            eventdb_url=os.environ["EVENTDB_URL"],
             event_id=event_id,
             output_dir=os.environ["SNAPSHOT_OUTPUT_DIR"],
-            network_id=os.environ["SNAPSHOT_NETWORK_ID"],
-            dbsync_url=os.environ["DBSYNC_URL"],
+            network_ids=network_ids,
             snapshot_tool_path=os.environ.get("SNAPSHOT_TOOL_PATH", "snapshot_tool"),
             catalyst_toolbox_path=os.environ.get("CATALYST_TOOLBOX_PATH", "catalyst-toolbox"),
             gvc_api_url=os.environ["GVC_API_URL"],

@@ -1,5 +1,5 @@
 [package]
-name = "tally"
+name = "audit"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,13 @@ edition = "2021"
 [dependencies]
 chain-crypto = { path = "../chain-libs/chain-crypto" }
 chain-vote = { path = "../chain-libs/chain-vote" }
+jormungandr-lib = { path = "../jormungandr/jormungandr-lib" }
+chain-addr = { path = "../chain-libs/chain-addr" }
+chain-core = { path = "../chain-libs/chain-core" }
+chain-impl-mockchain = { path = "../chain-libs/chain-impl-mockchain" }
+chain-ser = { path = "../chain-libs/chain-ser" }
+chain-storage = { path = "../chain-libs/chain-storage" }
+
 rand_core = "0.6"
 
 base64 = "0.21.0"
@@ -17,9 +24,27 @@ clap = { version = "4", features = ["derive", "cargo"] }
 clap_complete_command = { version = "0.5" }
 
 color-eyre = "0.6"
+thiserror = "1.0.40"
+serde = "1.0.164"
+csv = "1.1"
+hex = "0.4"
+
+
 
 [dev-dependencies]
 rand_chacha = "0.3"
 smoke = "^0.2.1"
 criterion = "0.3"
 chain-crypto = { path = "../chain-libs/chain-crypto", features=["property-test-api"]}
+
+[lib]
+name = "lib"
+path = "src/lib/mod.rs"
+
+[[bin]]
+name = "tally"
+path = "src/tally/bin/main.rs"
+
+[[bin]]
+name = "fragments"
+path = "src/fragments/bin/main.rs"

@@ -5,7 +5,7 @@ This tool allows the community to cross reference and validate vote results.
 *Example usage:*
 
 ```
-cargo build --release -p tally
+cargo build --release -p audit
 ```  
 
 #### Public use: Validate results 

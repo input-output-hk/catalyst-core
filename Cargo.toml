@@ -52,7 +52,7 @@ members = [
   "src/vit-testing/scheduler-service-lib",
   "src/voting-tools-rs",
   "src/cat-data-service",
-  "src/tally",
+  "src/audit",
 ]
 
 [workspace.dependencies]

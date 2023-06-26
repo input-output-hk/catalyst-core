@@ -109,6 +109,7 @@ CREATE TABLE proposal_review (
   auditability_rating_given INTEGER,
   auditability_note VARCHAR,
   ranking INTEGER,
+  flags JSONB NULL,
 
   FOREIGN KEY (proposal_id) REFERENCES proposal(row_id) ON DELETE CASCADE
   FOREIGN KEY (assessor_level) REFERENCES reviewer_level(row_id) ON DELETE CASCADE
@@ -145,6 +146,19 @@ DEPRECATED: Only used for Vit-SS compatibility.';
 COMMENT ON COLUMN proposal_review.ranking IS
 'Numeric  Measure of quality of this review according to veteran community advisors.
 DEPRECATED: Only used for Vit-SS compatibility.
+';
+
+COMMENT ON COLUMN proposal_review.flags IS
+'OPTIONAL: JSON Array which defines the flags raised for this review.
+Flags can be raised for different reasons and have different metadata.
+Each entry =
+```jsonc
+{
+   "flag_type": "<flag_type>", // Enum of the flag type (0: Profanity, 1: Similarity 2: AI generated).
+   "score": <score>, // Profanity score, similarity score, or AI generated score. 0-1.
+   "related_reviews": [<review_id>] // Array of review IDs that this flag is related to (valid for similarity).
+}
+```
 ';
 
 CREATE TABLE review_metric (

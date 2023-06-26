@@ -21,3 +21,7 @@ path = "end2end/main.rs"
 [[test]]
 name = "non_functional"
 path = "non_functional/main.rs"
+
+[package]
+name = "cat-data-service-client"
+path = "cat-data-service-client/cat-data-service-client/src/lib.rs"

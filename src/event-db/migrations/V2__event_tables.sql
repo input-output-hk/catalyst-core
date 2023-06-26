@@ -13,7 +13,7 @@ CREATE TABLE event
     registration_snapshot_time TIMESTAMP,
     snapshot_start TIMESTAMP,
     voting_power_threshold BIGINT,
-    max_voting_power_pct NUMERIC(6,3) CONSTRAINT percentage CHECK (max_voting_power_pct <= 100),
+    max_voting_power_pct NUMERIC(6,3) CONSTRAINT percentage CHECK (max_voting_power_pct <= 100 AND max_voting_power_pct >= 0),
 
     start_time TIMESTAMP,
     end_time TIMESTAMP,

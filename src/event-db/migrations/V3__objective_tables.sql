@@ -101,7 +101,6 @@ CREATE TABLE objective
     rewards_total BIGINT,
     rewards_total_lovelace BIGINT,
     proposers_rewards BIGINT,
-    review_rewards BIGINT,
     vote_options INTEGER,
 
     extra JSONB,
@@ -131,7 +130,6 @@ COMMENT ON COLUMN objective.rewards_currency IS 'The currency rewards values are
 COMMENT ON COLUMN objective.rewards_total IS 'The total reward pool to pay on this objective to winning proposals. In the Objective Currency.';
 COMMENT ON COLUMN objective.rewards_total_lovelace IS 'The total reward pool to pay on this objective to winning proposals. In Lovelace.';
 COMMENT ON COLUMN objective.proposers_rewards IS 'Not sure how this is different from rewards_total???';
-COMMENT ON COLUMN objective.review_rewards IS 'The total reward pool to pay for community reviewers for their valid reviews of the proposals assigned to this objective.';
 COMMENT ON COLUMN objective.vote_options IS 'The Vote Options applicable to all proposals in this objective.';
 COMMENT ON COLUMN objective.extra IS
 'Extra Data  for this objective represented as JSON.

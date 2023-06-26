@@ -74,9 +74,9 @@ CREATE TABLE reviewer_level (
     name TEXT NOT NULL,
     total_reward_pct NUMERIC(6,3) CONSTRAINT percentage CHECK (total_reward_pct <= 100 AND total_reward_pct >= 0),
 
-    objective INTEGER NOT NULL,
+    event INTEGER NOT NULL,
 
-    FOREIGN KEY(objective) REFERENCES objective(row_id) ON DELETE CASCADE
+    FOREIGN KEY(event) REFERENCES event(row_id) ON DELETE CASCADE
 );
 
 COMMENT ON TABLE reviewer_level IS 
@@ -85,8 +85,8 @@ This table represents all different types of reviewer`s levels, which is taken i
 COMMENT ON COLUMN reviewer_level.row_id IS 'Synthetic Unique Key';
 COMMENT ON COLUMN reviewer_level.name IS 'Name of the reviewer level';
 COMMENT ON COLUMN reviewer_level.total_reward_pct IS 
-'Total reviewer`s reward assigned to the specific level, which is defined as a percentage from the total pot of Community Review rewards (See `objective.review_rewards` column).';
-COMMENT ON COLUMN reviewer_level.objective IS 'The Objective this reviewer`s level falls under.';
+'Total reviewer`s reward assigned to the specific level, which is defined as a percentage from the total pot of Community Review rewards (See `event.review_rewards` column).';
+COMMENT ON COLUMN reviewer_level.objective IS 'The specific Event ID this review level is part of.';
 
 -- community advisor reviews
 

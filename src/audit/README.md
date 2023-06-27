@@ -19,12 +19,19 @@ MOUNT_PATH=/tmp/fund9-leader-1:/leader1stuff
 HISTORICAL_STATE=/leader1stuff/persist/leader-1
 BLOCK_0=/leader1stuff/artifacts/block0.bin
 
-earthly +all
+earthly +build && earthly +docker
 docker run  --net=host -v $MOUNT_PATH --env STORAGE_PATH=$HISTORICAL_STATE --env GENESIS_PATH=$BLOCK_0 jormungandr
 ```
 
-Curl for active vote plan to recreate IOG results.
+### Retrieve historical fund results *active vote plans* 
+
+Takes several minutes to replay state and stabilize before it is possible to retrieve vote results ⌛
 
 ```bash
-curl http://127.0.0.1:10000/api/v0/vote/active/plans > vote_plans_replayed.txt
+curl http://127.0.0.1:10000/api/v0/vote/active/plans > vote_plans_replayed.json
 ```
+
+### Extract and analyse tally fragments and match with *results* 
+
+
+

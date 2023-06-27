@@ -1,6 +1,6 @@
 ### Community Tally verification tool
 
-This tool allows the community to cross reference and validate vote results.
+This tool allows the community to cross-reference and validate vote results.
 
 *Example usage:*
 

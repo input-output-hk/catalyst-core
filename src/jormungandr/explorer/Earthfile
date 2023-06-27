@@ -1,0 +1,23 @@
+VERSION 0.7
+
+build:
+    FROM ../../../+builder
+    RUN cargo build --locked --release --bin explorer
+
+    # Store the artifact
+    SAVE ARTIFACT target/release/explorer explorer
+    SAVE IMAGE --cache-hint
+
+docker:
+    FROM ../../../+deployment
+
+    WORKDIR /app
+    ARG tag="catalyst-fund9.1"
+    ARG registry
+
+    COPY +build/explorer .
+    COPY entry.sh .
+    RUN chmod +x entry.sh
+
+    ENTRYPOINT ["/app/entry.sh"]
+    SAVE IMAGE --push ${registry}explorer:$tag

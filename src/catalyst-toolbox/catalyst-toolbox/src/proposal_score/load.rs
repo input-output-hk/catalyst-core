@@ -2,38 +2,41 @@ use crate::utils;
 use serde::Deserialize;
 use std::path::PathBuf;
 
+const ALLOCATED_TYPE: u32 = 1;
+const NOT_ALLOCATED_TYPE: u32 = 0;
+
 #[derive(Deserialize, Debug)]
-struct ReviewsRow {
-    id: u32,
-    #[serde(alias = "Challenge")]
-    challenge: String,
-    #[serde(alias = "Idea Title")]
-    idea_title: String,
-    #[serde(alias = "Idea URL")]
-    idea_url: String,
-    #[serde(alias = "Reviewer")]
-    reviewer: String,
-    #[serde(alias = "Level")]
-    level: u32,
+pub struct ReviewsRow {
     #[serde(alias = "Review Type")]
     review_type: u32,
-    proposal_id: u32,
-    challenge_id: u32,
-    #[serde(alias = "Impact / Alignment Note")]
-    alignment_note: String,
     #[serde(alias = "Impact / Alignment Rating")]
     alignment_rating: u32,
-    #[serde(alias = "Feasibility Note")]
-    feasibility_note: String,
     #[serde(alias = "Feasibility Rating")]
-    feasibility_rating: String,
-    #[serde(alias = "Auditability Note")]
-    auditability_note: String,
+    feasibility_rating: u32,
     #[serde(alias = "Auditability Rating")]
     auditability_rating: u32,
 }
 
-fn load_reviews_from_csv(path: &PathBuf) -> Result<Vec<ReviewsRow>, csv::Error> {
+// impl TryInto<super::Review> for ReviewsRow {
+//     type Error = String;
+//     fn try_into(self) -> Result<super::Review, Self::Error> {
+//         let allocated = match self.review_type {
+//             ALLOCATED_TYPE => true,
+//             NOT_ALLOCATED_TYPE => false,
+//             _ => {
+//                 return Err("Invalid review type".to_string());
+//             }
+//         };
+//         Ok(super::Review {
+//             allocated,
+//             alignment_rating: self.alignment_rating,
+//             feasibility_rating: self.feasibility_rating,
+//             auditability_rating: self.auditability_rating,
+//         })
+//     }
+// }
+
+pub fn load_reviews_from_csv(path: &PathBuf) -> Result<Vec<ReviewsRow>, csv::Error> {
     utils::csv::load_data_from_csv::<_, b','>(path)
 }
 

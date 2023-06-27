@@ -65,7 +65,7 @@ pub async fn get_all_review_types(configuration: &configuration::Configuration, 
 }
 
 /// Retrieves advisor reviews information for the provided proposal id. 
-pub async fn get_proposal_reviews(configuration: &configuration::Configuration, limit: Option<serde_json::Value>, offset: Option<serde_json::Value>) -> Result<serde_json::Value, Error<GetProposalReviewsError>> {
+pub async fn get_proposal_reviews(configuration: &configuration::Configuration, id: serde_json::Value, obj_id: serde_json::Value, prop_id: serde_json::Value, limit: Option<serde_json::Value>, offset: Option<serde_json::Value>) -> Result<serde_json::Value, Error<GetProposalReviewsError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;

@@ -32,7 +32,7 @@ pub enum GetProposalError {
 
 
 /// Summarized Lists all available proposals. 
-pub async fn get_all_proposals(configuration: &configuration::Configuration, limit: Option<serde_json::Value>, offset: Option<serde_json::Value>, grp: Option<serde_json::Value>) -> Result<serde_json::Value, Error<GetAllProposalsError>> {
+pub async fn get_all_proposals(configuration: &configuration::Configuration, id: i32, obj_id: i32, limit: Option<serde_json::Value>, offset: Option<serde_json::Value>, grp: Option<serde_json::Value>) -> Result<serde_json::Value, Error<GetAllProposalsError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;

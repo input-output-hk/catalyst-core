@@ -40,7 +40,9 @@ pub async fn get_delegator_info(configuration: &configuration::Configuration, sp
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/api/v1/registration/delegations/{sp_key}?event_id={eid}", local_var_configuration.base_path, sp_key=sp_key);
+    let event_id_unwrap = event_id.as_ref().unwrap();
+
+    let local_var_uri_str = format!("{}/api/v1/registration/delegations/{sp_key}?event_id={event_id_unwrap}", local_var_configuration.base_path, sp_key=sp_key);
     let mut local_var_req_builder = local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = event_id {
@@ -71,7 +73,10 @@ pub async fn get_voter_info(configuration: &configuration::Configuration, vkey: 
 
     let local_var_client = &local_var_configuration.client;
 
-    let local_var_uri_str = format!("{}/api/v1/registration/voter/{vkey}?event_id={eid}&with_delegators={flag}", local_var_configuration.base_path, vkey=vkey);
+    let event_id_unwrap = event_id.as_ref().unwrap();
+    let with_delegators_unwrap = with_delegators.as_ref().unwrap();
+
+    let local_var_uri_str = format!("{}/api/v1/registration/voter/{vkey}?event_id={event_id_unwrap}&with_delegators={with_delegators_unwrap}", local_var_configuration.base_path, vkey=vkey);
     let mut local_var_req_builder = local_var_client.request(reqwest::Method::GET, local_var_uri_str.as_str());
 
     if let Some(ref local_var_str) = event_id {

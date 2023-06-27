@@ -25,7 +25,7 @@ pub enum GetObjectivesError {
 
 
 /// Get all current objectives to be decided for the voting event. An Objective here is defined as:\\ *\"A vote in which all the people in a group decide on an important issue.\"*\\ Examples of objectives are: * Catalyst Funding Challenges * General Voting Events * Any other Decision to be determined by the Communities Collective will. * Non binding community collective opinion measurement.
-pub async fn get_objectives(configuration: &configuration::Configuration, limit: Option<serde_json::Value>, offset: Option<serde_json::Value>, grp: Option<serde_json::Value>) -> Result<serde_json::Value, Error<GetObjectivesError>> {
+pub async fn get_objectives(configuration: &configuration::Configuration, id: i32, limit: Option<serde_json::Value>, offset: Option<serde_json::Value>, grp: Option<serde_json::Value>) -> Result<serde_json::Value, Error<GetObjectivesError>> {
     let local_var_configuration = configuration;
 
     let local_var_client = &local_var_configuration.client;
@@ -47,6 +47,7 @@ pub async fn get_objectives(configuration: &configuration::Configuration, limit:
     }
 
     let local_var_req = local_var_req_builder.build()?;
+
     let local_var_resp = local_var_client.execute(local_var_req).await?;
 
     let local_var_status = local_var_resp.status();

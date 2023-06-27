@@ -28,6 +28,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     //
     // Load and replay fund fragments from storage
     //
+
     let storage_path = args.tally_fragments;
 
     let path = PathBuf::from(storage_path);

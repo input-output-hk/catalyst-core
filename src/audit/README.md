@@ -1,20 +1,30 @@
-# Audit Tooling: Under Construction <img width="45" alt="schermafbeelding 2017-09-27 om 23 08 12" src="https://user-images.githubusercontent.com/7254997/30937972-c9632d04-a3d8-11e7-87f3-c44ce2b86d24.png">
+# Audit Tooling:
 
-###
+### Download Fund State
+Download historical fund state from [here](https://github.com/input-output-hk/catalyst-core) in order to replay the voting event.
 
-*We need to wrap this up in earthly for ease of use*
+### Start and load node with historical state
 
-Start node with legacy storage i.e fundX with custom node config. 
+Pre-requisites
+- Install [Earthly CLI](https://earthly.dev/get-earthly)
+- Docker or Podman
+- Git
 
 ```bash
-./target/release/jormungandr --genesis-block /tmp/fund*-leader-1/artifacts/block0.bin --config=node_config.yaml
+cd balance
+
+# Mount local path as a volume in the container
+MOUNT_PATH=/tmp/fund9-leader-1:/leader1stuff
+
+HISTORICAL_STATE=/leader1stuff/persist/leader-1
+BLOCK_0=/leader1stuff/artifacts/block0.bin
+
+earthly +all
+docker run  --net=host -v $MOUNT_PATH --env STORAGE_PATH=$HISTORICAL_STATE --env GENESIS_PATH=$BLOCK_0 jormungandr
 ```
 
 Curl for active vote plan to recreate IOG results.
 
 ```bash
-curl http://127.0.0.1:10000/api/v0/vote/active/plans > voteplansgen.txt
+curl http://127.0.0.1:10000/api/v0/vote/active/plans > vote_plans_replayed.txt
 ```
-
-Extract results from voteplansgen.txt and feed to fragments extraction tool to verify all of them match.
-

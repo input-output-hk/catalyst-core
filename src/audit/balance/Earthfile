@@ -10,15 +10,17 @@ build:
 
 docker:
     FROM ../../../+deployment
-
     WORKDIR /app
     ARG tag="latest"
     ARG registry
 
     COPY +build/jormungandr .
     COPY entry.sh .
-    RUN chmod +x entry.sh
 
+    COPY node_config.yaml .
+    RUN chmod +x entry.sh
+    RUN pwd
+    ENV NODE_CONFIG_PATH=/app/node_config.yaml
     ENV BIN_PATH=/app/jormungandr
     ENTRYPOINT ["/app/entry.sh"]
     SAVE IMAGE --push ${registry}jormungandr:$tag

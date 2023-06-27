@@ -1,5 +1,4 @@
 ---
-storage: /tmp/fund*-leader-1/persist/leader-1
 rest:
   listen: "127.0.0.1:10000"
 jrpc:

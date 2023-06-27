@@ -21,12 +21,12 @@ fi
 # Verify config is present
 if [[ ! -f "$NODE_CONFIG_PATH" ]]; then
     echo "ERROR: node configuration is absent at: $NODE_CONFIG_PATH"
-    echo ">>> Aborting..."
+    echo ">>> Aborting..."TH"
     exit 1
 fi
 # Verify genesis block is present
 if [[ ! -f "$GENESIS_PATH" ]]; then
-    echo "ERROR: genesis block is absent at: $GENESIS_PATH"
+    echo "ERROR: genesis block is absent at: $GENESIS_PA
     echo ">>> Aborting..."
     exit 1
 fi

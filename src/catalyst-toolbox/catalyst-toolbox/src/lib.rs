@@ -15,6 +15,7 @@ pub mod types;
 pub mod utils;
 pub mod vca_reviews;
 pub mod vote_check;
+pub mod proposal_score;
 
 #[macro_use]
 extern crate tracing;

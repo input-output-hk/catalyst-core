@@ -7,6 +7,7 @@ pub mod ideascale;
 pub mod kedqr;
 pub mod logs;
 pub mod notifications;
+pub mod proposal_score;
 pub mod recovery;
 pub mod rewards;
 pub mod stats;
@@ -15,7 +16,6 @@ pub mod types;
 pub mod utils;
 pub mod vca_reviews;
 pub mod vote_check;
-pub mod proposal_score;
 
 #[macro_use]
 extern crate tracing;

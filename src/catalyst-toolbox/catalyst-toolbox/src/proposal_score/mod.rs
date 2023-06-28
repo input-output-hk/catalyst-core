@@ -158,13 +158,12 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn full_test() {
         let allocated_weight = 0.8;
         let not_allocated_weight = 0.2;
 
-        let db = std::path::PathBuf::from("src/proposal_score/fund9.sqlite3");
-        let reviews = std::path::PathBuf::from("src/proposal_score/reviews-example.csv");
+        let db = std::path::PathBuf::from("src/proposal_score/test_data/fund9.sqlite3");
+        let reviews = std::path::PathBuf::from("src/proposal_score/test_data/reviews-example.csv");
 
         let reviews = load::load_reviews_from_csv(&reviews).unwrap();
 

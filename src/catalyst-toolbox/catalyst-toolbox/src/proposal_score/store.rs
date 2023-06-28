@@ -15,7 +15,7 @@ pub fn store_scores_in_sqllite_db(
     feasibility_score: FeasibilityScore,
     auditability_score: AuditabilityScore,
 ) -> Result<(), Error> {
-    let conn = Connection::open(&db)?;
+    let conn = Connection::open(db)?;
 
     let json = serde_json::json!(
         {
@@ -33,21 +33,25 @@ pub fn store_scores_in_sqllite_db(
     Ok(())
 }
 
-#[test]
-#[ignore]
-fn test_store_scores_in_sqllite_db() {
-    let db = PathBuf::from("src/proposal_score/fund9.sqlite3");
-    let proposal_id = ProposalId(423260);
-    let aligment_score = AligmentScore(0.5);
-    let feasibility_score = FeasibilityScore(0.5);
-    let auditability_score = AuditabilityScore(0.5);
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    store_scores_in_sqllite_db(
-        &db,
-        proposal_id,
-        aligment_score,
-        feasibility_score,
-        auditability_score,
-    )
-    .unwrap();
+    #[test]
+    fn test_store_scores_in_sqllite_db() {
+        let db = PathBuf::from("src/proposal_score/test_data/fund9.sqlite3");
+        let proposal_id = ProposalId(423260);
+        let aligment_score = AligmentScore(0.5);
+        let feasibility_score = FeasibilityScore(0.5);
+        let auditability_score = AuditabilityScore(0.5);
+
+        store_scores_in_sqllite_db(
+            &db,
+            proposal_id,
+            aligment_score,
+            feasibility_score,
+            auditability_score,
+        )
+        .unwrap();
+    }
 }

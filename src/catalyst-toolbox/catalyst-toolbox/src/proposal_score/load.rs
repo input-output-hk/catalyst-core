@@ -1,7 +1,7 @@
 use super::{AligmentReviews, AuditabilityReviews, FeasibilityReviews, ProposalId, Review};
 use crate::utils;
 use serde::Deserialize;
-use std::{collections::HashMap, path::PathBuf};
+use std::{collections::HashMap, path::Path};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -14,6 +14,8 @@ pub enum Error {
 const ALLOCATED_TYPE: u32 = 1;
 const NOT_ALLOCATED_TYPE: u32 = 0;
 
+/// Represents a cvs's row, as an example of csv file in `tets_data/reviews-example.csv`
+/// All serde aliases are used to be corresponded with the csv's column names
 #[derive(Deserialize, Debug)]
 pub struct ReviewsRow {
     proposal_id: i32,
@@ -28,7 +30,7 @@ pub struct ReviewsRow {
 }
 
 pub fn load_reviews_from_csv(
-    path: &PathBuf,
+    path: &Path,
 ) -> Result<HashMap<ProposalId, (AligmentReviews, FeasibilityReviews, AuditabilityReviews)>, Error>
 {
     let rows: Vec<ReviewsRow> = utils::csv::load_data_from_csv::<_, b','>(path)?;
@@ -65,11 +67,16 @@ pub fn load_reviews_from_csv(
     Ok(reviews_per_proposal)
 }
 
-#[test]
-#[ignore]
-fn load_test() {
-    let file = PathBuf::from("src/proposal_score/reviews-example.csv");
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::PathBuf;
 
-    let res = load_reviews_from_csv(&file).unwrap();
-    println!("{:?}", res);
+    #[test]
+    fn load_test() {
+        let file = PathBuf::from("src/proposal_score/test_data/reviews-example.csv");
+
+        let res = load_reviews_from_csv(&file).unwrap();
+        println!("{:?}", res);
+    }
 }

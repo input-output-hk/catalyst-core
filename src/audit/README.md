@@ -31,7 +31,7 @@ Takes several minutes to replay state and stabilize before it is possible to ret
 curl http://127.0.0.1:10000/api/v0/vote/active/plans > vote_plans_replayed.json
 ```
 
-### Extract and analyse tally fragments and match with *results* 
-
+### Extract and analyse tally fragments and match with official *results* 
+[See here](src/fragments/bin/README.md)
 
 

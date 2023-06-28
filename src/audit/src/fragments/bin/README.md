@@ -19,4 +19,5 @@ OFFICIAL_CATALYST_RESULTS='/tmp/vote_plans_replayed.json'
 
 ```
 
-- [x] Tick vs active plans
+#### Find my vote?
+*TODO*

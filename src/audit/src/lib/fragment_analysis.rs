@@ -8,9 +8,15 @@ use chain_impl_mockchain::{
 
 use jormungandr_lib::interfaces::{AccountIdentifier, Address};
 
+use ::serde::Deserialize;
+
+use serde::Deserializer;
+
+use std::{fs::File, path::Path};
+
 use serde::Serialize;
 
-use std::{collections::HashMap, path::Path};
+use std::collections::HashMap;
 
 const MAIN_TAG: &str = "HEAD";
 
@@ -146,6 +152,21 @@ pub fn confirm_vote(jormungandr_database: &Path, output_dir: &Path) -> Result<()
         }
     }
     Ok(())
+}
+
+pub fn json_from_file<T: for<'a> Deserialize<'a>>(path: impl AsRef<Path>) -> color_eyre::Result<T> {
+    Ok(serde_json::from_reader(File::open(path)?)?)
+}
+
+pub fn deserialize_truthy_falsy<'de, D>(deserializer: D) -> Result<bool, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let truthy_value: String = String::deserialize(deserializer)?;
+    Ok(matches!(
+        truthy_value.to_lowercase().as_ref(),
+        "x" | "1" | "true"
+    ))
 }
 
 #[cfg(test)]

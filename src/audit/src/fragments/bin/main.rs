@@ -5,7 +5,8 @@
 use clap::Parser;
 
 use color_eyre::Result;
-use lib::fragment_analysis::extract_tally_fragments;
+use jormungandr_lib::interfaces::VotePlanStatus;
+use lib::fragment_analysis::{extract_tally_fragments, json_from_file};
 
 use std::{error::Error, path::PathBuf};
 
@@ -18,6 +19,9 @@ pub struct Args {
     /// Obtain tally fragments by providing path to historical fund data.
     #[clap(short, long)]
     pub tally_fragments: String,
+    /// Official catalyst results in json format.
+    #[clap(short, long)]
+    pub active_vote_plans: String,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -25,23 +29,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let args = Args::parse();
 
-    //
     // Load and replay fund fragments from storage
-    //
+    let storage_path = PathBuf::from(args.tally_fragments);
 
-    let storage_path = args.tally_fragments;
+    let active_plans_official_path = PathBuf::from(args.active_vote_plans);
 
-    let path = PathBuf::from(storage_path);
+    // extracted tally fragments (results) from replayed fund
+    let tallies = extract_tally_fragments(&storage_path)?;
 
-    let tallies = extract_tally_fragments(&path).unwrap();
+    // official catalyst results in json format
+    let voteplans: Vec<VotePlanStatus> = json_from_file(active_plans_official_path)?;
 
-    // match against active_plans.json to verify
-    println!("# of results {}", tallies.len());
-    for tally in tallies {
-        for decrypted in tally.iter() {
-            println!("result: {:?}", decrypted.tally_result);
-        }
-    }
+    // cross reference official results with tally fragments
+
+    println!("votes {:?}", voteplans);
 
     Ok(())
 }

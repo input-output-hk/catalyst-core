@@ -2,7 +2,7 @@
 
 ## Online audit
 
-During the voting event, it is possible to keep track of each the tally and votes cast for each proposal.
+During the voting event, it is possible to keep track of the *tally* and *votes cast* for each proposal.
 
 
 ```bash
@@ -27,9 +27,9 @@ curl https://core.projectcatalyst.io/api/v0/vote/active/plans
 
 ```
 
-To keep track live you will need to decrypt the encrypted tally to verify our process. We will publish the *decrypt shares* and *public keys*, allowing you to decrypt and verify the results. [See live tooling for more info](src/live/README.md)
+During the voting event, the endpoint will return an encrypted tally. We will publish the *decrypt shares* and *public keys*, allowing you to decrypt and verify the process results. [See live tooling for more info](src/live/README.md)
 
-Once the voting event terminates this endpoint will return the *final* decrypted results which you then verify with the [offline tooling](src/offline/bin/README.md).
+Once the voting event terminates this endpoint will return the *final* decrypted results which you can then verify with catalyst [offline tooling](src/offline/bin/README.md).
 
 ```yaml
 ---

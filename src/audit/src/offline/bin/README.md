@@ -8,7 +8,7 @@ This tool allows facilitates fragment analysis of a fund using historical blockc
 cargo build --release -p audit
 ```  
 
-#### Cross reference official published results 
+#### Cross reference official published results.
 
 ```bash
 

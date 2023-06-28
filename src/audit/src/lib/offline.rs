@@ -171,7 +171,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::fragment_analysis::extract_tally_fragments;
+    use crate::offline::extract_tally_fragments;
     use std::path::PathBuf;
 
     #[test]

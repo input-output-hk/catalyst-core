@@ -1,12 +1,12 @@
 //!
-//! Tool for Fragment Analysis
+//! Tool for offline Fragment Analysis
 //!
 
 use clap::Parser;
 
 use color_eyre::Result;
 use jormungandr_lib::interfaces::VotePlanStatus;
-use lib::fragment_analysis::{extract_tally_fragments, json_from_file};
+use lib::offline::{extract_tally_fragments, json_from_file};
 
 use std::{error::Error, path::PathBuf};
 

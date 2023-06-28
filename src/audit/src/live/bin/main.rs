@@ -3,15 +3,15 @@
 //!
 
 use chain_vote::tally::batch_decrypt;
-
-use clap::Parser;
-
-use color_eyre::Result;
-use lib::tally::{
+use lib::live::{
     decrypt_tally_with_secret_keys, encode_decrypt_shares, encode_public_keys,
     extract_decrypt_shares, load_decrypt_shares, load_encrypted_tally,
     parse_private_committee_keys, parse_public_committee_keys,
 };
+
+use clap::Parser;
+
+use color_eyre::Result;
 
 use std::error::Error;
 
@@ -134,7 +134,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 #[cfg(test)]
 mod tests {
 
-    use crate::{
+    use lib::live::{
         encode_decrypt_shares, encode_public_keys, extract_decrypt_shares, load_decrypt_shares,
         load_encrypted_tally, parse_public_committee_keys,
     };

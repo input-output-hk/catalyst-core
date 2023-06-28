@@ -45,9 +45,9 @@ name = "lib"
 path = "src/lib/mod.rs"
 
 [[bin]]
-name = "tally"
-path = "src/tally/bin/main.rs"
+name = "live"
+path = "src/live/bin/main.rs"
 
 [[bin]]
-name = "fragments"
-path = "src/fragments/bin/main.rs"
+name = "offline"
+path = "src/offline/bin/main.rs"

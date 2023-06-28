@@ -77,7 +77,7 @@ earthly +build && earthly +docker
 docker run  --net=host -v $MOUNT_PATH --env STORAGE_PATH=$HISTORICAL_STATE --env GENESIS_PATH=$BLOCK_0 jormungandr
 ```
 
-### Retrieve historical fund results *active vote plans* 
+### Retrieve historical fund results.
 
 Takes several minutes to replay state and stabilize before it is possible to retrieve vote results ⌛
 

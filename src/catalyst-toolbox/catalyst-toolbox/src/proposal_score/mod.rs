@@ -1,4 +1,44 @@
-mod load;
+pub mod load;
+pub mod store;
+
+#[derive(Debug, Hash, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ProposalId(pub i32);
+
+#[derive(Debug)]
+pub struct AligmentReviews(pub Vec<Review>);
+pub struct AligmentScore(f64);
+#[derive(Debug)]
+pub struct FeasibilityReviews(pub Vec<Review>);
+pub struct FeasibilityScore(f64);
+#[derive(Debug)]
+pub struct AuditabilityReviews(pub Vec<Review>);
+pub struct AuditabilityScore(f64);
+
+pub fn calc_score(
+    allocated_weight: f64,
+    not_allocated_weight: f64,
+    aligment_reviews: &AligmentReviews,
+    feasibility_reviews: &FeasibilityReviews,
+    auditability_review: &AuditabilityReviews,
+) -> Result<(AligmentScore, FeasibilityScore, AuditabilityScore), Error> {
+    let aligment_score = AligmentScore(weighted_avarage_score(
+        allocated_weight,
+        not_allocated_weight,
+        &aligment_reviews.0,
+    )?);
+    let feasibility_score = FeasibilityScore(weighted_avarage_score(
+        allocated_weight,
+        not_allocated_weight,
+        &feasibility_reviews.0,
+    )?);
+    let auditability_score = AuditabilityScore(weighted_avarage_score(
+        allocated_weight,
+        not_allocated_weight,
+        &auditability_review.0,
+    )?);
+
+    Ok((aligment_score, feasibility_score, auditability_score))
+}
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -6,6 +46,7 @@ pub enum Error {
     InvalidWeights(f64, f64),
 }
 
+#[derive(Debug)]
 pub struct Review {
     rating: u32,
     allocated: bool,
@@ -16,7 +57,7 @@ fn review_weight(weight: f64, reviews_amount: usize) -> f64 {
 }
 
 /// weighted average score calculation
-pub fn score(
+fn weighted_avarage_score(
     allocated_weight: f64,
     not_allocated_weight: f64,
     reviews: &[Review],
@@ -109,9 +150,43 @@ mod tests {
             },
         ];
 
-        let result = score(allocated_weight, not_allocated_weight, &reviews).unwrap();
+        let result =
+            weighted_avarage_score(allocated_weight, not_allocated_weight, &reviews).unwrap();
         assert_eq!(result, 2.6);
 
-        assert!(score(0.5, 0.6, &[]).is_err());
+        assert!(weighted_avarage_score(0.5, 0.6, &[]).is_err());
+    }
+
+    #[test]
+    #[ignore]
+    fn full_test() {
+        let allocated_weight = 0.8;
+        let not_allocated_weight = 0.2;
+
+        let db = std::path::PathBuf::from("src/proposal_score/fund9.sqlite3");
+        let reviews = std::path::PathBuf::from("src/proposal_score/reviews-example.csv");
+
+        let reviews = load::load_reviews_from_csv(&reviews).unwrap();
+
+        for (proposal_id, (aligment_reviews, feasibility_reviews, auditability_reviews)) in reviews
+        {
+            let (aligment_score, feasibility_score, auditability_score) = calc_score(
+                allocated_weight,
+                not_allocated_weight,
+                &aligment_reviews,
+                &feasibility_reviews,
+                &auditability_reviews,
+            )
+            .unwrap();
+
+            store::store_scores_in_sqllite_db(
+                &db,
+                proposal_id,
+                aligment_score,
+                feasibility_score,
+                auditability_score,
+            )
+            .unwrap();
+        }
     }
 }

@@ -64,6 +64,7 @@ snapshot-lib = { path = "../snapshot-lib" }
 fraction = "0.12"
 tracing.workspace = true
 tracing-subscriber.workspace = true
+rusqlite = { version = "0.29.0", features = ["bundled"] }
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib", optional = true }
 
 [dev-dependencies]

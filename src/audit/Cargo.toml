@@ -45,8 +45,8 @@ name = "lib"
 path = "src/lib/mod.rs"
 
 [[bin]]
-name = "live"
-path = "src/live/bin/main.rs"
+name = "tally"
+path = "src/tally/bin/main.rs"
 
 [[bin]]
 name = "offline"

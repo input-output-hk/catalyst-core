@@ -4,6 +4,7 @@ mod ideascale;
 mod kedqr;
 mod logs;
 mod notifications;
+mod proposal_score;
 mod recovery;
 mod rewards;
 mod snapshot;
@@ -34,6 +35,8 @@ pub struct Cli {
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]
 pub enum CatalystCommand {
+    /// Proposal score operations
+    ProposalScore(proposal_score::ProposalScore),
     /// Rewards related operations
     #[clap(subcommand)]
     Rewards(rewards::Rewards),
@@ -89,6 +92,7 @@ impl CatalystCommand {
     pub fn exec(self) -> Result<(), Report> {
         use self::CatalystCommand::*;
         match self {
+            ProposalScore(proposal_score) => proposal_score.exec()?,
             Rewards(rewards) => rewards.exec()?,
             Push(notifications) => notifications.exec()?,
             Recover(recover) => recover.exec()?,

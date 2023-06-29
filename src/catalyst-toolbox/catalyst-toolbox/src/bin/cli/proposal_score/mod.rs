@@ -56,3 +56,20 @@ impl ProposalScore {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn proposal_score_test() {
+        let proposal_score = ProposalScore {
+            allocated_weight: 0.8,
+            not_allocated_weight: 0.2,
+            reviews_path: PathBuf::from("src/proposal_score/test_data/reviews-example.csv"),
+            db_path: PathBuf::from("src/proposal_score/test_data/fund9.sqlite3"),
+        };
+
+        proposal_score.exec().unwrap();
+    }
+}

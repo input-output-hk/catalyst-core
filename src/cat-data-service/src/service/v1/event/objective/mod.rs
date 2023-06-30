@@ -111,7 +111,7 @@ async fn objectives_voting_statuses_exec(
         .into_iter()
         .map(|objective| VotingStatus {
             objective_id: objective.summary.id,
-            open: data.0.clone(),
+            open: data.0,
             settings: data.1.clone(),
         })
         .collect();

@@ -1209,7 +1209,10 @@ components:
           description: Whether this objective is open for voting or not.
         settings:
           type: string
-          description: voting settings
+          description: voting settings data, empty if `open` is false
+      required:
+        - objective_id
+        - open
     VotePlan:
       title: Vote Plan
       type: object

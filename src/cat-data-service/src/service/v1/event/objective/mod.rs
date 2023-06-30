@@ -7,7 +7,7 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::types::event::{objective::Objective, EventId};
+use event_db::types::event::{objective::Objective, voting_status::VotingStatus, EventId};
 use std::sync::Arc;
 
 mod ballots;
@@ -24,10 +24,16 @@ pub fn objective(state: Arc<State>) -> Router {
             "/objective/:objective",
             proposal.merge(review_type).merge(ballots),
         )
-        .route(
-            "/objectives",
+        .route("/objectives", {
+            let state = state.clone();
             get(move |path, query| async {
                 handle_result(objectives_exec(path, query, state).await)
+            })
+        })
+        .route(
+            "/objectives/voting_status",
+            get(move |path, query| async {
+                handle_result(objectives_voting_statuses_exec(path, query, state).await)
             }),
         )
 }
@@ -39,11 +45,66 @@ async fn objectives_exec(
 ) -> Result<Vec<Objective>, Error> {
     tracing::debug!("objectives_query, event: {0}", event.0);
 
-    let event = state
+    let objectives = state
         .event_db
         .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
         .await?;
-    Ok(event)
+    Ok(objectives)
+}
+
+// TODO:
+// mocked data, will be replaced when we will add this into event-db
+fn mocked_settings_data() -> String {
+    let settings = serde_json::json!(
+        {
+            "purpose": 0,
+            "ver": 0,
+            "fees":
+                {
+                    "constant": 10,
+                    "coefficient": 2,
+                    "certificate": 100
+                },
+            "discrimination": "production",
+            "block0_initial_hash":
+                {
+                    "hash": "baf6b54817cf2a3e865f432c3922d28ac5be641e66662c66d445f141e409183e"
+                },
+            "block0_date": 1586637936,
+            "slot_duration": 20,
+            "time_era":
+                {
+                    "epoch_start": 0,
+                    "slot_start": 0,
+                    "slots_per_epoch": 180
+                },
+            "transaction_max_expiry_epochs":1
+        }
+    );
+    settings.to_string()
+}
+
+async fn objectives_voting_statuses_exec(
+    Path(event): Path<EventId>,
+    lim_ofs: Query<LimitOffset>,
+    state: Arc<State>,
+) -> Result<Vec<VotingStatus>, Error> {
+    tracing::debug!("objectives_voting_statuses_query, event: {0}", event.0);
+
+    let objectives = state
+        .event_db
+        .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
+        .await?;
+
+    let voting_statuses: Vec<_> = objectives
+        .into_iter()
+        .map(|objective| VotingStatus {
+            objective_id: objective.summary.id,
+            open: true,
+            settings: Some(mocked_settings_data()),
+        })
+        .collect();
+    Ok(voting_statuses)
 }
 
 /// Need to setup and run a test event db instance
@@ -197,6 +258,94 @@ mod tests {
         let request = Request::builder()
             .uri(format!(
                 "/api/v1/event/{0}/objectives?limit={1}&offset={2}",
+                1, 1, 2
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(
+            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
+                .unwrap(),
+            serde_json::to_string(&Vec::<Objective>::new()).unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn objectives_voting_status_test() {
+        let state = Arc::new(State::new(None).await.unwrap());
+        let app = app(state);
+
+        let request = Request::builder()
+            .uri(format!("/api/v1/event/{0}/objectives/voting_status", 1))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                [
+                    {
+                        "objective_id": 1,
+                        "open": true,
+                        "settings": mocked_settings_data(),
+                    },
+                    {
+                        "objective_id": 2,
+                        "open": true,
+                        "settings": mocked_settings_data(),
+                    }
+                ]
+            )
+        ));
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/event/{0}/objectives/voting_status?limit={1}",
+                1, 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                [
+                    {
+                        "objective_id": 1,
+                        "open": true,
+                        "settings": mocked_settings_data(),
+                    },
+                ]
+            )
+        ));
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/event/{0}/objectives/voting_status?offset={1}",
+                1, 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                [
+                    {
+                        "objective_id": 2,
+                        "open": true,
+                        "settings": mocked_settings_data(),
+                    }
+                ]
+            )
+        ));
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/event/{0}/objectives/voting_status?limit={1}&offset={2}",
                 1, 1, 2
             ))
             .body(Body::empty())

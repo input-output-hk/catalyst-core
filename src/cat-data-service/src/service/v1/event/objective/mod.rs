@@ -54,7 +54,10 @@ async fn objectives_exec(
 
 // TODO:
 // mocked data, will be replaced when we will add this into event-db
-fn mocked_settings_data() -> String {
+fn mocked_voting_status_data() -> (bool, Option<String>) {
+    use chrono::Local;
+    use chrono::Timelike;
+
     let settings = serde_json::json!(
         {
             "purpose": 0,
@@ -81,7 +84,13 @@ fn mocked_settings_data() -> String {
             "transaction_max_expiry_epochs":1
         }
     );
-    settings.to_string()
+
+    // Result based on the local time and it changes every 10 minutes
+    if Local::now().minute() / 10 % 2 == 0 {
+        (true, Some(settings.to_string()))
+    } else {
+        (false, None)
+    }
 }
 
 async fn objectives_voting_statuses_exec(
@@ -96,12 +105,14 @@ async fn objectives_voting_statuses_exec(
         .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
         .await?;
 
+    let data = mocked_voting_status_data();
+
     let voting_statuses: Vec<_> = objectives
         .into_iter()
         .map(|objective| VotingStatus {
             objective_id: objective.summary.id,
-            open: true,
-            settings: Some(mocked_settings_data()),
+            open: data.0.clone(),
+            settings: data.1.clone(),
         })
         .collect();
     Ok(voting_statuses)
@@ -275,6 +286,7 @@ mod tests {
         let state = Arc::new(State::new(None).await.unwrap());
         let app = app(state);
 
+        let data = mocked_voting_status_data();
         let request = Request::builder()
             .uri(format!("/api/v1/event/{0}/objectives/voting_status", 1))
             .body(Body::empty())
@@ -287,13 +299,13 @@ mod tests {
                 [
                     {
                         "objective_id": 1,
-                        "open": true,
-                        "settings": mocked_settings_data(),
+                        "open": data.0.clone(),
+                        "settings": data.1.clone(),
                     },
                     {
                         "objective_id": 2,
-                        "open": true,
-                        "settings": mocked_settings_data(),
+                        "open": data.0,
+                        "settings": data.1,
                     }
                 ]
             )
@@ -314,8 +326,8 @@ mod tests {
                 [
                     {
                         "objective_id": 1,
-                        "open": true,
-                        "settings": mocked_settings_data(),
+                        "open": data.0.clone(),
+                        "settings": data.1.clone(),
                     },
                 ]
             )
@@ -336,8 +348,8 @@ mod tests {
                 [
                     {
                         "objective_id": 2,
-                        "open": true,
-                        "settings": mocked_settings_data(),
+                        "open": data.0.clone(),
+                        "settings": data.1.clone(),
                     }
                 ]
             )

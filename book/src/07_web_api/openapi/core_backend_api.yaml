@@ -179,7 +179,33 @@ paths:
                       x-stoplight:
                         id: mdciat4uo1xu8
         '404':
-          description: The requested challenge was not found
+          description: The requested objectives was not found
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/voter_groups_filter'
+  /api/v1/event/{id}/objectives/voting_status:
+    parameters:
+      - $ref: '#/components/parameters/event_id'
+    get:
+      operationId: getObjectiveVoteStatuses
+      summary: Get objective`s voting statuses for a Voting Event.
+      tags:
+        - objective
+      description: |-
+        Get all current objective`s voting statuses with the voting settings for the voting event.
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                description: List of objective`s voting statuses.
+                type: array
+                item:
+                 - $ref: '#/components/schemas/VotingStatus'
+        '404':
+          description: The requested objective`s voting statuses was not found
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
@@ -1169,6 +1195,21 @@ components:
         supplemental:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
       required:
+    VotingStatus:
+      title: Objective`s voting status
+      description: Individual objective`s voting status info
+      type: object
+      properties:
+        objective_id:
+          type: integer
+          format: int32
+          description: The ID of this objective.
+        open:
+          type: boolean
+          description: Whether this objective is open for voting or not.
+        settings:
+          type: string
+          description: voting settings
     VotePlan:
       title: Vote Plan
       type: object

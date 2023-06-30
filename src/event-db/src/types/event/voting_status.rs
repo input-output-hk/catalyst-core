@@ -5,6 +5,7 @@ use serde::Serialize;
 pub struct VotingStatus {
     pub objective_id: ObjectiveId,
     pub open: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub settings: Option<String>,
 }
 

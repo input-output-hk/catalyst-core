@@ -295,20 +295,35 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         assert!(body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
-            serde_json::json!(
-                [
-                    {
-                        "objective_id": 1,
-                        "open": data.0.clone(),
-                        "settings": data.1.clone(),
-                    },
-                    {
-                        "objective_id": 2,
-                        "open": data.0,
-                        "settings": data.1,
-                    }
-                ]
-            )
+            if let Some(settings) = data.1.clone() {
+                serde_json::json!(
+                    [
+                        {
+                            "objective_id": 1,
+                            "open": data.0,
+                            "settings": settings,
+                        },
+                        {
+                            "objective_id": 2,
+                            "open": data.0,
+                            "settings": settings,
+                        }
+                    ]
+                )
+            } else {
+                serde_json::json!(
+                    [
+                        {
+                            "objective_id": 1,
+                            "open": data.0,
+                        },
+                        {
+                            "objective_id": 2,
+                            "open": data.0,
+                        }
+                    ]
+                )
+            }
         ));
 
         let request = Request::builder()
@@ -322,15 +337,26 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         assert!(body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
-            serde_json::json!(
-                [
-                    {
-                        "objective_id": 1,
-                        "open": data.0.clone(),
-                        "settings": data.1.clone(),
-                    },
-                ]
-            )
+            if let Some(settings) = data.1.clone() {
+                serde_json::json!(
+                    [
+                        {
+                            "objective_id": 1,
+                            "open": data.0,
+                            "settings": settings,
+                        }
+                    ]
+                )
+            } else {
+                serde_json::json!(
+                    [
+                        {
+                            "objective_id": 1,
+                            "open": data.0,
+                        }
+                    ]
+                )
+            }
         ));
 
         let request = Request::builder()
@@ -344,15 +370,26 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         assert!(body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
-            serde_json::json!(
-                [
-                    {
-                        "objective_id": 2,
-                        "open": data.0.clone(),
-                        "settings": data.1.clone(),
-                    }
-                ]
-            )
+            if let Some(settings) = data.1.clone() {
+                serde_json::json!(
+                    [
+                        {
+                            "objective_id": 2,
+                            "open": data.0,
+                            "settings": settings,
+                        }
+                    ]
+                )
+            } else {
+                serde_json::json!(
+                    [
+                        {
+                            "objective_id": 2,
+                            "open": data.0,
+                        }
+                    ]
+                )
+            }
         ));
 
         let request = Request::builder()

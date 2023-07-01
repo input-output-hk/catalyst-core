@@ -1,7 +1,6 @@
 use chain_addr::Discrimination;
 use chain_core::{packer::Codec, property::DeserializeFromSlice};
 
-use chain_impl_mockchain::certificate::DecryptedPrivateTally;
 use chain_impl_mockchain::{
     block::Block, chaintypes::HeaderId, fragment::Fragment, transaction::InputEnum,
 };
@@ -9,14 +8,11 @@ use chain_impl_mockchain::{
 use jormungandr_lib::interfaces::{AccountIdentifier, Address};
 
 use ::serde::Deserialize;
-
 use serde::Deserializer;
-
-use std::{fs::File, path::Path};
-
 use serde::Serialize;
-
 use std::collections::HashMap;
+use std::error;
+use std::{fs::File, path::Path};
 
 const MAIN_TAG: &str = "HEAD";
 
@@ -48,9 +44,9 @@ struct Vote {
     raw_fragment: String,
 }
 
-pub fn extract_tally_fragments(
+pub fn extract_fragments_from_storage(
     jormungandr_database: &Path,
-) -> Result<Vec<DecryptedPrivateTally>, Error> {
+) -> Result<Vec<Fragment>, Box<dyn error::Error>> {
     let db = chain_storage::BlockStore::file(
         jormungandr_database,
         HeaderId::zero_hash()
@@ -59,7 +55,7 @@ pub fn extract_tally_fragments(
             .into_boxed_slice(),
     )?;
 
-    let mut tally_fragments = vec![];
+    let mut fragments = vec![];
 
     let tip_id = db.get_tag(MAIN_TAG)?.unwrap();
     let distance = db.get_block_info(tip_id.as_ref())?.chain_length();
@@ -72,16 +68,11 @@ pub fn extract_tally_fragments(
         let block: Block = DeserializeFromSlice::deserialize_from_slice(&mut codec).unwrap();
 
         for fragment in block.fragments() {
-            if let Fragment::VoteTally(tx) = fragment {
-                let certificate = tx.as_slice().payload().into_payload();
-
-                if let Some(dec) = certificate.tally_decrypted() {
-                    tally_fragments.push(dec.to_owned());
-                }
-            }
+            fragments.push(fragment.to_owned());
         }
     }
-    Ok(tally_fragments)
+
+    Ok(fragments)
 }
 /// TODO:
 /// Did I vote?
@@ -171,24 +162,16 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::offline::extract_tally_fragments;
+    use crate::offline::extract_fragments_from_storage;
     use std::path::PathBuf;
 
     #[test]
     #[ignore]
-    fn test_tally_fragments_extraction() {
+    fn test_fragments_extraction() {
         // Everytime the test is run, the storage folder get overwritten.
         // If you are getting weird errors, tar -xvf to new folder and point path accordingly to reset state.
         let path = PathBuf::from("/tmp/fund9-leader-1/persist/leader-1");
 
-        let tallies = extract_tally_fragments(&path).unwrap();
-
-        // match against active_plans.json to verify
-        println!("# of results {}", tallies.len());
-        for tally in tallies {
-            for decrypted in tally.iter() {
-                println!("result: {:?}", decrypted.tally_result);
-            }
-        }
+        let _fragments = extract_fragments_from_storage(&path).unwrap();
     }
 }

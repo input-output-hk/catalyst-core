@@ -58,10 +58,9 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 ```
 
 This will create three files:
-I want to verify a proposal:
-- *ledger_after_tally.json* 
-- *ledger_before_tally.json* 
-- *decryption_shares.json* 
+- *ledger_after_tally.json* (decrypted ledger state after tally)
+- *ledger_before_tally.json* (encrypted ledger state before tally)
+- *decryption_shares.json* (decryption shares for each proposal)
 
 [See here for more details](src/tally/README.md)
 

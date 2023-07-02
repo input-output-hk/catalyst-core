@@ -1,10 +1,12 @@
 use chain_addr::Discrimination;
 use chain_core::{packer::Codec, property::DeserializeFromSlice};
 
+use base64::{engine::general_purpose, Engine};
 use chain_impl_mockchain::{
     block::Block, chaintypes::HeaderId, fragment::Fragment, transaction::InputEnum,
 };
 
+use chain_vote::TallyDecryptShare;
 use color_eyre::Report;
 use jormungandr_lib::interfaces::VotePlanStatus;
 use jormungandr_lib::interfaces::{AccountIdentifier, Address};
@@ -15,6 +17,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::error;
 use std::{fs::File, path::Path};
+use tracing::warn;
 
 use crate::recover::recover_ledger_from_fragments;
 
@@ -83,7 +86,7 @@ pub fn extract_fragments_from_storage(
 /// Replay up until tally, do not include tally fragments
 /// State before tally begins i.e encrypted tallies have not been decrypted
 /// Tally fragments have been removed
-pub fn get_encrypted_tallies(
+pub fn ledger_before_tally(
     all_fragments: Vec<Fragment>,
     block0: Block,
 ) -> Result<Vec<VotePlanStatus>, Report> {
@@ -96,7 +99,7 @@ pub fn get_encrypted_tallies(
     let (ledger, failed) =
         recover_ledger_from_fragments(&block0, without_tally_fragments.into_iter())?;
     if !failed.is_empty() {
-        println!("{} fragments couldn't be properly processed", failed.len());
+        warn!("{} fragments couldn't be properly processed", failed.len());
     }
 
     // recovered ledger is now available for analysis
@@ -108,13 +111,13 @@ pub fn get_encrypted_tallies(
 }
 
 /// Replay all fragments including tally fragments to obtain final decrypted tallies
-pub fn get_decrypted_tallies(
+pub fn ledger_after_tally(
     all_fragments: Vec<Fragment>,
     block0: Block,
 ) -> Result<Vec<VotePlanStatus>, Report> {
     let (ledger, failed) = recover_ledger_from_fragments(&block0, all_fragments.into_iter())?;
     if !failed.is_empty() {
-        println!("{} fragments couldn't be properly processed", failed.len());
+        warn!("{} fragments couldn't be properly processed", failed.len());
     }
 
     // recovered ledger is now available for analysis
@@ -123,6 +126,44 @@ pub fn get_decrypted_tallies(
         voteplans.into_iter().map(VotePlanStatus::from).collect();
 
     Ok(offline_voteplans)
+}
+
+/// Extract decryption shares and results from tally fragments
+pub fn extract_decryption_shares_and_results(
+    all_fragments: Vec<Fragment>,
+) -> HashMap<String, Vec<String>> {
+    let mut shares_and_results: HashMap<String, Vec<String>> = HashMap::new();
+    let tally_fragments: Vec<Fragment> = all_fragments
+        .clone()
+        .into_iter()
+        .filter(|f| matches!(f, Fragment::VoteTally(_)))
+        .collect();
+
+    for fragment in tally_fragments {
+        if let Fragment::VoteTally(tx) = fragment {
+            let certificate = tx.as_slice().payload().into_payload();
+
+            if let Some(dt) = certificate.tally_decrypted() {
+                for tally in dt.iter() {
+                    let decrypt_shares =
+                        decrypt_shares_to_b64(tally.clone().decrypt_shares.into_vec());
+                    let results = tally.clone().tally_result.into_vec();
+                    shares_and_results.insert(format!("{:?}", results), decrypt_shares);
+                }
+            }
+        }
+    }
+    shares_and_results
+}
+
+// decrypt_shares_to_b64 converts decrypt shares to base64
+fn decrypt_shares_to_b64(decrypt_shares: Vec<TallyDecryptShare>) -> Vec<String> {
+    let mut shares = vec![];
+    for share in decrypt_shares {
+        shares.push(general_purpose::STANDARD.encode(share.to_bytes()));
+    }
+
+    shares
 }
 
 /// TODO:

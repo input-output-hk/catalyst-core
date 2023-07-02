@@ -187,3 +187,123 @@ pub fn decrypt_tally_with_secret_keys(
 
     Ok(batch_decrypt([validated_tally])?)
 }
+
+#[cfg(test)]
+mod tests {
+
+    use rand_chacha::ChaCha20Rng;
+
+    use chain_vote::{tally::batch_decrypt, EncryptedTally};
+    use chain_vote::{Ballot, Crs, ElectionPublicKey, MemberCommunicationKey, MemberState, Vote};
+    use rand_core::{CryptoRng, RngCore, SeedableRng};
+
+    use crate::tally::{
+        encode_decrypt_shares, encode_public_keys, extract_decrypt_shares, load_decrypt_shares,
+        load_encrypted_tally, parse_public_committee_keys,
+    };
+
+    fn get_encrypted_ballot<R: RngCore + CryptoRng>(
+        rng: &mut R,
+        pk: &ElectionPublicKey,
+        crs: &Crs,
+        vote: Vote,
+    ) -> Ballot {
+        let (enc, proof) = pk.encrypt_and_prove_vote(rng, crs, vote);
+        Ballot::try_from_vote_and_proof(enc, &proof, crs, pk).unwrap()
+    }
+
+    #[test]
+    pub fn test_validation_logic() {
+        let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+
+        let shared_string = b"common reference string (CRS)".to_owned();
+        let h = Crs::from_hash(&shared_string);
+
+        let alice = MemberCommunicationKey::new(&mut rng);
+
+        let bob = MemberCommunicationKey::new(&mut rng);
+
+        let charlie = MemberCommunicationKey::new(&mut rng);
+
+        let threshold = 1;
+
+        let alice = MemberState::new(&mut rng, threshold, &h, &[alice.to_public()], 0);
+        let bob = MemberState::new(&mut rng, threshold, &h, &[bob.to_public()], 0);
+        let charlie = MemberState::new(&mut rng, threshold, &h, &[charlie.to_public()], 0);
+
+        let committee_public_keys =
+            vec![alice.public_key(), bob.public_key(), charlie.public_key()];
+        let committee_secret_keys = vec![
+            alice.member_secret_key(),
+            bob.member_secret_key(),
+            charlie.member_secret_key(),
+        ];
+
+        let ek = ElectionPublicKey::from_participants(&committee_public_keys);
+
+        println!("encrypting vote");
+
+        let vote_options = 2;
+        let e1 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap());
+        let e2 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 1).unwrap());
+        let e3 = get_encrypted_ballot(&mut rng, &ek, &h, Vote::new(vote_options, 0).unwrap());
+
+        println!("tallying");
+
+        let mut encrypted_tally = EncryptedTally::new(vote_options, ek.clone(), h.clone());
+        encrypted_tally.add(&e1, 1);
+        encrypted_tally.add(&e2, 3);
+        encrypted_tally.add(&e3, 4);
+
+        // Ingredients to publish for community validation (decrypt shares, pub keys, encrypted tally)
+
+        //
+        // decrypt shares
+        //
+
+        let shares = extract_decrypt_shares(encrypted_tally.clone(), committee_secret_keys);
+
+        let published_shares = encode_decrypt_shares(shares.clone());
+
+        let loaded_shares = load_decrypt_shares(published_shares).unwrap();
+
+        assert_eq!(shares, loaded_shares);
+
+        //
+        // encrypted tally
+        //
+
+        let published_encrypted_tally = encrypted_tally.to_base64();
+
+        let loaded_encrypted_tally = load_encrypted_tally(published_encrypted_tally).unwrap();
+
+        assert_eq!(encrypted_tally, loaded_encrypted_tally);
+
+        //
+        // pub keys
+        //
+
+        let pub_keys = encode_public_keys(committee_public_keys.clone()).unwrap();
+
+        let pub_keys = parse_public_committee_keys(pub_keys).unwrap();
+
+        assert_eq!(pub_keys, committee_public_keys);
+
+        //
+        // public decryption
+        // (decrypt shares, pub keys, encrypted tally)
+        //
+
+        let validated_tally = encrypted_tally
+            .validate_partial_decryptions(&pub_keys, &shares)
+            .unwrap();
+
+        let tally = &batch_decrypt([validated_tally]).unwrap()[0];
+
+        assert_eq!(tally.votes, vec![5, 3]);
+
+        assert!(tally.verify(&encrypted_tally, &committee_public_keys, &shares));
+
+        println!("results from decryption: {:?}", tally);
+    }
+}

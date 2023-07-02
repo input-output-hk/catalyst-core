@@ -3,14 +3,19 @@
 //!
 
 use chain_ser::deser::Deserialize;
-use clap::Parser;
 
-use std::{fs::File, io::BufWriter};
+use clap::Parser;
+use tracing::{info, Level};
+
+use std::{fs::File, io::BufWriter, thread};
 
 use chain_impl_mockchain::block::Block;
 use color_eyre::Result;
 use jormungandr_lib::interfaces::VotePlanStatus;
-use lib::offline::{extract_fragments_from_storage, get_decrypted_tallies, json_from_file};
+use lib::offline::{
+    extract_decryption_shares_and_results, extract_fragments_from_storage, json_from_file,
+    ledger_after_tally, ledger_before_tally,
+};
 
 use chain_core::packer::Codec;
 use color_eyre::{eyre::Context, Report};
@@ -38,6 +43,24 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let args = Args::parse();
 
+    // Configure a custom event formatter
+    let format = tracing_subscriber::fmt::format()
+        .with_level(true) // don't include levels in formatted output
+        .with_target(true) // don't include targets
+        .with_thread_ids(true) // include the thread ID of the current thread
+        .with_thread_names(true) // include the name of the current thread
+        .compact(); // use the `Compact` formatting style.
+
+    // Create a `fmt` subscriber that uses our custom event format, and set it
+    // as the default.
+    tracing_subscriber::fmt()
+        .event_format(format)
+        .with_max_level(Level::INFO /*DEBUG*/)
+        .init();
+
+    info!("Audit Tool.");
+    info!("Offline Fragment Analysis.");
+
     // Load and replay fund fragments from storage
     let storage_path = PathBuf::from(args.fragments);
 
@@ -46,11 +69,31 @@ fn main() -> Result<(), Box<dyn Error>> {
     let block0 = read_block0(block0_path).unwrap();
 
     // all fragments including tally fragments
+    info!("extract_fragments_from_storage");
     let all_fragments = extract_fragments_from_storage(&storage_path).unwrap();
 
-    //let encrypted_tallies = get_encrypted_tallies(all_fragments.clone(), block0.clone())?;
+    // ledger state before tally fragments applied, results are still encrypted. Decrypted results should match results post tally.
+    // voting has effectively ended, the results have just not been decrypted yet.
+    info!("ledger_before_tally");
+    let fragments_all = all_fragments.clone();
+    let block_zero = block0.clone();
+    let ledger_before_tally =
+        thread::spawn(move || ledger_before_tally(fragments_all, block_zero).unwrap());
 
-    let decrypted_tallies = get_decrypted_tallies(all_fragments.clone(), block0.clone())?;
+    // ledger state after tally fragments applied, results are decrypted i.e encrypted tallies are now plaintext.
+    info!("ledger_after_tally");
+    let fragments_all = all_fragments.clone();
+    let block_zero = block0.clone();
+    let ledger_after_tally =
+        thread::spawn(move || ledger_after_tally(fragments_all, block_zero).unwrap());
+
+    let ledger_before_tally = ledger_before_tally.join().unwrap();
+    let ledger_after_tally = ledger_after_tally.join().unwrap();
+    info!("ledgers completed");
+
+    // decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext
+    // use tally tool to validate decrypted results
+    let shares_and_results = extract_decryption_shares_and_results(all_fragments.clone());
 
     // Compare decrypted tallies with official results if provided
     if let Some(official_results) = args.official_results {
@@ -60,24 +103,47 @@ fn main() -> Result<(), Box<dyn Error>> {
 
         let matches = official_tallies
             .iter()
-            .zip(&decrypted_tallies)
+            .zip(&ledger_after_tally)
             .filter(|&(a, b)| a == b)
             .count();
 
-        println!("matches: {}/{}", matches, official_tallies.len());
+        info!("matches: {}/{}", matches, official_tallies.len());
     }
 
-    // write decrypted tallies to file
-    let offline = PathBuf::from("/tmp/offline").with_extension("decrypted_tally.json");
+    // write ledger state before and after tally fragments applied to file i.e encrypted and decrypted tallies
+    let ledger_before_tally_file =
+        PathBuf::from("/tmp/offline").with_extension("ledger_before_tally.json");
+    let ledger_after_tally_file =
+        PathBuf::from("/tmp/offline").with_extension("ledger_after_tally.json");
+    let shares_and_results_file =
+        PathBuf::from("/tmp/offline").with_extension("decryption_shares.json");
 
     let file = File::options()
         .write(true)
         .create(true)
         .truncate(true)
-        .open(offline)?;
+        .open(ledger_before_tally_file)?;
     let writer = BufWriter::new(file);
 
-    serde_json::to_writer_pretty(writer, &decrypted_tallies)?;
+    serde_json::to_writer_pretty(writer, &ledger_before_tally)?;
+
+    let file = File::options()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(ledger_after_tally_file)?;
+    let writer = BufWriter::new(file);
+
+    serde_json::to_writer_pretty(writer, &ledger_after_tally)?;
+
+    let file = File::options()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(shares_and_results_file)?;
+    let writer = BufWriter::new(file);
+
+    serde_json::to_writer_pretty(writer, &shares_and_results)?;
 
     Ok(())
 }

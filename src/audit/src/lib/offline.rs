@@ -5,6 +5,8 @@ use chain_impl_mockchain::{
     block::Block, chaintypes::HeaderId, fragment::Fragment, transaction::InputEnum,
 };
 
+use color_eyre::Report;
+use jormungandr_lib::interfaces::VotePlanStatus;
 use jormungandr_lib::interfaces::{AccountIdentifier, Address};
 
 use ::serde::Deserialize;
@@ -13,6 +15,8 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::error;
 use std::{fs::File, path::Path};
+
+use crate::recover::recover_ledger_from_fragments;
 
 const MAIN_TAG: &str = "HEAD";
 
@@ -44,6 +48,7 @@ struct Vote {
     raw_fragment: String,
 }
 
+/// Extract fragments from storage
 pub fn extract_fragments_from_storage(
     jormungandr_database: &Path,
 ) -> Result<Vec<Fragment>, Box<dyn error::Error>> {
@@ -74,6 +79,52 @@ pub fn extract_fragments_from_storage(
 
     Ok(fragments)
 }
+
+/// Replay up until tally, do not include tally fragments
+/// State before tally begins i.e encrypted tallies have not been decrypted
+/// Tally fragments have been removed
+pub fn get_encrypted_tallies(
+    all_fragments: Vec<Fragment>,
+    block0: Block,
+) -> Result<Vec<VotePlanStatus>, Report> {
+    let without_tally_fragments: Vec<Fragment> = all_fragments
+        .clone()
+        .into_iter()
+        .filter(|f| !matches!(f, Fragment::VoteTally(_)))
+        .collect();
+
+    let (ledger, failed) =
+        recover_ledger_from_fragments(&block0, without_tally_fragments.into_iter())?;
+    if !failed.is_empty() {
+        println!("{} fragments couldn't be properly processed", failed.len());
+    }
+
+    // recovered ledger is now available for analysis
+    let voteplans = ledger.active_vote_plans();
+    let offline_voteplans: Vec<VotePlanStatus> =
+        voteplans.into_iter().map(VotePlanStatus::from).collect();
+
+    Ok(offline_voteplans)
+}
+
+/// Replay all fragments including tally fragments to obtain final decrypted tallies
+pub fn get_decrypted_tallies(
+    all_fragments: Vec<Fragment>,
+    block0: Block,
+) -> Result<Vec<VotePlanStatus>, Report> {
+    let (ledger, failed) = recover_ledger_from_fragments(&block0, all_fragments.into_iter())?;
+    if !failed.is_empty() {
+        println!("{} fragments couldn't be properly processed", failed.len());
+    }
+
+    // recovered ledger is now available for analysis
+    let voteplans = ledger.active_vote_plans();
+    let offline_voteplans: Vec<VotePlanStatus> =
+        voteplans.into_iter().map(VotePlanStatus::from).collect();
+
+    Ok(offline_voteplans)
+}
+
 /// TODO:
 /// Did I vote?
 /// Iterate through all vote cast fragments and match the given voters key to confirm vote "went through".

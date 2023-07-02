@@ -223,7 +223,8 @@ impl<I: Iterator<Item = Fragment>> Iterator for VoteFragmentFilter<I> {
     }
 }
 
-pub fn recover_ledger_from_logs(
+/// Replay fragments from storage and recover the ledger state
+pub fn recover_ledger_from_fragments(
     block0: &Block,
     fragment_logs: impl Iterator<Item = Fragment>,
 ) -> Result<(Ledger, Vec<Fragment>), Error> {
@@ -281,7 +282,6 @@ struct FragmentReplayer {
     wallets: HashMap<Address, Wallet>,
     non_voting_wallets: HashMap<Address, Wallet>,
     pending_requests: HashMap<FragmentId, Address>,
-
     settings: Settings,
 }
 

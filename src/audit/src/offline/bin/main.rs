@@ -10,10 +10,7 @@ use std::{fs::File, io::BufWriter};
 use chain_impl_mockchain::block::Block;
 use color_eyre::Result;
 use jormungandr_lib::interfaces::VotePlanStatus;
-use lib::{
-    offline::{extract_fragments_from_storage, json_from_file},
-    recover::recover_ledger_from_logs,
-};
+use lib::offline::{extract_fragments_from_storage, get_decrypted_tallies, json_from_file};
 
 use chain_core::packer::Codec;
 use color_eyre::{eyre::Context, Report};
@@ -44,38 +41,34 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Load and replay fund fragments from storage
     let storage_path = PathBuf::from(args.fragments);
 
-    // load block0
+    // load and read block0
     let block0_path = PathBuf::from(args.block0);
-
     let block0 = read_block0(block0_path).unwrap();
 
-    let fragments = extract_fragments_from_storage(&storage_path).unwrap();
+    // all fragments including tally fragments
+    let all_fragments = extract_fragments_from_storage(&storage_path).unwrap();
 
-    let (ledger, failed) = recover_ledger_from_logs(&block0, fragments.into_iter())?;
-    if !failed.is_empty() {
-        println!("{} fragments couldn't be properly processed", failed.len());
-    }
+    //let encrypted_tallies = get_encrypted_tallies(all_fragments.clone(), block0.clone())?;
 
-    let voteplans = ledger.active_vote_plans();
-    let offline_voteplans: Vec<VotePlanStatus> =
-        voteplans.into_iter().map(VotePlanStatus::from).collect();
+    let decrypted_tallies = get_decrypted_tallies(all_fragments.clone(), block0.clone())?;
 
-    // Compare offline tally with official results
+    // Compare decrypted tallies with official results if provided
     if let Some(official_results) = args.official_results {
         // official catalyst results in json format
-        let official_voteplans: Vec<VotePlanStatus> =
+        let official_tallies: Vec<VotePlanStatus> =
             json_from_file(PathBuf::from(official_results))?;
 
-        let matches = official_voteplans
+        let matches = official_tallies
             .iter()
-            .zip(&offline_voteplans)
+            .zip(&decrypted_tallies)
             .filter(|&(a, b)| a == b)
             .count();
 
-        println!("matches: {}/{}", matches, official_voteplans.len());
+        println!("matches: {}/{}", matches, official_tallies.len());
     }
 
-    let offline = PathBuf::from("/tmp/offline").with_extension("offline_tally.json");
+    // write decrypted tallies to file
+    let offline = PathBuf::from("/tmp/offline").with_extension("decrypted_tally.json");
 
     let file = File::options()
         .write(true)
@@ -84,11 +77,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         .open(offline)?;
     let writer = BufWriter::new(file);
 
-    serde_json::to_writer_pretty(writer, &offline_voteplans)?;
+    serde_json::to_writer_pretty(writer, &decrypted_tallies)?;
 
     Ok(())
 }
 
+/// Read block0 from file               
 fn read_block0(path: PathBuf) -> Result<Block, Report> {
     let reader = std::fs::File::open(path)?;
     Block::deserialize(&mut Codec::new(reader)).context("block0 loading")

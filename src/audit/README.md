@@ -43,7 +43,7 @@ This tool allows facilitates *offline* fragment analysis of a fund using histori
 cargo build --release -p audit
 ```  
 
-*Cross reference offline tally with **published** catalyst tally.*
+*Cross reference offline tallies with **published** catalyst tallies.*
 
 ```bash
 

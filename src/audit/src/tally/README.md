@@ -22,7 +22,7 @@ Get **public keys**
 cd /tmp
 head offline.ledger_before_tally.json 
 ```
-We now have **pub keys**, **encrypted tally** and **decryption share**s** for the proposal id. It is now possible to verify the result by decrypting the tally from the shares. See below.
+We now have **pub keys**, **encrypted tally** and **decryption shares** for the proposal id. It is now possible to verify the result by decrypting the tally from the shares. See below.
 
 #### Public use: Validate results 
 #### `decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext`

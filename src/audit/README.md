@@ -25,7 +25,7 @@ earthly +build && earthly +docker
 docker run  --net=host -v $MOUNT_PATH --env STORAGE_PATH=$HISTORICAL_STATE --env GENESIS_PATH=$BLOCK_0 jormungandr
 ```
 
-### Retrieve historical fund results from node.
+### Retrieve decrypted results results from node.
 
 Takes several minutes to replay state and stabilize before it is possible to retrieve vote results ⌛
 
@@ -43,7 +43,7 @@ This tool allows facilitates *offline* fragment analysis of a fund using histori
 cargo build --release -p audit
 ```  
 
-#### Cross reference offline regenerated tally with official published results.
+*Cross reference offline tally with **published** catalyst tally.*
 
 ```bash
 

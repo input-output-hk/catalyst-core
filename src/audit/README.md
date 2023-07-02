@@ -58,9 +58,9 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 ```
 
 This will create three files:
-- *ledger_after_tally.json* **(decrypted ledger state after tally)**
-- *ledger_before_tally.json* **(encrypted ledger state before tally)**
+- *ledger_after_tally.json* **(decrypted ledger state after tally)** *should match official results!*
+- *ledger_before_tally.json* **(encrypted ledger state before tally)** 
 - *decryption_shares.json* **(decryption shares for each proposal)**
 
-[See here for more details](src/tally/README.md)
+[See here for next steps of audit process](src/tally/README.md)
 

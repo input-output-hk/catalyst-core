@@ -14,7 +14,7 @@ cargo build --release -p audit
 I want to verify a proposal:
 - Open *ledger_after_tally.json* and find the proposal id of the the result in question.
 - Open *ledger_before_tally.json* and find the encrypted tally for the proposal id.
-- Open *decryption_shares.json* and find the decryption shares for the proposal id.
+- Open *decryption_shares.json* and find the decryption shares for the proposal id matching the plaintext results.
 
 Get **public keys**
 

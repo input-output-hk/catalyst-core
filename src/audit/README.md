@@ -57,5 +57,11 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 
 ```
 
-[See here for more details](src/offline/bin/README.md)
+This will create three files:
+I want to verify a proposal:
+- *ledger_after_tally.json* 
+- *ledger_before_tally.json* 
+- *decryption_shares.json* 
+
+[See here for more details](src/tally/README.md)
 

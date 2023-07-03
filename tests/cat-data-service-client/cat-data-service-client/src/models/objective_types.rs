@@ -10,18 +10,12 @@
 
 /// ObjectiveTypes : Objective Type defines the rules of the objective.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub struct ObjectiveTypes {
-}
+pub struct ObjectiveTypes {}
 
 impl ObjectiveTypes {
     /// Objective Type defines the rules of the objective.
     pub fn new() -> ObjectiveTypes {
-        ObjectiveTypes {
-        }
+        ObjectiveTypes {}
     }
 }
-
-

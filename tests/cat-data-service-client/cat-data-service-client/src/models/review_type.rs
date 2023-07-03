@@ -10,8 +10,6 @@
 
 /// ReviewType : Details about a Type of review.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ReviewType {
     /// The Unique ID for this review type.
@@ -21,7 +19,12 @@ pub struct ReviewType {
     #[serde(rename = "name", deserialize_with = "Option::deserialize")]
     pub name: Option<serde_json::Value>,
     /// Description about what the review type is.
-    #[serde(rename = "description", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "description",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub description: Option<Option<serde_json::Value>>,
     /// The inclusive Minimum value for the reviews rating. By definition, lower value ratings are considered lower ratings. Therefore this field represents the lowest possible rating.
     #[serde(rename = "min", deserialize_with = "Option::deserialize")]
@@ -30,19 +33,35 @@ pub struct ReviewType {
     #[serde(rename = "max", deserialize_with = "Option::deserialize")]
     pub max: Option<serde_json::Value>,
     /// Does the Review Type include a note? * Null - *Optional*, may or may not include a note. * False - **MUST NOT** include a note. * True - **MUST** include a note.
-    #[serde(rename = "note", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "note",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub note: Option<Option<serde_json::Value>>,
     /// Optional sequential list of mapped named values for rating scores. * If not present, the rating score is numeric. * If present:   * all possible rating scores must be represented with mapped names and the rating is represented by the value in the map.   * The lowest numbered score comes first in the array.   * The array is sequential with no gaps.
     #[serde(rename = "map", deserialize_with = "Option::deserialize")]
     pub map: Option<serde_json::Value>,
     /// The reviewer group who can create this review type.
-    #[serde(rename = "group", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "group",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub group: Option<Option<serde_json::Value>>,
 }
 
 impl ReviewType {
     /// Details about a Type of review.
-    pub fn new(id: Option<serde_json::Value>, name: Option<serde_json::Value>, min: Option<serde_json::Value>, max: Option<serde_json::Value>, map: Option<serde_json::Value>) -> ReviewType {
+    pub fn new(
+        id: Option<serde_json::Value>,
+        name: Option<serde_json::Value>,
+        min: Option<serde_json::Value>,
+        max: Option<serde_json::Value>,
+        map: Option<serde_json::Value>,
+    ) -> ReviewType {
         ReviewType {
             id,
             name,
@@ -55,5 +74,3 @@ impl ReviewType {
         }
     }
 }
-
-

@@ -10,21 +10,39 @@
 
 /// ProposerDetails : Details about a proposer for a particular proposal.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ProposerDetails {
     /// Name of the author/s of the proposal.
-    #[serde(rename = "name", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "name",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub name: Option<Option<serde_json::Value>>,
     /// Email contact address of the author/s of the proposal. If not present, there is no known contact email for the authors.
-    #[serde(rename = "email", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "email",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub email: Option<Option<serde_json::Value>>,
     /// URL to a web resource with details about the author/s of the proposal.
-    #[serde(rename = "url", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "url",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub url: Option<Option<serde_json::Value>>,
     /// The Payment Address the Funds requested will be paid to. Will not be included if the proposal does not request funds.
-    #[serde(rename = "payment_key", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "payment_key",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub payment_key: Option<Option<serde_json::Value>>,
 }
 
@@ -39,5 +57,3 @@ impl ProposerDetails {
         }
     }
 }
-
-

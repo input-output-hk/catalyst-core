@@ -10,8 +10,6 @@
 
 /// ObjectiveSummary : Summary off an Individual Objective
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ObjectiveSummary {
     /// The Numeric ID of an Objective to be decided in a Voting Event
@@ -30,7 +28,12 @@ pub struct ObjectiveSummary {
 
 impl ObjectiveSummary {
     /// Summary off an Individual Objective
-    pub fn new(id: Option<serde_json::Value>, r#type: crate::models::ObjectiveType, title: Option<serde_json::Value>, description: Option<serde_json::Value>) -> ObjectiveSummary {
+    pub fn new(
+        id: Option<serde_json::Value>,
+        r#type: crate::models::ObjectiveType,
+        title: Option<serde_json::Value>,
+        description: Option<serde_json::Value>,
+    ) -> ObjectiveSummary {
         ObjectiveSummary {
             id,
             r#type: Box::new(r#type),
@@ -39,5 +42,3 @@ impl ObjectiveSummary {
         }
     }
 }
-
-

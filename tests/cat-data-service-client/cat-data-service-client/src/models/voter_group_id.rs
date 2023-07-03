@@ -10,18 +10,12 @@
 
 /// VoterGroupId : Voters Group ID.</br>`direct` = Direct voter.</br>`rep` = Delegated Representative.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub struct VoterGroupId {
-}
+pub struct VoterGroupId {}
 
 impl VoterGroupId {
     /// Voters Group ID.</br>`direct` = Direct voter.</br>`rep` = Delegated Representative.
     pub fn new() -> VoterGroupId {
-        VoterGroupId {
-        }
+        VoterGroupId {}
     }
 }
-
-

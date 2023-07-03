@@ -10,8 +10,6 @@
 
 /// DelegationInfo : voters delegation info
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct DelegationInfo {
     /// Hex encoded voting key for this delegation.
@@ -29,7 +27,12 @@ pub struct DelegationInfo {
 
 impl DelegationInfo {
     /// voters delegation info
-    pub fn new(voting_key: Option<serde_json::Value>, group: crate::models::VoterGroupId, weight: Option<serde_json::Value>, value: Option<serde_json::Value>) -> DelegationInfo {
+    pub fn new(
+        voting_key: Option<serde_json::Value>,
+        group: crate::models::VoterGroupId,
+        weight: Option<serde_json::Value>,
+        value: Option<serde_json::Value>,
+    ) -> DelegationInfo {
         DelegationInfo {
             voting_key,
             group,
@@ -38,5 +41,3 @@ impl DelegationInfo {
         }
     }
 }
-
-

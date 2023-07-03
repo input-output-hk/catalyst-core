@@ -10,8 +10,6 @@
 
 /// Rating : Individual Rating
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct Rating {
     /// The review type being rated. Maps to the ReviewType id.
@@ -21,7 +19,12 @@ pub struct Rating {
     #[serde(rename = "score", deserialize_with = "Option::deserialize")]
     pub score: Option<serde_json::Value>,
     /// Reason why this rating was given. If NO reason was given, this field is omitted.
-    #[serde(rename = "note", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "note",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub note: Option<Option<serde_json::Value>>,
 }
 
@@ -35,5 +38,3 @@ impl Rating {
         }
     }
 }
-
-

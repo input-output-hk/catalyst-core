@@ -10,21 +10,39 @@
 
 /// ProposalSupplementalDetails : Additional Information related to the proposal.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ProposalSupplementalDetails {
     /// For `simple` challenges, the free-form description of the proposed solution.
-    #[serde(rename = "solution", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "solution",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub solution: Option<Option<serde_json::Value>>,
     /// For `community-choice` challenges, the free-form brief explanation of the proposal.
-    #[serde(rename = "brief", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "brief",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub brief: Option<Option<serde_json::Value>>,
     /// For `community-choice` challenges, the free-form explanation of the proposals importance, in the view of the proposers.
-    #[serde(rename = "importance", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "importance",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub importance: Option<Option<serde_json::Value>>,
     /// For `community-choice` challenges, the free-form explanation of the metrics of success.  As proposed by the proposers.
-    #[serde(rename = "metrics", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "metrics",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub metrics: Option<Option<serde_json::Value>>,
 }
 
@@ -39,5 +57,3 @@ impl ProposalSupplementalDetails {
         }
     }
 }
-
-

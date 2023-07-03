@@ -10,15 +10,23 @@
 
 /// SearchQuery : Parameters for the search
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct SearchQuery {
     #[serde(rename = "table")]
     pub table: crate::models::SearchTable,
-    #[serde(rename = "filter", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "filter",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub filter: Option<Option<serde_json::Value>>,
-    #[serde(rename = "order_by", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "order_by",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub order_by: Option<Option<serde_json::Value>>,
 }
 
@@ -32,5 +40,3 @@ impl SearchQuery {
         }
     }
 }
-
-

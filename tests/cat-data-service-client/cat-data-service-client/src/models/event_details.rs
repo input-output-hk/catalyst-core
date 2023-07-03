@@ -10,8 +10,6 @@
 
 /// EventDetails : Detailed information for an individual voting event.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct EventDetails {
     /// How Voting Power is Calculated and its parameters.
@@ -21,7 +19,12 @@ pub struct EventDetails {
     #[serde(rename = "registration", skip_serializing_if = "Option::is_none")]
     pub registration: Option<Box<crate::models::EventRegistration>>,
     /// The ordered goals of the voting event.
-    #[serde(rename = "goals", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "goals",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub goals: Option<Option<serde_json::Value>>,
     /// The schedule of the voting Event
     #[serde(rename = "schedule", skip_serializing_if = "Option::is_none")]
@@ -39,5 +42,3 @@ impl EventDetails {
         }
     }
 }
-
-

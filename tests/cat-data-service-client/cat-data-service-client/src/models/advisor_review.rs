@@ -10,15 +10,23 @@
 
 /// AdvisorReview : Review of a Proposal by a Community Advisor
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct AdvisorReview {
     /// Anonymized Assessor identity. All reviews by the same Assessor will have the same identity string.
-    #[serde(rename = "assessor", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "assessor",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub assessor: Option<Option<serde_json::Value>>,
     /// List of review ratings given by this reviewer.
-    #[serde(rename = "ratings", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "ratings",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub ratings: Option<Option<serde_json::Value>>,
 }
 
@@ -31,5 +39,3 @@ impl AdvisorReview {
         }
     }
 }
-
-

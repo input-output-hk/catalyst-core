@@ -10,8 +10,6 @@
 
 /// EventGoal : An Individual Event Goal
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct EventGoal {
     /// The Relative order of this Goal. 0 being highest.
@@ -25,11 +23,6 @@ pub struct EventGoal {
 impl EventGoal {
     /// An Individual Event Goal
     pub fn new(idx: Option<serde_json::Value>, name: Option<serde_json::Value>) -> EventGoal {
-        EventGoal {
-            idx,
-            name,
-        }
+        EventGoal { idx, name }
     }
 }
-
-

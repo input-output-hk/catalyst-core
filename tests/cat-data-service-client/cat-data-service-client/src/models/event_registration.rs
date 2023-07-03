@@ -10,12 +10,15 @@
 
 /// EventRegistration : Details about Voting Event Registration
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct EventRegistration {
     /// The Registration Purpose.
-    #[serde(rename = "purpose", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "purpose",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub purpose: Option<Option<serde_json::Value>>,
     /// RFC3339 DateTime String UTC.
     #[serde(rename = "deadline", deserialize_with = "Option::deserialize")]
@@ -27,7 +30,10 @@ pub struct EventRegistration {
 
 impl EventRegistration {
     /// Details about Voting Event Registration
-    pub fn new(deadline: Option<serde_json::Value>, taken: Option<serde_json::Value>) -> EventRegistration {
+    pub fn new(
+        deadline: Option<serde_json::Value>,
+        taken: Option<serde_json::Value>,
+    ) -> EventRegistration {
         EventRegistration {
             purpose: None,
             deadline,
@@ -35,5 +41,3 @@ impl EventRegistration {
         }
     }
 }
-
-

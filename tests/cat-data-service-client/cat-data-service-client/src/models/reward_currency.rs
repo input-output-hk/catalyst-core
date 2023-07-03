@@ -10,18 +10,12 @@
 
 /// RewardCurrency : Currency of the Reward.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub struct RewardCurrency {
-}
+pub struct RewardCurrency {}
 
 impl RewardCurrency {
     /// Currency of the Reward.
     pub fn new() -> RewardCurrency {
-        RewardCurrency {
-        }
+        RewardCurrency {}
     }
 }
-
-

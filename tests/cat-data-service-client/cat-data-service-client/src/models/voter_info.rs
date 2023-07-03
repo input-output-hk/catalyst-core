@@ -10,8 +10,6 @@
 
 /// VoterInfo : voter's info
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct VoterInfo {
     /// Voting keys voting power. This is the true voting power, subject to minimum voting power and max cap.
@@ -26,16 +24,30 @@ pub struct VoterInfo {
     #[serde(rename = "delegations_count", deserialize_with = "Option::deserialize")]
     pub delegations_count: Option<serde_json::Value>,
     /// Voting power's share of the total voting power. Can be used to gauge potential voting power saturation. This value is NOT saturated however, and gives the raw share of total registered voting power.
-    #[serde(rename = "voting_power_saturation", deserialize_with = "Option::deserialize")]
+    #[serde(
+        rename = "voting_power_saturation",
+        deserialize_with = "Option::deserialize"
+    )]
     pub voting_power_saturation: Option<serde_json::Value>,
     /// List of stake public key addresses which delegated to this voting key.
-    #[serde(rename = "delegator_addresses", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "delegator_addresses",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub delegator_addresses: Option<Option<serde_json::Value>>,
 }
 
 impl VoterInfo {
     /// voter's info
-    pub fn new(voting_power: Option<serde_json::Value>, voting_group: crate::models::VoterGroupId, delegations_power: Option<serde_json::Value>, delegations_count: Option<serde_json::Value>, voting_power_saturation: Option<serde_json::Value>) -> VoterInfo {
+    pub fn new(
+        voting_power: Option<serde_json::Value>,
+        voting_group: crate::models::VoterGroupId,
+        delegations_power: Option<serde_json::Value>,
+        delegations_count: Option<serde_json::Value>,
+        voting_power_saturation: Option<serde_json::Value>,
+    ) -> VoterInfo {
         VoterInfo {
             voting_power,
             voting_group,
@@ -46,5 +58,3 @@ impl VoterInfo {
         }
     }
 }
-
-

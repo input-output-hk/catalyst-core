@@ -10,8 +10,6 @@
 
 /// ProposalSummary : Summary of a Proposal for an Objective
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ProposalSummary {
     /// The ID of this proposal.
@@ -27,13 +25,11 @@ pub struct ProposalSummary {
 
 impl ProposalSummary {
     /// Summary of a Proposal for an Objective
-    pub fn new(id: Option<serde_json::Value>, title: Option<serde_json::Value>, summary: Option<serde_json::Value>) -> ProposalSummary {
-        ProposalSummary {
-            id,
-            title,
-            summary,
-        }
+    pub fn new(
+        id: Option<serde_json::Value>,
+        title: Option<serde_json::Value>,
+        summary: Option<serde_json::Value>,
+    ) -> ProposalSummary {
+        ProposalSummary { id, title, summary }
     }
 }
-
-

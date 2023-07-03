@@ -10,21 +10,39 @@
 
 /// ProposalDetails : Details of a particular Proposal
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ProposalDetails {
     /// The amount of funds requested by this proposal. In the denomination of the Objectives Reward. If not present, then this proposal is not requesting any funds.
-    #[serde(rename = "funds", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "funds",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub funds: Option<Option<serde_json::Value>>,
     /// URL to a web page with details on this proposal.
-    #[serde(rename = "url", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "url",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub url: Option<Option<serde_json::Value>>,
     /// Link to extra files associated with this proposal. Only included if there are linked files.
-    #[serde(rename = "files", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "files",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub files: Option<Option<serde_json::Value>>,
     /// List of all proposers making this proposal.
-    #[serde(rename = "proposer", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "proposer",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub proposer: Option<Option<serde_json::Value>>,
     #[serde(rename = "supplemental", skip_serializing_if = "Option::is_none")]
     pub supplemental: Option<Box<crate::models::ProposalSupplementalDetails>>,
@@ -42,5 +60,3 @@ impl ProposalDetails {
         }
     }
 }
-
-

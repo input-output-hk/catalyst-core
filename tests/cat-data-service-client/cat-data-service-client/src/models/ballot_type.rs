@@ -10,18 +10,12 @@
 
 /// BallotType : The kind of ballot to be cast on this Objective. * `public` - All Ballots are public when cast. * `private` - All Ballots are private. * `cast-private` - All Ballots are cast privately but become public after the tally.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
-pub struct BallotType {
-}
+pub struct BallotType {}
 
 impl BallotType {
     /// The kind of ballot to be cast on this Objective. * `public` - All Ballots are public when cast. * `private` - All Ballots are private. * `cast-private` - All Ballots are cast privately but become public after the tally.
     pub fn new() -> BallotType {
-        BallotType {
-        }
+        BallotType {}
     }
 }
-
-

@@ -10,18 +10,31 @@
 
 /// ObjectiveSupplementalData : Extra Data which can be used to enrich the information shared about the Objective. All Information here is optional. If there is no supplemental information for the Objective this field is omitted.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ObjectiveSupplementalData {
     /// External URL that better describes the Objective.
-    #[serde(rename = "url", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "url",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub url: Option<Option<serde_json::Value>>,
     /// Who is sponsoring this Objective.
-    #[serde(rename = "sponsor", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "sponsor",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub sponsor: Option<Option<serde_json::Value>>,
     /// Link to a video about this Objective
-    #[serde(rename = "video", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "video",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub video: Option<Option<serde_json::Value>>,
 }
 
@@ -35,5 +48,3 @@ impl ObjectiveSupplementalData {
         }
     }
 }
-
-

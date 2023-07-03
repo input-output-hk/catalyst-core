@@ -10,27 +10,55 @@
 
 /// EventSchedule : The chronological sequence of stages of the voting event.\\ Stages run chronologically and only 1 stage can run at a time.\\ Each new stage terminates the previous stage.\\ Any omitted entries are assumed to not exist as a stage in this event.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct EventSchedule {
     /// RFC3339 DateTime String UTC.
-    #[serde(rename = "insight_sharing", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "insight_sharing",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub insight_sharing: Option<Option<serde_json::Value>>,
     /// RFC3339 DateTime String UTC.
-    #[serde(rename = "proposal_submission", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "proposal_submission",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub proposal_submission: Option<Option<serde_json::Value>>,
     /// RFC3339 DateTime String UTC.
-    #[serde(rename = "refine_proposals", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "refine_proposals",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub refine_proposals: Option<Option<serde_json::Value>>,
     /// RFC3339 DateTime String UTC.
-    #[serde(rename = "finalize_proposals", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "finalize_proposals",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub finalize_proposals: Option<Option<serde_json::Value>>,
     /// RFC3339 DateTime String UTC.
-    #[serde(rename = "proposal_assessment", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "proposal_assessment",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub proposal_assessment: Option<Option<serde_json::Value>>,
     /// RFC3339 DateTime String UTC.
-    #[serde(rename = "assessment_qa_start", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "assessment_qa_start",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub assessment_qa_start: Option<Option<serde_json::Value>>,
     /// RFC3339 DateTime String UTC.
     #[serde(rename = "voting", deserialize_with = "Option::deserialize")]
@@ -45,7 +73,11 @@ pub struct EventSchedule {
 
 impl EventSchedule {
     /// The chronological sequence of stages of the voting event.\\ Stages run chronologically and only 1 stage can run at a time.\\ Each new stage terminates the previous stage.\\ Any omitted entries are assumed to not exist as a stage in this event.
-    pub fn new(voting: Option<serde_json::Value>, tallying: Option<serde_json::Value>, tallying_end: Option<serde_json::Value>) -> EventSchedule {
+    pub fn new(
+        voting: Option<serde_json::Value>,
+        tallying: Option<serde_json::Value>,
+        tallying_end: Option<serde_json::Value>,
+    ) -> EventSchedule {
         EventSchedule {
             insight_sharing: None,
             proposal_submission: None,
@@ -59,5 +91,3 @@ impl EventSchedule {
         }
     }
 }
-
-

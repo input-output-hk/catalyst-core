@@ -10,72 +10,195 @@
 
 /// VitSsFund : Note, ANY date-time formatted field in this API may report: \"1970-01-01T00:00:00Z\" Which is The unix Epoch.         This date is to be interpreted that the date-time for the event the  field represents is not yet known. The UI may either not display anything for this field, or TBD or an  equivalent message.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct VitSsFund {
     /// Identifier of the fund campaign.
-    #[serde(rename = "id", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "id",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub id: Option<Option<serde_json::Value>>,
     /// Human-readable name of the fund campaign.
-    #[serde(rename = "fund_name", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "fund_name",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub fund_name: Option<Option<serde_json::Value>>,
     /// Description of the campaign's goals.
-    #[serde(rename = "fund_goal", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "fund_goal",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub fund_goal: Option<Option<serde_json::Value>>,
     /// Deprecated, same as registration_snapshot_time.
-    #[serde(rename = "voting_power_info", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "voting_power_info",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub voting_power_info: Option<Option<serde_json::Value>>,
-    /// Minimal amount of funds required for a valid voter registration. This amount is in lovelace. 
-    #[serde(rename = "voting_power_threshold", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    /// Minimal amount of funds required for a valid voter registration. This amount is in lovelace.
+    #[serde(
+        rename = "voting_power_threshold",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub voting_power_threshold: Option<Option<serde_json::Value>>,
-    #[serde(rename = "rewards_info", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "rewards_info",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub rewards_info: Option<Option<serde_json::Value>>,
     /// Date and time for the start of the current voting period.
-    #[serde(rename = "fund_start_time", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "fund_start_time",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub fund_start_time: Option<Option<serde_json::Value>>,
     /// Date and time for the end of the current voting period.
-    #[serde(rename = "fund_end_time", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "fund_end_time",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub fund_end_time: Option<Option<serde_json::Value>>,
     /// Date and time for the start of the next voting period.
-    #[serde(rename = "next_fund_start_time", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "next_fund_start_time",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub next_fund_start_time: Option<Option<serde_json::Value>>,
     /// Date and time for blockchain state snapshot capturing voter registrations.
-    #[serde(rename = "registration_snapshot_time", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "registration_snapshot_time",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub registration_snapshot_time: Option<Option<serde_json::Value>>,
     /// Date and time for next blockchain state snapshot capturing voter registrations.
-    #[serde(rename = "next_registration_snapshot_time", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "next_registration_snapshot_time",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub next_registration_snapshot_time: Option<Option<serde_json::Value>>,
     /// Vote plans registered for voting in this fund campaign.
-    #[serde(rename = "chain_vote_plans", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "chain_vote_plans",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub chain_vote_plans: Option<Option<serde_json::Value>>,
-    #[serde(rename = "groups", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "groups",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub groups: Option<Option<serde_json::Value>>,
     /// A list of campaign challenges structuring the proposals.
-    #[serde(rename = "challenges", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "challenges",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub challenges: Option<Option<serde_json::Value>>,
     /// The list of campaign goals for this fund.
-    #[serde(rename = "goals", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "goals",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub goals: Option<Option<serde_json::Value>>,
-    #[serde(rename = "insight_sharing_start", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "insight_sharing_start",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub insight_sharing_start: Option<Option<serde_json::Value>>,
-    #[serde(rename = "proposal_submission_start", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "proposal_submission_start",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub proposal_submission_start: Option<Option<serde_json::Value>>,
-    #[serde(rename = "refine_proposals_start", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "refine_proposals_start",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub refine_proposals_start: Option<Option<serde_json::Value>>,
-    #[serde(rename = "finalize_proposals_start", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "finalize_proposals_start",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub finalize_proposals_start: Option<Option<serde_json::Value>>,
-    #[serde(rename = "proposal_assessment_start", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "proposal_assessment_start",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub proposal_assessment_start: Option<Option<serde_json::Value>>,
-    #[serde(rename = "assessment_qa_start", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "assessment_qa_start",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub assessment_qa_start: Option<Option<serde_json::Value>>,
-    #[serde(rename = "snapshot_start", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "snapshot_start",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub snapshot_start: Option<Option<serde_json::Value>>,
-    #[serde(rename = "voting_start", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "voting_start",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub voting_start: Option<Option<serde_json::Value>>,
-    #[serde(rename = "voting_end", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "voting_end",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub voting_end: Option<Option<serde_json::Value>>,
-    #[serde(rename = "tallying_end", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "tallying_end",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub tallying_end: Option<Option<serde_json::Value>>,
 }
 
@@ -111,5 +234,3 @@ impl VitSsFund {
         }
     }
 }
-
-

@@ -10,12 +10,13 @@
 
 /// VotePlan : The voteplan to use for this group.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct VotePlan {
     /// The Index of the proposal, needed to create a ballot for it.
-    #[serde(rename = "chain_proposal_index", deserialize_with = "Option::deserialize")]
+    #[serde(
+        rename = "chain_proposal_index",
+        deserialize_with = "Option::deserialize"
+    )]
     pub chain_proposal_index: Option<serde_json::Value>,
     /// The name of the group (Must be unique in the array).
     #[serde(rename = "group")]
@@ -27,13 +28,22 @@ pub struct VotePlan {
     #[serde(rename = "chain_voteplan_id", deserialize_with = "Option::deserialize")]
     pub chain_voteplan_id: Option<serde_json::Value>,
     /// The public encryption key used. ONLY if required by the ballot type (private, cast-private).
-    #[serde(rename = "encryption_key", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "encryption_key",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub encryption_key: Option<Option<serde_json::Value>>,
 }
 
 impl VotePlan {
     /// The voteplan to use for this group.
-    pub fn new(chain_proposal_index: Option<serde_json::Value>, group: crate::models::VoterGroupId, chain_voteplan_id: Option<serde_json::Value>) -> VotePlan {
+    pub fn new(
+        chain_proposal_index: Option<serde_json::Value>,
+        group: crate::models::VoterGroupId,
+        chain_voteplan_id: Option<serde_json::Value>,
+    ) -> VotePlan {
         VotePlan {
             chain_proposal_index,
             group,
@@ -43,5 +53,3 @@ impl VotePlan {
         }
     }
 }
-
-

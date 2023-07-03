@@ -10,8 +10,6 @@
 
 /// EventSummary : A Summary of an individual Voting Event
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct EventSummary {
     /// The Numeric ID of a Voting Event
@@ -21,22 +19,41 @@ pub struct EventSummary {
     #[serde(rename = "name", deserialize_with = "Option::deserialize")]
     pub name: Option<serde_json::Value>,
     /// RFC3339 DateTime String UTC.
-    #[serde(rename = "starts", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "starts",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub starts: Option<Option<serde_json::Value>>,
     /// RFC3339 DateTime String UTC.
-    #[serde(rename = "ends", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "ends",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub ends: Option<Option<serde_json::Value>>,
     /// True if the event is finished and no changes can be made to it.<br>Does not Including payment of rewards or funding of projects.
     #[serde(rename = "final", deserialize_with = "Option::deserialize")]
     pub r#final: Option<serde_json::Value>,
     /// RFC3339 DateTime String UTC.
-    #[serde(rename = "reg_checked", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "reg_checked",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub reg_checked: Option<Option<serde_json::Value>>,
 }
 
 impl EventSummary {
     /// A Summary of an individual Voting Event
-    pub fn new(id: Option<serde_json::Value>, name: Option<serde_json::Value>, r#final: Option<serde_json::Value>) -> EventSummary {
+    pub fn new(
+        id: Option<serde_json::Value>,
+        name: Option<serde_json::Value>,
+        r#final: Option<serde_json::Value>,
+    ) -> EventSummary {
         EventSummary {
             id,
             name,
@@ -47,5 +64,3 @@ impl EventSummary {
         }
     }
 }
-
-

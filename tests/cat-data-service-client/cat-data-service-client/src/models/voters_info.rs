@@ -10,8 +10,6 @@
 
 /// VotersInfo : The voting power for the requested voting key.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct VotersInfo {
     #[serde(rename = "voter_info")]
@@ -20,16 +18,29 @@ pub struct VotersInfo {
     #[serde(rename = "last_updated", deserialize_with = "Option::deserialize")]
     pub last_updated: Option<serde_json::Value>,
     /// Date and time the latest snapshot represents.
-    #[serde(rename = "as_at", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "as_at",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub as_at: Option<Option<serde_json::Value>>,
     /// `True` = this is the final snapshot which will be used for voting power in the event.</br>`False` =This is an interim snapshot, subject to change.
-    #[serde(rename = "final", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "final",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub r#final: Option<Option<serde_json::Value>>,
 }
 
 impl VotersInfo {
     /// The voting power for the requested voting key.
-    pub fn new(voter_info: crate::models::VoterInfo, last_updated: Option<serde_json::Value>) -> VotersInfo {
+    pub fn new(
+        voter_info: crate::models::VoterInfo,
+        last_updated: Option<serde_json::Value>,
+    ) -> VotersInfo {
         VotersInfo {
             voter_info: Box::new(voter_info),
             last_updated,
@@ -38,5 +49,3 @@ impl VotersInfo {
         }
     }
 }
-
-

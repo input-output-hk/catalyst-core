@@ -10,18 +10,26 @@
 
 /// ObjectiveDetails : Individual Objective Details
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct ObjectiveDetails {
     /// The valid voter groups for this voting event.
-    #[serde(rename = "groups", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "groups",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub groups: Option<Option<serde_json::Value>>,
     /// The Total Reward being offered for this Objective. Distribution of the Reward is determined under the rules of this Objective. If this field is not present there is no reward being offered for the Objective.
     #[serde(rename = "reward", skip_serializing_if = "Option::is_none")]
     pub reward: Option<Box<crate::models::RewardDefinition>>,
     /// External URL that better describes the Objective.
-    #[serde(rename = "url", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "url",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub url: Option<Option<serde_json::Value>>,
     #[serde(rename = "supplemental", skip_serializing_if = "Option::is_none")]
     pub supplemental: Option<Box<crate::models::ObjectiveSupplementalData>>,
@@ -38,5 +46,3 @@ impl ObjectiveDetails {
         }
     }
 }
-
-

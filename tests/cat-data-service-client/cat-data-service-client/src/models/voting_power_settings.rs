@@ -10,18 +10,26 @@
 
 /// VotingPowerSettings : The Settings Used to configure the voting power calculation.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct VotingPowerSettings {
     /// The Voting Power Algorithm.  * `threshold_staked_ADA` = \"Linear Voting Power in Staked ADA, With a minimum limit and maximum relative threshold.
     #[serde(rename = "alg", deserialize_with = "Option::deserialize")]
     pub alg: Option<Alg>,
     /// Minimum staked funds required for a valid voter registration. This amount is in Whole ADA. If not present, there is no minimum.\\ Valid for `alg`: * `threshold_staked_ADA`
-    #[serde(rename = "min_ada", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "min_ada",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub min_ada: Option<Option<serde_json::Value>>,
     /// Maximum Percentage of total registered voting power allowed for voting power. For example `1.23` = `1.23%` of total registered staked ADA as maximum voting power. If not present, there is no maximum percentage.\\ Valid for `alg`: * `threshold_staked_ADA`
-    #[serde(rename = "max_pct", default, with = "::serde_with::rust::double_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "max_pct",
+        default,
+        with = "::serde_with::rust::double_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub max_pct: Option<Option<serde_json::Value>>,
 }
 
@@ -48,4 +56,3 @@ impl Default for Alg {
         Self::ThresholdStakedAda
     }
 }
-

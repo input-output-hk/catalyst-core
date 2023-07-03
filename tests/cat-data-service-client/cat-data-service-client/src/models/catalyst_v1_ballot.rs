@@ -10,8 +10,6 @@
 
 /// CatalystV1Ballot : Details necessary to complete a ballot for the specific proposal and objective.
 
-
-
 #[derive(Clone, Debug, PartialEq, Default, Serialize, Deserialize)]
 pub struct CatalystV1Ballot {
     /// Ordered list of choices available for all proposals in this Objective. The offset into the array is the index of the choice. For example, the first element is Choice 0, second is Choice 1 and so on.
@@ -24,12 +22,10 @@ pub struct CatalystV1Ballot {
 
 impl CatalystV1Ballot {
     /// Details necessary to complete a ballot for the specific proposal and objective.
-    pub fn new(choices: Option<serde_json::Value>, voteplans: Option<serde_json::Value>) -> CatalystV1Ballot {
-        CatalystV1Ballot {
-            choices,
-            voteplans,
-        }
+    pub fn new(
+        choices: Option<serde_json::Value>,
+        voteplans: Option<serde_json::Value>,
+    ) -> CatalystV1Ballot {
+        CatalystV1Ballot { choices, voteplans }
     }
 }
-
-

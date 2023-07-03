@@ -43,13 +43,16 @@ async fn objectives_exec(
     Path(event): Path<EventId>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
-) -> Result<Vec<Objective>, Error> {
+) -> Result<Vec<SerdeType<Objective>>, Error> {
     tracing::debug!("objectives_query, event: {0}", event.0);
 
     let objectives = state
         .event_db
         .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
-        .await?;
+        .await?
+        .into_iter()
+        .map(Into::into)
+        .collect();
     Ok(objectives)
 }
 
@@ -281,7 +284,7 @@ mod tests {
         assert_eq!(
             String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
                 .unwrap(),
-            serde_json::to_string(&Vec::<Objective>::new()).unwrap()
+            serde_json::to_string(&Vec::<SerdeType<Objective>>::new()).unwrap()
         );
     }
 
@@ -407,7 +410,7 @@ mod tests {
         assert_eq!(
             String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
                 .unwrap(),
-            serde_json::to_string(&Vec::<Objective>::new()).unwrap()
+            serde_json::to_string(&Vec::<SerdeType<Objective>>::new()).unwrap()
         );
     }
 }

@@ -1,11 +1,11 @@
 use super::SerdeType;
 use event_db::types::event::voting_status::VotingStatus;
-use serde::ser::{Serialize, SerializeStruct};
+use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 impl Serialize for SerdeType<VotingStatus> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: Serializer,
     {
         let mut serializer = serializer.serialize_struct("VotingStatus", 3)?;
         serializer.serialize_field("objective_id", &self.0.objective_id)?;

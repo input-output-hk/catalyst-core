@@ -134,12 +134,7 @@ impl Serialize for SerdeType<&ObjectiveDetails> {
         let mut serializer = serializer.serialize_struct("ObjectiveDetails", 3)?;
         serializer.serialize_field(
             "groups",
-            &self
-                .0
-                .groups
-                .iter()
-                .map(|el| SerdeType(el))
-                .collect::<Vec<_>>(),
+            &self.0.groups.iter().map(SerdeType).collect::<Vec<_>>(),
         )?;
         if let Some(reward) = &self.0.reward {
             serializer.serialize_field("reward", &SerdeType(reward))?;

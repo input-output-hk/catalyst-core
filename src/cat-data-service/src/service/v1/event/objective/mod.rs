@@ -1,6 +1,7 @@
 use crate::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{
     extract::{Path, Query},
@@ -97,7 +98,7 @@ async fn objectives_voting_statuses_exec(
     Path(event): Path<EventId>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
-) -> Result<Vec<VotingStatus>, Error> {
+) -> Result<Vec<SerdeType<VotingStatus>>, Error> {
     tracing::debug!("objectives_voting_statuses_query, event: {0}", event.0);
 
     let objectives = state
@@ -109,10 +110,13 @@ async fn objectives_voting_statuses_exec(
 
     let voting_statuses: Vec<_> = objectives
         .into_iter()
-        .map(|objective| VotingStatus {
-            objective_id: objective.summary.id,
-            open: data.0,
-            settings: data.1.clone(),
+        .map(|objective| {
+            VotingStatus {
+                objective_id: objective.summary.id,
+                open: data.0,
+                settings: data.1.clone(),
+            }
+            .into()
         })
         .collect();
     Ok(voting_statuses)

@@ -7,6 +7,7 @@ pub mod ideascale;
 pub mod kedqr;
 pub mod logs;
 pub mod notifications;
+pub mod proposal_score;
 pub mod recovery;
 pub mod rewards;
 pub mod stats;

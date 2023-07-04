@@ -1,7 +1,6 @@
+use super::{objective::ObjectiveId, proposal::ProposalId};
 use crate::types::registration::VoterGroupId;
 use serde::Serialize;
-
-use super::{objective::ObjectiveId, proposal::ProposalId};
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct ObjectiveChoices(pub Vec<String>);

@@ -1,6 +1,7 @@
 use crate::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{
     extract::{Path, Query},
@@ -23,7 +24,7 @@ async fn review_types_exec(
     Path((event, objective)): Path<(EventId, ObjectiveId)>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
-) -> Result<Vec<ReviewType>, Error> {
+) -> Result<Vec<SerdeType<ReviewType>>, Error> {
     tracing::debug!(
         "review_types_query, event:{0} objective: {1}",
         event.0,
@@ -33,7 +34,10 @@ async fn review_types_exec(
     let reviews = state
         .event_db
         .get_review_types(event, objective, lim_ofs.limit, lim_ofs.offset)
-        .await?;
+        .await?
+        .into_iter()
+        .map(SerdeType)
+        .collect();
     Ok(reviews)
 }
 
@@ -88,7 +92,6 @@ mod tests {
                         "max": 5,
                         "map": [],
                         "group": "review_group 1",
-                        "note": null,
                     },
                     {
                         "id": 2,
@@ -139,7 +142,6 @@ mod tests {
                         "max": 5,
                         "map": [],
                         "group": "review_group 1",
-                        "note": null,
                     },
                     {
                         "id": 2,

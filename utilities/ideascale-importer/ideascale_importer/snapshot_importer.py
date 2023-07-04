@@ -177,6 +177,16 @@ network_id_priority: Dict[str, int] = {
 }
 
 
+@dataclass
+class SSHConfig:
+    """Required SSH configuration values."""
+
+    keyfile_path: str
+    destination: str
+    snapshot_tool_path: str
+    snapshot_tool_output_dir: str
+
+
 class Importer:
     """Snapshot importer."""
 
@@ -191,6 +201,7 @@ class Importer:
         gvc_api_url: str,
         raw_snapshot_file: Optional[str] = None,
         dreps_file: Optional[str] = None,
+        ssh_config: Optional[SSHConfig] = None,
     ):
         """Initialize the importer."""
         self.snapshot_tool_path = snapshot_tool_path
@@ -216,6 +227,7 @@ class Importer:
         self.network_params: Dict[str, NetworkParams] = {}
 
         self.raw_snapshot_file = raw_snapshot_file
+        self.ssh_config = ssh_config
 
         self.dreps_json = "[]"
         self.dreps_file = dreps_file
@@ -311,9 +323,7 @@ class Importer:
                 logger.info(
                     "Got registration snapshot block data",
                     slot_no=registration_snapshot_slot,
-                    block_time=None
-                    if registration_snapshot_block_time is None
-                    else registration_snapshot_block_time.isoformat(),
+                    block_time=None if registration_snapshot_block_time is None else registration_snapshot_block_time.isoformat(),
                     network_id=network_id,
                 )
 
@@ -396,18 +406,44 @@ class Importer:
 
             params = self.network_params[network_id]
 
-            snapshot_tool_cmd = (
-                f"{self.snapshot_tool_path}"
-                f" --db-user {db_user}"
-                f" --db-pass {db_pass}"
-                f" --db-host {db_host}"
-                f" --db {db_name}"
-                f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
-                f" --network-id {network_id}"
-                f" --out-file {params.snapshot_tool_out_file}"
-            )
+            if self.ssh_config is None:
+                snapshot_tool_cmd = (
+                    f"{self.snapshot_tool_path}"
+                    f" --db-user {db_user}"
+                    f" --db-pass {db_pass}"
+                    f" --db-host {db_host}"
+                    f" --db {db_name}"
+                    f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
+                    f" --network-id {network_id}"
+                    f" --out-file {params.snapshot_tool_out_file}"
+                )
 
-            await run_cmd("snapshot_tool", snapshot_tool_cmd)
+                await run_cmd("snapshot_tool", snapshot_tool_cmd)
+            else:
+                snapshot_tool_out_file = os.path.join(self.ssh_config.snapshot_tool_output_dir, f"{network_id}_snapshot_tool_out.json")
+
+                snapshot_tool_cmd = (
+                    "ssh"
+                    f" -i {self.ssh_config.keyfile_path}"
+                    f" {self.ssh_config.destination}"
+                    f" {self.ssh_config.snapshot_tool_path}"
+                    f" --db-user {db_user}"
+                    f" --db-pass {db_pass}"
+                    f" --db-host {db_host}"
+                    f" --db {db_name}"
+                    f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
+                    f" --network-id {network_id}"
+                    f" --out-file {snapshot_tool_out_file}"
+                )
+                scp_cmd = (
+                    "scp"
+                    f" -i {self.ssh_config.keyfile_path}"
+                    f" {self.ssh_config.destination}:{snapshot_tool_out_file}"
+                    f" {params.snapshot_tool_out_file}"
+                )
+
+                await run_cmd("SSH snapshot_tool", snapshot_tool_cmd)
+                await run_cmd("SSH snapshot artifacts copy", scp_cmd)
 
     def _process_snapshot_output(self):
         for params in self.network_params.values():
@@ -588,7 +624,9 @@ class Importer:
                     if not voting_key.startswith("0x"):
                         voting_key = "0x" + voting_key
 
-                    delegation_data = registration_delegation_data[network_id][f"{snapshot_contribution.stake_public_key}{voting_key}"]
+                    delegation_data = registration_delegation_data[network_id][
+                        f"{snapshot_contribution.stake_public_key}{voting_key}"
+                    ]
 
                     contribution = models.Contribution(
                         stake_public_key=snapshot_contribution.stake_public_key,

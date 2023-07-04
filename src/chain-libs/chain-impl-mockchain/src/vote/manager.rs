@@ -763,14 +763,16 @@ impl VotePlanManager {
             });
         }
 
-        /*
-        if !self.can_vote(block_date) {
-            return Err(VoteError::NotVoteTime {
-                start: self.plan().vote_start(),
-                end: self.plan().vote_end(),
-                vote: cast,
-            });
-        }*/
+        if !cfg!(feature = "audit") {
+            if !self.can_vote(block_date) {
+                return Err(VoteError::NotVoteTime {
+                    start: self.plan().vote_start(),
+                    end: self.plan().vote_end(),
+                    vote: cast,
+                });
+            }
+        }
+
         if self.plan().payload_type() != cast.payload().payload_type() {
             return Err(VoteError::InvalidPayloadType {
                 expected: self.plan().payload_type(),
@@ -805,12 +807,14 @@ impl VotePlanManager {
     where
         F: FnMut(&VoteAction),
     {
-        /*if !self.can_committee(block_date) {
-            return Err(VoteError::NotCommitteeTime {
-                start: self.plan().committee_start(),
-                end: self.plan().committee_end(),
-            });
-        }*/
+        if !cfg!(feature = "audit") {
+            if !self.can_committee(block_date) {
+                return Err(VoteError::NotCommitteeTime {
+                    start: self.plan().committee_start(),
+                    end: self.plan().committee_end(),
+                });
+            }
+        }
 
         if !self.valid_committee(&sig) {
             return Err(VoteError::InvalidTallyCommittee);
@@ -846,12 +850,14 @@ impl VotePlanManager {
     where
         F: FnMut(&VoteAction),
     {
-        /*if !self.can_committee(block_date) {
-            return Err(VoteError::NotCommitteeTime {
-                start: self.plan().committee_start(),
-                end: self.plan().committee_end(),
-            });
-        }*/
+        if !cfg!(feature = "audit") {
+            if !self.can_committee(block_date) {
+                return Err(VoteError::NotCommitteeTime {
+                    start: self.plan().committee_start(),
+                    end: self.plan().committee_end(),
+                });
+            }
+        }
 
         if !self.valid_committee(&sig) {
             return Err(VoteError::InvalidTallyCommittee);

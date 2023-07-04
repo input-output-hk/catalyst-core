@@ -7,6 +7,7 @@ pub mod ballot;
 pub mod objective;
 pub mod proposal;
 pub mod review;
+pub mod voting_status;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EventId(pub i32);

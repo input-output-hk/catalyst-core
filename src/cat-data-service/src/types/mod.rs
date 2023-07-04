@@ -1,5 +1,6 @@
 use std::ops::Deref;
 
+pub mod ballot;
 pub mod objective;
 pub mod registration;
 pub mod voting_status;

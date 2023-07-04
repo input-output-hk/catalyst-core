@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["Objective","ObjectiveDetails","ObjectiveId","ObjectiveSummary","ObjectiveSupplementalData","ObjectiveType","RewardDefintion","VoterGroup","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"struct":["Objective","ObjectiveDetails","ObjectiveId","ObjectiveSummary","ObjectiveType","RewardDefintion","VoterGroup","__Visitor"]};

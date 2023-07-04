@@ -1,4 +1,6 @@
 use std::ops::Deref;
+
+pub mod event;
 pub mod objective;
 pub mod voting_status;
 

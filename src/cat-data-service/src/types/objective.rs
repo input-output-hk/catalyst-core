@@ -63,7 +63,7 @@ impl Serialize for SerdeType<&ObjectiveSummary> {
         S: Serializer,
     {
         let mut serializer = serializer.serialize_struct("ObjectiveSummary", 4)?;
-        serializer.serialize_field("id", &self.id)?;
+        serializer.serialize_field("id", &SerdeType(&self.id))?;
         serializer.serialize_field("type", &SerdeType(&self.objective_type))?;
         serializer.serialize_field("title", &self.title)?;
         serializer.serialize_field("description", &self.description)?;
@@ -155,7 +155,7 @@ impl Serialize for SerdeType<ObjectiveDetails> {
     }
 }
 
-impl Serialize for SerdeType<Objective> {
+impl Serialize for SerdeType<&Objective> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -173,6 +173,15 @@ impl Serialize for SerdeType<Objective> {
             details: SerdeType(&self.details),
         };
         val.serialize(serializer)
+    }
+}
+
+impl Serialize for SerdeType<Objective> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        SerdeType(&self.0).serialize(serializer)
     }
 }
 

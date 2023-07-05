@@ -1,7 +1,7 @@
 use crate::{
     service::{handle_result, Error},
     state::State,
-    types::jorm_mock::{AccountVote, Fragments, FragmentsProcessingSummary},
+    types::jorm_mock::{AccountId, AccountVote, Fragments, FragmentsProcessingSummary},
 };
 use axum::{
     extract::Path,
@@ -27,20 +27,21 @@ async fn fragments_exec(
     state: Arc<State>,
 ) -> Result<FragmentsProcessingSummary, Error> {
     tracing::debug!("fragments query",);
-
-    let res = state
-        .jorm
-        .accept_fragments(fragments_query.fail_fast, fragments_query.fragments);
+    let mut jorm = state.jorm.lock().unwrap();
+    let res = jorm.accept_fragments(fragments_query.fragments);
     Ok(res)
 }
 
 async fn account_votes_exec(
-    Path(account_id): Path<String>,
-    _state: Arc<State>,
+    Path(account_id): Path<AccountId>,
+    state: Arc<State>,
 ) -> Result<Vec<AccountVote>, Error> {
-    tracing::debug!("account votes query, account_id: {}", account_id);
-
-    Ok(vec![])
+    tracing::debug!(
+        "account votes query, account_id: {}",
+        account_id.to_string()
+    );
+    let jorm = state.jorm.lock().unwrap();
+    Ok(jorm.get_account_votes(&account_id))
 }
 
 /// Need to setup and run a test event db instance

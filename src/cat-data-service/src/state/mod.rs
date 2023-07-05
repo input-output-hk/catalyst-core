@@ -7,7 +7,8 @@ pub mod jorm_mock;
 
 pub struct State {
     pub event_db: Arc<dyn EventDbQueries>,
-    pub jorm: Arc<jorm_mock::JormState>,
+    #[cfg(feature = "jorm-mock")]
+    pub jorm: std::sync::Mutex<jorm_mock::JormState>,
 }
 
 impl State {

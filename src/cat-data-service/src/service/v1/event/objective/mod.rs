@@ -51,7 +51,7 @@ async fn objectives_exec(
         .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
         .await?
         .into_iter()
-        .map(Into::into)
+        .map(SerdeType)
         .collect();
     Ok(objectives)
 }

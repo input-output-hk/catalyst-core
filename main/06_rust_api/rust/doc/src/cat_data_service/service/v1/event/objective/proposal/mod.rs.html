@@ -259,9 +259,15 @@
 <a href="#259" id="259">259</a>
 <a href="#260" id="260">260</a>
 <a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
+    types::SerdeType,
 };
 <span class="kw">use </span>axum::{
     extract::{Path, Query},
@@ -308,7 +314,7 @@
     Path((event, objective)): Path&lt;(EventId, ObjectiveId)&gt;,
     lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalSummary&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SerdeType&lt;ProposalSummary&gt;&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;proposals_query, event:{0} objective: {1}&quot;</span>,
         event.<span class="number">0</span>,
@@ -318,14 +324,17 @@
     <span class="kw">let </span>proposals = state
         .event_db
         .get_proposals(event, objective, lim_ofs.limit, lim_ofs.offset)
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into_iter()
+        .map(SerdeType)
+        .collect();
     <span class="prelude-val">Ok</span>(proposals)
 }
 
 <span class="kw">async fn </span>proposal_exec(
     Path((event, objective, proposal)): Path&lt;(EventId, ObjectiveId, ProposalId)&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Proposal, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;SerdeType&lt;Proposal&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;proposal_query, event:{0} objective: {1}, proposal: {2}&quot;</span>,
         event.<span class="number">0</span>,
@@ -336,7 +345,8 @@
     <span class="kw">let </span>proposal = state
         .event_db
         .get_proposal(event, objective, proposal)
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into();
     <span class="prelude-val">Ok</span>(proposal)
 }
 

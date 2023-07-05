@@ -224,9 +224,12 @@
 <a href="#224" id="224">224</a>
 <a href="#225" id="225">225</a>
 <a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
+    types::SerdeType,
 };
 <span class="kw">use </span>axum::{
     extract::{Path, Query},
@@ -249,7 +252,7 @@
     Path((event, objective)): Path&lt;(EventId, ObjectiveId)&gt;,
     lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ReviewType&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SerdeType&lt;ReviewType&gt;&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;review_types_query, event:{0} objective: {1}&quot;</span>,
         event.<span class="number">0</span>,
@@ -259,7 +262,10 @@
     <span class="kw">let </span>reviews = state
         .event_db
         .get_review_types(event, objective, lim_ofs.limit, lim_ofs.offset)
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into_iter()
+        .map(SerdeType)
+        .collect();
     <span class="prelude-val">Ok</span>(reviews)
 }
 
@@ -314,7 +320,6 @@
                         <span class="string">&quot;max&quot;</span>: <span class="number">5</span>,
                         <span class="string">&quot;map&quot;</span>: [],
                         <span class="string">&quot;group&quot;</span>: <span class="string">&quot;review_group 1&quot;</span>,
-                        <span class="string">&quot;note&quot;</span>: null,
                     },
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
@@ -365,7 +370,6 @@
                         <span class="string">&quot;max&quot;</span>: <span class="number">5</span>,
                         <span class="string">&quot;map&quot;</span>: [],
                         <span class="string">&quot;group&quot;</span>: <span class="string">&quot;review_group 1&quot;</span>,
-                        <span class="string">&quot;note&quot;</span>: null,
                     },
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,

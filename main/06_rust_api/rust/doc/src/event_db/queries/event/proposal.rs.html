@@ -270,16 +270,11 @@
 <a href="#270" id="270">270</a>
 <a href="#271" id="271">271</a>
 <a href="#272" id="272">272</a>
-<a href="#273" id="273">273</a>
-<a href="#274" id="274">274</a>
-<a href="#275" id="275">275</a>
-<a href="#276" id="276">276</a>
-<a href="#277" id="277">277</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::event::{
         objective::ObjectiveId,
-        proposal::{ProposalDetails, ProposalSummary, ProposalSupplementalDetails},
+        proposal::{ProposalDetails, ProposalSummary},
     },
     types::event::{
         proposal::{Proposal, ProposalId, ProposerDetails},
@@ -350,26 +345,21 @@
             payment_key: row.try_get(<span class="string">&quot;public_key&quot;</span>)<span class="question-mark">?</span>,
         }];
 
-        <span class="kw">let </span>proposal_summary = ProposalSummary {
+        <span class="kw">let </span>summary = ProposalSummary {
             id: ProposalId(row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>),
             title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
             summary: row.try_get(<span class="string">&quot;summary&quot;</span>)<span class="question-mark">?</span>,
         };
 
-        <span class="kw">let </span>proposal_details = ProposalDetails {
+        <span class="kw">let </span>details = ProposalDetails {
             proposer,
-            supplemental: row
-                .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;&gt;(<span class="string">&quot;extra&quot;</span>)<span class="question-mark">?
-                </span>.map(ProposalSupplementalDetails),
+            supplemental: row.try_get(<span class="string">&quot;extra&quot;</span>)<span class="question-mark">?</span>,
             funds: row.try_get(<span class="string">&quot;funds&quot;</span>)<span class="question-mark">?</span>,
             url: row.try_get(<span class="string">&quot;url&quot;</span>)<span class="question-mark">?</span>,
             files: row.try_get(<span class="string">&quot;files_url&quot;</span>)<span class="question-mark">?</span>,
         };
 
-        <span class="prelude-val">Ok</span>(Proposal {
-            proposal_details,
-            proposal_summary,
-        })
+        <span class="prelude-val">Ok</span>(Proposal { details, summary })
     }
 
     <span class="kw">async fn </span>get_proposals(
@@ -435,12 +425,12 @@
 
         <span class="macro">assert_eq!</span>(
             Proposal {
-                proposal_summary: ProposalSummary {
+                summary: ProposalSummary {
                     id: ProposalId(<span class="number">10</span>),
                     title: String::from(<span class="string">&quot;title 1&quot;</span>),
                     summary: String::from(<span class="string">&quot;summary 1&quot;</span>)
                 },
-                proposal_details: ProposalDetails {
+                details: ProposalDetails {
                     funds: <span class="number">100</span>,
                     url: <span class="string">&quot;url.xyz&quot;</span>.to_string(),
                     files: <span class="string">&quot;files.xyz&quot;</span>.to_string(),
@@ -452,13 +442,13 @@
                             <span class="string">&quot;b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde&quot;
                                 </span>.to_string()
                     }],
-                    supplemental: <span class="prelude-val">Some</span>(ProposalSupplementalDetails(<span class="macro">json!</span>(
+                    supplemental: <span class="prelude-val">Some</span>(<span class="macro">json!</span>(
                         {
                             <span class="string">&quot;brief&quot;</span>: <span class="string">&quot;Brief explanation of a proposal&quot;</span>,
                             <span class="string">&quot;goal&quot;</span>: <span class="string">&quot;The goal of the proposal is addressed to meet&quot;</span>,
                             <span class="string">&quot;importance&quot;</span>: <span class="string">&quot;The importance of the proposal&quot;</span>,
                         }
-                    ))),
+                    )),
                 }
             },
             proposal

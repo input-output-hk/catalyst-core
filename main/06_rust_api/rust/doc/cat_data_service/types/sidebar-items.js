@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["objective","voting_status"],"struct":["SerdeType"]};
+window.SIDEBAR_ITEMS = {"mod":["objective","proposal","review","voting_status"],"struct":["SerdeType"]};

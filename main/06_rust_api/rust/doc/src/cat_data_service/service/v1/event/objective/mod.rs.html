@@ -467,7 +467,7 @@
         .get_objectives(event, lim_ofs.limit, lim_ofs.offset)
         .<span class="kw">await</span><span class="question-mark">?
         </span>.into_iter()
-        .map(Into::into)
+        .map(SerdeType)
         .collect();
     <span class="prelude-val">Ok</span>(objectives)
 }

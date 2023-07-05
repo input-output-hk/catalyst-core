@@ -190,11 +190,9 @@
 <a href="#190" id="190">190</a>
 <a href="#191" id="191">191</a>
 <a href="#192" id="192">192</a>
-<a href="#193" id="193">193</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::types::registration::VoterGroupId;
+</pre><pre class="rust"><code><span class="kw">use super</span>::{objective::ObjectiveId, proposal::ProposalId};
+<span class="kw">use </span><span class="kw">crate</span>::types::registration::VoterGroupId;
 <span class="kw">use </span>serde::Serialize;
-
-<span class="kw">use super</span>::{objective::ObjectiveId, proposal::ProposalId};
 
 <span class="attr">#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>ObjectiveChoices(<span class="kw">pub </span>Vec&lt;String&gt;);

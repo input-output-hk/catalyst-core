@@ -367,6 +367,15 @@
 <a href="#367" id="367">367</a>
 <a href="#368" id="368">368</a>
 <a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::SerdeType;
 <span class="kw">use </span>event_db::types::event::objective::{
     Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType, RewardDefintion,
@@ -383,7 +392,7 @@
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="self">self</span>.<span class="number">0 </span>.<span class="number">0</span>.serialize(serializer)
+        <span class="self">self</span>.<span class="number">0</span>.serialize(serializer)
     }
 }
 
@@ -411,8 +420,8 @@
         </span>S: Serializer,
     {
         <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;ObjectiveType&quot;</span>, <span class="number">2</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;id&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.id)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;description&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.description)<span class="question-mark">?</span>;
+        serializer.serialize_field(<span class="string">&quot;id&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.id)<span class="question-mark">?</span>;
+        serializer.serialize_field(<span class="string">&quot;description&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.description)<span class="question-mark">?</span>;
         serializer.end()
     }
 }
@@ -432,10 +441,10 @@
         </span>S: Serializer,
     {
         <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;ObjectiveSummary&quot;</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;id&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.id)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;type&quot;</span>, <span class="kw-2">&amp;</span>SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.objective_type))<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;title&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.title)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;description&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.description)<span class="question-mark">?</span>;
+        serializer.serialize_field(<span class="string">&quot;id&quot;</span>, <span class="kw-2">&amp;</span>SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.id))<span class="question-mark">?</span>;
+        serializer.serialize_field(<span class="string">&quot;type&quot;</span>, <span class="kw-2">&amp;</span>SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.objective_type))<span class="question-mark">?</span>;
+        serializer.serialize_field(<span class="string">&quot;title&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.title)<span class="question-mark">?</span>;
+        serializer.serialize_field(<span class="string">&quot;description&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.description)<span class="question-mark">?</span>;
         serializer.end()
     }
 }
@@ -455,8 +464,8 @@
         </span>S: Serializer,
     {
         <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;RewardDefintion&quot;</span>, <span class="number">2</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;currency&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.currency)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;value&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.value)<span class="question-mark">?</span>;
+        serializer.serialize_field(<span class="string">&quot;currency&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.currency)<span class="question-mark">?</span>;
+        serializer.serialize_field(<span class="string">&quot;value&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.value)<span class="question-mark">?</span>;
         serializer.end()
     }
 }
@@ -476,10 +485,10 @@
         </span>S: Serializer,
     {
         <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;VoterGroup&quot;</span>, <span class="number">2</span>)<span class="question-mark">?</span>;
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(group) = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.group {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(group) = <span class="kw-2">&amp;</span><span class="self">self</span>.group {
             serializer.serialize_field(<span class="string">&quot;group&quot;</span>, group)<span class="question-mark">?</span>;
         }
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(voting_token) = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.voting_token {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(voting_token) = <span class="kw-2">&amp;</span><span class="self">self</span>.voting_token {
             serializer.serialize_field(<span class="string">&quot;voting_token&quot;</span>, voting_token)<span class="question-mark">?</span>;
         }
         serializer.end()
@@ -503,12 +512,12 @@
         <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;ObjectiveDetails&quot;</span>, <span class="number">3</span>)<span class="question-mark">?</span>;
         serializer.serialize_field(
             <span class="string">&quot;groups&quot;</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.groups.iter().map(SerdeType).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+            <span class="kw-2">&amp;</span><span class="self">self</span>.groups.iter().map(SerdeType).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
         )<span class="question-mark">?</span>;
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(reward) = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.reward {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(reward) = <span class="kw-2">&amp;</span><span class="self">self</span>.reward {
             serializer.serialize_field(<span class="string">&quot;reward&quot;</span>, <span class="kw-2">&amp;</span>SerdeType(reward))<span class="question-mark">?</span>;
         }
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(supplemental) = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.supplemental {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(supplemental) = <span class="kw-2">&amp;</span><span class="self">self</span>.supplemental {
             serializer.serialize_field(<span class="string">&quot;supplemental&quot;</span>, <span class="kw-2">&amp;</span>supplemental)<span class="question-mark">?</span>;
         }
         serializer.end()
@@ -524,7 +533,7 @@
     }
 }
 
-<span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;Objective&gt; {
+<span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;<span class="kw-2">&amp;</span>Objective&gt; {
     <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
         </span>S: Serializer,
@@ -542,6 +551,15 @@
             details: SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.details),
         };
         val.serialize(serializer)
+    }
+}
+
+<span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;Objective&gt; {
+    <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+    <span class="kw">where
+        </span>S: Serializer,
+    {
+        SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>).serialize(serializer)
     }
 }
 

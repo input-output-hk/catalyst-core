@@ -14,7 +14,7 @@ impl Serialize for SerdeType<&ObjectiveId> {
     where
         S: Serializer,
     {
-        self.0 .0.serialize(serializer)
+        self.0.serialize(serializer)
     }
 }
 
@@ -42,8 +42,8 @@ impl Serialize for SerdeType<&ObjectiveType> {
         S: Serializer,
     {
         let mut serializer = serializer.serialize_struct("ObjectiveType", 2)?;
-        serializer.serialize_field("id", &self.0.id)?;
-        serializer.serialize_field("description", &self.0.description)?;
+        serializer.serialize_field("id", &self.id)?;
+        serializer.serialize_field("description", &self.description)?;
         serializer.end()
     }
 }
@@ -63,10 +63,10 @@ impl Serialize for SerdeType<&ObjectiveSummary> {
         S: Serializer,
     {
         let mut serializer = serializer.serialize_struct("ObjectiveSummary", 4)?;
-        serializer.serialize_field("id", &self.0.id)?;
-        serializer.serialize_field("type", &SerdeType(&self.0.objective_type))?;
-        serializer.serialize_field("title", &self.0.title)?;
-        serializer.serialize_field("description", &self.0.description)?;
+        serializer.serialize_field("id", &SerdeType(&self.id))?;
+        serializer.serialize_field("type", &SerdeType(&self.objective_type))?;
+        serializer.serialize_field("title", &self.title)?;
+        serializer.serialize_field("description", &self.description)?;
         serializer.end()
     }
 }
@@ -86,8 +86,8 @@ impl Serialize for SerdeType<&RewardDefintion> {
         S: Serializer,
     {
         let mut serializer = serializer.serialize_struct("RewardDefintion", 2)?;
-        serializer.serialize_field("currency", &self.0.currency)?;
-        serializer.serialize_field("value", &self.0.value)?;
+        serializer.serialize_field("currency", &self.currency)?;
+        serializer.serialize_field("value", &self.value)?;
         serializer.end()
     }
 }
@@ -107,10 +107,10 @@ impl Serialize for SerdeType<&VoterGroup> {
         S: Serializer,
     {
         let mut serializer = serializer.serialize_struct("VoterGroup", 2)?;
-        if let Some(group) = &self.0.group {
+        if let Some(group) = &self.group {
             serializer.serialize_field("group", group)?;
         }
-        if let Some(voting_token) = &self.0.voting_token {
+        if let Some(voting_token) = &self.voting_token {
             serializer.serialize_field("voting_token", voting_token)?;
         }
         serializer.end()
@@ -134,12 +134,12 @@ impl Serialize for SerdeType<&ObjectiveDetails> {
         let mut serializer = serializer.serialize_struct("ObjectiveDetails", 3)?;
         serializer.serialize_field(
             "groups",
-            &self.0.groups.iter().map(SerdeType).collect::<Vec<_>>(),
+            &self.groups.iter().map(SerdeType).collect::<Vec<_>>(),
         )?;
-        if let Some(reward) = &self.0.reward {
+        if let Some(reward) = &self.reward {
             serializer.serialize_field("reward", &SerdeType(reward))?;
         }
-        if let Some(supplemental) = &self.0.supplemental {
+        if let Some(supplemental) = &self.supplemental {
             serializer.serialize_field("supplemental", &supplemental)?;
         }
         serializer.end()
@@ -155,7 +155,7 @@ impl Serialize for SerdeType<ObjectiveDetails> {
     }
 }
 
-impl Serialize for SerdeType<Objective> {
+impl Serialize for SerdeType<&Objective> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -173,6 +173,15 @@ impl Serialize for SerdeType<Objective> {
             details: SerdeType(&self.details),
         };
         val.serialize(serializer)
+    }
+}
+
+impl Serialize for SerdeType<Objective> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        SerdeType(&self.0).serialize(serializer)
     }
 }
 

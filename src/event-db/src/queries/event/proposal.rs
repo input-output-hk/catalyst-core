@@ -2,7 +2,7 @@ use crate::{
     error::Error,
     types::event::{
         objective::ObjectiveId,
-        proposal::{ProposalDetails, ProposalSummary, ProposalSupplementalDetails},
+        proposal::{ProposalDetails, ProposalSummary},
     },
     types::event::{
         proposal::{Proposal, ProposalId, ProposerDetails},
@@ -73,26 +73,21 @@ impl ProposalQueries for EventDB {
             payment_key: row.try_get("public_key")?,
         }];
 
-        let proposal_summary = ProposalSummary {
+        let summary = ProposalSummary {
             id: ProposalId(row.try_get("id")?),
             title: row.try_get("title")?,
             summary: row.try_get("summary")?,
         };
 
-        let proposal_details = ProposalDetails {
+        let details = ProposalDetails {
             proposer,
-            supplemental: row
-                .try_get::<_, Option<serde_json::Value>>("extra")?
-                .map(ProposalSupplementalDetails),
+            supplemental: row.try_get("extra")?,
             funds: row.try_get("funds")?,
             url: row.try_get("url")?,
             files: row.try_get("files_url")?,
         };
 
-        Ok(Proposal {
-            proposal_details,
-            proposal_summary,
-        })
+        Ok(Proposal { details, summary })
     }
 
     async fn get_proposals(
@@ -158,12 +153,12 @@ mod tests {
 
         assert_eq!(
             Proposal {
-                proposal_summary: ProposalSummary {
+                summary: ProposalSummary {
                     id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
-                proposal_details: ProposalDetails {
+                details: ProposalDetails {
                     funds: 100,
                     url: "url.xyz".to_string(),
                     files: "files.xyz".to_string(),
@@ -175,13 +170,13 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    supplemental: Some(ProposalSupplementalDetails(json!(
+                    supplemental: Some(json!(
                         {
                             "brief": "Brief explanation of a proposal",
                             "goal": "The goal of the proposal is addressed to meet",
                             "importance": "The importance of the proposal",
                         }
-                    ))),
+                    )),
                 }
             },
             proposal

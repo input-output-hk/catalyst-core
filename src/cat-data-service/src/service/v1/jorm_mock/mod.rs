@@ -107,7 +107,7 @@ mod tests {
             .method(Method::GET)
             .uri(format!(
                 "/api/v1/votes/plan/account-votes/{0}",
-                "account_id"
+                "0000000000000000000000000000000000000000"
             ))
             .body(Body::empty())
             .unwrap();

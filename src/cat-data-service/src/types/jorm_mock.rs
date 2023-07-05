@@ -84,23 +84,20 @@ pub struct AccountVote {
 mod tests {
     use super::*;
     use serde_json::json;
+    use std::str::FromStr;
 
-    // #[test]
-    // fn fragmenst_json_test() {
-    //     let json = json!({
-    //         "fail_fast": false,
-    //         "fragments": []
-    //     });
+    #[test]
+    fn account_id_json_test() {
+        let json = json!("0000000000000000000000000000000000000000");
+        let account_id: AccountId = serde_json::from_value(json).unwrap();
 
-    //     let fragments: Fragments = serde_json::from_value(json).unwrap();
-    //     assert_eq!(
-    //         fragments,
-    //         Fragments {
-    //             fail_fast: false,
-    //             fragments: vec![],
-    //         }
-    //     );
-    // }
+        assert_eq!(
+            account_id,
+            AccountId(
+                AccountPublicKey::from_str("0000000000000000000000000000000000000000",).unwrap()
+            )
+        );
+    }
 
     #[test]
     fn reason_json_test() {

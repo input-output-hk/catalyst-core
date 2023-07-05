@@ -1,5 +1,9 @@
 use std::ops::Deref;
+
+pub mod event;
 pub mod objective;
+pub mod proposal;
+pub mod review;
 pub mod voting_status;
 
 #[derive(Debug, Clone, PartialEq, Eq)]

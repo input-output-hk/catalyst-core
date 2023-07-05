@@ -1,6 +1,7 @@
 use crate::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{
     extract::{Path, Query},
@@ -47,7 +48,7 @@ async fn proposals_exec(
     Path((event, objective)): Path<(EventId, ObjectiveId)>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
-) -> Result<Vec<ProposalSummary>, Error> {
+) -> Result<Vec<SerdeType<ProposalSummary>>, Error> {
     tracing::debug!(
         "proposals_query, event:{0} objective: {1}",
         event.0,
@@ -57,14 +58,17 @@ async fn proposals_exec(
     let proposals = state
         .event_db
         .get_proposals(event, objective, lim_ofs.limit, lim_ofs.offset)
-        .await?;
+        .await?
+        .into_iter()
+        .map(SerdeType)
+        .collect();
     Ok(proposals)
 }
 
 async fn proposal_exec(
     Path((event, objective, proposal)): Path<(EventId, ObjectiveId, ProposalId)>,
     state: Arc<State>,
-) -> Result<Proposal, Error> {
+) -> Result<SerdeType<Proposal>, Error> {
     tracing::debug!(
         "proposal_query, event:{0} objective: {1}, proposal: {2}",
         event.0,
@@ -75,7 +79,8 @@ async fn proposal_exec(
     let proposal = state
         .event_db
         .get_proposal(event, objective, proposal)
-        .await?;
+        .await?
+        .into();
     Ok(proposal)
 }
 

@@ -29,3 +29,6 @@ chrono = { workspace = true }
 
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }
+
+[features]
+jorm-mock = []

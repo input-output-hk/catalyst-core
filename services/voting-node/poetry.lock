@@ -917,7 +917,7 @@ test = ["Cython (>=0.29.24,<0.30.0)"]
 
 [[package]]
 name = "ideascale-importer"
-version = "0.2.0"
+version = "0.3.0"
 description = ""
 category = "main"
 optional = false

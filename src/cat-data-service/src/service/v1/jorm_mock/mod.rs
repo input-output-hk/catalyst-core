@@ -37,14 +37,10 @@ async fn fragments_exec(
 async fn account_votes_exec(
     Path(account_id): Path<String>,
     _state: Arc<State>,
-) -> Result<AccountVote, Error> {
+) -> Result<Vec<AccountVote>, Error> {
     tracing::debug!("account votes query, account_id: {}", account_id);
 
-    let res = AccountVote {
-        vote_plan_id: "".to_string(),
-        votes: vec![],
-    };
-    Ok(res)
+    Ok(vec![])
 }
 
 /// Need to setup and run a test event db instance
@@ -84,9 +80,7 @@ mod tests {
             .body(Body::from(
                 serde_json::json!({
                     "fail_fast": false,
-                    "fragments": [
-                        "a50a80e0ce6cb8e19d4381dc2a521c1d3ab8a532029131e440548625b2a4d3e8"
-                    ]
+                    "fragments": []
                 })
                 .to_string(),
             ))
@@ -121,10 +115,7 @@ mod tests {
         assert_eq!(response.status(), StatusCode::OK);
         assert!(body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
-            serde_json::json!({
-                "vote_plan_id": "",
-                "votes": []
-            })
+            serde_json::json!([])
         ));
     }
 }

@@ -9,8 +9,8 @@ impl JormState {
         _fail_fast: bool,
         _fragments: Vec<Fragment>,
     ) -> FragmentsProcessingSummary {
-        
 
+        
         FragmentsProcessingSummary {
             accepted: vec![],
             rejected: vec![],

@@ -870,6 +870,7 @@ name = "cat-data-service"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "chain-impl-mockchain",
  "chrono",
  "clap 4.2.1",
  "event-db",
@@ -879,6 +880,7 @@ dependencies = [
  "rust_decimal",
  "serde",
  "serde_json",
+ "serde_with",
  "thiserror",
  "tokio",
  "tower",

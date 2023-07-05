@@ -311,10 +311,18 @@
 <a href="#311" id="311">311</a>
 <a href="#312" id="312">312</a>
 <a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::LimitOffset;
 <span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 <span class="kw">use </span>axum::{
     extract::{Path, Query},
@@ -351,17 +359,20 @@
         )
 }
 
-<span class="kw">async fn </span>event_exec(Path(event): Path&lt;EventId&gt;, state: Arc&lt;State&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Event, Error&gt; {
+<span class="kw">async fn </span>event_exec(
+    Path(event): Path&lt;EventId&gt;,
+    state: Arc&lt;State&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;SerdeType&lt;Event&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;event_exec, event: {0}&quot;</span>, event.<span class="number">0</span>);
 
-    <span class="kw">let </span>event = state.event_db.get_event(event).<span class="kw">await</span><span class="question-mark">?</span>;
+    <span class="kw">let </span>event = state.event_db.get_event(event).<span class="kw">await</span><span class="question-mark">?</span>.into();
     <span class="prelude-val">Ok</span>(event)
 }
 
 <span class="kw">async fn </span>events_exec(
     lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;EventSummary&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SerdeType&lt;EventSummary&gt;&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;events_query, limit: {0:?}, offset: {1:?}&quot;</span>,
         lim_ofs.limit,
@@ -371,7 +382,10 @@
     <span class="kw">let </span>events = state
         .event_db
         .get_events(lim_ofs.limit, lim_ofs.offset)
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into_iter()
+        .map(SerdeType)
+        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
     <span class="prelude-val">Ok</span>(events)
 }
 

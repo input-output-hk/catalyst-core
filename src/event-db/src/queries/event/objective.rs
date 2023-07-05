@@ -3,8 +3,8 @@ use crate::{
     types::{
         event::{
             objective::{
-                Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
-                ObjectiveSupplementalData, ObjectiveType, RewardDefintion, VoterGroup,
+                Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType,
+                RewardDefintion, VoterGroup,
             },
             EventId,
         },
@@ -92,9 +92,7 @@ impl ObjectiveQueries for EventDB {
             let details = ObjectiveDetails {
                 groups,
                 reward,
-                supplemental: row
-                    .try_get::<_, Option<serde_json::Value>>("extra")?
-                    .map(ObjectiveSupplementalData),
+                supplemental: row.try_get::<_, Option<serde_json::Value>>("extra")?,
             };
             objectives.push(Objective { summary, details });
         }
@@ -161,13 +159,13 @@ mod tests {
                             currency: "ADA".to_string(),
                             value: 100
                         }),
-                        supplemental: Some(ObjectiveSupplementalData(json!(
+                        supplemental: Some(json!(
                         {
                             "url": "objective 1 url",
                             "sponsor": "objective 1 sponsor",
                             "video": "objective 1 video"
                         }
-                        ))),
+                        )),
                     }
                 },
                 Objective {
@@ -220,13 +218,13 @@ mod tests {
                         currency: "ADA".to_string(),
                         value: 100
                     }),
-                    supplemental: Some(ObjectiveSupplementalData(json!(
+                    supplemental: Some(json!(
                     {
                         "url": "objective 1 url",
                         "sponsor": "objective 1 sponsor",
                         "video": "objective 1 video"
                     }
-                    ))),
+                    )),
                 }
             },]
         );

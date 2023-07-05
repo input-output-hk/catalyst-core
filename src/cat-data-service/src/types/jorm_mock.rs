@@ -1,9 +1,15 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
+pub struct Fragment(pub String);
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct FragmentId(pub String);
+
+#[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct Fragments {
     pub fail_fast: bool,
-    pub fragments: Vec<String>,
+    pub fragments: Vec<Fragment>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -16,14 +22,14 @@ pub enum Reason {
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct RejectedInfo {
-    pub id: String,
+    pub id: FragmentId,
     pub pool_number: u64,
     pub reason: Reason,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct FragmentsProcessingSummary {
-    pub accepted: Vec<String>,
+    pub accepted: Vec<FragmentId>,
     pub rejected: Vec<RejectedInfo>,
 }
 
@@ -52,9 +58,9 @@ mod tests {
             fragments,
             Fragments {
                 fail_fast: false,
-                fragments: vec![
-                    "a50a80e0ce6cb8e19d4381dc2a521c1d3ab8a532029131e440548625b2a4d3e8".to_string(),
-                ],
+                fragments: vec![Fragment(
+                    "a50a80e0ce6cb8e19d4381dc2a521c1d3ab8a532029131e440548625b2a4d3e8".to_string()
+                ),],
             }
         );
     }
@@ -81,7 +87,9 @@ mod tests {
     #[test]
     fn rejected_info_json_test() {
         let rejected_info = RejectedInfo {
-            id: "a50a80e0ce6cb8e19d4381dc2a521c1d3ab8a532029131e440548625b2a4d3e8".to_string(),
+            id: FragmentId(
+                "a50a80e0ce6cb8e19d4381dc2a521c1d3ab8a532029131e440548625b2a4d3e8".to_string(),
+            ),
             pool_number: 0,
             reason: Reason::FragmentInvalid,
         };
@@ -99,9 +107,9 @@ mod tests {
     #[test]
     fn fragments_processing_summary_json_test() {
         let summary = FragmentsProcessingSummary {
-            accepted: vec![
+            accepted: vec![FragmentId(
                 "a50a80e0ce6cb8e19d4381dc2a521c1d3ab8a532029131e440548625b2a4d3e8".to_string(),
-            ],
+            )],
             rejected: vec![],
         };
         let json = serde_json::to_value(&summary).unwrap();

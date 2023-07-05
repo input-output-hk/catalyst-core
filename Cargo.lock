@@ -873,6 +873,7 @@ dependencies = [
  "chrono",
  "clap 4.2.1",
  "event-db",
+ "jormungandr-lib",
  "metrics",
  "metrics-exporter-prometheus",
  "rust_decimal",

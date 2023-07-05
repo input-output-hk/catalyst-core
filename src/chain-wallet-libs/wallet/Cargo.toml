@@ -24,9 +24,9 @@ serde = { version = "1.0.114", features = ["derive"] }
 chain-time = { path = "../../chain-libs/chain-time" }
 chain-crypto = { path = "../../chain-libs/chain-crypto" }
 chain-addr = { path = "../../chain-libs/chain-addr" }
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain" }
+chain-impl-mockchain = { workspace = true }
 cardano-legacy-address = { path = "../../chain-libs/cardano-legacy-address" }
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 imhamt = { path = "../../chain-libs/imhamt" }
 
 [dev-dependencies]

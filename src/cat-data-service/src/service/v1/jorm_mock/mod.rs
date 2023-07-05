@@ -24,14 +24,13 @@ pub fn jorm_mock(state: Arc<State>) -> Router {
 
 async fn fragments_exec(
     Json(fragments_query): Json<Fragments>,
-    _state: Arc<State>,
+    state: Arc<State>,
 ) -> Result<FragmentsProcessingSummary, Error> {
     tracing::debug!("fragments query",);
 
-    let res = FragmentsProcessingSummary {
-        accepted: fragments_query.fragments,
-        rejected: vec![],
-    };
+    let res = state
+        .jorm
+        .accept_fragments(fragments_query.fail_fast, fragments_query.fragments);
     Ok(res)
 }
 
@@ -98,9 +97,7 @@ mod tests {
         assert!(body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!({
-                "accepted": [
-                    "a50a80e0ce6cb8e19d4381dc2a521c1d3ab8a532029131e440548625b2a4d3e8"
-                ],
+                "accepted": [],
                 "rejected": []
             })
         ));

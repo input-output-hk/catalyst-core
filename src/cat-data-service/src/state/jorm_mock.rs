@@ -2,7 +2,7 @@ use crate::types::jorm_mock::{
     AccountId, AccountVote, Fragment, FragmentId, FragmentsProcessingSummary, ProposalIndex,
     Reason, RejectedInfo, VotePlanId, DEFAULT_POOL_NUMBER,
 };
-use chain_impl_mockchain::transaction::{InputEnum, Witness};
+use chain_impl_mockchain::transaction::InputEnum;
 use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
@@ -11,6 +11,12 @@ pub struct JormState {
 }
 
 impl JormState {
+    /// Accepts input fragments with a minimal validation for `VoteCast` fragment.
+    ///
+    /// - If it is a `VoteCast` fragment it is verified that the transaction contains 1 input and 1 witness,
+    /// if it is valid storing account vote into the state.
+    ///
+    /// - If it is not a `VoteCast` fragment just returns it as accepted without storing and processing anything.
     pub fn accept_fragments(&mut self, fragments: Vec<Fragment>) -> FragmentsProcessingSummary {
         let mut accepted = vec![];
         let mut rejected = vec![];
@@ -29,7 +35,7 @@ impl JormState {
                         .zip(tx.witnesses().iter())
                         .next()
                     {
-                        Some((InputEnum::AccountInput(account_id, _), Witness::Account(_, _))) => {
+                        Some((InputEnum::AccountInput(account_id, _), _)) => {
                             match account_id.to_single_account() {
                                 Some(account_id) => {
                                     let vote = tx.payload().into_payload();

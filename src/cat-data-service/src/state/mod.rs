@@ -20,6 +20,7 @@ impl State {
         };
         Ok(Self {
             event_db,
+            #[cfg(feature = "jorm-mock")]
             jorm: Default::default(),
         })
     }

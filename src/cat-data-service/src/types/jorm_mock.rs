@@ -41,7 +41,7 @@ impl Deref for FragmentId {
     }
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
 pub struct ProposalIndex(pub u8);
 
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
@@ -51,12 +51,9 @@ pub struct Fragments {
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-#[allow(dead_code)]
 pub enum Reason {
     FragmentAlreadyInLog,
     FragmentInvalid,
-    PreviousFragmentInvalid,
-    PoolOverflow,
 }
 
 pub const DEFAULT_POOL_NUMBER: u64 = 0;
@@ -108,14 +105,6 @@ mod tests {
         let reason = Reason::FragmentInvalid;
         let json = serde_json::to_value(&reason).unwrap();
         assert_eq!(json, json!("FragmentInvalid"));
-
-        let reason = Reason::PreviousFragmentInvalid;
-        let json = serde_json::to_value(&reason).unwrap();
-        assert_eq!(json, json!("PreviousFragmentInvalid"));
-
-        let reason = Reason::PoolOverflow;
-        let json = serde_json::to_value(&reason).unwrap();
-        assert_eq!(json, json!("PoolOverflow"));
     }
 
     #[test]

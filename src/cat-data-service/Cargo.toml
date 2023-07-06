@@ -31,8 +31,11 @@ chrono = { workspace = true }
 jormungandr-lib = { workspace = true, optional = true }
 chain-impl-mockchain = { workspace = true, optional = true }
 
+quickcheck = { version = "0.9", optional = true }
+quickcheck_macros = { version = "0.9", optional = true }
+
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }
 
 [features]
-jorm-mock = ["jormungandr-lib", "chain-impl-mockchain"]
+jorm-mock = ["jormungandr-lib", "chain-impl-mockchain/property-test-api", "quickcheck", "quickcheck_macros"]

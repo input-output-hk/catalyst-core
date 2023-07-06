@@ -3,11 +3,11 @@ use crate::types::jorm_mock::{
     Reason, RejectedInfo, VotePlanId, DEFAULT_POOL_NUMBER,
 };
 use chain_impl_mockchain::transaction::{InputEnum, Witness};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Default)]
 pub struct JormState {
-    account_votes: HashMap<AccountId, HashMap<VotePlanId, Vec<ProposalIndex>>>,
+    account_votes: HashMap<AccountId, HashMap<VotePlanId, HashSet<ProposalIndex>>>,
 }
 
 impl JormState {
@@ -28,9 +28,8 @@ impl JormState {
                         .map(|input| input.to_enum())
                         .zip(tx.witnesses().iter())
                         .next()
-                        .unwrap()
                     {
-                        (InputEnum::AccountInput(account_id, _), Witness::Account(_, _)) => {
+                        Some((InputEnum::AccountInput(account_id, _), Witness::Account(_, _))) => {
                             match account_id.to_single_account() {
                                 Some(account_id) => {
                                     let vote = tx.payload().into_payload();
@@ -42,9 +41,15 @@ impl JormState {
                                     let vote_plan =
                                         self.account_votes.entry(account_id).or_default();
                                     let votes = vote_plan.entry(vote_plan_id).or_default();
-                                    votes.push(proposal_index);
-
-                                    accepted.push(id);
+                                    if votes.insert(proposal_index) {
+                                        accepted.push(id);
+                                    } else {
+                                        rejected.push(RejectedInfo {
+                                            id,
+                                            pool_number: DEFAULT_POOL_NUMBER,
+                                            reason: Reason::FragmentAlreadyInLog,
+                                        })
+                                    }
                                 }
                                 None => rejected.push(RejectedInfo {
                                     id,
@@ -53,7 +58,7 @@ impl JormState {
                                 }),
                             }
                         }
-                        (_, _) => rejected.push(RejectedInfo {
+                        _ => rejected.push(RejectedInfo {
                             id,
                             pool_number: DEFAULT_POOL_NUMBER,
                             reason: Reason::FragmentInvalid,
@@ -74,10 +79,37 @@ impl JormState {
                 .into_iter()
                 .map(|(vote_plan_id, votes)| AccountVote {
                     vote_plan_id: vote_plan_id,
-                    votes: votes,
+                    votes: votes.into_iter().collect(),
                 })
                 .collect(),
             None => vec![],
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use quickcheck_macros::quickcheck;
+
+    #[quickcheck]
+    fn accept_fragments_test(
+        f1: chain_impl_mockchain::fragment::Fragment,
+        f2: chain_impl_mockchain::fragment::Fragment,
+        f3: chain_impl_mockchain::fragment::Fragment,
+    ) {
+        let fragments = vec![f1, f2, f3];
+
+        let mut state = JormState::default();
+
+        let res = state.accept_fragments(
+            fragments
+                .clone()
+                .into_iter()
+                .map(Fragment)
+                .collect::<Vec<_>>(),
+        );
+
+        assert_eq!(res.accepted.len() + res.rejected.len(), fragments.len());
     }
 }

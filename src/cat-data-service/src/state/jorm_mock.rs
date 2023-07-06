@@ -42,8 +42,10 @@ impl<T> TimedType<T> {
     }
 }
 
+type AccountVotes = HashMap<AccountId, HashMap<VotePlanId, HashSet<TimedType<ProposalIndex>>>>;
+
 pub struct JormState {
-    account_votes: HashMap<AccountId, HashMap<VotePlanId, HashSet<TimedType<ProposalIndex>>>>,
+    account_votes: AccountVotes,
     cleanup_timeout: Duration,
 }
 

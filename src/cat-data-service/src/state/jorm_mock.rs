@@ -84,7 +84,7 @@ impl JormState {
                 .clone()
                 .into_iter()
                 .map(|(vote_plan_id, votes)| AccountVote {
-                    vote_plan_id: vote_plan_id,
+                    vote_plan_id,
                     votes: votes.into_iter().collect(),
                 })
                 .collect(),

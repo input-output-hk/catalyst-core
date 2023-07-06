@@ -28,8 +28,7 @@ async fn fragments_exec(
 ) -> Result<FragmentsProcessingSummary, Error> {
     tracing::debug!("fragments query",);
     let mut jorm = state.jorm.lock().unwrap();
-    let res = jorm.accept_fragments(fragments_query.fragments);
-    Ok(res)
+    Ok(jorm.accept_fragments(fragments_query.fragments))
 }
 
 async fn account_votes_exec(
@@ -40,7 +39,7 @@ async fn account_votes_exec(
         "account votes query, account_id: {}",
         account_id.to_string()
     );
-    let jorm = state.jorm.lock().unwrap();
+    let mut jorm = state.jorm.lock().unwrap();
     Ok(jorm.get_account_votes(&account_id))
 }
 

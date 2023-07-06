@@ -21,7 +21,9 @@ impl State {
         Ok(Self {
             event_db,
             #[cfg(feature = "jorm-mock")]
-            jorm: Default::default(),
+            jorm: std::sync::Mutex::new(jorm_mock::JormState::new(
+                jorm_mock::JormState::CLEANUP_TIMEOUT,
+            )),
         })
     }
 }

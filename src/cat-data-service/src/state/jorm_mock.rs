@@ -48,8 +48,8 @@ pub struct JormState {
 }
 
 impl JormState {
-    /// default `cleanup_timeout` value, 5 minutes
-    pub const CLEANUP_TIMEOUT: Duration = Duration::from_secs(5 * 60);
+    /// default `cleanup_timeout` value, 10 minutes
+    pub const CLEANUP_TIMEOUT: Duration = Duration::from_secs(10 * 60);
 
     pub fn new(cleanup_timeout: Duration) -> Self {
         Self {

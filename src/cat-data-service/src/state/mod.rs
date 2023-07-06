@@ -18,12 +18,23 @@ impl State {
         } else {
             Arc::new(event_db::establish_connection(None).await?)
         };
+
+        #[cfg(feature = "jorm-mock")]
+        let jorm = {
+            if let Ok(arg) = std::env::var("JORM_CLEANUP_TIMEOUT") {
+                let duration = arg.parse::<u64>().map_err(|e| {
+                    Error::Service(crate::service::Error::CannotRunService(e.to_string()))
+                })?;
+                jorm_mock::JormState::new(std::time::Duration::from_secs(duration * 60))
+            } else {
+                jorm_mock::JormState::new(jorm_mock::JormState::CLEANUP_TIMEOUT)
+            }
+        };
+
         Ok(Self {
             event_db,
             #[cfg(feature = "jorm-mock")]
-            jorm: std::sync::Mutex::new(jorm_mock::JormState::new(
-                jorm_mock::JormState::CLEANUP_TIMEOUT,
-            )),
+            jorm: std::sync::Mutex::new(jorm),
         })
     }
 }

@@ -6,7 +6,7 @@ Catalyst event data service
 ```
 cargo build -p cat-data-service
 ```
-To enable jormungandr mocked `/api/v1/fragments`, `/api/v1/votes/plan/account-votes/{account_id}` endpoints build with the `jorm-mock` feature flag
+To enable jormungandr mocked `/api/v1/fragments`, `/api/v1/votes/plan/account-votes/{account_id}` endpoints build with the `jorm-mock` feature flag. These endpoints have a time limit for internal state, after fragment has been submitted it will be cleanup from the internal after 5 minutes timeout
 ```
 cargo build -p cat-data-service --features jorm-mock
 ```

@@ -32,7 +32,7 @@ import os
 from datetime import datetime
 
 from ideascale_importer.ideascale.importer import Importer as IdeascaleImporter
-from ideascale_importer.snapshot_importer import Importer as DBSyncImporter
+from ideascale_importer.snapshot_importer import Importer as DBSyncImporter, SSHConfig as SnapshotToolSSHConfig
 from loguru import logger
 from pydantic import BaseModel
 
@@ -80,10 +80,42 @@ class ExternalDataImporter:
         * `SNAPSHOT_NETWORK_IDS` sets `--network-ids`.
         * `SNAPSHOT_TOOL_PATH` sets `--snapshot-tool-path` (optional).
         * `CATALYST_TOOLBOX_PATH` sets `--catalyst-toolbox-path` (optional).
+
+        To run snapshot_tool through SSH then the following are required:
+        * `SNAPSHOT_TOOL_SSH`
+        * `SSH_SNAPSHOT_TOOL_PATH`
+        * `SSH_SNAPSHOT_TOOL_OUTPUT_DIR`
+        * `SSH_SNAPSHOT_TOOL_KEYFILE`
+        * `SSH_SNAPSHOT_TOOL_DESTINATION`
         """
         # Parse network IDs from the env var using the
         # same format that the DBSync snapshot importer CLI expects.
         network_ids = [id.strip() for id in os.environ["SNAPSHOT_NETWORK_IDS"].split(" ")]
+
+        if os.environ["SNAPSHOT_TOOL_SSH"] is not None:
+            snapshot_tool_path = os.environ["SSH_SNAPSHOT_TOOL_PATH"]
+            snapshot_tool_out_dir = os.environ["SSH_SNAPSHOT_TOOL_OUTPUT_DIR"]
+            keyfile_path = os.environ["SSH_SNAPSHOT_TOOL_KEYFILE"]
+            destination = os.environ["SSH_SNAPSHOT_TOOL_DESTINATION"]
+
+            if (
+                snapshot_tool_path is not None
+                and snapshot_tool_out_dir is not None
+                and keyfile_path is not None
+                and destination is not None
+            ):
+                ssh_config = SnapshotToolSSHConfig(
+                    keyfile_path=keyfile_path,
+                    destination=destination,
+                    snapshot_tool_path=snapshot_tool_path,
+                    snapshot_tool_output_dir=snapshot_tool_out_dir,
+                )
+            else:
+                raise Exception("SSH_SNAPSHOT_TOOL_PATH, SSH_SNAPSHOT_TOOL_OUTPUT_DIR, "
+                                "SSH_SNAPSHOT_TOOL_OUTPUT_DIR and SSH_SNAPSHOT_TOOL_DESTINATION "
+                                "are all required when SNAPSHOT_TOOL_SSH is set")
+        else:
+            ssh_config = None
 
         logger.info(f"Importing snapshot data for event {event_id}")
         importer = DBSyncImporter(
@@ -94,6 +126,7 @@ class ExternalDataImporter:
             snapshot_tool_path=os.environ.get("SNAPSHOT_TOOL_PATH", "snapshot_tool"),
             catalyst_toolbox_path=os.environ.get("CATALYST_TOOLBOX_PATH", "catalyst-toolbox"),
             gvc_api_url=os.environ["GVC_API_URL"],
+            ssh_config=ssh_config,
         )
         try:
             await importer.run()

@@ -16,11 +16,12 @@ struct LimitOffset {
 }
 
 pub fn v1(state: Arc<State>) -> Router {
+    #[cfg(feature = "jorm-mock")]
+    let jorm_mock = jorm_mock::jorm_mock(state.clone());
+
     let registration = registration::registration(state.clone());
     let event = event::event(state.clone());
-    let search = search::search(state.clone());
-    #[cfg(feature = "jorm-mock")]
-    let jorm_mock = jorm_mock::jorm_mock(state);
+    let search = search::search(state);
 
     let router = registration.merge(event).merge(search);
     #[cfg(feature = "jorm-mock")]

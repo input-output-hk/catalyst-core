@@ -1,6 +1,8 @@
 use std::ops::Deref;
 
 pub mod event;
+#[cfg(feature = "jorm-mock")]
+pub mod jorm_mock;
 pub mod objective;
 pub mod proposal;
 pub mod review;

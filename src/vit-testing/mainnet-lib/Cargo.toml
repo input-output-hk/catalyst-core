@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 cardano-serialization-lib = "11.3.1"
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 jortestkit = { path = "../../jortestkit" }
 tempdir = "0.3.7"
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["proptest"] }

@@ -7,10 +7,10 @@ edition = "2021"
 
 [dependencies]
 jcli = { path = "../../jcli" }
-jormungandr-lib = { path = "../../jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 jormungandr-automation = { path = "../jormungandr-automation" }
 jortestkit = { path = "../../../jortestkit" }
-chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
+chain-impl-mockchain = { workspace = true, features = [ "property-test-api" ] }
 chain-addr      = { path = "../../../chain-libs/chain-addr", features = [ "property-test-api" ] }
 chain-crypto    = { path = "../../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
 chain-core      = { path = "../../../chain-libs/chain-core" }

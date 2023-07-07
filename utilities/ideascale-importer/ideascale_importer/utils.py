@@ -136,9 +136,11 @@ class BadResponse(Exception):
 class GetFailed(Exception):
     """Raised when a GET request fails."""
 
-    def __init__(self, status, reason, content):
+    def __init__(self, status: int, content: str):
         """Initialize a new instance of GetFailed."""
-        super().__init__(f"{status} {reason}\n{content})")
+        super().__init__(f"Get request failed status={status} content={content}")
+        self.status = status
+        self.content = content
 
 
 class JsonHttpClient:
@@ -183,7 +185,7 @@ class JsonHttpClient:
                     snake_case_keys(parsed_json)
                     return parsed_json
                 else:
-                    raise GetFailed(r.status, r.reason, content)
+                    raise GetFailed(r.status, content.decode())
 
 
 log_level_colors = {

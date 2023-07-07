@@ -1,7 +1,6 @@
-use serde::Serialize;
 use serde_json::Value;
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProposalId(pub i32);
 
 #[derive(Debug, Clone, PartialEq, Eq)]

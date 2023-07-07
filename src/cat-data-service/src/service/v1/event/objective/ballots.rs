@@ -20,7 +20,7 @@ async fn ballots_exec(
         SerdeType<ObjectiveId>,
     )>,
     state: Arc<State>,
-) -> Result<Vec<ProposalBallot>, Error> {
+) -> Result<Vec<SerdeType<ProposalBallot>>, Error> {
     tracing::debug!(
         "ballots_query, event: {0}, objective: {1}",
         event.0,
@@ -30,7 +30,10 @@ async fn ballots_exec(
     let ballot = state
         .event_db
         .get_objective_ballots(event, objective)
-        .await?;
+        .await?
+        .into_iter()
+        .map(SerdeType)
+        .collect();
     Ok(ballot)
 }
 

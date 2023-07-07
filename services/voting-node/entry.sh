@@ -76,6 +76,7 @@ echo ">>> Starting entrypoint script..."
 
 # Check if all required environment variables are set
 REQUIRED_ENV=(
+    "DBSYNC_SSH_HOST_KEY"
     "DBSYNC_SSH_PRIVKEY"
     "DBSYNC_SSH_PUBKEY"
     "EVENTDB_URL"
@@ -132,11 +133,14 @@ fi
 
 # Setup dbsync SSH keys
 echo ">>> Setting up dbsync SSH keys..."
-mkdir -p /app/ssh
-echo -n "${DBSYNC_SSH_PRIVKEY}" | base64 -d >/app/ssh/private
-echo -n "${DBSYNC_SSH_PUBKEY}" | base64 -d >/app/ssh/public
+mkdir -p ~/.ssh
+echo -n "${DBSYNC_SSH_PRIVKEY}" | base64 -d >/root/.ssh/id_snapshot
+echo -n "${DBSYNC_SSH_PUBKEY}" | base64 -d >/root/.ssh/id_snapshot.pub
+echo -n "${DBSYNC_SSH_HOST_KEY}" | base64 -d >/root/.ssh/known_hosts
+chmod 0700 /root/.ssh
+chmod 0600 /root/.ssh/*
 
-export SSH_SNAPSHOT_TOOL_KEYFILE=/app/ssh/private
+export SSH_SNAPSHOT_TOOL_KEYFILE=/root/.ssh/id_snapshot
 
 # Sleep if DEBUG_SLEEP is set
 debug_sleep

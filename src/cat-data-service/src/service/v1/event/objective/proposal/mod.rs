@@ -45,7 +45,10 @@ pub fn proposal(state: Arc<State>) -> Router {
 }
 
 async fn proposals_exec(
-    Path((event, objective)): Path<(EventId, ObjectiveId)>,
+    Path((SerdeType(event), SerdeType(objective))): Path<(
+        SerdeType<EventId>,
+        SerdeType<ObjectiveId>,
+    )>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<SerdeType<ProposalSummary>>, Error> {
@@ -66,7 +69,11 @@ async fn proposals_exec(
 }
 
 async fn proposal_exec(
-    Path((event, objective, proposal)): Path<(EventId, ObjectiveId, ProposalId)>,
+    Path((SerdeType(event), SerdeType(objective), SerdeType(proposal))): Path<(
+        SerdeType<EventId>,
+        SerdeType<ObjectiveId>,
+        SerdeType<ProposalId>,
+    )>,
     state: Arc<State>,
 ) -> Result<SerdeType<Proposal>, Error> {
     tracing::debug!(

@@ -1,6 +1,7 @@
 use crate::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{
     extract::{Path, Query},
@@ -35,52 +36,57 @@ pub fn registration(state: Arc<State>) -> Router {
 
 #[derive(Deserialize)]
 struct VotersQuery {
-    event_id: Option<EventId>,
+    event_id: Option<SerdeType<EventId>>,
     with_delegators: Option<bool>,
 }
 
 async fn voter_exec(
     Path(voting_key): Path<String>,
-    voters_query: Query<VotersQuery>,
+    Query(VotersQuery {
+        event_id,
+        with_delegators,
+    }): Query<VotersQuery>,
     state: Arc<State>,
-) -> Result<Voter, Error> {
+) -> Result<SerdeType<Voter>, Error> {
     tracing::debug!(
         "voter_query: voting_key: {0}, event_id: {1:?}",
         voting_key,
-        voters_query.event_id
+        &event_id
     );
 
     let voter = state
         .event_db
         .get_voter(
-            &voters_query.event_id,
+            &event_id.map(|val| val.0),
             voting_key,
-            voters_query.with_delegators.unwrap_or(false),
+            with_delegators.unwrap_or(false),
         )
-        .await?;
+        .await?
+        .into();
     Ok(voter)
 }
 
 #[derive(Deserialize)]
 struct DelegationsQuery {
-    event_id: Option<EventId>,
+    event_id: Option<SerdeType<EventId>>,
 }
 
 async fn delegations_exec(
     Path(stake_public_key): Path<String>,
-    delegations_query: Query<DelegationsQuery>,
+    Query(DelegationsQuery { event_id }): Query<DelegationsQuery>,
     state: Arc<State>,
-) -> Result<Delegator, Error> {
+) -> Result<SerdeType<Delegator>, Error> {
     tracing::debug!(
         "delegator_query: stake_public_key: {0}, eid: {1:?}",
         stake_public_key,
-        delegations_query.event_id
+        &event_id
     );
 
     let delegator = state
         .event_db
-        .get_delegator(&delegations_query.event_id, stake_public_key)
-        .await?;
+        .get_delegator(&event_id.map(|val| val.0), stake_public_key)
+        .await?
+        .into();
     Ok(delegator)
 }
 

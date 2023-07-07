@@ -21,7 +21,10 @@ pub fn review_type(state: Arc<State>) -> Router {
 }
 
 async fn review_types_exec(
-    Path((event, objective)): Path<(EventId, ObjectiveId)>,
+    Path((SerdeType(event), SerdeType(objective))): Path<(
+        SerdeType<EventId>,
+        SerdeType<ObjectiveId>,
+    )>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<SerdeType<ReviewType>>, Error> {

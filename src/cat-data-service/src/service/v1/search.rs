@@ -1,6 +1,7 @@
 use crate::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{extract::Query, routing::post, Json, Router};
 use event_db::types::search::{SearchQuery, SearchResult};
@@ -25,9 +26,9 @@ struct SearchParam {
 
 async fn search_exec(
     search_param: Query<SearchParam>,
-    Json(search_query): Json<SearchQuery>,
+    Json(SerdeType(search_query)): Json<SerdeType<SearchQuery>>,
     state: Arc<State>,
-) -> Result<SearchResult, Error> {
+) -> Result<SerdeType<SearchResult>, Error> {
     tracing::debug!("search_query",);
 
     let res = state
@@ -38,7 +39,8 @@ async fn search_exec(
             search_param.limit,
             search_param.offset,
         )
-        .await?;
+        .await?
+        .into();
     Ok(res)
 }
 

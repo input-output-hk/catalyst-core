@@ -6,7 +6,7 @@ use event_db::types::event::{
 use rust_decimal::prelude::ToPrimitive;
 use serde::{
     de::Deserializer,
-    ser::{Error, SerializeStruct, Serializer},
+    ser::{Error as _, SerializeStruct, Serializer},
     Deserialize, Serialize,
 };
 
@@ -105,7 +105,7 @@ impl Serialize for SerdeType<&VotingPowerSettings> {
                 "max_pct",
                 &max_pct
                     .to_f64()
-                    .ok_or_else(|| Error::custom("cannot decimal convert to f64"))?,
+                    .ok_or_else(|| S::Error::custom("cannot decimal convert to f64"))?,
             )?;
         }
         serializer.end()

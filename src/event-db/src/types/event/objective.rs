@@ -1,19 +1,18 @@
 use crate::types::registration::VoterGroupId;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
 pub struct ObjectiveId(pub i32);
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectiveType {
     pub id: String,
     pub description: String,
 }
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectiveSummary {
     pub id: ObjectiveId,
-    #[serde(rename = "type")]
     pub objective_type: ObjectiveType,
     pub title: String,
     pub description: String,

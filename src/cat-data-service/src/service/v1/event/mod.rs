@@ -40,7 +40,7 @@ pub fn event(state: Arc<State>) -> Router {
 }
 
 async fn event_exec(
-    Path(event): Path<EventId>,
+    Path(SerdeType(event)): Path<SerdeType<EventId>>,
     state: Arc<State>,
 ) -> Result<SerdeType<Event>, Error> {
     tracing::debug!("event_exec, event: {0}", event.0);
@@ -314,7 +314,7 @@ mod tests {
         assert_eq!(
             String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
                 .unwrap(),
-            serde_json::to_string(&Vec::<EventSummary>::new()).unwrap()
+            serde_json::to_string(&Vec::<()>::new()).unwrap()
         );
     }
 }

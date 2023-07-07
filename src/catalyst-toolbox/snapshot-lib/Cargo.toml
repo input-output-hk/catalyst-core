@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 serde = { version = "1", features = ["derive"] }
 proptest = { workspace = true, branch = "master", optional = true }
 chain-addr = { path = "../../chain-libs/chain-addr" }

@@ -21,7 +21,8 @@
     clippy::iter_nth_zero,
     clippy::type_complexity,
     clippy::match_same_arms,
-    clippy::useless_conversion
+    clippy::useless_conversion,
+    clippy::wildcard_imports
 )]
 #![cfg_attr(test, allow(clippy::let_underscore_drop))] // useful in tests, often a bug otherwise
 

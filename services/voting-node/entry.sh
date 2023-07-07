@@ -33,12 +33,11 @@
 # IDEASCALE_CONFIG_PATH - Path to JSON config file for IdeaScale importer
 #
 # ### DBSYNC SNAPSHOT DATA IMPORTER
-# DBSYNC_URL - URL for DBSync database
 # SNAPSHOT_TOOL_PATH - Path to snapshot tool executable (optional). Defaults to 'snapshot_tool'
 # CATALYST_TOOLBOX_PATH - Path to toolbox executable (optional). Defaults to 'catalyst-toolbox'
 # GVC_API_URL - URL for GVC
 # SNAPSHOT_OUTPUT_DIR - Path to directory where snapshot data will be stored
-# SNAPSHOT_NETWORK_ID - Network ID for snapshot data. Possible values are 'mainnet' and 'testnet'
+# SNAPSHOT_NETWORK_IDS - Network IDs (separated by space) for snapshot data. Possible values are 'mainnet' and 'testnet'.
 # SNAPSHOT_INTERVAL_SECONDS - Interval in seconds for snapshot data (optional)
 # ---------------------------------------------------------------
 
@@ -77,6 +76,8 @@ echo ">>> Starting entrypoint script..."
 
 # Check if all required environment variables are set
 REQUIRED_ENV=(
+    "DBSYNC_SSH_PRIVKEY"
+    "DBSYNC_SSH_PUBKEY"
     "EVENTDB_URL"
 )
 echo ">>> Checking required env vars..."
@@ -111,10 +112,11 @@ if [ "$HOSTNAME" = "leader0" ]; then
         "IDEASCALE_STAGE_ID"
         "IDEASCALE_API_URL"
         "IDEASCALE_CONFIG_PATH"
-        "DBSYNC_URL"
+        #"TESTNET_DBSYNC_URL"
+        #"MAINNET_DBSYNC_URL"
         "GVC_API_URL"
         "SNAPSHOT_OUTPUT_DIR"
-        "SNAPSHOT_NETWORK_ID"
+        "SNAPSHOT_NETWORK_IDS"
     )
     check_env_vars "${LEADER0_ENV[@]}"
 
@@ -128,6 +130,14 @@ if [ "$HOSTNAME" = "leader0" ]; then
     export SNAPSHOT_INTERVAL_SECONDS="${SNAPSHOT_INTERVAL_SECONDS}"
 fi
 
+# Setup dbsync SSH keys
+echo ">>> Setting up dbsync SSH keys..."
+mkdir -p /app/ssh
+echo -n "${DBSYNC_SSH_PRIVKEY}" | base64 -d >/app/ssh/private
+echo -n "${DBSYNC_SSH_PUBKEY}" | base64 -d >/app/ssh/public
+
+export SSH_SNAPSHOT_TOOL_KEYFILE=/app/ssh/private
+
 # Sleep if DEBUG_SLEEP is set
 debug_sleep
 
@@ -140,8 +150,8 @@ CMD="$CMD_TO_RUN $ARGS"
 
 # Wait for DEBUG_SLEEP seconds if the DEBUG_SLEEP environment variable is set
 if [ -n "${DEBUG_SLEEP:-}" ]; then
-  echo "DEBUG_SLEEP is set to ${DEBUG_SLEEP}. Sleeping..."
-  sleep "$DEBUG_SLEEP"
+    echo "DEBUG_SLEEP is set to ${DEBUG_SLEEP}. Sleeping..."
+    sleep "$DEBUG_SLEEP"
 fi
 
 echo ">>> Executing command..."
@@ -153,6 +163,6 @@ set -e
 
 # If the exit code is 0, the Python executable returned successfully
 if [ $EXIT_CODE -ne 0 ]; then
-  echo "Error: Python executable returned with exit code $EXIT_CODE"
-  exit 1
+    echo "Error: Python executable returned with exit code $EXIT_CODE"
+    exit 1
 fi

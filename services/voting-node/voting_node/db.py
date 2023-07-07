@@ -54,7 +54,7 @@ class EventDb(BaseModel):
         FROM
             event
         WHERE
-            start_time > $1
+            start_time <= $1 AND $1 < end_time
         ORDER BY
             start_time ASC
         LIMIT 1"""

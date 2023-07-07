@@ -141,6 +141,7 @@ class FinalSnapshotAlreadyPresent(Exception):
 
     ...
 
+
 class InvalidDatabaseUrl(Exception):
     """Raised when the database URL is invalid."""
 
@@ -152,48 +153,81 @@ class InvalidDatabaseUrl(Exception):
         """Return a string representation of the exception."""
         return "Invalid database URL"
 
+
+class MissingNetworkSnapshotData(Exception):
+    """Raised when the custom raw snapshot file does not contain snapshot data for a network"""
+
+    ...
+
+
+@dataclass
+class NetworkParams:
+    lastest_block_time: Optional[datetime]
+    latest_block_slot_no: Optional[int]
+    registration_snapshot_slot: Optional[int]
+    registration_snapshot_block_time: Optional[datetime]
+    snapshot_tool_out_file: str
+    catalyst_toolbox_out_file: str
+
+
+network_id_priority: Dict[str, int] = {
+    "mainnet": 2,
+    "preprod": 1,
+    "testnet": 0,
+}
+
+
+@dataclass
+class SSHConfig:
+    """Required SSH configuration values."""
+
+    keyfile_path: str
+    destination: str
+    snapshot_tool_path: str
+    snapshot_tool_output_dir: str
+
+
 class Importer:
     """Snapshot importer."""
 
     def __init__(
         self,
-        database_url: str,
+        eventdb_url: str,
         event_id: int,
         output_dir: str,
-        network_id: str,
-        dbsync_url: str,
+        network_ids: List[str],
         snapshot_tool_path: str,
         catalyst_toolbox_path: str,
         gvc_api_url: str,
         raw_snapshot_file: Optional[str] = None,
         dreps_file: Optional[str] = None,
+        ssh_config: Optional[SSHConfig] = None,
     ):
         """Initialize the importer."""
-        self.config = Config(
-            dbsync_database=DbSyncDatabaseConfig(db_url=dbsync_url),
-            snapshot_tool=SnapshotToolConfig(path=snapshot_tool_path),
-            catalyst_toolbox=CatalystToolboxConfig(path=catalyst_toolbox_path),
-            gvc=GvcConfig(api_url=gvc_api_url),
-        )
-        self.database_url = database_url
+        self.snapshot_tool_path = snapshot_tool_path
+        self.catalyst_toolbox_path = catalyst_toolbox_path
+        self.gvc_api_url = gvc_api_url
+
+        self.eventdb_url = eventdb_url
         self.event_id = event_id
-        self.lastest_block_time: Optional[datetime] = None
-        self.latest_block_slot_no: Optional[int] = None
-        self.registration_snapshot_slot: Optional[int] = None
-        self.registration_snapshot_block_time: Optional[datetime] = None
+
         self.registration_snapshot_time: Optional[datetime] = None
         self.snapshot_start_time: Optional[datetime] = None
         self.min_stake_threshold: Optional[int] = None
         self.voting_power_cap: Optional[float] = None
-        self.catalyst_toolbox_out_file = os.path.join(output_dir, "voter_groups.json")
-        self.network_id = network_id
+        self.merged_catalyst_toolbox_out_file = os.path.join(output_dir, "merged_catalyst_toolbox_out.json")
 
-        if raw_snapshot_file is None:
-            self.raw_snapshot_tool_file = os.path.join(output_dir, "snapshot_tool_out.json")
-            self.skip_snapshot_tool_execution = False
-        else:
-            self.raw_snapshot_tool_file = raw_snapshot_file
-            self.skip_snapshot_tool_execution = True
+        self.merged_snapshot_tool_out_file = os.path.join(output_dir, "merged_snapshot_tool_out.json")
+
+        self.network_dbsync_url: Dict[str, str] = {}
+        for network_id in network_ids:
+            envname = f"{network_id}_dbsync_url".upper()
+            self.network_dbsync_url[network_id] = os.environ[envname]
+
+        self.network_params: Dict[str, NetworkParams] = {}
+
+        self.raw_snapshot_file = raw_snapshot_file
+        self.ssh_config = ssh_config
 
         self.dreps_json = "[]"
         self.dreps_file = dreps_file
@@ -202,8 +236,10 @@ class Importer:
         if not os.path.exists(output_dir):
             raise OutputDirectoryDoesNotExist(output_dir)
 
+        self.output_dir = output_dir
+
     async def _check_preconditions(self):
-        conn = await ideascale_importer.db.connect(self.database_url)
+        conn = await ideascale_importer.db.connect(self.eventdb_url)
 
         # Check if a final snapshot already exists
         row = await conn.fetchrow("SELECT final FROM snapshot WHERE event = $1", self.event_id)
@@ -212,10 +248,10 @@ class Importer:
 
         await conn.close()
 
-    async def _fetch_parameters(self, *db_args, **db_kwargs):
+    async def _fetch_eventdb_parameters(self):
         # Fetch event parameters
         try:
-            conn = await ideascale_importer.db.connect(self.database_url, *db_args, **db_kwargs)
+            conn = await ideascale_importer.db.connect(self.eventdb_url)
 
             row = await conn.fetchrow(
                 "SELECT "
@@ -224,7 +260,9 @@ class Importer:
                 self.event_id,
             )
             if row is None:
-                raise FetchParametersFailed("Failed to get event parameters from the database: " f"event_id={self.event_id} not found")
+                raise FetchParametersFailed(
+                    "Failed to get event parameters from the database: " f"event_id={self.event_id} not found"
+                )
 
             self.voting_power_cap = row["max_voting_power_pct"]
             if self.voting_power_cap is not None:
@@ -264,10 +302,11 @@ class Importer:
             logger.error("Failed to fetch event parameters", exc_info=e)
             raise FetchParametersFailed(str(e))
 
-        if not self.skip_snapshot_tool_execution:
+    async def _fetch_network_parameters(self):
+        for network_id, dbsync_url in self.network_dbsync_url.items():
             try:
                 # Fetch max slot
-                conn = await ideascale_importer.db.connect(self.config.dbsync_database.db_url)
+                conn = await ideascale_importer.db.connect(dbsync_url)
 
                 # Fetch slot number and time from the block right before or equal the registration snapshot time
                 row = await conn.fetchrow(
@@ -279,14 +318,13 @@ class Importer:
                         "Failed to get registration snapshot block data from db_sync database: no data returned by the query"
                     )
 
-                self.registration_snapshot_slot = row["slot_no"]
-                self.registration_snapshot_block_time = row["time"]
+                registration_snapshot_slot = row["slot_no"]
+                registration_snapshot_block_time = row["time"]
                 logger.info(
                     "Got registration snapshot block data",
-                    slot_no=self.registration_snapshot_slot,
-                    block_time=None
-                    if self.registration_snapshot_block_time is None
-                    else self.registration_snapshot_block_time.isoformat(),
+                    slot_no=registration_snapshot_slot,
+                    block_time=None if registration_snapshot_block_time is None else registration_snapshot_block_time.isoformat(),
+                    network_id=network_id,
                 )
 
                 row = await conn.fetchrow(
@@ -297,24 +335,32 @@ class Importer:
                         "Failed to get latest block time and slot number from db_sync database: no data returned by the query"
                     )
 
-                self.latest_block_slot_no = row["slot_no"]
-                self.lastest_block_time = row["time"]
+                latest_block_slot_no = row["slot_no"]
+                lastest_block_time = row["time"]
                 logger.info(
                     "Got latest block data",
-                    time=None if self.lastest_block_time is None else self.lastest_block_time.isoformat(),
-                    slot_no=self.latest_block_slot_no,
+                    time=None if lastest_block_time is None else lastest_block_time.isoformat(),
+                    slot_no=latest_block_slot_no,
+                    network_id=network_id,
                 )
 
                 await conn.close()
+
+                self.network_params[network_id] = NetworkParams(
+                    lastest_block_time=lastest_block_time,
+                    latest_block_slot_no=latest_block_slot_no,
+                    registration_snapshot_slot=registration_snapshot_slot,
+                    registration_snapshot_block_time=registration_snapshot_block_time,
+                    snapshot_tool_out_file=os.path.join(self.output_dir, f"{network_id}_snapshot_tool_out.json"),
+                    catalyst_toolbox_out_file=os.path.join(self.output_dir, f"{network_id}_catalyst_toolbox_out.json"),
+                )
             except Exception as e:
-                raise FetchParametersFailed(f"Failed to get latest block data with snapshot_tool: {e}")
-        else:
-            logger.info("Skipping querying max slot parameter")
+                raise FetchParametersFailed(f"Failed to get latest block data ({network_id}): {e}")
 
     async def _fetch_gvc_dreps_list(self):
         logger.info("Fetching drep list from GVC")
 
-        gvc_client = GvcClient(self.config.gvc.api_url)
+        gvc_client = GvcClient(self.gvc_api_url)
 
         dreps = []
         try:
@@ -328,42 +374,89 @@ class Importer:
         with open(self.dreps_out_file, "w") as f:
             json.dump(dataclasses.asdict(dreps_data), f)
 
+    def _split_raw_snapshot_file(self, raw_snapshot_file: str):
+        logger.info("Splitting raw snapshot file for processing")
+
+        with open(raw_snapshot_file) as f:
+            merged_data = json.load(f)
+
+        for network_id, params in self.network_params.items():
+            if network_id not in merged_data:
+                logger.error("Missing network snapshot data in raw snapshot file", network_id=network_id)
+                raise MissingNetworkSnapshotData()
+
+            with open(params.snapshot_tool_out_file, "w") as f:
+                json.dump(merged_data[network_id], f)
+
     async def _run_snapshot_tool(self):
-        # Extract the db_user, db_pass, db_host, and db_name from the address using a regular expression
-        db_url = self.config.dbsync_database.db_url
-        match = re.match(r'^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+):?([0-9]*)\/(?P<db_name>[^?]+)?', db_url)
+        for network_id, dbsync_url in self.network_dbsync_url.items():
+            # Extract the db_user, db_pass, db_host, and db_name from the address using a regular expression
+            match = re.match(
+                r"^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+):?([0-9]*)\/(?P<db_name>[^?]+)?",
+                dbsync_url,
+            )
 
-        if match is None:
-            raise InvalidDatabaseUrl(db_url=db_url)
+            if match is None:
+                raise InvalidDatabaseUrl(db_url=dbsync_url)
 
-        db_user = match.group('db_user')
-        db_pass = match.group('db_pass')
-        db_host = match.group('db_host')
-        db_name = match.group('db_name')
+            db_user = match.group("db_user")
+            db_pass = match.group("db_pass")
+            db_host = match.group("db_host")
+            db_name = match.group("db_name")
 
-        snapshot_tool_cmd = (
-            f"{self.config.snapshot_tool.path}"
-            f" --db-user {db_user}"
-            f" --db-pass {db_pass}"
-            f" --db-host {db_host}"
-            f" --db {db_name}"
-            f" --min-slot 0 --max-slot {self.registration_snapshot_slot}"
-            f" --network-id {self.network_id}"
-            f" --out-file {self.raw_snapshot_tool_file}"
-        )
+            params = self.network_params[network_id]
 
-        await run_cmd("snapshot_tool", snapshot_tool_cmd)
+            if self.ssh_config is None:
+                snapshot_tool_cmd = (
+                    f"{self.snapshot_tool_path}"
+                    f" --db-user {db_user}"
+                    f" --db-pass {db_pass}"
+                    f" --db-host {db_host}"
+                    f" --db {db_name}"
+                    f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
+                    f" --network-id {network_id}"
+                    f" --out-file {params.snapshot_tool_out_file}"
+                )
 
-        # Process snapshot_tool output file to handle the case when voting_purpose is null.
-        # We are setting it to 0 which is the value for Catalyst.
-        with open(self.raw_snapshot_tool_file, "r") as f:
-            snapshot_tool_out = json.load(f)
-            for r in snapshot_tool_out:
-                if r["voting_purpose"] is None:
-                    r["voting_purpose"] = 0
+                await run_cmd("snapshot_tool", snapshot_tool_cmd)
+            else:
+                snapshot_tool_out_file = os.path.join(self.ssh_config.snapshot_tool_output_dir, f"{network_id}_snapshot_tool_out.json")
 
-        with open(self.raw_snapshot_tool_file, "w") as f:
-            json.dump(snapshot_tool_out, f)
+                snapshot_tool_cmd = (
+                    "ssh"
+                    f" -i {self.ssh_config.keyfile_path}"
+                    f" {self.ssh_config.destination}"
+                    f" {self.ssh_config.snapshot_tool_path}"
+                    f" --db-user {db_user}"
+                    f" --db-pass {db_pass}"
+                    f" --db-host {db_host}"
+                    f" --db {db_name}"
+                    f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
+                    f" --network-id {network_id}"
+                    f" --out-file {snapshot_tool_out_file}"
+                )
+                scp_cmd = (
+                    "scp"
+                    f" -i {self.ssh_config.keyfile_path}"
+                    f" {self.ssh_config.destination}:{snapshot_tool_out_file}"
+                    f" {params.snapshot_tool_out_file}"
+                )
+
+                await run_cmd("SSH snapshot_tool", snapshot_tool_cmd)
+                await run_cmd("SSH snapshot artifacts copy", scp_cmd)
+
+    def _process_snapshot_output(self):
+        for params in self.network_params.values():
+            # Process snapshot_tool output file to handle the case when voting_purpose is null.
+            # We are setting it to 0 which is the value for Catalyst.
+            with open(params.snapshot_tool_out_file, "r") as f:
+                snapshot_tool_out = json.load(f)
+                for r in snapshot_tool_out:
+                    if r["voting_purpose"] is None:
+                        r["voting_purpose"] = 0
+
+            with open(params.snapshot_tool_out_file, "w") as f:
+                json.dump(snapshot_tool_out, f)
 
     async def _run_catalyst_toolbox_snapshot(self):
         # Could happen when the event in the database does not have these set
@@ -372,74 +465,98 @@ class Importer:
                 "min_stake_threshold and voting_power_cap must be set either as CLI arguments or in the database"
             )
 
-        catalyst_toolbox_cmd = (
-            f"{self.config.catalyst_toolbox.path} snapshot"
-            f" -s {self.raw_snapshot_tool_file}"
-            f" -m {self.min_stake_threshold}"
-            f" -v {self.voting_power_cap}"
-            f" --dreps {self.dreps_out_file}"
-            f" --output-format json {self.catalyst_toolbox_out_file}"
-        )
+        for params in self.network_params.values():
+            catalyst_toolbox_cmd = (
+                f"{self.catalyst_toolbox_path} snapshot"
+                f" -s {params.snapshot_tool_out_file}"
+                f" -m {self.min_stake_threshold}"
+                f" -v {self.voting_power_cap}"
+                f" --dreps {self.dreps_out_file}"
+                f" --output-format json {params.catalyst_toolbox_out_file}"
+            )
 
-        await run_cmd("catalyst-toolbox", catalyst_toolbox_cmd)
+            await run_cmd("catalyst-toolbox", catalyst_toolbox_cmd)
+
+    def _merge_output_files(self):
+        logger.info("Merging snapshot output files", network_ids=",".join(self.network_params.keys()))
+
+        # Merge snapshot_tool outputs
+        merged_files = {}
+
+        for network_id, params in self.network_params.items():
+            with open(params.snapshot_tool_out_file) as f:
+                merged_files[network_id] = json.load(f)
+
+        with open(self.merged_snapshot_tool_out_file, "w") as f:
+            json.dump(merged_files, f)
+
+        # Merge catalyst-toolbox outputs
+        merged_files.clear()
+
+        for network_id, params in self.network_params.items():
+            with open(params.catalyst_toolbox_out_file) as f:
+                merged_files[network_id] = json.load(f)
+
+        with open(self.merged_catalyst_toolbox_out_file, "w") as f:
+            json.dump(merged_files, f)
 
     async def _write_db_data(self):
-        with open(self.raw_snapshot_tool_file) as f:
+        with open(self.merged_snapshot_tool_out_file) as f:
             snapshot_tool_data_raw_json = f.read()
-        with open(self.catalyst_toolbox_out_file) as f:
+        with open(self.merged_catalyst_toolbox_out_file) as f:
             catalyst_toolbox_data_raw_json = f.read()
 
-        catalyst_toolbox_data: List[SnapshotProcessedEntry] = []
-        for e in json.loads(catalyst_toolbox_data_raw_json):
-            catalyst_toolbox_data.append(pydantic.tools.parse_obj_as(SnapshotProcessedEntry, e))
-            await asyncio.sleep(0)
+        catalyst_toolbox_data: Dict[str, List[SnapshotProcessedEntry]] = pydantic.tools.parse_raw_as(
+            Dict[str, List[SnapshotProcessedEntry]], catalyst_toolbox_data_raw_json
+        )
 
-        snapshot_tool_data: List[Registration] = []
-        for r in json.loads(snapshot_tool_data_raw_json):
-            snapshot_tool_data.append(pydantic.tools.parse_obj_as(Registration, r))
-            await asyncio.sleep(0)
+        snapshot_tool_data: Dict[str, List[Registration]] = pydantic.tools.parse_raw_as(
+            Dict[str, List[Registration]], snapshot_tool_data_raw_json
+        )
 
-        total_registered_voting_power = 0
+        total_registered_voting_power = {}
         registration_delegation_data = {}
-        for r in snapshot_tool_data:
-            total_registered_voting_power += r.voting_power
+        for network_id, network_snapshot in snapshot_tool_data.items():
+            for r in network_snapshot:
+                total_registered_voting_power[network_id] = total_registered_voting_power.get(network_id, 0) + r.voting_power
 
-            if isinstance(r.delegations, str):  # CIP15 registration
-                voting_key = pad_voting_key(r.delegations)
-                voting_key_idx = 0
-                voting_weight = 1
+                if isinstance(r.delegations, str):  # CIP15 registration
+                    voting_key = pad_voting_key(r.delegations)
+                    voting_key_idx = 0
+                    voting_weight = 1
+                    key = f"{r.stake_public_key}{voting_key}"
 
-                registration_delegation_data[f"{r.stake_public_key}{voting_key}"] = {
-                    "voting_key_idx": voting_key_idx,
-                    "voting_weight": voting_weight,
-                }
-            elif isinstance(r.delegations, list):  # CIP36 registration
-                for idx, d in enumerate(r.delegations):
-                    voting_key = pad_voting_key(d[0])
-                    voting_key_idx = idx
-                    voting_weight = d[1]
-
-                    registration_delegation_data[f"{r.stake_public_key}{voting_key}"] = {
+                    delegation_data = registration_delegation_data.get(network_id, {})
+                    delegation_data[key] = {
                         "voting_key_idx": voting_key_idx,
                         "voting_weight": voting_weight,
                     }
-            else:
-                raise Exception("Invalid delegations format in registrations")
+                    registration_delegation_data[network_id] = delegation_data
+                elif isinstance(r.delegations, list):  # CIP36 registration
+                    for idx, d in enumerate(r.delegations):
+                        voting_key = pad_voting_key(d[0])
+                        voting_key_idx = idx
+                        voting_weight = d[1]
+                        key = f"{r.stake_public_key}{voting_key}"
 
-            await asyncio.sleep(0)
+                        delegation_data = registration_delegation_data.get(network_id, {})
+                        delegation_data[key] = {
+                            "voting_key_idx": voting_key_idx,
+                            "voting_weight": voting_weight,
+                        }
+                        registration_delegation_data[network_id] = delegation_data
+                else:
+                    raise Exception("Invalid delegations format in registrations")
 
-        is_snapshot_final = False
-        should_update_final = False
+                await asyncio.sleep(0)
 
-        if self.lastest_block_time is not None and self.snapshot_start_time is not None:
-            is_snapshot_final = self.lastest_block_time >= self.snapshot_start_time
-            should_update_final = True
-            logger.info(
-                "Setting snapshot final flag",
-                final=is_snapshot_final,
-                snapshot_start=self.snapshot_start_time.isoformat(),
-                latest_block_time=self.lastest_block_time.isoformat(),
-            )
+        networks_is_snapshot_final = []
+        for params in self.network_params.values():
+            if params.lastest_block_time is not None and self.snapshot_start_time is not None:
+                networks_is_snapshot_final.append(params.lastest_block_time >= self.snapshot_start_time)
+
+        should_update_final = len(networks_is_snapshot_final) == len(self.network_dbsync_url)
+        is_snapshot_final = all(networks_is_snapshot_final)
 
         compressed_snapshot_tool_data = brotli.compress(bytes(snapshot_tool_data_raw_json, "utf-8"))
         logger.debug(
@@ -456,79 +573,93 @@ class Importer:
         compressed_dreps_data = brotli.compress(bytes(self.dreps_json, "utf-8"))
         logger.debug("Compressed DREPs data", size=len(compressed_dreps_data), original_size=len(self.dreps_json))
 
-        if self.lastest_block_time is None:
+        highest_priority_network = None
+        highest_priority_network_params = None
+        for network_id, params in self.network_params.items():
+            if highest_priority_network is None or network_id_priority[network_id] > network_id_priority[highest_priority_network]:
+                highest_priority_network = network_id
+                highest_priority_network_params = params
+
+        if highest_priority_network_params is None:
+            raise WriteDbDataFailed("Empty network parameters")
+        if highest_priority_network_params.lastest_block_time is None:
             raise WriteDbDataFailed("lastest_block_time not set")
         if self.registration_snapshot_time is None:
             raise WriteDbDataFailed("registration_snapshot_time not set")
-        if self.registration_snapshot_slot is None:
+        if highest_priority_network_params.registration_snapshot_slot is None:
             raise WriteDbDataFailed("registration_snapshot_slot not set")
-        if self.latest_block_slot_no is None:
+        if highest_priority_network_params.latest_block_slot_no is None:
             raise WriteDbDataFailed("latest_block_slot_no not set")
 
         snapshot = models.Snapshot(
             row_id=0,
             event=self.event_id,
             as_at=self.registration_snapshot_time,
-            as_at_slotno=self.registration_snapshot_slot,
-            last_updated=self.lastest_block_time,
-            last_updated_slotno=self.latest_block_slot_no,
+            as_at_slotno=highest_priority_network_params.registration_snapshot_slot,
+            last_updated=highest_priority_network_params.lastest_block_time,
+            last_updated_slotno=highest_priority_network_params.latest_block_slot_no,
             final=is_snapshot_final,
-            dbsync_snapshot_cmd=os.path.basename(self.config.snapshot_tool.path),
+            dbsync_snapshot_cmd=os.path.basename(self.snapshot_tool_path),
             dbsync_snapshot_data=compressed_snapshot_tool_data,
             drep_data=compressed_dreps_data,
-            catalyst_snapshot_cmd=os.path.basename(self.config.catalyst_toolbox.path),
+            catalyst_snapshot_cmd=os.path.basename(self.catalyst_toolbox_path),
             catalyst_snapshot_data=compressed_catalyst_toolbox_data,
         )
 
         voters: Dict[str, models.Voter] = {}
         contributions: List[models.Contribution] = []
-        total_contributed_voting_power = 0
-        total_hir_voting_power = 0
 
-        for ctd in catalyst_toolbox_data:
-            total_hir_voting_power += ctd.hir.voting_power
+        for network_id, network_processed_snapshot in catalyst_toolbox_data.items():
+            total_contributed_voting_power = 0
+            total_hir_voting_power = 0
 
-            for snapshot_contribution in ctd.contributions:
-                total_contributed_voting_power += snapshot_contribution.value
+            for ctd in network_processed_snapshot:
+                total_hir_voting_power += ctd.hir.voting_power
 
-                voting_key = ctd.hir.voting_key
-                # This can be removed once it's fixed in catalyst-toolbox
-                if not voting_key.startswith("0x"):
-                    voting_key = "0x" + voting_key
+                for snapshot_contribution in ctd.contributions:
+                    total_contributed_voting_power += snapshot_contribution.value
 
-                delegation_data = registration_delegation_data[f"{snapshot_contribution.stake_public_key}{voting_key}"]
+                    voting_key = ctd.hir.voting_key
+                    # This can be removed once it's fixed in catalyst-toolbox
+                    if not voting_key.startswith("0x"):
+                        voting_key = "0x" + voting_key
 
-                contribution = models.Contribution(
-                    stake_public_key=snapshot_contribution.stake_public_key,
-                    snapshot_id=0,
-                    voting_key=voting_key,
-                    voting_weight=delegation_data["voting_weight"],
-                    voting_key_idx=delegation_data["voting_key_idx"],
-                    value=snapshot_contribution.value,
-                    voting_group=ctd.hir.voting_group,
-                    reward_address=snapshot_contribution.reward_address,
-                )
+                    delegation_data = registration_delegation_data[network_id][
+                        f"{snapshot_contribution.stake_public_key}{voting_key}"
+                    ]
 
-                voter = models.Voter(
-                    voting_key=voting_key,
-                    snapshot_id=0,
-                    voting_group=ctd.hir.voting_group,
-                    voting_power=ctd.hir.voting_power,
-                )
+                    contribution = models.Contribution(
+                        stake_public_key=snapshot_contribution.stake_public_key,
+                        snapshot_id=0,
+                        voting_key=voting_key,
+                        voting_weight=delegation_data["voting_weight"],
+                        voting_key_idx=delegation_data["voting_key_idx"],
+                        value=snapshot_contribution.value,
+                        voting_group=ctd.hir.voting_group,
+                        reward_address=snapshot_contribution.reward_address,
+                    )
 
-                contributions.append(contribution)
-                voters[f"{voter.voting_key}{voter.voting_group}"] = voter
+                    voter = models.Voter(
+                        voting_key=voting_key,
+                        snapshot_id=0,
+                        voting_group=ctd.hir.voting_group,
+                        voting_power=ctd.hir.voting_power,
+                    )
 
-            await asyncio.sleep(0)
+                    contributions.append(contribution)
+                    voters[f"{voter.voting_key}{voter.voting_group}"] = voter
 
-        logger.info(
-            "Done processing contributions and voters",
-            total_registered_voting_power=total_registered_voting_power,
-            total_contributed_voting_power=total_contributed_voting_power,
-            total_hir_voting_power=total_hir_voting_power,
-        )
+                    await asyncio.sleep(0)
 
-        conn = await ideascale_importer.db.connect(self.database_url)
+            logger.info(
+                "Done processing contributions and voters",
+                total_registered_voting_power=total_registered_voting_power[network_id],
+                total_contributed_voting_power=total_contributed_voting_power,
+                total_hir_voting_power=total_hir_voting_power,
+                network_id=network_id,
+            )
+
+        conn = await ideascale_importer.db.connect(self.eventdb_url)
 
         async with conn.transaction():
             # Do not update the final column if we are not sure about it.
@@ -551,18 +682,22 @@ class Importer:
                 v.snapshot_id = inserted_snapshot.row_id
 
             await ideascale_importer.db.delete_snapshot_data(conn, inserted_snapshot.row_id)
-            await ideascale_importer.db.insert_many(conn, contributions)
-            await ideascale_importer.db.insert_many(conn, list(voters.values()))
+            total_contributions_written = len(await ideascale_importer.db.insert_many(conn, contributions))
+            total_voters_written = len(await ideascale_importer.db.insert_many(conn, list(voters.values())))
+
+        assert total_contributions_written == len(contributions)
+        assert total_voters_written == len(voters)
 
         logger.info(
             "Finished writing snapshot data to database",
-            contributions_count=len(contributions),
-            voters_count=len(voters.values()),
+            contributions_count=total_contributions_written,
+            voters_count=total_voters_written,
         )
 
-    async def run(self, *db_args, **db_kwargs):
+    async def run(self):
         """Take a snapshot and write the data to the database."""
-        await self._fetch_parameters(*db_args, **db_kwargs)
+        await self._fetch_eventdb_parameters()
+        await self._fetch_network_parameters()
 
         if self.dreps_file is None:
             await self._fetch_gvc_dreps_list()
@@ -571,12 +706,15 @@ class Importer:
             with open(self.dreps_file) as f:
                 self.dreps = json.load(f)
 
-        if self.skip_snapshot_tool_execution:
-            logger.info("Skipping snapshot_tool execution. Using raw snapshot file")
+        if self.raw_snapshot_file is not None:
+            logger.info("Skipping snapshot_tool execution")
+            self._split_raw_snapshot_file(self.raw_snapshot_file)
         else:
             await self._run_snapshot_tool()
 
+        self._process_snapshot_output()
         await self._run_catalyst_toolbox_snapshot()
+        self._merge_output_files()
         await self._write_db_data()
 
 

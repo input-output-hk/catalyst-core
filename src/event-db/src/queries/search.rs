@@ -2,7 +2,7 @@ use crate::{
     types::{
         event::{
             objective::{ObjectiveId, ObjectiveSummary, ObjectiveType},
-            proposal::ProposalSummary,
+            proposal::{ProposalId, ProposalSummary},
             EventId, EventSummary,
         },
         search::{
@@ -227,7 +227,7 @@ impl SearchQueries for EventDB {
                     let mut proposals = Vec::new();
                     for row in rows {
                         let summary = ProposalSummary {
-                            id: row.try_get("id")?,
+                            id: ProposalId(row.try_get("id")?),
                             title: row.try_get("title")?,
                             summary: row.try_get("summary")?,
                         };
@@ -288,7 +288,7 @@ mod tests {
             .search(search_query.clone(), false, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 4);
+        assert_eq!(query_result.total, 5);
         assert_eq!(
             query_result.results,
             Some(ValueResults::Events(vec![
@@ -373,11 +373,31 @@ mod tests {
                 EventSummary {
                     id: EventId(4),
                     name: "Test Fund 4".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: None,
+                    is_final: false,
+                },
+                EventSummary {
+                    id: EventId(5),
+                    name: "Test Fund 5".to_string(),
                     starts: None,
                     ends: None,
                     reg_checked: None,
                     is_final: false,
-                },
+                }
             ]))
         );
 
@@ -385,7 +405,7 @@ mod tests {
             .search(search_query, true, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 4);
+        assert_eq!(query_result.total, 5);
         assert_eq!(query_result.results, None);
 
         let search_query = SearchQuery {
@@ -403,15 +423,35 @@ mod tests {
             .search(search_query.clone(), false, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 4);
+        assert_eq!(query_result.total, 5);
         assert_eq!(
             query_result.results,
             Some(ValueResults::Events(vec![
                 EventSummary {
-                    id: EventId(4),
-                    name: "Test Fund 4".to_string(),
+                    id: EventId(5),
+                    name: "Test Fund 5".to_string(),
                     starts: None,
                     ends: None,
+                    reg_checked: None,
+                    is_final: false,
+                },
+                EventSummary {
+                    id: EventId(4),
+                    name: "Test Fund 4".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
                     reg_checked: None,
                     is_final: false,
                 },
@@ -505,13 +545,44 @@ mod tests {
             query_result.results,
             Some(ValueResults::Events(vec![
                 EventSummary {
-                    id: EventId(4),
-                    name: "Test Fund 4".to_string(),
+                    id: EventId(5),
+                    name: "Test Fund 5".to_string(),
                     starts: None,
                     ends: None,
                     reg_checked: None,
                     is_final: false,
                 },
+                EventSummary {
+                    id: EventId(4),
+                    name: "Test Fund 4".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: None,
+                    is_final: false,
+                },
+            ]))
+        );
+
+        let query_result = event_db
+            .search(search_query.clone(), false, None, Some(2))
+            .await
+            .unwrap();
+        assert_eq!(query_result.total, 3);
+        assert_eq!(
+            query_result.results,
+            Some(ValueResults::Events(vec![
                 EventSummary {
                     id: EventId(3),
                     name: "Test Fund 3".to_string(),
@@ -538,17 +609,6 @@ mod tests {
                     )),
                     is_final: true,
                 },
-            ]))
-        );
-
-        let query_result = event_db
-            .search(search_query.clone(), false, None, Some(2))
-            .await
-            .unwrap();
-        assert_eq!(query_result.total, 2);
-        assert_eq!(
-            query_result.results,
-            Some(ValueResults::Events(vec![
                 EventSummary {
                     id: EventId(2),
                     name: "Test Fund 2".to_string(),
@@ -612,8 +672,8 @@ mod tests {
         assert_eq!(
             query_result.results,
             Some(ValueResults::Events(vec![EventSummary {
-                id: EventId(3),
-                name: "Test Fund 3".to_string(),
+                id: EventId(4),
+                name: "Test Fund 4".to_string(),
                 starts: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
                         NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
@@ -623,19 +683,13 @@ mod tests {
                 )),
                 ends: Some(DateTime::<Utc>::from_utc(
                     NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 6, 1).unwrap(),
+                        NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
                         NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                     ),
                     Utc
                 )),
-                reg_checked: Some(DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                )),
-                is_final: true,
+                reg_checked: None,
+                is_final: false,
             },]))
         );
 
@@ -674,7 +728,7 @@ mod tests {
             .search(search_query.clone(), false, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 2);
+        assert_eq!(query_result.total, 4);
         assert_eq!(
             query_result.results,
             Some(ValueResults::Objectives(vec![
@@ -696,6 +750,24 @@ mod tests {
                     title: "title 2".to_string(),
                     description: "description 2".to_string(),
                 },
+                ObjectiveSummary {
+                    id: ObjectiveId(3),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 3".to_string(),
+                    description: "description 3".to_string(),
+                },
+                ObjectiveSummary {
+                    id: ObjectiveId(4),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-native".to_string(),
+                        description: "??".to_string()
+                    },
+                    title: "title 4".to_string(),
+                    description: "description 4".to_string(),
+                },
             ]))
         );
 
@@ -703,7 +775,7 @@ mod tests {
             .search(search_query, true, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 2);
+        assert_eq!(query_result.total, 4);
         assert_eq!(query_result.results, None);
 
         let search_query: SearchQuery = SearchQuery {
@@ -721,10 +793,28 @@ mod tests {
             .search(search_query.clone(), false, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 2);
+        assert_eq!(query_result.total, 4);
         assert_eq!(
             query_result.results,
             Some(ValueResults::Objectives(vec![
+                ObjectiveSummary {
+                    id: ObjectiveId(4),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-native".to_string(),
+                        description: "??".to_string()
+                    },
+                    title: "title 4".to_string(),
+                    description: "description 4".to_string(),
+                },
+                ObjectiveSummary {
+                    id: ObjectiveId(3),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 3".to_string(),
+                    description: "description 3".to_string(),
+                },
                 ObjectiveSummary {
                     id: ObjectiveId(2),
                     objective_type: ObjectiveType {
@@ -754,13 +844,13 @@ mod tests {
         assert_eq!(
             query_result.results,
             Some(ValueResults::Objectives(vec![ObjectiveSummary {
-                id: ObjectiveId(2),
+                id: ObjectiveId(4),
                 objective_type: ObjectiveType {
                     id: "catalyst-native".to_string(),
                     description: "??".to_string()
                 },
-                title: "title 2".to_string(),
-                description: "description 2".to_string(),
+                title: "title 4".to_string(),
+                description: "description 4".to_string(),
             },]))
         );
 
@@ -768,18 +858,38 @@ mod tests {
             .search(search_query, false, None, Some(1))
             .await
             .unwrap();
-        assert_eq!(query_result.total, 1);
+        assert_eq!(query_result.total, 3);
         assert_eq!(
             query_result.results,
-            Some(ValueResults::Objectives(vec![ObjectiveSummary {
-                id: ObjectiveId(1),
-                objective_type: ObjectiveType {
-                    id: "catalyst-simple".to_string(),
-                    description: "A Simple choice".to_string()
+            Some(ValueResults::Objectives(vec![
+                ObjectiveSummary {
+                    id: ObjectiveId(3),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 3".to_string(),
+                    description: "description 3".to_string(),
                 },
-                title: "title 1".to_string(),
-                description: "description 1".to_string(),
-            },]))
+                ObjectiveSummary {
+                    id: ObjectiveId(2),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-native".to_string(),
+                        description: "??".to_string()
+                    },
+                    title: "title 2".to_string(),
+                    description: "description 2".to_string(),
+                },
+                ObjectiveSummary {
+                    id: ObjectiveId(1),
+                    objective_type: ObjectiveType {
+                        id: "catalyst-simple".to_string(),
+                        description: "A Simple choice".to_string()
+                    },
+                    title: "title 1".to_string(),
+                    description: "description 1".to_string(),
+                },
+            ]))
         );
 
         let search_query = SearchQuery {
@@ -822,17 +932,17 @@ mod tests {
             query_result.results,
             Some(ValueResults::Proposals(vec![
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 },
@@ -866,17 +976,17 @@ mod tests {
             query_result.results,
             Some(ValueResults::Proposals(vec![
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
@@ -892,12 +1002,12 @@ mod tests {
             query_result.results,
             Some(ValueResults::Proposals(vec![
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
@@ -913,12 +1023,12 @@ mod tests {
             query_result.results,
             Some(ValueResults::Proposals(vec![
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
@@ -933,7 +1043,7 @@ mod tests {
         assert_eq!(
             query_result.results,
             Some(ValueResults::Proposals(vec![ProposalSummary {
-                id: 2,
+                id: ProposalId(20),
                 title: String::from("title 2"),
                 summary: String::from("summary 2")
             },]))

@@ -145,7 +145,7 @@ pub fn voters_with_at_least_one_vote() {
                 .iter()
                 .map(|x| (x.id, x.proposers_rewards as usize))
                 .collect(),
-            proposals,
+            proposals.into_iter().map(Into::into).collect(),
         )
         .unwrap(),
         1_000_000u32.into(),

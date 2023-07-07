@@ -1,9 +1,10 @@
 """Snapshot importer CLI commands."""
 
 import asyncio
+from typing import List, Optional
 import typer
 
-from ideascale_importer.snapshot_importer import Importer
+from ideascale_importer.snapshot_importer import Importer, SSHConfig
 from ideascale_importer.utils import configure_logger
 from loguru import logger
 
@@ -13,14 +14,13 @@ app = typer.Typer(add_completion=False)
 @app.command(name="import")
 def import_snapshot(
     event_id: int = typer.Option(..., help="Database event id to link all snapshot data to"),
-    database_url: str = typer.Option(..., envvar="EVENTDB_URL", help="URL of the Postgres database in which to import the data to"),
+    eventdb_url: str = typer.Option(..., envvar="EVENTDB_URL", help="URL of the Postgres database in which to import the data to"),
     output_dir: str = typer.Option(..., envvar="SNAPSHOT_OUTPUT_DIR", help="Output directory for generated files"),
-    network_id: str = typer.Option(
+    network_ids: List[str] = typer.Option(
         ...,
-        envvar="SNAPSHOT_NETWORK_ID",
+        envvar="SNAPSHOT_NETWORK_IDS",
         help="Network id to pass as parameter to snapshot_tool",
     ),
-    dbsync_url: str = typer.Option(..., envvar="DBSYNC_URL", help="URL of the DBSync database in which to import the data to"),
     snapshot_tool_path: str = typer.Option(default="snapshot_tool", envvar="SNAPSHOT_TOOL_PATH", help="Path to the snapshot tool"),
     catalyst_toolbox_path: str = typer.Option(
         default="catalyst-toolbox", envvar="CATALYST_TOOLBOX_PATH", help="Path to the catalyst-toolbox"
@@ -50,31 +50,67 @@ def import_snapshot(
         envvar="SNAPSHOT_LOG_FORMAT",
         help="Log format",
     ),
+    ssh_keyfile: Optional[str] = typer.Option(
+        default=None,
+        envvar="SSH_KEYFILE",
+        help="Path to the file containing the SSH private key to use when running commands through SSH",
+    ),
+    ssh_destination: Optional[str] = typer.Option(
+        default=None, envvar="SSH_DESTINATION", help="user@host to use when running commands through SSH"
+    ),
+    ssh_snapshot_tool_path: Optional[str] = typer.Option(
+        default=None,
+        envvar="SSH_SNAPSHOT_TOOL_PATH",
+        help="Path to the snapshot tool on the remote machine",
+    ),
+    ssh_snapshot_tool_output_dir: Optional[str] = typer.Option(
+        default=None,
+        envvar="SSH_SNAPSHOT_TOOL_OUTPUT_DIR",
+        help="Output directoy for storing the snapshot_tool output on the remote machine",
+    ),
+    snapshot_tool_ssh: bool = typer.Option(
+        default=False,
+        envvar="SNAPSHOT_TOOL_SSH",
+        help="If set, snapshot tool will be executed through SSH",
+    ),
 ):
     """Import snapshot data into the database."""
     # Configure logger with the given parameters
     configure_logger(log_level, log_format)
 
     async def inner():
-        importer = Importer(
-            database_url=database_url,
-            event_id=event_id,
-            output_dir=output_dir,
-            network_id=network_id,
-            dbsync_url=dbsync_url,
-            snapshot_tool_path=snapshot_tool_path,
-            catalyst_toolbox_path=catalyst_toolbox_path,
-            gvc_api_url=gvc_api_url,
-            raw_snapshot_file=raw_snapshot_file,
-            dreps_file=dreps_file,
-        )
+        if (
+            snapshot_tool_ssh
+            and ssh_keyfile is not None
+            and ssh_destination is not None
+            and ssh_snapshot_tool_path is not None
+            and ssh_snapshot_tool_output_dir is not None
+        ):
+            ssh_config = SSHConfig(ssh_keyfile, ssh_destination, ssh_snapshot_tool_path, ssh_snapshot_tool_output_dir)
+        else:
+            if snapshot_tool_ssh:
+                logger.error(
+                    "SSH_KEYFILE, SSH_DESTINATION, SSH_SNAPSHOT_TOOL_PATH and SSH_SNAPSHOT_TOOL_OUTPUT_DIR "
+                    "are all required when SSH_SNAPSHOT_TOOL is set"
+                )
+                raise typer.Exit(1)
+
+            ssh_config = None
         try:
+            importer = Importer(
+                eventdb_url=eventdb_url,
+                event_id=event_id,
+                output_dir=output_dir,
+                network_ids=network_ids,
+                snapshot_tool_path=snapshot_tool_path,
+                catalyst_toolbox_path=catalyst_toolbox_path,
+                gvc_api_url=gvc_api_url,
+                raw_snapshot_file=raw_snapshot_file,
+                dreps_file=dreps_file,
+                ssh_config=ssh_config,
+            )
             await importer.run()
         except Exception as e:
             logger.error(e)
 
-    try:
-        asyncio.run(inner())
-    except Exception as e:
-        logger.error(e)
-        raise typer.Exit(1)
+    asyncio.run(inner())

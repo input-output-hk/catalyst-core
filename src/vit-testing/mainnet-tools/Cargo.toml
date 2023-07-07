@@ -19,11 +19,11 @@ color-eyre = "0.6"
 http-zipkin = "0.3.0"
 signals-handler = { path = "../signals-handler" }
 mainnet-lib = { path = "../mainnet-lib" }
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain"}
+chain-impl-mockchain = { workspace = true }
 voting_tools_rs = { path = "../../voting-tools-rs"}
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1.2", features = ["macros","rt","process"] }
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 jortestkit = { path = "../../jortestkit" }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicing-station-tests" }

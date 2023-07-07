@@ -1,6 +1,7 @@
 use crate::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{
     extract::{Path, Query},
@@ -20,56 +21,72 @@ pub fn registration(state: Arc<State>) -> Router {
             "/registration/voter/:voting_key",
             get({
                 let state = state.clone();
-                move |path, query| async {
-                    handle_result(voter_exec(path, query, state).await).await
-                }
+                move |path, query| async { handle_result(voter_exec(path, query, state).await) }
             }),
         )
         .route(
             "/registration/delegations/:stake_public_key",
             get({
                 move |path, query| async {
-                    handle_result(delegations_exec(path, query, state).await).await
+                    handle_result(delegations_exec(path, query, state).await)
                 }
             }),
         )
 }
 
 #[derive(Deserialize)]
-struct EventIdQuery {
-    eid: Option<EventId>,
+struct VotersQuery {
+    event_id: Option<SerdeType<EventId>>,
+    with_delegators: Option<bool>,
 }
 
 async fn voter_exec(
     Path(voting_key): Path<String>,
-    eid_query: Query<EventIdQuery>,
+    Query(VotersQuery {
+        event_id,
+        with_delegators,
+    }): Query<VotersQuery>,
     state: Arc<State>,
-) -> Result<Voter, Error> {
+) -> Result<SerdeType<Voter>, Error> {
     tracing::debug!(
-        "voter_query: voting_key: {0}, eid: {1:?}",
+        "voter_query: voting_key: {0}, event_id: {1:?}",
         voting_key,
-        eid_query.eid
+        &event_id
     );
 
-    let voter = state.event_db.get_voter(&eid_query.eid, voting_key).await?;
+    let voter = state
+        .event_db
+        .get_voter(
+            &event_id.map(|val| val.0),
+            voting_key,
+            with_delegators.unwrap_or(false),
+        )
+        .await?
+        .into();
     Ok(voter)
+}
+
+#[derive(Deserialize)]
+struct DelegationsQuery {
+    event_id: Option<SerdeType<EventId>>,
 }
 
 async fn delegations_exec(
     Path(stake_public_key): Path<String>,
-    eid_query: Query<EventIdQuery>,
+    Query(DelegationsQuery { event_id }): Query<DelegationsQuery>,
     state: Arc<State>,
-) -> Result<Delegator, Error> {
+) -> Result<SerdeType<Delegator>, Error> {
     tracing::debug!(
         "delegator_query: stake_public_key: {0}, eid: {1:?}",
         stake_public_key,
-        eid_query.eid
+        &event_id
     );
 
     let delegator = state
         .event_db
-        .get_delegator(&eid_query.eid, stake_public_key)
-        .await?;
+        .get_delegator(&event_id.map(|val| val.0), stake_public_key)
+        .await?
+        .into();
     Ok(delegator)
 }
 
@@ -91,13 +108,11 @@ async fn delegations_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::app;
+    use crate::service::{app, tests::body_data_json_check};
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, Utc};
-    use event_db::types::registration::{Delegation, VoterInfo};
     use tower::ServiceExt;
 
     #[tokio::test]
@@ -111,74 +126,106 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Voter {
-                voter_info: VoterInfo {
-                    voting_power: 250,
-                    voting_group: "rep".to_string(),
-                    delegations_power: 250,
-                    delegations_count: 2,
-                    voting_power_saturation: 0.625,
-                },
-                as_at: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: true,
-            })
-            .unwrap()
-        );
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                {
+                    "voter_info": {
+                        "voting_power": 250,
+                        "voting_group": "rep",
+                        "delegations_power": 250,
+                        "delegations_count": 2,
+                        "voting_power_saturation": 0.625,
+                    },
+                    "as_at": "2022-03-31T12:00:00+00:00",
+                    "last_updated": "2022-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
+        ));
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/voter/{0}?eid={1}",
+                "/api/v1/registration/voter/{0}?with_delegators=true",
+                "voting_key_1"
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                {
+                    "voter_info": {
+                        "voting_power": 250,
+                        "voting_group": "rep",
+                        "delegations_power": 250,
+                        "delegations_count": 2,
+                        "voting_power_saturation": 0.625,
+                        "delegator_addresses": ["stake_public_key_1", "stake_public_key_2"]
+                    },
+                    "as_at": "2022-03-31T12:00:00+00:00",
+                    "last_updated": "2022-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
+        ));
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/voter/{0}?event_id={1}",
                 "voting_key_1", 1
             ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Voter {
-                voter_info: VoterInfo {
-                    voting_power: 250,
-                    voting_group: "rep".to_string(),
-                    delegations_power: 250,
-                    delegations_count: 2,
-                    voting_power_saturation: 0.625,
-                },
-                as_at: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: true,
-            })
-            .unwrap()
-        );
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                {
+                    "voter_info": {
+                        "voting_power": 250,
+                        "voting_group": "rep",
+                        "delegations_power": 250,
+                        "delegations_count": 2,
+                        "voting_power_saturation": 0.625,
+                    },
+                    "as_at": "2020-03-31T12:00:00+00:00",
+                    "last_updated": "2020-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
+        ));
+
+        let request = Request::builder()
+            .uri(format!(
+                "/api/v1/registration/voter/{0}?event_id={1}&with_delegators=true",
+                "voting_key_1", 1
+            ))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                {
+                    "voter_info": {
+                        "voting_power": 250,
+                        "voting_group": "rep",
+                        "delegations_power": 250,
+                        "delegations_count": 2,
+                        "voting_power_saturation": 0.625,
+                        "delegator_addresses": ["stake_public_key_1", "stake_public_key_2"]
+                    },
+                    "as_at": "2020-03-31T12:00:00+00:00",
+                    "last_updated": "2020-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
+        ));
 
         let request = Request::builder()
             .uri(format!("/api/v1/registration/voter/{0}", "voting_key"))
@@ -189,7 +236,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/voter/{0}?eid={1}",
+                "/api/v1/registration/voter/{0}?event_id={1}",
                 "voting_key", 1
             ))
             .body(Body::empty())
@@ -212,92 +259,72 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Delegator {
-                delegations: vec![
-                    Delegation {
-                        voting_key: "voting_key_1".to_string(),
-                        group: "rep".to_string(),
-                        weight: 1,
-                        value: 140
-                    },
-                    Delegation {
-                        voting_key: "voting_key_2".to_string(),
-                        group: "rep".to_string(),
-                        weight: 1,
-                        value: 100
-                    }
-                ],
-                raw_power: 240,
-                total_power: 1000,
-                as_at: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: true
-            })
-            .unwrap()
-        );
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                {
+                    "delegations": [
+                        {
+                            "voting_key": "voting_key_1",
+                            "group": "rep",
+                            "weight": 1,
+                            "value": 140,
+                        },
+                        {
+                            "voting_key": "voting_key_2",
+                            "group": "rep",
+                            "weight": 1,
+                            "value": 100,
+                        },
+                    ],
+                    "reward_address": "addrrreward_address_1",
+                    "reward_payable": true,
+                    "raw_power": 240,
+                    "total_power": 1000,
+                    "as_at": "2022-03-31T12:00:00+00:00",
+                    "last_updated": "2022-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
+        ));
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/delegations/{0}?eid={1}",
+                "/api/v1/registration/delegations/{0}?event_id={1}",
                 "stake_public_key_1", 1
             ))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Delegator {
-                delegations: vec![
-                    Delegation {
-                        voting_key: "voting_key_1".to_string(),
-                        group: "rep".to_string(),
-                        weight: 1,
-                        value: 140
-                    },
-                    Delegation {
-                        voting_key: "voting_key_2".to_string(),
-                        group: "rep".to_string(),
-                        weight: 1,
-                        value: 100
-                    }
-                ],
-                raw_power: 240,
-                total_power: 1000,
-                as_at: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                last_updated: DateTime::<Utc>::from_utc(
-                    NaiveDateTime::new(
-                        NaiveDate::from_ymd_opt(2020, 3, 31).unwrap(),
-                        NaiveTime::from_hms_opt(12, 0, 0).unwrap()
-                    ),
-                    Utc
-                ),
-                is_final: true
-            })
-            .unwrap()
-        );
+        assert!(body_data_json_check(
+            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            serde_json::json!(
+                {
+                    "delegations": [
+                        {
+                            "voting_key": "voting_key_1",
+                            "group": "rep",
+                            "weight": 1,
+                            "value": 140,
+                        },
+                        {
+                            "voting_key": "voting_key_2",
+                            "group": "rep",
+                            "weight": 1,
+                            "value": 100,
+                        },
+                    ],
+                    "reward_address": "addrrreward_address_1",
+                    "reward_payable": true,
+                    "raw_power": 240,
+                    "total_power": 1000,
+                    "as_at": "2020-03-31T12:00:00+00:00",
+                    "last_updated": "2020-03-31T12:00:00+00:00",
+                    "final": true
+                }
+            )
+        ));
 
         let request = Request::builder()
             .uri(format!(
@@ -311,7 +338,7 @@ mod tests {
 
         let request = Request::builder()
             .uri(format!(
-                "/api/v1/registration/delegations/{0}?eid={1}",
+                "/api/v1/registration/delegations/{0}?event_id={1}",
                 "stake_public_key", 1
             ))
             .body(Body::empty())

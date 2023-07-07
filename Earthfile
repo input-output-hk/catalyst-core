@@ -2,15 +2,18 @@
 VERSION 0.7
 FROM debian:stable-slim
 
+rust-toolchain:
+    FROM rust:1.65-slim-bullseye
+
 # Installs Cargo chef
 install-chef:
-    FROM rust:1.65-slim-bullseye
+    FROM +rust-toolchain
     RUN cargo install --debug cargo-chef
 
 # Prepares the local cache
 prepare-cache:
     FROM +install-chef
-    COPY --dir src Cargo.lock Cargo.toml .
+    COPY --dir src tests Cargo.lock Cargo.toml .
     RUN cargo chef prepare
     SAVE ARTIFACT recipe.json
     SAVE IMAGE --cache-hint
@@ -36,7 +39,7 @@ build-cache:
 
 # This is the default builder that all other builders should inherit from
 builder:
-    FROM rust:1.65-slim-bullseye
+    FROM +rust-toolchain
     # Install build dependencies
     RUN apt-get update && \
         apt-get install -y --no-install-recommends \
@@ -46,7 +49,7 @@ builder:
         libsqlite3-dev \
         protobuf-compiler
     RUN rustup component add rustfmt
-    COPY --dir src Cargo.lock Cargo.toml .
+    COPY --dir src tests Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target
     SAVE ARTIFACT src

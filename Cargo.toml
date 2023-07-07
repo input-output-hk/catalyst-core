@@ -1,5 +1,6 @@
 [workspace]
 members = [
+  "tests",
   "src/catalyst-toolbox/catalyst-toolbox",
   "src/catalyst-toolbox/snapshot-lib",
   "src/chain-libs/imhamt",
@@ -50,10 +51,14 @@ members = [
   "src/vit-testing/signals-handler",
   "src/vit-testing/scheduler-service-lib",
   "src/voting-tools-rs",
-  "src/cat-data-service"
+  "src/cat-data-service",
+  "src/tally",
 ]
 
 [workspace.dependencies]
+jormungandr-lib = { path = "src/jormungandr/jormungandr-lib" }
+chain-impl-mockchain = { path = "src/chain-libs/chain-impl-mockchain" }
+
 uuid = { version = "1", features = ["v4", "serde"] }
 # we use this branch because it uses v1 of `itoa`, but the latest crates.io release doesn't
 csv = { git = "https://github.com/BurntSushi/rust-csv" }

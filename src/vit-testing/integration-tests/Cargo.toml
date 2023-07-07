@@ -9,7 +9,7 @@ edition = "2021"
 [dependencies]
 base64 = "0.21"
 num-traits = "0.2.15"
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 thor = { path = "../../jormungandr/testing/thor" }
 hersir = { path = "../../jormungandr/testing/hersir" }
@@ -22,7 +22,7 @@ chain-core = { path = "../../chain-libs/chain-core"}
 chain-ser = { path = "../../chain-libs/chain-ser" }
 chain-crypto = { path = "../../chain-libs/chain-crypto" }
 voting_tools_rs = {path = "../../voting-tools-rs"}
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
+chain-impl-mockchain = { workspace = true, features = [ "property-test-api" ] }
 vitup = { path = "../vitup"} 
 iapyx = { path = "../iapyx"} 
 valgrind = { path = "../valgrind"} 

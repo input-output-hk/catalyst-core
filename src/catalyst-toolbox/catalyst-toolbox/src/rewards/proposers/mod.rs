@@ -1,5 +1,5 @@
-use std::collections::{HashMap, HashSet};
-
+use self::{io::vecs_to_maps, types::NotFundedReason};
+use crate::types::{challenge::Challenge, proposal::Proposal};
 use chain_impl_mockchain::value::Value;
 use color_eyre::{
     eyre::{bail, eyre},
@@ -12,13 +12,10 @@ use jormungandr_lib::{
         Address, Block0Configuration, Initial, Tally, VotePlanStatus, VoteProposalStatus,
     },
 };
+use std::collections::{HashMap, HashSet};
 use tracing::debug;
-use vit_servicing_station_lib::db::models::{challenges::Challenge, proposals::Proposal};
-
 pub use types::*;
 pub use util::build_path_for_challenge;
-
-use self::{io::vecs_to_maps, types::NotFundedReason};
 
 pub mod io;
 mod types;

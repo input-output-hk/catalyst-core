@@ -2,7 +2,7 @@ use crate::{
     error::Error,
     types::event::{
         objective::ObjectiveId,
-        proposal::{ProposalDetails, ProposalSummary, ProposalSupplementalDetails},
+        proposal::{ProposalDetails, ProposalSummary},
     },
     types::event::{
         proposal::{Proposal, ProposalId, ProposerDetails},
@@ -35,7 +35,7 @@ impl EventDB {
     const PROPOSALS_QUERY: &'static str = "SELECT proposal.id, proposal.title, proposal.summary
         FROM proposal
         INNER JOIN objective on proposal.objective = objective.row_id
-        WHERE proposal.objective = $1 AND objective.event = $2
+        WHERE objective.event = $1 AND objective.id = $2
         LIMIT $3 OFFSET $4;";
 
     const PROPOSAL_QUERY: &'static str =
@@ -44,7 +44,7 @@ impl EventDB {
     proposal.proposer_name, proposal.proposer_contact, proposal.proposer_url, proposal.public_key
     FROM proposal
     INNER JOIN objective on proposal.objective = objective.row_id
-    WHERE proposal.id = $1 AND proposal.objective = $2 AND objective.event = $3;";
+    WHERE objective.event = $1 AND objective.id = $2 AND proposal.id = $3;";
 }
 
 #[async_trait]
@@ -55,7 +55,9 @@ impl ProposalQueries for EventDB {
         objective: ObjectiveId,
         proposal: ProposalId,
     ) -> Result<Proposal, Error> {
-        let conn = self.pool.get().await?;
+        let conn: bb8::PooledConnection<
+            bb8_postgres::PostgresConnectionManager<tokio_postgres::NoTls>,
+        > = self.pool.get().await?;
 
         let rows = conn
             .query(Self::PROPOSAL_QUERY, &[&event.0, &objective.0, &proposal.0])
@@ -71,26 +73,21 @@ impl ProposalQueries for EventDB {
             payment_key: row.try_get("public_key")?,
         }];
 
-        let proposal_summary = ProposalSummary {
-            id: row.try_get("id")?,
+        let summary = ProposalSummary {
+            id: ProposalId(row.try_get("id")?),
             title: row.try_get("title")?,
             summary: row.try_get("summary")?,
         };
 
-        let proposal_details = ProposalDetails {
+        let details = ProposalDetails {
             proposer,
-            supplemental: row
-                .try_get::<_, Option<serde_json::Value>>("extra")?
-                .map(ProposalSupplementalDetails),
+            supplemental: row.try_get("extra")?,
             funds: row.try_get("funds")?,
             url: row.try_get("url")?,
             files: row.try_get("files_url")?,
         };
 
-        Ok(Proposal {
-            proposal_details,
-            proposal_summary,
-        })
+        Ok(Proposal { details, summary })
     }
 
     async fn get_proposals(
@@ -105,14 +102,14 @@ impl ProposalQueries for EventDB {
         let rows = conn
             .query(
                 Self::PROPOSALS_QUERY,
-                &[&objective.0, &event.0, &limit, &offset.unwrap_or(0)],
+                &[&event.0, &objective.0, &limit, &offset.unwrap_or(0)],
             )
             .await?;
 
         let mut proposals = Vec::new();
         for row in rows {
             let summary = ProposalSummary {
-                id: row.try_get("id")?,
+                id: ProposalId(row.try_get("id")?),
                 title: row.try_get("title")?,
                 summary: row.try_get("summary")?,
             };
@@ -141,28 +138,27 @@ impl ProposalQueries for EventDB {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use serde_json::json;
-
     use super::*;
     use crate::establish_connection;
+    use serde_json::json;
 
     #[tokio::test]
     async fn get_proposal_test() {
         let event_db = establish_connection(None).await.unwrap();
 
         let proposal = event_db
-            .get_proposal(EventId(1), ObjectiveId(1), ProposalId(1))
+            .get_proposal(EventId(1), ObjectiveId(1), ProposalId(10))
             .await
             .unwrap();
 
         assert_eq!(
             Proposal {
-                proposal_summary: ProposalSummary {
-                    id: 1,
+                summary: ProposalSummary {
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
-                proposal_details: ProposalDetails {
+                details: ProposalDetails {
                     funds: 100,
                     url: "url.xyz".to_string(),
                     files: "files.xyz".to_string(),
@@ -174,13 +170,13 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    supplemental: Some(ProposalSupplementalDetails(json!(
+                    supplemental: Some(json!(
                         {
                             "brief": "Brief explanation of a proposal",
                             "goal": "The goal of the proposal is addressed to meet",
                             "importance": "The importance of the proposal",
                         }
-                    ))),
+                    )),
                 }
             },
             proposal
@@ -199,17 +195,17 @@ mod tests {
         assert_eq!(
             vec![
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 }
@@ -225,12 +221,12 @@ mod tests {
         assert_eq!(
             vec![
                 ProposalSummary {
-                    id: 1,
+                    id: ProposalId(10),
                     title: String::from("title 1"),
                     summary: String::from("summary 1")
                 },
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
@@ -246,12 +242,12 @@ mod tests {
         assert_eq!(
             vec![
                 ProposalSummary {
-                    id: 2,
+                    id: ProposalId(20),
                     title: String::from("title 2"),
                     summary: String::from("summary 2")
                 },
                 ProposalSummary {
-                    id: 3,
+                    id: ProposalId(30),
                     title: String::from("title 3"),
                     summary: String::from("summary 3")
                 }
@@ -266,7 +262,7 @@ mod tests {
 
         assert_eq!(
             vec![ProposalSummary {
-                id: 2,
+                id: ProposalId(20),
                 title: String::from("title 2"),
                 summary: String::from("summary 2")
             },],

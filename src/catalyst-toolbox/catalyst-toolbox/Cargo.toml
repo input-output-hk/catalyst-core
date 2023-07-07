@@ -26,11 +26,11 @@ chain-crypto = { path = "../../chain-libs/chain-crypto" }
 chain-ser = { path = "../../chain-libs/chain-ser" }
 chain-storage = { path = "../../chain-libs/chain-storage" }
 chain-time = { path = "../../chain-libs/chain-time" }
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain" }
+chain-impl-mockchain = { workspace = true }
 time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
 itertools = "0.10"
 jcli = { path = "../../jormungandr/jcli" }
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 jormungandr-integration-tests = { path = "../../jormungandr/testing/jormungandr-integration-tests" }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 thor = { path = "../../jormungandr/testing/thor" }
@@ -60,11 +60,12 @@ quircs = "0.10.0"
 symmetric-cipher = { path = "../../chain-wallet-libs/symmetric-cipher" }
 graphql_client.workspace = true
 gag = "1"
-vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
 snapshot-lib = { path = "../snapshot-lib" }
 fraction = "0.12"
 tracing.workspace = true
 tracing-subscriber.workspace = true
+rusqlite = { version = "0.29.0", features = ["bundled"] }
+vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib", optional = true }
 
 [dev-dependencies]
 rand_chacha = "0.3"
@@ -82,4 +83,4 @@ vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicin
 versionisator = "1.0.3"
 
 [features]
-test-api = []
+test-api = ["vit-servicing-station-lib"]

@@ -68,7 +68,7 @@ tracing-test.workspace = true
 insta = { version = "1", features = ["json"] }
 postgres = "0.19"  # just to create the reference db in case it doesn't already exist
 diesel_migrations="2"
-jormungandr-lib = { path = "../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 
 [features]
 all_tests = ["reference_tests", "e2e_tests"]

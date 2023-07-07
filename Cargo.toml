@@ -56,6 +56,9 @@ members = [
 ]
 
 [workspace.dependencies]
+jormungandr-lib = { path = "src/jormungandr/jormungandr-lib" }
+chain-impl-mockchain = { path = "src/chain-libs/chain-impl-mockchain" }
+
 uuid = { version = "1", features = ["v4", "serde"] }
 # we use this branch because it uses v1 of `itoa`, but the latest crates.io release doesn't
 csv = { git = "https://github.com/BurntSushi/rust-csv" }

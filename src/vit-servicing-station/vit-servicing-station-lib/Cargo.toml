@@ -31,7 +31,7 @@ tracing-subscriber.workspace = true
 warp = { version = "0.3.2", features = ["tls"] }
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib" }
 chain-ser = { path = "../../chain-libs/chain-ser" }
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 event-db = { path = "../../event-db" }
 eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch = "fast-u64-scalar-mul", features = ["fast-u64-scalar-mul"], optional = true }
 http-zipkin = "0.3.0"

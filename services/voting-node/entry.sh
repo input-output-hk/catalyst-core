@@ -133,7 +133,7 @@ fi
 
 # Setup dbsync SSH keys
 echo ">>> Setting up dbsync SSH keys..."
-mkdir -p ~/.ssh
+mkdir -p /root/.ssh
 echo -n "${DBSYNC_SSH_PRIVKEY}" | base64 -d >/root/.ssh/id_snapshot
 echo -n "${DBSYNC_SSH_PUBKEY}" | base64 -d >/root/.ssh/id_snapshot.pub
 echo -n "${DBSYNC_SSH_HOST_KEY}" | base64 -d >/root/.ssh/known_hosts

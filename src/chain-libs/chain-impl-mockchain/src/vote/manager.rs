@@ -850,13 +850,11 @@ impl VotePlanManager {
     where
         F: FnMut(&VoteAction),
     {
-        if !cfg!(feature = "audit") {
-            if !self.can_committee(block_date) {
-                return Err(VoteError::NotCommitteeTime {
-                    start: self.plan().committee_start(),
-                    end: self.plan().committee_end(),
-                });
-            }
+        if !cfg!(feature = "audit") && !self.can_committee(block_date) {
+            return Err(VoteError::NotCommitteeTime {
+                start: self.plan().committee_start(),
+                end: self.plan().committee_end(),
+            });
         }
 
         if !self.valid_committee(&sig) {

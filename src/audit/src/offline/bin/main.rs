@@ -83,7 +83,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // ledger state after tally fragments applied, results are decrypted i.e encrypted tallies are now plaintext.
     info!("ledger_after_tally");
     let fragments_all = all_fragments.clone();
-    let block_zero = block0.clone();
+    let block_zero = block0;
     let ledger_after_tally =
         thread::spawn(move || ledger_after_tally(fragments_all, block_zero).unwrap());
 
@@ -93,7 +93,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext
     // use tally tool to validate decrypted results
-    let shares_and_results = extract_decryption_shares_and_results(all_fragments.clone());
+    let shares_and_results = extract_decryption_shares_and_results(all_fragments);
 
     // Compare decrypted tallies with official results if provided
     if let Some(official_results) = args.official_results {

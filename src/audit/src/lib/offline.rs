@@ -91,7 +91,6 @@ pub fn ledger_before_tally(
     block0: Block,
 ) -> Result<Vec<VotePlanStatus>, Report> {
     let without_tally_fragments: Vec<Fragment> = all_fragments
-        .clone()
         .into_iter()
         .filter(|f| !matches!(f, Fragment::VoteTally(_)))
         .collect();
@@ -134,7 +133,6 @@ pub fn extract_decryption_shares_and_results(
 ) -> HashMap<String, Vec<String>> {
     let mut shares_and_results: HashMap<String, Vec<String>> = HashMap::new();
     let tally_fragments: Vec<Fragment> = all_fragments
-        .clone()
         .into_iter()
         .filter(|f| matches!(f, Fragment::VoteTally(_)))
         .collect();

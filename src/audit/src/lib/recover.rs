@@ -146,8 +146,6 @@ pub enum ReplayError {
 
 pub struct ValidatedFragment {
     pub fragment: Fragment,
-
-    pub spending_counter: SpendingCounter,
 }
 
 pub struct ReplayedFragment {
@@ -198,8 +196,7 @@ impl<I: Iterator<Item = Fragment>> Iterator for VoteFragmentFilter<I> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.fragments.next().map(|fragment| {
-            //let PersistentFragmentLog { fragment, time } = persistent_fragment_log;
-            let spending_counter = match &fragment {
+            match &fragment {
                 Fragment::VoteCast(tx) => {
                     let transaction_slice = tx.as_slice();
                     let is_valid_vote_cast = valid_vote_cast(&transaction_slice);
@@ -215,10 +212,7 @@ impl<I: Iterator<Item = Fragment>> Iterator for VoteFragmentFilter<I> {
             }
             .map_err(|e| (fragment.clone(), e))?;
 
-            Ok(ValidatedFragment {
-                fragment,
-                spending_counter,
-            })
+            Ok(ValidatedFragment { fragment })
         })
     }
 }

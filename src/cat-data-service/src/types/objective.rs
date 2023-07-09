@@ -14,7 +14,7 @@ impl Serialize for SerdeType<&ObjectiveId> {
     where
         S: Serializer,
     {
-        self.0.serialize(serializer)
+        self.0 .0.serialize(serializer)
     }
 }
 
@@ -108,7 +108,7 @@ impl Serialize for SerdeType<&VoterGroup> {
     {
         let mut serializer = serializer.serialize_struct("VoterGroup", 2)?;
         if let Some(group) = &self.group {
-            serializer.serialize_field("group", group)?;
+            serializer.serialize_field("group", &SerdeType(group))?;
         }
         if let Some(voting_token) = &self.voting_token {
             serializer.serialize_field("voting_token", voting_token)?;

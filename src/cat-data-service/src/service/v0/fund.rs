@@ -1,6 +1,7 @@
 use crate::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{routing::get, Router};
 use event_db::types::vit_ss::fund::FundWithNext;
@@ -16,10 +17,10 @@ pub fn fund(state: Arc<State>) -> Router {
     )
 }
 
-async fn fund_exec(state: Arc<State>) -> Result<FundWithNext, Error> {
+async fn fund_exec(state: Arc<State>) -> Result<SerdeType<FundWithNext>, Error> {
     tracing::debug!("fund_query",);
 
-    let fund = state.event_db.get_fund().await?;
+    let fund = state.event_db.get_fund().await?.into();
     Ok(fund)
 }
 

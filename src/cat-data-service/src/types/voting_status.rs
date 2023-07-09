@@ -8,9 +8,9 @@ impl Serialize for SerdeType<VotingStatus> {
         S: Serializer,
     {
         let mut serializer = serializer.serialize_struct("VotingStatus", 3)?;
-        serializer.serialize_field("objective_id", &self.0.objective_id)?;
-        serializer.serialize_field("open", &self.0.open)?;
-        if let Some(settings) = &self.0.settings {
+        serializer.serialize_field("objective_id", &SerdeType(&self.objective_id))?;
+        serializer.serialize_field("open", &self.open)?;
+        if let Some(settings) = &self.settings {
             serializer.serialize_field("settings", settings)?;
         }
         serializer.end()

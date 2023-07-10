@@ -10,10 +10,7 @@ use std::sync::Arc;
 pub fn fund(state: Arc<State>) -> Router {
     Router::new().route(
         "/fund",
-        get({
-            let state = state.clone();
-            move || async { handle_result(fund_exec(state).await) }
-        }),
+        get(|| async { handle_result(fund_exec(state).await) }),
     )
 }
 

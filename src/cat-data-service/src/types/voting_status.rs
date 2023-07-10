@@ -1,19 +1,25 @@
 use super::SerdeType;
-use event_db::types::voting_status::VotingStatus;
-use serde::ser::{Serialize, SerializeStruct, Serializer};
+use event_db::types::{objective::ObjectiveId, voting_status::VotingStatus};
+use serde::{ser::Serializer, Serialize};
 
 impl Serialize for SerdeType<VotingStatus> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("VotingStatus", 3)?;
-        serializer.serialize_field("objective_id", &SerdeType(&self.objective_id))?;
-        serializer.serialize_field("open", &self.open)?;
-        if let Some(settings) = &self.settings {
-            serializer.serialize_field("settings", settings)?;
+        #[derive(Serialize)]
+        struct VotingStatusSerde<'a> {
+            objective_id: SerdeType<&'a ObjectiveId>,
+            open: bool,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            settings: Option<&'a String>,
         }
-        serializer.end()
+        VotingStatusSerde {
+            objective_id: SerdeType(&self.objective_id),
+            open: self.open,
+            settings: self.settings.as_ref(),
+        }
+        .serialize(serializer)
     }
 }
 

@@ -3,22 +3,24 @@ use event_db::types::search::{
     SearchColumn, SearchConstraint, SearchOrderBy, SearchQuery, SearchResult, SearchTable,
     ValueResults,
 };
-use serde::{
-    de::{Deserializer, Error as _},
-    ser::{SerializeStruct, Serializer},
-    Deserialize, Serialize,
-};
+use serde::{de::Deserializer, ser::Serializer, Deserialize, Serialize};
 
 impl<'de> Deserialize<'de> for SerdeType<SearchTable> {
     fn deserialize<D>(deserializer: D) -> Result<SerdeType<SearchTable>, D::Error>
     where
         D: Deserializer<'de>,
     {
-        match String::deserialize(deserializer)?.as_str() {
-            "events" => Ok(SerdeType(SearchTable::Events)),
-            "objectives" => Ok(SerdeType(SearchTable::Objectives)),
-            "proposals" => Ok(SerdeType(SearchTable::Proposals)),
-            val => Err(D::Error::custom(format!("Unknown search table: {}", val))),
+        #[derive(Deserialize)]
+        #[serde(rename_all = "kebab-case")]
+        enum SearchTableSerde {
+            Events,
+            Objectives,
+            Proposals,
+        }
+        match SearchTableSerde::deserialize(deserializer)? {
+            SearchTableSerde::Events => Ok(SerdeType(SearchTable::Events)),
+            SearchTableSerde::Objectives => Ok(SerdeType(SearchTable::Objectives)),
+            SearchTableSerde::Proposals => Ok(SerdeType(SearchTable::Proposals)),
         }
     }
 }
@@ -28,13 +30,21 @@ impl<'de> Deserialize<'de> for SerdeType<SearchColumn> {
     where
         D: Deserializer<'de>,
     {
-        match String::deserialize(deserializer)?.as_str() {
-            "title" => Ok(SerdeType(SearchColumn::Title)),
-            "type" => Ok(SerdeType(SearchColumn::Type)),
-            "description" => Ok(SerdeType(SearchColumn::Description)),
-            "author" => Ok(SerdeType(SearchColumn::Author)),
-            "funds" => Ok(SerdeType(SearchColumn::Funds)),
-            val => Err(D::Error::custom(format!("Unknown search colum: {}", val))),
+        #[derive(Deserialize)]
+        #[serde(rename_all = "kebab-case")]
+        enum SearchColumnSerde {
+            Title,
+            Type,
+            Description,
+            Author,
+            Funds,
+        }
+        match SearchColumnSerde::deserialize(deserializer)? {
+            SearchColumnSerde::Title => Ok(SerdeType(SearchColumn::Title)),
+            SearchColumnSerde::Type => Ok(SerdeType(SearchColumn::Type)),
+            SearchColumnSerde::Description => Ok(SerdeType(SearchColumn::Description)),
+            SearchColumnSerde::Author => Ok(SerdeType(SearchColumn::Author)),
+            SearchColumnSerde::Funds => Ok(SerdeType(SearchColumn::Funds)),
         }
     }
 }
@@ -45,12 +55,12 @@ impl<'de> Deserialize<'de> for SerdeType<SearchConstraint> {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct SearchConstraintImpl {
+        struct SearchConstraintSerde {
             column: SerdeType<SearchColumn>,
             search: String,
         }
-        let SearchConstraintImpl { column, search } =
-            SearchConstraintImpl::deserialize(deserializer)?;
+        let SearchConstraintSerde { column, search } =
+            SearchConstraintSerde::deserialize(deserializer)?;
         Ok(SerdeType(SearchConstraint {
             column: column.0,
             search,
@@ -64,13 +74,13 @@ impl<'de> Deserialize<'de> for SerdeType<SearchOrderBy> {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct SearchOrderByImpl {
+        struct SearchOrderBySerde {
             pub column: SerdeType<SearchColumn>,
             #[serde(default)]
             pub descending: bool,
         }
-        let SearchOrderByImpl { column, descending } =
-            SearchOrderByImpl::deserialize(deserializer)?;
+        let SearchOrderBySerde { column, descending } =
+            SearchOrderBySerde::deserialize(deserializer)?;
         Ok(SerdeType(SearchOrderBy {
             column: column.0,
             descending,
@@ -84,18 +94,18 @@ impl<'de> Deserialize<'de> for SerdeType<SearchQuery> {
         D: Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        struct SearchQueryImpl {
+        struct SearchQuerySerde {
             pub table: SerdeType<SearchTable>,
             #[serde(default)]
             pub filter: Vec<SerdeType<SearchConstraint>>,
             #[serde(default)]
             pub order_by: Vec<SerdeType<SearchOrderBy>>,
         }
-        let SearchQueryImpl {
+        let SearchQuerySerde {
             table,
             filter,
             order_by,
-        } = SearchQueryImpl::deserialize(deserializer)?;
+        } = SearchQuerySerde::deserialize(deserializer)?;
         Ok(SerdeType(SearchQuery {
             table: table.0,
             filter: filter.into_iter().map(|val| val.0).collect(),
@@ -143,12 +153,17 @@ impl Serialize for SerdeType<&SearchResult> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("SearchResult", 2)?;
-        serializer.serialize_field("total", &self.total)?;
-        if let Some(results) = &self.results {
-            serializer.serialize_field("results", &SerdeType(results))?;
+        #[derive(Serialize)]
+        struct SearchResultSerde<'a> {
+            total: &'a i64,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            results: Option<SerdeType<&'a ValueResults>>,
         }
-        serializer.end()
+        SearchResultSerde {
+            total: &self.total,
+            results: self.results.as_ref().map(SerdeType),
+        }
+        .serialize(serializer)
     }
 }
 

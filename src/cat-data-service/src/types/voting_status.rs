@@ -1,5 +1,5 @@
 use super::SerdeType;
-use event_db::types::event::voting_status::VotingStatus;
+use event_db::types::voting_status::VotingStatus;
 use serde::ser::{Serialize, SerializeStruct, Serializer};
 
 impl Serialize for SerdeType<VotingStatus> {
@@ -20,7 +20,7 @@ impl Serialize for SerdeType<VotingStatus> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use event_db::types::event::objective::ObjectiveId;
+    use event_db::types::objective::ObjectiveId;
     use serde_json::json;
 
     #[test]

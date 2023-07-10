@@ -8,7 +8,7 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::types::event::{objective::Objective, voting_status::VotingStatus, EventId};
+use event_db::types::{objective::Objective, voting_status::VotingStatus, event::EventId};
 use std::sync::Arc;
 
 mod ballots;

@@ -1,5 +1,5 @@
 use super::SerdeType;
-use event_db::types::event::review::{AdvisorReview, Rating, ReviewType};
+use event_db::types::review::{AdvisorReview, Rating, ReviewType};
 use serde::{
     ser::{SerializeStruct, Serializer},
     Serialize,

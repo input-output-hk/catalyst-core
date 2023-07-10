@@ -1,5 +1,5 @@
 use super::SerdeType;
-use event_db::types::event::objective::{
+use event_db::types::objective::{
     Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType, RewardDefintion,
     VoterGroup,
 };

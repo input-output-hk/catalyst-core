@@ -1,5 +1,5 @@
 use super::SerdeType;
-use event_db::types::event::ballot::{Ballot, ObjectiveBallots, ProposalBallot, VotePlan};
+use event_db::types::ballot::{Ballot, ObjectiveBallots, ProposalBallot, VotePlan};
 use serde::{
     ser::{SerializeStruct, Serializer},
     Serialize,
@@ -104,12 +104,12 @@ impl Serialize for SerdeType<ObjectiveBallots> {
 mod tests {
     use super::*;
     use event_db::types::{
-        event::{
+        registration::VoterGroupId,
+        {
             ballot::{BallotType, GroupVotePlans, ObjectiveChoices},
             objective::ObjectiveId,
             proposal::ProposalId,
         },
-        registration::VoterGroupId,
     };
     use serde_json::json;
 

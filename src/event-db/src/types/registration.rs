@@ -1,7 +1,6 @@
 use chrono::{DateTime, Utc};
-use serde::Serialize;
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VoterGroupId(pub String);
 
 #[derive(Debug, Clone, PartialEq)]

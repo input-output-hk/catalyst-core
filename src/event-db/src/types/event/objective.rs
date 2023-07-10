@@ -1,7 +1,6 @@
 use crate::types::registration::VoterGroupId;
-use serde::Serialize;
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ObjectiveId(pub i32);
 
 #[derive(Debug, Clone, PartialEq, Eq)]

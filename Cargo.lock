@@ -2301,7 +2301,6 @@ dependencies = [
  "chrono",
  "dotenvy",
  "rust_decimal",
- "serde",
  "serde_json",
  "thiserror",
  "tokio",

@@ -17,10 +17,16 @@ pub fn ballots(state: Arc<State>) -> Router {
 async fn ballots_exec(
     Path(SerdeType(event)): Path<SerdeType<EventId>>,
     state: Arc<State>,
-) -> Result<Vec<ObjectiveBallots>, Error> {
+) -> Result<Vec<SerdeType<ObjectiveBallots>>, Error> {
     tracing::debug!("ballots_query, event: {0}", event.0,);
 
-    let ballot = state.event_db.get_event_ballots(event).await?;
+    let ballot = state
+        .event_db
+        .get_event_ballots(event)
+        .await?
+        .into_iter()
+        .map(SerdeType)
+        .collect();
     Ok(ballot)
 }
 

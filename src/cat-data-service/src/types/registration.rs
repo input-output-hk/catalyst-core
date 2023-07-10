@@ -11,7 +11,7 @@ impl Serialize for SerdeType<&VoterGroupId> {
     where
         S: Serializer,
     {
-        self.0.serialize(serializer)
+        self.0 .0.serialize(serializer)
     }
 }
 

@@ -123,7 +123,7 @@ impl Serialize for SerdeType<&VotingPowerSettings> {
         }
         VotingPowerSettingsSerde {
             alg: SerdeType(&self.alg),
-            min_ada: self.min_ada.clone(),
+            min_ada: self.min_ada,
             max_pct: if let Some(max_pct) = &self.max_pct {
                 Some(
                     max_pct
@@ -168,7 +168,7 @@ impl Serialize for SerdeType<&EventRegistration> {
             taken: &'a Option<DateTime<Utc>>,
         }
         EventRegistrationSerde {
-            purpose: self.purpose.clone(),
+            purpose: self.purpose,
             deadline: &self.deadline,
             taken: &self.taken,
         }

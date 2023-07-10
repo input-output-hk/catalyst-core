@@ -46,6 +46,7 @@ fn cors_layer() -> CorsLayer {
     CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(Any)
+        .allow_headers(Any)
 }
 
 async fn run_service(app: Router, addr: &SocketAddr, name: &str) -> Result<(), Error> {

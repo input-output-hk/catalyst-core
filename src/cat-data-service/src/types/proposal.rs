@@ -2,11 +2,8 @@ use super::SerdeType;
 use event_db::types::proposal::{
     Proposal, ProposalDetails, ProposalId, ProposalSummary, ProposerDetails,
 };
-use serde::{
-    de::Deserializer,
-    ser::{SerializeStruct, Serializer},
-    Deserialize, Serialize,
-};
+use serde::{de::Deserializer, ser::Serializer, Deserialize, Serialize};
+use serde_json::Value;
 
 impl Serialize for SerdeType<&ProposalId> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -40,11 +37,18 @@ impl Serialize for SerdeType<&ProposalSummary> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("ProposalSummary", 3)?;
-        serializer.serialize_field("id", &SerdeType(&self.id))?;
-        serializer.serialize_field("title", &self.title)?;
-        serializer.serialize_field("summary", &self.summary)?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct ProposalSummarySerde<'a> {
+            id: SerdeType<&'a ProposalId>,
+            title: &'a String,
+            summary: &'a String,
+        }
+        ProposalSummarySerde {
+            id: SerdeType(&self.id),
+            title: &self.title,
+            summary: &self.summary,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -62,12 +66,20 @@ impl Serialize for SerdeType<&ProposerDetails> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("ProposerDetails", 4)?;
-        serializer.serialize_field("name", &self.name)?;
-        serializer.serialize_field("email", &self.email)?;
-        serializer.serialize_field("url", &self.url)?;
-        serializer.serialize_field("payment_key", &self.payment_key)?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct ProposerDetailsSerde<'a> {
+            name: &'a String,
+            email: &'a String,
+            url: &'a String,
+            payment_key: &'a String,
+        }
+        ProposerDetailsSerde {
+            name: &self.name,
+            email: &self.email,
+            url: &self.url,
+            payment_key: &self.payment_key,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -85,18 +97,23 @@ impl Serialize for SerdeType<&ProposalDetails> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("ProposalDetails", 5)?;
-        serializer.serialize_field("funds", &self.funds)?;
-        serializer.serialize_field("url", &self.url)?;
-        serializer.serialize_field("files", &self.files)?;
-        serializer.serialize_field(
-            "proposer",
-            &self.proposer.iter().map(SerdeType).collect::<Vec<_>>(),
-        )?;
-        if let Some(supplemental) = &self.supplemental {
-            serializer.serialize_field("supplemental", supplemental)?;
+        #[derive(Serialize)]
+        struct ProposalDetailsSerde<'a> {
+            funds: i64,
+            url: &'a String,
+            files: &'a String,
+            proposer: Vec<SerdeType<&'a ProposerDetails>>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            supplemental: &'a Option<Value>,
         }
-        serializer.end()
+        ProposalDetailsSerde {
+            funds: self.funds,
+            url: &self.url,
+            files: &self.files,
+            proposer: self.proposer.iter().map(SerdeType).collect(),
+            supplemental: &self.supplemental,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -115,14 +132,14 @@ impl Serialize for SerdeType<&Proposal> {
         S: Serializer,
     {
         #[derive(Serialize)]
-        pub struct ProposalImpl<'a> {
+        pub struct ProposalSerde<'a> {
             #[serde(flatten)]
             summary: SerdeType<&'a ProposalSummary>,
             #[serde(flatten)]
             details: SerdeType<&'a ProposalDetails>,
         }
 
-        let val = ProposalImpl {
+        let val = ProposalSerde {
             summary: SerdeType(&self.summary),
             details: SerdeType(&self.details),
         };

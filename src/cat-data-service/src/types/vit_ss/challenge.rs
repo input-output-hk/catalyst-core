@@ -34,26 +34,26 @@ impl Serialize for SerdeType<&Challenge> {
     {
         #[derive(Serialize)]
         struct ChallengeSerde<'a> {
-            internal_id: &'a i32,
-            id: &'a i32,
+            internal_id: i32,
+            id: i32,
             challenge_type: &'a String,
             title: &'a String,
             description: &'a String,
-            rewards_total: &'a i64,
-            proposers_rewards: &'a i64,
-            fund_id: &'a i32,
+            rewards_total: i64,
+            proposers_rewards: i64,
+            fund_id: i32,
             challenge_url: &'a String,
             highlights: Option<SerdeType<&'a ChallengeHighlights>>,
         }
         ChallengeSerde {
-            internal_id: &self.internal_id,
-            id: &self.id,
+            internal_id: self.internal_id,
+            id: self.id,
             challenge_type: &self.challenge_type,
             title: &self.title,
             description: &self.description,
-            rewards_total: &self.rewards_total,
-            proposers_rewards: &self.proposers_rewards,
-            fund_id: &self.fund_id,
+            rewards_total: self.rewards_total,
+            proposers_rewards: self.proposers_rewards,
+            fund_id: self.fund_id,
             challenge_url: &self.challenge_url,
             highlights: self.highlights.as_ref().map(SerdeType),
         }

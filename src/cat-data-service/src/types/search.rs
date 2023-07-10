@@ -155,12 +155,12 @@ impl Serialize for SerdeType<&SearchResult> {
     {
         #[derive(Serialize)]
         struct SearchResultSerde<'a> {
-            total: &'a i64,
+            total: i64,
             #[serde(skip_serializing_if = "Option::is_none")]
             results: Option<SerdeType<&'a ValueResults>>,
         }
         SearchResultSerde {
-            total: &self.total,
+            total: self.total,
             results: self.results.as_ref().map(SerdeType),
         }
         .serialize(serializer)

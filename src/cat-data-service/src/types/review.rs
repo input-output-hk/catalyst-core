@@ -1,31 +1,38 @@
 use super::SerdeType;
 use event_db::types::review::{AdvisorReview, Rating, ReviewType};
-use serde::{
-    ser::{SerializeStruct, Serializer},
-    Serialize,
-};
+use serde::{ser::Serializer, Serialize};
+use serde_json::Value;
 
 impl Serialize for SerdeType<&ReviewType> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("ReviewType", 8)?;
-        serializer.serialize_field("id", &self.id)?;
-        serializer.serialize_field("name", &self.name)?;
-        if let Some(description) = &self.description {
-            serializer.serialize_field("description", description)?;
+        #[derive(Serialize)]
+        struct ReviewTypeSerde<'a> {
+            id: i32,
+            name: &'a String,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            description: Option<&'a String>,
+            min: i32,
+            max: i32,
+            map: &'a Vec<Value>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            note: Option<bool>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            group: Option<&'a String>,
         }
-        serializer.serialize_field("min", &self.min)?;
-        serializer.serialize_field("max", &self.max)?;
-        serializer.serialize_field("map", &self.map)?;
-        if let Some(note) = &self.note {
-            serializer.serialize_field("note", note)?;
+        ReviewTypeSerde {
+            id: self.id,
+            name: &self.name,
+            description: self.description.as_ref(),
+            min: self.min,
+            max: self.max,
+            map: &self.map,
+            note: self.note,
+            group: self.group.as_ref(),
         }
-        if let Some(group) = &self.group {
-            serializer.serialize_field("group", group)?;
-        }
-        serializer.end()
+        .serialize(serializer)
     }
 }
 
@@ -43,13 +50,19 @@ impl Serialize for SerdeType<&Rating> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("Rating", 3)?;
-        serializer.serialize_field("review_type", &self.review_type)?;
-        serializer.serialize_field("score", &self.score)?;
-        if let Some(note) = &self.note {
-            serializer.serialize_field("note", note)?;
+        #[derive(Serialize)]
+        struct RatingSerde<'a> {
+            review_type: i32,
+            score: i32,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            note: Option<&'a String>,
         }
-        serializer.end()
+        RatingSerde {
+            review_type: self.review_type,
+            score: self.score,
+            note: self.note.as_ref(),
+        }
+        .serialize(serializer)
     }
 }
 
@@ -67,13 +80,16 @@ impl Serialize for SerdeType<&AdvisorReview> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("AdvisorReview", 2)?;
-        serializer.serialize_field("assessor", &self.assessor)?;
-        serializer.serialize_field(
-            "ratings",
-            &self.ratings.iter().map(SerdeType).collect::<Vec<_>>(),
-        )?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct AdvisorReviewSerde<'a> {
+            assessor: &'a String,
+            ratings: Vec<SerdeType<&'a Rating>>,
+        }
+        AdvisorReviewSerde {
+            assessor: &self.assessor,
+            ratings: self.ratings.iter().map(SerdeType).collect(),
+        }
+        .serialize(serializer)
     }
 }
 

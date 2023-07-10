@@ -1,10 +1,9 @@
-use super::SerdeType;
-use event_db::types::registration::{Delegation, Delegator, Voter, VoterGroupId, VoterInfo};
-use serde::{
-    de::Deserializer,
-    ser::{SerializeStruct, Serializer},
-    Deserialize, Serialize,
+use super::{serialize_datetime_as_rfc3339, SerdeType};
+use chrono::{DateTime, Utc};
+use event_db::types::registration::{
+    Delegation, Delegator, RewardAddress, Voter, VoterGroupId, VoterInfo,
 };
+use serde::{de::Deserializer, ser::Serializer, Deserialize, Serialize};
 
 impl Serialize for SerdeType<&VoterGroupId> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -38,16 +37,25 @@ impl Serialize for SerdeType<&VoterInfo> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("VoterInfo", 6)?;
-        serializer.serialize_field("voting_power", &self.voting_power)?;
-        serializer.serialize_field("voting_group", &SerdeType(&self.voting_group))?;
-        serializer.serialize_field("delegations_power", &self.delegations_power)?;
-        serializer.serialize_field("delegations_count", &self.delegations_count)?;
-        serializer.serialize_field("voting_power_saturation", &self.voting_power_saturation)?;
-        if let Some(delegator_addresses) = &self.delegator_addresses {
-            serializer.serialize_field("delegator_addresses", delegator_addresses)?;
+        #[derive(Serialize)]
+        struct VoterInfoSerde<'a> {
+            voting_power: i64,
+            voting_group: SerdeType<&'a VoterGroupId>,
+            delegations_power: i64,
+            delegations_count: i64,
+            voting_power_saturation: f64,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            delegator_addresses: &'a Option<Vec<String>>,
         }
-        serializer.end()
+        VoterInfoSerde {
+            voting_power: self.voting_power,
+            voting_group: SerdeType(&self.voting_group),
+            delegations_power: self.delegations_power,
+            delegations_count: self.delegations_count,
+            voting_power_saturation: self.voting_power_saturation,
+            delegator_addresses: &self.delegator_addresses,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -65,12 +73,23 @@ impl Serialize for SerdeType<&Voter> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("VoterInfo", 4)?;
-        serializer.serialize_field("voter_info", &SerdeType(&self.voter_info))?;
-        serializer.serialize_field("as_at", &self.as_at.to_rfc3339())?;
-        serializer.serialize_field("last_updated", &self.last_updated.to_rfc3339())?;
-        serializer.serialize_field("final", &self.is_final)?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct VoterSerde<'a> {
+            voter_info: SerdeType<&'a VoterInfo>,
+            #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
+            as_at: &'a DateTime<Utc>,
+            #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
+            last_updated: &'a DateTime<Utc>,
+            #[serde(rename = "final")]
+            is_final: bool,
+        }
+        VoterSerde {
+            voter_info: SerdeType(&self.voter_info),
+            as_at: &self.as_at,
+            last_updated: &self.last_updated,
+            is_final: self.is_final,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -88,16 +107,51 @@ impl Serialize for SerdeType<&Delegation> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("Delegation", 4)?;
-        serializer.serialize_field("voting_key", &self.voting_key)?;
-        serializer.serialize_field("group", &SerdeType(&self.group))?;
-        serializer.serialize_field("weight", &self.weight)?;
-        serializer.serialize_field("value", &self.value)?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct DelegationSerde<'a> {
+            voting_key: &'a String,
+            group: SerdeType<&'a VoterGroupId>,
+            weight: i32,
+            value: i64,
+        }
+        DelegationSerde {
+            voting_key: &self.voting_key,
+            group: SerdeType(&self.group),
+            weight: self.weight,
+            value: self.value,
+        }
+        .serialize(serializer)
     }
 }
 
 impl Serialize for SerdeType<Delegation> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        SerdeType(&self.0).serialize(serializer)
+    }
+}
+
+impl Serialize for SerdeType<&RewardAddress> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        struct RewardAddressSerde<'a> {
+            reward_address: &'a str,
+            reward_payable: bool,
+        }
+        RewardAddressSerde {
+            reward_address: &self.reward_address(),
+            reward_payable: self.reward_payable(),
+        }
+        .serialize(serializer)
+    }
+}
+
+impl Serialize for SerdeType<RewardAddress> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -111,19 +165,30 @@ impl Serialize for SerdeType<&Delegator> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("Delegator", 8)?;
-        serializer.serialize_field(
-            "delegations",
-            &self.delegations.iter().map(SerdeType).collect::<Vec<_>>(),
-        )?;
-        serializer.serialize_field("reward_address", self.reward_address.reward_address())?;
-        serializer.serialize_field("reward_payable", &self.reward_address.reward_payable())?;
-        serializer.serialize_field("raw_power", &self.raw_power)?;
-        serializer.serialize_field("total_power", &self.total_power)?;
-        serializer.serialize_field("as_at", &self.as_at.to_rfc3339())?;
-        serializer.serialize_field("last_updated", &self.last_updated.to_rfc3339())?;
-        serializer.serialize_field("final", &self.is_final)?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct DelegatorSerde<'a> {
+            delegations: Vec<SerdeType<&'a Delegation>>,
+            #[serde(flatten)]
+            reward_address: SerdeType<&'a RewardAddress>,
+            raw_power: i64,
+            total_power: i64,
+            #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
+            as_at: &'a DateTime<Utc>,
+            #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
+            last_updated: &'a DateTime<Utc>,
+            #[serde(rename = "final")]
+            is_final: bool,
+        }
+        DelegatorSerde {
+            delegations: self.delegations.iter().map(SerdeType).collect(),
+            reward_address: SerdeType(&self.reward_address),
+            raw_power: self.raw_power,
+            total_power: self.total_power,
+            as_at: &self.as_at,
+            last_updated: &self.last_updated,
+            is_final: self.is_final,
+        }
+        .serialize(serializer)
     }
 }
 

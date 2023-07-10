@@ -13,24 +13,24 @@ impl Serialize for SerdeType<&ReviewType> {
             id: i32,
             name: &'a String,
             #[serde(skip_serializing_if = "Option::is_none")]
-            description: Option<&'a String>,
+            description: &'a Option<String>,
             min: i32,
             max: i32,
             map: &'a Vec<Value>,
             #[serde(skip_serializing_if = "Option::is_none")]
             note: Option<bool>,
             #[serde(skip_serializing_if = "Option::is_none")]
-            group: Option<&'a String>,
+            group: &'a Option<String>,
         }
         ReviewTypeSerde {
             id: self.id,
             name: &self.name,
-            description: self.description.as_ref(),
+            description: &self.description,
             min: self.min,
             max: self.max,
             map: &self.map,
             note: self.note,
-            group: self.group.as_ref(),
+            group: &self.group,
         }
         .serialize(serializer)
     }
@@ -55,12 +55,12 @@ impl Serialize for SerdeType<&Rating> {
             review_type: i32,
             score: i32,
             #[serde(skip_serializing_if = "Option::is_none")]
-            note: Option<&'a String>,
+            note: &'a Option<String>,
         }
         RatingSerde {
             review_type: self.review_type,
             score: self.score,
-            note: self.note.as_ref(),
+            note: &self.note,
         }
         .serialize(serializer)
     }

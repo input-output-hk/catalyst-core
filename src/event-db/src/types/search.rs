@@ -1,4 +1,4 @@
-use super::event::{objective::ObjectiveSummary, proposal::ProposalSummary, EventSummary};
+use super::{event::EventSummary, objective::ObjectiveSummary, proposal::ProposalSummary};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SearchTable {

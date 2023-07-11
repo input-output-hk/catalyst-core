@@ -1,12 +1,9 @@
 use crate::{
     error::Error,
-    types::event::{
+    types::{
+        event::EventId,
         objective::ObjectiveId,
-        proposal::{ProposalDetails, ProposalSummary},
-    },
-    types::event::{
-        proposal::{Proposal, ProposalId, ProposerDetails},
-        EventId,
+        proposal::{Proposal, ProposalDetails, ProposalId, ProposalSummary, ProposerDetails},
     },
     EventDB,
 };

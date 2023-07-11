@@ -1,4 +1,5 @@
 use crate::types::registration::VoterGroupId;
+use serde_json::Value;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ObjectiveId(pub i32);
@@ -33,7 +34,7 @@ pub struct VoterGroup {
 pub struct ObjectiveDetails {
     pub groups: Vec<VoterGroup>,
     pub reward: Option<RewardDefintion>,
-    pub supplemental: Option<serde_json::Value>,
+    pub supplemental: Option<Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

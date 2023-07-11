@@ -8,7 +8,7 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::types::event::{objective::ObjectiveId, review::ReviewType, EventId};
+use event_db::types::{event::EventId, objective::ObjectiveId, review::ReviewType};
 use std::sync::Arc;
 
 pub fn review_type(state: Arc<State>) -> Router {

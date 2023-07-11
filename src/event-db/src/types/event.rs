@@ -1,12 +1,6 @@
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 
-pub mod ballot;
-pub mod objective;
-pub mod proposal;
-pub mod review;
-pub mod voting_status;
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EventId(pub i32);
 

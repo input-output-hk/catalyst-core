@@ -1,16 +1,16 @@
 use crate::{
     error::Error,
     types::{
-        event::{
+        registration::VoterGroupId,
+        {
             ballot::{
                 Ballot, BallotType, GroupVotePlans, ObjectiveBallots, ObjectiveChoices,
                 ProposalBallot, VotePlan,
             },
+            event::EventId,
             objective::ObjectiveId,
             proposal::ProposalId,
-            EventId,
         },
-        registration::VoterGroupId,
     },
     EventDB,
 };

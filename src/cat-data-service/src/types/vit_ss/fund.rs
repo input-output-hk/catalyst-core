@@ -69,10 +69,10 @@ impl Serialize for SerdeType<&Fund> {
     {
         #[derive(Serialize)]
         struct FundSerde<'a> {
-            id: &'a i32,
+            id: i32,
             fund_name: &'a String,
             fund_goal: &'a String,
-            voting_power_threshold: &'a i64,
+            voting_power_threshold: i64,
             #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
             fund_start_time: &'a DateTime<Utc>,
             #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
@@ -93,10 +93,10 @@ impl Serialize for SerdeType<&Fund> {
             groups: Vec<SerdeType<&'a Group>>,
         }
         FundSerde {
-            id: &self.id,
+            id: self.id,
             fund_name: &self.fund_name,
             fund_goal: &self.fund_goal,
-            voting_power_threshold: &self.voting_power_threshold,
+            voting_power_threshold: self.voting_power_threshold,
             fund_start_time: &self.fund_start_time,
             fund_end_time: &self.fund_end_time,
             next_fund_start_time: &self.next_fund_start_time,
@@ -130,13 +130,13 @@ impl Serialize for SerdeType<&FundNextInfo> {
     {
         #[derive(Serialize)]
         struct FundNextInfoSerde<'a> {
-            id: &'a i32,
+            id: i32,
             fund_name: &'a String,
             #[serde(flatten)]
             stage_dates: SerdeType<&'a FundStageDates>,
         }
         FundNextInfoSerde {
-            id: &self.id,
+            id: self.id,
             fund_name: &self.fund_name,
             stage_dates: SerdeType(&self.stage_dates),
         }

@@ -9,12 +9,12 @@ impl Serialize for SerdeType<&Group> {
     {
         #[derive(Serialize)]
         struct GroupSerde<'a> {
-            fund_id: &'a i32,
+            fund_id: i32,
             token_identifier: &'a String,
             group_id: &'a String,
         }
         GroupSerde {
-            fund_id: &self.fund_id,
+            fund_id: self.fund_id,
             token_identifier: &self.token_identifier,
             group_id: &self.group_id,
         }

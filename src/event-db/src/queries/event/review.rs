@@ -1,10 +1,11 @@
 use crate::{
     error::Error,
-    types::event::{
+    types::{
+        event::EventId,
         objective::ObjectiveId,
+        proposal::ProposalId,
         review::{AdvisorReview, Rating, ReviewType},
     },
-    types::event::{proposal::ProposalId, EventId},
     EventDB,
 };
 use async_trait::async_trait;

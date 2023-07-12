@@ -1,12 +1,13 @@
 use crate::{
     types::{
-        event::{
-            objective::{ObjectiveId, ObjectiveSummary, ObjectiveType},
-            proposal::{ProposalId, ProposalSummary},
-            EventId, EventSummary,
-        },
         search::{
             SearchConstraint, SearchOrderBy, SearchQuery, SearchResult, SearchTable, ValueResults,
+        },
+        {
+            event::EventId,
+            event::EventSummary,
+            objective::{ObjectiveId, ObjectiveSummary, ObjectiveType},
+            proposal::{ProposalId, ProposalSummary},
         },
     },
     Error, EventDB,

@@ -1,28 +1,100 @@
 use super::SerdeType;
-use event_db::types::event::ballot::{Ballot, ObjectiveBallots, ProposalBallot, VotePlan};
-use serde::{
-    ser::{SerializeStruct, Serializer},
-    Serialize,
+use event_db::types::{
+    ballot::{
+        Ballot, BallotType, GroupVotePlans, ObjectiveBallots, ObjectiveChoices, ProposalBallot,
+        VotePlan,
+    },
+    objective::ObjectiveId,
+    proposal::ProposalId,
+    registration::VoterGroupId,
 };
+use serde::{ser::Serializer, Serialize};
+
+impl Serialize for SerdeType<&ObjectiveChoices> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0 .0.serialize(serializer)
+    }
+}
+
+impl Serialize for SerdeType<ObjectiveChoices> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        SerdeType(&self.0).serialize(serializer)
+    }
+}
+
+impl Serialize for SerdeType<&BallotType> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0 .0.serialize(serializer)
+    }
+}
+
+impl Serialize for SerdeType<BallotType> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        SerdeType(&self.0).serialize(serializer)
+    }
+}
 
 impl Serialize for SerdeType<&VotePlan> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("VotePlan", 5)?;
-        serializer.serialize_field("chain_proposal_index", &self.chain_proposal_index)?;
-        serializer.serialize_field("group", &SerdeType(&self.group))?;
-        serializer.serialize_field("ballot_type", &self.ballot_type.0)?;
-        serializer.serialize_field("chain_voteplan_id", &self.chain_voteplan_id)?;
-        if let Some(encryption_key) = &self.encryption_key {
-            serializer.serialize_field("encryption_key", encryption_key)?;
+        #[derive(Serialize)]
+        struct VotePlanSerde<'a> {
+            chain_proposal_index: i64,
+            group: SerdeType<&'a VoterGroupId>,
+            ballot_type: SerdeType<&'a BallotType>,
+            chain_voteplan_id: &'a String,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            encryption_key: &'a Option<String>,
         }
-        serializer.end()
+        VotePlanSerde {
+            chain_proposal_index: self.chain_proposal_index,
+            group: SerdeType(&self.group),
+            ballot_type: SerdeType(&self.ballot_type),
+            chain_voteplan_id: &self.chain_voteplan_id,
+            encryption_key: &self.encryption_key,
+        }
+        .serialize(serializer)
     }
 }
 
 impl Serialize for SerdeType<VotePlan> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        SerdeType(&self.0).serialize(serializer)
+    }
+}
+
+impl Serialize for SerdeType<&GroupVotePlans> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0
+             .0
+            .iter()
+            .map(SerdeType)
+            .collect::<Vec<_>>()
+            .serialize(serializer)
+    }
+}
+
+impl Serialize for SerdeType<GroupVotePlans> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -36,13 +108,16 @@ impl Serialize for SerdeType<&Ballot> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("Ballot", 2)?;
-        serializer.serialize_field("choices", &self.choices.0)?;
-        serializer.serialize_field(
-            "voteplans",
-            &self.voteplans.0.iter().map(SerdeType).collect::<Vec<_>>(),
-        )?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct BallotSerde<'a> {
+            choices: SerdeType<&'a ObjectiveChoices>,
+            voteplans: SerdeType<&'a GroupVotePlans>,
+        }
+        BallotSerde {
+            choices: SerdeType(&self.choices),
+            voteplans: SerdeType(&self.voteplans),
+        }
+        .serialize(serializer)
     }
 }
 
@@ -60,10 +135,16 @@ impl Serialize for SerdeType<&ProposalBallot> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("ProposalBallot", 2)?;
-        serializer.serialize_field("proposal_id", &SerdeType(&self.proposal_id))?;
-        serializer.serialize_field("ballot", &SerdeType(&self.ballot))?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct ProposalBallotSerde<'a> {
+            proposal_id: SerdeType<&'a ProposalId>,
+            ballot: SerdeType<&'a Ballot>,
+        }
+        ProposalBallotSerde {
+            proposal_id: SerdeType(&self.proposal_id),
+            ballot: SerdeType(&self.ballot),
+        }
+        .serialize(serializer)
     }
 }
 
@@ -81,13 +162,16 @@ impl Serialize for SerdeType<&ObjectiveBallots> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("ObjectiveBallots", 2)?;
-        serializer.serialize_field("objective_id", &SerdeType(&self.objective_id))?;
-        serializer.serialize_field(
-            "ballots",
-            &self.ballots.iter().map(SerdeType).collect::<Vec<_>>(),
-        )?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct ObjectiveBallotsSerde<'a> {
+            objective_id: SerdeType<&'a ObjectiveId>,
+            ballots: Vec<SerdeType<&'a ProposalBallot>>,
+        }
+        ObjectiveBallotsSerde {
+            objective_id: SerdeType(&self.objective_id),
+            ballots: self.ballots.iter().map(SerdeType).collect(),
+        }
+        .serialize(serializer)
     }
 }
 
@@ -104,12 +188,12 @@ impl Serialize for SerdeType<ObjectiveBallots> {
 mod tests {
     use super::*;
     use event_db::types::{
-        event::{
+        registration::VoterGroupId,
+        {
             ballot::{BallotType, GroupVotePlans, ObjectiveChoices},
             objective::ObjectiveId,
             proposal::ProposalId,
         },
-        registration::VoterGroupId,
     };
     use serde_json::json;
 

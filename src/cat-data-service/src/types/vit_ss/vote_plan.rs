@@ -10,7 +10,7 @@ impl Serialize for SerdeType<&Voteplan> {
     {
         #[derive(Serialize)]
         struct VoteplanSerde<'a> {
-            id: &'a i32,
+            id: i32,
             chain_voteplan_id: &'a String,
             #[serde(serialize_with = "serialize_datetime_as_rfc3339")]
             chain_vote_start_time: &'a DateTime<Utc>,
@@ -20,18 +20,18 @@ impl Serialize for SerdeType<&Voteplan> {
             chain_committee_end_time: &'a DateTime<Utc>,
             chain_voteplan_payload: &'a String,
             chain_vote_encryption_key: &'a String,
-            fund_id: &'a i32,
+            fund_id: i32,
             token_identifier: &'a String,
         }
         VoteplanSerde {
-            id: &self.id,
+            id: self.id,
             chain_voteplan_id: &self.chain_voteplan_id,
             chain_vote_start_time: &self.chain_vote_start_time,
             chain_vote_end_time: &self.chain_vote_end_time,
             chain_committee_end_time: &self.chain_committee_end_time,
             chain_voteplan_payload: &self.chain_voteplan_payload,
             chain_vote_encryption_key: &self.chain_vote_encryption_key,
-            fund_id: &self.fund_id,
+            fund_id: self.fund_id,
             token_identifier: &self.token_identifier,
         }
         .serialize(serializer)

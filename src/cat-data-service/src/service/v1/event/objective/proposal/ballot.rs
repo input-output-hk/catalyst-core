@@ -4,8 +4,8 @@ use crate::{
     types::SerdeType,
 };
 use axum::{extract::Path, routing::get, Router};
-use event_db::types::event::{
-    ballot::Ballot, objective::ObjectiveId, proposal::ProposalId, EventId,
+use event_db::types::{
+    ballot::Ballot, event::EventId, objective::ObjectiveId, proposal::ProposalId,
 };
 use std::sync::Arc;
 

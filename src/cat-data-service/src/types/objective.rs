@@ -1,13 +1,13 @@
 use super::SerdeType;
-use event_db::types::event::objective::{
-    Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType, RewardDefintion,
-    VoterGroup,
+use event_db::types::{
+    objective::{
+        Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType, RewardDefintion,
+        VoterGroup,
+    },
+    registration::VoterGroupId,
 };
-use serde::{
-    de::Deserializer,
-    ser::{SerializeStruct, Serializer},
-    Deserialize, Serialize,
-};
+use serde::{de::Deserializer, ser::Serializer, Deserialize, Serialize};
+use serde_json::Value;
 
 impl Serialize for SerdeType<&ObjectiveId> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -41,10 +41,16 @@ impl Serialize for SerdeType<&ObjectiveType> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("ObjectiveType", 2)?;
-        serializer.serialize_field("id", &self.id)?;
-        serializer.serialize_field("description", &self.description)?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct ObjectiveTypeSerde<'a> {
+            id: &'a String,
+            description: &'a String,
+        }
+        ObjectiveTypeSerde {
+            id: &self.id,
+            description: &self.description,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -62,12 +68,21 @@ impl Serialize for SerdeType<&ObjectiveSummary> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("ObjectiveSummary", 4)?;
-        serializer.serialize_field("id", &SerdeType(&self.id))?;
-        serializer.serialize_field("type", &SerdeType(&self.objective_type))?;
-        serializer.serialize_field("title", &self.title)?;
-        serializer.serialize_field("description", &self.description)?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct ObjectiveSummarySerde<'a> {
+            id: SerdeType<&'a ObjectiveId>,
+            #[serde(rename = "type")]
+            objective_type: SerdeType<&'a ObjectiveType>,
+            title: &'a String,
+            description: &'a String,
+        }
+        ObjectiveSummarySerde {
+            id: SerdeType(&self.id),
+            objective_type: SerdeType(&self.objective_type),
+            title: &self.title,
+            description: &self.description,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -85,10 +100,16 @@ impl Serialize for SerdeType<&RewardDefintion> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("RewardDefintion", 2)?;
-        serializer.serialize_field("currency", &self.currency)?;
-        serializer.serialize_field("value", &self.value)?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct RewardDefintionSerde<'a> {
+            currency: &'a String,
+            value: i64,
+        }
+        RewardDefintionSerde {
+            currency: &self.currency,
+            value: self.value,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -106,14 +127,18 @@ impl Serialize for SerdeType<&VoterGroup> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("VoterGroup", 2)?;
-        if let Some(group) = &self.group {
-            serializer.serialize_field("group", &SerdeType(group))?;
+        #[derive(Serialize)]
+        struct VoterGroupSerde<'a> {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            group: Option<SerdeType<&'a VoterGroupId>>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            voting_token: &'a Option<String>,
         }
-        if let Some(voting_token) = &self.voting_token {
-            serializer.serialize_field("voting_token", voting_token)?;
+        VoterGroupSerde {
+            group: self.group.as_ref().map(SerdeType),
+            voting_token: &self.voting_token,
         }
-        serializer.end()
+        .serialize(serializer)
     }
 }
 
@@ -131,18 +156,20 @@ impl Serialize for SerdeType<&ObjectiveDetails> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("ObjectiveDetails", 3)?;
-        serializer.serialize_field(
-            "groups",
-            &self.groups.iter().map(SerdeType).collect::<Vec<_>>(),
-        )?;
-        if let Some(reward) = &self.reward {
-            serializer.serialize_field("reward", &SerdeType(reward))?;
+        #[derive(Serialize)]
+        struct ObjectiveDetailsSerde<'a> {
+            groups: Vec<SerdeType<&'a VoterGroup>>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            reward: Option<SerdeType<&'a RewardDefintion>>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            supplemental: &'a Option<Value>,
         }
-        if let Some(supplemental) = &self.supplemental {
-            serializer.serialize_field("supplemental", &supplemental)?;
+        ObjectiveDetailsSerde {
+            groups: self.groups.iter().map(SerdeType).collect(),
+            reward: self.reward.as_ref().map(SerdeType),
+            supplemental: &self.supplemental,
         }
-        serializer.end()
+        .serialize(serializer)
     }
 }
 
@@ -161,14 +188,14 @@ impl Serialize for SerdeType<&Objective> {
         S: Serializer,
     {
         #[derive(Serialize)]
-        pub struct ObjectiveImpl<'a> {
+        pub struct ObjectiveSerde<'a> {
             #[serde(flatten)]
             summary: SerdeType<&'a ObjectiveSummary>,
             #[serde(flatten)]
             details: SerdeType<&'a ObjectiveDetails>,
         }
 
-        let val = ObjectiveImpl {
+        let val = ObjectiveSerde {
             summary: SerdeType(&self.summary),
             details: SerdeType(&self.details),
         };

@@ -9,14 +9,14 @@ impl Serialize for SerdeType<&Goal> {
     {
         #[derive(Serialize)]
         struct GoalSerde<'a> {
-            id: &'a i32,
+            id: i32,
             goal_name: &'a String,
-            fund_id: &'a i32,
+            fund_id: i32,
         }
         GoalSerde {
-            id: &self.id,
+            id: self.id,
             goal_name: &self.goal_name,
-            fund_id: &self.fund_id,
+            fund_id: self.fund_id,
         }
         .serialize(serializer)
     }

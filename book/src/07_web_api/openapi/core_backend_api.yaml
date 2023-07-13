@@ -991,7 +991,6 @@ components:
           description: The public encryption key used. ONLY if required by the ballot type (private, cast-private).
       required:
         - chain_proposal_index
-        - group
         - chain_voteplan_id
       x-stoplight:
         id: owvld2uvjjnty

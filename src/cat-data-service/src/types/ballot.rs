@@ -54,7 +54,8 @@ impl Serialize for SerdeType<&VotePlan> {
         #[derive(Serialize)]
         struct VotePlanSerde<'a> {
             chain_proposal_index: i64,
-            group: SerdeType<&'a VoterGroupId>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            group: Option<SerdeType<&'a VoterGroupId>>,
             ballot_type: SerdeType<&'a BallotType>,
             chain_voteplan_id: &'a String,
             #[serde(skip_serializing_if = "Option::is_none")]
@@ -62,7 +63,7 @@ impl Serialize for SerdeType<&VotePlan> {
         }
         VotePlanSerde {
             chain_proposal_index: self.chain_proposal_index,
-            group: SerdeType(&self.group),
+            group: self.group.as_ref().map(SerdeType),
             ballot_type: SerdeType(&self.ballot_type),
             chain_voteplan_id: &self.chain_voteplan_id,
             encryption_key: &self.encryption_key,
@@ -201,7 +202,7 @@ mod tests {
     fn vote_plan_json_test() {
         let vote_plan = SerdeType(VotePlan {
             chain_proposal_index: 1,
-            group: VoterGroupId("rep".to_string()),
+            group: Some(VoterGroupId("rep".to_string())),
             ballot_type: BallotType("public".to_string()),
             chain_voteplan_id: "chain_voteplan_id 1".to_string(),
             encryption_key: Some("encryption_key 1".to_string()),
@@ -223,7 +224,7 @@ mod tests {
 
         let vote_plan = SerdeType(VotePlan {
             chain_proposal_index: 1,
-            group: VoterGroupId("rep".to_string()),
+            group: None,
             ballot_type: BallotType("public".to_string()),
             chain_voteplan_id: "chain_voteplan_id 1".to_string(),
             encryption_key: None,
@@ -235,7 +236,6 @@ mod tests {
             json!(
                 {
                     "chain_proposal_index": 1,
-                    "group": "rep",
                     "ballot_type": "public",
                     "chain_voteplan_id": "chain_voteplan_id 1",
                 }

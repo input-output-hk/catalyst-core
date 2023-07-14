@@ -58,8 +58,8 @@ class Idea:
     text: str
     author_info: IdeaAuthorInfo
     contributors: List[IdeaAuthorInfo]
-    custom_fields_by_key: Mapping[str, str]
     url: str
+    custom_fields_by_key: Mapping[str, str] = pydantic.Field(default={})
 
     def contributors_name(self) -> List[str]:
         """Get the names of all contributors."""

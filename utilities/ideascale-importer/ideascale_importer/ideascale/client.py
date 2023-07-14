@@ -187,7 +187,7 @@ class Client:
 
     async def funnel(self, funnel_id: int) -> Funnel:
         """Get the funnel with the given id."""
-        res = await self._get(f"/v1/funnels/{funnel_id}")
+        res = await self._get(f"/a/rest/v1/funnels/{funnel_id}")
         return pydantic.tools.parse_obj_as(Funnel, res)
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:

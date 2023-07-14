@@ -4,8 +4,8 @@ use crate::{
     types::SerdeType,
 };
 use axum::{extract::Path, routing::get, Router};
-use event_db::types::event::{
-    ballot::Ballot, objective::ObjectiveId, proposal::ProposalId, EventId,
+use event_db::types::{
+    ballot::Ballot, event::EventId, objective::ObjectiveId, proposal::ProposalId,
 };
 use std::sync::Arc;
 
@@ -23,7 +23,7 @@ async fn ballot_exec(
         SerdeType<ProposalId>,
     )>,
     state: Arc<State>,
-) -> Result<Ballot, Error> {
+) -> Result<SerdeType<Ballot>, Error> {
     tracing::debug!(
         "ballot_query, event: {0}, objective: {1}, proposal: {2}",
         event.0,
@@ -34,7 +34,8 @@ async fn ballot_exec(
     let ballot = state
         .event_db
         .get_ballot(event, objective, proposal)
-        .await?;
+        .await?
+        .into();
     Ok(ballot)
 }
 

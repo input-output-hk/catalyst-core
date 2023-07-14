@@ -13,6 +13,7 @@ use std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
 use tower_http::cors::{Any, CorsLayer};
 
 mod health;
+mod v0;
 mod v1;
 
 #[derive(thiserror::Error, Debug)]
@@ -30,9 +31,10 @@ pub struct ErrorMessage {
 
 pub fn app(state: Arc<State>) -> Router {
     // build our application with a route
+    let v0 = v0::v0(state.clone());
     let v1 = v1::v1(state);
     let health = health::health();
-    Router::new().nest("/api", v1).merge(health)
+    Router::new().nest("/api", v1.merge(v0)).merge(health)
 }
 
 fn metrics_app() -> Router {
@@ -44,6 +46,7 @@ fn cors_layer() -> CorsLayer {
     CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(Any)
+        .allow_headers(Any)
 }
 
 async fn run_service(app: Router, addr: &SocketAddr, name: &str) -> Result<(), Error> {

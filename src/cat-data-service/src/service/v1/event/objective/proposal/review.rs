@@ -8,8 +8,8 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::types::event::{
-    objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview, EventId,
+use event_db::types::{
+    event::EventId, objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview,
 };
 use std::sync::Arc;
 

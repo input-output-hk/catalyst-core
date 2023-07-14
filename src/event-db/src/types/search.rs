@@ -1,7 +1,6 @@
-use super::event::{objective::ObjectiveSummary, proposal::ProposalSummary, EventSummary};
-use serde::Serialize;
+use super::{event::EventSummary, objective::ObjectiveSummary, proposal::ProposalSummary};
 
-#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SearchTable {
     Events,
     Objectives,

@@ -1,4 +1,5 @@
-use super::SerdeType;
+use super::{serialize_option_datetime_as_rfc3339, SerdeType};
+use chrono::{DateTime, Utc};
 use event_db::types::event::{
     Event, EventDetails, EventGoal, EventId, EventRegistration, EventSchedule, EventSummary,
     VotingPowerAlgorithm, VotingPowerSettings,
@@ -6,7 +7,7 @@ use event_db::types::event::{
 use rust_decimal::prelude::ToPrimitive;
 use serde::{
     de::Deserializer,
-    ser::{Error as _, SerializeStruct, Serializer},
+    ser::{Error as _, Serializer},
     Deserialize, Serialize,
 };
 
@@ -42,20 +43,37 @@ impl Serialize for SerdeType<&EventSummary> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("EventSummary", 6)?;
-        serializer.serialize_field("id", &SerdeType(&self.id))?;
-        serializer.serialize_field("name", &self.name)?;
-        if let Some(starts) = &self.starts {
-            serializer.serialize_field("starts", &starts.to_rfc3339())?;
+        #[derive(Serialize)]
+        struct EventSummarySerde<'a> {
+            id: SerdeType<&'a EventId>,
+            name: &'a String,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            starts: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            ends: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            reg_checked: &'a Option<DateTime<Utc>>,
+            #[serde(rename = "final")]
+            is_final: bool,
         }
-        if let Some(ends) = &self.ends {
-            serializer.serialize_field("ends", &ends.to_rfc3339())?;
+        EventSummarySerde {
+            id: SerdeType(&self.id),
+            name: &self.name,
+            starts: &self.starts,
+            ends: &self.ends,
+            reg_checked: &self.reg_checked,
+            is_final: self.is_final,
         }
-        if let Some(reg_checked) = &self.reg_checked {
-            serializer.serialize_field("reg_checked", &reg_checked.to_rfc3339())?;
-        }
-        serializer.serialize_field("final", &self.is_final)?;
-        serializer.end()
+        .serialize(serializer)
     }
 }
 
@@ -95,20 +113,28 @@ impl Serialize for SerdeType<&VotingPowerSettings> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("VotingPowerSettings", 3)?;
-        serializer.serialize_field("alg", &SerdeType(&self.alg))?;
-        if let Some(min_ada) = &self.min_ada {
-            serializer.serialize_field("min_ada", &min_ada)?;
+        #[derive(Serialize)]
+        struct VotingPowerSettingsSerde<'a> {
+            alg: SerdeType<&'a VotingPowerAlgorithm>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            min_ada: Option<i64>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            max_pct: Option<f64>,
         }
-        if let Some(max_pct) = &self.max_pct {
-            serializer.serialize_field(
-                "max_pct",
-                &max_pct
-                    .to_f64()
-                    .ok_or_else(|| S::Error::custom("cannot decimal convert to f64"))?,
-            )?;
+        VotingPowerSettingsSerde {
+            alg: SerdeType(&self.alg),
+            min_ada: self.min_ada,
+            max_pct: if let Some(max_pct) = &self.max_pct {
+                Some(
+                    max_pct
+                        .to_f64()
+                        .ok_or_else(|| S::Error::custom("cannot decimal convert to f64"))?,
+                )
+            } else {
+                None
+            },
         }
-        serializer.end()
+        .serialize(serializer)
     }
 }
 
@@ -126,17 +152,27 @@ impl Serialize for SerdeType<&EventRegistration> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("EventRegistration", 3)?;
-        if let Some(purpose) = &self.purpose {
-            serializer.serialize_field("purpose", &purpose)?;
+        #[derive(Serialize)]
+        struct EventRegistrationSerde<'a> {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            purpose: Option<i64>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            deadline: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            taken: &'a Option<DateTime<Utc>>,
         }
-        if let Some(deadline) = &self.deadline {
-            serializer.serialize_field("deadline", &deadline.to_rfc3339())?;
+        EventRegistrationSerde {
+            purpose: self.purpose,
+            deadline: &self.deadline,
+            taken: &self.taken,
         }
-        if let Some(taken) = &self.taken {
-            serializer.serialize_field("taken", &taken.to_rfc3339())?;
-        }
-        serializer.end()
+        .serialize(serializer)
     }
 }
 
@@ -154,10 +190,16 @@ impl Serialize for SerdeType<&EventGoal> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("EventGoal", 2)?;
-        serializer.serialize_field("idx", &self.idx)?;
-        serializer.serialize_field("name", &self.name)?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct EventGoalSerde<'a> {
+            idx: i32,
+            name: &'a String,
+        }
+        EventGoalSerde {
+            idx: self.idx,
+            name: &self.name,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -175,35 +217,66 @@ impl Serialize for SerdeType<&EventSchedule> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("EventGoal", 9)?;
-        if let Some(insight_sharing) = &self.insight_sharing {
-            serializer.serialize_field("insight_sharing", &insight_sharing.to_rfc3339())?;
+        #[derive(Serialize)]
+        struct EventScheduleSerde<'a> {
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            insight_sharing: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            proposal_submission: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            refine_proposals: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            finalize_proposals: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            proposal_assessment: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            assessment_qa_start: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            voting: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            tallying: &'a Option<DateTime<Utc>>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                serialize_with = "serialize_option_datetime_as_rfc3339"
+            )]
+            tallying_end: &'a Option<DateTime<Utc>>,
         }
-        if let Some(proposal_submission) = &self.proposal_submission {
-            serializer.serialize_field("proposal_submission", &proposal_submission.to_rfc3339())?;
+        EventScheduleSerde {
+            insight_sharing: &self.insight_sharing,
+            proposal_submission: &self.proposal_submission,
+            refine_proposals: &self.refine_proposals,
+            finalize_proposals: &self.finalize_proposals,
+            proposal_assessment: &self.proposal_assessment,
+            assessment_qa_start: &self.assessment_qa_start,
+            voting: &self.voting,
+            tallying: &self.tallying,
+            tallying_end: &self.tallying_end,
         }
-        if let Some(refine_proposals) = &self.refine_proposals {
-            serializer.serialize_field("refine_proposals", &refine_proposals.to_rfc3339())?;
-        }
-        if let Some(finalize_proposals) = &self.finalize_proposals {
-            serializer.serialize_field("finalize_proposals", &finalize_proposals.to_rfc3339())?;
-        }
-        if let Some(proposal_assessment) = &self.proposal_assessment {
-            serializer.serialize_field("proposal_assessment", &proposal_assessment.to_rfc3339())?;
-        }
-        if let Some(assessment_qa_start) = &self.assessment_qa_start {
-            serializer.serialize_field("assessment_qa_start", &assessment_qa_start.to_rfc3339())?;
-        }
-        if let Some(voting) = &self.voting {
-            serializer.serialize_field("voting", &voting.to_rfc3339())?;
-        }
-        if let Some(tallying) = &self.tallying {
-            serializer.serialize_field("tallying", &tallying.to_rfc3339())?;
-        }
-        if let Some(tallying_end) = &self.tallying_end {
-            serializer.serialize_field("tallying_end", &tallying_end.to_rfc3339())?;
-        }
-        serializer.end()
+        .serialize(serializer)
     }
 }
 
@@ -221,15 +294,20 @@ impl Serialize for SerdeType<&EventDetails> {
     where
         S: Serializer,
     {
-        let mut serializer = serializer.serialize_struct("EventDetails", 4)?;
-        serializer.serialize_field("voting_power", &SerdeType(&self.voting_power))?;
-        serializer.serialize_field("registration", &SerdeType(&self.registration))?;
-        serializer.serialize_field("schedule", &SerdeType(&self.schedule))?;
-        serializer.serialize_field(
-            "goals",
-            &self.goals.iter().map(SerdeType).collect::<Vec<_>>(),
-        )?;
-        serializer.end()
+        #[derive(Serialize)]
+        struct EventDetailsSerde<'a> {
+            voting_power: SerdeType<&'a VotingPowerSettings>,
+            registration: SerdeType<&'a EventRegistration>,
+            schedule: SerdeType<&'a EventSchedule>,
+            goals: Vec<SerdeType<&'a EventGoal>>,
+        }
+        EventDetailsSerde {
+            voting_power: SerdeType(&self.voting_power),
+            registration: SerdeType(&self.registration),
+            schedule: SerdeType(&self.schedule),
+            goals: self.goals.iter().map(SerdeType).collect(),
+        }
+        .serialize(serializer)
     }
 }
 
@@ -248,14 +326,14 @@ impl Serialize for SerdeType<&Event> {
         S: Serializer,
     {
         #[derive(Serialize)]
-        pub struct EventImpl<'a> {
+        pub struct EventSerde<'a> {
             #[serde(flatten)]
             summary: SerdeType<&'a EventSummary>,
             #[serde(flatten)]
             details: SerdeType<&'a EventDetails>,
         }
 
-        let val = EventImpl {
+        let val = EventSerde {
             summary: SerdeType(&self.summary),
             details: SerdeType(&self.details),
         };

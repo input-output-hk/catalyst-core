@@ -270,8 +270,7 @@ class Importer:
 
         client = Client(self.api_token, self.ideascale_api_url)
 
-        groups = [g for g in await client.campaign_groups() if g.name.lower().startswith("fund")]
-
+        groups = await client.campaign_groups()
         if len(groups) == 0:
             logger.warning("No funds found")
             return

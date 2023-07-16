@@ -76,7 +76,7 @@ CREATE TABLE reviewer_level (
 
     event_id INTEGER NOT NULL,
 
-    FOREIGN KEY(event_id) REFERENCES event(row_id) ON DELETE CASCADE
+    FOREIGN KEY (event_id) REFERENCES event(row_id) ON DELETE CASCADE
 );
 
 COMMENT ON TABLE reviewer_level IS 
@@ -111,7 +111,7 @@ CREATE TABLE proposal_review (
   ranking INTEGER,
   flags JSONB NULL,
 
-  FOREIGN KEY (proposal_id) REFERENCES proposal(row_id) ON DELETE CASCADE
+  FOREIGN KEY (proposal_id) REFERENCES proposal(row_id) ON DELETE CASCADE,
   FOREIGN KEY (assessor_level) REFERENCES reviewer_level(row_id) ON DELETE CASCADE
 );
 

@@ -946,21 +946,10 @@
 <a href="#946" id="946">946</a>
 <a href="#947" id="947">947</a>
 <a href="#948" id="948">948</a>
-<a href="#949" id="949">949</a>
-<a href="#950" id="950">950</a>
-<a href="#951" id="951">951</a>
-<a href="#952" id="952">952</a>
-<a href="#953" id="953">953</a>
-<a href="#954" id="954">954</a>
-<a href="#955" id="955">955</a>
-<a href="#956" id="956">956</a>
-<a href="#957" id="957">957</a>
-<a href="#958" id="958">958</a>
-<a href="#959" id="959">959</a>
-<a href="#960" id="960">960</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 <span class="kw">use </span>axum::{extract::Query, routing::post, Json, Router};
 <span class="kw">use </span>event_db::types::search::{SearchQuery, SearchResult};
@@ -970,9 +959,7 @@
 <span class="kw">pub fn </span>search(state: Arc&lt;State&gt;) -&gt; Router {
     Router::new().route(
         <span class="string">&quot;/search&quot;</span>,
-        post(<span class="kw">move </span>|query, body| <span class="kw">async </span>{
-            handle_result(search_exec(query, body, state).<span class="kw">await</span>).<span class="kw">await
-        </span>}),
+        post(<span class="kw">move </span>|query, body| <span class="kw">async </span>{ handle_result(search_exec(query, body, state).<span class="kw">await</span>) }),
     )
 }
 
@@ -987,9 +974,9 @@
 
 <span class="kw">async fn </span>search_exec(
     search_param: Query&lt;SearchParam&gt;,
-    Json(search_query): Json&lt;SearchQuery&gt;,
+    Json(SerdeType(search_query)): Json&lt;SerdeType&lt;SearchQuery&gt;&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;SearchResult, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;SerdeType&lt;SearchResult&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;search_query&quot;</span>,);
 
     <span class="kw">let </span>res = state
@@ -1000,7 +987,8 @@
             search_param.limit,
             search_param.offset,
         )
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into();
     <span class="prelude-val">Ok</span>(res)
 }
 
@@ -1022,12 +1010,11 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::service::app;
+    <span class="kw">use </span><span class="kw">crate</span>::service::{app, tests::body_data_json_check};
     <span class="kw">use </span>axum::{
         body::{Body, HttpBody},
         http::{header, Method, Request, StatusCode},
     };
-    <span class="kw">use </span>std::str::FromStr;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -1055,15 +1042,10 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>({
-                <span class="string">&quot;total&quot;</span>: <span class="number">4</span>,
+                <span class="string">&quot;total&quot;</span>: <span class="number">5</span>,
                 <span class="string">&quot;results&quot;</span>: [
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
@@ -1092,11 +1074,18 @@
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
                         <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
+                        <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2024-06-01T12:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
+                    </span>},
+                    {
+                        <span class="string">&quot;id&quot;</span>: <span class="number">5</span>,
+                        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 5&quot;</span>,
                         <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
                     </span>}
                 ]
             })
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1118,17 +1107,12 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>({
-                <span class="string">&quot;total&quot;</span>: <span class="number">4</span>,
+                <span class="string">&quot;total&quot;</span>: <span class="number">5</span>,
             })
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1151,19 +1135,21 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>({
-                <span class="string">&quot;total&quot;</span>: <span class="number">4</span>,
+                <span class="string">&quot;total&quot;</span>: <span class="number">5</span>,
                 <span class="string">&quot;results&quot;</span>: [
+                    {
+                        <span class="string">&quot;id&quot;</span>: <span class="number">5</span>,
+                        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 5&quot;</span>,
+                        <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
+                    </span>},
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
                         <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
+                        <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2024-06-01T12:00:00+00:00&quot;</span>,
                         <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
                     </span>},
                     {
@@ -1192,7 +1178,7 @@
                     </span>}
                 ]
             })
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1215,34 +1201,28 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;total&quot;</span>: <span class="number">2</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
-                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">5</span>,
+                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 5&quot;</span>,
                             <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
                         </span>},
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
-                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 3&quot;</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
+                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
                             <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2022-06-01T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;reg_checked&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
-                        </span>}
+                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2024-06-01T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
+                        </span>},
                     ]
                 }
             ),
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1265,17 +1245,20 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
-                    <span class="string">&quot;total&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;total&quot;</span>: <span class="number">3</span>,
                     <span class="string">&quot;results&quot;</span>: [
+                        {
+                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 3&quot;</span>,
+                            <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2022-06-01T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;reg_checked&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+                        </span>},
                         {
                             <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
                             <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 2&quot;</span>,
@@ -1295,7 +1278,7 @@
                     ]
                 }
             ),
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1318,29 +1301,23 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;total&quot;</span>: <span class="number">1</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
-                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 3&quot;</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
+                            <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 4&quot;</span>,
                             <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2022-05-01T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2022-06-01T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;reg_checked&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
-                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
-                        </span>}
+                            <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2024-06-01T12:00:00+00:00&quot;</span>,
+                            <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
+                        </span>},
                     ]
                 }
             )
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1386,16 +1363,11 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
-                    <span class="string">&quot;total&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;total&quot;</span>: <span class="number">4</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
                             <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
@@ -1414,11 +1386,29 @@
                             </span>},
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
                             <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 2&quot;
+                        </span>},
+                        {
+                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;type&quot;</span>: {
+                                <span class="string">&quot;id&quot;</span>: <span class="string">&quot;catalyst-simple&quot;</span>,
+                                <span class="string">&quot;description&quot;</span>: <span class="string">&quot;A Simple choice&quot;
+                            </span>},
+                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 3&quot;</span>,
+                            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 3&quot;
+                        </span>},
+                        {
+                            <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
+                            <span class="string">&quot;type&quot;</span>: {
+                                <span class="string">&quot;id&quot;</span>: <span class="string">&quot;catalyst-native&quot;</span>,
+                                <span class="string">&quot;description&quot;</span>: <span class="string">&quot;??&quot;
+                            </span>},
+                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 4&quot;</span>,
+                            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 4&quot;
                         </span>}
                     ]
                 }
             ),
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1440,19 +1430,14 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
-                    <span class="string">&quot;total&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;total&quot;</span>: <span class="number">4</span>,
                 }
             )
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1475,17 +1460,30 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
-                    <span class="string">&quot;total&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;total&quot;</span>: <span class="number">4</span>,
                     <span class="string">&quot;results&quot;</span>: [
+                        {
+                            <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
+                            <span class="string">&quot;type&quot;</span>: {
+                                <span class="string">&quot;id&quot;</span>: <span class="string">&quot;catalyst-native&quot;</span>,
+                                <span class="string">&quot;description&quot;</span>: <span class="string">&quot;??&quot;
+                            </span>},
+                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 4&quot;</span>,
+                            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 4&quot;
+                        </span>},
+                        {
+                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;type&quot;</span>: {
+                                <span class="string">&quot;id&quot;</span>: <span class="string">&quot;catalyst-simple&quot;</span>,
+                                <span class="string">&quot;description&quot;</span>: <span class="string">&quot;A Simple choice&quot;
+                            </span>},
+                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 3&quot;</span>,
+                            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 3&quot;
+                        </span>},
                         {
                             <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
                             <span class="string">&quot;type&quot;</span>: {
@@ -1507,7 +1505,7 @@
                     ]
                 }
             )
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1530,31 +1528,26 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;total&quot;</span>: <span class="number">1</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">4</span>,
                             <span class="string">&quot;type&quot;</span>: {
                                 <span class="string">&quot;id&quot;</span>: <span class="string">&quot;catalyst-native&quot;</span>,
                                 <span class="string">&quot;description&quot;</span>: <span class="string">&quot;??&quot;
                             </span>},
-                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
-                            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 2&quot;
-                        </span>}
+                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 4&quot;</span>,
+                            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 4&quot;
+                        </span>},
                     ]
 
                 }
             )
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1577,17 +1570,30 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
-                    <span class="string">&quot;total&quot;</span>: <span class="number">1</span>,
+                    <span class="string">&quot;total&quot;</span>: <span class="number">3</span>,
                     <span class="string">&quot;results&quot;</span>: [
+                        {
+                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;type&quot;</span>: {
+                                <span class="string">&quot;id&quot;</span>: <span class="string">&quot;catalyst-simple&quot;</span>,
+                                <span class="string">&quot;description&quot;</span>: <span class="string">&quot;A Simple choice&quot;
+                            </span>},
+                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 3&quot;</span>,
+                            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 3&quot;
+                        </span>},
+                        {
+                            <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                            <span class="string">&quot;type&quot;</span>: {
+                                <span class="string">&quot;id&quot;</span>: <span class="string">&quot;catalyst-native&quot;</span>,
+                                <span class="string">&quot;description&quot;</span>: <span class="string">&quot;??&quot;
+                            </span>},
+                            <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
+                            <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 2&quot;
+                        </span>},
                         {
                             <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
                             <span class="string">&quot;type&quot;</span>: {
@@ -1600,7 +1606,7 @@
                     ]
                 }
             )
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1646,36 +1652,31 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;total&quot;</span>: <span class="number">3</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">10</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 1&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 1&quot;
                         </span>},
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">20</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 2&quot;
                         </span>},
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">30</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 3&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 3&quot;
                         </span>}
                     ]
                 }
             ),
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1697,19 +1698,14 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;total&quot;</span>: <span class="number">3</span>,
                 }
             )
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1732,36 +1728,31 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;total&quot;</span>: <span class="number">3</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">30</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 3&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 3&quot;
                         </span>},
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">20</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 2&quot;
                         </span>},
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">10</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 1&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 1&quot;
                         </span>}
                     ]
                 }
             )
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1784,31 +1775,26 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;total&quot;</span>: <span class="number">2</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">3</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">30</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 3&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 3&quot;
                         </span>},
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">20</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 2&quot;
                         </span>}
                     ]
                 }
             ),
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1831,31 +1817,26 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;total&quot;</span>: <span class="number">2</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">20</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 2&quot;
                         </span>},
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">10</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 1&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 1&quot;
                         </span>}
                     ]
                 }
             ),
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)
@@ -1878,26 +1859,21 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;total&quot;</span>: <span class="number">1</span>,
                     <span class="string">&quot;results&quot;</span>: [
                         {
-                            <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
+                            <span class="string">&quot;id&quot;</span>: <span class="number">20</span>,
                             <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
                             <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary 2&quot;
                         </span>}
                     ]
                 }
             )
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .method(Method::POST)

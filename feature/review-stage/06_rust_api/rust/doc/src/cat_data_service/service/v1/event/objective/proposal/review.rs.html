@@ -201,49 +201,37 @@
 <a href="#201" id="201">201</a>
 <a href="#202" id="202">202</a>
 <a href="#203" id="203">203</a>
-<a href="#204" id="204">204</a>
-<a href="#205" id="205">205</a>
-<a href="#206" id="206">206</a>
-<a href="#207" id="207">207</a>
-<a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
-<a href="#213" id="213">213</a>
-<a href="#214" id="214">214</a>
-<a href="#215" id="215">215</a>
-<a href="#216" id="216">216</a>
-<a href="#217" id="217">217</a>
-<a href="#218" id="218">218</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
+    types::SerdeType,
 };
 <span class="kw">use </span>axum::{
     extract::{Path, Query},
     routing::get,
     Router,
 };
-<span class="kw">use </span>event_db::types::event::{
-    objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview, EventId,
+<span class="kw">use </span>event_db::types::{
+    event::EventId, objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview,
 };
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub fn </span>review(state: Arc&lt;State&gt;) -&gt; Router {
     Router::new().route(
         <span class="string">&quot;/reviews&quot;</span>,
-        get(<span class="kw">move </span>|path, query| <span class="kw">async </span>{
-            handle_result(reviews_exec(path, query, state).<span class="kw">await</span>).<span class="kw">await
-        </span>}),
+        get(<span class="kw">move </span>|path, query| <span class="kw">async </span>{ handle_result(reviews_exec(path, query, state).<span class="kw">await</span>) }),
     )
 }
 
 <span class="kw">async fn </span>reviews_exec(
-    Path((event, objective, proposal)): Path&lt;(EventId, ObjectiveId, ProposalId)&gt;,
+    Path((SerdeType(event), SerdeType(objective), SerdeType(proposal))): Path&lt;(
+        SerdeType&lt;EventId&gt;,
+        SerdeType&lt;ObjectiveId&gt;,
+        SerdeType&lt;ProposalId&gt;,
+    )&gt;,
     lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;AdvisorReview&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SerdeType&lt;AdvisorReview&gt;&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;reviews_query, event:{0} objective: {1}, proposal: {2}&quot;</span>,
         event.<span class="number">0</span>,
@@ -254,7 +242,10 @@
     <span class="kw">let </span>reviews = state
         .event_db
         .get_reviews(event, objective, proposal, lim_ofs.limit, lim_ofs.offset)
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into_iter()
+        .map(SerdeType)
+        .collect();
     <span class="prelude-val">Ok</span>(reviews)
 }
 
@@ -276,12 +267,11 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::service::app;
+    <span class="kw">use </span><span class="kw">crate</span>::service::{app, tests::body_data_json_check};
     <span class="kw">use </span>axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>std::str::FromStr;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -292,19 +282,14 @@
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
                 <span class="string">&quot;/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews&quot;</span>,
-                <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">10
             </span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>([
                 {
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 1&quot;</span>,
@@ -335,24 +320,19 @@
                     <span class="string">&quot;ratings&quot;</span>: []
                 }
             ])
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
                 <span class="string">&quot;/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews?limit={3}&quot;</span>,
-                <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">2
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">10</span>, <span class="number">2
             </span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>([
                 {
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 1&quot;</span>,
@@ -379,24 +359,19 @@
                     <span class="string">&quot;ratings&quot;</span>: []
                 },
             ])
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
                 <span class="string">&quot;/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews?offset={3}&quot;</span>,
-                <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">10</span>, <span class="number">1
             </span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>([
                 {
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 2&quot;</span>,
@@ -407,31 +382,26 @@
                     <span class="string">&quot;ratings&quot;</span>: []
                 }
             ])
-        );
+        ));
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
                 <span class="string">&quot;/api/v1/event/{0}/objective/{1}/proposal/{2}/reviews?limit={3}&amp;offset={4}&quot;</span>,
-                <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1</span>, <span class="number">1
+                <span class="number">1</span>, <span class="number">1</span>, <span class="number">10</span>, <span class="number">1</span>, <span class="number">1
             </span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>([
                 {
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 2&quot;</span>,
                     <span class="string">&quot;ratings&quot;</span>: []
                 },
             ])
-        );
+        ));
     }
 }
 </code></pre></div>

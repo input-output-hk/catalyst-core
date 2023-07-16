@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["get_data_from_files","get_data_from_network","json_from_file","json_from_network","load_data","vecs_to_maps","write_csv","write_json","write_results"],"static":["CALLSITE","META"],"type":["CleanedVitSSData","VitSSData"]};
+window.SIDEBAR_ITEMS = {"fn":["vecs_to_maps","write_csv","write_json","write_results"],"type":["CleanedVitSSData"]};

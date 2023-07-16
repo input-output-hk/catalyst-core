@@ -15,11 +15,11 @@
 </pre><pre class="rust"><code><span class="kw">use </span>clap::Parser;
 
 <span class="kw">mod </span>cli;
-<span class="comment">// mod db;
-</span><span class="kw">mod </span>logger;
+<span class="kw">mod </span>logger;
 <span class="kw">mod </span>service;
 <span class="kw">mod </span>settings;
 <span class="kw">mod </span>state;
+<span class="kw">mod </span>types;
 
 <span class="attr">#[tokio::main]
 </span><span class="kw">async fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), cli::Error&gt; {

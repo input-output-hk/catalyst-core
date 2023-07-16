@@ -469,6 +469,11 @@
 <a href="#469" id="469">469</a>
 <a href="#470" id="470">470</a>
 <a href="#471" id="471">471</a>
+<a href="#472" id="472">472</a>
+<a href="#473" id="473">473</a>
+<a href="#474" id="474">474</a>
+<a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Threshold, VoteCount};
 <span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
@@ -922,7 +927,7 @@
             Threshold::new(
                 DEFAULT_TEST_THRESHOLD,
                 per_challenge_threshold.clone(),
-                proposals.clone(),
+                proposals.clone().into_iter().map(Into::into).collect(),
             )
             .unwrap(),
             Rewards::ONE,
@@ -932,7 +937,12 @@
         <span class="kw">let </span>rewards_only_active = calc_voter_rewards(
             only_active,
             voters,
-            Threshold::new(DEFAULT_TEST_THRESHOLD, per_challenge_threshold, proposals).unwrap(),
+            Threshold::new(
+                DEFAULT_TEST_THRESHOLD,
+                per_challenge_threshold,
+                proposals.into_iter().map(Into::into).collect(),
+            )
+            .unwrap(),
             Rewards::ONE,
         )
         .unwrap();

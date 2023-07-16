@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ALLOCATED_TYPE","FIELDS","NOT_ALLOCATED_TYPE"],"enum":["Error","__Field"],"fn":["load_reviews_from_csv"],"struct":["ReviewsRow","__FieldVisitor","__Visitor"]};

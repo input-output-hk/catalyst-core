@@ -132,22 +132,26 @@
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 <span class="kw">use </span>axum::{extract::Path, routing::get, Router};
-<span class="kw">use </span>event_db::types::event::{ballot::ProposalBallot, objective::ObjectiveId, EventId};
+<span class="kw">use </span>event_db::types::{ballot::ProposalBallot, event::EventId, objective::ObjectiveId};
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub fn </span>ballots(state: Arc&lt;State&gt;) -&gt; Router {
     Router::new().route(
         <span class="string">&quot;/ballots&quot;</span>,
-        get(<span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(ballots_exec(path, state).<span class="kw">await</span>).<span class="kw">await </span>}),
+        get(<span class="kw">move </span>|path| <span class="kw">async </span>{ handle_result(ballots_exec(path, state).<span class="kw">await</span>) }),
     )
 }
 
 <span class="kw">async fn </span>ballots_exec(
-    Path((event, objective)): Path&lt;(EventId, ObjectiveId)&gt;,
+    Path((SerdeType(event), SerdeType(objective))): Path&lt;(
+        SerdeType&lt;EventId&gt;,
+        SerdeType&lt;ObjectiveId&gt;,
+    )&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalBallot&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SerdeType&lt;ProposalBallot&gt;&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;ballots_query, event: {0}, objective: {1}&quot;</span>,
         event.<span class="number">0</span>,
@@ -157,7 +161,10 @@
     <span class="kw">let </span>ballot = state
         .event_db
         .get_objective_ballots(event, objective)
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into_iter()
+        .map(SerdeType)
+        .collect();
     <span class="prelude-val">Ok</span>(ballot)
 }
 
@@ -179,12 +186,11 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::service::app;
+    <span class="kw">use </span><span class="kw">crate</span>::service::{app, tests::body_data_json_check};
     <span class="kw">use </span>axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
     };
-    <span class="kw">use </span>std::str::FromStr;
     <span class="kw">use </span>tower::ServiceExt;
 
     <span class="attr">#[tokio::test]
@@ -198,18 +204,12 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-
-        <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(
-                String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                    .unwrap()
-                    .as_str()
-            )
-            .unwrap(),
+        <span class="macro">assert!</span>(body_data_json_check(
+            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 [
                     {
-                        <span class="string">&quot;proposal_id&quot;</span>: <span class="number">1</span>,
+                        <span class="string">&quot;proposal_id&quot;</span>: <span class="number">10</span>,
                         <span class="string">&quot;ballot&quot;</span>: {
                             <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
                             <span class="string">&quot;voteplans&quot;</span>: [
@@ -229,7 +229,7 @@
                         }
                     },
                     {
-                        <span class="string">&quot;proposal_id&quot;</span>: <span class="number">2</span>,
+                        <span class="string">&quot;proposal_id&quot;</span>: <span class="number">20</span>,
                         <span class="string">&quot;ballot&quot;</span>: {
                             <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
                             <span class="string">&quot;voteplans&quot;</span>: [
@@ -249,7 +249,7 @@
                         }
                     },
                     {
-                        <span class="string">&quot;proposal_id&quot;</span>: <span class="number">3</span>,
+                        <span class="string">&quot;proposal_id&quot;</span>: <span class="number">30</span>,
                         <span class="string">&quot;ballot&quot;</span>: {
                             <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],
                             <span class="string">&quot;voteplans&quot;</span>: []
@@ -257,7 +257,7 @@
                     }
                 ]
             )
-        );
+        ));
     }
 }
 </code></pre></div>

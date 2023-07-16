@@ -5,6 +5,14 @@ info:
   title: Catalyst 1.0
   description: |-
     Revised API expressing all capabilities of the Catalyst 1.0 Backend.
+
+    TODO:
+    * Implement Permissionless Auth.
+    * Implement Replacement Functionality for GVC.
+    * Implement drep registration on main-chain, distinct from voter registration.
+    * Implement Voting API abstracting the Jormungandr API from public exposure.
+    * Implement Audit API's (Retrieve voting blockchain records,  registration/voting power audit and private tally audit.
+    * Implement API's needed to support posting Ideas/Proposals etc.
   version: 1.0.0
   contact:
     name: Steven Johnson
@@ -31,7 +39,7 @@ tags:
   - name: search
     description: Search operations.
 servers:
-  - url: 'http://localhost:{port}'
+  - url: 'http://localhost:8080'
     description: Local Testing Only
     variables:
       port:
@@ -45,6 +53,34 @@ servers:
   - url: 'https://prod.xxxxxxxxxxxxxx.io'
     description: Production Environment
 paths:
+  /health/ready:
+    get:
+      operationId: healthReady
+      summary: readiness of the service to accept incoming requests
+      description: |
+        readiness of the service to accept incoming requests
+      responses:
+        '200':
+          description: |
+              Valid response
+          content:
+            application/json:
+              schema:
+                type: boolean
+                description: returns 'true' if service is ready
+  /health/live:
+    get:
+      operationId: healthLive
+      summary: liveness of the service
+      description: liveness of the service
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                type: boolean
+                description: returns 'true' if service is live
   /api/v1/events:
     get:
       operationId: getEvents
@@ -55,8 +91,8 @@ paths:
         Get list of all currently known past, present and future Voting Events.
       responses:
         '200':
+          description: Valid response
           content:
-            description: Valid response
             application/json:
               schema:
                 description: List of all known Voting Events.
@@ -123,7 +159,33 @@ paths:
                       x-stoplight:
                         id: mdciat4uo1xu8
         '404':
-          description: The requested challenge was not found
+          description: The requested objectives was not found
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/voter_groups_filter'
+  /api/v1/event/{id}/objectives/voting_status:
+    parameters:
+      - $ref: '#/components/parameters/event_id'
+    get:
+      operationId: getObjectiveVoteStatuses
+      summary: Get objective`s voting statuses for a Voting Event.
+      tags:
+        - objective
+      description: |-
+        Get all current objective`s voting statuses with the voting settings for the voting event.
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                description: List of objective`s voting statuses.
+                type: array
+                item:
+                 - $ref: '#/components/schemas/VotingStatus'
+        '404':
+          description: The requested objective`s voting statuses was not found
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
@@ -277,7 +339,7 @@ paths:
         - $ref: '#/components/parameters/offset'
         - $ref: '#/components/parameters/total'
     parameters: []
-  /api/v1/registration/voter/{vkey}:
+  /api/v1/registration/voter/{vkey}?event_id={eid}&with_delegators={flag}:
     parameters:
       - name: vkey
         in: path
@@ -285,6 +347,13 @@ paths:
         schema:
           type: string
         description: A Voting Key.
+      - $ref: '#/components/parameters/event_id_filter'
+      - name: with_delegators
+        in: query
+        required: false
+        schema:
+          type: boolean
+        description: Flag to include delegators list in the response.
     get:
       operationId: getVoterInfo
       summary: Get voter's info by voting key
@@ -292,7 +361,8 @@ paths:
         - registration
       description: |
         Get voter's registration and voting power by their voting key.\
-        If the `eid` query parameter is omitted, then the latest voting power is retrieved.
+        If the `event_id` query parameter is omitted, then the latest voting power is retrieved.
+        If the `with_delegators` query parameter is ommitted, then `delegator_addresses` field of `VoterInfo` type does not provided.
       responses:
         '200':
           description: Success
@@ -304,11 +374,10 @@ paths:
           description: There is an error with the request.
         '404':
           description: Voting Key not found for requested event.
-      parameters:
-        - $ref: '#/components/parameters/event_id_filter'
-  /api/v1/registration/delegations/{sp_key}:
+  /api/v1/registration/delegations/{sp_key}?event_id={eid}:
     parameters:
       - $ref: '#/components/parameters/stake_public_key'
+      - $ref: '#/components/parameters/event_id_filter'
     get:
       operationId: getDelegatorInfo
       summary: Get voters info by stake public key
@@ -328,8 +397,6 @@ paths:
           description: An error occurred
         '404':
           description: Stake Address for the event was not found in the snapshot.
-      parameters:
-        - $ref: '#/components/parameters/event_id_filter'
   /api/v1/event/{id}/objective/{obj_id}/proposal/{prop_id}/ballot:
     parameters:
       - $ref: '#/components/parameters/event_id'
@@ -381,7 +448,7 @@ paths:
                       format: int32
                       description: The ID of this proposal.
                     ballot:
-                      type:
+                      schema:
                         $ref: '#/components/schemas/CatalystV1Ballot'
                   required:
                    - proposal_id
@@ -422,14 +489,14 @@ paths:
                             format: int32
                             description: The ID of this proposal.
                           ballot:
-                            type:
+                            schema:
                               $ref: '#/components/schemas/CatalystV1Ballot'
                         required:
                           - proposal_id
                           - ballot
-                    required:
-                      - objective_id
-                      - ballots
+                  required:
+                    - objective_id
+                    - ballots
   /api/v1/ballot/check:
     post:
       summary: Check Ballot Validity
@@ -808,12 +875,6 @@ components:
         - private
         - public
         - cast-private
-      minItems: 1
-      maxItems: 16
-      uniqueItems: true
-      items:
-        type: string
-        minLength: 1
     ObjectiveSupplementalData:
       title: Objective Supplemental Data
       x-stoplight:
@@ -887,6 +948,24 @@ components:
         supplemental:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
       required:
+    VotingStatus:
+      title: Objective`s voting status
+      description: Individual objective`s voting status info
+      type: object
+      properties:
+        objective_id:
+          type: integer
+          format: int32
+          description: The ID of this objective.
+        open:
+          type: boolean
+          description: Whether this objective is open for voting or not.
+        settings:
+          type: string
+          description: voting settings data, empty if `open` is false
+      required:
+        - objective_id
+        - open
     VotePlan:
       title: Vote Plan
       type: object
@@ -912,7 +991,6 @@ components:
           description: The public encryption key used. ONLY if required by the ballot type (private, cast-private).
       required:
         - chain_proposal_index
-        - group
         - chain_voteplan_id
       x-stoplight:
         id: owvld2uvjjnty
@@ -1332,6 +1410,14 @@ components:
           format: float
           minimum: 0
           maximum: 100
+        delegator_addresses:
+          description: |-
+            List of stake public key addresses which delegated to this voting key.
+          type: array
+          items:
+            type: string
+            pattern: '[0-9a-f]{64}'
+            description: Hex string of stake public key address.
       required:
         - voting_power
         - voting_group
@@ -1406,6 +1492,12 @@ components:
           description: |-
             List off delegations made by this stake address.
             In the order as presented in the voters registration.
+        reward_address:
+          type: string
+          description: Reward address for this delegation.
+        reward_payable:
+          type: boolean
+          description: flag which reflects does the `reward_address` valid or not, contains it "addrr" or "addrr_test" prefix or not.
         raw_power:
           type: number
           description: Raw total voting power from stake address
@@ -1550,7 +1642,7 @@ components:
         type: string
       description: Stake Public key
     event_id_filter:
-      name: eid
+      name: event_id
       in: query
       required: false
       schema:

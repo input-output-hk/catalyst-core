@@ -18,6 +18,10 @@
 <a href="#18" id="18">18</a>
 <a href="#19" id="19">19</a>
 <a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::logger::{LogLevel, LOG_LEVEL_DEFAULT};
 <span class="kw">use </span>clap::Args;
 <span class="kw">use </span>std::net::SocketAddr;
@@ -29,6 +33,10 @@
     <span class="doccomment">/// Server binding address
     </span><span class="attr">#[clap(long, default_value = ADDRESS_DEFAULT)]
     </span><span class="kw">pub </span>address: SocketAddr,
+
+    <span class="doccomment">/// Server binding address
+    </span><span class="attr">#[clap(long, default_value = Option::None)]
+    </span><span class="kw">pub </span>metrics_address: <span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
 
     <span class="doccomment">/// Url to the postgres event db
     </span><span class="attr">#[clap(long, env)]

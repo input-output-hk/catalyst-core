@@ -8,7 +8,7 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::types::event::{objective::Objective, voting_status::VotingStatus, EventId};
+use event_db::types::{event::EventId, objective::Objective, voting_status::VotingStatus};
 use std::sync::Arc;
 
 mod ballots;
@@ -40,7 +40,7 @@ pub fn objective(state: Arc<State>) -> Router {
 }
 
 async fn objectives_exec(
-    Path(event): Path<EventId>,
+    Path(SerdeType(event)): Path<SerdeType<EventId>>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<SerdeType<Objective>>, Error> {
@@ -98,7 +98,7 @@ fn mocked_voting_status_data() -> (bool, Option<String>) {
 }
 
 async fn objectives_voting_statuses_exec(
-    Path(event): Path<EventId>,
+    Path(SerdeType(event)): Path<SerdeType<EventId>>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<SerdeType<VotingStatus>>, Error> {

@@ -15,5 +15,5 @@ crate-type = ["staticlib", "cdylib"]
 wallet = { path = "../../wallet" }
 chain-ser = { path = "../../../chain-libs/chain-ser" }
 chain-addr = { path = "../../../chain-libs/chain-addr" }
-chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
+chain-impl-mockchain = { workspace = true }
 wallet-core = { path = "../wallet-core" }

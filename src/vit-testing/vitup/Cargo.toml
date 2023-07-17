@@ -20,11 +20,11 @@ itertools = "0.10.3"
 chain-core           = { path = "../../chain-libs/chain-core" }
 chain-crypto         = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
 chain-addr           = { path = "../../chain-libs/chain-addr", features = [ "property-test-api" ] }
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
+chain-impl-mockchain = { workspace = true, features = [ "property-test-api" ] }
 chain-time           = { path = "../../chain-libs/chain-time" }
 chain-vote           = { path = "../../chain-libs/chain-vote" }
 proptest = { workspace = true }
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 thor = { path = "../../jormungandr/testing/thor" }
 hersir = { path = "../../jormungandr/testing/hersir" }

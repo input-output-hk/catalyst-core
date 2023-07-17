@@ -9,7 +9,7 @@ description = "Data structures and formats used by Jormungandr node API and conf
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }
 serde_with = { version = "2", features = ["macros"] }
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain" }
+chain-impl-mockchain = { workspace = true }
 chain-addr      = { path = "../../chain-libs/chain-addr" }
 chain-core      = { path = "../../chain-libs/chain-core" }
 chain-crypto    = { path = "../../chain-libs/chain-crypto" }
@@ -35,7 +35,7 @@ quickcheck = "0.9"
 quickcheck_macros = "0.9"
 # FIXME required to work with quickcheck 0.9. Remove after migrating another crate or newer quickcheck
 rand07 = { package = "rand", version = "0.7" }
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
+chain-impl-mockchain = { workspace = true, features = [ "property-test-api" ] }
 chain-addr      = { path = "../../chain-libs/chain-addr", features = [ "property-test-api" ] }
 chain-crypto    = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
 ed25519-bip32 = "0.4.1"

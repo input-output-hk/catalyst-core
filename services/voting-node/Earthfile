@@ -52,11 +52,6 @@ docker:
     RUN apt-get clean && \
         rm -rf /var/lib/apt/lists/*
 
-    # We should probably do this by mouting the file at runtime?
-    RUN mkdir -p /root/.ssh && \
-        echo "Host *\n\tStrictHostKeyChecking accept-new" >> /root/.ssh/config && \
-        chmod 644 /root/.ssh/config
-
     # Set the working directory
     WORKDIR /app
 

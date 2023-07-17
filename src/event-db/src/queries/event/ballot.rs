@@ -1,16 +1,16 @@
 use crate::{
     error::Error,
     types::{
-        event::{
+        registration::VoterGroupId,
+        {
             ballot::{
                 Ballot, BallotType, GroupVotePlans, ObjectiveBallots, ObjectiveChoices,
                 ProposalBallot, VotePlan,
             },
+            event::EventId,
             objective::ObjectiveId,
             proposal::ProposalId,
-            EventId,
         },
-        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -94,7 +94,9 @@ impl BallotQueries for EventDB {
         for row in rows {
             voteplans.push(VotePlan {
                 chain_proposal_index: row.try_get("bb_proposal_index")?,
-                group: VoterGroupId(row.try_get("group_id")?),
+                group: row
+                    .try_get::<_, Option<String>>("group_id")?
+                    .map(VoterGroupId),
                 ballot_type: BallotType(row.try_get("category")?),
                 chain_voteplan_id: row.try_get("id")?,
                 encryption_key: row.try_get("encryption_key")?,
@@ -136,7 +138,9 @@ impl BallotQueries for EventDB {
             for row in rows {
                 voteplans.push(VotePlan {
                     chain_proposal_index: row.try_get("bb_proposal_index")?,
-                    group: VoterGroupId(row.try_get("group_id")?),
+                    group: row
+                        .try_get::<_, Option<String>>("group_id")?
+                        .map(VoterGroupId),
                     ballot_type: BallotType(row.try_get("category")?),
                     chain_voteplan_id: row.try_get("id")?,
                     encryption_key: row.try_get("encryption_key")?,
@@ -176,7 +180,9 @@ impl BallotQueries for EventDB {
             for row in rows {
                 voteplans.push(VotePlan {
                     chain_proposal_index: row.try_get("bb_proposal_index")?,
-                    group: VoterGroupId(row.try_get("group_id")?),
+                    group: row
+                        .try_get::<_, Option<String>>("group_id")?
+                        .map(VoterGroupId),
                     ballot_type: BallotType(row.try_get("category")?),
                     chain_voteplan_id: row.try_get("id")?,
                     encryption_key: row.try_get("encryption_key")?,
@@ -240,14 +246,14 @@ mod tests {
                 voteplans: GroupVotePlans(vec![
                     VotePlan {
                         chain_proposal_index: 10,
-                        group: VoterGroupId("direct".to_string()),
+                        group: Some(VoterGroupId("direct".to_string())),
                         ballot_type: BallotType("public".to_string()),
                         chain_voteplan_id: "1".to_string(),
                         encryption_key: None,
                     },
                     VotePlan {
                         chain_proposal_index: 12,
-                        group: VoterGroupId("rep".to_string()),
+                        group: Some(VoterGroupId("rep".to_string())),
                         ballot_type: BallotType("public".to_string()),
                         chain_voteplan_id: "2".to_string(),
                         encryption_key: None,
@@ -276,14 +282,14 @@ mod tests {
                         voteplans: GroupVotePlans(vec![
                             VotePlan {
                                 chain_proposal_index: 10,
-                                group: VoterGroupId("direct".to_string()),
+                                group: Some(VoterGroupId("direct".to_string())),
                                 ballot_type: BallotType("public".to_string()),
                                 chain_voteplan_id: "1".to_string(),
                                 encryption_key: None,
                             },
                             VotePlan {
                                 chain_proposal_index: 12,
-                                group: VoterGroupId("rep".to_string()),
+                                group: Some(VoterGroupId("rep".to_string())),
                                 ballot_type: BallotType("public".to_string()),
                                 chain_voteplan_id: "2".to_string(),
                                 encryption_key: None,
@@ -298,14 +304,14 @@ mod tests {
                         voteplans: GroupVotePlans(vec![
                             VotePlan {
                                 chain_proposal_index: 11,
-                                group: VoterGroupId("direct".to_string()),
+                                group: Some(VoterGroupId("direct".to_string())),
                                 ballot_type: BallotType("public".to_string()),
                                 chain_voteplan_id: "1".to_string(),
                                 encryption_key: None,
                             },
                             VotePlan {
                                 chain_proposal_index: 13,
-                                group: VoterGroupId("rep".to_string()),
+                                group: Some(VoterGroupId("rep".to_string())),
                                 ballot_type: BallotType("public".to_string()),
                                 chain_voteplan_id: "2".to_string(),
                                 encryption_key: None,
@@ -342,14 +348,14 @@ mod tests {
                             voteplans: GroupVotePlans(vec![
                                 VotePlan {
                                     chain_proposal_index: 10,
-                                    group: VoterGroupId("direct".to_string()),
+                                    group: Some(VoterGroupId("direct".to_string())),
                                     ballot_type: BallotType("public".to_string()),
                                     chain_voteplan_id: "1".to_string(),
                                     encryption_key: None,
                                 },
                                 VotePlan {
                                     chain_proposal_index: 12,
-                                    group: VoterGroupId("rep".to_string()),
+                                    group: Some(VoterGroupId("rep".to_string())),
                                     ballot_type: BallotType("public".to_string()),
                                     chain_voteplan_id: "2".to_string(),
                                     encryption_key: None,
@@ -364,14 +370,14 @@ mod tests {
                             voteplans: GroupVotePlans(vec![
                                 VotePlan {
                                     chain_proposal_index: 11,
-                                    group: VoterGroupId("direct".to_string()),
+                                    group: Some(VoterGroupId("direct".to_string())),
                                     ballot_type: BallotType("public".to_string()),
                                     chain_voteplan_id: "1".to_string(),
                                     encryption_key: None,
                                 },
                                 VotePlan {
                                     chain_proposal_index: 13,
-                                    group: VoterGroupId("rep".to_string()),
+                                    group: Some(VoterGroupId("rep".to_string())),
                                     ballot_type: BallotType("public".to_string()),
                                     chain_voteplan_id: "2".to_string(),
                                     encryption_key: None,

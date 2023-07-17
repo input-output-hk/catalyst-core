@@ -384,6 +384,14 @@ OPTIONS:
 
 ```
 
+#### Proposals score calculation
+
+Given a proposal's reviews .csv file (example in `catalyst-toolbox/src/proposal_score/test_data/reviews-example.csv`) calculates proposal's scores values and puts it into the given db sqlite file (example in `catalyst-toolbox/src/proposal_score/test_data/fund9.sqlite3`), particularly into `proposals` table, `proposal_files_url` column.
+```shell
+USAGE:
+    catalyst-toolbox proposal-score --allocated-weight <ALLOCATED_WEIGHT> --not-allocated-weight <NOT_ALLOCATED_WEIGHT> --reviews-path <REVIEWS_PATH> --db-path <DB_PATH>
+```
+
 ## Python scripts
 
 Use an updated version of `python3` and either create a venv or just install the dependencies from the

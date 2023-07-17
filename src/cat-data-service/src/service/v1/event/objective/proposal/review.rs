@@ -8,8 +8,8 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::types::event::{
-    objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview, EventId,
+use event_db::types::{
+    event::EventId, objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview,
 };
 use std::sync::Arc;
 
@@ -21,7 +21,11 @@ pub fn review(state: Arc<State>) -> Router {
 }
 
 async fn reviews_exec(
-    Path((event, objective, proposal)): Path<(EventId, ObjectiveId, ProposalId)>,
+    Path((SerdeType(event), SerdeType(objective), SerdeType(proposal))): Path<(
+        SerdeType<EventId>,
+        SerdeType<ObjectiveId>,
+        SerdeType<ProposalId>,
+    )>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<SerdeType<AdvisorReview>>, Error> {

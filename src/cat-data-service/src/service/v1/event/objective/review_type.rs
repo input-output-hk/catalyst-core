@@ -8,7 +8,7 @@ use axum::{
     routing::get,
     Router,
 };
-use event_db::types::event::{objective::ObjectiveId, review::ReviewType, EventId};
+use event_db::types::{event::EventId, objective::ObjectiveId, review::ReviewType};
 use std::sync::Arc;
 
 pub fn review_type(state: Arc<State>) -> Router {
@@ -21,7 +21,10 @@ pub fn review_type(state: Arc<State>) -> Router {
 }
 
 async fn review_types_exec(
-    Path((event, objective)): Path<(EventId, ObjectiveId)>,
+    Path((SerdeType(event), SerdeType(objective))): Path<(
+        SerdeType<EventId>,
+        SerdeType<ObjectiveId>,
+    )>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
 ) -> Result<Vec<SerdeType<ReviewType>>, Error> {

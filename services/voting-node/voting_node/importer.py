@@ -92,11 +92,11 @@ class ExternalDataImporter:
         # same format that the DBSync snapshot importer CLI expects.
         network_ids = [id.strip() for id in os.environ["SNAPSHOT_NETWORK_IDS"].split(" ")]
 
-        if os.environ["SNAPSHOT_TOOL_SSH"] is not None:
-            snapshot_tool_path = os.environ["SSH_SNAPSHOT_TOOL_PATH"]
-            snapshot_tool_out_dir = os.environ["SSH_SNAPSHOT_TOOL_OUTPUT_DIR"]
-            keyfile_path = os.environ["SSH_SNAPSHOT_TOOL_KEYFILE"]
-            destination = os.environ["SSH_SNAPSHOT_TOOL_DESTINATION"]
+        if os.getenv("SNAPSHOT_TOOL_SSH") is not None:
+            snapshot_tool_path = os.getenv("SSH_SNAPSHOT_TOOL_PATH")
+            snapshot_tool_out_dir = os.getenv("SSH_SNAPSHOT_TOOL_OUTPUT_DIR")
+            keyfile_path = os.getenv("SSH_SNAPSHOT_TOOL_KEYFILE")
+            destination = os.getenv("SSH_SNAPSHOT_TOOL_DESTINATION")
 
             if (
                 snapshot_tool_path is not None

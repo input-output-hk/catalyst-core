@@ -2,7 +2,7 @@ VERSION 0.7
 
 build:
     FROM ../../+builder
-    RUN cargo build --locked --release --bin cat-data-service
+    RUN cargo build --locked --release --bin cat-data-service --features jorm-mock
 
     # Store the artifact
     SAVE ARTIFACT target/release/cat-data-service cat-data-service
@@ -33,6 +33,6 @@ test:
         --load migrations:latest=(../../containers/event-db-migrations+docker --data=test) \
         --service migrations \
         --allow-privileged
-        RUN EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev" cargo test -p cat-data-service
+        RUN EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev" cargo test -p cat-data-service --all-features
     END
 

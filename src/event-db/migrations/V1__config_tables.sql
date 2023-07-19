@@ -41,6 +41,17 @@ Defined  Data Formats:
     `value`->"created" = <Integer Unix Epoch when Token was created>,
     `value`->"expires" = <Integer Unix Epoch when Token will expire>,
     `value`->"perms" = {Permissions assigned to this api key}
+  
+  Community reviewers:
+    `id` = `email`
+    `id2` = `encrypted_password`
+    `id3` = `salt`
+    `value`->"role" = `role`
+    `value`->"name" = `name`
+    `value`->"anonymous_id" = `<anonymous_id of the PA>`
+    `value`->"force_reset" = "<bool used to force reset of password>"
+    `value`->"active" = "<bool used to activate account>"
+    ...
 ';
 
 COMMENT ON COLUMN config.row_id IS

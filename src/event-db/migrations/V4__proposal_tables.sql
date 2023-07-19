@@ -97,7 +97,7 @@ CREATE TABLE proposal_review (
   row_id SERIAL PRIMARY KEY,
   proposal_id INTEGER NOT NULL,
   assessor VARCHAR NOT NULL,
-  assessor_level INTEGER NOT NULL,
+  assessor_level INTEGER,
   reward_address TEXT,
 
   -- These fields are deprecated and WILL BE removed in a future migration.

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["challenge","proposal"],"struct":["ArbitraryValidVotePlanConfig"]};

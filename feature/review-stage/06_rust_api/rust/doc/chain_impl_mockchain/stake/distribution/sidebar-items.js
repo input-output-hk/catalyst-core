@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["assign_account_value","get_distribution"],"struct":["PoolStakeDistribution","PoolStakeInformation","StakeDistribution"]};

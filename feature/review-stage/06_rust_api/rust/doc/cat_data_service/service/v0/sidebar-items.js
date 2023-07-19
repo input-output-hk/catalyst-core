@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["v0"],"mod":["fund"]};

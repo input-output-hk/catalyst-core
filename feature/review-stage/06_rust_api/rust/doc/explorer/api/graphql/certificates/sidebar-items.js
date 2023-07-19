@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Certificate"],"opaque":[""],"struct":["EvmMapping","MintToken","OwnerStakeDelegation","PoolRegistration","PoolRetirement","PoolUpdate","StakeDelegation","Token","UpdateProposal","UpdateVote","VoteCast","VotePlan","VoteTally"],"trait":["AmbiguousIfMoreThanOne"]};

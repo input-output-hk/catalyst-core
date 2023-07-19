@@ -95,6 +95,9 @@ services:
       - TESTNET_DBSYNC_URL=postgres://CHANGE_ME
       - GVC_API_URL=https://CHANGE_ME
       # Remove comments and edit to run snapshot_tool via SSH
+      - DBSYNC_SSH_HOST_KEY=MQo=
+      - DBSYNC_SSH_PRIVKEY=MQo=
+      - DBSYNC_SSH_PUBKEY=MQo=
       # - SNAPSHOT_TOOL_SSH=1
       # - SSH_SNAPSHOT_TOOL_PATH=CHANGE_ME
       # - SSH_SNAPSHOT_TOOL_OUTPUT_DIR=CHANGE_ME

@@ -67,6 +67,27 @@ COMMENT ON COLUMN proposal.extra IS
     "goal"       : <text> - The goal of the proposal is addressed to meet.
     "metrics"    : <text> - The metrics of the proposal or how success will be determined.';
 
+-- Reviewer's levels table
+
+CREATE TABLE reviewer_level (
+    row_id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    total_reward_pct NUMERIC(6,3) CONSTRAINT percentage CHECK (total_reward_pct <= 100 AND total_reward_pct >= 0),
+
+    event_id INTEGER NOT NULL,
+
+    FOREIGN KEY (event_id) REFERENCES event(row_id) ON DELETE CASCADE
+);
+
+COMMENT ON TABLE reviewer_level IS 
+'All levels of reviewers.
+This table represents all different types of reviewer`s levels, which is taken into account during rewarding process.';
+COMMENT ON COLUMN reviewer_level.row_id IS 'Synthetic Unique Key';
+COMMENT ON COLUMN reviewer_level.name IS 'Name of the reviewer level';
+COMMENT ON COLUMN reviewer_level.total_reward_pct IS 
+'Total reviewer`s reward assigned to the specific level, which is defined as a percentage from the total pot of Community Review rewards (See `event.review_rewards` column).';
+COMMENT ON COLUMN reviewer_level.event_id IS 'The specific Event ID this review level is part of.';
+
 -- community advisor reviews
 
 -- I feel like these ratings and notes should be in a  general json field to
@@ -76,6 +97,8 @@ CREATE TABLE proposal_review (
   row_id SERIAL PRIMARY KEY,
   proposal_id INTEGER NOT NULL,
   assessor VARCHAR NOT NULL,
+  assessor_level INTEGER,
+  reward_address TEXT,
 
   -- These fields are deprecated and WILL BE removed in a future migration.
   -- They MUST only be used for Vit-SS compatibility.
@@ -86,14 +109,18 @@ CREATE TABLE proposal_review (
   auditability_rating_given INTEGER,
   auditability_note VARCHAR,
   ranking INTEGER,
+  flags JSONB NULL,
 
-  FOREIGN KEY (proposal_id) REFERENCES proposal(row_id) ON DELETE CASCADE
+  FOREIGN KEY (proposal_id) REFERENCES proposal(row_id) ON DELETE CASCADE,
+  FOREIGN KEY (assessor_level) REFERENCES reviewer_level(row_id) ON DELETE CASCADE
 );
 
 COMMENT ON TABLE proposal_review IS 'All Reviews.';
 COMMENT ON COLUMN proposal_review.row_id IS 'Synthetic Unique Key.';
 COMMENT ON COLUMN proposal_review.proposal_id IS 'The Proposal this review is for.';
 COMMENT ON COLUMN proposal_review.assessor IS 'Assessors Anonymized ID';
+COMMENT ON COLUMN proposal_review.assessor_level IS 'Assessors level ID';
+COMMENT ON COLUMN proposal_review.reward_address IS 'Assessors reward address';
 
 COMMENT ON COLUMN proposal_review.impact_alignment_rating_given IS
 'The  numeric rating assigned to the proposal by the assessor.
@@ -119,6 +146,19 @@ DEPRECATED: Only used for Vit-SS compatibility.';
 COMMENT ON COLUMN proposal_review.ranking IS
 'Numeric  Measure of quality of this review according to veteran community advisors.
 DEPRECATED: Only used for Vit-SS compatibility.
+';
+
+COMMENT ON COLUMN proposal_review.flags IS
+'OPTIONAL: JSON Array which defines the flags raised for this review.
+Flags can be raised for different reasons and have different metadata.
+Each entry =
+```jsonc
+{
+   "flag_type": "<flag_type>", // Enum of the flag type (0: Profanity, 1: Similarity 2: AI generated).
+   "score": <score>, // Profanity score, similarity score, or AI generated score. 0-1.
+   "related_reviews": [<review_id>] // Array of review IDs that this flag is related to (valid for similarity).
+}
+```
 ';
 
 CREATE TABLE review_metric (

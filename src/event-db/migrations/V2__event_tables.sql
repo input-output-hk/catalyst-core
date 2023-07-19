@@ -13,7 +13,9 @@ CREATE TABLE event
     registration_snapshot_time TIMESTAMP,
     snapshot_start TIMESTAMP,
     voting_power_threshold BIGINT,
-    max_voting_power_pct NUMERIC(6,3) CONSTRAINT percentage CHECK (max_voting_power_pct <= 100),
+    max_voting_power_pct NUMERIC(6,3) CONSTRAINT percentage CHECK (max_voting_power_pct <= 100 AND max_voting_power_pct >= 0),
+
+    review_rewards BIGINT,
 
     start_time TIMESTAMP,
     end_time TIMESTAMP,
@@ -60,6 +62,7 @@ NULL = Not yet defined or Not Applicable.';
 COMMENT ON COLUMN event.voting_power_threshold IS
 'The Minimum number of Lovelace staked at the time of snapshot, to be eligible to vote.
 NULL = Not yet defined.';
+COMMENT ON COLUMN event.review_rewards IS 'The total reward pool to pay for community reviewers for their valid reviews of the proposals assigned to this event.';
 COMMENT ON COLUMN event.start_time IS
 'The time (UTC) the event starts.
 NULL = Not yet defined.';

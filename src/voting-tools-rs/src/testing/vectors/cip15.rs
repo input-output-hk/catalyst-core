@@ -1,8 +1,9 @@
+use chrono::NaiveDateTime;
 use serde_json::{json, Value};
 
 use crate::{
     data::{Nonce, PubKey, Registration, RewardsAddress, SignedRegistration, StakeKeyHex, TxId},
-    Sig, Signature, VotingKey,
+    Sig, Signature, SlotNo, VotingKey,
 };
 
 /// CIP-15 test vector voting key
@@ -37,7 +38,8 @@ pub const STAKE_PRIVATE_KEY: &str =
 pub fn vector() -> SignedRegistration {
     SignedRegistration {
         tx_id: TxId(1), // not provided in the test vector
-        slot: 0,
+        slot: SlotNo(0),
+        block_time: NaiveDateTime::MIN,
         registration: Registration {
             voting_key: VotingKey::direct_from_hex(VOTING_KEY).unwrap(),
             stake_key: StakeKeyHex(PubKey::from_hex(STAKE_KEY).unwrap()),

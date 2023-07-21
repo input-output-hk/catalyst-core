@@ -6,6 +6,7 @@ use crate::{
     verify::{is_valid_rewards_address, stake_key_hash, StakeKeyHash},
 };
 use bytekind::{Bytes, HexString};
+use chrono::NaiveDateTime;
 use ciborium::value::Value;
 use clap::builder::OsStr;
 use hex::FromHexError;
@@ -150,7 +151,10 @@ pub struct SignedRegistration {
     pub tx_id: TxId,
 
     /// The slot the registration was found in.
-    pub slot: u64,
+    pub slot: SlotNo,
+
+    /// The block time for the block the registration was found in.
+    pub block_time: NaiveDateTime,
 }
 
 fn ox_hex<T, S>(v: &T, serializer: S) -> Result<S::Ok, S::Error>
@@ -202,7 +206,10 @@ pub struct RawRegistration {
     pub tx_id: TxId,
 
     /// The slot the registration was found in.
-    pub slot: u64,
+    pub slot: SlotNo,
+
+    /// The block time for the block the registration was found in.
+    pub block_time: NaiveDateTime,
 }
 
 impl RawRegistration {
@@ -227,6 +234,7 @@ impl RawRegistration {
             stake_key_hash: stake_key_hash(&registration.stake_key, network_id),
             tx_id: self.tx_id,
             slot: self.slot,
+            block_time: self.block_time,
         })
     }
 
@@ -583,6 +591,12 @@ pub struct SnapshotEntry {
 
     /// Registration transaction id
     pub tx_id: TxId,
+
+    /// Registration slot number
+    pub slot: SlotNo,
+
+    /// Registration block time
+    pub block_time: NaiveDateTime,
 
     /// Registration Nonce
     pub nonce: u64,

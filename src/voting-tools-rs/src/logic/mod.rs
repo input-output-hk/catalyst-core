@@ -106,6 +106,8 @@ fn convert_to_snapshot_entry(
                 voting_purpose,
             },
         tx_id,
+        slot,
+        block_time,
         stake_key_hash,
         ..
     } = registration;
@@ -128,6 +130,8 @@ fn convert_to_snapshot_entry(
         voting_power,
         voting_purpose,
         tx_id,
+        slot,
+        block_time,
         nonce: nonce.0,
     })
 }

@@ -10,6 +10,7 @@ use bigdecimal::{BigDecimal, FromPrimitive};
 use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
 use cardano_serialization_lib::utils::BigNum;
+use chrono::NaiveDateTime;
 use dashmap::DashMap;
 use mainnet_lib::{
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
@@ -96,7 +97,8 @@ impl DataProvider for MockDbProvider {
 
                         SignedRegistration {
                             tx_id: TxId::from(tx_id),
-                            slot: 0,
+                            slot: SlotNo(0),
+                            block_time: NaiveDateTime::MIN,
                             registration: Registration {
                                 voting_key,
                                 stake_key,

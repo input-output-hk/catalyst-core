@@ -13,10 +13,11 @@ use nonempty::nonempty;
 /// DB columns
 const REG_TX_ID: usize = 2;
 const REG_SLOT_NO: usize = 4;
-const REG_JSON: usize = 6;
-const REG_BIN: usize = 7;
-const SIG_JSON: usize = 9;
-const SIG_BIN: usize = 10;
+const REG_BLOCK_TIME: usize = 5;
+const REG_JSON: usize = 7;
+const REG_BIN: usize = 8;
+const SIG_JSON: usize = 10;
+const SIG_BIN: usize = 11;
 
 /// Contains the most recent registration for each public stake address
 pub type Valids = Vec<SignedRegistration>;
@@ -56,6 +57,7 @@ pub fn filter_registrations(
         meta_table.tx_id as reg_tx_id,
         sig_table.tx_id as sig_tx_id,
         block.slot_no,
+        block.time,
         meta_table.key as reg_key,
         meta_table.json as reg_json,
         meta_table.bytes as reg_bytes,
@@ -95,7 +97,8 @@ pub fn filter_registrations(
             bin_reg: row.get(REG_BIN),
             bin_sig: row.get(SIG_BIN),
             tx_id: TxId(tx_id as u64),
-            slot: slot as u64,
+            slot: SlotNo(slot as u64),
+            block_time: row.get(REG_BLOCK_TIME),
         };
 
         // deserialize the raw Binary CBOR.

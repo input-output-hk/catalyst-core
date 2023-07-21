@@ -6,6 +6,7 @@ use crate::{db::inner::DbQuery, Db};
 use crate::data::{SignedRegistration, SlotNo};
 use crate::db::schema::{block, tx, tx_metadata};
 use bigdecimal::{BigDecimal, FromPrimitive};
+use chrono::NaiveDateTime;
 use color_eyre::eyre::{eyre, Result};
 use color_eyre::{Help, Report};
 use diesel::RunQueryDsl;
@@ -128,7 +129,8 @@ fn convert_row((tx_id, metadata, signature, _slot_no): Row) -> Result<SignedRegi
         signature,
         stake_key_hash: vec![0; 29],
         tx_id,
-        slot: 0,
+        slot: SlotNo(0),
+        block_time: NaiveDateTime::MIN,
     })
 }
 

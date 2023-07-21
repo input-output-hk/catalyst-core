@@ -41,9 +41,7 @@ impl Validate for SignedRegistration {
         let SignedRegistration {
             registration,
             signature,
-            stake_key_hash: _,
-            tx_id: _,
-            slot: _,
+            ..
         } = self;
 
         validate_voting_power(&registration.voting_key)?;

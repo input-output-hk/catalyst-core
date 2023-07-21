@@ -1,6 +1,6 @@
 use crate::{
     validation::{cbor::cbor_to_bytes, hash::hash},
-    Sig, Signature, VotingKey, VotingPurpose,
+    Sig, Signature, SlotNo, VotingKey, VotingPurpose,
 };
 
 use super::{
@@ -8,6 +8,7 @@ use super::{
     VotingKeyHex,
 };
 use cardano_serialization_lib::chain_crypto::{AsymmetricKey, Ed25519, SigningAlgorithm};
+use chrono::NaiveDateTime;
 use proptest::{arbitrary::StrategyFor, prelude::*, strategy::Map};
 
 type Inputs = (Nonce, RewardsAddress, VotingKeyHex, [u8; 32], TxId);
@@ -67,7 +68,8 @@ pub(crate) fn arbitrary_signed_registration(
         signature,
         stake_key_hash: vec![0; 29],
         tx_id,
-        slot: 12345,
+        slot: SlotNo(12345),
+        block_time: NaiveDateTime::MIN,
     }
 }
 

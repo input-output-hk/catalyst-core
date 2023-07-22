@@ -54,3 +54,7 @@ path = "src/tally/bin/main.rs"
 [[bin]]
 name = "offline"
 path = "src/offline/bin/main.rs"
+
+[[bin]]
+name = "find"
+path = "src/find/bin/main.rs"

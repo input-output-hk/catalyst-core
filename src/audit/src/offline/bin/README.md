@@ -20,5 +20,3 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 
 ```
 
-#### Find my vote?
-*TODO*

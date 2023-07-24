@@ -60,8 +60,8 @@ class Idea:
     text: str
     author_info: IdeaAuthorInfo
     contributors: List[IdeaAuthorInfo]
-    custom_fields_by_key: Mapping[str, str]
     url: str
+    custom_fields_by_key: Mapping[str, str] = pydantic.Field(default={})
 
     def contributors_name(self) -> List[str]:
         """Get the names of all contributors."""
@@ -210,7 +210,7 @@ class Client:
 
     async def funnel(self, funnel_id: int) -> Funnel:
         """Get the funnel with the given id."""
-        res = await self._get(f"/v1/funnels/{funnel_id}")
+        res = await self._get(f"/a/rest/v1/funnels/{funnel_id}")
         return pydantic.tools.parse_obj_as(Funnel, res)
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:

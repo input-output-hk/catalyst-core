@@ -75,8 +75,4 @@ def import_all(
         await importer.run()
         await importer.close()
 
-    try:
-        asyncio.run(inner(event_id, campaign_group_id, stage_id, proposals_scores_csv, ideascale_api_url))
-    except Exception as e:
-        logger.error(e)
-        raise typer.Exit(1)
+    asyncio.run(inner(event_id, campaign_group_id, stage_id, proposals_scores_csv, ideascale_api_url))

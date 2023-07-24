@@ -270,8 +270,7 @@ class Importer:
 
         client = Client(self.api_token, self.ideascale_api_url)
 
-        groups = [g for g in await client.campaign_groups() if g.name.lower().startswith("fund")]
-
+        groups = await client.campaign_groups()
         if len(groups) == 0:
             logger.warning("No funds found")
             return
@@ -300,10 +299,12 @@ class Importer:
             inserted_objectives_ix = {o.id: o for o in inserted_objectives}
 
             proposals_with_campaign_id = [(a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)) for a in ideas]
+            proposals = []
             for objective_id, p in proposals_with_campaign_id:
-                p.objective = inserted_objectives_ix[objective_id].row_id
+                if objective_id in inserted_objectives_ix:
+                    p.objective = inserted_objectives_ix[objective_id].row_id
+                    proposals.append(p)
 
-            proposals = [p for (_, p) in proposals_with_campaign_id]
             proposal_count = len(proposals)
             await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id", "objective"])
 

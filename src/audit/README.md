@@ -2,9 +2,14 @@
 
 ## Offline audit
 
-### Download Fund State
-Download historical fund state from [here](https://github.com/input-output-hk/catalyst-core) in order to replay the voting event.
+- [ ] Reproduce official results via node replay
+- [ ] Cross reference results with *offline* stateless fragment replay
+- [ ] Verify individual proposal results with cryptographic proofs 
 
+### Download Fund State
+Download historical fund state from [here](https://github.com/input-output-hk/catalyst-core) in order to replay and audit the voting event.
+
+### Reproduce published results
 ### Start and load node with historical state
 
 Pre-requisites
@@ -35,6 +40,8 @@ Takes several minutes to replay state and stabilize before it is possible to ret
 curl http://127.0.0.1:10000/api/v0/vote/active/plans > activevoteplans.json 
 ```
 
+- ✅ Generate results with node replay and compare with *pubished results*
+
 ### Offline fragment analysis and tally
 
 This tool facilitates *offline* fragment analysis of a fund using historical blockchain state.     
@@ -61,6 +68,8 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 ./target/release/offline --fragments $FRAGMENTS_STORAGE --block0 $BLOCK0 --official-results $OFFICIAL_RESULTS
 
 ```
+
+- ✅ Cross reference results with *offline* stateless fragment replay 
 
 This will create three files:
 - *ledger_after_tally.json* **(decrypted ledger state after tally)** *should match official results!*

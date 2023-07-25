@@ -37,7 +37,12 @@ curl http://127.0.0.1:10000/api/v0/vote/active/plans > activevoteplans.json
 
 ### Offline fragment analysis and tally
 
-This tool facilitates *offline* fragment analysis of a fund using historical blockchain state.       
+This tool facilitates *offline* fragment analysis of a fund using historical blockchain state.     
+
+##### Make sure the jormungandr container has been stopped in the context of node replay to re-generate the results.
+```bash
+sudo docker docker stop $JORMUNGANDR_CONTAINER_ID
+```
 
 *Example usage:*
 

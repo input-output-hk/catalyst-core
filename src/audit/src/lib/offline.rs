@@ -1,15 +1,12 @@
-use chain_addr::{AddressReadable, Discrimination};
 use chain_core::{packer::Codec, property::DeserializeFromSlice};
 
 use base64::{engine::general_purpose, Engine};
-use chain_impl_mockchain::{
-    block::Block, chaintypes::HeaderId, fragment::Fragment, transaction::InputEnum,
-};
+use chain_impl_mockchain::{block::Block, chaintypes::HeaderId, fragment::Fragment};
 
 use chain_vote::TallyDecryptShare;
 use color_eyre::Report;
+use jormungandr_lib::interfaces::Address;
 use jormungandr_lib::interfaces::VotePlanStatus;
-use jormungandr_lib::interfaces::{AccountIdentifier, Address};
 
 use ::serde::Deserialize;
 use serde::Deserializer;
@@ -43,12 +40,12 @@ pub enum Error {
 
 #[derive(Serialize, Debug)]
 pub struct Vote {
-    fragment_id: String,
-    caster: Address,
-    proposal: u8,
-    time: String,
-    choice: u8,
-    raw_fragment: String,
+    pub fragment_id: String,
+    pub caster: Address,
+    pub proposal: u8,
+    pub time: String,
+    pub choice: u8,
+    pub raw_fragment: String,
 }
 
 /// Extract fragments from storage
@@ -164,75 +161,6 @@ fn decrypt_shares_to_b64(decrypt_shares: Vec<TallyDecryptShare>) -> Vec<String> 
     shares
 }
 
-/// Did I vote?
-/// Iterate through all vote cast fragments and match the given voters pub key to confirm vote "went through".
-///
-pub fn find_vote(jormungandr_database: &Path, caster_address: String) -> Result<Vec<Vote>, Error> {
-    let db = chain_storage::BlockStore::file(
-        jormungandr_database,
-        HeaderId::zero_hash()
-            .as_bytes()
-            .to_owned()
-            .into_boxed_slice(),
-    )?;
-
-    let caster_address = AddressReadable::from_string(&"ca".to_string(), &caster_address)
-        .unwrap()
-        .to_address();
-
-    // Tag should be present
-    let tip_id = db.get_tag(MAIN_TAG)?.unwrap();
-    let distance = db.get_block_info(tip_id.as_ref())?.chain_length();
-
-    let mut votes = vec![];
-
-    let block_iter = db.iter(tip_id.as_ref(), distance)?;
-
-    for iter_res in block_iter {
-        let block_bin = iter_res?;
-        let mut codec = Codec::new(block_bin.as_ref());
-        let block: Block = DeserializeFromSlice::deserialize_from_slice(&mut codec).unwrap();
-
-        for fragment in block.fragments() {
-            if let Fragment::VoteCast(tx) = fragment {
-                let fragment_id = fragment.hash();
-
-                let input = tx.as_slice().inputs().iter().next().unwrap().to_enum();
-                let caster = if let InputEnum::AccountInput(account_id, _value) = input {
-                    AccountIdentifier::from(account_id)
-                        .into_address(Discrimination::Production, "ca")
-                } else {
-                    return Err(Error::UnhandledInput);
-                };
-                let certificate = tx.as_slice().payload().into_payload();
-
-                let choice = match certificate.payload() {
-                    chain_impl_mockchain::vote::Payload::Public { choice } => choice.as_byte(),
-                    chain_impl_mockchain::vote::Payload::Private { .. } => {
-                        // zeroing data to enable private voting support
-                        // (at least everying exception choice, since it is disabled by design in private vote)
-                        0u8
-                    }
-                };
-
-                let v = Vote {
-                    fragment_id: fragment_id.to_string(),
-                    caster: caster.clone(),
-                    proposal: certificate.proposal_index(),
-                    time: block.header().block_date().to_string(),
-                    raw_fragment: hex::encode(tx.as_ref()),
-                    choice,
-                };
-
-                if caster.clone() == caster_address.clone().into() {
-                    votes.push(v);
-                }
-            }
-        }
-    }
-    Ok(votes)
-}
-
 pub fn json_from_file<T: for<'a> Deserialize<'a>>(path: impl AsRef<Path>) -> color_eyre::Result<T> {
     Ok(serde_json::from_reader(File::open(path)?)?)
 }
@@ -254,8 +182,6 @@ mod tests {
 
     use std::path::PathBuf;
 
-    use super::find_vote;
-
     #[test]
     #[ignore]
     fn test_fragments_extraction() {
@@ -264,18 +190,5 @@ mod tests {
         let path = PathBuf::from("/tmp/fund9-leader-1/persist/leader-1");
 
         let _fragments = extract_fragments_from_storage(&path).unwrap();
-    }
-
-    #[test]
-    #[ignore]
-    fn test_find_vote() {
-        let path = PathBuf::from("/tmp/fund9-leader-1/persist/leader-1");
-
-        // ed25519 public key in bech32 format
-        let pub_key = "ca1qkgkj2twpl77c44nv06zkueuptwn93u5zmcx7dl37vnk5cehyj44jy3nush".to_string();
-
-        let votes = find_vote(&path, pub_key).unwrap();
-
-        println!("votes for voter{:?}", votes);
     }
 }

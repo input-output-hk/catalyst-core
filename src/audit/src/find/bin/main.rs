@@ -3,11 +3,11 @@
 //!
 
 use clap::Parser;
+use lib::find::find_vote;
 use tracing::{info, Level};
 
 use color_eyre::Result;
 
-use lib::offline::find_vote;
 use std::{fs::File, io::BufWriter};
 
 use std::{error::Error, path::PathBuf};

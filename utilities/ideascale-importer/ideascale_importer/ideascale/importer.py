@@ -60,13 +60,22 @@ class Config:
 class ReadConfigException(Exception):
     """Raised when the configuration file cannot be read."""
 
-    ...
+    def __init__(self, cause: str):
+        super().__init__(f"Failed to read config file: {cause}")
 
 
 class ReadProposalsScoresCsv(Exception):
     """Raised when the proposals impact scores csv cannot be read."""
 
-    ...
+    def __init__(self, cause: str):
+        super().__init__(f"Failed to read proposals impact score file: {cause}")
+
+
+class MapObjectiveError(Exception):
+    """Raised when mapping an objective from campaign data fails."""
+
+    def __init__(self, objective_field: str, campaign_field: str, cause: str):
+        super().__init__(f"Failed to map objective '{objective_field}' from campaign '{campaign_field}': {cause}")
 
 
 class Mapper:
@@ -79,7 +88,10 @@ class Mapper:
 
     def map_objective(self, a: Campaign, event_id: int) -> ideascale_importer.db.models.Challenge:
         """Map a IdeaScale campaign into a objective."""
-        reward = parse_reward(a.tagline)
+        try:
+            reward = parse_reward(a.tagline)
+        except InvalidRewardsString as e:
+            raise MapObjectiveError("reward", "tagline", str(e))
 
         return ideascale_importer.db.models.Challenge(
             row_id=0,
@@ -169,7 +181,8 @@ class Reward:
 class InvalidRewardsString(Exception):
     """Raised when the reward string cannot be parsed."""
 
-    ...
+    def __init__(self):
+        super().__init__("Invalid rewards string")
 
 
 def parse_reward(s: str) -> Reward:

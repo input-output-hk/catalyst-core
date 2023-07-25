@@ -210,7 +210,7 @@ class Importer:
         config_path: Optional[str],
         event_id: int,
         campaign_group_id: int,
-        stage_id: int,
+        stage_ids: [int],
         proposals_scores_csv_path: Optional[str],
         ideascale_api_url: str,
     ):
@@ -219,7 +219,7 @@ class Importer:
         self.database_url = database_url
         self.event_id = event_id
         self.campaign_group_id = campaign_group_id
-        self.stage_id = stage_id
+        self.stage_ids = stage_ids
         self.conn: asyncpg.Connection | None = None
         self.ideascale_api_url = ideascale_api_url
 
@@ -285,7 +285,9 @@ class Importer:
             logger.error("Campaign group id does not correspond to any fund campaign group id")
             return
 
-        ideas = await client.stage_ideas(self.stage_id)
+        ideas = []
+        for stage_id in self.stage_ids:
+            ideas.extend(await client.stage_ideas(stage_id=stage_id))
 
         vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, ["yes", "no"])
         mapper = Mapper(vote_options_id, self.config)

@@ -31,7 +31,7 @@ docker run  --net=host -v $MOUNT_PATH --env STORAGE_PATH=$HISTORICAL_STATE --env
 
 Takes several minutes to replay state and stabilize before it is possible to retrieve vote results ⌛
 
-```bash
+
 curl http://127.0.0.1:10000/api/v0/vote/active/plans > activevoteplans.json 
 ```
 

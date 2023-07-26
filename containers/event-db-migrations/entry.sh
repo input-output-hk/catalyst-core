@@ -17,6 +17,8 @@
 # DB_SUPERUSER_PASSWORD - The password of the database superuser
 # DB_USER - The username of the database user
 # DB_USER_PASSWORD - The password of the database user
+# DB_SKIP_HISTORICAL_DATA - If set, historical data will not be added to the database (optional)
+# DB_SKIP_TEST_DATA - If set, test data will not be added to the database (optional)
 # ADMIN_ROLE_PASSWORD - The password of the cat_admin role for graphql
 # ADMIN_USER_PASSWORD - The password of the admin user for graphql
 # ANON_ROLE_PASSWORD - The password of the cat_anon role for graphql
@@ -135,15 +137,20 @@ echo ">>> Running migrations..."
 export DATABASE_URL="postgres://${DB_USER}:${DB_USER_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 ./refinery migrate -e DATABASE_URL -c ./refinery.toml -p ./migrations
 
-# Add historic data from previous funds
-while IFS= read -r -d '' file; do
-    echo "Adding historic data from $file"
-    psql -f "$file"
-done < <(find ./historic_data -name '*.sql' -print0 | sort -z)
+# Add historical data from previous funds
+if [[ -z "${DB_SKIP_HISTORICAL_DATA:-}" ]]; then
+    while IFS= read -r -d '' file; do
+        echo "Adding historic data from $file"
+        psql -f "$file"
+    done < <(find ./historic_data -name '*.sql' -print0 | sort -z)
+fi
+
 # Add test data
-while IFS= read -r -d '' file; do
-    echo "Adding test data from $file"
-    psql -f "$file"
-done < <(find ./test_data -name '*.sql' -print0 | sort -z)
+if [[ -z "${DB_SKIP_TEST_DATA:-}" ]]; then
+    while IFS= read -r -d '' file; do
+        echo "Adding test data from $file"
+        psql -f "$file"
+    done < <(find ./test_data -name '*.sql' -print0 | sort -z)
+fi
 
 echo ">>> Finished entrypoint script"

@@ -16,6 +16,8 @@ CREATE TABLE proposal
     files_url TEXT NOT NULL,
     impact_score BIGINT NOT NULL,
 
+    deleted BOOLEAN NOT NULL DEFAULT FALSE,
+
     extra JSONB,
 
     proposer_name TEXT NOT NULL,
@@ -45,6 +47,7 @@ COMMENT ON COLUMN proposal.funds IS 'How much funds (in the currency of the fund
 COMMENT ON COLUMN proposal.url IS 'A URL with supporting information for the proposal.';
 COMMENT ON COLUMN proposal.files_url IS 'A URL link to relevant files supporting the proposal.';
 COMMENT ON COLUMN proposal.impact_score IS 'The Impact score assigned to this proposal by the Assessors.';
+COMMENT ON COLUMN proposal.deleted IS 'Flag which defines was this proposal deleted from ideascale or not. DEPRECATED: only used for ideascale compatibility.';
 COMMENT ON COLUMN proposal.proposer_name IS 'The proposers name.';
 COMMENT ON COLUMN proposal.proposer_contact IS 'Contact details for the proposer.';
 COMMENT ON COLUMN proposal.proposer_url IS 'A URL with details of the proposer.';

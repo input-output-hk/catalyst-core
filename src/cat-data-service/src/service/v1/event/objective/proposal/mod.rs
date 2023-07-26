@@ -137,6 +137,7 @@ mod tests {
                     "id": 10,
                     "title": "title 1",
                     "summary": "summary 1",
+                    "deleted": false,
                     "funds": 100,
                     "url": "url.xyz",
                     "files": "files.xyz",
@@ -186,16 +187,19 @@ mod tests {
                     "id": 10,
                     "title": "title 1",
                     "summary": "summary 1",
+                    "deleted": false
                 },
                 {
                     "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
+                    "deleted": false
                 },
                 {
                     "id": 30,
                     "title": "title 3",
                     "summary": "summary 3",
+                    "deleted": false
                 }
             ])
         ));
@@ -216,11 +220,13 @@ mod tests {
                     "id": 10,
                     "title": "title 1",
                     "summary": "summary 1",
+                    "deleted": false
                 },
                 {
                     "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
+                    "deleted": false
                 },
             ])
         ));
@@ -241,11 +247,13 @@ mod tests {
                     "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
+                    "deleted": false
                 },
                 {
                     "id": 30,
                     "title": "title 3",
                     "summary": "summary 3",
+                    "deleted": false
                 }
             ])
         ));
@@ -266,6 +274,7 @@ mod tests {
                     "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
+                    "deleted": false
                 },
             ])
         ));

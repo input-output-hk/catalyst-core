@@ -918,11 +918,15 @@ components:
             Long form explanation of this particular objective.\
             *May contain HTML Markup.*\
             *May contain Links to external content or assets.*
+        deleted:
+          type: boolean
+          description: Whether this Objective has been deleted or not.
       required:
         - id
         - type
         - title
         - description
+        - deleted
     ObjectiveDetails:
       title: Objective Details
       x-stoplight:
@@ -1019,10 +1023,14 @@ components:
         summary:
           type: string
           description: Brief description of the proposal.
+        deleted:
+          type: boolean
+          description: Whether this Proposal has been deleted or not.
       required:
         - id
         - title
         - summary
+        - deleted
       x-stoplight:
         id: 149678fbb6bb5
     ProposerDetails:

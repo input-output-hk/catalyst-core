@@ -78,3 +78,5 @@ This will create three files:
 
 [See here for next steps of audit process](src/tally/README.md)
 
+### Find my vote
+[See here for instructions on how to find your voting history](src/find/README.md)

@@ -1,14 +1,16 @@
 use bech32::{self, FromBase32};
 use chain_addr::{Address, Kind};
-use chain_crypto::{AsymmetricPublicKey, Ed25519, PublicKey};
+use chain_crypto::{Ed25519, PublicKey};
 use chain_impl_mockchain::account;
 
-use chain_addr::{AddressReadable, Discrimination};
+use chain_addr::Discrimination;
 use chain_core::{packer::Codec, property::DeserializeFromSlice};
 
 use chain_impl_mockchain::{
     block::Block, chaintypes::HeaderId, fragment::Fragment, transaction::InputEnum,
 };
+
+use tracing::error;
 
 use jormungandr_lib::interfaces::AccountIdentifier;
 
@@ -32,6 +34,9 @@ pub enum Error {
     #[error("Only accounts inputs are supported not Utxos")]
     UnhandledInput,
 
+    #[error("Corrupted key")]
+    CorruptedKey,
+
     #[error("Unable to extract Tally fragment")]
     CorruptedFragments,
 
@@ -46,6 +51,7 @@ pub struct AccountId {
     account: account::Identifier,
 }
 
+/// Generate account identifier from ED25519 Key
 fn id_from_pub(pk: PublicKey<Ed25519>) -> account::Identifier {
     account::Identifier::from(pk)
 }
@@ -88,16 +94,10 @@ impl AccountId {
     }
 }
 
-pub fn bytes_to_pub_key<K: AsymmetricPublicKey>(bytes: &[u8]) -> Result<String, Error> {
-    pub use chain_crypto::bech32::Bech32 as _;
-    let public: chain_crypto::PublicKey<K> = chain_crypto::PublicKey::from_binary(bytes).unwrap();
-    Ok(public.to_bech32_str())
-}
-
 /// Did I vote?
 /// Iterate through all vote cast fragments and match the given voters pub key to confirm vote "went through".
 ///
-pub fn find_vote(jormungandr_database: &Path, caster_address: String) -> Result<Vec<Vote>, Error> {
+pub fn find_vote(jormungandr_database: &Path, voting_key: String) -> Result<Vec<Vote>, Error> {
     let db = chain_storage::BlockStore::file(
         jormungandr_database,
         HeaderId::zero_hash()
@@ -106,9 +106,26 @@ pub fn find_vote(jormungandr_database: &Path, caster_address: String) -> Result<
             .into_boxed_slice(),
     )?;
 
-    let caster_address = AddressReadable::from_string(&"ca".to_string(), &caster_address)
-        .unwrap()
-        .to_address();
+    let decoded_voting_key = match hex::decode(voting_key) {
+        Ok(decoded_key) => decoded_key,
+        Err(err) => {
+            error!("err decoding key {}", err);
+            return Err(Error::CorruptedKey);
+        }
+    };
+
+    let voting_key: PublicKey<Ed25519> = match PublicKey::from_binary(&decoded_voting_key) {
+        Ok(voting_key) => voting_key,
+        Err(err) => {
+            error!("err parsing pub key from bin {}", err);
+            return Err(Error::CorruptedKey);
+        }
+    };
+
+    let caster_address = Address(
+        Discrimination::Production,
+        Kind::Account(voting_key.clone()),
+    );
 
     // Tag should be present
     let tip_id = db.get_tag(MAIN_TAG)?.unwrap();
@@ -167,24 +184,52 @@ pub fn find_vote(jormungandr_database: &Path, caster_address: String) -> Result<
 mod tests {
     use std::path::PathBuf;
 
-    use chain_crypto::Ed25519;
+    use chain_addr::{Address, AddressReadable, Discrimination, Kind};
+    use chain_crypto::{Ed25519, PublicKey};
 
     use crate::find::find_vote;
-
-    use super::{bytes_to_pub_key, AccountId};
 
     #[test]
     #[ignore]
     fn test_account_parser() {
+        // voting key as per CIP-36: 61284 format
+        // random key not from any fund
         let voting_key =
             "f895a6a7f44dd15f7700c60456c93793b1241fdd1c77bbb6cd3fc8a4d24c8c1b".to_string();
 
-        let decoded = hex::decode(voting_key).unwrap();
-        let pub_key = bytes_to_pub_key::<Ed25519>(&decoded).unwrap();
+        // we need to convert this to our internal key representation
+        let decoded_voting_key = hex::decode(voting_key).unwrap();
+        let voting_key: PublicKey<Ed25519> = PublicKey::from_binary(&decoded_voting_key).unwrap();
+        let addr = Address(Discrimination::Production, Kind::Single(voting_key.clone()));
+        let addr_readable = AddressReadable::from_address("ca", &addr);
 
-        let account = AccountId::try_from_str(&pub_key).unwrap();
+        println!("{:?}", addr_readable);
+        assert_eq!(
+            "ca1q0uftf4873xazhmhqrrqg4kfx7fmzfqlm5w80wake5lu3fxjfjxpk6wv3f7".to_string(),
+            addr_readable.to_string()
+        );
+    }
 
-        println!("account {:?}", account.to_url_arg());
+    #[test]
+    #[ignore]
+    fn test_key_transformation() {
+        // test internal key representation transform to 61284 representation
+        // 61284 representation as seen by voter in TX Metadata
+
+        // internal address representation address from fund9
+        let voting_key =
+            "ca1qhjmpfwz2rmck46t3vtjsw7vd3mf9ae0ckqfpa9q5gmzf97j35dg2wapv8u".to_string();
+
+        let voting_key_61824_format = AddressReadable::from_string("ca", &voting_key)
+            .unwrap()
+            .to_address();
+
+        let voting_key = voting_key_61824_format.public_key().unwrap().to_string();
+
+        assert_eq!(
+            voting_key,
+            "e5b0a5c250f78b574b8b17283bcc6c7692f72fc58090f4a0a2362497d28d1a85"
+        );
     }
 
     #[test]
@@ -192,11 +237,12 @@ mod tests {
     fn test_find_vote() {
         let path = PathBuf::from("/tmp/fund9-leader-1/persist/leader-1");
 
-        // ed25519 public key in bech32 format
-        let pub_key = "ca1qkgkj2twpl77c44nv06zkueuptwn93u5zmcx7dl37vnk5cehyj44jy3nush".to_string();
+        // ca1qhjmpfwz2rmck46t3vtjsw7vd3mf9ae0ckqfpa9q5gmzf97j35dg2wapv8u = e5b0a5c250f78b574b8b17283bcc6c7692f72fc58090f4a0a2362497d28d1a85
+        let voting_key =
+            "e5b0a5c250f78b574b8b17283bcc6c7692f72fc58090f4a0a2362497d28d1a85".to_string();
 
-        let votes = find_vote(&path, pub_key).unwrap();
+        let votes = find_vote(&path, voting_key).unwrap();
 
-        println!("votes for voter{:?}", votes);
+        assert_eq!(votes.len(), 286);
     }
 }

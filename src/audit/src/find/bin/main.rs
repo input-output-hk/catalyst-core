@@ -21,9 +21,9 @@ pub struct Args {
     /// Obtain fragments by providing path to historical fund data.
     #[clap(short, long)]
     pub fragments: String,
-    /// pub key of caster
+    /// voting key
     #[clap(short, long)]
-    pub_key: String,
+    voting_key: String,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -53,12 +53,15 @@ fn main() -> Result<(), Box<dyn Error>> {
     let storage_path = PathBuf::from(args.fragments);
 
     // all fragments including tally fragments
-    info!("finding vote metadata of caster {:?}", args.pub_key);
+    info!("finding vote history of voter {:?}", args.voting_key);
 
-    let matched_votes = find_vote(&storage_path, args.pub_key.clone())?;
+    let matched_votes = find_vote(&storage_path, args.voting_key.clone())?;
 
     // record of casters votes
-    let matched_votes_path = PathBuf::from("/tmp/offline").with_extension("casters_votes.json");
+    let matched_votes_path = PathBuf::from("/tmp/offline").with_extension(format!(
+        "voting_history_of_{}.json",
+        args.voting_key.clone()
+    ));
 
     let file = File::options()
         .write(true)
@@ -68,8 +71,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let writer = BufWriter::new(file);
 
     info!(
-        "writing vote metadata of {:?} to {:?}",
-        args.pub_key, matched_votes_path
+        "writing voting history of voter {:?} to {:?}",
+        args.voting_key, matched_votes_path
     );
 
     serde_json::to_writer_pretty(writer, &matched_votes)?;

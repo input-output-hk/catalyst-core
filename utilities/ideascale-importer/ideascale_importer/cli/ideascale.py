@@ -71,8 +71,11 @@ def import_all(
             ideascale_api_url,
         )
 
-        await importer.connect()
-        await importer.run()
-        await importer.close()
+        try:
+            await importer.connect()
+            await importer.run()
+            await importer.close()
+        except Exception as e:
+            logger.error(e)
 
     asyncio.run(inner(event_id, campaign_group_id, stage_ids, proposals_scores_csv, ideascale_api_url))

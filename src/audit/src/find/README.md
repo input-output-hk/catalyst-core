@@ -1,6 +1,6 @@
 ### Find my vote
 
-Retrieve voting key history via offline fragment analysis replay.    
+Retrieve voting key history and metadata via offline fragment analysis replay.    
 
 *Example usage:*
 

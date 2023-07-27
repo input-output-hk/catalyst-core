@@ -2,54 +2,16 @@
 
 ## Offline audit
 
-- [ ] Reproduce official results via node replay
-- [ ] Cross reference results with *offline* stateless fragment replay
-- [ ] Verify individual proposal results with cryptographic proofs 
-
 ### Download Fund State
-Download historical fund state from [here](https://github.com/input-output-hk/catalyst-core) in order to replay and audit the voting event.
+Download historical fund state from [*here*](https://github.com/input-output-hk/catalyst-core) in order to replay and audit the voting event.
 
-### Reproduce published results
-### Start and load node with historical state
+The official published results can be found in this file in the form of **activevoteplans.json**.
 
-Pre-requisites
-- Install [Earthly CLI](https://earthly.dev/get-earthly)
-- Docker or Podman
-- Git
+**activevoteplans.json** = FINAL RESULTS.
 
-```bash
-cd balance
+If you would like to re-generate **activevoteplans.json** yourself, via a live node and historical fragments - [*see here for instructions*](./balance/README.md)
 
-# Mount local path as a volume in the container
-MOUNT_PATH=/tmp/fund9-leader-1:/leader1stuff
-
-HISTORICAL_STATE=/leader1stuff/persist/leader-1
-BLOCK_0=/leader1stuff/artifacts/block0.bin
-
-earthly +build && earthly +docker
-docker run  --net=host -v $MOUNT_PATH --env STORAGE_PATH=$HISTORICAL_STATE --env GENESIS_PATH=$BLOCK_0 jormungandr
-```
-
-### Spin up node to retrieve vote results
-
-```bash
-
-Takes several minutes to replay state and stabilize before it is possible to retrieve vote results ⌛
-
-
-curl http://127.0.0.1:10000/api/v0/vote/active/plans > activevoteplans.json 
-```
-
-- ✅ Generate results with node replay and compare with *pubished results*
-
-### Offline fragment analysis and tally
-
-This tool facilitates *offline* fragment analysis of a fund using historical blockchain state.     
-
-##### Make sure the jormungandr container has been stopped in the context of node replay to re-generate the results.
-```bash
-sudo docker docker stop $JORMUNGANDR_CONTAINER_ID
-```
+If not, you can begin the audit with the following steps.
 
 *Example usage:*
 
@@ -57,7 +19,7 @@ sudo docker docker stop $JORMUNGANDR_CONTAINER_ID
 cargo build --release -p audit
 ```  
 
-*Cross reference offline tallies with **published** catalyst tallies.*
+*Cross reference offline tallies with published catalyst tallies.*
 
 ```bash
 
@@ -69,14 +31,12 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 
 ```
 
-- ✅ Cross reference results with *offline* stateless fragment replay 
-
 This will create three files:
 - *ledger_after_tally.json* **(decrypted ledger state after tally)** *should match official results!*
 - *ledger_before_tally.json* **(encrypted ledger state before tally)** 
 - *decryption_shares.json* **(decryption shares for each proposal)**
 
-[See here for next steps of audit process](src/tally/README.md)
+[*See here for next steps of audit process*](src/tally/README.md)
 
 ### Find my vote
-[See here for instructions on how to find your voting history](src/find/README.md)
+[*See here for instructions on how to find your voting history*](src/find/README.md)

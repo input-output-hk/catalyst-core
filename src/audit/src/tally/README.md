@@ -12,17 +12,32 @@ cargo build --release -p audit
 #### The before state contains the encrypted tallies and the after state contains the decrypted tallies.
 
 I want to verify a proposal:
-- Open *ledger_after_tally.json* and find the proposal id of the the result in question.
-- Open *ledger_before_tally.json* and find the encrypted tally for the proposal id.
-- Open *decryption_shares.json* and find the decryption shares for the proposal id matching the plaintext results.
 
-Get **public keys**
+- Open *ledger_after_tally.json* and find the proposal id of the the result in question.
+
+We need three ingredients to unwind the cryptographic proof.
+- [ ] Encrypted tally
+- [ ] Public keys of committee
+- [ ] Decryption shares
+
+### Encrypted tally
+- Open *ledger_before_tally.json* and find the encrypted tally for the proposal id.
+```bash
+ENCRYPTED_TALLY='yF6iIwbAVAsIBryA+HDWlL8X4G8TCrP1G47O8ossgT3jwrQFAAAAAOzRYqMSRlR0RHwFKLcH+OStqQfWeRLlCPyXvsAjNV0ixJ6FrijYPUnKt8bG6xcQ5ROQmzvTc2MrC47VAYNIU1Ls0WKjEkZUdER8BSi3B/jkrakH1nkS5Qj8l77AIzVdIlQanikT1SrvHlKmDn+9E1stq3uxmlFqm2jSgCVzcKN/'
+```
+
+### Committee Public keys
 
 ```bash
-cd /tmp
-head offline.ledger_before_tally.json 
+Search for *committee_member_keys* in *ledger_before_tally.json* - use the public key associated with the vote plan id where the given proposal id resides.
+
+PUBLIC_KEY_ALICE='ristretto255_memberpk1mrt3dr5vher3jhs7enepaxl65ggsqeu23amm55nxup9h8nqmuqeqwccn78' 
 ```
-We now have **pub keys**, **encrypted tally** and **decryption shares** for the proposal id. It is now possible to verify the result by decrypting the tally from the shares. See below.
+### Decryption shares
+- Open *decryption_shares.json* and find the decryption shares for the proposal id by searching for the plaintext results of the proposal id.
+```bash
+SHARES_ALICE='WDDMb68A6JCVR5UdhDtl7QYrQHSMOFqg44lHcmtB/Q3IfSoqusq+obtC/JJOtDYWadSM9mOXtPwUfwV14hrGAw30MilDYi93ULxgB9JZ8+hlTaCkH4Dr3y3zALLBS6UEWDDMb68A6JCVR5UdhDtl7QYrQHSMOFqg44lHcmtB/Q2Q9hcGlcFVV4QLXxlWOAb1hJT9/2WhM16JXyJ+RC3MAyUKJf2AJJGuENKWyPEROI7ROuiVU6hn/iVIVbGQeO0I'
+```
 
 #### Public use: Validate results 
 #### `decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext`

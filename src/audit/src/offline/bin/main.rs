@@ -1,5 +1,5 @@
 //!
-//! Tool for offline Fragment Analysis
+//! Tool for offline tally
 //!
 
 use chain_ser::deser::Deserialize;
@@ -59,7 +59,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .init();
 
     info!("Audit Tool.");
-    info!("Offline Fragment Analysis.");
+    info!("Starting Offline Tally");
 
     // Load and replay fund fragments from storage
     let storage_path = PathBuf::from(args.fragments);
@@ -69,19 +69,19 @@ fn main() -> Result<(), Box<dyn Error>> {
     let block0 = read_block0(block0_path).unwrap();
 
     // all fragments including tally fragments
-    info!("extract_fragments_from_storage");
+    info!("extracting fragments from storage");
     let all_fragments = extract_fragments_from_storage(&storage_path).unwrap();
 
     // ledger state before tally fragments applied, results are still encrypted. Decrypted results should match results post tally.
     // voting has effectively ended, the results have just not been decrypted yet.
-    info!("ledger_before_tally");
+    info!("ledger_before_tally ⏳");
     let fragments_all = all_fragments.clone();
     let block_zero = block0.clone();
     let ledger_before_tally =
         thread::spawn(move || ledger_before_tally(fragments_all, block_zero).unwrap());
 
     // ledger state after tally fragments applied, results are decrypted i.e encrypted tallies are now plaintext.
-    info!("ledger_after_tally");
+    info!("ledger_after_tally ⏳");
     let fragments_all = all_fragments.clone();
     let block_zero = block0;
     let ledger_after_tally =
@@ -89,7 +89,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let ledger_before_tally = ledger_before_tally.join().unwrap();
     let ledger_after_tally = ledger_after_tally.join().unwrap();
-    info!("ledgers completed");
+    info!("ledger replays completed ⌛");
 
     // decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext
     // use tally tool to validate decrypted results
@@ -107,6 +107,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             .filter(|&(a, b)| a == b)
             .count();
 
+        info!("matching re-generated voteplans with given official vote plans.");
         info!("matches: {}/{}", matches, official_tallies.len());
     }
 
@@ -144,6 +145,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let writer = BufWriter::new(file);
 
     serde_json::to_writer_pretty(writer, &shares_and_results)?;
+
+    info!("saved: /tmp/offline.ledger_before_tally.json 🚀");
+    info!("saved: /tmp/offline.ledger_after_tally.json 🚀");
+    info!("saved: /tmp/offline.decryption_shares.json 🚀");
 
     Ok(())
 }

@@ -65,6 +65,7 @@ pub(crate) fn valid_vote_cast(tx: &TransactionSlice<certificate::VoteCast>) -> b
         || tx.outputs().nb_outputs() != 0)
 }
 
+/// Unpack TX into payload, id and witness
 pub fn deconstruct_account_transaction<P: chain_impl_mockchain::transaction::Payload>(
     transaction: &TransactionSlice<P>,
 ) -> Result<(P, account::Identifier, account::Witness), ValidationError> {
@@ -144,6 +145,7 @@ pub enum ReplayError {
     NotAVotingFragment { id: String },
 }
 
+/// Fragment which has passed validation
 pub struct ValidatedFragment {
     pub fragment: Fragment,
 }

@@ -14,7 +14,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 use std::error;
 use std::{fs::File, path::Path};
-use tracing::warn;
+use tracing::{error, warn};
 
 use crate::recover::recover_ledger_from_fragments;
 
@@ -185,7 +185,7 @@ mod tests {
     #[test]
     #[ignore]
     fn test_fragments_extraction() {
-        // Everytime the test is run, the storage folder get overwritten.
+        // Test over writes storage folder.
         // If you are getting weird errors, tar -xvf to new folder and point path accordingly to reset state.
         let path = PathBuf::from("/tmp/fund9-leader-1/persist/leader-1");
 

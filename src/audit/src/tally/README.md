@@ -28,7 +28,7 @@ ENCRYPTED_TALLY='yF6iIwbAVAsIBryA+HDWlL8X4G8TCrP1G47O8ossgT3jwrQFAAAAAOzRYqMSRlR
 
 ### Committee Public keys
 
-Search for *committee_member_keys* in *ledger_before_tally.json* - use the public key associated with the vote plan id where the given proposal id resides.
+- Search for *committee_member_keys* in *ledger_before_tally.json* - use the public key associated with the vote plan id where the given proposal id resides.
 
 ```bash
 PUBLIC_KEY_ALICE='ristretto255_memberpk1mrt3dr5vher3jhs7enepaxl65ggsqeu23amm55nxup9h8nqmuqeqwccn78' 

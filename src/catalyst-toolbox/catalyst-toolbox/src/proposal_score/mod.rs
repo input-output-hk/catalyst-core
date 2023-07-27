@@ -162,10 +162,13 @@ mod tests {
         let allocated_weight = 0.8;
         let not_allocated_weight = 0.2;
 
-        let db = std::path::PathBuf::from("src/proposal_score/test_data/fund9.sqlite3");
-        let reviews = std::path::PathBuf::from("src/proposal_score/test_data/reviews-example.csv");
+        let proposals_file =
+            std::path::PathBuf::from("src/proposal_score/test_data/proposals.json");
+        let reviews_file =
+            std::path::PathBuf::from("src/proposal_score/test_data/reviews-example.csv");
 
-        let reviews = load::load_reviews_from_csv(&reviews).unwrap();
+        let reviews = load::load_reviews_from_csv(&reviews_file).unwrap();
+        let mut proposals = load::load_proposals_from_json(&proposals_file).unwrap();
 
         for (proposal_id, (aligment_reviews, feasibility_reviews, auditability_reviews)) in reviews
         {
@@ -178,14 +181,18 @@ mod tests {
             )
             .unwrap();
 
-            store::store_scores_in_sqllite_db(
-                &db,
-                proposal_id,
-                aligment_score,
-                feasibility_score,
-                auditability_score,
-            )
-            .unwrap();
+            if let Some(proposal) = proposals.get_mut(&proposal_id) {
+                store::store_score_into_proposal(
+                    proposal,
+                    aligment_score,
+                    feasibility_score,
+                    auditability_score,
+                )
+                .unwrap();
+            }
         }
+
+        store::store_proposals_into_file(&proposals_file, proposals.into_values().collect())
+            .unwrap();
     }
 }

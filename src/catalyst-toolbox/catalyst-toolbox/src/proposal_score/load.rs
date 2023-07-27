@@ -6,9 +6,15 @@ use std::{collections::HashMap, path::Path};
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
+    IO(#[from] std::io::Error),
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
+    #[error(transparent)]
     Csv(#[from] csv::Error),
     #[error("Invalid review type value, should be either 0 or 1, provided: {0}")]
     InvalidReviewType(u32),
+    #[error("Invalid proposal data: {0}")]
+    InvalidProposalData(String),
 }
 
 const ALLOCATED_TYPE: u32 = 1;
@@ -67,16 +73,57 @@ pub fn load_reviews_from_csv(
     Ok(reviews_per_proposal)
 }
 
+pub fn load_proposals_from_json(
+    path: &Path,
+) -> Result<HashMap<ProposalId, serde_json::Value>, Error> {
+    let proposals: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    let mut res = HashMap::new();
+    for proposal in proposals {
+        res.insert(
+            ProposalId(
+                proposal
+                    .get("proposal_id")
+                    .ok_or_else(|| {
+                        Error::InvalidProposalData(
+                            "does not have \"proposal_id\" field".to_string(),
+                        )
+                    })?
+                    .as_str()
+                    .ok_or_else(|| {
+                        Error::InvalidProposalData(
+                            "invalid \"proposal_id\" field type, not a string".to_string(),
+                        )
+                    })?
+                    .parse()
+                    .map_err(|_| {
+                        Error::InvalidProposalData(
+                            "invalid \"proposal_id\" field type, not a string encoded int"
+                                .to_string(),
+                        )
+                    })?,
+            ),
+            proposal,
+        );
+    }
+    Ok(res)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::path::PathBuf;
 
     #[test]
-    fn load_test() {
+    fn load_reviews_test() {
         let file = PathBuf::from("src/proposal_score/test_data/reviews-example.csv");
-
         let res = load_reviews_from_csv(&file).unwrap();
+        println!("{:?}", res);
+    }
+
+    #[test]
+    fn load_proposals_test() {
+        let file = PathBuf::from("src/proposal_score/test_data/proposals.json");
+        let res = load_proposals_from_json(&file).unwrap();
         println!("{:?}", res);
     }
 }

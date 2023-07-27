@@ -91,8 +91,7 @@ pub fn ledger_before_tally(
         .into_iter()
         .filter(|f| !matches!(f, Fragment::VoteTally(_)));
 
-    let (ledger, failed) =
-        recover_ledger_from_fragments(&block0, without_tally_fragments.into_iter())?;
+    let (ledger, failed) = recover_ledger_from_fragments(&block0, without_tally_fragments)?;
     if !failed.is_empty() {
         warn!("{} fragments couldn't be properly processed", failed.len());
     }

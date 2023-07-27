@@ -1,6 +1,6 @@
 ### Find my vote
 
-Retrieve vote metadata given caster pub key      
+Retrieve voting key history via offline fragment analysis replay.    
 
 *Example usage:*
 

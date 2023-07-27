@@ -122,10 +122,7 @@ pub fn find_vote(jormungandr_database: &Path, voting_key: String) -> Result<Vec<
         }
     };
 
-    let caster_address = Address(
-        Discrimination::Production,
-        Kind::Account(voting_key.clone()),
-    );
+    let caster_address = Address(Discrimination::Production, Kind::Account(voting_key));
 
     // Tag should be present
     let tip_id = db.get_tag(MAIN_TAG)?.unwrap();

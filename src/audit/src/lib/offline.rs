@@ -87,10 +87,9 @@ pub fn ledger_before_tally(
     all_fragments: Vec<Fragment>,
     block0: Block,
 ) -> Result<Vec<VotePlanStatus>, Report> {
-    let without_tally_fragments: Vec<Fragment> = all_fragments
+    let without_tally_fragments = all_fragments
         .into_iter()
-        .filter(|f| !matches!(f, Fragment::VoteTally(_)))
-        .collect();
+        .filter(|f| !matches!(f, Fragment::VoteTally(_)));
 
     let (ledger, failed) =
         recover_ledger_from_fragments(&block0, without_tally_fragments.into_iter())?;

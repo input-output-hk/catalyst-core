@@ -1,3 +1,4 @@
+#[allow(clippy::result_large_err)]
 use chain_addr::{Discrimination, Kind};
 use chain_core::property::Fragment as _;
 use chain_crypto::{Ed25519Extended, SecretKey};

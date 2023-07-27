@@ -850,7 +850,9 @@ impl VotePlanManager {
     where
         F: FnMut(&VoteAction),
     {
-        if !cfg!(feature = "audit") && !self.can_committee(block_date) {
+        if cfg!(feature = "audit") {
+            // audit feature enabled - fragment replay has no concept of time. Skip check.
+        } else if !self.can_committee(block_date) {
             return Err(VoteError::NotCommitteeTime {
                 start: self.plan().committee_start(),
                 end: self.plan().committee_end(),

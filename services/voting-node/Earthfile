@@ -46,7 +46,7 @@ docker:
 
     # Install voting-node system dependencies
     RUN apt-get update && \
-        apt-get install -y --no-install-recommends libpq5
+        apt-get install -y --no-install-recommends libpq5 openssh-client
 
     ## apt cleanup
     RUN apt-get clean && \

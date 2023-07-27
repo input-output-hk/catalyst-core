@@ -38,8 +38,6 @@ tags:
     description: Ballot and Voting operations.
   - name: search
     description: Search operations.
-  - name: vit-ss
-    description: VIT-SS backward compatibility endpoints
 servers:
   - url: 'http://localhost:8080'
     description: Local Testing Only
@@ -55,24 +53,6 @@ servers:
   - url: 'https://prod.xxxxxxxxxxxxxx.io'
     description: Production Environment
 paths:
-  /api/v0/fund:
-    get:
-      operationId: getCurrentFund
-      summary: Get available fund
-      tags:
-        - fund
-      description: |
-        Retrieves information on the current treasury fund campaign.
-      responses:
-        '200':
-          description: Valid response
-          content:
-            application/json:
-              schema:
-                allOf:
-                  - $ref: '#/components/schemas/VitSSFund'
-                  - $ref: '#/components/schemas/VitSSNextFundInfo'
-      deprecated: true
   /health/ready:
     get:
       operationId: healthReady
@@ -179,7 +159,33 @@ paths:
                       x-stoplight:
                         id: mdciat4uo1xu8
         '404':
-          description: The requested challenge was not found
+          description: The requested objectives was not found
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+        - $ref: '#/components/parameters/voter_groups_filter'
+  /api/v1/event/{id}/objectives/voting_status:
+    parameters:
+      - $ref: '#/components/parameters/event_id'
+    get:
+      operationId: getObjectiveVoteStatuses
+      summary: Get objective`s voting statuses for a Voting Event.
+      tags:
+        - objective
+      description: |-
+        Get all current objective`s voting statuses with the voting settings for the voting event.
+      responses:
+        '200':
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                description: List of objective`s voting statuses.
+                type: array
+                item:
+                 - $ref: '#/components/schemas/VotingStatus'
+        '404':
+          description: The requested objective`s voting statuses was not found
       parameters:
         - $ref: '#/components/parameters/limit'
         - $ref: '#/components/parameters/offset'
@@ -554,233 +560,6 @@ paths:
       - $ref: '#/components/parameters/event_id'
 components:
   schemas:
-    VitSSFund:
-      description: |-
-        Note, ANY date-time formatted field in this API may report:
-        "1970-01-01T00:00:00Z"
-        Which is The unix Epoch.         This date is to be interpreted that the date-time for the event the  field represents is not yet known.
-        The UI may either not display anything for this field, or TBD or an  equivalent message.
-      properties:
-        id:
-          type: integer
-          format: int32
-          description: Identifier of the fund campaign.
-        fund_name:
-          type: string
-          description: Human-readable name of the fund campaign.
-        fund_goal:
-          type: string
-          description: Description of the campaign's goals.
-        voting_power_info:
-          type: string
-          deprecated: true
-          description: 'Deprecated, same as registration_snapshot_time.'
-        voting_power_threshold:
-          type: integer
-          format: int64
-          description: |
-            Minimal amount of funds required for a valid voter registration.
-            This amount is in lovelace.
-        rewards_info:
-          type: string
-        fund_start_time:
-          type: string
-          format: date-time
-          description: Date and time for the start of the current voting period.
-        fund_end_time:
-          type: string
-          format: date-time
-          description: Date and time for the end of the current voting period.
-        next_fund_start_time:
-          type: string
-          format: date-time
-          description: Date and time for the start of the next voting period.
-        registration_snapshot_time:
-          type: string
-          format: date-time
-          description: Date and time for blockchain state snapshot capturing voter registrations.
-        next_registration_snapshot_time:
-          type: string
-          format: date-time
-          description: Date and time for next blockchain state snapshot capturing voter registrations.
-        chain_vote_plans:
-          type: array
-          items:
-            $ref: '#/components/schemas/VitSSVotePlan'
-          description: Vote plans registered for voting in this fund campaign.
-        groups:
-          type: array
-          items:
-            $ref: '#/components/schemas/VitSSVoterGroup'
-        challenges:
-          type: array
-          items:
-            $ref: '#/components/schemas/VitSSChallenge'
-          description: A list of campaign challenges structuring the proposals.
-        goals:
-          type: array
-          items:
-            $ref: '#/components/schemas/VitSSGoal'
-          description: The list of campaign goals for this fund.
-        insight_sharing_start:
-          type: string
-          format: date-time
-        proposal_submission_start:
-          type: string
-          format: date-time
-        refine_proposals_start:
-          type: string
-          format: date-time
-        finalize_proposals_start:
-          type: string
-          format: date-time
-        proposal_assessment_start:
-          type: string
-          format: date-time
-        assessment_qa_start:
-          type: string
-          format: date-time
-        snapshot_start:
-          type: string
-          format: date-time
-        voting_start:
-          type: string
-          format: date-time
-        voting_end:
-          type: string
-          format: date-time
-        tallying_end:
-          type: string
-          format: date-time
-    VitSSVotePlan:
-      properties:
-        id:
-          type: integer
-          format: int32
-          description: API identifier of the vote plan.
-        chain_voteplan_id:
-          type: string
-          format: hash
-          description: Blockchain ID of the vote plan transaction.
-        chain_vote_start_time:
-          type: string
-          format: date-time
-          description: Date and time for the start of voting on this vote plan.
-        chain_vote_end_time:
-          type: string
-          format: date-time
-          description: Date and time for the end of voting on this vote plan.
-        chain_committee_end_time:
-          type: string
-          format: date-time
-          description: Date and time for the end of tallying on this vote plan.
-        chain_voteplan_payload:
-          type: string
-          description: |
-            Whether the voting is done using the public or the privacy-preserving protocol.
-        fund_id:
-          type: integer
-          format: int32
-          description: The fund ID this vote plan belongs to.
-        voting_token:
-          type: string
-          pattern: '[0-9a-f]{56}(\.[0-9a-f]{1,64})?'
-          description: |
-            The identifier of voting power token used withing this plan.
-    VitSSVoterGroup:
-      type: object
-      properties:
-        id:
-          $ref: '#/components/schemas/VoterGroupId'
-        voting_token:
-          type: string
-          pattern: '[0-9a-f]{56}(\.[0-9a-f]{1,64})?'
-          description: |
-            The identifier of voting power token used withing this group. All vote plans within a
-            group are guaranteed to use the same token.
-    VitSSChallenge:
-      properties:
-        id:
-          type: integer
-          format: int32
-        challenge_type:
-          type: string
-          enum:
-            - simple
-            - community-choice
-        title:
-          type: string
-        description:
-          type: string
-        rewards_total:
-          type: integer
-          format: int64
-        fund_id:
-          type: integer
-          format: int32
-        challenge_url:
-          type: string
-        highlights:
-          type: object
-          properties:
-            sponsor:
-              type: string
-    VitSSGoal:
-      properties:
-        id:
-          type: integer
-          format: int32
-        goal_name:
-          type: string
-        fund_id:
-          type: integer
-          format: int32
-    VitSSNextFundInfo:
-      properties:
-        next:
-          description: |-
-            Note, ANY date-time formatted field in this API may report:
-            "1970-01-01T00:00:00Z"
-            Which is The unix Epoch.         This date is to be interpreted that the date-time for the event the  field represents is not yet known.
-            The UI may either not display anything for this field, or TBD or an  equivalent message.
-          properties:
-            id:
-              type: integer
-              format: int32
-              description: Identifier of the fund campaign.
-            fund_name:
-              type: string
-              description: Human-readable name of the fund campaign.
-            insight_sharing_start:
-              type: string
-              format: date-time
-            proposal_submission_start:
-              type: string
-              format: date-time
-            refine_proposals_start:
-              type: string
-              format: date-time
-            finalize_proposals_start:
-              type: string
-              format: date-time
-            proposal_assessment_start:
-              type: string
-              format: date-time
-            assessment_qa_start:
-              type: string
-              format: date-time
-            snapshot_start:
-              type: string
-              format: date-time
-            voting_start:
-              type: string
-              format: date-time
-            voting_end:
-              type: string
-              format: date-time
-            tallying_end:
-              type: string
-              format: date-time
     DateTime:
       title: DateTime
       x-stoplight:
@@ -1139,11 +918,15 @@ components:
             Long form explanation of this particular objective.\
             *May contain HTML Markup.*\
             *May contain Links to external content or assets.*
+        deleted:
+          type: boolean
+          description: Whether this Objective has been deleted or not.
       required:
         - id
         - type
         - title
         - description
+        - deleted
     ObjectiveDetails:
       title: Objective Details
       x-stoplight:
@@ -1169,6 +952,24 @@ components:
         supplemental:
           $ref: '#/components/schemas/ObjectiveSupplementalData'
       required:
+    VotingStatus:
+      title: Objective`s voting status
+      description: Individual objective`s voting status info
+      type: object
+      properties:
+        objective_id:
+          type: integer
+          format: int32
+          description: The ID of this objective.
+        open:
+          type: boolean
+          description: Whether this objective is open for voting or not.
+        settings:
+          type: string
+          description: voting settings data, empty if `open` is false
+      required:
+        - objective_id
+        - open
     VotePlan:
       title: Vote Plan
       type: object
@@ -1194,7 +995,6 @@ components:
           description: The public encryption key used. ONLY if required by the ballot type (private, cast-private).
       required:
         - chain_proposal_index
-        - group
         - chain_voteplan_id
       x-stoplight:
         id: owvld2uvjjnty
@@ -1223,10 +1023,14 @@ components:
         summary:
           type: string
           description: Brief description of the proposal.
+        deleted:
+          type: boolean
+          description: Whether this Proposal has been deleted or not.
       required:
         - id
         - title
         - summary
+        - deleted
       x-stoplight:
         id: 149678fbb6bb5
     ProposerDetails:

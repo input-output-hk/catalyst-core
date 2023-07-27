@@ -2,6 +2,7 @@ use super::LimitOffset;
 use crate::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{
     extract::{Path, Query},
@@ -38,17 +39,20 @@ pub fn event(state: Arc<State>) -> Router {
         )
 }
 
-async fn event_exec(Path(event): Path<EventId>, state: Arc<State>) -> Result<Event, Error> {
+async fn event_exec(
+    Path(SerdeType(event)): Path<SerdeType<EventId>>,
+    state: Arc<State>,
+) -> Result<SerdeType<Event>, Error> {
     tracing::debug!("event_exec, event: {0}", event.0);
 
-    let event = state.event_db.get_event(event).await?;
+    let event = state.event_db.get_event(event).await?.into();
     Ok(event)
 }
 
 async fn events_exec(
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
-) -> Result<Vec<EventSummary>, Error> {
+) -> Result<Vec<SerdeType<EventSummary>>, Error> {
     tracing::debug!(
         "events_query, limit: {0:?}, offset: {1:?}",
         lim_ofs.limit,
@@ -58,7 +62,10 @@ async fn events_exec(
     let events = state
         .event_db
         .get_events(lim_ofs.limit, lim_ofs.offset)
-        .await?;
+        .await?
+        .into_iter()
+        .map(SerdeType)
+        .collect::<Vec<_>>();
     Ok(events)
 }
 
@@ -307,7 +314,7 @@ mod tests {
         assert_eq!(
             String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
                 .unwrap(),
-            serde_json::to_string(&Vec::<EventSummary>::new()).unwrap()
+            serde_json::to_string(&Vec::<()>::new()).unwrap()
         );
     }
 }

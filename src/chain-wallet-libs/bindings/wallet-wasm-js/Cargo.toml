@@ -21,7 +21,7 @@ default = ["console_error_panic_hook"]
 chain-crypto = { path = "../../../chain-libs/chain-crypto" }
 chain-vote = { path = "../../../chain-libs/chain-vote" }
 chain-core = { path = "../../../chain-libs/chain-core" }
-chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain" }
+chain-impl-mockchain = { workspace = true }
 getrandom = { version = "0.2.2", features = ["js"] }
 rand = "0.8.3"
 rand_chacha = "0.3.0"

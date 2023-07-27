@@ -1,11 +1,13 @@
 """IdeaScale API client."""
 
 import asyncio
+import json
 from pydantic.dataclasses import dataclass
 import pydantic.tools
 from typing import Any, Iterable, List, Mapping
 
 from ideascale_importer import utils
+from ideascale_importer.utils import GetFailed
 
 
 @dataclass
@@ -58,8 +60,8 @@ class Idea:
     text: str
     author_info: IdeaAuthorInfo
     contributors: List[IdeaAuthorInfo]
-    custom_fields_by_key: Mapping[str, str]
     url: str
+    custom_fields_by_key: Mapping[str, str] = pydantic.Field(default={})
 
     def contributors_name(self) -> List[str]:
         """Get the names of all contributors."""
@@ -89,6 +91,14 @@ class Funnel:
     id: int
     name: str
     stages: List[Stage]
+
+
+class StageNotFoundError(Exception):
+    def __init__(self, stage_id: int):
+        self.stage_id = stage_id
+
+    def __str__(self) -> str:
+        return f"No stage found with id {self.stage_id}"
 
 
 class Client:
@@ -173,6 +183,19 @@ class Client:
                     d.done = True
 
         d = WorkerData()
+
+        try:
+            await asyncio.create_task(worker(d))
+        except GetFailed as e:
+            if e.status == 404:
+                content = json.loads(e.content)
+                if content["key"] == "STAGE_NOT_FOUND":
+                    raise StageNotFoundError(stage_id)
+                else:
+                    raise e
+            else:
+                raise e
+
         worker_tasks = [asyncio.create_task(worker(d)) for _ in range(request_workers_count)]
         for task in worker_tasks:
             await task
@@ -187,7 +210,7 @@ class Client:
 
     async def funnel(self, funnel_id: int) -> Funnel:
         """Get the funnel with the given id."""
-        res = await self._get(f"/v1/funnels/{funnel_id}")
+        res = await self._get(f"/a/rest/v1/funnels/{funnel_id}")
         return pydantic.tools.parse_obj_as(Funnel, res)
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:

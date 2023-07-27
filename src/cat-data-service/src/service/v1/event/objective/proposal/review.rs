@@ -1,14 +1,15 @@
 use crate::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{
     extract::{Path, Query},
     routing::get,
     Router,
 };
-use event_db::types::event::{
-    objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview, EventId,
+use event_db::types::{
+    event::EventId, objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview,
 };
 use std::sync::Arc;
 
@@ -20,10 +21,14 @@ pub fn review(state: Arc<State>) -> Router {
 }
 
 async fn reviews_exec(
-    Path((event, objective, proposal)): Path<(EventId, ObjectiveId, ProposalId)>,
+    Path((SerdeType(event), SerdeType(objective), SerdeType(proposal))): Path<(
+        SerdeType<EventId>,
+        SerdeType<ObjectiveId>,
+        SerdeType<ProposalId>,
+    )>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
-) -> Result<Vec<AdvisorReview>, Error> {
+) -> Result<Vec<SerdeType<AdvisorReview>>, Error> {
     tracing::debug!(
         "reviews_query, event:{0} objective: {1}, proposal: {2}",
         event.0,
@@ -34,7 +39,10 @@ async fn reviews_exec(
     let reviews = state
         .event_db
         .get_reviews(event, objective, proposal, lim_ofs.limit, lim_ofs.offset)
-        .await?;
+        .await?
+        .into_iter()
+        .map(SerdeType)
+        .collect();
     Ok(reviews)
 }
 

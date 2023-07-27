@@ -7,7 +7,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jormungandr-lib = { path = "../../jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 jortestkit = { path = "../../../jortestkit" }
 jormungandr-automation = { path = "../jormungandr-automation" }
 rand_core = "0.6"
@@ -16,7 +16,7 @@ thiserror = "1.0"
 clap = { workspace = true }
 assert_fs = "1.0"
 indicatif = "0.15"
-chain-impl-mockchain = { path = "../../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
+chain-impl-mockchain = { workspace = true, features = [ "property-test-api" ] }
 chain-addr      = { path = "../../../chain-libs/chain-addr", features = [ "property-test-api" ] }
 chain-core      = { path = "../../../chain-libs/chain-core" }
 chain-crypto    = { path = "../../../chain-libs/chain-crypto", features = [ "property-test-api" ] }

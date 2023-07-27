@@ -1,7 +1,7 @@
 """IdeaScale CLI commands."""
 
 import asyncio
-from typing import Optional
+from typing import Optional, List
 import typer
 
 from ideascale_importer.ideascale.client import Client
@@ -25,10 +25,10 @@ def import_all(
         envvar="IDEASCALE_CAMPAIGN_GROUP",
         help="IdeaScale campaign group id for the event which data will be imported",
     ),
-    stage_id: int = typer.Option(
+    stage_ids: List[int] = typer.Option(
         ...,
         envvar="IDEASCALE_STAGE_ID",
-        help="IdeaScale stage id for from which proposal data will be imported",
+        help="IdeaScale stage ids for from which proposal data will be imported",
     ),
     proposals_scores_csv: Optional[str] = typer.Option(
         None,
@@ -56,7 +56,7 @@ def import_all(
     async def inner(
         event_id: int,
         campaign_group_id: int,
-        stage_id: int,
+        stage_ids: [int],
         proposals_scores_csv_path: Optional[str],
         ideascale_api_url: str,
     ):
@@ -66,17 +66,16 @@ def import_all(
             None,
             event_id,
             campaign_group_id,
-            stage_id,
+            stage_ids,
             proposals_scores_csv_path,
             ideascale_api_url,
         )
 
-        await importer.connect()
-        await importer.run()
-        await importer.close()
+        try:
+            await importer.connect()
+            await importer.run()
+            await importer.close()
+        except Exception as e:
+            logger.error(e)
 
-    try:
-        asyncio.run(inner(event_id, campaign_group_id, stage_id, proposals_scores_csv, ideascale_api_url))
-    except Exception as e:
-        logger.error(e)
-        raise typer.Exit(1)
+    asyncio.run(inner(event_id, campaign_group_id, stage_ids, proposals_scores_csv, ideascale_api_url))

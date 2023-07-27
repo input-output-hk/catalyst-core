@@ -15,7 +15,7 @@ edition = "2021"
 chain-addr = { path = "../../chain-libs/chain-addr" }
 chain-core = { path = "../../chain-libs/chain-core" }
 chain-crypto = { path = "../../chain-libs/chain-crypto" }
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain" }
+chain-impl-mockchain = { workspace = true }
 chain-network = { path = "../../chain-libs/chain-network" }
 chain-storage   = { path = "../../chain-libs/chain-storage" }
 chain-time      = { path = "../../chain-libs/chain-time" }
@@ -29,7 +29,7 @@ base64 = "0.13.0"
 bech32 = "0.8"
 futures = "0.3.21"
 hex = "0.4"
-jormungandr-lib = { path = "../jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 keynesis = "1.1"
 lazy_static = "1.4"
 linked-hash-map = "0.5"
@@ -76,7 +76,7 @@ local-ip-address = "0.4.9"
 tokio = { version = "^1.15", features = ["full"] }
 quickcheck = "0.9"
 quickcheck_macros = "0.9"
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
+chain-impl-mockchain = { workspace = true, features = [ "property-test-api" ] }
 chain-addr = { path = "../../chain-libs/chain-addr", features = [ "property-test-api" ] }
 chain-crypto = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
 criterion = { version = "0.3", features = ["html_reports", "async_tokio"] }

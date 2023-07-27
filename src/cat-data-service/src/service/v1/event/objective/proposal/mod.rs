@@ -1,16 +1,17 @@
 use crate::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
+    types::SerdeType,
 };
 use axum::{
     extract::{Path, Query},
     routing::get,
     Router,
 };
-use event_db::types::event::{
+use event_db::types::{
+    event::EventId,
     objective::ObjectiveId,
     proposal::{Proposal, ProposalId, ProposalSummary},
-    EventId,
 };
 use std::sync::Arc;
 
@@ -44,10 +45,13 @@ pub fn proposal(state: Arc<State>) -> Router {
 }
 
 async fn proposals_exec(
-    Path((event, objective)): Path<(EventId, ObjectiveId)>,
+    Path((SerdeType(event), SerdeType(objective))): Path<(
+        SerdeType<EventId>,
+        SerdeType<ObjectiveId>,
+    )>,
     lim_ofs: Query<LimitOffset>,
     state: Arc<State>,
-) -> Result<Vec<ProposalSummary>, Error> {
+) -> Result<Vec<SerdeType<ProposalSummary>>, Error> {
     tracing::debug!(
         "proposals_query, event:{0} objective: {1}",
         event.0,
@@ -57,14 +61,21 @@ async fn proposals_exec(
     let proposals = state
         .event_db
         .get_proposals(event, objective, lim_ofs.limit, lim_ofs.offset)
-        .await?;
+        .await?
+        .into_iter()
+        .map(SerdeType)
+        .collect();
     Ok(proposals)
 }
 
 async fn proposal_exec(
-    Path((event, objective, proposal)): Path<(EventId, ObjectiveId, ProposalId)>,
+    Path((SerdeType(event), SerdeType(objective), SerdeType(proposal))): Path<(
+        SerdeType<EventId>,
+        SerdeType<ObjectiveId>,
+        SerdeType<ProposalId>,
+    )>,
     state: Arc<State>,
-) -> Result<Proposal, Error> {
+) -> Result<SerdeType<Proposal>, Error> {
     tracing::debug!(
         "proposal_query, event:{0} objective: {1}, proposal: {2}",
         event.0,
@@ -75,7 +86,8 @@ async fn proposal_exec(
     let proposal = state
         .event_db
         .get_proposal(event, objective, proposal)
-        .await?;
+        .await?
+        .into();
     Ok(proposal)
 }
 
@@ -125,6 +137,7 @@ mod tests {
                     "id": 10,
                     "title": "title 1",
                     "summary": "summary 1",
+                    "deleted": false,
                     "funds": 100,
                     "url": "url.xyz",
                     "files": "files.xyz",
@@ -174,16 +187,19 @@ mod tests {
                     "id": 10,
                     "title": "title 1",
                     "summary": "summary 1",
+                    "deleted": false
                 },
                 {
                     "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
+                    "deleted": false
                 },
                 {
                     "id": 30,
                     "title": "title 3",
                     "summary": "summary 3",
+                    "deleted": false
                 }
             ])
         ));
@@ -204,11 +220,13 @@ mod tests {
                     "id": 10,
                     "title": "title 1",
                     "summary": "summary 1",
+                    "deleted": false
                 },
                 {
                     "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
+                    "deleted": false
                 },
             ])
         ));
@@ -229,11 +247,13 @@ mod tests {
                     "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
+                    "deleted": false
                 },
                 {
                     "id": 30,
                     "title": "title 3",
                     "summary": "summary 3",
+                    "deleted": false
                 }
             ])
         ));
@@ -254,6 +274,7 @@ mod tests {
                     "id": 20,
                     "title": "title 2",
                     "summary": "summary 2",
+                    "deleted": false
                 },
             ])
         ));

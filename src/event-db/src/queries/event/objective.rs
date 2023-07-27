@@ -1,14 +1,14 @@
 use crate::{
     error::Error,
     types::{
-        event::{
-            objective::{
-                Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary,
-                ObjectiveSupplementalData, ObjectiveType, RewardDefintion, VoterGroup,
-            },
-            EventId,
-        },
         registration::VoterGroupId,
+        {
+            event::EventId,
+            objective::{
+                Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType,
+                RewardDefintion, VoterGroup,
+            },
+        },
     },
     EventDB,
 };
@@ -26,7 +26,7 @@ pub trait ObjectiveQueries: Sync + Send + 'static {
 
 impl EventDB {
     const OBJECTIVES_QUERY: &'static str =
-        "SELECT objective.row_id, objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
+        "SELECT objective.row_id, objective.id, objective.title, objective.description, objective.deleted, objective.rewards_currency, objective.rewards_total, objective.extra,
         objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
@@ -67,6 +67,7 @@ impl ObjectiveQueries for EventDB {
                 },
                 title: row.try_get("title")?,
                 description: row.try_get("description")?,
+                deleted: row.try_get("deleted")?,
             };
             let currency: Option<_> = row.try_get("rewards_currency")?;
             let value: Option<_> = row.try_get("rewards_total")?;
@@ -92,9 +93,7 @@ impl ObjectiveQueries for EventDB {
             let details = ObjectiveDetails {
                 groups,
                 reward,
-                supplemental: row
-                    .try_get::<_, Option<serde_json::Value>>("extra")?
-                    .map(ObjectiveSupplementalData),
+                supplemental: row.try_get::<_, Option<serde_json::Value>>("extra")?,
             };
             objectives.push(Objective { summary, details });
         }
@@ -145,6 +144,7 @@ mod tests {
                         },
                         title: "title 1".to_string(),
                         description: "description 1".to_string(),
+                        deleted: false,
                     },
                     details: ObjectiveDetails {
                         groups: vec![
@@ -161,13 +161,13 @@ mod tests {
                             currency: "ADA".to_string(),
                             value: 100
                         }),
-                        supplemental: Some(ObjectiveSupplementalData(json!(
+                        supplemental: Some(json!(
                         {
                             "url": "objective 1 url",
                             "sponsor": "objective 1 sponsor",
                             "video": "objective 1 video"
                         }
-                        ))),
+                        )),
                     }
                 },
                 Objective {
@@ -179,6 +179,7 @@ mod tests {
                         },
                         title: "title 2".to_string(),
                         description: "description 2".to_string(),
+                        deleted: false,
                     },
                     details: ObjectiveDetails {
                         groups: Vec::new(),
@@ -204,6 +205,7 @@ mod tests {
                     },
                     title: "title 1".to_string(),
                     description: "description 1".to_string(),
+                    deleted: false,
                 },
                 details: ObjectiveDetails {
                     groups: vec![
@@ -220,13 +222,13 @@ mod tests {
                         currency: "ADA".to_string(),
                         value: 100
                     }),
-                    supplemental: Some(ObjectiveSupplementalData(json!(
+                    supplemental: Some(json!(
                     {
                         "url": "objective 1 url",
                         "sponsor": "objective 1 sponsor",
                         "video": "objective 1 video"
                     }
-                    ))),
+                    )),
                 }
             },]
         );
@@ -246,6 +248,7 @@ mod tests {
                     },
                     title: "title 2".to_string(),
                     description: "description 2".to_string(),
+                    deleted: false,
                 },
                 details: ObjectiveDetails {
                     groups: Vec::new(),

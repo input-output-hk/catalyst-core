@@ -1,12 +1,9 @@
 use crate::{
     error::Error,
-    types::event::{
+    types::{
+        event::EventId,
         objective::ObjectiveId,
-        proposal::{ProposalDetails, ProposalSummary, ProposalSupplementalDetails},
-    },
-    types::event::{
-        proposal::{Proposal, ProposalId, ProposerDetails},
-        EventId,
+        proposal::{Proposal, ProposalDetails, ProposalId, ProposalSummary, ProposerDetails},
     },
     EventDB,
 };
@@ -32,14 +29,15 @@ pub trait ProposalQueries: Sync + Send + 'static {
 }
 
 impl EventDB {
-    const PROPOSALS_QUERY: &'static str = "SELECT proposal.id, proposal.title, proposal.summary
+    const PROPOSALS_QUERY: &'static str =
+        "SELECT proposal.id, proposal.title, proposal.summary, proposal.deleted
         FROM proposal
         INNER JOIN objective on proposal.objective = objective.row_id
         WHERE objective.event = $1 AND objective.id = $2
         LIMIT $3 OFFSET $4;";
 
     const PROPOSAL_QUERY: &'static str =
-        "SELECT proposal.id, proposal.title, proposal.summary, proposal.extra,
+        "SELECT proposal.id, proposal.title, proposal.summary, proposal.deleted, proposal.extra,
     proposal.funds, proposal.url, proposal.files_url,
     proposal.proposer_name, proposal.proposer_contact, proposal.proposer_url, proposal.public_key
     FROM proposal
@@ -73,26 +71,22 @@ impl ProposalQueries for EventDB {
             payment_key: row.try_get("public_key")?,
         }];
 
-        let proposal_summary = ProposalSummary {
+        let summary = ProposalSummary {
             id: ProposalId(row.try_get("id")?),
             title: row.try_get("title")?,
             summary: row.try_get("summary")?,
+            deleted: row.try_get("deleted")?,
         };
 
-        let proposal_details = ProposalDetails {
+        let details = ProposalDetails {
             proposer,
-            supplemental: row
-                .try_get::<_, Option<serde_json::Value>>("extra")?
-                .map(ProposalSupplementalDetails),
+            supplemental: row.try_get("extra")?,
             funds: row.try_get("funds")?,
             url: row.try_get("url")?,
             files: row.try_get("files_url")?,
         };
 
-        Ok(Proposal {
-            proposal_details,
-            proposal_summary,
-        })
+        Ok(Proposal { details, summary })
     }
 
     async fn get_proposals(
@@ -117,6 +111,7 @@ impl ProposalQueries for EventDB {
                 id: ProposalId(row.try_get("id")?),
                 title: row.try_get("title")?,
                 summary: row.try_get("summary")?,
+                deleted: row.try_get("deleted")?,
             };
 
             proposals.push(summary);
@@ -158,12 +153,13 @@ mod tests {
 
         assert_eq!(
             Proposal {
-                proposal_summary: ProposalSummary {
+                summary: ProposalSummary {
                     id: ProposalId(10),
                     title: String::from("title 1"),
-                    summary: String::from("summary 1")
+                    summary: String::from("summary 1"),
+                    deleted: false,
                 },
-                proposal_details: ProposalDetails {
+                details: ProposalDetails {
                     funds: 100,
                     url: "url.xyz".to_string(),
                     files: "files.xyz".to_string(),
@@ -175,13 +171,13 @@ mod tests {
                             "b7a3c12dc0c8c748ab07525b701122b88bd78f600c76342d27f25e5f92444cde"
                                 .to_string()
                     }],
-                    supplemental: Some(ProposalSupplementalDetails(json!(
+                    supplemental: Some(json!(
                         {
                             "brief": "Brief explanation of a proposal",
                             "goal": "The goal of the proposal is addressed to meet",
                             "importance": "The importance of the proposal",
                         }
-                    ))),
+                    )),
                 }
             },
             proposal
@@ -202,17 +198,20 @@ mod tests {
                 ProposalSummary {
                     id: ProposalId(10),
                     title: String::from("title 1"),
-                    summary: String::from("summary 1")
+                    summary: String::from("summary 1"),
+                    deleted: false
                 },
                 ProposalSummary {
                     id: ProposalId(20),
                     title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                    summary: String::from("summary 2"),
+                    deleted: false
                 },
                 ProposalSummary {
                     id: ProposalId(30),
                     title: String::from("title 3"),
-                    summary: String::from("summary 3")
+                    summary: String::from("summary 3"),
+                    deleted: false
                 }
             ],
             proposal_summary
@@ -228,12 +227,14 @@ mod tests {
                 ProposalSummary {
                     id: ProposalId(10),
                     title: String::from("title 1"),
-                    summary: String::from("summary 1")
+                    summary: String::from("summary 1"),
+                    deleted: false
                 },
                 ProposalSummary {
                     id: ProposalId(20),
                     title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                    summary: String::from("summary 2"),
+                    deleted: false
                 },
             ],
             proposal_summary
@@ -249,12 +250,14 @@ mod tests {
                 ProposalSummary {
                     id: ProposalId(20),
                     title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                    summary: String::from("summary 2"),
+                    deleted: false
                 },
                 ProposalSummary {
                     id: ProposalId(30),
                     title: String::from("title 3"),
-                    summary: String::from("summary 3")
+                    summary: String::from("summary 3"),
+                    deleted: false
                 }
             ],
             proposal_summary
@@ -269,7 +272,8 @@ mod tests {
             vec![ProposalSummary {
                 id: ProposalId(20),
                 title: String::from("title 2"),
-                summary: String::from("summary 2")
+                summary: String::from("summary 2"),
+                deleted: false
             },],
             proposal_summary
         );

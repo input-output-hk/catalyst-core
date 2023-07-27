@@ -3,23 +3,23 @@ name: Build
 on:
   push:
     branches:
-    - main
+      - main
     paths-ignore:
-      - '**.md'
-      - 'src/**/**.md'
-      - 'Makefiles/**'
-      - 'nix/**'
-      - 'book/**'
+      - "**.md"
+      - "src/**/**.md"
+      - "Makefiles/**"
+      - "nix/**"
+      - "book/**"
   pull_request:
     branches:
-    - main
+      - main
     paths-ignore:
-       - '**.md'
-       - 'book/**'
-       - 'src/**/**.md'
-       - 'Makefiles/**'
-       - 'nix/**'
-       - 'book/**'
+      - "**.md"
+      - "book/**"
+      - "src/**/**.md"
+      - "Makefiles/**"
+      - "nix/**"
+      - "book/**"
 
 env:
   RUST_LATEST_STABLE_VERSION: 1.65
@@ -30,10 +30,9 @@ env:
   CARGO_FLAGS: --verbose --locked
   SEGMENT_DOWNLOAD_TIMEOUT_MINS: 15
 
-
 jobs:
   cancel:
-    name: 'Cancel Previous Runs'
+    name: "Cancel Previous Runs"
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
@@ -62,8 +61,17 @@ jobs:
           save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install deps
-        run:
-          sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+        run: sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
+
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
 
       - name: Build on Linux
         run: cargo build --all-features ${{env.CARGO_FLAGS}}
@@ -109,8 +117,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: "C:\\${{ github.event.repository.name }}"
-        run:
-          choco install -y protoc openssl sqlite postgresql14
+        run: choco install -y protoc openssl sqlite postgresql14
 
       - name: Set PostgreSQL env variables
         working-directory: "C:\\${{ github.event.repository.name }}"

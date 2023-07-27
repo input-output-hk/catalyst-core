@@ -1,12 +1,13 @@
 use crate::{
     types::{
-        event::{
-            objective::{ObjectiveId, ObjectiveSummary, ObjectiveType},
-            proposal::{ProposalId, ProposalSummary},
-            EventId, EventSummary,
-        },
         search::{
             SearchConstraint, SearchOrderBy, SearchQuery, SearchResult, SearchTable, ValueResults,
+        },
+        {
+            event::EventId,
+            event::EventSummary,
+            objective::{ObjectiveId, ObjectiveSummary, ObjectiveType},
+            proposal::{ProposalId, ProposalSummary},
         },
     },
     Error, EventDB,
@@ -32,12 +33,12 @@ impl EventDB {
         LEFT JOIN snapshot ON event.row_id = snapshot.event";
 
     const SEARCH_OBJECTIVES_QUERY: &'static str =
-        "SELECT objective.id, objective.title, objective.description, objective_category.name, objective_category.description as objective_category_description
+        "SELECT objective.id, objective.title, objective.description, objective.deleted, objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name";
 
     const SEARCH_PROPOSALS_QUERY: &'static str =
-        "SELECT DISTINCT proposal.id, proposal.title, proposal.summary
+        "SELECT DISTINCT proposal.id, proposal.title, proposal.summary, proposal.deleted
         FROM proposal";
 
     fn build_where_clause(table: &str, filter: &[SearchConstraint]) -> String {
@@ -206,6 +207,7 @@ impl SearchQueries for EventDB {
                             },
                             title: row.try_get("title")?,
                             description: row.try_get("description")?,
+                            deleted: row.try_get("deleted")?,
                         };
                         objectives.push(objective);
                     }
@@ -230,6 +232,7 @@ impl SearchQueries for EventDB {
                             id: ProposalId(row.try_get("id")?),
                             title: row.try_get("title")?,
                             summary: row.try_get("summary")?,
+                            deleted: row.try_get("deleted")?,
                         };
 
                         proposals.push(summary);
@@ -740,6 +743,7 @@ mod tests {
                     },
                     title: "title 1".to_string(),
                     description: "description 1".to_string(),
+                    deleted: false,
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(2),
@@ -749,6 +753,7 @@ mod tests {
                     },
                     title: "title 2".to_string(),
                     description: "description 2".to_string(),
+                    deleted: false,
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(3),
@@ -758,6 +763,7 @@ mod tests {
                     },
                     title: "title 3".to_string(),
                     description: "description 3".to_string(),
+                    deleted: false,
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(4),
@@ -767,6 +773,7 @@ mod tests {
                     },
                     title: "title 4".to_string(),
                     description: "description 4".to_string(),
+                    deleted: false,
                 },
             ]))
         );
@@ -805,6 +812,7 @@ mod tests {
                     },
                     title: "title 4".to_string(),
                     description: "description 4".to_string(),
+                    deleted: false,
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(3),
@@ -814,6 +822,7 @@ mod tests {
                     },
                     title: "title 3".to_string(),
                     description: "description 3".to_string(),
+                    deleted: false,
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(2),
@@ -823,6 +832,7 @@ mod tests {
                     },
                     title: "title 2".to_string(),
                     description: "description 2".to_string(),
+                    deleted: false,
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(1),
@@ -832,6 +842,7 @@ mod tests {
                     },
                     title: "title 1".to_string(),
                     description: "description 1".to_string(),
+                    deleted: false,
                 },
             ]))
         );
@@ -851,6 +862,7 @@ mod tests {
                 },
                 title: "title 4".to_string(),
                 description: "description 4".to_string(),
+                deleted: false,
             },]))
         );
 
@@ -870,6 +882,7 @@ mod tests {
                     },
                     title: "title 3".to_string(),
                     description: "description 3".to_string(),
+                    deleted: false,
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(2),
@@ -879,6 +892,7 @@ mod tests {
                     },
                     title: "title 2".to_string(),
                     description: "description 2".to_string(),
+                    deleted: false,
                 },
                 ObjectiveSummary {
                     id: ObjectiveId(1),
@@ -888,6 +902,7 @@ mod tests {
                     },
                     title: "title 1".to_string(),
                     description: "description 1".to_string(),
+                    deleted: false,
                 },
             ]))
         );
@@ -934,17 +949,20 @@ mod tests {
                 ProposalSummary {
                     id: ProposalId(10),
                     title: String::from("title 1"),
-                    summary: String::from("summary 1")
+                    summary: String::from("summary 1"),
+                    deleted: false
                 },
                 ProposalSummary {
                     id: ProposalId(20),
                     title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                    summary: String::from("summary 2"),
+                    deleted: false,
                 },
                 ProposalSummary {
                     id: ProposalId(30),
                     title: String::from("title 3"),
-                    summary: String::from("summary 3")
+                    summary: String::from("summary 3"),
+                    deleted: false
                 },
             ]))
         );
@@ -978,17 +996,20 @@ mod tests {
                 ProposalSummary {
                     id: ProposalId(30),
                     title: String::from("title 3"),
-                    summary: String::from("summary 3")
+                    summary: String::from("summary 3"),
+                    deleted: false
                 },
                 ProposalSummary {
                     id: ProposalId(20),
                     title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                    summary: String::from("summary 2"),
+                    deleted: false
                 },
                 ProposalSummary {
                     id: ProposalId(10),
                     title: String::from("title 1"),
-                    summary: String::from("summary 1")
+                    summary: String::from("summary 1"),
+                    deleted: false
                 },
             ]))
         );
@@ -1004,12 +1025,14 @@ mod tests {
                 ProposalSummary {
                     id: ProposalId(30),
                     title: String::from("title 3"),
-                    summary: String::from("summary 3")
+                    summary: String::from("summary 3"),
+                    deleted: false
                 },
                 ProposalSummary {
                     id: ProposalId(20),
                     title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                    summary: String::from("summary 2"),
+                    deleted: false
                 },
             ]))
         );
@@ -1025,12 +1048,14 @@ mod tests {
                 ProposalSummary {
                     id: ProposalId(20),
                     title: String::from("title 2"),
-                    summary: String::from("summary 2")
+                    summary: String::from("summary 2"),
+                    deleted: false
                 },
                 ProposalSummary {
                     id: ProposalId(10),
                     title: String::from("title 1"),
-                    summary: String::from("summary 1")
+                    summary: String::from("summary 1"),
+                    deleted: false
                 },
             ]))
         );
@@ -1045,7 +1070,8 @@ mod tests {
             Some(ValueResults::Proposals(vec![ProposalSummary {
                 id: ProposalId(20),
                 title: String::from("title 2"),
-                summary: String::from("summary 2")
+                summary: String::from("summary 2"),
+                deleted: false
             },]))
         );
 

@@ -19,7 +19,7 @@ const DATABASE_URL_ENVVAR: &str = "EVENT_DB_URL";
 
 /// Database version this crate matches.
 /// Must equal the last Migrations Version Number.
-pub const DATABASE_SCHEMA_VERSION: i32 = 9;
+pub const DATABASE_SCHEMA_VERSION: i32 = 10;
 
 #[allow(unused)]
 /// Connection to the Election Database

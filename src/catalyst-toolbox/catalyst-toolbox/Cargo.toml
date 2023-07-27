@@ -26,11 +26,11 @@ chain-crypto = { path = "../../chain-libs/chain-crypto" }
 chain-ser = { path = "../../chain-libs/chain-ser" }
 chain-storage = { path = "../../chain-libs/chain-storage" }
 chain-time = { path = "../../chain-libs/chain-time" }
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain" }
+chain-impl-mockchain = { workspace = true }
 time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
 itertools = "0.10"
 jcli = { path = "../../jormungandr/jcli" }
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 jormungandr-integration-tests = { path = "../../jormungandr/testing/jormungandr-integration-tests" }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 thor = { path = "../../jormungandr/testing/thor" }
@@ -64,6 +64,7 @@ snapshot-lib = { path = "../snapshot-lib" }
 fraction = "0.12"
 tracing.workspace = true
 tracing-subscriber.workspace = true
+rusqlite = { version = "0.29.0", features = ["bundled"] }
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib", optional = true }
 
 [dev-dependencies]

@@ -14,7 +14,7 @@ clap = { workspace = true }
 walkdir = "2.3.1"
 scheduler-service-lib = { path = "../scheduler-service-lib"}
 jortestkit = { path = "../../jortestkit" }
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 chain-addr = { path = "../../chain-libs/chain-addr" }
 catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features=["test-api"]}
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib" }

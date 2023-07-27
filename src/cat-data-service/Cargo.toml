@@ -13,6 +13,8 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["fmt"]}
 
 serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+serde_with = { version = "2", features = ["macros"] }
 
 tokio = { version = "1.8", features = ["rt", "macros", "rt-multi-thread"] }
 thiserror = { version = "1.0" }
@@ -22,9 +24,18 @@ metrics-exporter-prometheus = { version = "0.8" }
 
 tower-http = { version = "0.4", features = ["cors"] }
 
-[dev-dependencies]
-serde_json = { version = "1.0" }
-tower = { version = "0.4", features = ["util"] }
-chrono = { workspace = true }
 rust_decimal = {  workspace = true }
 
+chrono = { workspace = true }
+
+jormungandr-lib = { workspace = true, optional = true }
+chain-impl-mockchain = { workspace = true, optional = true }
+
+quickcheck = { version = "0.9", optional = true }
+quickcheck_macros = { version = "0.9", optional = true }
+
+[dev-dependencies]
+tower = { version = "0.4", features = ["util"] }
+
+[features]
+jorm-mock = ["jormungandr-lib", "chain-impl-mockchain/property-test-api", "quickcheck", "quickcheck_macros"]

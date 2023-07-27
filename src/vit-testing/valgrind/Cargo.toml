@@ -8,7 +8,7 @@ edition = "2018"
 [dependencies]
 clap = { workspace = true }
 
-jormungandr-lib = { path = "../../jormungandr/jormungandr-lib" }
+jormungandr-lib = { workspace = true }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 wallet = { path = "../../chain-wallet-libs/wallet" }
 wallet-core = { path = "../../chain-wallet-libs/bindings/wallet-core" }
@@ -27,7 +27,7 @@ vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicin
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
 chain-core           = { path = "../../chain-libs/chain-core" }
 chain-crypto         = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
-chain-impl-mockchain = { path = "../../chain-libs/chain-impl-mockchain", features = [ "property-test-api" ] }
+chain-impl-mockchain = { workspace = true, features = [ "property-test-api" ] }
 chain-ser  = { path = "../../chain-libs/chain-ser" }
 chain-time = { path = "../../chain-libs/chain-time" }
 chain-vote = { path = "../../chain-libs/chain-vote" }

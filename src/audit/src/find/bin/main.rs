@@ -58,10 +58,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let matched_votes = find_vote(&storage_path, args.voting_key.clone())?;
 
     // record of casters votes
-    let matched_votes_path = PathBuf::from("/tmp/offline").with_extension(format!(
-        "voting_history_of_{}.json",
-        args.voting_key.clone()
-    ));
+    let matched_votes_path = PathBuf::from("/tmp/offline")
+        .with_extension(format!("voting_history_of_{}.json", args.voting_key));
 
     let file = File::options()
         .write(true)

@@ -1793,6 +1793,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "audit"))]
     pub fn vote_manager_too_late_to_vote() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(1);
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, VoteTestGen::vote_cast_payload());

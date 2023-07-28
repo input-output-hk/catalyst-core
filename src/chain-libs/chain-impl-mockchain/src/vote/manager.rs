@@ -1822,6 +1822,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "audit"))]
     pub fn vote_manager_too_early_to_vote() {
         let vote_plan = VotePlan::new(
             BlockDate::from_epoch_slot_id(1, 0),

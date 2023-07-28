@@ -27,7 +27,7 @@ pub fn store_score_into_proposal(
             .ok_or_else(|| {
                 Error::InvalidProposalData("data inside \"files_url\" not a string".to_string())
             })?
-            .replace("'", "\"")
+            .replace('\'', "\"")
             .as_str(),
     )?;
 

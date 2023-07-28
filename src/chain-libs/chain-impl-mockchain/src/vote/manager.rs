@@ -1254,6 +1254,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "audit"))]
     pub fn vote_plan_manager_tally_invalid_date_public() {
         let (
             _,
@@ -1288,6 +1289,8 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "audit"))]
+
     pub fn vote_plan_manager_tally_invalid_date_private() {
         let (
             members,
@@ -1324,6 +1327,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(feature = "audit"))]
     fn vote_plan_manager_tally_invalid_date_setup(
         payload_type: PayloadType,
     ) -> (

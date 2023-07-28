@@ -41,7 +41,7 @@ pub fn store_score_into_proposal(
         auditability_score.0.into(),
     );
 
-    *files_url_data = files_url_object.to_string().into();
+    *files_url_data = files_url_object.to_string().replace('"', "'").into();
 
     Ok(())
 }
@@ -89,7 +89,7 @@ mod tests {
                             "feasibility_score": 0.9,
                             "auditability_score": 2.5
                         }
-                    ).to_string()
+                    ).to_string().replace('"', "'")
                 }
             )
         )

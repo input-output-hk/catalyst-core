@@ -386,10 +386,10 @@ OPTIONS:
 
 #### Proposals score calculation
 
-Given a proposal's reviews .csv file (example in `catalyst-toolbox/src/proposal_score/test_data/reviews-example.csv`) calculates proposal's scores values and puts it into the given db sqlite file (example in `catalyst-toolbox/src/proposal_score/test_data/fund9.sqlite3`), particularly into `proposals` table, `proposal_files_url` column.
+Given a proposal's reviews .csv file (example in `catalyst-toolbox/src/proposal_score/test_data/reviews-example.csv`) calculates proposal's scores values and updates the provided file (example in `catalyst-toolbox/src/proposal_score/test_data/proposals.json`) (which should already contain some information about proposals), particularly into `files_url` field, extended json encoded object with the new fields.
 ```shell
 USAGE:
-    catalyst-toolbox proposal-score --allocated-weight <ALLOCATED_WEIGHT> --not-allocated-weight <NOT_ALLOCATED_WEIGHT> --reviews-path <REVIEWS_PATH> --db-path <DB_PATH>
+    catalyst-toolbox proposal-score --allocated-weight <ALLOCATED_WEIGHT> --not-allocated-weight <NOT_ALLOCATED_WEIGHT> --reviews-path <REVIEWS_PATH> --proposals-path <PROPOSALS_PATH>
 ```
 
 ## Python scripts

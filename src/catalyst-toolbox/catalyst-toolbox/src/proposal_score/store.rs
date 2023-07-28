@@ -1,4 +1,4 @@
-use super::{AligmentScore, AuditabilityScore, FeasibilityScore};
+use super::{AlignmentScore, AuditabilityScore, FeasibilityScore};
 use std::{fs::File, path::Path, str::FromStr};
 
 #[derive(thiserror::Error, Debug)]
@@ -13,7 +13,7 @@ pub enum Error {
 
 pub fn store_score_into_proposal(
     proposal: &mut serde_json::Value,
-    aligment_score: AligmentScore,
+    alignment_score: AlignmentScore,
     feasibility_score: FeasibilityScore,
     auditability_score: AuditabilityScore,
 ) -> Result<(), Error> {
@@ -34,7 +34,7 @@ pub fn store_score_into_proposal(
     let values = files_url_object.as_object_mut().ok_or_else(|| {
         Error::InvalidProposalData("data inside \"files_url\" not json encoded".to_string())
     })?;
-    values.insert("aligment_score".to_string(), aligment_score.0.into());
+    values.insert("alignment_score".to_string(), alignment_score.0.into());
     values.insert("feasibility_score".to_string(), feasibility_score.0.into());
     values.insert(
         "auditability_score".to_string(),
@@ -73,7 +73,7 @@ mod tests {
 
         store_score_into_proposal(
             &mut proposal,
-            AligmentScore(0.8),
+            AlignmentScore(0.8),
             FeasibilityScore(0.9),
             AuditabilityScore(2.5),
         )
@@ -85,7 +85,7 @@ mod tests {
                     "files_url": serde_json::json!(
                         {
                             "some_data": "data",
-                            "aligment_score": 0.8,
+                            "alignment_score": 0.8,
                             "feasibility_score": 0.9,
                             "auditability_score": 2.5
                         }

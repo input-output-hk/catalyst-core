@@ -33,13 +33,13 @@ impl ProposalScore {
         let mut proposals =
             catalyst_toolbox::proposal_score::load::load_proposals_from_json(&self.proposals_path)?;
 
-        for (proposal_id, (aligment_reviews, feasibility_reviews, auditability_reviews)) in reviews
+        for (proposal_id, (alignment_reviews, feasibility_reviews, auditability_reviews)) in reviews
         {
-            let (aligment_score, feasibility_score, auditability_score) =
+            let (alignment_score, feasibility_score, auditability_score) =
                 catalyst_toolbox::proposal_score::calc_score(
                     self.allocated_weight,
                     self.not_allocated_weight,
-                    &aligment_reviews,
+                    &alignment_reviews,
                     &feasibility_reviews,
                     &auditability_reviews,
                 )?;
@@ -49,7 +49,7 @@ impl ProposalScore {
             })?;
             catalyst_toolbox::proposal_score::store::store_score_into_proposal(
                 proposal,
-                aligment_score,
+                alignment_score,
                 feasibility_score,
                 auditability_score,
             )?;

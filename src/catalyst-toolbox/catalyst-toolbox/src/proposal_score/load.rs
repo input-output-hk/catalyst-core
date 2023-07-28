@@ -1,4 +1,4 @@
-use super::{AligmentReviews, AuditabilityReviews, FeasibilityReviews, ProposalId, Review};
+use super::{AlignmentReviews, AuditabilityReviews, FeasibilityReviews, ProposalId, Review};
 use crate::utils;
 use serde::Deserialize;
 use std::{collections::HashMap, path::Path};
@@ -37,7 +37,7 @@ pub struct ReviewsRow {
 
 pub fn load_reviews_from_csv(
     path: &Path,
-) -> Result<HashMap<ProposalId, (AligmentReviews, FeasibilityReviews, AuditabilityReviews)>, Error>
+) -> Result<HashMap<ProposalId, (AlignmentReviews, FeasibilityReviews, AuditabilityReviews)>, Error>
 {
     let rows: Vec<ReviewsRow> = utils::csv::load_data_from_csv::<_, b','>(path)?;
     let mut reviews_per_proposal = HashMap::new();
@@ -52,7 +52,7 @@ pub fn load_reviews_from_csv(
         let reviews = reviews_per_proposal
             .entry(ProposalId(row.proposal_id))
             .or_insert((
-                AligmentReviews(Vec::new()),
+                AlignmentReviews(Vec::new()),
                 FeasibilityReviews(Vec::new()),
                 AuditabilityReviews(Vec::new()),
             ));
@@ -73,39 +73,40 @@ pub fn load_reviews_from_csv(
     Ok(reviews_per_proposal)
 }
 
+fn retrieve_proposal_id(proposal: &serde_json::Value) -> Result<ProposalId, Error> {
+    Ok(ProposalId(
+        proposal
+            .get("proposal_id")
+            .ok_or_else(|| {
+                Error::InvalidProposalData("does not have \"proposal_id\" field".to_string())
+            })?
+            .as_str()
+            .ok_or_else(|| {
+                Error::InvalidProposalData(
+                    "invalid \"proposal_id\" field type, not a string".to_string(),
+                )
+            })?
+            .parse()
+            .map_err(|_| {
+                Error::InvalidProposalData(
+                    "invalid \"proposal_id\" field type, not a string encoded int".to_string(),
+                )
+            })?,
+    ))
+}
+
 pub fn load_proposals_from_json(
     path: &Path,
 ) -> Result<HashMap<ProposalId, serde_json::Value>, Error> {
     let proposals: Vec<serde_json::Value> = serde_json::from_str(&std::fs::read_to_string(path)?)?;
-    let mut res = HashMap::new();
-    for proposal in proposals {
-        res.insert(
-            ProposalId(
-                proposal
-                    .get("proposal_id")
-                    .ok_or_else(|| {
-                        Error::InvalidProposalData(
-                            "does not have \"proposal_id\" field".to_string(),
-                        )
-                    })?
-                    .as_str()
-                    .ok_or_else(|| {
-                        Error::InvalidProposalData(
-                            "invalid \"proposal_id\" field type, not a string".to_string(),
-                        )
-                    })?
-                    .parse()
-                    .map_err(|_| {
-                        Error::InvalidProposalData(
-                            "invalid \"proposal_id\" field type, not a string encoded int"
-                                .to_string(),
-                        )
-                    })?,
-            ),
-            proposal,
-        );
-    }
-    Ok(res)
+    proposals
+        .into_iter()
+        .map(
+            |proposal| -> Result<(ProposalId, serde_json::Value), Error> {
+                Ok((retrieve_proposal_id(&proposal)?, proposal))
+            },
+        )
+        .collect()
 }
 
 #[cfg(test)]
@@ -118,6 +119,15 @@ mod tests {
         let file = PathBuf::from("src/proposal_score/test_data/reviews-example.csv");
         let res = load_reviews_from_csv(&file).unwrap();
         println!("{:?}", res);
+    }
+
+    #[test]
+    fn retrieve_proposal_id_test() {
+        let proposal = serde_json::json!({
+            "proposal_id": "32",
+        });
+        let proposal_id = retrieve_proposal_id(&proposal).unwrap();
+        assert_eq!(proposal_id, ProposalId(32));
     }
 
     #[test]

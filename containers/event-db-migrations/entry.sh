@@ -149,10 +149,10 @@ fi
 
 # Add stage specific data to the DB when initialized.
 if [[ -z "${DB_SKIP_STAGE_DATA:-}" ]]; then
-    if [[ -d "$STAGE_DATA" ]]; then
-        STAGE_DATA = "./stage_data/$STAGE"
+    if [[ -n "$STAGE" ]]; then
+        STAGE_DATA="./stage_data/$STAGE"
     else
-        STAGE_DATA = "./stage_data/local"
+        STAGE_DATA="./stage_data/local"
     fi
 
     while IFS= read -r -d '' file; do

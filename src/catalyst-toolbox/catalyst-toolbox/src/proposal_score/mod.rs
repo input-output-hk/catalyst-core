@@ -53,7 +53,11 @@ pub struct Review {
 }
 
 fn review_weight(weight: f64, reviews_amount: usize) -> f64 {
-    weight / reviews_amount as f64
+    if reviews_amount != 0 {
+        weight / reviews_amount as f64
+    } else {
+        0.0
+    }
 }
 
 /// weighted average score calculation

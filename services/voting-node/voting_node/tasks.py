@@ -65,7 +65,6 @@ LEADER0_NODE_SCHEDULE: Final = [
     "set_node_secret",
     "set_node_topology_key",
     "set_node_config",
-    "wait_for_registration_snapshot_time",
     "import_snapshot_data",
     "collect_snapshot_data",
     "setup_tally_committee",
@@ -473,17 +472,6 @@ class Leader0Schedule(LeaderSchedule):
             event = await self.db.fetch_upcoming_event()
             logger.debug("current event retrieved from DB")
             self.node.event = event
-
-    async def wait_for_registration_snapshot_time(self):
-        """Wait for the event registration_snapshot_time."""
-        # get the snapshot start timestamp
-        # raises an exception otherwise
-        snapshot_time = self.node.get_registration_snapshot_time()
-        # check if now is after the snapshot start time
-        if not self.node.has_registration_ended():
-            raise Exception(f"registration snapshot time will be stable on {snapshot_time} UTC")
-
-        logger.debug("registration snapshot time reached.")
 
     async def import_snapshot_data(self):
         """Collect the snapshot data from EventDB."""

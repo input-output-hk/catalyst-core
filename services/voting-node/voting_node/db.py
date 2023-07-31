@@ -192,7 +192,7 @@ class EventDb(BaseModel):
 
     async def fetch_voteplans(self, event_id: int) -> list[VotePlan]:
         """Fetch the voteplans for the event_id."""
-        query = "SELECT * FROM voteplan WHERE event_id = $1 ORDER BY id ASC"
+        query = "SELECT * FROM voteplan WHERE objective_id IN (SELECT row_id FROM objective WHERE event = $1) ORDER BY id ASC"
         result = await self.conn().fetch(query, event_id)
         if result is None:
             raise Exception("voteplan DB error")

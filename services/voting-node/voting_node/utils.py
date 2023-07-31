@@ -258,7 +258,7 @@ async def create_committee_member_keys(
     return MemberKeys(seckey=member_sk, pubkey=member_sk)
 
 
-async def create_committee(jcli: JCli, committee_id: str, event_id: int, size: int, threshold: int, crs: str) -> Committee:
+async def create_committee(jcli: JCli, event_id: int, size: int, threshold: int, crs: str) -> Committee:
     """Return a Committee.
 
     `committee_id` is the hex-encoded public key of the Committee wallet.
@@ -266,6 +266,10 @@ async def create_committee(jcli: JCli, committee_id: str, event_id: int, size: i
     `threshold` is the minimum number of committee members needed to carry out the tally.
     `crs` is the common reference string shared by all member keys.
     """
+    logger.debug("creating committee wallet info")
+    committee_wallet = await create_wallet_keyset(jcli)
+    committee_pk = committee_wallet.seckey
+    committee_id = committee_wallet.hex_encoded
     communication_keys = [await create_communication_keys(jcli) for _ in range(size)]
 
     def comm_pk(kp: CommunicationKeys) -> str:
@@ -291,6 +295,7 @@ async def create_committee(jcli: JCli, committee_id: str, event_id: int, size: i
         size=size,
         threshold=threshold,
         crs=crs,
+        committee_pk=committee_pk,
         committee_id=committee_id,
         members=members,
         election_key=election_key,

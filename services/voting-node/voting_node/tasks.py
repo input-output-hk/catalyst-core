@@ -550,7 +550,6 @@ class Leader0Schedule(LeaderSchedule):
                 crs = secrets.token_hex(32)
             committee = await utils.create_committee(
                 self.jcli(),
-                committee_wallet.hex_encoded,
                 event.row_id,
                 event.committee_size,
                 event.committee_threshold,

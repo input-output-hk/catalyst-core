@@ -5,10 +5,12 @@ from pydantic import BaseModel
 class WalletKeys(BaseModel):
     """The keys to an external wallet.
 
+    `seckey` is the secret key for the wallet.
+    `pubkey` is the public key for the wallet.
     `hex_encoded` is used to generate the genesis block.
     """
 
-    seckey: str | None
+    seckey: str
     pubkey: str
     hex_encoded: str
 

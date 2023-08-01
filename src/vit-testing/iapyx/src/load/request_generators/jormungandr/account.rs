@@ -23,11 +23,11 @@ impl AccountRequestGen {
     pub fn random_account_request(&mut self) -> Result<(), RequestFailure> {
         let wallet_index = self.rand.gen_range(0..self.wallets.len());
         let wallet = self.wallets.get(wallet_index).ok_or_else(|| {
-            RequestFailure::General(format!("wallet with index '{}' not found", wallet_index))
+            RequestFailure::General(format!("wallet with index '{wallet_index}' not found"))
         })?;
         self.rest
             .account_state(wallet.id())
-            .map_err(|e| RequestFailure::General(format!("{:?}", e)))?;
+            .map_err(|e| RequestFailure::General(format!("{e:?}")))?;
         Ok(())
     }
 }
@@ -40,7 +40,7 @@ impl RequestGenerator for AccountRequestGen {
                 ids: vec![],
                 duration: start.elapsed(),
             }),
-            Err(e) => Err(RequestFailure::General(format!("{:?}", e))),
+            Err(e) => Err(RequestFailure::General(format!("{e:?}"))),
         }
     }
 

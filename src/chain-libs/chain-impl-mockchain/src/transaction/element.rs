@@ -35,10 +35,10 @@ pub struct SingleAccountBindingSignature(
 );
 
 impl SingleAccountBindingSignature {
-    pub fn verify_slice<'a>(
+    pub fn verify_slice(
         &self,
         pk: &PublicKey<Ed25519>,
-        data: &TransactionBindingAuthData<'a>,
+        data: &TransactionBindingAuthData<'_>,
     ) -> Verification {
         self.0.verify_slice(pk, data.0)
     }

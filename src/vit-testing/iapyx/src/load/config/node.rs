@@ -80,7 +80,6 @@ impl Config {
         if let Some(qr_codes) = &self.qr_codes_folder {
             let qr_codes: Vec<PathBuf> = std::fs::read_dir(qr_codes)
                 .map_err(|_| Error::CannotReadQrs(qr_codes.clone()))?
-                .into_iter()
                 .map(|x| x.unwrap().path())
                 .collect();
 
@@ -97,7 +96,6 @@ impl Config {
         } else if let Some(secrets_folder) = &self.secrets_folder {
             let secrets: Vec<PathBuf> = std::fs::read_dir(secrets_folder)
                 .unwrap()
-                .into_iter()
                 .map(|x| x.unwrap().path())
                 .collect();
             MultiController::recover_from_sks(&self.address, &secrets, self.rest_settings())

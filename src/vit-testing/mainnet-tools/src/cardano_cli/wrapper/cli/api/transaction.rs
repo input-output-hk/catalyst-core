@@ -73,7 +73,7 @@ impl Transaction {
         let mut command = self.transaction_command.submit().tx_file(tx_signed).build();
         let output = command
             .output()
-            .map_err(|_| Error::CannotGetOutputFromCommand(format!("{:?}", command)))?;
+            .map_err(|_| Error::CannotGetOutputFromCommand(format!("{command:?}")))?;
 
         debug!("status: {}", output.status);
         std::io::stdout()
@@ -90,7 +90,7 @@ impl Transaction {
         let mut command = self.transaction_command.id().tx_file(tx_signed).build();
         let output = command
             .output()
-            .map_err(|_| Error::CannotGetOutputFromCommand(format!("{:?}", command)))?;
+            .map_err(|_| Error::CannotGetOutputFromCommand(format!("{command:?}")))?;
 
         println!("status: {}", output.status);
         std::io::stdout()
@@ -127,7 +127,7 @@ impl Transaction {
 
         let output = command
             .output()
-            .map_err(|_| Error::CannotGetOutputFromCommand(format!("{:?}", command)))?;
+            .map_err(|_| Error::CannotGetOutputFromCommand(format!("{command:?}")))?;
 
         std::io::stdout()
             .write_all(&output.stdout)

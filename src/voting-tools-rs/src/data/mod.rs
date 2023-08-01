@@ -335,7 +335,7 @@ fn inspect_witness(
         Err(err) => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: format!("ED25119 signature should be 64 bytes {}", err),
+                    err: format!("ED25119 signature should be 64 bytes {err}"),
                 },
             )))
         }
@@ -365,7 +365,7 @@ fn inspect_cip36_sig(decoded: Value) -> Result<Vec<Value>, Result<Signature, Box
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: format!("Not congruent with CIP-36 {:?}", decoded),
+                    err: format!("Not congruent with CIP-36 {decoded:?}"),
                 },
             )))
         }
@@ -482,8 +482,7 @@ fn inspect_voting_key(
                                     return Err(Err(Box::new(
                                         RegistrationError::RawBinCborRegistrationFailure {
                                             err: format!(
-                                                "Unable to extract weight for delegation {}",
-                                                err
+                                                "Unable to extract weight for delegation {err}"
                                             ),
                                         },
                                     )))
@@ -548,7 +547,7 @@ fn inspect_cip36_reg(decoded: &Value) -> Result<Vec<Value>, Result<Registration,
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: format!("Not congruent with CIP-36 {:?}", decoded),
+                    err: format!("Not congruent with CIP-36 {decoded:?}"),
                 },
             )))
         }

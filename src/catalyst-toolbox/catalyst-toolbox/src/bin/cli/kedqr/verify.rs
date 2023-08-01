@@ -37,7 +37,6 @@ impl VerifyQrCodeCmd {
             } else {
                 std::fs::read_dir(self.folder.as_ref().unwrap())
                     .unwrap()
-                    .into_iter()
                     .map(|x| x.unwrap().path())
                     .collect()
             }

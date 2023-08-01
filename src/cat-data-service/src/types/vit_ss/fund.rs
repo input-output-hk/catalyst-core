@@ -203,7 +203,7 @@ mod tests {
             tallying_end: DateTime::from_utc(NaiveDateTime::default(), Utc),
         });
 
-        let json = serde_json::to_value(&fund_stage_dates).unwrap();
+        let json = serde_json::to_value(fund_stage_dates).unwrap();
         assert_eq!(
             json,
             json!(
@@ -255,7 +255,7 @@ mod tests {
             groups: vec![],
         });
 
-        let json = serde_json::to_value(&fund).unwrap();
+        let json = serde_json::to_value(fund).unwrap();
         assert_eq!(
             json,
             json!(
@@ -309,7 +309,7 @@ mod tests {
             },
         });
 
-        let json = serde_json::to_value(&fund_next_info).unwrap();
+        let json = serde_json::to_value(fund_next_info).unwrap();
         assert_eq!(
             json,
             json!(
@@ -366,7 +366,7 @@ mod tests {
             next: None,
         });
 
-        let json = serde_json::to_value(&fund_with_next).unwrap();
+        let json = serde_json::to_value(fund_with_next).unwrap();
         assert_eq!(
             json,
             json!(

@@ -554,7 +554,7 @@ impl FragmentReplayer {
                 .entry(address.clone())
                 .or_insert_with(|| {
                     Wallet::new_from_key(<SecretKey<Ed25519Extended>>::generate(
-                        &mut rand::thread_rng(),
+                        rand::thread_rng(),
                     ))
                 })
                 .account_id()

@@ -55,7 +55,7 @@ pub fn write_to_file_or_println(
         let mut file = File::create(out_file)?;
         file.write_all(content.as_bytes())?;
     } else {
-        println!("{}", content);
+        println!("{content}");
     }
     Ok(())
 }

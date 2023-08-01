@@ -109,19 +109,19 @@ impl Wallet {
         self.account.confirm_transaction_at_lane(lane).unwrap();
     }
 
-    pub fn make_witness<'a>(
+    pub fn make_witness(
         &mut self,
         block0_hash: &HeaderId,
-        tad: TransactionAuthData<'a>,
+        tad: TransactionAuthData<'_>,
     ) -> Witness {
         self.make_witness_at_lane(block0_hash, 0, tad)
     }
 
-    pub fn make_witness_at_lane<'a>(
+    pub fn make_witness_at_lane(
         &mut self,
         block0_hash: &HeaderId,
         lane: usize,
-        tad: TransactionAuthData<'a>,
+        tad: TransactionAuthData<'_>,
     ) -> Witness {
         self.as_account()
             .make_witness_with_lane(block0_hash, lane, tad)

@@ -18,7 +18,9 @@ use typed_bytes::{ByteArray, ByteBuilder};
 ///
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Ord, PartialOrd, Hash)]
 #[repr(u8)]
+#[derive(Default)]
 pub enum PayloadType {
+    #[default]
     Public = 1,
     Private = 2,
 }
@@ -181,11 +183,7 @@ impl TryFrom<u8> for PayloadType {
     }
 }
 
-impl Default for PayloadType {
-    fn default() -> Self {
-        PayloadType::Public
-    }
-}
+
 
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {

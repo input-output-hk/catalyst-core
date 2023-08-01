@@ -118,7 +118,7 @@ impl fmt::Display for QueryUTxO {
                 format!("{} lovelace", utxo.amount)
             ]);
         }
-        write!(f, "{}", table)
+        write!(f, "{table}")
     }
 }
 

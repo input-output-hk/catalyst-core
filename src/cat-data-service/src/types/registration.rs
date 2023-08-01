@@ -230,7 +230,7 @@ mod tests {
             delegator_addresses: Some(vec!["stake_public_key_1".to_string()]),
         });
 
-        let json = serde_json::to_value(&voter_info).unwrap();
+        let json = serde_json::to_value(voter_info).unwrap();
         assert_eq!(
             json,
             json!(
@@ -254,7 +254,7 @@ mod tests {
             delegator_addresses: None,
         });
 
-        let json = serde_json::to_value(&voter_info).unwrap();
+        let json = serde_json::to_value(voter_info).unwrap();
         assert_eq!(
             json,
             json!(
@@ -285,7 +285,7 @@ mod tests {
             is_final: true,
         });
 
-        let json = serde_json::to_value(&voter).unwrap();
+        let json = serde_json::to_value(voter).unwrap();
         assert_eq!(
             json,
             json!(
@@ -314,7 +314,7 @@ mod tests {
             value: 100,
         });
 
-        let json = serde_json::to_value(&delegation).unwrap();
+        let json = serde_json::to_value(delegation).unwrap();
         assert_eq!(
             json,
             json!(
@@ -340,7 +340,7 @@ mod tests {
             is_final: true,
         });
 
-        let json = serde_json::to_value(&delegator).unwrap();
+        let json = serde_json::to_value(delegator).unwrap();
         assert_eq!(
             json,
             json!(

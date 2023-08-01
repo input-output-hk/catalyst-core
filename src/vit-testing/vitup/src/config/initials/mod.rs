@@ -18,8 +18,10 @@ pub const DIRECT_VOTING_GROUP: &str = "direct";
 pub const REP_VOTING_GROUP: &str = "rep";
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Default)]
 pub enum Role {
     Representative,
+    #[default]
     Voter,
 }
 
@@ -68,11 +70,7 @@ pub enum Error {
     UnknownRole(String),
 }
 
-impl Default for Role {
-    fn default() -> Self {
-        Role::Voter
-    }
-}
+
 
 #[cfg(test)]
 mod test {

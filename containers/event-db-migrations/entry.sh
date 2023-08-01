@@ -32,7 +32,7 @@
 # SKIP_GRAPHQL_INIT - If set, graphql will not be initialized (optional)
 # DEBUG - If set, the script will print debug information (optional)
 # DEBUG_SLEEP - If set, the script will sleep for the specified number of seconds (optional)
-# STAGE - The stage being run.  Currnelty only controls if stage specific data is applied to the DB (optional)
+# STAGE - The stage being run.  Currently only controls if stage specific data is applied to the DB (optional)
 # ---------------------------------------------------------------
 set +x
 set -o errexit

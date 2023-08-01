@@ -352,5 +352,6 @@ jobs:
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
           components: rustfmt, clippy
-
+          
+      - run: rustup component add clippy
       - run: scripts/check-fmt.sh

@@ -53,7 +53,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
-          override: true
 
       - name: Cache rust
         uses: Swatinem/rust-cache@v2

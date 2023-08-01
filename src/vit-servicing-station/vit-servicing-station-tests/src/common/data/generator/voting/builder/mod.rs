@@ -29,7 +29,7 @@ impl ArbitraryValidVotePlanConfig {
     }
 
     pub fn challenge(mut self, mut challenge: ChallengeConfig) -> Self {
-        challenge.proposals.iter_mut().for_each(|mut p| {
+        challenge.proposals.iter_mut().for_each(|p| {
             p.challenge_id = Some(self.challenges.len());
         });
         self.challenges.push(challenge);

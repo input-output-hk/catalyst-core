@@ -1,4 +1,4 @@
-#[allow(clippy::all)]
+#![allow(clippy::all)]
 use std::{error::Error, ffi::OsString, io::Cursor};
 
 use crate::{
@@ -343,6 +343,7 @@ fn inspect_witness(
     Ok(sig)
 }
 
+#[allow(clippy::manual_let_else)]
 fn inspect_metamap_sig(
     spec_61285: &[Value],
 ) -> Result<&Vec<(Value, Value)>, Result<Signature, Box<dyn Error>>> {
@@ -451,6 +452,7 @@ fn inspect_stake_key(
     Ok(stake_key)
 }
 
+#[allow(clippy::manual_let_else)]
 fn inspect_voting_key(
     metamap: &[(Value, Value)],
 ) -> Result<VotingKey, Result<Registration, Box<dyn Error>>> {
@@ -525,6 +527,7 @@ fn inspect_voting_key(
     Ok(voting_key)
 }
 
+#[allow(clippy::manual_let_else)]
 fn inspect_metamap_reg(
     spec_61284: &[Value],
 ) -> Result<&Vec<(Value, Value)>, Result<Registration, Box<dyn Error>>> {

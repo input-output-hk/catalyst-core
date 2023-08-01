@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 use crate::common::wait_until_folder_contains_all_qrs;
 use assert_fs::TempDir;
 use chain_impl_mockchain::key::Hash;

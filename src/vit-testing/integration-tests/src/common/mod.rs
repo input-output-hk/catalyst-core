@@ -1,12 +1,22 @@
+#[allow(clippy::all)]
 mod assert;
+#[allow(clippy::all)]
 pub mod load;
+#[allow(clippy::all)]
 pub mod mainnet_wallet_ext;
+#[allow(clippy::all)]
 mod reps;
+#[allow(clippy::all)]
 mod rewards;
+#[allow(clippy::all)]
 pub mod snapshot;
+#[allow(clippy::all)]
 pub(crate) mod snapshot_filter;
+#[allow(clippy::all)]
 mod static_data;
+#[allow(clippy::all)]
 mod vote_plan_status;
+#[allow(clippy::all)]
 mod wallet;
 
 pub use reps::{empty_assigner, RepsVoterAssignerSource};

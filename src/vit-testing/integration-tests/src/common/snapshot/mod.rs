@@ -1,7 +1,12 @@
+#[allow(clippy::all)]
 mod controller;
+#[allow(clippy::all)]
 pub mod mock;
+#[allow(clippy::all)]
 pub mod result;
+#[allow(clippy::all)]
 mod starter;
+#[allow(clippy::all)]
 mod voter_hirs_asserts;
 
 use crate::common::snapshot::result::do_snapshot as do_snapshot_internal;

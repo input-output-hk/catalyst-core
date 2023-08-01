@@ -22,7 +22,7 @@ on:
       - "book/**"
 
 env:
-  RUST_LATEST_STABLE_VERSION: 1.65
+  RUST_LATEST_STABLE_VERSION: 1.71
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
   RUST_BACKTRACE: 1

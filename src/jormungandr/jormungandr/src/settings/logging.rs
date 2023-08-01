@@ -19,8 +19,6 @@ pub enum LogFormat {
     Json,
 }
 
-
-
 impl Display for LogFormat {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {

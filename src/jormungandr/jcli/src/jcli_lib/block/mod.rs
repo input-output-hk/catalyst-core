@@ -1,3 +1,4 @@
+#![allow(clippy::result_large_err)]
 use crate::jcli_lib::utils::io;
 use chain_core::{
     packer::Codec,

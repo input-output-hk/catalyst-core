@@ -92,8 +92,7 @@ impl From<ActiveSlotsCoeff> for f64 {
 }
 
 /// Fees nSettings
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 pub enum FeesGoesTo {
     /// Move the fees to the rewards; this is the common mode of blockchain operation.
     #[default]
@@ -102,8 +101,6 @@ pub enum FeesGoesTo {
     /// it fundamentally change the dynamic of the blockchain operation.
     Treasury,
 }
-
-
 
 pub const SLOTS_PERCENTAGE_RANGE: u8 = 100;
 

@@ -183,8 +183,6 @@ impl TryFrom<u8> for PayloadType {
     }
 }
 
-
-
 #[cfg(any(test, feature = "property-test-api"))]
 mod tests {
     use super::*;

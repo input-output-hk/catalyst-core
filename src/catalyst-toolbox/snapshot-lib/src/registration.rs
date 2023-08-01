@@ -2,6 +2,9 @@ use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Value;
 use serde::{de::Error, Deserialize, Serialize};
 
+const MAINNET_PREFIX: &'static str = "addr";
+const STAKE_PREFIX: &'static str = "stake";
+
 pub type MainnetRewardAddress = String;
 pub type MainnetStakeAddress = String;
 
@@ -12,6 +15,7 @@ pub type MainnetStakeAddress = String;
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::module_name_repetitions)]
 pub struct VotingRegistration {
+    #[serde(deserialize_with = "serde_impl::stake_addr_from_hex")]
     pub stake_public_key: MainnetStakeAddress,
     pub voting_power: Value,
     /// Shelley address discriminated for the same network this transaction is submitted to.
@@ -175,6 +179,17 @@ pub mod serde_impl {
         }
     }
 
+    pub fn stake_addr_from_hex<'de, D>(deserializer: D) -> Result<MainnetStakeAddress, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use bech32::ToBase32;
+        let bytes = hex::decode(String::deserialize(deserializer)?.trim_start_matches("0x"))
+            .map_err(|e| D::Error::custom(format!("invalid hex string: {}", e)))?;
+        bech32::encode(STAKE_PREFIX, bytes.to_base32(), bech32::Variant::Bech32)
+            .map_err(|e| D::Error::custom(format!("bech32 encoding failed: {}", e)))
+    }
+
     pub fn reward_addr_from_hex<'de, D>(deserializer: D) -> Result<MainnetRewardAddress, D::Error>
     where
         D: Deserializer<'de>,
@@ -182,7 +197,7 @@ pub mod serde_impl {
         use bech32::ToBase32;
         let bytes = hex::decode(String::deserialize(deserializer)?.trim_start_matches("0x"))
             .map_err(|e| D::Error::custom(format!("invalid hex string: {}", e)))?;
-        bech32::encode("stake", bytes.to_base32(), bech32::Variant::Bech32)
+        bech32::encode(MAINNET_PREFIX, bytes.to_base32(), bech32::Variant::Bech32)
             .map_err(|e| D::Error::custom(format!("bech32 encoding failed: {}", e)))
     }
 }
@@ -244,10 +259,18 @@ mod tests {
         fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
             (any::<([u8; 32], [u8; 32], Delegations)>(), 0..45_000_000u64)
                 .prop_map(|((stake_key, rewards_addr, delegations), vp)| {
-                    let stake_public_key = hex::encode(stake_key);
-                    let reward_address =
-                        bech32::encode("stake", rewards_addr.to_base32(), bech32::Variant::Bech32)
-                            .unwrap();
+                    let stake_public_key = bech32::encode(
+                        STAKE_PREFIX,
+                        stake_key.to_base32(),
+                        bech32::Variant::Bech32,
+                    )
+                    .unwrap();
+                    let reward_address = bech32::encode(
+                        MAINNET_PREFIX,
+                        rewards_addr.to_base32(),
+                        bech32::Variant::Bech32,
+                    )
+                    .unwrap();
                     let voting_power: Value = vp.into();
                     VotingRegistration {
                         stake_public_key,

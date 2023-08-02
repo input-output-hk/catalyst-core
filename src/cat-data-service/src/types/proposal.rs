@@ -42,11 +42,13 @@ impl Serialize for SerdeType<&ProposalSummary> {
             id: SerdeType<&'a ProposalId>,
             title: &'a String,
             summary: &'a String,
+            deleted: bool,
         }
         ProposalSummarySerde {
             id: SerdeType(&self.id),
             title: &self.title,
             summary: &self.summary,
+            deleted: self.deleted,
         }
         .serialize(serializer)
     }
@@ -178,6 +180,7 @@ mod tests {
             id: ProposalId(1),
             title: "title".to_string(),
             summary: "summary".to_string(),
+            deleted: false,
         });
 
         let json = serde_json::to_value(&proposal_summary).unwrap();
@@ -188,6 +191,7 @@ mod tests {
                     "id": 1,
                     "title": "title",
                     "summary": "summary",
+                    "deleted": false,
                 }
             )
         )
@@ -269,6 +273,7 @@ mod tests {
                 id: ProposalId(1),
                 title: "title".to_string(),
                 summary: "summary".to_string(),
+                deleted: false,
             },
             details: ProposalDetails {
                 funds: 1,
@@ -287,6 +292,7 @@ mod tests {
                     "id": 1,
                     "title": "title",
                     "summary": "summary",
+                    "deleted": false,
                     "funds": 1,
                     "url": "url",
                     "files": "files",

@@ -75,12 +75,14 @@ impl Serialize for SerdeType<&ObjectiveSummary> {
             objective_type: SerdeType<&'a ObjectiveType>,
             title: &'a String,
             description: &'a String,
+            deleted: bool,
         }
         ObjectiveSummarySerde {
             id: SerdeType(&self.id),
             objective_type: SerdeType(&self.objective_type),
             title: &self.title,
             description: &self.description,
+            deleted: self.deleted,
         }
         .serialize(serializer)
     }
@@ -259,6 +261,7 @@ mod tests {
             },
             title: "objective 1".to_string(),
             description: "description 1".to_string(),
+            deleted: false,
         });
 
         let json = serde_json::to_value(&objective_summary).unwrap();
@@ -273,6 +276,7 @@ mod tests {
                     },
                     "title": "objective 1",
                     "description": "description 1",
+                    "deleted": false,
                 }
             )
         );
@@ -362,6 +366,7 @@ mod tests {
                 },
                 title: "objective 1".to_string(),
                 description: "description 1".to_string(),
+                deleted: false,
             },
             details: ObjectiveDetails {
                 groups: vec![VoterGroup {
@@ -388,6 +393,7 @@ mod tests {
                     },
                     "title": "objective 1",
                     "description": "description 1",
+                    "deleted": false,
                     "groups": [
                         {
                             "group": "group",

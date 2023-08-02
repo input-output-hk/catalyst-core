@@ -428,7 +428,8 @@ mod tests {
                                 "description": "A Simple choice"
                             },
                             "title": "title 1",
-                            "description": "description 1"
+                            "description": "description 1",
+                            "deleted": false,
                         },
                         {
                             "id": 2,
@@ -437,7 +438,8 @@ mod tests {
                                 "description": "??"
                             },
                             "title": "title 2",
-                            "description": "description 2"
+                            "description": "description 2",
+                            "deleted": false,
                         },
                         {
                             "id": 3,
@@ -446,7 +448,8 @@ mod tests {
                                 "description": "A Simple choice"
                             },
                             "title": "title 3",
-                            "description": "description 3"
+                            "description": "description 3",
+                            "deleted": false,
                         },
                         {
                             "id": 4,
@@ -455,7 +458,8 @@ mod tests {
                                 "description": "??"
                             },
                             "title": "title 4",
-                            "description": "description 4"
+                            "description": "description 4",
+                            "deleted": false,
                         }
                     ]
                 }
@@ -525,7 +529,8 @@ mod tests {
                                 "description": "??"
                             },
                             "title": "title 4",
-                            "description": "description 4"
+                            "description": "description 4",
+                            "deleted": false,
                         },
                         {
                             "id": 3,
@@ -534,7 +539,8 @@ mod tests {
                                 "description": "A Simple choice"
                             },
                             "title": "title 3",
-                            "description": "description 3"
+                            "description": "description 3",
+                            "deleted": false,
                         },
                         {
                             "id": 2,
@@ -543,7 +549,8 @@ mod tests {
                                 "description": "??"
                             },
                             "title": "title 2",
-                            "description": "description 2"
+                            "description": "description 2",
+                            "deleted": false,
                         },
                         {
                             "id": 1,
@@ -552,7 +559,8 @@ mod tests {
                                 "description": "A Simple choice"
                             },
                             "title": "title 1",
-                            "description": "description 1"
+                            "description": "description 1",
+                            "deleted": false,
                         }
                     ]
                 }
@@ -593,7 +601,8 @@ mod tests {
                                 "description": "??"
                             },
                             "title": "title 4",
-                            "description": "description 4"
+                            "description": "description 4",
+                            "deleted": false,
                         },
                     ]
 
@@ -635,7 +644,8 @@ mod tests {
                                 "description": "A Simple choice"
                             },
                             "title": "title 3",
-                            "description": "description 3"
+                            "description": "description 3",
+                            "deleted": false,
                         },
                         {
                             "id": 2,
@@ -644,7 +654,8 @@ mod tests {
                                 "description": "??"
                             },
                             "title": "title 2",
-                            "description": "description 2"
+                            "description": "description 2",
+                            "deleted": false,
                         },
                         {
                             "id": 1,
@@ -653,7 +664,8 @@ mod tests {
                                 "description": "A Simple choice"
                             },
                             "title": "title 1",
-                            "description": "description 1"
+                            "description": "description 1",
+                            "deleted": false,
                         }
                     ]
                 }
@@ -713,17 +725,20 @@ mod tests {
                         {
                             "id": 10,
                             "title": "title 1",
-                            "summary": "summary 1"
+                            "summary": "summary 1",
+                            "deleted": false,
                         },
                         {
                             "id": 20,
                             "title": "title 2",
-                            "summary": "summary 2"
+                            "summary": "summary 2",
+                            "deleted": false,
                         },
                         {
                             "id": 30,
                             "title": "title 3",
-                            "summary": "summary 3"
+                            "summary": "summary 3",
+                            "deleted": false,
                         }
                     ]
                 }
@@ -789,17 +804,20 @@ mod tests {
                         {
                             "id": 30,
                             "title": "title 3",
-                            "summary": "summary 3"
+                            "summary": "summary 3",
+                            "deleted": false
                         },
                         {
                             "id": 20,
                             "title": "title 2",
-                            "summary": "summary 2"
+                            "summary": "summary 2",
+                            "deleted": false
                         },
                         {
                             "id": 10,
                             "title": "title 1",
-                            "summary": "summary 1"
+                            "summary": "summary 1",
+                            "deleted": false
                         }
                     ]
                 }
@@ -836,12 +854,14 @@ mod tests {
                         {
                             "id": 30,
                             "title": "title 3",
-                            "summary": "summary 3"
+                            "summary": "summary 3",
+                            "deleted": false
                         },
                         {
                             "id": 20,
                             "title": "title 2",
-                            "summary": "summary 2"
+                            "summary": "summary 2",
+                            "deleted": false
                         }
                     ]
                 }
@@ -878,12 +898,14 @@ mod tests {
                         {
                             "id": 20,
                             "title": "title 2",
-                            "summary": "summary 2"
+                            "summary": "summary 2",
+                            "deleted": false
                         },
                         {
                             "id": 10,
                             "title": "title 1",
-                            "summary": "summary 1"
+                            "summary": "summary 1",
+                            "deleted": false
                         }
                     ]
                 }
@@ -920,7 +942,8 @@ mod tests {
                         {
                             "id": 20,
                             "title": "title 2",
-                            "summary": "summary 2"
+                            "summary": "summary 2",
+                            "deleted": false
                         }
                     ]
                 }

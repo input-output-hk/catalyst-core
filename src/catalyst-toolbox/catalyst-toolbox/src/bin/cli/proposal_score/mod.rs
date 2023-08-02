@@ -21,37 +21,44 @@ pub struct ProposalScore {
     #[clap(long)]
     reviews_path: PathBuf,
 
-    /// Path to the output sqlite3 database file
+    /// Path to the input json file with the proposals file, in which resulted output will rewrite its content
     #[clap(long)]
-    db_path: PathBuf,
+    proposals_path: PathBuf,
 }
 
 impl ProposalScore {
     pub fn exec(self) -> Result<(), Report> {
         let reviews =
             catalyst_toolbox::proposal_score::load::load_reviews_from_csv(&self.reviews_path)?;
+        let mut proposals =
+            catalyst_toolbox::proposal_score::load::load_proposals_from_json(&self.proposals_path)?;
 
-        for (proposal_id, (aligment_reviews, feasibility_reviews, auditability_reviews)) in reviews
+        for (proposal_id, (alignment_reviews, feasibility_reviews, auditability_reviews)) in reviews
         {
-            let (aligment_score, feasibility_score, auditability_score) =
+            let (alignment_score, feasibility_score, auditability_score) =
                 catalyst_toolbox::proposal_score::calc_score(
                     self.allocated_weight,
                     self.not_allocated_weight,
-                    &aligment_reviews,
+                    &alignment_reviews,
                     &feasibility_reviews,
                     &auditability_reviews,
-                )
-                .unwrap();
+                )?;
 
-            catalyst_toolbox::proposal_score::store::store_scores_in_sqllite_db(
-                &self.db_path,
-                proposal_id,
-                aligment_score,
+            let proposal = proposals.get_mut(&proposal_id).ok_or_else(|| {
+                color_eyre::eyre::eyre!("Proposal with id {} not found", proposal_id.0)
+            })?;
+            catalyst_toolbox::proposal_score::store::store_score_into_proposal(
+                proposal,
+                alignment_score,
                 feasibility_score,
                 auditability_score,
-            )
-            .unwrap();
+            )?;
         }
+
+        catalyst_toolbox::proposal_score::store::store_proposals_into_file(
+            &self.proposals_path,
+            proposals.into_values().collect(),
+        )?;
 
         Ok(())
     }
@@ -67,7 +74,7 @@ mod tests {
             allocated_weight: 0.8,
             not_allocated_weight: 0.2,
             reviews_path: PathBuf::from("src/proposal_score/test_data/reviews-example.csv"),
-            db_path: PathBuf::from("src/proposal_score/test_data/fund9.sqlite3"),
+            proposals_path: PathBuf::from("src/proposal_score/test_data/proposals.json"),
         };
 
         proposal_score.exec().unwrap();

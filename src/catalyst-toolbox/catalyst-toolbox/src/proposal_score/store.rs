@@ -1,53 +1,57 @@
-use super::{AligmentScore, AuditabilityScore, FeasibilityScore, ProposalId};
-use rusqlite::Connection;
-use std::{path::PathBuf, str::FromStr};
+use super::{AlignmentScore, AuditabilityScore, FeasibilityScore};
+use std::{fs::File, path::Path, str::FromStr};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error(transparent)]
-    Sqlite(#[from] rusqlite::Error),
+    IO(#[from] std::io::Error),
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+    #[error("Invalid proposal data: {0}")]
+    InvalidProposalData(String),
 }
 
-pub fn store_scores_in_sqllite_db(
-    db: &PathBuf,
-    proposal_id: ProposalId,
-    aligment_score: AligmentScore,
+pub fn store_score_into_proposal(
+    proposal: &mut serde_json::Value,
+    alignment_score: AlignmentScore,
     feasibility_score: FeasibilityScore,
     auditability_score: AuditabilityScore,
 ) -> Result<(), Error> {
-    let conn = Connection::open(db)?;
+    let files_url_data = proposal
+        .get_mut("files_url")
+        .ok_or_else(|| Error::InvalidProposalData("missing field \"files_url\"".to_string()))?;
 
-    let mut statement =
-        conn.prepare("SELECT proposal_files_url FROM proposals WHERE proposal_id = ?1;")?;
-    let proposal_files_url: String = statement.query_row([proposal_id.0], |row| row.get(0))?;
-
-    let mut current;
-    if proposal_files_url.is_empty() {
-        current = serde_json::json!(
-            {
-                "aligment_score": aligment_score.0,
-                "feasibility_score": feasibility_score.0,
-                "auditability_score": auditability_score.0
-            }
-        );
-    } else {
-        current = serde_json::Value::from_str(&proposal_files_url)?;
-        let values = current.as_object_mut().unwrap();
-        values.insert("aligment_score".to_string(), aligment_score.0.into());
-        values.insert("feasibility_score".to_string(), feasibility_score.0.into());
-        values.insert(
-            "auditability_score".to_string(),
-            auditability_score.0.into(),
-        );
-    }
-
-    conn.execute(
-        "UPDATE proposals SET proposal_files_url = ?1 WHERE proposal_id = ?2;",
-        (current.to_string(), &proposal_id.0),
+    let mut files_url_object = serde_json::Value::from_str(
+        files_url_data
+            .as_str()
+            .ok_or_else(|| {
+                Error::InvalidProposalData("data inside \"files_url\" not a string".to_string())
+            })?
+            .replace('\'', "\"")
+            .as_str(),
     )?;
 
+    let values = files_url_object.as_object_mut().ok_or_else(|| {
+        Error::InvalidProposalData("data inside \"files_url\" not json encoded".to_string())
+    })?;
+    values.insert("alignment_score".to_string(), alignment_score.0.into());
+    values.insert("feasibility_score".to_string(), feasibility_score.0.into());
+    values.insert(
+        "auditability_score".to_string(),
+        auditability_score.0.into(),
+    );
+
+    *files_url_data = files_url_object.to_string().replace('"', "'").into();
+
+    Ok(())
+}
+
+pub fn store_proposals_into_file(
+    path: &Path,
+    proposals: Vec<serde_json::Value>,
+) -> Result<(), Error> {
+    let mut file = File::create(path)?;
+    serde_json::to_writer_pretty(&mut file, &proposals)?;
     Ok(())
 }
 
@@ -56,20 +60,38 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_store_scores_in_sqllite_db() {
-        let db = PathBuf::from("src/proposal_score/test_data/fund9.sqlite3");
-        let proposal_id = ProposalId(423260);
-        let aligment_score = AligmentScore(0.8);
-        let feasibility_score = FeasibilityScore(0.9);
-        let auditability_score = AuditabilityScore(2.5);
+    fn test_store_into_proposal() {
+        let mut proposal = serde_json::json!(
+            {
+                "files_url": serde_json::json!(
+                    {
+                        "some_data": "data"
+                    }
+                ).to_string()
+            }
+        );
 
-        store_scores_in_sqllite_db(
-            &db,
-            proposal_id,
-            aligment_score,
-            feasibility_score,
-            auditability_score,
+        store_score_into_proposal(
+            &mut proposal,
+            AlignmentScore(0.8),
+            FeasibilityScore(0.9),
+            AuditabilityScore(2.5),
         )
         .unwrap();
+        assert_eq!(
+            proposal,
+            serde_json::json!(
+                {
+                    "files_url": serde_json::json!(
+                        {
+                            "some_data": "data",
+                            "alignment_score": 0.8,
+                            "feasibility_score": 0.9,
+                            "auditability_score": 2.5
+                        }
+                    ).to_string().replace('"', "'")
+                }
+            )
+        )
     }
 }

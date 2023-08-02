@@ -29,6 +29,7 @@ build:
     SAVE ARTIFACT migrations # Save the migrations directory as an artifact
     SAVE ARTIFACT historic_data # Save the historic_data directory as an artifact
     SAVE ARTIFACT test_data # Save the test_data directory as an artifact
+    SAVE ARTIFACT stage_data # Save the stage_data directory as an artifact
 
 docker-compose:
     FROM scratch

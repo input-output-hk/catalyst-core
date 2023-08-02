@@ -173,6 +173,7 @@ mod tests {
                         },
                         "title": "title 1",
                         "description": "description 1",
+                        "deleted": false,
                         "groups": [
                             {
                                 "group": "direct",
@@ -201,6 +202,7 @@ mod tests {
                         },
                         "title": "title 2",
                         "description": "description 2",
+                        "deleted": false,
                         "groups": [],
                     }
                 ]
@@ -225,6 +227,7 @@ mod tests {
                         },
                         "title": "title 1",
                         "description": "description 1",
+                        "deleted": false,
                         "groups": [
                             {
                                 "group": "direct",
@@ -267,6 +270,7 @@ mod tests {
                         },
                         "title": "title 2",
                         "description": "description 2",
+                        "deleted": false,
                         "groups": [],
                     }
                 ]

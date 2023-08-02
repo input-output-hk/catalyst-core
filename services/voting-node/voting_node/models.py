@@ -149,6 +149,7 @@ class Committee(BaseModel):
     `event_id` the number of committee members.
     `size` the number of committee members.
     `threshold` the minimum number of members needed to tally.
+    `committee_pk` the encrypted private key of the Committee address.
     `committee_id` the hex-encoded public key of the Committee address.
     `crs` the encrypted Common Reference String shared in the creation of every set of committee member keys.
     `members` list of containing the communication and member secrets of each member of the commitee.
@@ -161,6 +162,7 @@ class Committee(BaseModel):
     size: int
     threshold: int
     crs: str
+    committee_pk: str
     committee_id: str
     members: list[CommitteeMember] | None = None
     election_key: ElectionKey

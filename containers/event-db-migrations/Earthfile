@@ -45,6 +45,7 @@ docker:
         COPY --dir ../../src/event-db+build/test_data ./test_data
     END
     COPY ../../src/event-db+build/refinery.toml .
+    COPY ../../src/event-db+build/stage_data ./stage_data
 
     VOLUME /eventdb/tmp
     COPY ./entry.sh .

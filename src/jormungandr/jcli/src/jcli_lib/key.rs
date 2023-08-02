@@ -266,7 +266,7 @@ impl ToBytes {
         }?;
         let bytes = Vec::<u8>::from_base32(&data).map_err(Bech32Error::from)?;
         let mut output = self.output_file.open()?;
-        writeln!(output, "{}", hex::encode(&bytes))?;
+        writeln!(output, "{}", hex::encode(bytes))?;
         Ok(())
     }
 }

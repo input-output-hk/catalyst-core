@@ -24,7 +24,7 @@
     clippy::useless_conversion,
     clippy::wildcard_imports
 )]
-#![cfg_attr(test, allow(clippy::let_underscore_drop))] // useful in tests, often a bug otherwise
+#![cfg_attr(test, allow(let_underscore_drop))] // useful in tests, often a bug otherwise
 
 #[macro_use]
 extern crate tracing;

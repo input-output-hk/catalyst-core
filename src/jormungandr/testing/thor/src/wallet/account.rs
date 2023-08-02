@@ -141,9 +141,9 @@ impl Wallet {
         Input::from_account_single(self.identifier().to_inner(), value.into())
     }
 
-    pub fn add_input<'a, Extra: Payload>(
+    pub fn add_input<Extra: Payload>(
         &self,
-        payload: PayloadSlice<'a, Extra>,
+        payload: PayloadSlice<'_, Extra>,
         iobuilder: &mut InputOutputBuilder,
         fees: &LinearFee,
     ) -> Result<(), FragmentBuilderError>

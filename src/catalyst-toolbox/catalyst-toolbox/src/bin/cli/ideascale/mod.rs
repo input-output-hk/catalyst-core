@@ -239,7 +239,7 @@ impl Filter {
         let rows = load_data_from_csv::<_, b','>(input)?;
         let rows = Self::filter_rows(&rows);
 
-        dump_data_to_csv(&rows, &output)?;
+        dump_data_to_csv(rows, &output)?;
 
         Ok(())
     }

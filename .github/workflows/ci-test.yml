@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   build:
+    name: CI Test
     runs-on: ubuntu-latest
     env:
       FORCE_COLOR: 1

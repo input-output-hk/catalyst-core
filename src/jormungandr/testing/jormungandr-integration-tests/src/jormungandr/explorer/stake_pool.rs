@@ -100,7 +100,7 @@ pub fn explorer_stake_pool_test() {
     let initial_stake_pool = stake_pools.get(0).unwrap();
 
     let mut stake_pool_update = initial_stake_pool.clone();
-    let mut stake_pool_info = stake_pool_update.info_mut();
+    let stake_pool_info = stake_pool_update.info_mut();
     stake_pool_info.owners = vec![stake_pool_owner.public_key()];
 
     let mem_check = fragment_sender

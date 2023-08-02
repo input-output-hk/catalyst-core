@@ -1,4 +1,4 @@
-FROM rust:1.65-slim-bullseye
+FROM rust:1.71.0-slim-bullseye
 WORKDIR /usr/src/catalyst-core
 COPY . .
 RUN apt-get update && \

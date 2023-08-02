@@ -20,7 +20,7 @@ impl SettingsRequestGen {
     pub fn settings_request(&mut self) -> Result<(), RequestFailure> {
         self.rest
             .settings()
-            .map_err(|e| RequestFailure::General(format!("{:?}", e)))?;
+            .map_err(|e| RequestFailure::General(format!("{e:?}")))?;
         Ok(())
     }
 }
@@ -33,7 +33,7 @@ impl RequestGenerator for SettingsRequestGen {
                 ids: vec![],
                 duration: start.elapsed(),
             }),
-            Err(e) => Err(RequestFailure::General(format!("{:?}", e))),
+            Err(e) => Err(RequestFailure::General(format!("{e:?}"))),
         }
     }
 

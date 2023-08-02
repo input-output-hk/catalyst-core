@@ -1,144 +1,22 @@
-//!
-//! Community Tally Verification Tool
-//!
-
 use bech32::{self, Error as Bech32Error, FromBase32};
 use bech32::{ToBase32, Variant};
 
+use chain_crypto::testing::TestCryptoRng;
 use chain_crypto::{Ed25519, SecretKey};
 use chain_vote::committee::MemberSecretKey;
 use chain_vote::tally::batch_decrypt;
 use chain_vote::{EncryptedTally, MemberPublicKey, Tally};
 
 use chain_vote::TallyDecryptShare;
-use clap::Parser;
 
 use base64::{engine::general_purpose, Engine as _};
-use chain_crypto::testing::TestCryptoRng;
+
 use color_eyre::Result;
 use rand_core::SeedableRng;
-
-use std::error::Error;
 
 /// A Bech32_encoded address consists of 3 parts: A Human-Readable Part (HRP) + Separator + Data:
 const HRP_PK: &str = "ristretto255_memberpk";
 const HRP_SK: &str = "ristretto255_membersk";
-
-///
-/// Args defines and declares CLI behaviour within the context of clap
-///
-#[derive(Parser, Debug, Clone)]
-#[clap(about, version, author)]
-pub struct Args {
-    /// Encrypted tally
-    #[clap(short, long)]
-    pub encrypted_tally: Option<String>,
-    /// Produce decrypt shares: not for public use
-    #[clap(
-        short,
-        long,
-        requires = "encrypted_tally",
-        value_delimiter = ' ',
-        num_args = 1..
-    )]
-    pub produce_decrypt_shares: Option<Vec<String>>,
-    /// Decrypt Tally from shares: public use
-    #[clap(
-        short,
-        long,
-        requires = "encrypted_tally",
-        requires = "public_keys",
-        value_delimiter = ' ',
-        num_args = 1..
-    )]
-    pub decrypt_tally_from_shares: Option<Vec<String>>,
-    /// Decrypt Tally from secret keys: internal use
-    #[clap(short, long, requires = "encrypted_tally", value_delimiter = ' ', num_args = 1..)]
-    pub decrypt_tally_from_keys: Option<Vec<String>>,
-    /// List of whitespace seperated Secret keys
-    #[clap(short, long, value_delimiter = ' ', num_args = 1..)]
-    pub private_keys: Option<Vec<String>>,
-    /// List of whitespace seperated Public keys
-    #[clap(short, long, value_delimiter = ' ', num_args = 1..)]
-    pub public_keys: Option<Vec<String>>,
-    /// Show Public keys
-    #[clap(short, long, value_delimiter = ' ', num_args = 1..)]
-    pub show_public_keys: Option<Vec<String>>,
-}
-
-fn main() -> Result<(), Box<dyn Error>> {
-    color_eyre::install()?;
-
-    let args = Args::parse();
-
-    //
-    // Load decrypt shares for cross referencing Tally result
-    // Intended for public use
-    //
-    if let Some(shares) = args.decrypt_tally_from_shares {
-        let shares = load_decrypt_shares(shares)?;
-        let pub_keys = args.public_keys.clone().ok_or("handled by clap")?;
-
-        let encrypted_tally =
-            load_encrypted_tally(args.encrypted_tally.clone().ok_or("handled by clap")?)?;
-
-        let pks = parse_public_committee_keys(pub_keys)?;
-
-        let validated_tally = encrypted_tally.validate_partial_decryptions(&pks, &shares)?;
-
-        println!(
-            "Decryption results {:?}",
-            &batch_decrypt([validated_tally])?
-        );
-    }
-
-    //
-    // Produce decrypt shares for publication
-    // Internal use only
-    //
-    if let Some(committee_private_keys) = args.produce_decrypt_shares {
-        let (_pub_keys, priv_keys) = parse_private_committee_keys(committee_private_keys)?;
-
-        let encrypted_tally =
-            load_encrypted_tally(args.encrypted_tally.clone().ok_or("handled by clap")?)?;
-
-        let shares = extract_decrypt_shares(encrypted_tally, priv_keys);
-
-        println!("Decryption shares: {:?}", encode_decrypt_shares(shares));
-    }
-
-    //
-    // Decrypt tally from secret keys
-    // Intended for internal use
-    //
-    if let Some(committee_private_keys) = args.decrypt_tally_from_keys {
-        let (_pub_keys, priv_keys) = parse_private_committee_keys(committee_private_keys)?;
-
-        let encrypted_tally =
-            load_encrypted_tally(args.encrypted_tally.clone().ok_or("handled by clap")?)?;
-
-        println!(
-            "tally decryption {:?}",
-            decrypt_tally_with_secret_keys(encrypted_tally, priv_keys)
-        );
-    }
-
-    //
-    // Show public keys of private keys
-    //
-    if let Some(committee_private_keys) = args.show_public_keys {
-        let (pub_keys, _priv_keys) = parse_private_committee_keys(committee_private_keys.clone())?;
-
-        let encoded = encode_public_keys(pub_keys)?;
-        let it = encoded.iter().zip(committee_private_keys.iter());
-
-        for (i, (x, y)) in it.enumerate() {
-            println!("{}: ({}, {})", i, x, y);
-        }
-    }
-
-    Ok(())
-}
 
 ///
 /// Get member's secret share
@@ -313,15 +191,16 @@ pub fn decrypt_tally_with_secret_keys(
 #[cfg(test)]
 mod tests {
 
-    use crate::{
-        encode_decrypt_shares, encode_public_keys, extract_decrypt_shares, load_decrypt_shares,
-        load_encrypted_tally, parse_public_committee_keys,
-    };
     use rand_chacha::ChaCha20Rng;
 
     use chain_vote::{tally::batch_decrypt, EncryptedTally};
     use chain_vote::{Ballot, Crs, ElectionPublicKey, MemberCommunicationKey, MemberState, Vote};
     use rand_core::{CryptoRng, RngCore, SeedableRng};
+
+    use crate::tally::{
+        encode_decrypt_shares, encode_public_keys, extract_decrypt_shares, load_decrypt_shares,
+        load_encrypted_tally, parse_public_committee_keys,
+    };
 
     fn get_encrypted_ballot<R: RngCore + CryptoRng>(
         rng: &mut R,

@@ -1,15 +1,57 @@
 ### Community Tally verification tool
 
-This tool allows the community to cross reference and validate vote results.
+This tool allows the community to cross-reference and validate vote results.
 
 *Example usage:*
 
 ```
-cargo build --release -p tally
+cargo build --release -p audit
 ```  
+
+#### The fragment analysis tool saves the ledgers before and after state.
+#### The before state contains the encrypted tallies and the after state contains the decrypted tallies.
+
+I want to verify a proposal:
+
+- Open *ledger_after_tally.json* and find the proposal id of the the result in question.
+
+We need three ingredients to unwind the cryptographic proof.
+- [ ] Encrypted tally
+- [ ] Public keys of committee
+- [ ] Decryption shares
+
+### Encrypted tally
+- Open *ledger_before_tally.json* and find the encrypted tally for the proposal id.
+```bash
+ENCRYPTED_TALLY='yF6iIwbAVAsIBryA+HDWlL8X4G8TCrP1G47O8ossgT3jwrQFAAAAAOzRYqMSRlR0RHwFKLcH+OStqQfWeRLlCPyXvsAjNV0ixJ6FrijYPUnKt8bG6xcQ5ROQmzvTc2MrC47VAYNIU1Ls0WKjEkZUdER8BSi3B/jkrakH1nkS5Qj8l77AIzVdIlQanikT1SrvHlKmDn+9E1stq3uxmlFqm2jSgCVzcKN/'
+```
+
+### Committee Public keys
+
+- Search for *committee_member_keys* in *ledger_before_tally.json* - use the public key associated with the vote plan id where the given proposal id resides.Each vote plan will have a unique member public key. Make sure the member public key coincides with proposal id in question.
+
+```bash
+PUBLIC_KEY_ALICE='ristretto255_memberpk1mrt3dr5vher3jhs7enepaxl65ggsqeu23amm55nxup9h8nqmuqeqwccn78' 
+```
+### Decryption shares
+- Open *decryption_shares.json* and find the decryption shares for the proposal id by searching for the plaintext results of the proposal id.
+```bash
+SHARES_ALICE='WDDMb68A6JCVR5UdhDtl7QYrQHSMOFqg44lHcmtB/Q3IfSoqusq+obtC/JJOtDYWadSM9mOXtPwUfwV14hrGAw30MilDYi93ULxgB9JZ8+hlTaCkH4Dr3y3zALLBS6UEWDDMb68A6JCVR5UdhDtl7QYrQHSMOFqg44lHcmtB/Q2Q9hcGlcFVV4QLXxlWOAb1hJT9/2WhM16JXyJ+RC3MAyUKJf2AJJGuENKWyPEROI7ROuiVU6hn/iVIVbGQeO0I'
+```
 
 #### Public use: Validate results 
 #### `decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext`
+
+```bash
+SHARES_ALICE='0DDHBs4TnabGQjvhIiQP2S53mTThxqilR+ogY8MpIRV6PdDb+5NWVZYQvAQQZUIe8e/rzeZjGX5QkCpd84b/CyvrivhD4u7zvhccz6zSgOfLx3EVjY9PXBXOhPYkrUoE0DDHBs4TnabGQjvhIiQP2S53mTThxqilR+ogY8MpIRXOp9W5weElw0uZSyz4oCkRMKiRv2L1kfrOuNLOXtobBnWorfj2FLdBb2jZ5Cb0tqYvMKj+WLTTs2hrohjlSC0D'
+
+ENCRYPTED_TALLY='yF6iIwbAVAsIBryA+HDWlL8X4G8TCrP1G47O8ossgT3jwrQFAAAAAOzRYqMSRlR0RHwFKLcH+OStqQfWeRLlCPyXvsAjNV0ixJ6FrijYPUnKt8bG6xcQ5ROQmzvTc2MrC47VAYNIU1Ls0WKjEkZUdER8BSi3B/jkrakH1nkS5Qj8l77AIzVdIlQanikT1SrvHlKmDn+9E1stq3uxmlFqm2jSgCVzcKN/'
+
+PUBLIC_KEY_ALICE='ristretto255_memberpk1mrt3dr5vher3jhs7enepaxl65ggsqeu23amm55nxup9h8nqmuqeqwccn78' 
+
+./target/release/tally --decrypt-tally-from-shares $SHARES_ALICE --encrypted-tally $ENCRYPTED_TALLY --public-keys $PUBLIC_KEY_ALICE
+```
+N number of committee members
 
 ```bash
 SHARES_ALICE='WDDMb68A6JCVR5UdhDtl7QYrQHSMOFqg44lHcmtB/Q3IfSoqusq+obtC/JJOtDYWadSM9mOXtPwUfwV14hrGAw30MilDYi93ULxgB9JZ8+hlTaCkH4Dr3y3zALLBS6UEWDDMb68A6JCVR5UdhDtl7QYrQHSMOFqg44lHcmtB/Q2Q9hcGlcFVV4QLXxlWOAb1hJT9/2WhM16JXyJ+RC3MAyUKJf2AJJGuENKWyPEROI7ROuiVU6hn/iVIVbGQeO0I'

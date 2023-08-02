@@ -31,7 +31,7 @@ pub fn decode<S: Into<String>>(
     password: &[u8],
 ) -> Result<SecretKey<Ed25519Extended>, Error> {
     let encrypted_bytes = hex::decode(payload.into())?;
-    let key = decrypt(password, &encrypted_bytes)?;
+    let key = decrypt(password, encrypted_bytes)?;
     Ok(SecretKey::from_binary(&key)?)
 }
 

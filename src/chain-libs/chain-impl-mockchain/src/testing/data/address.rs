@@ -249,19 +249,19 @@ impl AddressData {
         AddressData::new(other.private_key, other.spending_counter, user_address)
     }
 
-    pub fn make_witness<'a>(
+    pub fn make_witness(
         &mut self,
         block0_hash: &HeaderId,
-        tad: TransactionAuthData<'a>,
+        tad: TransactionAuthData<'_>,
     ) -> Witness {
         self.make_witness_with_lane(block0_hash, 0, tad)
     }
 
-    pub fn make_witness_with_lane<'a>(
+    pub fn make_witness_with_lane(
         &mut self,
         block0_hash: &HeaderId,
         lane: usize,
-        tad: TransactionAuthData<'a>,
+        tad: TransactionAuthData<'_>,
     ) -> Witness {
         let witness = make_witness_with_lane(block0_hash, self, lane, &tad.hash());
         self.confirm_transaction_at_lane(lane).unwrap();
@@ -386,19 +386,19 @@ impl AddressDataValue {
         self.address_data.confirm_transaction_at_lane(lane)
     }
 
-    pub fn make_witness<'a>(
+    pub fn make_witness(
         &mut self,
         block0_hash: &HeaderId,
-        tad: TransactionAuthData<'a>,
+        tad: TransactionAuthData<'_>,
     ) -> Witness {
         self.make_witness_with_lane(block0_hash, 0, tad)
     }
 
-    pub fn make_witness_with_lane<'a>(
+    pub fn make_witness_with_lane(
         &mut self,
         block0_hash: &HeaderId,
         lane: usize,
-        tad: TransactionAuthData<'a>,
+        tad: TransactionAuthData<'_>,
     ) -> Witness {
         self.address_data
             .make_witness_with_lane(block0_hash, lane, tad)

@@ -132,7 +132,7 @@ impl TimeEra {
     }
 }
 
-#[cfg(any(test))]
+#[cfg(test)]
 mod test {
     use super::*;
     use crate::timeframe::*;

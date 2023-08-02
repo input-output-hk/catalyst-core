@@ -81,7 +81,7 @@ impl ServicingStationRequestGen {
         let proposal = self.proposals.get(index).unwrap().clone();
         self.client
             .proposal_raw(&proposal.internal_id.to_string())
-            .map_err(|e| RequestFailure::General(format!("{:?}", e)))
+            .map_err(|e| RequestFailure::General(format!("{e:?}")))
     }
 
     fn random_challenge(&mut self) -> Result<reqwest::blocking::Response, RequestFailure> {
@@ -89,7 +89,7 @@ impl ServicingStationRequestGen {
         let challenge = self.challenges.get(index).unwrap().clone();
         self.client
             .challenge_raw(&challenge.id.to_string())
-            .map_err(|e| RequestFailure::General(format!("{:?}", e)))
+            .map_err(|e| RequestFailure::General(format!("{e:?}")))
     }
 
     pub fn next_request(&mut self) -> Result<Vec<Option<Id>>, RequestFailure> {
@@ -98,22 +98,22 @@ impl ServicingStationRequestGen {
                 .client
                 .funds_raw()
                 .map(|_response| vec![None])
-                .map_err(|e| RequestFailure::General(format!("{:?}", e))),
+                .map_err(|e| RequestFailure::General(format!("{e:?}"))),
             RequestType::Challenges => self
                 .client
                 .challenges_raw()
                 .map(|_response| vec![None])
-                .map_err(|e| RequestFailure::General(format!("{:?}", e))),
+                .map_err(|e| RequestFailure::General(format!("{e:?}"))),
             RequestType::Challenge => self
                 .random_challenge()
                 .map(|_response| vec![None])
-                .map_err(|e| RequestFailure::General(format!("{:?}", e))),
+                .map_err(|e| RequestFailure::General(format!("{e:?}"))),
             RequestType::Proposal => self.random_proposal().map(|_response| vec![None]),
             RequestType::Proposals => self
                 .client
                 .proposals_raw()
                 .map(|_response| vec![None])
-                .map_err(|e| RequestFailure::General(format!("{:?}", e))),
+                .map_err(|e| RequestFailure::General(format!("{e:?}"))),
         }
     }
 }
@@ -126,7 +126,7 @@ impl RequestGenerator for ServicingStationRequestGen {
                 ids: v,
                 duration: start.elapsed(),
             }),
-            Err(e) => Err(RequestFailure::General(format!("{:?}", e))),
+            Err(e) => Err(RequestFailure::General(format!("{e:?}"))),
         }
     }
 

@@ -32,7 +32,7 @@ impl VotePlanStatusProvider for Block0Configuration {
 
         for vote in votes {
             for vote_plan in active_vote_plan.iter_mut() {
-                if let Some(mut proposal) = vote_plan
+                if let Some(proposal) = vote_plan
                     .proposals
                     .iter_mut()
                     .find(|p| p.proposal_id == vote.proposal_id)

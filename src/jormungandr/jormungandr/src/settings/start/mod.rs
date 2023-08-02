@@ -296,7 +296,7 @@ fn generate_network(
 
     let node_key = match p2p.bootstrap.node_key_file {
         Some(node_key_file) => {
-            <SigningKey<Ed25519>>::from_bech32_str(&std::fs::read_to_string(&node_key_file)?)?
+            <SigningKey<Ed25519>>::from_bech32_str(&std::fs::read_to_string(node_key_file)?)?
         }
         None => SigningKey::generate(rand::thread_rng()),
     };

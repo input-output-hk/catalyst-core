@@ -1,4 +1,4 @@
-#[allow(clippy::all)]
+#![allow(clippy::all)]
 use std::{error::Error, ffi::OsString, io::Cursor};
 
 use crate::{
@@ -335,7 +335,7 @@ fn inspect_witness(
         Err(err) => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: format!("ED25119 signature should be 64 bytes {}", err),
+                    err: format!("ED25119 signature should be 64 bytes {err}"),
                 },
             )))
         }
@@ -343,6 +343,7 @@ fn inspect_witness(
     Ok(sig)
 }
 
+#[allow(clippy::manual_let_else)]
 fn inspect_metamap_sig(
     spec_61285: &[Value],
 ) -> Result<&Vec<(Value, Value)>, Result<Signature, Box<dyn Error>>> {
@@ -365,7 +366,7 @@ fn inspect_cip36_sig(decoded: Value) -> Result<Vec<Value>, Result<Signature, Box
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: format!("Not congruent with CIP-36 {:?}", decoded),
+                    err: format!("Not congruent with CIP-36 {decoded:?}"),
                 },
             )))
         }
@@ -451,6 +452,7 @@ fn inspect_stake_key(
     Ok(stake_key)
 }
 
+#[allow(clippy::manual_let_else)]
 fn inspect_voting_key(
     metamap: &[(Value, Value)],
 ) -> Result<VotingKey, Result<Registration, Box<dyn Error>>> {
@@ -482,8 +484,7 @@ fn inspect_voting_key(
                                     return Err(Err(Box::new(
                                         RegistrationError::RawBinCborRegistrationFailure {
                                             err: format!(
-                                                "Unable to extract weight for delegation {}",
-                                                err
+                                                "Unable to extract weight for delegation {err}"
                                             ),
                                         },
                                     )))
@@ -526,6 +527,7 @@ fn inspect_voting_key(
     Ok(voting_key)
 }
 
+#[allow(clippy::manual_let_else)]
 fn inspect_metamap_reg(
     spec_61284: &[Value],
 ) -> Result<&Vec<(Value, Value)>, Result<Registration, Box<dyn Error>>> {
@@ -548,7 +550,7 @@ fn inspect_cip36_reg(decoded: &Value) -> Result<Vec<Value>, Result<Registration,
         _ => {
             return Err(Err(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: format!("Not congruent with CIP-36 {:?}", decoded),
+                    err: format!("Not congruent with CIP-36 {decoded:?}"),
                 },
             )))
         }

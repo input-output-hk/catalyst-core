@@ -96,7 +96,6 @@ impl VitVotePlanDefBuilder {
         .take(self.proposals_count)
         .collect::<Vec<ProposalDefBuilder>>()
         .chunks(self.split_by)
-        .into_iter()
         .enumerate()
         .flat_map(|(index, proposal_builders)| {
             let vote_plan_name = {

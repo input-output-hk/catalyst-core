@@ -113,7 +113,7 @@ impl ValidVotePlanGenerator {
                     .clone();
 
                 let challenge_idx: i32 = proposal_template.challenge_id.unwrap().parse().unwrap();
-                let mut challenge = fund
+                let challenge = fund
                     .challenges
                     .iter_mut()
                     .find(|x| x.id == challenge_idx)

@@ -99,11 +99,11 @@ mod tests {
     #[test]
     fn reason_json_test() {
         let reason = Reason::FragmentAlreadyInLog;
-        let json = serde_json::to_value(&reason).unwrap();
+        let json = serde_json::to_value(reason).unwrap();
         assert_eq!(json, json!("FragmentAlreadyInLog"));
 
         let reason = Reason::FragmentInvalid;
-        let json = serde_json::to_value(&reason).unwrap();
+        let json = serde_json::to_value(reason).unwrap();
         assert_eq!(json, json!("FragmentInvalid"));
     }
 
@@ -114,7 +114,7 @@ mod tests {
             pool_number: DEFAULT_POOL_NUMBER,
             reason: Reason::FragmentInvalid,
         };
-        let json = serde_json::to_value(&rejected_info).unwrap();
+        let json = serde_json::to_value(rejected_info).unwrap();
         assert_eq!(
             json,
             json!({
@@ -133,7 +133,7 @@ mod tests {
             )],
             rejected: vec![],
         };
-        let json = serde_json::to_value(&summary).unwrap();
+        let json = serde_json::to_value(summary).unwrap();
         assert_eq!(
             json,
             json!({
@@ -156,7 +156,7 @@ mod tests {
             ),
             votes: vec![ProposalIndex(1)],
         };
-        let json = serde_json::to_value(&account_vote).unwrap();
+        let json = serde_json::to_value(account_vote).unwrap();
         assert_eq!(
             json,
             json!({

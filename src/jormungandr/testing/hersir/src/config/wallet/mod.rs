@@ -63,7 +63,7 @@ impl WalletTemplate {
     }
 }
 
-#[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::derived_hash_with_manual_eq)]
 impl Hash for WalletTemplate {
     fn hash<H: Hasher>(&self, state: &mut H) {
         match self {

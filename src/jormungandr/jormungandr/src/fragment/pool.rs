@@ -21,7 +21,7 @@ use jormungandr_lib::{
     },
     time::SecondsSinceUnixEpoch,
 };
-use std::mem;
+
 use thiserror::Error;
 use tokio::{
     fs::File,
@@ -80,7 +80,7 @@ impl Pool {
     /// Synchronizes the persistent log file contents and metadata
     /// to the file system and closes the file.
     pub async fn close_persistent_log(&mut self) {
-        if let Some(mut persistent_log) = mem::replace(&mut self.persistent_log, None) {
+        if let Some(mut persistent_log) = self.persistent_log.take() {
             if let Err(error) = persistent_log.flush().await {
                 tracing::error!(%error, "failed to flush persistent log");
             }

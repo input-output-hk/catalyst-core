@@ -237,17 +237,18 @@ jobs:
 
       - name: Build and archive tests
         if: steps.archive-cache.outputs.cache-hit != 'true'
-        run: cargo nextest archive \
-          --workspace \
-          --exclude vitup \
-          --exclude mainnet-lib \
-          --exclude jortestkit \
-          --exclude integration-tests \
-          --exclude vit-servicing-station-cli \
-          --exclude vit-servicing-station-server \
-          --exclude vit-servicing-station-tests \
-          --exclude vit-servicing-station-lib \
-          --archive-file nextest-archive.tar.zst
+        run: | 
+          cargo nextest archive \
+            --workspace \
+            --exclude vitup \
+            --exclude mainnet-lib \
+            --exclude jortestkit \
+            --exclude integration-tests \
+            --exclude vit-servicing-station-cli \
+            --exclude vit-servicing-station-server \
+            --exclude vit-servicing-station-tests \
+            --exclude vit-servicing-station-lib \
+            --archive-file nextest-archive.tar.zst
 
       - name: Run Catalyst Core tests
         env:

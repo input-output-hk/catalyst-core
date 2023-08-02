@@ -86,20 +86,21 @@ class Mapper:
         self.config = config
         self.vote_options_id = vote_options_id
 
-    def map_objective(self, a: Campaign, event_id: int) -> ideascale_importer.db.models.Challenge:
+    def map_objective(self, a: Campaign, event_id: int) -> ideascale_importer.db.models.Objective:
         """Map a IdeaScale campaign into a objective."""
         try:
             reward = parse_reward(a.tagline)
         except InvalidRewardsString as e:
             raise MapObjectiveError("reward", "tagline", str(e))
 
-        return ideascale_importer.db.models.Challenge(
+        return ideascale_importer.db.models.Objective(
             row_id=0,
             id=a.id,
             event=event_id,
             category=get_objective_category(a),
             title=a.name,
             description=html_to_md(a.description),
+            deleted=False,
             rewards_currency=reward.currency,
             rewards_total=reward.amount,
             proposers_rewards=reward.amount,
@@ -136,6 +137,7 @@ class Mapper:
             objective=0,  # should be set later
             title=html_to_md(a.title),
             summary=html_to_md(a.text),
+            deleted=False,
             category="",
             public_key=public_key,
             funds=funds,
@@ -310,7 +312,7 @@ class Importer:
         proposal_count = 0
 
         async with self.conn.transaction():
-            inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id", "event"])
+            inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id", "event"], pre_update_cols={"deleted": True}, pre_update_cond={"event": f"= {self.event_id}"})            
             inserted_objectives_ix = {o.id: o for o in inserted_objectives}
 
             proposals_with_campaign_id = [(a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)) for a in ideas]
@@ -321,6 +323,10 @@ class Importer:
                     proposals.append(p)
 
             proposal_count = len(proposals)
-            await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id", "objective"])
+
+            all_objectives = await ideascale_importer.db.select(self.conn, objectives[0], cond={"event": f"= {self.event_id}"})
+            all_objectives_str = ','.join([f"{objective.row_id}" for objective in all_objectives])
+
+            await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id", "objective"], pre_update_cols={"deleted": True}, pre_update_cond={"objective": f"IN ({all_objectives_str})"})
 
         logger.info("Imported objectives and proposals", objective_count=objective_count, proposal_count=proposal_count)

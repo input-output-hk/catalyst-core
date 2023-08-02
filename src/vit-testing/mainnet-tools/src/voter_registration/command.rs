@@ -41,7 +41,7 @@ impl Command {
             Ok(value) => std::fs::read_to_string(value)?,
             Err(_) => fake::metadata(),
         };
-        println!("{}", output);
+        println!("{output}");
         Ok(())
     }
 }

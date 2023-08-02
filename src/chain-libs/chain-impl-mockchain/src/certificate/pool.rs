@@ -369,10 +369,10 @@ impl PoolSignature {
         }
     }
 
-    pub fn verify<'a>(
+    pub fn verify(
         &self,
         pool_info: &PoolRegistration,
-        verify_data: &TransactionBindingAuthData<'a>,
+        verify_data: &TransactionBindingAuthData<'_>,
     ) -> Verification {
         match self {
             PoolSignature::Operator(_) => Verification::Failed,
@@ -388,10 +388,10 @@ impl PoolOwnersSignature {
         })
     }
 
-    pub fn verify<'a>(
+    pub fn verify(
         &self,
         pool_info: &PoolRegistration,
-        verify_data: &TransactionBindingAuthData<'a>,
+        verify_data: &TransactionBindingAuthData<'_>,
     ) -> Verification {
         // fast track if we don't meet the management threshold already
         if self.signatures.len() < pool_info.management_threshold() as usize {

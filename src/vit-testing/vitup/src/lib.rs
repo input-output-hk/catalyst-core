@@ -7,6 +7,7 @@ pub mod client;
 pub mod config;
 pub mod error;
 pub mod mode;
+#[allow(clippy::all)]
 pub mod testing;
 
 pub type Result<T> = std::result::Result<T, error::Error>;

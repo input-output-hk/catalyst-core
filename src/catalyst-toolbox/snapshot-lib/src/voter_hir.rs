@@ -57,7 +57,7 @@ pub mod tests {
         type Parameters = (String, VpRange);
         type Strategy = BoxedStrategy<Self>;
         fn arbitrary_with(args: Self::Parameters) -> Self::Strategy {
-            (any::<([u8; 32])>(), args.1 .0)
+            (any::<[u8; 32]>(), args.1 .0)
                 .prop_map(move |(key, voting_power)| VoterHIR {
                     voting_key: Identifier::from_hex(&hex::encode(key)).unwrap(),
                     voting_power: voting_power.into(),

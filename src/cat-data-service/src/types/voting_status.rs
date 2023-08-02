@@ -37,7 +37,7 @@ mod tests {
             settings: None,
         });
 
-        let json = serde_json::to_value(&voting_status).unwrap();
+        let json = serde_json::to_value(voting_status).unwrap();
         assert_eq!(
             json,
             json!(
@@ -54,7 +54,7 @@ mod tests {
             settings: Some("some settings".to_string()),
         });
 
-        let json = serde_json::to_value(&voting_status).unwrap();
+        let json = serde_json::to_value(voting_status).unwrap();
         assert_eq!(
             json,
             json!(

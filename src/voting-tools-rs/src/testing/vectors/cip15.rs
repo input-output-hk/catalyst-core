@@ -87,8 +87,6 @@ mod tests {
 
         // cardano_serialization_lib types don't implement Debug so we can't use assert_eq!
         // lmao
-        if public != public_from_secret {
-            panic!()
-        }
+        assert!(!(public != public_from_secret),);
     }
 }

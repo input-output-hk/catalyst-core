@@ -81,7 +81,7 @@ mod tests {
             sponsor: "sponsor 1".to_string(),
         });
 
-        let json = serde_json::to_value(&highlights).unwrap();
+        let json = serde_json::to_value(highlights).unwrap();
         assert_eq!(
             json,
             json!(
@@ -107,7 +107,7 @@ mod tests {
             highlights: None,
         });
 
-        let json = serde_json::to_value(&challenge).unwrap();
+        let json = serde_json::to_value(challenge).unwrap();
         assert_eq!(
             json,
             json!(

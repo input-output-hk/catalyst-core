@@ -20,7 +20,7 @@ on:
        - 'book/**'
 
 env:
-  RUST_LATEST_STABLE_VERSION: 1.65
+  RUST_LATEST_STABLE_VERSION: 1.71
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
   RUST_BACKTRACE: 1
@@ -126,7 +126,18 @@ jobs:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
       - name: Build and archive tests
-        run: cargo nextest archive --archive-file nextest-archive.tar.zst
+        run: | 
+          cargo nextest archive \
+            --workspace \
+            --exclude vitup \
+            --exclude mainnet-lib \
+            --exclude jortestkit \
+            --exclude integration-tests \
+            --exclude vit-servicing-station-cli \
+            --exclude vit-servicing-station-server \
+            --exclude vit-servicing-station-tests \
+            --exclude vit-servicing-station-lib \
+            --archive-file nextest-archive.tar.zst
 
       - name: Save test archive
         uses: actions/cache/save@v3
@@ -226,7 +237,18 @@ jobs:
 
       - name: Build and archive tests
         if: steps.archive-cache.outputs.cache-hit != 'true'
-        run: cargo nextest archive --archive-file nextest-archive.tar.zst
+        run: | 
+          cargo nextest archive \
+            --workspace \
+            --exclude vitup \
+            --exclude mainnet-lib \
+            --exclude jortestkit \
+            --exclude integration-tests \
+            --exclude vit-servicing-station-cli \
+            --exclude vit-servicing-station-server \
+            --exclude vit-servicing-station-tests \
+            --exclude vit-servicing-station-lib \
+            --archive-file nextest-archive.tar.zst
 
       - name: Run Catalyst Core tests
         env:
@@ -235,8 +257,7 @@ jobs:
         ## removing test ui_test because of bug https://github.com/rust-lang/cargo/issues/10352
         run: |
           cargo nextest run \
-          -E "not (package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) \
-          + test(ui_test))" \
+          -E "not (test(ui_test))" \
           --archive-file nextest-archive.tar.zst --extract-to ${{ github.workspace }} \
           --extract-overwrite --partition hash:${{ matrix.partition }}/10 --profile ci
 
@@ -352,5 +373,6 @@ jobs:
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
           components: rustfmt, clippy
-
+          
+      - run: rustup component add clippy
       - run: scripts/check-fmt.sh

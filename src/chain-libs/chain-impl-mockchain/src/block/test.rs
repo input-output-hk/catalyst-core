@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 #[cfg(test)]
 use crate::block::Header;
 #[cfg(test)]

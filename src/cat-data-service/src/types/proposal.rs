@@ -183,7 +183,7 @@ mod tests {
             deleted: false,
         });
 
-        let json = serde_json::to_value(&proposal_summary).unwrap();
+        let json = serde_json::to_value(proposal_summary).unwrap();
         assert_eq!(
             json,
             json!(
@@ -206,7 +206,7 @@ mod tests {
             payment_key: "proposer payment key".to_string(),
         });
 
-        let json = serde_json::to_value(&proposer_details).unwrap();
+        let json = serde_json::to_value(proposer_details).unwrap();
         assert_eq!(
             json,
             json!(
@@ -230,7 +230,7 @@ mod tests {
             supplemental: Some(json!({})),
         });
 
-        let json = serde_json::to_value(&proposal_details).unwrap();
+        let json = serde_json::to_value(proposal_details).unwrap();
         assert_eq!(
             json,
             json!(
@@ -252,7 +252,7 @@ mod tests {
             supplemental: None,
         });
 
-        let json = serde_json::to_value(&proposal_details).unwrap();
+        let json = serde_json::to_value(proposal_details).unwrap();
         assert_eq!(
             json,
             json!(
@@ -284,7 +284,7 @@ mod tests {
             },
         });
 
-        let json = serde_json::to_value(&proposal).unwrap();
+        let json = serde_json::to_value(proposal).unwrap();
         assert_eq!(
             json,
             json!(

@@ -155,7 +155,6 @@ mod tests {
 
         let votes_count = snapshot
             .voting_keys()
-            .into_iter()
             .map(|key| (key.clone(), HashSet::from([Hash::from([0u8; 32])])))
             .collect::<VoteCount>();
 

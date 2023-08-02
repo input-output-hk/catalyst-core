@@ -47,7 +47,7 @@ pub enum QrDecodeError {
 impl KeyQrCode {
     pub fn generate(key: SecretKey<Ed25519Extended>, password: &[u8]) -> Self {
         let enc_hex = payload::generate(key, password);
-        let inner = QrCode::with_error_correction_level(&enc_hex, EcLevel::H).unwrap();
+        let inner = QrCode::with_error_correction_level(enc_hex, EcLevel::H).unwrap();
 
         KeyQrCode { inner }
     }

@@ -106,7 +106,7 @@ pub fn filter_registrations(
                     spec_61285: Some(prefix_hex(&rawreg.bin_sig)),
                     registration: None,
                     errors: nonempty![RegistrationError::CborDeserializationFailed {
-                        err: format!("Failed to deserialize Registration CBOR: {}", err),
+                        err: format!("Failed to deserialize Registration CBOR: {err}"),
                     }],
                     registration_bad_bin: Some(RegistrationCorruptedBin {
                         tx_id: TxId(tx_id as u64),
@@ -126,7 +126,7 @@ pub fn filter_registrations(
                     spec_61285: Some(prefix_hex(&rawreg.bin_sig)),
                     registration: Some(reg),
                     errors: nonempty![RegistrationError::SignatureError {
-                        err: format!("Signature validation failure: {}", err),
+                        err: format!("Signature validation failure: {err}"),
                     }],
                     registration_bad_bin: None,
                 });
@@ -236,7 +236,7 @@ pub fn validate_reg_cddl(
 ) -> Result<(), RegistrationError> {
     cddl::validate_cbor_from_slice(&cddl_config.spec_61284, bin_reg, None).map_err(|err| {
         RegistrationError::CddlParsingFailed {
-            err: format!("reg bytes does not match 61284 spec: {}", err),
+            err: format!("reg bytes does not match 61284 spec: {err}"),
         }
     })?;
 
@@ -254,7 +254,7 @@ pub fn validate_sig_cddl(
 ) -> Result<(), RegistrationError> {
     cddl::validate_cbor_from_slice(&cddl_config.spec_61285, bin_sig, None).map_err(|err| {
         RegistrationError::CddlParsingFailed {
-            err: format!("sig bytes does not match 61285 spec: {}", err),
+            err: format!("sig bytes does not match 61285 spec: {err}"),
         }
     })?;
 

@@ -3,7 +3,10 @@ use itertools::Itertools;
 use jormungandr_lib::crypto::account::Identifier;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
+use snapshot_lib::{
+    registration::{MainnetRewardAddress, StakeAddress},
+    KeyContribution, SnapshotInfo, VoterHIR,
+};
 use time::OffsetDateTime;
 use vit_servicing_station_lib::v0::endpoints::snapshot::SnapshotInfoInput;
 
@@ -84,14 +87,14 @@ impl SnapshotBuilder {
                     Some(SnapshotInfo {
                         contributions: std::iter::from_fn(|| {
                             Some(KeyContribution {
-                                reward_address: format!(
+                                reward_address: MainnetRewardAddress(format!(
                                     "address_{:?}",
                                     rng.gen_range(1u64, 1_000u64)
-                                ),
-                                stake_public_key: format!(
+                                )),
+                                stake_public_key: StakeAddress(format!(
                                     "address_{:?}",
                                     rng.gen_range(1u64, 1_000u64)
-                                ),
+                                )),
                                 value: rng.gen_range(1u64, 1_000u64),
                             })
                         })

@@ -4,7 +4,9 @@ use chain_impl_mockchain::testing::TestGen;
 use jormungandr_lib::interfaces::Value;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use snapshot_lib::registration::{Delegations, VotingRegistration};
+use snapshot_lib::registration::{
+    Delegations, MainnetRewardAddress, StakeAddress, VotingRegistration,
+};
 use snapshot_lib::{voting_group::RepsVotersAssigner, Error, Snapshot};
 use snapshot_lib::{
     voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
@@ -186,9 +188,9 @@ impl RawSnapshotBuilder {
             self.voting_registrations = Some(
                 std::iter::from_fn(|| {
                     Some(VotingRegistration {
-                        stake_public_key: TestGen::public_key().to_string(),
+                        stake_public_key: StakeAddress(TestGen::public_key().to_string()),
                         voting_power: rng.gen_range(1u64, 1_00u64).into(),
-                        reward_address: TestGen::public_key().to_string(),
+                        reward_address: MainnetRewardAddress(TestGen::public_key().to_string()),
                         delegations: if delegation_type_count > self.voting_registrations_count / 2
                         {
                             delegation_type_count += 1;

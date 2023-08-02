@@ -13,6 +13,7 @@ use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
 use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder};
+use snapshot_lib::registration::MainnetRewardAddress;
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
@@ -169,7 +170,8 @@ pub fn voter_rewards_happy_path() {
     assert_eq!(
         records
             .iter()
-            .find(|(x, _y)| **x == alice_wallet.reward_address().to_address().to_hex())
+            .find(|(x, _y)| **x
+                == MainnetRewardAddress(alice_wallet.reward_address().to_address().to_hex()))
             .unwrap()
             .1,
         &EXPECTED_REWARD.into()
@@ -178,7 +180,8 @@ pub fn voter_rewards_happy_path() {
     assert_eq!(
         records
             .iter()
-            .find(|(x, _y)| **x == bob_wallet.reward_address().to_address().to_hex())
+            .find(|(x, _y)| **x
+                == MainnetRewardAddress(bob_wallet.reward_address().to_address().to_hex()))
             .unwrap()
             .1,
         &EXPECTED_REWARD.into()
@@ -186,5 +189,6 @@ pub fn voter_rewards_happy_path() {
 
     assert!(!records
         .iter()
-        .any(|(x, _y)| **x == clarice_wallet.reward_address().to_address().to_hex()));
+        .any(|(x, _y)| *x
+            == MainnetRewardAddress(clarice_wallet.reward_address().to_address().to_hex())));
 }

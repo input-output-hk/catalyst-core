@@ -81,7 +81,9 @@ use jormungandr_lib::crypto::account::Identifier;
 use mainnet_lib::wallet_state::{MainnetWalletState, TemplateError};
 use mainnet_lib::{MainnetNetworkBuilder, SnapshotParameters};
 use num_traits::ToPrimitive;
-use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
+use snapshot_lib::registration::{
+    Delegations as VotingDelegations, MainnetRewardAddress, StakeAddress, VotingRegistration,
+};
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 use voting_tools_rs::test_api::MockDbProvider;
 use voting_tools_rs::{SnapshotEntry, VotingKey, VotingPurpose};
@@ -99,7 +101,7 @@ pub trait OutputExtension {
 impl OutputExtension for SnapshotEntry {
     fn try_into_voting_registration(self) -> Result<VotingRegistration, Error> {
         Ok(VotingRegistration {
-            stake_public_key: self.stake_key.to_string(),
+            stake_public_key: StakeAddress(self.stake_key.to_string()),
             voting_power: self
                 .voting_power
                 .to_u64()
@@ -107,7 +109,7 @@ impl OutputExtension for SnapshotEntry {
                     Error::CannotConvertFromOutput("cannot extract voting power".to_string())
                 })?
                 .into(),
-            reward_address: hex::encode(&self.rewards_address.0),
+            reward_address: MainnetRewardAddress(hex::encode(&self.rewards_address.0)),
             delegations: match self.voting_key {
                 VotingKey::Direct(legacy) => VotingDelegations::Legacy(
                     Identifier::from_hex(&legacy.to_hex())

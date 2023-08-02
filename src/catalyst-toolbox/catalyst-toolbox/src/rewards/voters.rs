@@ -135,7 +135,7 @@ mod tests {
     use super::*;
     use crate::utils::assert_are_close;
     use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
-    use snapshot_lib::registration::{Delegations, VotingRegistration};
+    use snapshot_lib::registration::{Delegations, StakeAddress, VotingRegistration};
     use snapshot_lib::Snapshot;
     use snapshot_lib::{Fraction, RawSnapshot};
     use test_strategy::proptest;
@@ -298,8 +298,8 @@ mod tests {
         let mut total_stake = 0u64;
 
         for i in 1..10u64 {
-            let stake_public_key = i.to_string();
-            let reward_address = i.to_string();
+            let stake_public_key = StakeAddress(i.to_string());
+            let reward_address = MainnetRewardAddress(i.to_string());
 
             let delegations = Delegations::New(vec![(voting_public_key.clone(), 1)]);
             raw_snapshot.push(VotingRegistration {
@@ -347,8 +347,8 @@ mod tests {
 
         for i in 1..10u64 {
             let voting_public_key = Identifier::from_hex(&hex::encode([i as u8; 32])).unwrap();
-            let stake_public_key = i.to_string();
-            let reward_address = i.to_string();
+            let stake_public_key = StakeAddress(i.to_string());
+            let reward_address = MainnetRewardAddress(i.to_string());
             let delegations = Delegations::New(vec![(voting_public_key.clone(), 1)]);
             raw_snapshot.push(VotingRegistration {
                 stake_public_key,

@@ -41,7 +41,7 @@ Defined  Data Formats:
     `value`->"created" = <Integer Unix Epoch when Token was created>,
     `value`->"expires" = <Integer Unix Epoch when Token will expire>,
     `value`->"perms" = {Permissions assigned to this api key}
-  
+
   Community reviewers:
     `id` = `email`
     `id2` = `encrypted_password`
@@ -51,7 +51,19 @@ Defined  Data Formats:
     `value`->"anonymous_id" = `<anonymous_id of the PA>`
     `value`->"force_reset" = "<bool used to force reset of password>"
     `value`->"active" = "<bool used to activate account>"
-    ...
+
+  IdeaScale parameters:
+    `id` = "ideascale"
+    `id2` = "params"
+    `id3` = <String identifying a fund, e.g. "F10">
+    `value`->"campaign_group_id" = <IdeaScale campaign group id>
+    `value`->"stage_ids" = <List of IdeaScale stage ids>
+
+  Event IdeaScale parameters:
+    `id` = "event"
+    `id2` = "ideascale_params"
+    `id3` = <Event row_id (as a string)>
+    `value`->"params_id" = <String identifier of the Ideascale parameters in the config table>
 ';
 
 COMMENT ON COLUMN config.row_id IS

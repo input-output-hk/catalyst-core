@@ -1,0 +1,29 @@
+---
+rest:
+  listen: "127.0.0.1:10000"
+jrpc:
+  listen: "127.0.0.1:10002"
+p2p:
+  bootstrap:
+    trusted_peers: []
+  connection:
+    public_address: /ip4/127.0.0.1/tcp/10001
+    allow_private_addresses: true
+    whitelist: ~
+  policy:
+    quarantine_duration: 1s
+  layers:
+    topics_of_interest:
+      messages: high
+      blocks: high
+log:
+  format: json
+  level: TRACE
+  output: stdout
+mempool:
+  pool_max_entries: 10000
+  log_max_entries: 100000
+  persistent_log: ~
+bootstrap_from_trusted_peers: false
+skip_bootstrap: true
+

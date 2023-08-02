@@ -763,13 +763,16 @@ impl VotePlanManager {
             });
         }
 
-        if !self.can_vote(block_date) {
+        if cfg!(feature = "audit") {
+            // audit feature enabled - fragment replay has no concept of time. Skip check.
+        } else if !self.can_vote(block_date) {
             return Err(VoteError::NotVoteTime {
                 start: self.plan().vote_start(),
                 end: self.plan().vote_end(),
                 vote: cast,
             });
         }
+
         if self.plan().payload_type() != cast.payload().payload_type() {
             return Err(VoteError::InvalidPayloadType {
                 expected: self.plan().payload_type(),
@@ -804,7 +807,9 @@ impl VotePlanManager {
     where
         F: FnMut(&VoteAction),
     {
-        if !self.can_committee(block_date) {
+        if cfg!(feature = "audit") {
+            // audit feature enabled - fragment replay has no concept of time. Skip check.
+        } else if !self.can_committee(block_date) {
             return Err(VoteError::NotCommitteeTime {
                 start: self.plan().committee_start(),
                 end: self.plan().committee_end(),
@@ -845,7 +850,9 @@ impl VotePlanManager {
     where
         F: FnMut(&VoteAction),
     {
-        if !self.can_committee(block_date) {
+        if cfg!(feature = "audit") {
+            // audit feature enabled - fragment replay has no concept of time. Skip check.
+        } else if !self.can_committee(block_date) {
             return Err(VoteError::NotCommitteeTime {
                 start: self.plan().committee_start(),
                 end: self.plan().committee_end(),
@@ -1247,6 +1254,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "audit"))]
     pub fn vote_plan_manager_tally_invalid_date_public() {
         let (
             _,
@@ -1281,6 +1289,8 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "audit"))]
+
     pub fn vote_plan_manager_tally_invalid_date_private() {
         let (
             members,
@@ -1317,6 +1327,7 @@ mod tests {
         );
     }
 
+    #[cfg(not(feature = "audit"))]
     fn vote_plan_manager_tally_invalid_date_setup(
         payload_type: PayloadType,
     ) -> (
@@ -1782,6 +1793,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "audit"))]
     pub fn vote_manager_too_late_to_vote() {
         let vote_plan = VoteTestGen::vote_plan_with_proposals(1);
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, VoteTestGen::vote_cast_payload());
@@ -1810,6 +1822,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(not(feature = "audit"))]
     pub fn vote_manager_too_early_to_vote() {
         let vote_plan = VotePlan::new(
             BlockDate::from_epoch_slot_id(1, 0),

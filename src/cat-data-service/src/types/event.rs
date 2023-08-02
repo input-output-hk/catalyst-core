@@ -379,7 +379,7 @@ mod tests {
             is_final: true,
         });
 
-        let json = serde_json::to_value(&event_summary).unwrap();
+        let json = serde_json::to_value(event_summary).unwrap();
         assert_eq!(
             json,
             json!(
@@ -403,7 +403,7 @@ mod tests {
             is_final: true,
         });
 
-        let json = serde_json::to_value(&event_summary).unwrap();
+        let json = serde_json::to_value(event_summary).unwrap();
         assert_eq!(
             json,
             json!(
@@ -420,7 +420,7 @@ mod tests {
     fn voting_power_algorithm_json_test() {
         let voting_power_algorithm = SerdeType(VotingPowerAlgorithm::ThresholdStakedADA);
 
-        let json = serde_json::to_value(&voting_power_algorithm).unwrap();
+        let json = serde_json::to_value(voting_power_algorithm).unwrap();
         assert_eq!(json, json!("threshold_staked_ADA"))
     }
 
@@ -432,7 +432,7 @@ mod tests {
             max_pct: Some(Decimal::new(123, 2)),
         });
 
-        let json = serde_json::to_value(&voting_power_settings).unwrap();
+        let json = serde_json::to_value(voting_power_settings).unwrap();
         assert_eq!(
             json,
             json!(
@@ -450,7 +450,7 @@ mod tests {
             max_pct: None,
         });
 
-        let json = serde_json::to_value(&voting_power_settings).unwrap();
+        let json = serde_json::to_value(voting_power_settings).unwrap();
         assert_eq!(
             json,
             json!(
@@ -469,7 +469,7 @@ mod tests {
             taken: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
         });
 
-        let json = serde_json::to_value(&event_registration).unwrap();
+        let json = serde_json::to_value(event_registration).unwrap();
         assert_eq!(
             json,
             json!(
@@ -487,7 +487,7 @@ mod tests {
             taken: None,
         });
 
-        let json = serde_json::to_value(&event_registration).unwrap();
+        let json = serde_json::to_value(event_registration).unwrap();
         assert_eq!(json, json!({}));
     }
 
@@ -498,7 +498,7 @@ mod tests {
             name: "Fund 10".to_string(),
         });
 
-        let json = serde_json::to_value(&event_goal).unwrap();
+        let json = serde_json::to_value(event_goal).unwrap();
         assert_eq!(
             json,
             json!(
@@ -524,7 +524,7 @@ mod tests {
             tallying_end: Some(DateTime::from_utc(NaiveDateTime::default(), Utc)),
         });
 
-        let json = serde_json::to_value(&event_schedule).unwrap();
+        let json = serde_json::to_value(event_schedule).unwrap();
         assert_eq!(
             json,
             json!(
@@ -554,7 +554,7 @@ mod tests {
             tallying_end: None,
         });
 
-        let json = serde_json::to_value(&event_schedule).unwrap();
+        let json = serde_json::to_value(event_schedule).unwrap();
         assert_eq!(json, json!({}));
     }
 
@@ -585,7 +585,7 @@ mod tests {
             goals: vec![],
         });
 
-        let json = serde_json::to_value(&event_details).unwrap();
+        let json = serde_json::to_value(event_details).unwrap();
         assert_eq!(
             json,
             json!(
@@ -654,7 +654,7 @@ mod tests {
             },
         });
 
-        let json = serde_json::to_value(&event).unwrap();
+        let json = serde_json::to_value(event).unwrap();
         assert_eq!(
             json,
             json!(

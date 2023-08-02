@@ -24,7 +24,7 @@ impl Settings {
             output_format,
         } = self;
         let settings = request_settings(args)?;
-        let formatted = output_format.format_json(serde_json::to_value(&settings)?)?;
+        let formatted = output_format.format_json(serde_json::to_value(settings)?)?;
         println!("{}", formatted);
         Ok(())
     }

@@ -478,10 +478,10 @@ impl ExplorerTransaction {
     /// The discrimination is needed to get addresses from account inputs.
     /// The transactions and blocks are used to resolve utxo inputs
 
-    pub fn from<'transaction, 'context, T>(
+    pub fn from<'context, T>(
         context: &'context ExplorerBlockBuildingContext<'context>,
         id: &FragmentId,
-        tx: &TransactionSlice<'transaction, T>,
+        tx: &TransactionSlice<'_, T>,
         certificate: Option<Certificate>,
         offset_in_block: u32,
         transactions_in_current_block: &HashMap<FragmentId, ExplorerTransaction>,

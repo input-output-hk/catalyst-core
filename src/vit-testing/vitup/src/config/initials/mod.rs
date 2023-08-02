@@ -17,9 +17,10 @@ pub struct Initials {
 pub const DIRECT_VOTING_GROUP: &str = "direct";
 pub const REP_VOTING_GROUP: &str = "rep";
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Default)]
 pub enum Role {
     Representative,
+    #[default]
     Voter,
 }
 
@@ -66,12 +67,6 @@ impl FromStr for Role {
 pub enum Error {
     #[error("unknown type of role: {0}")]
     UnknownRole(String),
-}
-
-impl Default for Role {
-    fn default() -> Self {
-        Role::Voter
-    }
 }
 
 #[cfg(test)]

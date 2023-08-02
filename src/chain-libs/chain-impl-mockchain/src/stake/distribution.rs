@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 use super::stake::Stake;
 use crate::{
     account,

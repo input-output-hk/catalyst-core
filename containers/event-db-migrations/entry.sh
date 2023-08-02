@@ -19,6 +19,7 @@
 # DB_USER_PASSWORD - The password of the database user
 # DB_SKIP_HISTORICAL_DATA - If set, historical data will not be added to the database (optional)
 # DB_SKIP_TEST_DATA - If set, test data will not be added to the database (optional)
+# DB_SKIP_STAGE_DATA - If set, stage specific data will not be added to the database (optional)
 # ADMIN_ROLE_PASSWORD - The password of the cat_admin role for graphql
 # ADMIN_USER_PASSWORD - The password of the admin user for graphql
 # ANON_ROLE_PASSWORD - The password of the cat_anon role for graphql
@@ -31,6 +32,7 @@
 # SKIP_GRAPHQL_INIT - If set, graphql will not be initialized (optional)
 # DEBUG - If set, the script will print debug information (optional)
 # DEBUG_SLEEP - If set, the script will sleep for the specified number of seconds (optional)
+# STAGE - The stage being run.  Currently only controls if stage specific data is applied to the DB (optional)
 # ---------------------------------------------------------------
 set +x
 set -o errexit
@@ -143,6 +145,20 @@ if [[ -z "${DB_SKIP_HISTORICAL_DATA:-}" ]]; then
         echo "Adding historic data from $file"
         psql -f "$file"
     done < <(find ./historic_data -name '*.sql' -print0 | sort -z)
+fi
+
+# Add stage specific data to the DB when initialized.
+if [[ -z "${DB_SKIP_STAGE_DATA:-}" ]]; then
+    if [[ -z "${STAGE:-}" ]]; then
+        STAGE_DATA="./stage_data/local"
+    else
+        STAGE_DATA="./stage_data/$STAGE"
+    fi
+
+    while IFS= read -r -d '' file; do
+        echo "Adding stage specific data from $file"
+        psql -f "$file"
+    done < <(find "$STAGE_DATA" -name '*.sql' -print0 | sort -z)
 fi
 
 # Add test data

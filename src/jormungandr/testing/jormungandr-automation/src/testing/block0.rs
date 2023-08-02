@@ -1,3 +1,4 @@
+#![allow(clippy::result_large_err)]
 use super::blockchain_config::BlockchainConfigurationExtension;
 use chain_core::{
     packer::Codec,

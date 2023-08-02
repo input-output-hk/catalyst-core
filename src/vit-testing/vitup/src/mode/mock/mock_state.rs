@@ -153,7 +153,7 @@ impl MockState {
 
     pub fn set_fund_id(&mut self, id: i32) {
         let funds = self.vit_state.funds_mut();
-        let mut fund = funds.first_mut().unwrap();
+        let fund = funds.first_mut().unwrap();
 
         fund.id = id;
 

@@ -238,7 +238,7 @@ mod tests {
             description: "catalyst native type".to_string(),
         });
 
-        let json = serde_json::to_value(&objective_type).unwrap();
+        let json = serde_json::to_value(objective_type).unwrap();
         assert_eq!(
             json,
             json!(
@@ -264,7 +264,7 @@ mod tests {
             deleted: false,
         });
 
-        let json = serde_json::to_value(&objective_summary).unwrap();
+        let json = serde_json::to_value(objective_summary).unwrap();
         assert_eq!(
             json,
             json!(
@@ -289,7 +289,7 @@ mod tests {
             value: 100,
         });
 
-        let json = serde_json::to_value(&reward_definition).unwrap();
+        let json = serde_json::to_value(reward_definition).unwrap();
         assert_eq!(
             json,
             json!(
@@ -308,7 +308,7 @@ mod tests {
             voting_token: Some("token".to_string()),
         });
 
-        let json = serde_json::to_value(&voter_group).unwrap();
+        let json = serde_json::to_value(voter_group).unwrap();
         assert_eq!(
             json,
             json!(
@@ -334,7 +334,7 @@ mod tests {
             supplemental: None,
         });
 
-        let json = serde_json::to_value(&objective_details).unwrap();
+        let json = serde_json::to_value(objective_details).unwrap();
         assert_eq!(
             json,
             json!(
@@ -381,7 +381,7 @@ mod tests {
             },
         });
 
-        let json = serde_json::to_value(&objective).unwrap();
+        let json = serde_json::to_value(objective).unwrap();
         assert_eq!(
             json,
             json!(

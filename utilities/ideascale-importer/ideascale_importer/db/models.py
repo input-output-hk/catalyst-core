@@ -47,7 +47,7 @@ class Event(Model):
 
 
 @dataclasses.dataclass
-class Challenge(Model):
+class Objective(Model):
     """Represents a database objective."""
 
     exclude_from_insert: ClassVar[Set[str]] = {"row_id"}
@@ -58,6 +58,7 @@ class Challenge(Model):
     category: str
     title: str
     description: str
+    deleted: bool
     rewards_currency: Optional[str]
     rewards_total: Optional[int]
     proposers_rewards: Optional[int]
@@ -78,6 +79,7 @@ class Proposal(Model):
     objective: int
     title: str
     summary: str
+    deleted: bool
     category: str
     public_key: str
     funds: int

@@ -72,10 +72,6 @@ jobs:
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/catalyst-toolbox/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/snapshot-lib/Cargo.toml --profile ci
 
-          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-cli/Cargo.toml --profile ci
-          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-lib/Cargo.toml --profile ci
-          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-server/Cargo.toml --profile ci
-
           cargo llvm-cov nextest --no-report --manifest-path ./src/voting-tools-rs/Cargo.toml --profile ci
 
           cargo llvm-cov nextest --no-report --manifest-path ./src/chain-libs/cardano-legacy-address/Cargo.toml --profile ci
@@ -158,5 +154,4 @@ jobs:
         run: |
           source <(cargo llvm-cov show-env --export-prefix)
           cargo build -p jcli -p jormungandr -p explorer -p vit-servicing-station-cli -p vit-servicing-station-server
-          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/testing/jormungandr-integration-tests/Cargo.toml --profile ci

@@ -235,8 +235,16 @@ jobs:
         ## removing test ui_test because of bug https://github.com/rust-lang/cargo/issues/10352
         run: |
           cargo nextest run \
-          -E "not (package(vitup) + package(mainnet-lib) + package(jortestkit) + package(integration-tests) \
-          + test(ui_test))" \
+          --workspace \
+          --exclude vitup \
+          --exclude mainnet-lib \
+          --exclude jortestkit \
+          --exclude integration-tests \
+          --exclude ui-test \
+          --exclude vit-servicing-station-cli \
+          --exclude vit-servicing-station-tests \
+          --exclude vit-servicing-station-lib \
+          --exclude vit-servicing-station-server \
           --archive-file nextest-archive.tar.zst --extract-to ${{ github.workspace }} \
           --extract-overwrite --partition hash:${{ matrix.partition }}/10 --profile ci
 

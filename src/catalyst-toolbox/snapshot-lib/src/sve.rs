@@ -16,7 +16,10 @@ pub struct Snapshot<RewardAddressType> {
 }
 
 impl<RewardAddressType> Snapshot<RewardAddressType> {
-    pub fn new(raw_snapshot: RawSnapshot<RewardAddressType>, min_stake_threshold: Value) -> (Self, usize) {
+    pub fn new(
+        raw_snapshot: RawSnapshot<RewardAddressType>,
+        min_stake_threshold: Value,
+    ) -> (Self, usize) {
         let mut total_rejected_registrations: usize = 0;
 
         let inner = raw_snapshot

@@ -3,9 +3,9 @@ use jormungandr_lib::interfaces::Value;
 use serde::{de::Error as _, ser::Error as _, Deserialize, Serialize};
 use std::ops::{Deref, DerefMut};
 
-const MAINNET_PREFIX: &'static str = "addr";
-const TESTNET_PREFIX: &'static str = "addr_test";
-const STAKE_PREFIX: &'static str = "stake";
+const MAINNET_PREFIX: &str = "addr";
+const TESTNET_PREFIX: &str = "addr_test";
+const STAKE_PREFIX: &str = "stake";
 
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MainnetRewardAddress(pub String);

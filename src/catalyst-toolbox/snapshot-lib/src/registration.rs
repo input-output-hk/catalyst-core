@@ -7,8 +7,23 @@ const MAINNET_PREFIX: &str = "addr";
 const TESTNET_PREFIX: &str = "addr_test";
 const STAKE_PREFIX: &str = "stake";
 
+pub trait RewardAddressTrait:
+    for<'a> Deserialize<'a>
+    + Serialize
+    + Clone
+    + Default
+    + PartialEq
+    + Eq
+    + PartialOrd
+    + Ord
+    + std::fmt::Debug
+{
+}
+
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MainnetRewardAddress(pub String);
+
+impl RewardAddressTrait for MainnetRewardAddress {}
 
 impl Deref for MainnetRewardAddress {
     type Target = String;
@@ -25,6 +40,8 @@ impl DerefMut for MainnetRewardAddress {
 
 #[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TestnetRewardAddress(pub String);
+
+impl RewardAddressTrait for TestnetRewardAddress {}
 
 impl Deref for TestnetRewardAddress {
     type Target = String;

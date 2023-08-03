@@ -4,9 +4,9 @@ use catalyst_toolbox::utils::csv::dump_to_csv_or_print;
 use catalyst_toolbox::utils::{assert_are_close, json_from_file};
 use clap::Parser;
 use color_eyre::{Report, Result};
-use serde::{Deserialize, Serialize};
-use snapshot_lib::registration::MainnetRewardAddress;
-use snapshot_lib::SnapshotInfo;
+use serde::Serialize;
+use snapshot_lib::registration::{MainnetRewardAddress, RewardAddressTrait, TestnetRewardAddress};
+use snapshot_lib::{NetworkType, SnapshotInfo};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -36,15 +36,16 @@ pub struct VotersRewards {
     /// Number of global votes required to be able to receive voter rewards
     #[clap(long, default_value = "0")]
     vote_threshold: u64,
+
+    /// Specify network type of the, could be "mainnet" or "testnet"
+    #[clap(long, default_value = "mainnet")]
+    net_type: NetworkType,
 }
 
-fn write_rewards_results<RewardAddressType>(
+fn write_rewards_results<RewardAddressType: RewardAddressTrait>(
     output: &Option<PathBuf>,
     rewards: BTreeMap<RewardAddressType, Rewards>,
-) -> Result<(), Report>
-where
-    RewardAddressType: Serialize + std::fmt::Debug + Serialize,
-{
+) -> Result<(), Report> {
     #[derive(Serialize, Debug)]
     struct Entry<RewardAddressType> {
         #[serde(rename = "Address")]
@@ -71,36 +72,35 @@ impl VotersRewards {
             snapshot_info_path,
             votes_count_path,
             vote_threshold,
+            net_type,
         } = self;
 
-        voter_rewards::<MainnetRewardAddress>(
-            &output,
-            &votes_count_path,
-            &snapshot_info_path,
-            vote_threshold,
-            total_rewards,
-        )
+        match net_type {
+            NetworkType::Mainnet => voter_rewards::<MainnetRewardAddress>(
+                &output,
+                &votes_count_path,
+                &snapshot_info_path,
+                vote_threshold,
+                total_rewards,
+            ),
+            NetworkType::Testnet => voter_rewards::<TestnetRewardAddress>(
+                &output,
+                &votes_count_path,
+                &snapshot_info_path,
+                vote_threshold,
+                total_rewards,
+            ),
+        }
     }
 }
 
-pub fn voter_rewards<RewardAddressType>(
+pub fn voter_rewards<RewardAddressType: RewardAddressTrait>(
     output: &Option<PathBuf>,
     votes_count_path: &Path,
     snapshot_path: &Path,
     vote_threshold: u64,
     total_rewards: u64,
-) -> Result<()>
-where
-    RewardAddressType: for<'a> Deserialize<'a>
-        + Serialize
-        + Clone
-        + Default
-        + PartialEq
-        + Eq
-        + PartialOrd
-        + Ord
-        + std::fmt::Debug,
-{
+) -> Result<()> {
     let vote_count = json_from_file(votes_count_path)?;
     let snapshot: Vec<SnapshotInfo<RewardAddressType>> = json_from_file(snapshot_path)?;
 

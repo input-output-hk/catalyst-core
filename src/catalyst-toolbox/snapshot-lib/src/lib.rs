@@ -7,6 +7,7 @@ use std::{
     collections::{BTreeMap, HashSet},
     iter::Iterator,
     num::NonZeroU64,
+    str::FromStr,
 };
 use thiserror::Error;
 pub use voter_hir::VoterHIR;
@@ -20,6 +21,23 @@ mod voter_hir;
 pub mod voting_group;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
+
+#[derive(Clone, Debug)]
+pub enum NetworkType {
+    Mainnet,
+    Testnet,
+}
+
+impl FromStr for NetworkType {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "mainnet" => Ok(Self::Mainnet),
+            "testnet" => Ok(Self::Testnet),
+            _ => Err("unknown network type".to_string()),
+        }
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct RawSnapshot<RewardAddressType>(Vec<VotingRegistration<RewardAddressType>>);

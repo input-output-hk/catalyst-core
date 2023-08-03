@@ -6,7 +6,11 @@ use clap::Parser;
 use color_eyre::Report;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::AccountVotes};
 use serde::Serialize;
-use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
+use snapshot_lib::NetworkType;
+use snapshot_lib::{
+    registration::{MainnetRewardAddress, RewardAddressTrait, TestnetRewardAddress},
+    SnapshotInfo,
+};
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
@@ -46,16 +50,20 @@ pub struct DrepsRewards {
     /// Can be obtained from /api/v0/proposals.
     #[clap(long)]
     proposals: PathBuf,
+
+    /// Specify network type of the, could be "mainnet" or "testnet"
+    #[clap(long, default_value = "mainnet")]
+    net_type: NetworkType,
 }
 
-fn write_rewards_results(
+fn write_rewards_results<RewardAddressType: RewardAddressTrait>(
     output: &Option<PathBuf>,
-    rewards: BTreeMap<MainnetRewardAddress, Rewards>,
+    rewards: BTreeMap<RewardAddressType, Rewards>,
 ) -> Result<(), Report> {
     #[derive(Serialize, Debug)]
-    struct Entry {
+    struct Entry<RewardAddressType> {
         #[serde(rename = "Address")]
-        address: MainnetRewardAddress,
+        address: RewardAddressType,
         #[serde(rename = "Reward for the voter (lovelace)")]
         reward: Rewards,
     }
@@ -71,7 +79,7 @@ fn write_rewards_results(
 }
 
 impl DrepsRewards {
-    pub fn exec(self) -> Result<(), Report> {
+    fn exec_impl<RewardAddressType: RewardAddressTrait>(self) -> Result<(), Report> {
         let DrepsRewards {
             output,
             total_rewards,
@@ -80,6 +88,7 @@ impl DrepsRewards {
             vote_threshold,
             per_challenge_threshold,
             proposals,
+            ..
         } = self;
 
         let proposals = serde_json::from_reader::<_, Vec<FullProposalInfo>>(
@@ -93,7 +102,7 @@ impl DrepsRewards {
             )?,
         )?;
 
-        let snapshot: Vec<SnapshotInfo<MainnetRewardAddress>> = serde_json::from_reader(
+        let snapshot: Vec<SnapshotInfo<RewardAddressType>> = serde_json::from_reader(
             jcli_lib::utils::io::open_file_read(&Some(snapshot_info_path))?,
         )?;
 
@@ -119,5 +128,12 @@ impl DrepsRewards {
 
         write_rewards_results(&output, results)?;
         Ok(())
+    }
+
+    pub fn exec(self) -> Result<(), Report> {
+        match self.net_type {
+            NetworkType::Mainnet => self.exec_impl::<MainnetRewardAddress>(),
+            NetworkType::Testnet => self.exec_impl::<TestnetRewardAddress>(),
+        }
     }
 }

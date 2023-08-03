@@ -1,15 +1,13 @@
 pub use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
-use registration::{
-    serde_impl::IdentifierDef, Delegations, MainnetRewardAddress, MainnetStakeAddress,
-    VotingRegistration,
-};
+use registration::{serde_impl::IdentifierDef, Delegations, StakeAddress, VotingRegistration};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::{
     borrow::Borrow,
     collections::{BTreeMap, HashSet},
     iter::Iterator,
     num::NonZeroU64,
+    str::FromStr,
 };
 use thiserror::Error;
 pub use voter_hir::VoterHIR;
@@ -24,11 +22,30 @@ pub mod voting_group;
 
 pub const CATALYST_VOTING_PURPOSE_TAG: u64 = 0;
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
-pub struct RawSnapshot(Vec<VotingRegistration>);
+#[derive(Clone, Debug)]
+pub enum NetworkType {
+    Mainnet,
+    Testnet,
+}
 
-impl From<Vec<VotingRegistration>> for RawSnapshot {
-    fn from(from: Vec<VotingRegistration>) -> Self {
+impl FromStr for NetworkType {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "mainnet" => Ok(Self::Mainnet),
+            "testnet" => Ok(Self::Testnet),
+            _ => Err("unknown network type".to_string()),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct RawSnapshot<RewardAddressType>(Vec<VotingRegistration<RewardAddressType>>);
+
+impl<RewardAddressType> From<Vec<VotingRegistration<RewardAddressType>>>
+    for RawSnapshot<RewardAddressType>
+{
+    fn from(from: Vec<VotingRegistration<RewardAddressType>>) -> Self {
         Self(from)
     }
 }
@@ -78,33 +95,33 @@ pub enum Error {
 
 /// Contribution to a voting key for some registration
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct KeyContribution {
-    pub stake_public_key: MainnetStakeAddress,
-    pub reward_address: MainnetRewardAddress,
+pub struct KeyContribution<RewardAddressType> {
+    pub stake_public_key: StakeAddress,
+    pub reward_address: RewardAddressType,
     pub value: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SnapshotInfo {
+pub struct SnapshotInfo<RewardAddressType> {
     /// The values in the contributions are the original values in the registration transactions and
     /// thus retain the original proportions.
     /// However, it's possible that the sum of those values is greater than the voting power assigned in the
     /// VoterHIR, due to voting power caps or additional transformations.
-    pub contributions: Vec<KeyContribution>,
+    pub contributions: Vec<KeyContribution<RewardAddressType>>,
     pub hir: VoterHIR,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Snapshot {
+pub struct Snapshot<RewardAddressType> {
     // a raw public key is preferred so that we don't have to worry about discrimination when deserializing from
     // a CIP-36 compatible encoding
-    inner: BTreeMap<Identifier, SnapshotInfo>,
+    inner: BTreeMap<Identifier, SnapshotInfo<RewardAddressType>>,
     stake_threshold: Value,
 }
 
-impl Snapshot {
+impl<RewardAddressType: Clone> Snapshot<RewardAddressType> {
     pub fn from_raw_snapshot(
-        raw_snapshot: RawSnapshot,
+        raw_snapshot: RawSnapshot<RewardAddressType>,
         stake_threshold: Value,
         cap: Fraction,
         voting_group_assigner: &impl VotingGroupAssigner,
@@ -187,9 +204,9 @@ impl Snapshot {
     }
 
     fn apply_voting_power_cap(
-        voters: Vec<SnapshotInfo>,
+        voters: Vec<SnapshotInfo<RewardAddressType>>,
         cap: Fraction,
-    ) -> Result<Vec<SnapshotInfo>, Error> {
+    ) -> Result<Vec<SnapshotInfo<RewardAddressType>>, Error> {
         Ok(influence_cap::cap_voting_influence(voters, cap)?
             .into_iter()
             .collect())
@@ -206,7 +223,7 @@ impl Snapshot {
             .collect::<Vec<_>>()
     }
 
-    pub fn to_full_snapshot_info(&self) -> Vec<SnapshotInfo> {
+    pub fn to_full_snapshot_info(&self) -> Vec<SnapshotInfo<RewardAddressType>> {
         self.inner.values().cloned().collect()
     }
 
@@ -217,7 +234,7 @@ impl Snapshot {
     pub fn contributions_for_voting_key<I: Borrow<Identifier>>(
         &self,
         voting_public_key: I,
-    ) -> Vec<KeyContribution> {
+    ) -> Vec<KeyContribution<RewardAddressType>> {
         self.inner
             .get(voting_public_key.borrow())
             .cloned()
@@ -228,6 +245,8 @@ impl Snapshot {
 
 #[cfg(any(test, feature = "proptest"))]
 pub mod tests {
+    use crate::registration::TestnetRewardAddress;
+
     use super::*;
     use chain_addr::{Discrimination, Kind};
     use jormungandr_lib::interfaces::{Address, InitialUTxO};
@@ -242,7 +261,7 @@ pub mod tests {
         }
     }
 
-    impl Snapshot {
+    impl<RewardAddressType> Snapshot<RewardAddressType> {
         pub fn to_block0_initials(&self, discrimination: Discrimination) -> Vec<InitialUTxO> {
             self.inner
                 .iter()
@@ -257,20 +276,22 @@ pub mod tests {
         }
     }
 
-    impl Arbitrary for RawSnapshot {
+    impl Arbitrary for RawSnapshot<TestnetRewardAddress> {
         type Parameters = ();
-        type Strategy = BoxedStrategy<RawSnapshot>;
+        type Strategy = BoxedStrategy<RawSnapshot<TestnetRewardAddress>>;
 
         fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
-            any::<Vec<VotingRegistration>>().prop_map(Self).boxed()
+            any::<Vec<VotingRegistration<TestnetRewardAddress>>>()
+                .prop_map(Self)
+                .boxed()
         }
     }
 
     #[proptest]
     fn test_threshold(
-        _raw: RawSnapshot,
+        _raw: RawSnapshot<TestnetRewardAddress>,
         _stake_threshold: u64,
-        _additional_reg: VotingRegistration,
+        _additional_reg: VotingRegistration<TestnetRewardAddress>,
     ) {
         let mut add = _raw.clone();
         add.0.push(_additional_reg.clone());
@@ -293,12 +314,12 @@ pub mod tests {
         );
     }
 
-    impl Arbitrary for Snapshot {
+    impl Arbitrary for Snapshot<TestnetRewardAddress> {
         type Parameters = ();
-        type Strategy = BoxedStrategy<Snapshot>;
+        type Strategy = BoxedStrategy<Snapshot<TestnetRewardAddress>>;
 
         fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
-            (any::<RawSnapshot>(), 1..u64::MAX)
+            (any::<RawSnapshot<TestnetRewardAddress>>(), 1..u64::MAX)
                 .prop_map(|(raw_snapshot, threshold)| {
                     Self::from_raw_snapshot(
                         raw_snapshot,
@@ -314,7 +335,7 @@ pub mod tests {
 
     // Test all voting power is distributed among delegated keys
     #[proptest]
-    fn test_voting_power_all_distributed(_reg: VotingRegistration) {
+    fn test_voting_power_all_distributed(_reg: VotingRegistration<TestnetRewardAddress>) {
         let snapshot = Snapshot::from_raw_snapshot(
             vec![_reg.clone()].into(),
             0.into(),
@@ -331,7 +352,7 @@ pub mod tests {
     }
 
     #[proptest]
-    fn test_non_catalyst_regs_are_ignored(mut _reg: VotingRegistration) {
+    fn test_non_catalyst_regs_are_ignored(mut _reg: VotingRegistration<TestnetRewardAddress>) {
         _reg.voting_purpose = 1;
         assert_eq!(
             Snapshot::from_raw_snapshot(
@@ -364,9 +385,9 @@ pub mod tests {
                 (voting_pub_key_2.clone(), 1),
             ]);
             raw_snapshot.push(VotingRegistration {
-                stake_public_key: String::new(),
+                stake_public_key: StakeAddress(String::new()),
                 voting_power: i.into(),
-                reward_address: String::new(),
+                reward_address: TestnetRewardAddress(String::new()),
                 delegations,
                 voting_purpose: 0,
                 nonce: 0,
@@ -396,7 +417,7 @@ pub mod tests {
 
     #[test]
     fn test_raw_snapshot_parsing() {
-        let raw: RawSnapshot = serde_json::from_str(
+        let raw: RawSnapshot<TestnetRewardAddress> = serde_json::from_str(
             r#"[
             {
                 "rewards_address": "0xe1ffff2912572257b59dca84c965e4638a09f1524af7a15787eb0d8a46",

@@ -465,7 +465,7 @@ class Importer:
                 "min_stake_threshold and voting_power_cap must be set either as CLI arguments or in the database"
             )
 
-        for params in self.network_params.values():
+        for network_id, params in self.network_params.items():
             catalyst_toolbox_cmd = (
                 f"{self.catalyst_toolbox_path} snapshot"
                 f" -s {params.snapshot_tool_out_file}"
@@ -473,6 +473,7 @@ class Importer:
                 f" -v {self.voting_power_cap}"
                 f" --dreps {self.dreps_out_file}"
                 f" --output-format json {params.catalyst_toolbox_out_file}"
+                f" --net-type {network_id}"
             )
 
             await run_cmd("catalyst-toolbox", catalyst_toolbox_cmd)
@@ -653,7 +654,7 @@ class Importer:
 
             logger.info(
                 "Done processing contributions and voters",
-                total_registered_voting_power=total_registered_voting_power[network_id],
+                total_registered_voting_power=total_registered_voting_power.get(network_id, 0),
                 total_contributed_voting_power=total_contributed_voting_power,
                 total_hir_voting_power=total_hir_voting_power,
                 network_id=network_id,

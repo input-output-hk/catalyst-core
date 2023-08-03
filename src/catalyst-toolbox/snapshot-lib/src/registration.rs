@@ -1,9 +1,77 @@
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Value;
-use serde::{de::Error, Deserialize, Serialize};
+use serde::{de::Error as _, ser::Error as _, Deserialize, Serialize};
+use std::ops::{Deref, DerefMut};
 
-pub type MainnetRewardAddress = String;
-pub type MainnetStakeAddress = String;
+const MAINNET_PREFIX: &str = "addr";
+const TESTNET_PREFIX: &str = "addr_test";
+#[allow(dead_code)]
+const STAKE_PREFIX: &str = "stake";
+
+pub trait RewardAddressTrait:
+    for<'a> Deserialize<'a>
+    + Serialize
+    + Clone
+    + Default
+    + PartialEq
+    + Eq
+    + PartialOrd
+    + Ord
+    + std::fmt::Debug
+{
+}
+
+#[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct MainnetRewardAddress(pub String);
+
+impl RewardAddressTrait for MainnetRewardAddress {}
+
+impl Deref for MainnetRewardAddress {
+    type Target = String;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for MainnetRewardAddress {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+#[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct TestnetRewardAddress(pub String);
+
+impl RewardAddressTrait for TestnetRewardAddress {}
+
+impl Deref for TestnetRewardAddress {
+    type Target = String;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for TestnetRewardAddress {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
+pub struct StakeAddress(pub String);
+
+impl Deref for StakeAddress {
+    type Target = String;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl DerefMut for StakeAddress {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
 
 /// The voting registration/delegation format as introduced in CIP-36,
 /// which is a generalization of CIP-15, allowing to distribute
@@ -11,15 +79,12 @@ pub type MainnetStakeAddress = String;
 /// to tag the purpose of the vote.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::module_name_repetitions)]
-pub struct VotingRegistration {
-    pub stake_public_key: MainnetStakeAddress,
+pub struct VotingRegistration<RewardAddressType> {
+    pub stake_public_key: StakeAddress,
     pub voting_power: Value,
     /// Shelley address discriminated for the same network this transaction is submitted to.
-    #[serde(
-        deserialize_with = "serde_impl::reward_addr_from_hex",
-        rename = "rewards_address"
-    )]
-    pub reward_address: MainnetRewardAddress,
+    #[serde(rename = "rewards_address")]
+    pub reward_address: RewardAddressType,
     pub delegations: Delegations,
     /// 0 = Catalyst, assumed 0 for old legacy registrations
     #[serde(default)]
@@ -29,7 +94,7 @@ pub struct VotingRegistration {
     pub nonce: u64,
 }
 
-impl VotingRegistration {
+impl<RewardAddressType> VotingRegistration<RewardAddressType> {
     #[must_use]
     pub fn is_legacy(&self) -> bool {
         matches!(self.delegations, Delegations::Legacy(_))
@@ -175,15 +240,34 @@ pub mod serde_impl {
         }
     }
 
-    pub fn reward_addr_from_hex<'de, D>(deserializer: D) -> Result<MainnetRewardAddress, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        use bech32::ToBase32;
-        let bytes = hex::decode(String::deserialize(deserializer)?.trim_start_matches("0x"))
-            .map_err(|e| D::Error::custom(format!("invalid hex string: {}", e)))?;
-        bech32::encode("stake", bytes.to_base32(), bech32::Variant::Bech32)
-            .map_err(|e| D::Error::custom(format!("bech32 encoding failed: {}", e)))
+    impl Serialize for MainnetRewardAddress {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            use bech32::ToBase32;
+            let bytes = hex::decode(self.trim_start_matches("0x"))
+                .map_err(|e| S::Error::custom(format!("invalid hex string: {}", e)))?;
+
+            bech32::encode(MAINNET_PREFIX, bytes.to_base32(), bech32::Variant::Bech32)
+                .map_err(|e| S::Error::custom(format!("bech32 encoding failed: {}", e)))?
+                .serialize(serializer)
+        }
+    }
+
+    impl Serialize for TestnetRewardAddress {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            use bech32::ToBase32;
+            let bytes = hex::decode(self.trim_start_matches("0x"))
+                .map_err(|e| S::Error::custom(format!("invalid hex string: {}", e)))?;
+
+            bech32::encode(TESTNET_PREFIX, bytes.to_base32(), bech32::Variant::Bech32)
+                .map_err(|e| S::Error::custom(format!("bech32 encoding failed: {}", e)))?
+                .serialize(serializer)
+        }
     }
 }
 
@@ -237,17 +321,29 @@ mod tests {
         }
     }
 
-    impl Arbitrary for VotingRegistration {
+    impl Arbitrary for VotingRegistration<TestnetRewardAddress> {
         type Parameters = ();
-        type Strategy = BoxedStrategy<VotingRegistration>;
+        type Strategy = BoxedStrategy<VotingRegistration<TestnetRewardAddress>>;
 
         fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
             (any::<([u8; 32], [u8; 32], Delegations)>(), 0..45_000_000u64)
                 .prop_map(|((stake_key, rewards_addr, delegations), vp)| {
-                    let stake_public_key = hex::encode(stake_key);
-                    let reward_address =
-                        bech32::encode("stake", rewards_addr.to_base32(), bech32::Variant::Bech32)
-                            .unwrap();
+                    let stake_public_key = StakeAddress(
+                        bech32::encode(
+                            STAKE_PREFIX,
+                            stake_key.to_base32(),
+                            bech32::Variant::Bech32,
+                        )
+                        .unwrap(),
+                    );
+                    let reward_address = TestnetRewardAddress(
+                        bech32::encode(
+                            TESTNET_PREFIX,
+                            rewards_addr.to_base32(),
+                            bech32::Variant::Bech32,
+                        )
+                        .unwrap(),
+                    );
                     let voting_power: Value = vp.into();
                     VotingRegistration {
                         stake_public_key,

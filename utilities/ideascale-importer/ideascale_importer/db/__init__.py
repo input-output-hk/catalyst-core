@@ -122,8 +122,13 @@ async def upsert_many(
     do_update_set_str = ",".join([f"{col} = EXCLUDED.{col}" for col in insert_cols if col not in exclude_update_cols])
     pre_update_set_str = ",".join([f"{col} = {val}" for col, val in pre_update_cols.items()])
     pre_update_cond_str = ",".join([f"{col} {cond}" for col, cond in pre_update_cond.items()])
+
+    pre_update_template = f"""
+        WITH updated AS ({ f"UPDATE {models[0].table()} SET {pre_update_set_str} {f' WHERE {pre_update_cond_str}' if pre_update_cond_str else ' '}" })
+        """.strip() if pre_update_set_str else " "     
+
     stmt_template = f"""
-        WITH updated AS ({ f"UPDATE {models[0].table()} SET {pre_update_set_str} {f' WHERE {pre_update_cond_str}' if pre_update_cond_str else ' '}" if pre_update_set_str else " " })
+        {pre_update_template}
 
         INSERT INTO {models[0].table()} ({insert_cols_str}) VALUES {val_nums_str}
         ON CONFLICT ({conflict_cols_str})

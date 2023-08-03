@@ -3,7 +3,9 @@
 use jormungandr_lib::crypto::account::Identifier;
 use jortestkit::prelude::WaitBuilder;
 use mainnet_tools::snapshot::OutputExtension;
-use snapshot_lib::registration::{Delegations as VotingDelegations, VotingRegistration};
+use snapshot_lib::registration::{
+    Delegations as VotingDelegations, MainnetRewardAddress, VotingRegistration,
+};
 use snapshot_trigger_service::client::rest::SnapshotRestClient;
 use snapshot_trigger_service::config::JobParameters;
 use snapshot_trigger_service::ContextState;
@@ -71,7 +73,9 @@ pub fn get_snapshot_from_history_by_id<Q: Into<String>, S: Into<String>, P: Into
     })
 }
 
-pub fn read_initials<S: Into<String>>(snapshot: S) -> Result<Vec<VotingRegistration>, Error> {
+pub fn read_initials<S: Into<String>>(
+    snapshot: S,
+) -> Result<Vec<VotingRegistration<MainnetRewardAddress>>, Error> {
     let snapshot = snapshot.into();
     serde_json::from_str(&snapshot).map_err(Into::into)
 }
@@ -79,7 +83,7 @@ pub fn read_initials<S: Into<String>>(snapshot: S) -> Result<Vec<VotingRegistrat
 #[derive(Debug)]
 pub struct SnapshotResult {
     status: ContextState,
-    snapshot: Vec<VotingRegistration>,
+    snapshot: Vec<VotingRegistration<MainnetRewardAddress>>,
 }
 
 impl SnapshotResult {
@@ -91,7 +95,10 @@ impl SnapshotResult {
         Ok(Self::new(status, voting_registrations))
     }
 
-    pub fn new(status: ContextState, snapshot: Vec<VotingRegistration>) -> Self {
+    pub fn new(
+        status: ContextState,
+        snapshot: Vec<VotingRegistration<MainnetRewardAddress>>,
+    ) -> Self {
         Self { status, snapshot }
     }
 
@@ -103,11 +110,14 @@ impl SnapshotResult {
         self.status.clone()
     }
 
-    pub fn registrations(&self) -> &Vec<VotingRegistration> {
+    pub fn registrations(&self) -> &Vec<VotingRegistration<MainnetRewardAddress>> {
         &self.snapshot
     }
 
-    pub fn by_identifier(&self, identifier: &Identifier) -> Option<VotingRegistration> {
+    pub fn by_identifier(
+        &self,
+        identifier: &Identifier,
+    ) -> Option<VotingRegistration<MainnetRewardAddress>> {
         self.registrations()
             .iter()
             .cloned()
@@ -117,7 +127,10 @@ impl SnapshotResult {
             })
     }
 
-    pub fn by_delegation(&self, id: &Identifier) -> Result<Option<VotingRegistration>, Error> {
+    pub fn by_delegation(
+        &self,
+        id: &Identifier,
+    ) -> Result<Option<VotingRegistration<MainnetRewardAddress>>, Error> {
         Ok(self
             .registrations()
             .iter()

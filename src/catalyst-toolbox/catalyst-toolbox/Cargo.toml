@@ -77,6 +77,7 @@ test-strategy = "0.2"
 serde_test = "1"
 snapshot-lib =  { path = "../snapshot-lib", features = ["proptest"] }
 vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicing-station-tests" }
+vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib"}
 
 [build-dependencies]
 versionisator = "1.0.3"

@@ -3,14 +3,17 @@ use itertools::Itertools;
 use jormungandr_lib::crypto::account::Identifier;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
+use snapshot_lib::{
+    registration::{StakeAddress, TestnetRewardAddress},
+    KeyContribution, SnapshotInfo, VoterHIR,
+};
 use time::OffsetDateTime;
 use vit_servicing_station_lib::v0::endpoints::snapshot::SnapshotInfoInput;
 
 #[derive(Debug, Clone)]
 pub struct Snapshot {
     pub tag: String,
-    pub content: SnapshotInfoInput,
+    pub content: SnapshotInfoInput<TestnetRewardAddress>,
 }
 
 impl Default for Snapshot {
@@ -84,14 +87,14 @@ impl SnapshotBuilder {
                     Some(SnapshotInfo {
                         contributions: std::iter::from_fn(|| {
                             Some(KeyContribution {
-                                reward_address: format!(
+                                reward_address: TestnetRewardAddress(format!(
                                     "address_{:?}",
                                     rng.gen_range(1u64, 1_000u64)
-                                ),
-                                stake_public_key: format!(
+                                )),
+                                stake_public_key: StakeAddress(format!(
                                     "address_{:?}",
                                     rng.gen_range(1u64, 1_000u64)
-                                ),
+                                )),
                                 value: rng.gen_range(1u64, 1_000u64),
                             })
                         })
@@ -146,8 +149,8 @@ impl PartialEq for VotingPower {
 
 impl Eq for VotingPower {}
 
-impl From<SnapshotInfo> for VotingPower {
-    fn from(snapshot_info: SnapshotInfo) -> Self {
+impl<RewardAddressType> From<SnapshotInfo<RewardAddressType>> for VotingPower {
+    fn from(snapshot_info: SnapshotInfo<RewardAddressType>) -> Self {
         let delegations_power: u64 = snapshot_info
             .contributions
             .iter()
@@ -202,7 +205,7 @@ impl SnapshotUpdater {
 
     pub fn add_contributions_to_voter(
         mut self,
-        contributions: Vec<KeyContribution>,
+        contributions: Vec<KeyContribution<TestnetRewardAddress>>,
         voting_key: &Identifier,
     ) -> Self {
         let voter = self

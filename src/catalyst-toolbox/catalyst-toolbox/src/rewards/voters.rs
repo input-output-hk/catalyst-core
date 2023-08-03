@@ -4,7 +4,7 @@ use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Address;
 use rust_decimal::Decimal;
-use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
+use snapshot_lib::SnapshotInfo;
 use std::collections::{BTreeMap, HashMap, HashSet};
 use thiserror::Error;
 
@@ -39,11 +39,11 @@ fn calculate_reward(
         .collect()
 }
 
-fn filter_active_addresses(
+fn filter_active_addresses<RewardAddressType>(
     vote_count: VoteCount,
-    snapshot_info: Vec<SnapshotInfo>,
+    snapshot_info: Vec<SnapshotInfo<RewardAddressType>>,
     threshold: Threshold,
-) -> Vec<SnapshotInfo> {
+) -> Vec<SnapshotInfo<RewardAddressType>> {
     snapshot_info
         .into_iter()
         .filter(|v| {
@@ -74,10 +74,13 @@ pub fn account_hex_to_address(
     )))
 }
 
-fn rewards_to_mainnet_addresses(
+fn rewards_to_mainnet_addresses<RewardAddressType>(
     rewards: HashMap<Identifier, Rewards>,
-    voters: Vec<SnapshotInfo>,
-) -> BTreeMap<MainnetRewardAddress, Rewards> {
+    voters: Vec<SnapshotInfo<RewardAddressType>>,
+) -> BTreeMap<RewardAddressType, Rewards>
+where
+    RewardAddressType: Clone + Default + PartialEq + Eq + PartialOrd + Ord,
+{
     let mut res = BTreeMap::new();
     let snapshot_info_by_key = voters
         .into_iter()
@@ -102,12 +105,15 @@ fn rewards_to_mainnet_addresses(
     res
 }
 
-pub fn calc_voter_rewards(
+pub fn calc_voter_rewards<RewardAddressType>(
     vote_count: VoteCount,
-    voters: Vec<SnapshotInfo>,
+    voters: Vec<SnapshotInfo<RewardAddressType>>,
     vote_threshold: Threshold,
     total_rewards: Rewards,
-) -> Result<BTreeMap<MainnetRewardAddress, Rewards>, Error> {
+) -> Result<BTreeMap<RewardAddressType, Rewards>, Error>
+where
+    RewardAddressType: Clone + Default + PartialEq + Eq + PartialOrd + Ord,
+{
     let unique_voters = voters
         .iter()
         .map(|s| s.hir.voting_key.clone())
@@ -135,7 +141,9 @@ mod tests {
     use super::*;
     use crate::utils::assert_are_close;
     use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
-    use snapshot_lib::registration::{Delegations, VotingRegistration};
+    use snapshot_lib::registration::{
+        Delegations, StakeAddress, TestnetRewardAddress, VotingRegistration,
+    };
     use snapshot_lib::Snapshot;
     use snapshot_lib::{Fraction, RawSnapshot};
     use test_strategy::proptest;
@@ -144,7 +152,7 @@ mod tests {
     const DEFAULT_SNAPSHOT_THRESHOLD: u64 = 1;
 
     #[proptest]
-    fn test_all_active_voters(raw_snapshot: RawSnapshot) {
+    fn test_all_active_voters(raw_snapshot: RawSnapshot<TestnetRewardAddress>) {
         let snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
@@ -176,7 +184,7 @@ mod tests {
     }
 
     #[proptest]
-    fn test_all_inactive_voters(raw_snapshot: RawSnapshot) {
+    fn test_all_inactive_voters(raw_snapshot: RawSnapshot<TestnetRewardAddress>) {
         let snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
@@ -199,7 +207,7 @@ mod tests {
     }
 
     #[proptest]
-    fn test_active_and_inactive_voters(raw_snapshot: RawSnapshot) {
+    fn test_active_and_inactive_voters(raw_snapshot: RawSnapshot<TestnetRewardAddress>) {
         let snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
@@ -298,8 +306,8 @@ mod tests {
         let mut total_stake = 0u64;
 
         for i in 1..10u64 {
-            let stake_public_key = i.to_string();
-            let reward_address = i.to_string();
+            let stake_public_key = StakeAddress(i.to_string());
+            let reward_address = TestnetRewardAddress(i.to_string());
 
             let delegations = Delegations::New(vec![(voting_public_key.clone(), 1)]);
             raw_snapshot.push(VotingRegistration {
@@ -347,8 +355,8 @@ mod tests {
 
         for i in 1..10u64 {
             let voting_public_key = Identifier::from_hex(&hex::encode([i as u8; 32])).unwrap();
-            let stake_public_key = i.to_string();
-            let reward_address = i.to_string();
+            let stake_public_key = StakeAddress(i.to_string());
+            let reward_address = TestnetRewardAddress(i.to_string());
             let delegations = Delegations::New(vec![(voting_public_key.clone(), 1)]);
             raw_snapshot.push(VotingRegistration {
                 stake_public_key,
@@ -384,7 +392,7 @@ mod tests {
     }
 
     #[proptest]
-    fn test_per_category_threshold(raw_snapshot: RawSnapshot) {
+    fn test_per_category_threshold(raw_snapshot: RawSnapshot<TestnetRewardAddress>) {
         let snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),

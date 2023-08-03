@@ -77,7 +77,7 @@ async def select(conn: asyncpg.Connection, model: Model, cond: Dict[str, str] = 
         SELECT {cols_str}
         FROM {model.table()}
         {f' WHERE {cond_str}' if cond_str else ' '}
-    """.strip()  
+    """.strip()
 
     result = await conn.fetch(stmt_template)
 
@@ -123,7 +123,7 @@ async def upsert_many(
     pre_update_set_str = ",".join([f"{col} = {val}" for col, val in pre_update_cols.items()])
     pre_update_cond_str = ",".join([f"{col} {cond}" for col, cond in pre_update_cond.items()])
     stmt_template = f"""
-        WITH updated AS ({ f"UPDATE {models[0].table()} SET {pre_update_set_str} {f' WHERE {pre_update_cond_str}' if pre_update_cond_str else ' '}" if pre_update_set_str else " " })
+        {f"WITH updated AS (UPDATE {models[0].table()} SET {pre_update_set_str} {f' WHERE {pre_update_cond_str}' if pre_update_cond_str else ' '}" if pre_update_set_str else ' '}
 
         INSERT INTO {models[0].table()} ({insert_cols_str}) VALUES {val_nums_str}
         ON CONFLICT ({conflict_cols_str})

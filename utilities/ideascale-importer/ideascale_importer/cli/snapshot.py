@@ -68,7 +68,7 @@ def import_snapshot(
         envvar="SSH_SNAPSHOT_TOOL_OUTPUT_DIR",
         help="Output directoy for storing the snapshot_tool output on the remote machine",
     ),
-    snapshot_tool_ssh: Optional[str] = typer.Option(
+    snapshot_tool_ssh: bool = typer.Option(
         default=False,
         envvar="SNAPSHOT_TOOL_SSH",
         help="If set, snapshot tool will be executed through SSH",
@@ -112,5 +112,6 @@ def import_snapshot(
             await importer.run()
         except Exception as e:
             logger.error(e)
+            raise e
 
     asyncio.run(inner())

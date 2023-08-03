@@ -56,7 +56,7 @@ impl DerefMut for TestnetRewardAddress {
     }
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct StakeAddress(pub String);
 
 impl Deref for StakeAddress {
@@ -236,21 +236,6 @@ pub mod serde_impl {
             // A safer way to do this would be to try parsing each variant instead of relying on the
             // deserializer to know the data type, which is not available in some formats like bincode,
             deserializer.deserialize_any(DelegationsVisitor)
-        }
-    }
-
-    impl Serialize for StakeAddress {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            use bech32::ToBase32;
-            let bytes = hex::decode(self.trim_start_matches("0x"))
-                .map_err(|e| S::Error::custom(format!("invalid hex string: {}", e)))?;
-
-            bech32::encode(STAKE_PREFIX, bytes.to_base32(), bech32::Variant::Bech32)
-                .map_err(|e| S::Error::custom(format!("bech32 encoding failed: {}", e)))?
-                .serialize(serializer)
         }
     }
 

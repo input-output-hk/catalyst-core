@@ -59,7 +59,7 @@ class ExternalDataImporter:
             config_path=os.environ["IDEASCALE_CONFIG_PATH"],
             event_id=event_id,
             campaign_group_id=int(os.environ["IDEASCALE_CAMPAIGN_GROUP"]),
-            stage_id=int(os.environ["IDEASCALE_STAGE_ID"]),
+            stage_ids=[int(os.environ["IDEASCALE_STAGE_ID"])],
             proposals_scores_csv_path=None,
             ideascale_api_url=os.environ["IDEASCALE_API_URL"],
         )
@@ -149,7 +149,7 @@ class SnapshotRunner(BaseModel):
         now = datetime.utcnow()
         return now > self.snapshot_start
 
-    def _reimaining_intervals_n_seconds_to_next_snapshot(self, current_time: datetime, interval: int) -> tuple[int, int]:
+    def _remaining_intervals_n_seconds_to_next_snapshot(self, current_time: datetime, interval: int) -> tuple[int, int]:
         """Calculates the remaining number of intervals and seconds until the next snapshot.
 
         :param current_time: The current datetime.
@@ -159,7 +159,7 @@ class SnapshotRunner(BaseModel):
         :return: A tuple containing the number of intervals until the next snapshot start and the number of seconds until the next interval.
         :rtype: Tuple[int, int]
         """
-        delta = self.snapshot_start - current_time
+        delta = self.snapshot_start - min(current_time, self.snapshot_start)
         delta_seconds = int(abs(delta.total_seconds()))
         # calculate the number of intervals until the snapshot start time
         num_intervals = int(delta_seconds / interval)
@@ -206,7 +206,7 @@ class SnapshotRunner(BaseModel):
         while True:
             interval = int(os.getenv("SNAPSHOT_INTERVAL_SECONDS", 1800))
             current_time = datetime.utcnow()
-            num_intervals, secs_to_sleep = self._reimaining_intervals_n_seconds_to_next_snapshot(current_time, interval)
+            num_intervals, secs_to_sleep = self._remaining_intervals_n_seconds_to_next_snapshot(current_time, interval)
 
             logger.info(f"{num_intervals + 1} snapshots remaining. Next snapshot is in {secs_to_sleep} seconds...")
             # Wait for the next snapshot interval

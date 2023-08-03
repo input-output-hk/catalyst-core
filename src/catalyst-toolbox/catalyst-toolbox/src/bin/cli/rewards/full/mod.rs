@@ -4,6 +4,7 @@ use catalyst_toolbox::{
 };
 use color_eyre::Result;
 use config::*;
+use snapshot_lib::registration::MainnetRewardAddress;
 use std::path::Path;
 use tracing::info;
 
@@ -44,7 +45,7 @@ pub(super) fn full_rewards(path: &Path) -> Result<()> {
     } = config;
 
     info!("calculating voter rewards");
-    super::voters::voter_rewards(
+    super::voters::voter_rewards::<MainnetRewardAddress>(
         &Some(voter_rewards_output),
         &vote_count_path,
         &snapshot_path,

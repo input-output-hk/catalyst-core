@@ -19,7 +19,7 @@ use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawSnapshot {
     pub tag: String,
-    pub content: RawSnapshotInput,
+    pub content: RawSnapshotInput<MainnetRewardAddress>,
 }
 
 impl Default for RawSnapshot {
@@ -45,18 +45,18 @@ impl RawSnapshot {
     }
 }
 
-pub trait RawSnapshotExtension {
+pub trait RawSnapshotExtension<RewardAddressType> {
     fn into_full_snapshot_infos(
         self,
         assigner: &RepsVotersAssigner,
-    ) -> Result<Vec<SnapshotInfo>, Error>;
+    ) -> Result<Vec<SnapshotInfo<RewardAddressType>>, Error>;
 }
 
-impl RawSnapshotExtension for RawSnapshot {
+impl RawSnapshotExtension<MainnetRewardAddress> for RawSnapshot {
     fn into_full_snapshot_infos(
         self,
         assigner: &RepsVotersAssigner,
-    ) -> Result<Vec<SnapshotInfo>, Error> {
+    ) -> Result<Vec<SnapshotInfo<MainnetRewardAddress>>, Error> {
         Ok(Snapshot::from_raw_snapshot(
             self.content.snapshot,
             self.content.min_stake_threshold,
@@ -82,9 +82,9 @@ impl From<RawSnapshot> for RepsVotersAssigner {
     }
 }
 
-impl TryInto<Vec<SnapshotInfo>> for RawSnapshot {
+impl TryInto<Vec<SnapshotInfo<MainnetRewardAddress>>> for RawSnapshot {
     type Error = Error;
-    fn try_into(self) -> Result<Vec<SnapshotInfo>, Self::Error> {
+    fn try_into(self) -> Result<Vec<SnapshotInfo<MainnetRewardAddress>>, Self::Error> {
         let direct_voter = self
             .content
             .direct_voters_group
@@ -114,7 +114,7 @@ pub struct RawSnapshotBuilder {
     direct_voters_group: Option<String>,
     representatives_group: Option<String>,
     voting_registrations_count: usize,
-    voting_registrations: Option<Vec<VotingRegistration>>,
+    voting_registrations: Option<Vec<VotingRegistration<MainnetRewardAddress>>>,
     dreps: Option<Dreps>,
 }
 
@@ -150,7 +150,7 @@ impl RawSnapshotBuilder {
     #[must_use]
     pub fn with_voting_registrations(
         mut self,
-        voting_registrations: Vec<VotingRegistration>,
+        voting_registrations: Vec<VotingRegistration<MainnetRewardAddress>>,
     ) -> Self {
         self.voting_registrations = Some(voting_registrations);
         self

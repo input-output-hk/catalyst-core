@@ -4,8 +4,9 @@ use catalyst_toolbox::utils::csv::dump_to_csv_or_print;
 use catalyst_toolbox::utils::{assert_are_close, json_from_file};
 use clap::Parser;
 use color_eyre::{Report, Result};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use snapshot_lib::registration::MainnetRewardAddress;
+use snapshot_lib::SnapshotInfo;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -37,14 +38,17 @@ pub struct VotersRewards {
     vote_threshold: u64,
 }
 
-fn write_rewards_results(
+fn write_rewards_results<RewardAddressType>(
     output: &Option<PathBuf>,
-    rewards: BTreeMap<MainnetRewardAddress, Rewards>,
-) -> Result<(), Report> {
+    rewards: BTreeMap<RewardAddressType, Rewards>,
+) -> Result<(), Report>
+where
+    RewardAddressType: Serialize + std::fmt::Debug + Serialize,
+{
     #[derive(Serialize, Debug)]
-    struct Entry {
+    struct Entry<RewardAddressType> {
         #[serde(rename = "Address")]
-        address: MainnetRewardAddress,
+        address: RewardAddressType,
         #[serde(rename = "Reward for the voter (lovelace)")]
         reward: Rewards,
     }
@@ -69,7 +73,7 @@ impl VotersRewards {
             vote_threshold,
         } = self;
 
-        voter_rewards(
+        voter_rewards::<MainnetRewardAddress>(
             &output,
             &votes_count_path,
             &snapshot_info_path,
@@ -79,15 +83,26 @@ impl VotersRewards {
     }
 }
 
-pub fn voter_rewards(
+pub fn voter_rewards<RewardAddressType>(
     output: &Option<PathBuf>,
     votes_count_path: &Path,
     snapshot_path: &Path,
     vote_threshold: u64,
     total_rewards: u64,
-) -> Result<()> {
+) -> Result<()>
+where
+    RewardAddressType: for<'a> Deserialize<'a>
+        + Serialize
+        + Clone
+        + Default
+        + PartialEq
+        + Eq
+        + PartialOrd
+        + Ord
+        + std::fmt::Debug,
+{
     let vote_count = json_from_file(votes_count_path)?;
-    let snapshot = json_from_file(snapshot_path)?;
+    let snapshot: Vec<SnapshotInfo<RewardAddressType>> = json_from_file(snapshot_path)?;
 
     let results = calc_voter_rewards(
         vote_count,

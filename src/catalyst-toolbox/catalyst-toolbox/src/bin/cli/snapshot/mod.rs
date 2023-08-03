@@ -3,6 +3,7 @@ use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
 use snapshot_lib::{
+    registration::MainnetRewardAddress,
     voting_group::{RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
     RawSnapshot, Snapshot,
 };
@@ -49,7 +50,8 @@ pub struct SnapshotCmd {
 
 impl SnapshotCmd {
     pub fn exec(self) -> Result<(), Report> {
-        let raw_snapshot: RawSnapshot = serde_json::from_reader(File::open(&self.snapshot)?)?;
+        let raw_snapshot: RawSnapshot<MainnetRewardAddress> =
+            serde_json::from_reader(File::open(&self.snapshot)?)?;
         let dreps = if let Some(dreps) = &self.dreps {
             serde_json::from_reader(File::open(dreps)?)?
         } else {

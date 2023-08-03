@@ -7,7 +7,7 @@ const MAINNET_PREFIX: &'static str = "addr";
 const TESTNET_PREFIX: &'static str = "addr_test";
 const STAKE_PREFIX: &'static str = "stake";
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct MainnetRewardAddress(pub String);
 
 impl Deref for MainnetRewardAddress {
@@ -23,7 +23,7 @@ impl DerefMut for MainnetRewardAddress {
     }
 }
 
-#[derive(Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TestnetRewardAddress(pub String);
 
 impl Deref for TestnetRewardAddress {
@@ -61,12 +61,12 @@ impl DerefMut for StakeAddress {
 /// to tag the purpose of the vote.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::module_name_repetitions)]
-pub struct VotingRegistration {
+pub struct VotingRegistration<RewardAddressType> {
     pub stake_public_key: StakeAddress,
     pub voting_power: Value,
     /// Shelley address discriminated for the same network this transaction is submitted to.
     #[serde(rename = "rewards_address")]
-    pub reward_address: MainnetRewardAddress,
+    pub reward_address: RewardAddressType,
     pub delegations: Delegations,
     /// 0 = Catalyst, assumed 0 for old legacy registrations
     #[serde(default)]
@@ -76,7 +76,7 @@ pub struct VotingRegistration {
     pub nonce: u64,
 }
 
-impl VotingRegistration {
+impl<RewardAddressType> VotingRegistration<RewardAddressType> {
     #[must_use]
     pub fn is_legacy(&self) -> bool {
         matches!(self.delegations, Delegations::Legacy(_))
@@ -318,9 +318,9 @@ mod tests {
         }
     }
 
-    impl Arbitrary for VotingRegistration {
+    impl Arbitrary for VotingRegistration<TestnetRewardAddress> {
         type Parameters = ();
-        type Strategy = BoxedStrategy<VotingRegistration>;
+        type Strategy = BoxedStrategy<VotingRegistration<TestnetRewardAddress>>;
 
         fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
             (any::<([u8; 32], [u8; 32], Delegations)>(), 0..45_000_000u64)
@@ -333,9 +333,9 @@ mod tests {
                         )
                         .unwrap(),
                     );
-                    let reward_address = MainnetRewardAddress(
+                    let reward_address = TestnetRewardAddress(
                         bech32::encode(
-                            MAINNET_PREFIX,
+                            TESTNET_PREFIX,
                             rewards_addr.to_base32(),
                             bech32::Variant::Bech32,
                         )

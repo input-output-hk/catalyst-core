@@ -93,7 +93,7 @@ impl DrepsRewards {
             )?,
         )?;
 
-        let snapshot: Vec<SnapshotInfo> = serde_json::from_reader(
+        let snapshot: Vec<SnapshotInfo<MainnetRewardAddress>> = serde_json::from_reader(
             jcli_lib::utils::io::open_file_read(&Some(snapshot_info_path))?,
         )?;
 

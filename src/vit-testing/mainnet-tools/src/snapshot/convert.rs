@@ -95,11 +95,15 @@ pub trait OutputExtension {
     /// # Errors
     ///
     /// At any internal error while creating a voting registration from output
-    fn try_into_voting_registration(self) -> Result<VotingRegistration, Error>;
+    fn try_into_voting_registration(
+        self,
+    ) -> Result<VotingRegistration<MainnetRewardAddress>, Error>;
 }
 
 impl OutputExtension for SnapshotEntry {
-    fn try_into_voting_registration(self) -> Result<VotingRegistration, Error> {
+    fn try_into_voting_registration(
+        self,
+    ) -> Result<VotingRegistration<MainnetRewardAddress>, Error> {
         Ok(VotingRegistration {
             stake_public_key: StakeAddress(self.stake_key.to_string()),
             voting_power: self

@@ -6,7 +6,10 @@ use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, OutputFormat};
 use jormungandr_lib::interfaces::{InitialUTxO, Value};
 use serde::Serialize;
-use snapshot_lib::{registration::VotingRegistration, RawSnapshot};
+use snapshot_lib::{
+    registration::{MainnetRewardAddress, VotingRegistration},
+    RawSnapshot,
+};
 
 #[derive(Serialize)]
 struct OutputInitial {
@@ -64,7 +67,8 @@ impl SveSnapshotCmd {
         }
 
         // Filter CIP-36 registrations with more than 1 delegation.
-        let registrations: Vec<VotingRegistration> = serde_json::from_value(registratons)?;
+        let registrations: Vec<VotingRegistration<MainnetRewardAddress>> =
+            serde_json::from_value(registratons)?;
         let raw_snapshot = RawSnapshot::from(registrations);
         let (snapshot, total_registrations_rejected) =
             snapshot_lib::sve::Snapshot::new(raw_snapshot, self.min_stake_threshold);

@@ -5,6 +5,7 @@ use std::ops::{Deref, DerefMut};
 
 const MAINNET_PREFIX: &str = "addr";
 const TESTNET_PREFIX: &str = "addr_test";
+#[allow(dead_code)]
 const STAKE_PREFIX: &str = "stake";
 
 pub trait RewardAddressTrait:

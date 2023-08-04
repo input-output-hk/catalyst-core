@@ -20,16 +20,6 @@ def import_all(
         ...,
         help="Database row id of the event which data will be imported",
     ),
-    campaign_group_id: int = typer.Option(
-        ...,
-        envvar="IDEASCALE_CAMPAIGN_GROUP",
-        help="IdeaScale campaign group id for the event which data will be imported",
-    ),
-    stage_ids: List[int] = typer.Option(
-        ...,
-        envvar="IDEASCALE_STAGE_ID",
-        help="IdeaScale stage ids for from which proposal data will be imported",
-    ),
     proposals_scores_csv: Optional[str] = typer.Option(
         None,
         help="CSV file containing proposals impact scores",
@@ -55,18 +45,13 @@ def import_all(
 
     async def inner(
         event_id: int,
-        campaign_group_id: int,
-        stage_ids: [int],
         proposals_scores_csv_path: Optional[str],
         ideascale_api_url: str,
     ):
         importer = Importer(
             api_token,
             database_url,
-            None,
             event_id,
-            campaign_group_id,
-            stage_ids,
             proposals_scores_csv_path,
             ideascale_api_url,
         )
@@ -78,4 +63,4 @@ def import_all(
         except Exception as e:
             logger.error(e)
 
-    asyncio.run(inner(event_id, campaign_group_id, stage_ids, proposals_scores_csv, ideascale_api_url))
+    asyncio.run(inner(event_id, proposals_scores_csv, ideascale_api_url))

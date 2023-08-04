@@ -218,3 +218,18 @@ class Snapshot(Model):
     def table() -> str:
         """Return the name of the table that this model is stored in."""
         return "snapshot"
+
+@dataclasses.dataclass
+class Config(Model):
+    """Represents a database config."""
+
+    row_id: int
+    id: str
+    id2: str
+    id3: str
+    value: Optional[Mapping[str, Any]]
+
+    @staticmethod
+    def table() -> str:
+        """Return the name of the table that this model is stored in."""
+        return "config"

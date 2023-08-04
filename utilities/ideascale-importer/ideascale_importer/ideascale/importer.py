@@ -257,8 +257,11 @@ class Importer:
 
         logger.debug("Loading ideascale config from the event-db")
 
-        config = ideascale_importer.db.models.Config(row_id=0, id="ideascale", id2="", id3="10", value=None)
-        res = await ideascale_importer.db.select(self.conn, config,  cond={"id": f"= \'{config.id}\'"})
+        config = ideascale_importer.db.models.Config(row_id=0, id="ideascale", id2="10", id3="", value=None)
+        res = await ideascale_importer.db.select(self.conn, config,  cond={
+            "id": "= '{}'".format(config.id),
+            "AND id2": "= '{}'".format(config.id2)
+            })
         if len(res) == 0:
             raise Exception("Cannot find ideascale config in the event-db database")
         self.config = Config.from_json(res[0].value)

@@ -257,10 +257,10 @@ class Importer:
 
         logger.debug("Loading ideascale config from the event-db")
 
-        config = ideascale_importer.db.models.Config(row_id=0, id="ideascale", id2="10", id3="", value=None)
+        config = ideascale_importer.db.models.Config(row_id=0, id="ideascale", id2=f"{self.event_id}", id3="", value=None)
         res = await ideascale_importer.db.select(self.conn, config,  cond={
-            "id": "= '{}'".format(config.id),
-            "AND id2": "= '{}'".format(config.id2)
+            "id": f"= '{config.id}'",
+            "AND id2": f"= '{config.id2}'"
             })
         if len(res) == 0:
             raise Exception("Cannot find ideascale config in the event-db database")

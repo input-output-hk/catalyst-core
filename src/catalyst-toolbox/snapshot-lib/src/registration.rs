@@ -226,7 +226,7 @@ pub mod serde_impl {
                 .map_err(|e| S::Error::custom(format!("invalid hex string: {}", e)))?;
 
             let addr_prefix = bytes
-                .get(0)
+                .first()
                 .ok_or_else(|| S::Error::custom("invalid address format"))?;
 
             // Shelley addrs: 0x0?, 0x1?, 0x2?, 0x3?, 0x4?, 0x5?, 0x6?, 0x7?
@@ -353,14 +353,14 @@ mod tests {
     #[test]
     fn reward_address_serde_test() {
         assert_eq!(
-            serde_json::to_value(&RewardAddress(
+            serde_json::to_value(RewardAddress(
                 "0x01cd3be59b212a45b99f2d26bd179c7119e2851c3b7ada415eff504683c7a5c447ebee137a684b65750e8ab5227ffb3199017bdaf069464c11".to_string()
             )).unwrap(),
             serde_json::json!("addr1q8xnhevmyy4ytwvl95nt69uuwyv79pgu8dad5s27lagydq785hzy06lwzdaxsjm9w58g4dfz0lanrxgp00d0q62xfsgsh7dfml")
         );
 
         assert_eq!(
-            serde_json::to_value(&RewardAddress(
+            serde_json::to_value(RewardAddress(
                 "0xe1b8d7b8e56a3ed89ee21bc062d284d537f843b50b68b905618b130297".to_string()
             ))
             .unwrap(),
@@ -368,14 +368,14 @@ mod tests {
         );
 
         assert_eq!(
-            serde_json::to_value(&RewardAddress(
+            serde_json::to_value(RewardAddress(
                 "0x00cd3be59b212a45b99f2d26bd179c7119e2851c3b7ada415eff504683c7a5c447ebee137a684b65750e8ab5227ffb3199017bdaf069464c11".to_string()
             )).unwrap(),
             serde_json::json!("addr_test1qrxnhevmyy4ytwvl95nt69uuwyv79pgu8dad5s27lagydq785hzy06lwzdaxsjm9w58g4dfz0lanrxgp00d0q62xfsgs5gsfhq")
         );
 
         assert_eq!(
-            serde_json::to_value(&RewardAddress(
+            serde_json::to_value(RewardAddress(
                 "0xe0b8d7b8e56a3ed89ee21bc062d284d537f843b50b68b905618b130297".to_string()
             ))
             .unwrap(),

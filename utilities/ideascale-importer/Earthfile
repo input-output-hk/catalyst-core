@@ -24,7 +24,6 @@ build:
     COPY pyproject.toml .
     COPY poetry.lock .
     COPY --dir ideascale_importer README.md ./
-    COPY ideascale-importer-config.json ./
 
     # Install package dependencies
     RUN poetry env use python

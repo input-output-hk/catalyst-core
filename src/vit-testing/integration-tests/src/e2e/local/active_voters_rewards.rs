@@ -158,8 +158,9 @@ pub fn voters_with_at_least_one_vote() {
     assert_eq!(
         records
             .iter()
-            .find(|(x, _y)| **x
-                == RewardAddress(alice_wallet.reward_address().to_address().to_hex()))
+            .find(
+                |(x, _y)| **x == RewardAddress(alice_wallet.reward_address().to_address().to_hex())
+            )
             .unwrap()
             .1,
         &50u32.into()
@@ -168,8 +169,7 @@ pub fn voters_with_at_least_one_vote() {
     assert_eq!(
         records
             .iter()
-            .find(|(x, _y)| **x
-                == RewardAddress(bob_wallet.reward_address().to_address().to_hex()))
+            .find(|(x, _y)| **x == RewardAddress(bob_wallet.reward_address().to_address().to_hex()))
             .unwrap()
             .1,
         &50u32.into()

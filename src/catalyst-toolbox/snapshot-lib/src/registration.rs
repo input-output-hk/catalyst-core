@@ -3,55 +3,22 @@ use jormungandr_lib::interfaces::Value;
 use serde::{de::Error as _, ser::Error as _, Deserialize, Serialize};
 use std::ops::{Deref, DerefMut};
 
-const MAINNET_PREFIX: &str = "addr";
-const TESTNET_PREFIX: &str = "addr_test";
-#[allow(dead_code)]
-const STAKE_PREFIX: &str = "stake";
+const MAINNET_PAYMENT_PREFIX: &str = "addr";
+const TESTNET_PAYMENT_PREFIX: &str = "addr_test";
+const MAINNET_STAKE_PREFIX: &str = "stake";
+const TESTNET_STAKE_PREFIX: &str = "stake_test";
 
-pub trait RewardAddressTrait:
-    for<'a> Deserialize<'a>
-    + Serialize
-    + Clone
-    + Default
-    + PartialEq
-    + Eq
-    + PartialOrd
-    + Ord
-    + std::fmt::Debug
-{
-}
+#[derive(Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct RewardAddress(pub String);
 
-#[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct MainnetRewardAddress(pub String);
-
-impl RewardAddressTrait for MainnetRewardAddress {}
-
-impl Deref for MainnetRewardAddress {
+impl Deref for RewardAddress {
     type Target = String;
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
 
-impl DerefMut for MainnetRewardAddress {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-#[derive(Deserialize, Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct TestnetRewardAddress(pub String);
-
-impl RewardAddressTrait for TestnetRewardAddress {}
-
-impl Deref for TestnetRewardAddress {
-    type Target = String;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for TestnetRewardAddress {
+impl DerefMut for RewardAddress {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
@@ -79,12 +46,12 @@ impl DerefMut for StakeAddress {
 /// to tag the purpose of the vote.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 #[allow(clippy::module_name_repetitions)]
-pub struct VotingRegistration<RewardAddressType> {
+pub struct VotingRegistration {
     pub stake_public_key: StakeAddress,
     pub voting_power: Value,
     /// Shelley address discriminated for the same network this transaction is submitted to.
     #[serde(rename = "rewards_address")]
-    pub reward_address: RewardAddressType,
+    pub reward_address: RewardAddress,
     pub delegations: Delegations,
     /// 0 = Catalyst, assumed 0 for old legacy registrations
     #[serde(default)]
@@ -94,7 +61,7 @@ pub struct VotingRegistration<RewardAddressType> {
     pub nonce: u64,
 }
 
-impl<RewardAddressType> VotingRegistration<RewardAddressType> {
+impl VotingRegistration {
     #[must_use]
     pub fn is_legacy(&self) -> bool {
         matches!(self.delegations, Delegations::Legacy(_))
@@ -240,31 +207,70 @@ pub mod serde_impl {
         }
     }
 
-    impl Serialize for MainnetRewardAddress {
+    impl Serialize for RewardAddress {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: Serializer,
         {
+            enum AddrType {
+                Shelley,
+                Stake,
+            }
+            enum NetType {
+                Mainnet,
+                Testnet,
+            }
+            // Following cip-0019 specification https://github.com/cardano-foundation/CIPs/blob/master/CIP-0019/README.md of the addresses formats
             use bech32::ToBase32;
             let bytes = hex::decode(self.trim_start_matches("0x"))
                 .map_err(|e| S::Error::custom(format!("invalid hex string: {}", e)))?;
 
-            bech32::encode(MAINNET_PREFIX, bytes.to_base32(), bech32::Variant::Bech32)
-                .map_err(|e| S::Error::custom(format!("bech32 encoding failed: {}", e)))?
-                .serialize(serializer)
-        }
-    }
+            let addr_prefix = bytes
+                .first()
+                .ok_or_else(|| S::Error::custom("invalid address format"))?;
 
-    impl Serialize for TestnetRewardAddress {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            use bech32::ToBase32;
-            let bytes = hex::decode(self.trim_start_matches("0x"))
-                .map_err(|e| S::Error::custom(format!("invalid hex string: {}", e)))?;
+            // Shelley addrs: 0x0?, 0x1?, 0x2?, 0x3?, 0x4?, 0x5?, 0x6?, 0x7?
+            // Stake addrs: 0xE?, 0xF?
+            let addr_type = addr_prefix >> 4 & 0xf;
+            // 0 or 1 are valid addrs in the following cases:
+            // type = 0x0 -  Testnet network
+            // type = 0x1 -  Mainnet network
+            let addr_net = addr_prefix & 0xf;
 
-            bech32::encode(TESTNET_PREFIX, bytes.to_base32(), bech32::Variant::Bech32)
+            let addr_type = match addr_type {
+                // Shelley
+                0x0 | 0x1 | 0x2 | 0x3 | 0x4 | 0x5 | 0x6 | 0x7 => AddrType::Shelley,
+                // Stake
+                0xf | 0xe => AddrType::Stake,
+                _ => {
+                    return Err(S::Error::custom(format!(
+                        "invalid address format, incorrect addr type: {}",
+                        addr_type
+                    )))
+                }
+            };
+
+            let addr_net = match addr_net {
+                // Mainnet
+                0x1 => NetType::Mainnet,
+                // Testnet
+                0x0 => NetType::Testnet,
+                _ => {
+                    return Err(S::Error::custom(format!(
+                        "invalid address format, incorrect network tag: {}",
+                        addr_net
+                    )))
+                }
+            };
+
+            let prefix = match (addr_type, addr_net) {
+                (AddrType::Shelley, NetType::Mainnet) => MAINNET_PAYMENT_PREFIX,
+                (AddrType::Stake, NetType::Mainnet) => MAINNET_STAKE_PREFIX,
+                (AddrType::Shelley, NetType::Testnet) => TESTNET_PAYMENT_PREFIX,
+                (AddrType::Stake, NetType::Testnet) => TESTNET_STAKE_PREFIX,
+            };
+
+            bech32::encode(prefix, bytes.to_base32(), bech32::Variant::Bech32)
                 .map_err(|e| S::Error::custom(format!("bech32 encoding failed: {}", e)))?
                 .serialize(serializer)
         }
@@ -274,7 +280,6 @@ pub mod serde_impl {
 #[cfg(any(test, feature = "proptest"))]
 mod tests {
     use super::*;
-    use bech32::ToBase32;
     use chain_crypto::{Ed25519, SecretKey};
     use proptest::collection::vec;
     use proptest::prelude::*;
@@ -321,29 +326,15 @@ mod tests {
         }
     }
 
-    impl Arbitrary for VotingRegistration<TestnetRewardAddress> {
+    impl Arbitrary for VotingRegistration {
         type Parameters = ();
-        type Strategy = BoxedStrategy<VotingRegistration<TestnetRewardAddress>>;
+        type Strategy = BoxedStrategy<VotingRegistration>;
 
         fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
             (any::<([u8; 32], [u8; 32], Delegations)>(), 0..45_000_000u64)
                 .prop_map(|((stake_key, rewards_addr, delegations), vp)| {
-                    let stake_public_key = StakeAddress(
-                        bech32::encode(
-                            STAKE_PREFIX,
-                            stake_key.to_base32(),
-                            bech32::Variant::Bech32,
-                        )
-                        .unwrap(),
-                    );
-                    let reward_address = TestnetRewardAddress(
-                        bech32::encode(
-                            TESTNET_PREFIX,
-                            rewards_addr.to_base32(),
-                            bech32::Variant::Bech32,
-                        )
-                        .unwrap(),
-                    );
+                    let stake_public_key = StakeAddress(hex::encode(stake_key));
+                    let reward_address = RewardAddress(hex::encode(rewards_addr));
                     let voting_power: Value = vp.into();
                     VotingRegistration {
                         stake_public_key,
@@ -356,6 +347,40 @@ mod tests {
                 })
                 .boxed()
         }
+    }
+
+    #[cfg(test)]
+    #[test]
+    fn reward_address_serde_test() {
+        assert_eq!(
+            serde_json::to_value(RewardAddress(
+                "0x01cd3be59b212a45b99f2d26bd179c7119e2851c3b7ada415eff504683c7a5c447ebee137a684b65750e8ab5227ffb3199017bdaf069464c11".to_string()
+            )).unwrap(),
+            serde_json::json!("addr1q8xnhevmyy4ytwvl95nt69uuwyv79pgu8dad5s27lagydq785hzy06lwzdaxsjm9w58g4dfz0lanrxgp00d0q62xfsgsh7dfml")
+        );
+
+        assert_eq!(
+            serde_json::to_value(RewardAddress(
+                "0xe1b8d7b8e56a3ed89ee21bc062d284d537f843b50b68b905618b130297".to_string()
+            ))
+            .unwrap(),
+            serde_json::json!("stake1uxud0w89dgld38hzr0qx955y65mlssa4pd5tjptp3vfs99cj39wag")
+        );
+
+        assert_eq!(
+            serde_json::to_value(RewardAddress(
+                "0x00cd3be59b212a45b99f2d26bd179c7119e2851c3b7ada415eff504683c7a5c447ebee137a684b65750e8ab5227ffb3199017bdaf069464c11".to_string()
+            )).unwrap(),
+            serde_json::json!("addr_test1qrxnhevmyy4ytwvl95nt69uuwyv79pgu8dad5s27lagydq785hzy06lwzdaxsjm9w58g4dfz0lanrxgp00d0q62xfsgs5gsfhq")
+        );
+
+        assert_eq!(
+            serde_json::to_value(RewardAddress(
+                "0xe0b8d7b8e56a3ed89ee21bc062d284d537f843b50b68b905618b130297".to_string()
+            ))
+            .unwrap(),
+            serde_json::json!("stake_test1uzud0w89dgld38hzr0qx955y65mlssa4pd5tjptp3vfs99c4m0ve4")
+        );
     }
 
     #[cfg(test)]

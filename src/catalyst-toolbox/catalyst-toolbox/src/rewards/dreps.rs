@@ -14,12 +14,12 @@ pub enum Error {
     MultipleEntries,
 }
 
-fn filter_requirements<RewardAddressType>(
-    mut dreps: Vec<SnapshotInfo<RewardAddressType>>,
+fn filter_requirements(
+    mut dreps: Vec<SnapshotInfo>,
     votes: VoteCount,
     top_dreps_to_reward: usize,
     votes_threshold: Threshold,
-) -> Vec<SnapshotInfo<RewardAddressType>> {
+) -> Vec<SnapshotInfo> {
     // only the top `top_dreps_to_reward` representatives get rewards
     dreps.sort_by_key(|v| v.hir.voting_power);
     dreps.reverse();
@@ -33,8 +33,8 @@ fn filter_requirements<RewardAddressType>(
         .collect()
 }
 
-pub fn calc_dreps_rewards<RewardAddressType>(
-    snapshot: Vec<SnapshotInfo<RewardAddressType>>,
+pub fn calc_dreps_rewards(
+    snapshot: Vec<SnapshotInfo>,
     votes: VoteCount,
     drep_voting_group: VotingGroup,
     top_dreps_to_reward: usize,
@@ -91,12 +91,12 @@ mod tests {
     use super::*;
     use jormungandr_lib::crypto::hash::Hash;
     use proptest::prop_assert_eq;
-    use snapshot_lib::{registration::TestnetRewardAddress, *};
+    use snapshot_lib::*;
     use std::collections::HashMap;
     use test_strategy::proptest;
 
     #[proptest]
-    fn test_small(snapshot: Snapshot<TestnetRewardAddress>) {
+    fn test_small(snapshot: Snapshot) {
         let voting_keys = snapshot.voting_keys().collect::<Vec<_>>();
 
         let votes_count = voting_keys
@@ -145,7 +145,7 @@ mod tests {
     }
 
     #[proptest]
-    fn test_threshold(snapshot: Snapshot<TestnetRewardAddress>) {
+    fn test_threshold(snapshot: Snapshot) {
         let voters = snapshot.to_full_snapshot_info();
 
         let rewards = calc_dreps_rewards(
@@ -161,7 +161,7 @@ mod tests {
     }
 
     #[proptest]
-    fn test_per_category_threshold(snapshot: Snapshot<TestnetRewardAddress>) {
+    fn test_per_category_threshold(snapshot: Snapshot) {
         use vit_servicing_station_tests::common::data::ArbitrarySnapshotGenerator;
 
         let voters = snapshot.to_full_snapshot_info();

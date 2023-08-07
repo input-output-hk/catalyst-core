@@ -13,8 +13,6 @@ use jormungandr_lib::{
     crypto::{account::Identifier, hash::Hash},
     interfaces::AccountVotes,
 };
-use snapshot_lib::registration::{MainnetRewardAddress, TestnetRewardAddress};
-use snapshot_lib::NetworkType;
 use std::{collections::HashMap, path::PathBuf};
 
 #[derive(Parser)]
@@ -33,12 +31,7 @@ pub enum Rewards {
     Veterans(veterans::VeteransRewards),
 
     /// Calculate full rewards based on a config file
-    Full {
-        path: PathBuf,
-        /// Specify network type of the, could be "mainnet" or "testnet"
-        #[clap(default_value = "mainnet")]
-        net_type: NetworkType,
-    },
+    Full { path: PathBuf },
 
     /// Calculate rewards for propsers
     Proposers(proposers_lib::ProposerRewards),
@@ -51,10 +44,7 @@ impl Rewards {
             Rewards::CommunityAdvisors(cmd) => cmd.exec(),
             Rewards::Veterans(cmd) => cmd.exec(),
             Rewards::Dreps(cmd) => cmd.exec(),
-            Rewards::Full { path, net_type } => match net_type {
-                NetworkType::Mainnet => full::full_rewards::<MainnetRewardAddress>(&path),
-                NetworkType::Testnet => full::full_rewards::<TestnetRewardAddress>(&path),
-            },
+            Rewards::Full { path } => full::full_rewards(&path),
             Rewards::Proposers(proposers) => proposers::rewards(&proposers),
         }
     }

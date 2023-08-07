@@ -11,15 +11,12 @@ use crate::{
     RawSnapshot,
 };
 
-pub struct Snapshot<RewardAddressType> {
-    inner: HashMap<Identifier, Vec<VotingRegistration<RewardAddressType>>>,
+pub struct Snapshot {
+    inner: HashMap<Identifier, Vec<VotingRegistration>>,
 }
 
-impl<RewardAddressType> Snapshot<RewardAddressType> {
-    pub fn new(
-        raw_snapshot: RawSnapshot<RewardAddressType>,
-        min_stake_threshold: Value,
-    ) -> (Self, usize) {
+impl Snapshot {
+    pub fn new(raw_snapshot: RawSnapshot, min_stake_threshold: Value) -> (Self, usize) {
         let mut total_rejected_registrations: usize = 0;
 
         let inner = raw_snapshot

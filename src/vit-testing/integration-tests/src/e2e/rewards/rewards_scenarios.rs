@@ -14,7 +14,7 @@ use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
 use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder};
-use snapshot_lib::registration::MainnetRewardAddress;
+use snapshot_lib::registration::RewardAddress;
 use snapshot_lib::VotingGroup;
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
@@ -254,7 +254,7 @@ pub fn mixed_rewards_happy_path() {
         direct_records
             .iter()
             .find(|(x, _y)| **x
-                == MainnetRewardAddress(emma_wallet.reward_address().to_address().to_hex()))
+                == RewardAddress(emma_wallet.reward_address().to_address().to_hex()))
             .unwrap()
             .1,
         &EXPECTED_REWARD.into()
@@ -265,8 +265,7 @@ pub fn mixed_rewards_happy_path() {
     assert_eq!(
         direct_records
             .iter()
-            .find(|(x, _y)| **x
-                == MainnetRewardAddress(jim_wallet.reward_address().to_address().to_hex()))
+            .find(|(x, _y)| **x == RewardAddress(jim_wallet.reward_address().to_address().to_hex()))
             .unwrap()
             .1,
         &EXPECTED_REWARD.into()

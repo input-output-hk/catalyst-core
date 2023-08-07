@@ -45,10 +45,10 @@ fn calc_vp_to_remove(x: u64, tot: u64, threshold: Fraction) -> u64 {
 ///       It's easy to see we need to repeat step 2.1 at most min(ceil(1/T), N) times.
 ///
 /// Complexity: O(NlogN + min(ceil(1/T), N))
-pub fn cap_voting_influence<RewardAddressType>(
-    mut voters: Vec<SnapshotInfo<RewardAddressType>>,
+pub fn cap_voting_influence(
+    mut voters: Vec<SnapshotInfo>,
     threshold: Fraction,
-) -> Result<Vec<SnapshotInfo<RewardAddressType>>, Error> {
+) -> Result<Vec<SnapshotInfo>, Error> {
     voters.retain(|v| v.hir.voting_power > 0.into());
 
     if voters.is_empty() {
@@ -109,7 +109,7 @@ pub fn cap_voting_influence<RewardAddressType>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{registration::TestnetRewardAddress, voter_hir::tests::VpRange, VoterHIR};
+    use crate::{voter_hir::tests::VpRange, VoterHIR};
     use proptest::{collection::vec, prelude::*};
     use test_strategy::proptest;
 
@@ -117,9 +117,7 @@ mod tests {
 
     #[proptest]
     fn test_insufficient_voters(
-        #[strategy(vec(any::<SnapshotInfo<TestnetRewardAddress>>(), 1..100))] voters: Vec<
-            SnapshotInfo<TestnetRewardAddress>,
-        >,
+        #[strategy(vec(any::<SnapshotInfo>(), 1..100))] voters: Vec<SnapshotInfo>,
     ) {
         let cap = Fraction::new(1u64, voters.len() as u64 + 1);
         assert!(cap_voting_influence(voters, cap).is_err());
@@ -127,8 +125,8 @@ mod tests {
 
     #[proptest]
     fn test_exact_voters(
-        #[strategy(vec(any_with::<SnapshotInfo<TestnetRewardAddress>>((Default::default(), DEFAULT_VP_STRATEGY)), 1..100))]
-        voters: Vec<SnapshotInfo<TestnetRewardAddress>>,
+        #[strategy(vec(any_with::<SnapshotInfo>((Default::default(), DEFAULT_VP_STRATEGY)), 1..100))]
+        voters: Vec<SnapshotInfo>,
     ) {
         let cap = Fraction::new(1u64, voters.len() as u64);
         let min = voters.iter().map(|v| v.hir.voting_power).min().unwrap();
@@ -141,8 +139,8 @@ mod tests {
 
     #[proptest]
     fn test_exact_voters_fixed_at_threshold(
-        #[strategy(vec(any_with::<SnapshotInfo<TestnetRewardAddress>>((Default::default(), DEFAULT_VP_STRATEGY)), 101..=101))]
-        voters: Vec<SnapshotInfo<TestnetRewardAddress>>,
+        #[strategy(vec(any_with::<SnapshotInfo>((Default::default(), DEFAULT_VP_STRATEGY)), 101..=101))]
+        voters: Vec<SnapshotInfo>,
     ) {
         let cap = Fraction::new(999u64, 100000u64);
         let res = cap_voting_influence(voters, cap).unwrap();
@@ -158,8 +156,8 @@ mod tests {
 
     #[proptest]
     fn test_exact_voters_fixed_below_threshold(
-        #[strategy(vec(any_with::<SnapshotInfo<TestnetRewardAddress>>((Default::default(), DEFAULT_VP_STRATEGY)), 100..=100))]
-        voters: Vec<SnapshotInfo<TestnetRewardAddress>>,
+        #[strategy(vec(any_with::<SnapshotInfo>((Default::default(), DEFAULT_VP_STRATEGY)), 100..=100))]
+        voters: Vec<SnapshotInfo>,
     ) {
         let cap = Fraction::new(9u64, 1000u64);
         assert!(cap_voting_influence(voters, cap).is_err());
@@ -167,8 +165,8 @@ mod tests {
 
     #[proptest]
     fn test_below_threshold(
-        #[strategy(vec(any_with::<SnapshotInfo<TestnetRewardAddress>>((Default::default(), DEFAULT_VP_STRATEGY)), 100..300))]
-        voters: Vec<SnapshotInfo<TestnetRewardAddress>>,
+        #[strategy(vec(any_with::<SnapshotInfo>((Default::default(), DEFAULT_VP_STRATEGY)), 100..300))]
+        voters: Vec<SnapshotInfo>,
     ) {
         let cap = Fraction::new(1u64, 100u64);
         let res = cap_voting_influence(voters, cap).unwrap();
@@ -182,7 +180,7 @@ mod tests {
         }
     }
 
-    impl Arbitrary for SnapshotInfo<TestnetRewardAddress> {
+    impl Arbitrary for SnapshotInfo {
         type Parameters = (String, VpRange);
         type Strategy = BoxedStrategy<Self>;
 

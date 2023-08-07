@@ -13,7 +13,6 @@ use jormungandr_lib::{
     crypto::{account::Identifier, hash::Hash},
     interfaces::AccountVotes,
 };
-use snapshot_lib::registration::{MainnetRewardAddress, TestnetRewardAddress};
 use snapshot_lib::NetworkType;
 use std::{collections::HashMap, path::PathBuf};
 
@@ -52,8 +51,8 @@ impl Rewards {
             Rewards::Veterans(cmd) => cmd.exec(),
             Rewards::Dreps(cmd) => cmd.exec(),
             Rewards::Full { path, net_type } => match net_type {
-                NetworkType::Mainnet => full::full_rewards::<MainnetRewardAddress>(&path),
-                NetworkType::Testnet => full::full_rewards::<TestnetRewardAddress>(&path),
+                NetworkType::Mainnet => full::full_rewards(&path),
+                NetworkType::Testnet => full::full_rewards(&path),
             },
             Rewards::Proposers(proposers) => proposers::rewards(&proposers),
         }

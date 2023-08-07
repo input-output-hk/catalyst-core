@@ -6,7 +6,6 @@ use clap::Parser;
 use color_eyre::{Report, Result};
 use serde::Serialize;
 use snapshot_lib::registration::RewardAddress;
-use snapshot_lib::{NetworkType};
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -36,10 +35,6 @@ pub struct VotersRewards {
     /// Number of global votes required to be able to receive voter rewards
     #[clap(long, default_value = "0")]
     vote_threshold: u64,
-
-    /// Specify network type of the, could be "mainnet" or "testnet"
-    #[clap(long, default_value = "mainnet")]
-    net_type: NetworkType,
 }
 
 fn write_rewards_results(
@@ -72,25 +67,15 @@ impl VotersRewards {
             snapshot_info_path,
             votes_count_path,
             vote_threshold,
-            net_type,
         } = self;
 
-        match net_type {
-            NetworkType::Mainnet => voter_rewards(
-                &output,
-                &votes_count_path,
-                &snapshot_info_path,
-                vote_threshold,
-                total_rewards,
-            ),
-            NetworkType::Testnet => voter_rewards(
-                &output,
-                &votes_count_path,
-                &snapshot_info_path,
-                vote_threshold,
-                total_rewards,
-            ),
-        }
+        voter_rewards(
+            &output,
+            &votes_count_path,
+            &snapshot_info_path,
+            vote_threshold,
+            total_rewards,
+        )
     }
 }
 

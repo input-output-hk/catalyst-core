@@ -7,7 +7,6 @@ use color_eyre::Report;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::AccountVotes};
 use serde::Serialize;
 use snapshot_lib::registration::RewardAddress;
-use snapshot_lib::NetworkType;
 use snapshot_lib::SnapshotInfo;
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
@@ -48,10 +47,6 @@ pub struct DrepsRewards {
     /// Can be obtained from /api/v0/proposals.
     #[clap(long)]
     proposals: PathBuf,
-
-    /// Specify network type of the, could be "mainnet" or "testnet"
-    #[clap(long, default_value = "mainnet")]
-    net_type: NetworkType,
 }
 
 fn write_rewards_results(
@@ -77,7 +72,7 @@ fn write_rewards_results(
 }
 
 impl DrepsRewards {
-    fn exec_impl(self) -> Result<(), Report> {
+    pub fn exec(self) -> Result<(), Report> {
         let DrepsRewards {
             output,
             total_rewards,
@@ -126,12 +121,5 @@ impl DrepsRewards {
 
         write_rewards_results(&output, results)?;
         Ok(())
-    }
-
-    pub fn exec(self) -> Result<(), Report> {
-        match self.net_type {
-            NetworkType::Mainnet => self.exec_impl(),
-            NetworkType::Testnet => self.exec_impl(),
-        }
     }
 }

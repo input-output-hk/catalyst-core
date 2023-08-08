@@ -8,7 +8,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 from .envvar import SECRET_SECRET
-from .models import Event, HostInfo, LeaderHostInfo, Proposal, Snapshot, VotePlan
+from .models import Contribution, Event, HostInfo, LeaderHostInfo, Proposal, Snapshot, VotePlan, Voter
 from .utils import LEADER_REGEX, decrypt_secret, encrypt_secret, get_hostname
 
 
@@ -189,6 +189,32 @@ class EventDb(BaseModel):
                 snapshot = Snapshot(*snpsht["row"])
                 logger.debug("snapshot retrieved from DB")
                 return snapshot
+
+    async def fetch_voters(self, event_id: int) -> list[Voter]:
+        """Fetch the voters registered for the event_id."""
+        query = """
+        SELECT * FROM voter WHERE snapshot_id IN (SELECT row_id FROM snapshot WHERE event = $1)
+        """
+        result = await self.conn().fetch(query, event_id)
+        match result:
+            case None:
+                raise Exception("DB error fetching voters")
+            case [*voters]:
+                logger.debug(f"voters retrieved from DB: {len(voters)}")
+                return [Voter(**dict(r)) for r in voters]
+
+    async def fetch_contributions(self, event_id: int) -> list[Contribution]:
+        """Fetch the contributions registered for the event_id."""
+        query = """
+        SELECT * FROM contribution WHERE snapshot_id IN (SELECT row_id FROM snapshot WHERE event = $1)
+        """
+        result = await self.conn().fetch(query, event_id)
+        match result:
+            case None:
+                raise Exception("DB error fetching contributions")
+            case [*contributions]:
+                logger.debug(f"contributions retrieved from DB: {len(contributions)}")
+                return [Contribution(**dict(r)) for r in contributions]
 
     async def fetch_voteplans(self, event_id: int) -> list[VotePlan]:
         """Fetch the voteplans for the event_id."""

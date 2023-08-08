@@ -10,7 +10,7 @@ from aiofile import async_open
 from loguru import logger
 from pydantic import BaseModel
 
-from .committee import CommitteeMember, CommunicationKeys, ElectionKey, MemberKeys
+from ..committee import CommitteeMember, CommunicationKeys, ElectionKey, MemberKeys
 
 
 ### Base types
@@ -428,6 +428,30 @@ class Voter:
     voting_group: str
     # The voting power associated with this key
     voting_power: int
+
+
+@dataclass
+class Contribution:
+    """Individual contributions from the stake public key to the voting key."""
+
+    row_id: str
+    # Stake Public key for the voter.
+    stake_public_key: str
+    # The ID of the snapshot this record belongs to
+    snapshot_id: str
+
+    # The voting key. If None, it is the raw staked ADA.
+    voting_key: str | None
+    # The weight that this key gets from the total.
+    voting_weight: int | None
+    # The index from 0 of the keys in the delegation array.
+    voting_key_idx: int | None
+    # The amount of ADA contributed to this voting key from the stake address.
+    value: int
+    # The group that this contribution goes to.
+    voting_group: str
+    # Currently unused.
+    reward_address: str | None
 
 
 @dataclass

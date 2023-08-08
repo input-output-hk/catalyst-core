@@ -220,14 +220,9 @@ class EventDb(BaseModel):
         """Fetch the voteplans for the event_id."""
         query = "SELECT * FROM voteplan WHERE objective_id IN (SELECT row_id FROM objective WHERE event = $1) ORDER BY id ASC"
         result = await self.conn().fetch(query, event_id)
-        if result is None:
-            raise Exception("voteplan DB error")
-        logger.debug(f"voteplans retrieved from DB: {len(result)}")
         match result:
             case None:
                 raise Exception("DB error fetching voteplans")
-            case []:
-                raise Exception("no voteplans found in DB")
             case [*voteplans]:
                 logger.debug(f"voteplans retrieved from DB: {len(voteplans)}")
                 return [VotePlan(**dict(r)) for r in voteplans]

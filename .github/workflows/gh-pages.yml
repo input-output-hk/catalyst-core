@@ -71,6 +71,8 @@ jobs:
           echo "GIT_BRANCH=$GIT_BRANCH" >> $GITHUB_ENV
           echo "PGHOST=postgres" >> $GITHUB_ENV
           echo "PGPASSWORD=postgres" >> $GITHUB_ENV
+          # Try and free space for the runner
+          rm -rf /opt/hostedtoolcache
 
       - name: Build Docs
         uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.4.3

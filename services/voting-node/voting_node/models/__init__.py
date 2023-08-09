@@ -307,6 +307,14 @@ class Event:
             raise Exception("event has no snapshot start time")
         return self.snapshot_start
 
+    def has_snapshot_started(self) -> bool:
+        """Return True when current time is equal or greater to the voting start time.
+
+        This method raises exception if the timestamp is None.
+        """
+        snapshot_start = self.get_snapshot_start()
+        return datetime.utcnow() >= snapshot_start
+
     def get_voting_start(self) -> datetime:
         """Get the timestamp for when the event voting starts.
 

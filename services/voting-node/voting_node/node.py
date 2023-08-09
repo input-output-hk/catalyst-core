@@ -143,8 +143,8 @@ class BaseNode(BaseModel):
 
         This is the time when the snapshot is considered to be stable.
         """
-        snapshot_start = self.get_snapshot_start()
-        return datetime.utcnow() > snapshot_start
+        event = self.get_event()
+        return event.has_snapshot_started()
 
     def has_voting_started(self) -> bool:
         """Get the timestamp for when the event voting starts.

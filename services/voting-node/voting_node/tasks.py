@@ -476,8 +476,8 @@ class Leader0Schedule(LeaderSchedule):
         """Collect the snapshot data from EventDB."""
         # gets the event, raises exception if none is found.
         event = self.node.get_event()
-        snapshot_start = self.node.get_snapshot_start()
-        if not self.node.has_snapshot_started():
+        snapshot_start = event.get_snapshot_start()
+        if not event.has_snapshot_started():
             raise Exception(f"snapshot will be stable on {snapshot_start} UTC")
 
         # check for this field before getting the data

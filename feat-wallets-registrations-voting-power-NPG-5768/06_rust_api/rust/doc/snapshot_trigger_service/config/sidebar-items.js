@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","NetworkType"],"fn":["read_config","write_config"],"mod":["job"],"struct":["Configuration","ConfigurationBuilder","JobParameters","VotingToolsParams"]};

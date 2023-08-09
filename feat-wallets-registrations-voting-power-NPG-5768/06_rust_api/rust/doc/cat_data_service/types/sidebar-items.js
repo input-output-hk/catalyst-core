@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["serialize_datetime_as_rfc3339","serialize_option_datetime_as_rfc3339"],"mod":["ballot","event","objective","proposal","registration","review","search","vit_ss","voting_status"],"struct":["SerdeType"]};

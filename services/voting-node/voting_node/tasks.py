@@ -505,9 +505,11 @@ class Leader0Schedule(LeaderSchedule):
             then a random 32-byte hex token is generated and used.
         """
         event = self.node.get_event()
+        conn = await self.db.connect()
+        secret_store = SecretDBStorage(conn=conn)
         # TODO: fetch tally committee data from secret storage
         try:
-            committee = await SecretDBStorage(conn=self.db.conn()).get_committee(event.row_id)
+            committee = await secret_store.get_committee(event.row_id)
             logger.debug("fetched committee from storage")
             self.node.committee = committee
         except Exception as e:
@@ -529,8 +531,10 @@ class Leader0Schedule(LeaderSchedule):
             )
             logger.debug(f"created committee: {committee.as_yaml()}")
             self.node.committee = committee
-            await SecretDBStorage(conn=self.db.conn()).save_committee(event_id=event.row_id, committee=committee)
+            await secret_store.save_committee(event_id=event.row_id, committee=committee)
             logger.debug("saved committee to storage")
+        finally:
+            await conn.close()
 
     async def block0_voting_tokens(self):
         """Build voting tokens for each voting group in the current event."""

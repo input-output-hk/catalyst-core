@@ -15,7 +15,8 @@ from .utils import LEADER_REGEX, decrypt_secret, encrypt_secret, get_hostname
 class EventDb(BaseModel):
     """Convenient abstraction to call the EventDB within the voting node service.
 
-    Each method that queries the EventDB opens and closes its own connection."""
+    Each method that queries the EventDB opens and closes its own connection.
+    """
 
     connection: Connection | None = None
     db_url: str

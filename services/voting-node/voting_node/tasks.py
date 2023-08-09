@@ -184,9 +184,13 @@ class NodeTaskSchedule(ScheduleRunner):
         return Jormungandr(self.settings.jorm_path_str)
 
     async def node_fetch_event(self):
-        """Fetch the upcoming event from the DB."""
-        # This all starts by getting the event row that has the nearest
-        # `voting_start`. We query the DB to get the row, and store it.
+        """Fetch the event from the DB.
+
+        This all starts by getting the event row that has the nearest
+        `voting_start`, or an event that has stared and not ended.
+
+        We query the DB to get the row, and store it in the node.
+        """
         try:
             event = await self.db.fetch_upcoming_event()
             logger.debug("upcoming event retrieved from DB")
@@ -446,7 +450,10 @@ class Leader0Schedule(LeaderSchedule):
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
     async def event_snapshot_period(self):
-        """Collect the snapshot data from EventDB."""
+        """Timespan for continuous snapshot import from DBSync and IdeaScale.
+
+        A snapshot is taken at intervals of `SNAPSHOT_INTERVAL_SECONDS` (default 1800 seconds).
+        """
         event = self.node.get_event()
         registration_time = event.get_registration_snapshot_time()
         snapshot_start = event.get_snapshot_start()

@@ -55,6 +55,7 @@ LEADER_NODE_SCHEDULE: Final = [
     "event_tally_period",
     "node_cleanup",
 ]
+"""List of scheduled tasks for peer leader nodes."""
 LEADER0_NODE_SCHEDULE: Final = [
     "node_fetch_event",
     "node_wait_for_start_time",
@@ -77,6 +78,7 @@ LEADER0_NODE_SCHEDULE: Final = [
     "event_tally_period",
     "node_cleanup",
 ]
+"""List of scheduled tasks for leader0 nodes."""
 FOLLOWER_NODE_SCHEDULE: Final = [
     "node_fetch_event",
     "node_wait_for_start_time",
@@ -87,6 +89,7 @@ FOLLOWER_NODE_SCHEDULE: Final = [
     "node_set_config",
     "node_cleanup",
 ]
+"""List of scheduled tasks for follower nodes."""
 
 
 class ScheduleRunner:

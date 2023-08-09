@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ErrorKind","LeaderOutput","LeadershipConsensus","Verification"],"macro":["try_check"],"mod":["bft","genesis"],"struct":["BftLeader","Error","GenesisLeader","Leader","Leadership"]};

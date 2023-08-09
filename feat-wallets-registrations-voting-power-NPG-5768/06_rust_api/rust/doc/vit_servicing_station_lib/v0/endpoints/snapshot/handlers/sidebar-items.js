@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["get_delegator_info","get_voters_info"],"opaque":[""],"static":["CALLSITE","META"],"struct":["RawSnapshotInput","SnapshotInfoInput"]};

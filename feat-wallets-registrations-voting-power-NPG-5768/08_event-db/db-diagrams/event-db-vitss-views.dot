@@ -1,0 +1,69 @@
+digraph erd {
+
+    
+    label = "Catalyst Event Database VitSS Compatibility"
+    labelloc = t
+    fontsize = 30
+    fontcolor = blue
+    
+
+    graph [
+        rankdir = "LR"
+    ];
+
+    node [
+        fontsize = "16"
+        shape = "plaintext"
+    ];
+
+    edge [
+    ];
+
+    
+
+    
+
+
+    "LEGEND" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='Pink' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>LEGEND</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Example</b></font></td>
+            </tr>
+
+            <tr>
+                <td align='text' bgcolor="seagreen1" ><font>Primary Key</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+
+
+            <tr>
+                <td align='text'><font>Standard Field</font><br align='left'/></td>
+                <td><font>bytea</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Nullable Field</font><br align='left'/></td>
+                <td><font><i>text</i></font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Sized Field</font><br align='left'/></td>
+                <td><font>varchar(32)</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Autoincrement Field</font><br align='left'/></td>
+                <td><font>integer+</font></td>
+            </tr>
+
+        </table>
+    >];
+
+    
+
+
+}

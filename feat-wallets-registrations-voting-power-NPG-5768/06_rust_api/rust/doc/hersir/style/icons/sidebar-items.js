@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["account","block","blockchain","failure","ignored","jcli","jormungandr","scenario","seed","success","transaction","wallet"],"type":["Icon"]};

@@ -14,9 +14,9 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from loguru import logger
 
-from .committee import CommitteeMember, CommunicationKeys, MemberKeys, WalletKeys
 from .jcli import JCli
-from .models import Committee, Event, Genesis, LeaderHostInfo, NodeConfig
+from .models import Event, Genesis, LeaderHostInfo, NodeConfig
+from .models.committee import Committee, CommitteeMember, CommunicationKeys, MemberKeys, WalletKeys
 from .templates import (
     GENESIS_YAML,
     NODE_CONFIG_FOLLOWER,

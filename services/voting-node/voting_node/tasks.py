@@ -442,27 +442,6 @@ class Leader0Schedule(LeaderSchedule):
     # Leader0 Node tasks
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
-    async def fetch_upcoming_event(self):
-        """Override common method to fetch the upcoming event from the DB.
-
-        'leader0' nodes that don't find an upcoming event, create one with
-        default values.
-        """
-        try:
-            event = await self.db.fetch_upcoming_event()
-            logger.debug("current event retrieved from DB")
-            self.node.event = event
-        except Exception:
-            # run helper to add a default event to the DB
-            from .helpers import add_default_event
-
-            logger.debug("event not found from DB, attempting to create")
-            await add_default_event(db_url=self.settings.db_url)
-            logger.info("event added to DB")
-            event = await self.db.fetch_upcoming_event()
-            logger.debug("current event retrieved from DB")
-            self.node.event = event
-
     async def import_snapshot_data(self):
         """Collect the snapshot data from EventDB."""
         event = self.node.get_event()

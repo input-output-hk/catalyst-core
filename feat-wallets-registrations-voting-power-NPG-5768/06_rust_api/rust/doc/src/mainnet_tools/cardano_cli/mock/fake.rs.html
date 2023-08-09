@@ -1,0 +1,446 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/vit-testing/mainnet-tools/src/cardano_cli/mock/fake.rs`."><title>fake.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="mainnet_tools" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (22f247c6f 2023-03-13)" data-search-js="search-d1bc581867fd0849.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../mainnet_tools/index.html"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<a href="#2" id="2">2</a>
+<a href="#3" id="3">3</a>
+<a href="#4" id="4">4</a>
+<a href="#5" id="5">5</a>
+<a href="#6" id="6">6</a>
+<a href="#7" id="7">7</a>
+<a href="#8" id="8">8</a>
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+<a href="#42" id="42">42</a>
+<a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
+<a href="#47" id="47">47</a>
+<a href="#48" id="48">48</a>
+<a href="#49" id="49">49</a>
+<a href="#50" id="50">50</a>
+<a href="#51" id="51">51</a>
+<a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+</pre><pre class="rust"><code><span class="kw">use </span>core::fmt::Formatter;
+<span class="kw">use </span>prettytable::{format, Table};
+<span class="kw">use </span>serde::{Deserialize, Serialize};
+<span class="kw">use </span>serde_json::{json, Value};
+<span class="kw">use </span>std::fmt;
+
+<span class="doccomment">/// Arbitrary blockchain tip
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>tip() -&gt; Tip {
+    Tip::default()
+}
+
+<span class="doccomment">/// Arbitraty query utxo response
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>utxo() -&gt; QueryUTxO {
+    QueryUTxO::default()
+}
+
+<span class="doccomment">/// Arbitrary hash
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>hash() -&gt; String {
+    <span class="string">&quot;a3a93043d015e9bb089b1a90d59b1922dffb9684b5c64a61426b6134e348123d&quot;</span>.to_string()
+}
+
+<span class="doccomment">/// Arbitrary address
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>address() -&gt; String {
+    <span class="string">&quot;addr1q9e0wsxghc395p8e3ff0zx2gdzurveq0pcu68lyq2z59vc5squl6qr0re0pe2x5syq7j5qf77q6s7zl43nass8u85vgscexsev&quot;</span>.to_string()
+}
+
+<span class="doccomment">/// Arbitrary stake address
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>stake_address() -&gt; String {
+    <span class="string">&quot;stake1uxgqw0aqph3uhsu4r2gzq0f2qyl0qdg0p06ce7cgr7r6xygwmtwku&quot;</span>.to_string()
+}
+
+<span class="doccomment">/// Arbitrary Response from Cardano CLI on submit transaction command
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>submit() -&gt; String {
+    <span class="string">&quot;Transaction successfully submitted.&quot;</span>.to_string()
+}
+
+<span class="doccomment">/// Response from transaction sign command
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>sign() -&gt; String {
+    <span class="macro">json!</span>({
+        <span class="string">&quot;type&quot;</span>: <span class="string">&quot;TxSignedShelley&quot;</span>,
+        <span class="string">&quot;description&quot;</span>: <span class="string">&quot;&quot;</span>,
+        <span class="string">&quot;cborHex&quot;</span>: <span class="string">&quot;83a500828258205761bdc4fd016ee0d52ac759ae6c0e8e0943d4892474283866a07f9768e48fee00825820e6701be50c87d8d584985edd4cf39799e1445bd37907027c44d08c7da79ea23200018182583900fec5a902e307707b6ab3de38104918c0e33cf4c3408e6fcea4f0a199c13582aec9a44fcc6d984be003c5058c660e1d2ff1370fd8b49ba73f1b00001e0369444cd7021a0002c329031a00ce0fc70758202386abf617780a925495f38f23d7bc594920ff374f03f3d7517a4345e355b047a1008182582099d1d0c4cdc8a4b206066e9606c6c3729678bd7338a8eab9bffdffa39d3df9585840af346c11fe7a222008f5b1b50fbc23a0cbc3d783bf4461f21353e8b5eb664adadb34291197e039e467d2a68346921879d1212bd0d54245a9e110162ecae9190ba219ef64a201582071ce673ef64b4ac1fb758b65df01b036665d4498256335e93e28b869568d9ed80258209be513df12b3fabe7c1b8c3f9fab0968eb2168d5689bf981c2f7c35b11718b2719ef65a101584057267d94e5bae64fa236924b83ce7411fef10bd5d73aca7af8403053cf2dc2e3621f7d253bf90933e2bc0bfb56146cf0a13925d9f96d6d06b0b798bc41d4000d&quot;
+    </span>}).to_string()
+}
+
+<span class="doccomment">/// Helper struct which imitates response from tip
+</span><span class="attr">#[derive(Debug, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Tip {
+    <span class="doccomment">/// tip hash
+    </span><span class="kw">pub </span>hash: String,
+    <span class="doccomment">/// tip block height
+    </span><span class="kw">pub </span>block: u64,
+    <span class="doccomment">/// tip slot
+    </span><span class="kw">pub </span>slot: u64,
+    <span class="doccomment">/// tip sync progress
+    </span><span class="kw">pub </span>sync_progress: String,
+    <span class="doccomment">/// tip era
+    </span><span class="kw">pub </span>era: String,
+    <span class="doccomment">/// tip epoch
+    </span><span class="kw">pub </span>epoch: u64,
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>Tip {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            hash: hash(),
+            block: <span class="number">6_589_745</span>,
+            slot: <span class="number">47_163_888</span>,
+            sync_progress: <span class="string">&quot;100.00&quot;</span>.to_string(),
+            era: <span class="string">&quot;Alonzo&quot;</span>.to_string(),
+            epoch: <span class="number">306</span>,
+        }
+    }
+}
+
+<span class="doccomment">/// Helper struct which imitates response from utxo
+</span><span class="attr">#[derive(Debug, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>UTxO {
+    <span class="doccomment">/// Utxo tx hash
+    </span><span class="kw">pub </span>tx_hash: String,
+    <span class="doccomment">/// Utxo tx id
+    </span><span class="kw">pub </span>tx_ix: u64,
+    <span class="doccomment">/// Utxo ada amount
+    </span><span class="kw">pub </span>amount: u64,
+}
+
+<span class="doccomment">/// Helper struct which imitates response from query utxo
+</span><span class="attr">#[derive(Debug, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>QueryUTxO {
+    utxos: Vec&lt;UTxO&gt;,
+}
+
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>QueryUTxO {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">let </span><span class="kw-2">mut </span>table = Table::new();
+        <span class="kw">let </span>format = format::FormatBuilder::new()
+            .column_separator(<span class="string">&#39;|&#39;</span>)
+            .separators(
+                <span class="kw-2">&amp;</span>[format::LinePosition::Top, format::LinePosition::Bottom],
+                format::LineSeparator::new(<span class="string">&#39;-&#39;</span>, <span class="string">&#39; &#39;</span>, <span class="string">&#39; &#39;</span>, <span class="string">&#39; &#39;</span>),
+            )
+            .padding(<span class="number">1</span>, <span class="number">1</span>)
+            .build();
+        table.set_format(format);
+        table.set_titles(<span class="macro">row!</span>[<span class="string">&quot;TxHash&quot;</span>, <span class="string">&quot;TxIx&quot;</span>, <span class="string">&quot;Amount&quot;</span>]);
+
+        <span class="kw">for </span>utxo <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.utxos {
+            table.add_row(<span class="macro">row!</span>[
+                utxo.tx_hash.to_string(),
+                utxo.tx_ix,
+                <span class="macro">format!</span>(<span class="string">&quot;{} lovelace&quot;</span>, utxo.amount)
+            ]);
+        }
+        <span class="macro">write!</span>(f, <span class="string">&quot;{table}&quot;</span>)
+    }
+}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>QueryUTxO {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        QueryUTxO {
+            utxos: <span class="macro">vec!</span>[
+                UTxO {
+                    tx_hash: <span class="string">&quot;61d47e568b1502064906e977aae848c7aec9a76f97e7d11ad5d752e95c438011&quot;
+                        </span>.to_string(),
+                    tx_ix: <span class="number">0</span>,
+                    amount: <span class="number">1_379_280</span>,
+                },
+                UTxO {
+                    tx_hash: <span class="string">&quot;ac1d8802a4e100d90ce59fb4e4573f1c7884a65197ff39810a88eb0b07de3aa6&quot;
+                        </span>.to_string(),
+                    tx_ix: <span class="number">0</span>,
+                    amount: <span class="number">30_000_000</span>,
+                },
+                UTxO {
+                    tx_hash: <span class="string">&quot;69818d49963ffafe8a287ec270d05ba89493de33ddf7b5b9bcb07e97802a0f28&quot;
+                        </span>.to_string(),
+                    tx_ix: <span class="number">0</span>,
+                    amount: <span class="number">5_573_009</span>,
+                },
+                UTxO {
+                    tx_hash: <span class="string">&quot;fba1526c49684722199b102bffd5b4a66ea1d490605532753fa24e12af925722&quot;
+                        </span>.to_string(),
+                    tx_ix: <span class="number">0</span>,
+                    amount: <span class="number">5_000_000</span>,
+                },
+            ],
+        }
+    }
+}
+
+<span class="doccomment">/// Arbitrary protocol parameters
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>protocol_parameters() -&gt; Value {
+    <span class="macro">json!</span>(
+    {
+        <span class="string">&quot;txFeePerByte&quot;</span>: <span class="number">44</span>,
+        <span class="string">&quot;minUTxOValue&quot;</span>: <span class="number">34_482</span>,
+        <span class="string">&quot;decentralization&quot;</span>: <span class="number">0</span>,
+        <span class="string">&quot;utxoCostPerWord&quot;</span>:  <span class="number">34_482</span>,
+        <span class="string">&quot;stakePoolDeposit&quot;</span>: <span class="number">500_000_000</span>,
+        <span class="string">&quot;poolRetireMaxEpoch&quot;</span>: <span class="number">18</span>,
+        <span class="string">&quot;extraPraosEntropy&quot;</span>: null,
+        <span class="string">&quot;collateralPercentage&quot;</span>: <span class="number">150</span>,
+        <span class="string">&quot;stakePoolTargetNum&quot;</span>: <span class="number">500</span>,
+        <span class="string">&quot;maxBlockBodySize&quot;</span>: <span class="number">73_728</span>,
+        <span class="string">&quot;minPoolCost&quot;</span>: <span class="number">340_000_000</span>,
+        <span class="string">&quot;maxTxSize&quot;</span>: <span class="number">16_384</span>,
+        <span class="string">&quot;treasuryCut&quot;</span>: <span class="number">0.2</span>,
+        <span class="string">&quot;maxBlockExecutionUnits&quot;</span>: {
+            <span class="string">&quot;memory&quot;</span>: <span class="number">50_000_000</span>,
+            <span class="string">&quot;steps&quot;</span>:  <span class="number">4_000_000
+        </span>},
+        <span class="string">&quot;maxCollateralInputs&quot;</span>: <span class="number">3</span>,
+        <span class="string">&quot;maxValueSize&quot;</span>: <span class="number">5_000</span>,
+        <span class="string">&quot;maxBlockHeaderSize&quot;</span>: <span class="number">1_100</span>,
+        <span class="string">&quot;maxTxExecutionUnits&quot;</span>: {
+            <span class="string">&quot;memory&quot;</span>: <span class="number">11_250_000</span>,
+            <span class="string">&quot;steps&quot;</span>: <span class="number">1_000_000
+        </span>},
+        <span class="string">&quot;costModels&quot;</span>: {},
+        <span class="string">&quot;protocolVersion&quot;</span>: {
+            <span class="string">&quot;minor&quot;</span>: <span class="number">0</span>,
+            <span class="string">&quot;major&quot;</span>: <span class="number">6
+        </span>},
+        <span class="string">&quot;txFeeFixed&quot;</span>: <span class="number">155_381</span>,
+        <span class="string">&quot;stakeAddressDeposit&quot;</span>: <span class="number">2_000_000</span>,
+        <span class="string">&quot;monetaryExpansion&quot;</span>: <span class="number">0.003</span>,
+        <span class="string">&quot;poolPledgeInfluence&quot;</span>: <span class="number">0.3</span>,
+        <span class="string">&quot;executionUnitPrices&quot;</span>: {
+            <span class="string">&quot;priceSteps&quot;</span>: <span class="number">0.000_072_1</span>,
+            <span class="string">&quot;priceMemory&quot;</span>: <span class="number">0.057_7
+        </span>}
+    })
+}
+
+<span class="doccomment">/// Arbitrary stake certificate
+</span><span class="attr">#[must_use]
+#[allow(dead_code)]
+</span><span class="kw">pub fn </span>stake_certificate() -&gt; String {
+    <span class="string">&quot;type: CertificateShelley \
+    description: Stake Registration Certificate \
+    cborHex: \
+    18b58a03582062d632e7ee8a83769bc108e3e42a674d8cb242d7375fc2d97db9b4dd6eded6fd5820 \
+    48aa7b2c8deb8f6d2318e3bf3df885e22d5d63788153e7f4040c33ecae15d3e61b0000005d21dba0 \
+    001b000000012a05f200d81e820001820058203a4e813b6340dc790f772b3d433ce1c371d5c5f5de \
+    46f1a68bdf8113f50e779d8158203a4e813b6340dc790f772b3d433ce1c371d5c5f5de46f1a68bdf \
+    8113f50e779d80f6&quot;
+        </span>.to_string()
+}
+
+<span class="doccomment">/// Arbitrary transaction
+</span><span class="attr">#[must_use]
+</span><span class="kw">pub fn </span>transaction() -&gt; String {
+    <span class="string">&quot;[{0: [[h&#39;C2642218EF9C5B2BC1EF66BF27C37640C0DFD159A0274C8100C852CA0B03D484&#39;, 1]], 1: [[h&#39;01B2344AB02D3DB07A62D640E2BA6F307CB02F3BB8196E81FE68BE8B780C39E651F9564FEFB52309B211E6F5A96BE9EE2A773AEC691219789E&#39;, 0]], 2: 0, 3: 25000000}, null]&quot;</span>.to_string()
+}
+</code></pre></div>
+</section></main></body></html>

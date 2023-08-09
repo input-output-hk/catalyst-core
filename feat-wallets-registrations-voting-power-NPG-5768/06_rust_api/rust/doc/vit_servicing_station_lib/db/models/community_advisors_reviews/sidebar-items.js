@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ReviewRanking"],"fn":["_impl_from_sql_row_for_reviewranking","_impl_queryable_for_advisorreview"],"struct":["AdvisorReview"]};

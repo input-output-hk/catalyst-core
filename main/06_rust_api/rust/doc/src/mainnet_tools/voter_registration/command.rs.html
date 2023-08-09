@@ -105,7 +105,7 @@
             <span class="prelude-val">Ok</span>(value) =&gt; std::fs::read_to_string(value)<span class="question-mark">?</span>,
             <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; fake::metadata(),
         };
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, output);
+        <span class="macro">println!</span>(<span class="string">&quot;{output}&quot;</span>);
         <span class="prelude-val">Ok</span>(())
     }
 }

@@ -165,7 +165,9 @@
 <a href="#165" id="165">165</a>
 <a href="#166" id="166">166</a>
 <a href="#167" id="167">167</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::utils::io;
+<a href="#168" id="168">168</a>
+</pre><pre class="rust"><code><span class="attr">#![allow(clippy::result_large_err)]
+</span><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::utils::io;
 <span class="kw">use </span>chain_core::{
     packer::Codec,
     property::{Block <span class="kw">as _</span>, Deserialize, ReadError, Serialize, WriteError},

@@ -739,7 +739,7 @@
         }<span class="question-mark">?</span>;
         <span class="kw">let </span>bytes = Vec::&lt;u8&gt;::from_base32(<span class="kw-2">&amp;</span>data).map_err(Bech32Error::from)<span class="question-mark">?</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>output = <span class="self">self</span>.output_file.open()<span class="question-mark">?</span>;
-        <span class="macro">writeln!</span>(output, <span class="string">&quot;{}&quot;</span>, hex::encode(<span class="kw-2">&amp;</span>bytes))<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(output, <span class="string">&quot;{}&quot;</span>, hex::encode(bytes))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 }

@@ -51,7 +51,7 @@
     <span class="kw">pub async fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Run(settings) =&gt; {
-                logger::init(settings.log_level).unwrap();
+                logger::init(settings.log_format, settings.log_level).unwrap();
 
                 <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">Some</span>(settings.database_url)).<span class="kw">await</span><span class="question-mark">?</span>);
                 service::run(<span class="kw-2">&amp;</span>settings.address, <span class="kw-2">&amp;</span>settings.metrics_address, state).<span class="kw">await</span><span class="question-mark">?</span>;

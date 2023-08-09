@@ -214,7 +214,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>command = <span class="self">self</span>.transaction_command.submit().tx_file(tx_signed).build();
         <span class="kw">let </span>output = command
             .output()
-            .map_err(|<span class="kw">_</span>| Error::CannotGetOutputFromCommand(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, command)))<span class="question-mark">?</span>;
+            .map_err(|<span class="kw">_</span>| Error::CannotGetOutputFromCommand(<span class="macro">format!</span>(<span class="string">&quot;{command:?}&quot;</span>)))<span class="question-mark">?</span>;
 
         <span class="macro">debug!</span>(<span class="string">&quot;status: {}&quot;</span>, output.status);
         std::io::stdout()
@@ -231,7 +231,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>command = <span class="self">self</span>.transaction_command.id().tx_file(tx_signed).build();
         <span class="kw">let </span>output = command
             .output()
-            .map_err(|<span class="kw">_</span>| Error::CannotGetOutputFromCommand(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, command)))<span class="question-mark">?</span>;
+            .map_err(|<span class="kw">_</span>| Error::CannotGetOutputFromCommand(<span class="macro">format!</span>(<span class="string">&quot;{command:?}&quot;</span>)))<span class="question-mark">?</span>;
 
         <span class="macro">println!</span>(<span class="string">&quot;status: {}&quot;</span>, output.status);
         std::io::stdout()
@@ -268,7 +268,7 @@
 
         <span class="kw">let </span>output = command
             .output()
-            .map_err(|<span class="kw">_</span>| Error::CannotGetOutputFromCommand(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, command)))<span class="question-mark">?</span>;
+            .map_err(|<span class="kw">_</span>| Error::CannotGetOutputFromCommand(<span class="macro">format!</span>(<span class="string">&quot;{command:?}&quot;</span>)))<span class="question-mark">?</span>;
 
         std::io::stdout()
             .write_all(<span class="kw-2">&amp;</span>output.stdout)

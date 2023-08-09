@@ -49,10 +49,10 @@ to a lot of data (millions of utxos, thousands of accounts, ..)</p>
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section></summary><div class="docblock"><p>Try to apply a message to the State, and return the new State if successful</p>
 <p>this does not <em>advance</em> the state to the new <em>state</em> but apply a simple fragment
 of block to the current context.</p>
-</div></details><details class="toggle method-toggle" open><summary><section id="method.apply_transaction" class="method"><h4 class="code-header">pub fn <a href="#method.apply_transaction" class="fn">apply_transaction</a>&lt;Extra, 'a&gt;(
+</div></details><details class="toggle method-toggle" open><summary><section id="method.apply_transaction" class="method"><h4 class="code-header">pub fn <a href="#method.apply_transaction" class="fn">apply_transaction</a>&lt;Extra&gt;(
     self,
     fragment_id: &amp;Hash,
-    tx: &amp;TransactionSlice&lt;'a, Extra&gt;
+    tx: &amp;TransactionSlice&lt;'_, Extra&gt;
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;(<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, <a class="struct" href="struct.Value.html" title="struct jormungandr::blockcfg::Value">Value</a>), Error&gt;<span class="where fmt-newline">where
     Extra: Payload,
     LinearFee: FeeAlgorithm,</span></h4></section></summary><div class="docblock"><p>Applies transaction to the account ledger by validating and verifying
@@ -66,10 +66,10 @@ if the spending counter doesn’t match.</p>
     auth_data: &amp;TransactionBindingAuthData&lt;'_&gt;,
     sig: SingleAccountBindingSignature,
     cur_date: <a class="struct" href="struct.BlockDate.html" title="struct jormungandr::blockcfg::BlockDate">BlockDate</a>
-) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_update_vote" class="method"><h4 class="code-header">pub fn <a href="#method.apply_update_vote" class="fn">apply_update_vote</a>&lt;'a&gt;(
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_update_vote" class="method"><h4 class="code-header">pub fn <a href="#method.apply_update_vote" class="fn">apply_update_vote</a>(
     self,
     vote: &amp;UpdateVote,
-    auth_data: &amp;TransactionBindingAuthData&lt;'a&gt;,
+    auth_data: &amp;TransactionBindingAuthData&lt;'_&gt;,
     sig: SingleAccountBindingSignature
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_vote_plan" class="method"><h4 class="code-header">pub fn <a href="#method.apply_vote_plan" class="fn">apply_vote_plan</a>(
     self,
@@ -81,28 +81,28 @@ if the spending counter doesn’t match.</p>
     self,
     account_id: Identifier,
     vote: VoteCast
-) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.active_vote_plans" class="method"><h4 class="code-header">pub fn <a href="#method.active_vote_plans" class="fn">active_vote_plans</a>(&amp;self) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;VotePlanStatus, <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/alloc/struct.Global.html" title="struct alloc::alloc::Global">Global</a>&gt; <a href="#" class="tooltip" data-notable-ty="Vec&lt;VotePlanStatus, Global&gt;">ⓘ</a></h4></section><section id="method.apply_vote_tally" class="method"><h4 class="code-header">pub fn <a href="#method.apply_vote_tally" class="fn">apply_vote_tally</a>&lt;'a&gt;(
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.active_vote_plans" class="method"><h4 class="code-header">pub fn <a href="#method.active_vote_plans" class="fn">active_vote_plans</a>(&amp;self) -&gt; <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html" title="struct alloc::vec::Vec">Vec</a>&lt;VotePlanStatus, <a class="struct" href="https://doc.rust-lang.org/nightly/alloc/alloc/struct.Global.html" title="struct alloc::alloc::Global">Global</a>&gt; <a href="#" class="tooltip" data-notable-ty="Vec&lt;VotePlanStatus, Global&gt;">ⓘ</a></h4></section><section id="method.apply_vote_tally" class="method"><h4 class="code-header">pub fn <a href="#method.apply_vote_tally" class="fn">apply_vote_tally</a>(
     self,
     tally: &amp;VoteTally,
-    bad: &amp;TransactionBindingAuthData&lt;'a&gt;,
+    bad: &amp;TransactionBindingAuthData&lt;'_&gt;,
     sig: TallyProof
-) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_pool_registration_signcheck" class="method"><h4 class="code-header">pub fn <a href="#method.apply_pool_registration_signcheck" class="fn">apply_pool_registration_signcheck</a>&lt;'a&gt;(
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_pool_registration_signcheck" class="method"><h4 class="code-header">pub fn <a href="#method.apply_pool_registration_signcheck" class="fn">apply_pool_registration_signcheck</a>(
     self,
     cert: &amp;PoolRegistration,
-    bad: &amp;TransactionBindingAuthData&lt;'a&gt;,
+    bad: &amp;TransactionBindingAuthData&lt;'_&gt;,
     sig: PoolSignature
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_pool_registration" class="method"><h4 class="code-header">pub fn <a href="#method.apply_pool_registration" class="fn">apply_pool_registration</a>(
     self,
     cert: &amp;PoolRegistration
-) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_pool_retirement" class="method"><h4 class="code-header">pub fn <a href="#method.apply_pool_retirement" class="fn">apply_pool_retirement</a>&lt;'a&gt;(
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_pool_retirement" class="method"><h4 class="code-header">pub fn <a href="#method.apply_pool_retirement" class="fn">apply_pool_retirement</a>(
     self,
     auth_cert: &amp;PoolRetirement,
-    bad: &amp;TransactionBindingAuthData&lt;'a&gt;,
+    bad: &amp;TransactionBindingAuthData&lt;'_&gt;,
     sig: PoolSignature
-) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_pool_update" class="method"><h4 class="code-header">pub fn <a href="#method.apply_pool_update" class="fn">apply_pool_update</a>&lt;'a&gt;(
+) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_pool_update" class="method"><h4 class="code-header">pub fn <a href="#method.apply_pool_update" class="fn">apply_pool_update</a>(
     self,
     auth_cert: &amp;PoolUpdate,
-    bad: &amp;TransactionBindingAuthData&lt;'a&gt;,
+    bad: &amp;TransactionBindingAuthData&lt;'_&gt;,
     sig: PoolSignature
 ) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/result/enum.Result.html" title="enum core::result::Result">Result</a>&lt;<a class="struct" href="struct.Ledger.html" title="struct jormungandr::blockcfg::Ledger">Ledger</a>, Error&gt;</h4></section><section id="method.apply_stake_delegation" class="method"><h4 class="code-header">pub fn <a href="#method.apply_stake_delegation" class="fn">apply_stake_delegation</a>(
     self,

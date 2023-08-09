@@ -771,8 +771,6 @@
 <a href="#771" id="771">771</a>
 <a href="#772" id="772">772</a>
 <a href="#773" id="773">773</a>
-<a href="#774" id="774">774</a>
-<a href="#775" id="775">775</a>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_core::property::Fragment <span class="kw">as _</span>;
 <span class="kw">use </span>chain_crypto::{Ed25519Extended, SecretKey};
@@ -1328,9 +1326,7 @@
             <span class="self">self</span>.non_voting_wallets
                 .entry(address.clone())
                 .or_insert_with(|| {
-                    Wallet::new_from_key(&lt;SecretKey&lt;Ed25519Extended&gt;&gt;::generate(
-                        <span class="kw-2">&amp;mut </span>rand::thread_rng(),
-                    ))
+                    Wallet::new_from_key(&lt;SecretKey&lt;Ed25519Extended&gt;&gt;::generate(rand::thread_rng()))
                 })
                 .account_id()
         }

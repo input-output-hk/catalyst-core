@@ -116,7 +116,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>file = File::create(out_file)<span class="question-mark">?</span>;
         file.write_all(content.as_bytes())<span class="question-mark">?</span>;
     } <span class="kw">else </span>{
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, content);
+        <span class="macro">println!</span>(<span class="string">&quot;{content}&quot;</span>);
     }
     <span class="prelude-val">Ok</span>(())
 }

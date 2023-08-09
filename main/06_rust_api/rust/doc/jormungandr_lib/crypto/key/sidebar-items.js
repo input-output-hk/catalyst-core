@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Identifier","KeyPair","Signature","SigningKey","__DeserializeWith","__SerializeWith","__Visitor"]};
+window.SIDEBAR_ITEMS = {"struct":["Identifier","KeyPair","Signature","SigningKey"]};

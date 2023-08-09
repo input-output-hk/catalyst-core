@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","GRACE_VALUE"],"enum":["Initial","__Field"],"fn":["convert_to_external_utxo"],"struct":["Initials","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"constant":["GRACE_VALUE"],"enum":["Initial"],"fn":["convert_to_external_utxo"],"struct":["Initials"]};

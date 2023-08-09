@@ -61,29 +61,41 @@
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
 <a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::SerdeType;
-<span class="kw">use </span>event_db::types::event::voting_status::VotingStatus;
-<span class="kw">use </span>serde::ser::{Serialize, SerializeStruct, Serializer};
+<span class="kw">use </span>event_db::types::{objective::ObjectiveId, voting_status::VotingStatus};
+<span class="kw">use </span>serde::{ser::Serializer, Serialize};
 
 <span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;VotingStatus&gt; {
     <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;VotingStatus&quot;</span>, <span class="number">3</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;objective_id&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.objective_id)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;open&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.open)<span class="question-mark">?</span>;
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(settings) = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>.settings {
-            serializer.serialize_field(<span class="string">&quot;settings&quot;</span>, settings)<span class="question-mark">?</span>;
+        <span class="attr">#[derive(Serialize)]
+        </span><span class="kw">struct </span>VotingStatusSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
+            objective_id: SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ObjectiveId&gt;,
+            open: bool,
+            <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+            </span>settings: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String&gt;,
         }
-        serializer.end()
+        VotingStatusSerde {
+            objective_id: SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.objective_id),
+            open: <span class="self">self</span>.open,
+            settings: <span class="self">self</span>.settings.as_ref(),
+        }
+        .serialize(serializer)
     }
 }
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span>event_db::types::event::objective::ObjectiveId;
+    <span class="kw">use </span>event_db::types::objective::ObjectiveId;
     <span class="kw">use </span>serde_json::json;
 
     <span class="attr">#[test]
@@ -94,7 +106,7 @@
             settings: <span class="prelude-val">None</span>,
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>voting_status).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(voting_status).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -111,7 +123,7 @@
             settings: <span class="prelude-val">Some</span>(<span class="string">&quot;some settings&quot;</span>.to_string()),
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>voting_status).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(voting_status).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(

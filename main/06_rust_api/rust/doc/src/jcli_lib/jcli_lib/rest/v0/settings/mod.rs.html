@@ -60,7 +60,7 @@
             output_format,
         } = <span class="self">self</span>;
         <span class="kw">let </span>settings = request_settings(args)<span class="question-mark">?</span>;
-        <span class="kw">let </span>formatted = output_format.format_json(serde_json::to_value(<span class="kw-2">&amp;</span>settings)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span>formatted = output_format.format_json(serde_json::to_value(settings)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, formatted);
         <span class="prelude-val">Ok</span>(())
     }

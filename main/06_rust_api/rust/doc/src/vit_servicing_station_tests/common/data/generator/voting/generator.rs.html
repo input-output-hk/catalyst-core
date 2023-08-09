@@ -350,7 +350,7 @@
                     .clone();
 
                 <span class="kw">let </span>challenge_idx: i32 = proposal_template.challenge_id.unwrap().parse().unwrap();
-                <span class="kw">let </span><span class="kw-2">mut </span>challenge = fund
+                <span class="kw">let </span>challenge = fund
                     .challenges
                     .iter_mut()
                     .find(|x| x.id == challenge_idx)

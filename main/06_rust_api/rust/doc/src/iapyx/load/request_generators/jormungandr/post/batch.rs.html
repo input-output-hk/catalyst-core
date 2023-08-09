@@ -239,7 +239,7 @@
             .map(|p| p.voteplan.chain_voteplan_id.to_string())
             .collect();
 
-        <span class="macro">println!</span>(<span class="string">&quot;direct vote plans: {:?}&quot;</span>, voting_groups_vote_plans_ids);
+        <span class="macro">println!</span>(<span class="string">&quot;direct vote plans: {voting_groups_vote_plans_ids:?}&quot;</span>);
 
         <span class="kw">let </span>vote_plans = multi_controller.backend().vote_plan_statuses()<span class="question-mark">?</span>;
         <span class="kw">let </span>settings = multi_controller.backend().settings()<span class="question-mark">?</span>;
@@ -390,7 +390,7 @@
                 ids,
                 duration: start.elapsed(),
             }),
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
         }
     }
 }

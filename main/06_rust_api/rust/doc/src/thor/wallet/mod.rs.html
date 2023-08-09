@@ -682,9 +682,9 @@
         }
     }
 
-    <span class="kw">pub fn </span>add_input&lt;<span class="lifetime">&#39;a</span>, Extra: Payload&gt;(
+    <span class="kw">pub fn </span>add_input&lt;Extra: Payload&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        payload: PayloadSlice&lt;<span class="lifetime">&#39;a</span>, Extra&gt;,
+        payload: PayloadSlice&lt;<span class="lifetime">&#39;_</span>, Extra&gt;,
         iobuilder: <span class="kw-2">&amp;mut </span>InputOutputBuilder,
         fees: <span class="kw-2">&amp;</span>LinearFee,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), FragmentBuilderError&gt;

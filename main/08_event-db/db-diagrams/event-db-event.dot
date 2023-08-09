@@ -77,6 +77,12 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="review_rewards"  align='text'><font>review_rewards</font><br align='left'/></td>
+                <td   ><font><i>bigint</i></font></td>
+                <td port="review_rewards_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The total reward pool to pay for community reviewers for their valid reviews of the proposals assigned to this event.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
                 <td port="start_time"  align='text'><font>start_time</font><br align='left'/></td>
                 <td   ><font><i>timestamp</i></font></td>
                 <td port="start_time_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The time (UTC) the event starts.<br align='left'/>NULL = Not yet defined.</i><br align="left"/></font></td>

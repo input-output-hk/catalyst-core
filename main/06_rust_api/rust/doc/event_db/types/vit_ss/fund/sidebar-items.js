@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Fund","FundNextInfo","FundStageDates","FundWithNext","__SerializeWith"]};
+window.SIDEBAR_ITEMS = {"struct":["Fund","FundNextInfo","FundStageDates","FundWithNext"]};

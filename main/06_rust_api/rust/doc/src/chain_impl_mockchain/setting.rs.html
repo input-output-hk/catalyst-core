@@ -349,11 +349,6 @@
 <a href="#349" id="349">349</a>
 <a href="#350" id="350">350</a>
 <a href="#351" id="351">351</a>
-<a href="#352" id="352">352</a>
-<a href="#353" id="353">353</a>
-<a href="#354" id="354">354</a>
-<a href="#355" id="355">355</a>
-<a href="#356" id="356">356</a>
 </pre><pre class="rust"><code><span class="doccomment">//! define the Blockchain settings
 //!
 
@@ -448,19 +443,14 @@
 }
 
 <span class="doccomment">/// Fees nSettings
-</span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+</span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq, Default)]
 </span><span class="kw">pub enum </span>FeesGoesTo {
     <span class="doccomment">/// Move the fees to the rewards; this is the common mode of blockchain operation.
+    </span><span class="attr">#[default]
     </span>Rewards,
     <span class="doccomment">/// Move the fees directly to treasury. this is not a recommended settings, as
     /// it fundamentally change the dynamic of the blockchain operation.
     </span>Treasury,
-}
-
-<span class="kw">impl </span>Default <span class="kw">for </span>FeesGoesTo {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        FeesGoesTo::Rewards
-    }
 }
 
 <span class="kw">pub const </span>SLOTS_PERCENTAGE_RANGE: u8 = <span class="number">100</span>;

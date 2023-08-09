@@ -164,7 +164,7 @@
     }
 
     <span class="kw">pub fn </span>challenge(<span class="kw-2">mut </span><span class="self">self</span>, <span class="kw-2">mut </span>challenge: ChallengeConfig) -&gt; <span class="self">Self </span>{
-        challenge.proposals.iter_mut().for_each(|<span class="kw-2">mut </span>p| {
+        challenge.proposals.iter_mut().for_each(|p| {
             p.challenge_id = <span class="prelude-val">Some</span>(<span class="self">self</span>.challenges.len());
         });
         <span class="self">self</span>.challenges.push(challenge);

@@ -360,7 +360,7 @@
 }
 
 <span class="kw">async fn </span>event_exec(
-    Path(event): Path&lt;EventId&gt;,
+    Path(SerdeType(event)): Path&lt;SerdeType&lt;EventId&gt;&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;SerdeType&lt;Event&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;event_exec, event: {0}&quot;</span>, event.<span class="number">0</span>);
@@ -634,7 +634,7 @@
         <span class="macro">assert_eq!</span>(
             String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
                 .unwrap(),
-            serde_json::to_string(<span class="kw-2">&amp;</span>Vec::&lt;EventSummary&gt;::new()).unwrap()
+            serde_json::to_string(<span class="kw-2">&amp;</span>Vec::&lt;()&gt;::new()).unwrap()
         );
     }
 }

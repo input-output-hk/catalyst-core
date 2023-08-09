@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["FragmentRejectionReason","__Field"],"struct":["FragmentsProcessingSummary","RejectedFragmentInfo","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["FragmentRejectionReason"],"struct":["FragmentsProcessingSummary","RejectedFragmentInfo"]};

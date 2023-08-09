@@ -948,6 +948,7 @@
 <a href="#948" id="948">948</a>
 <a href="#949" id="949">949</a>
 <a href="#950" id="950">950</a>
+<a href="#951" id="951">951</a>
 </pre><pre class="rust"><code><span class="comment">/*
 
 ```text
@@ -999,6 +1000,7 @@ See Internal documentation for more details: doc/internal_design.md
 [`Branch`]: ./struct.Branch.html
 */
 </span><span class="attr">#![allow(clippy::large_enum_variant)]
+#![allow(clippy::result_large_err)]
 </span><span class="kw">use </span><span class="kw">super</span>::reference_cache::RefCache;
 <span class="kw">use crate</span>::{
     blockcfg::{

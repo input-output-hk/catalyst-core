@@ -84,11 +84,11 @@
     <span class="kw">pub fn </span>random_account_request(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), RequestFailure&gt; {
         <span class="kw">let </span>wallet_index = <span class="self">self</span>.rand.gen_range(<span class="number">0</span>..<span class="self">self</span>.wallets.len());
         <span class="kw">let </span>wallet = <span class="self">self</span>.wallets.get(wallet_index).ok_or_else(|| {
-            RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;wallet with index &#39;{}&#39; not found&quot;</span>, wallet_index))
+            RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;wallet with index &#39;{wallet_index}&#39; not found&quot;</span>))
         })<span class="question-mark">?</span>;
         <span class="self">self</span>.rest
             .account_state(wallet.id())
-            .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e)))<span class="question-mark">?</span>;
+            .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>)))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 }
@@ -101,7 +101,7 @@
                 ids: <span class="macro">vec!</span>[],
                 duration: start.elapsed(),
             }),
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
         }
     }
 

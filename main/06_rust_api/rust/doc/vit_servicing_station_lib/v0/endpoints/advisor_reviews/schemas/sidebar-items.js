@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["GroupedReviews","__Visitor"]};
+window.SIDEBAR_ITEMS = {"struct":["GroupedReviews"]};

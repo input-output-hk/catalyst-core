@@ -434,14 +434,14 @@
     }
 }
 
-<span class="attr">#[allow(clippy::derive_hash_xor_eq)]
+<span class="attr">#[allow(clippy::derived_hash_with_manual_eq)]
 </span><span class="kw">impl </span>Hash <span class="kw">for </span>GroupElement {
     <span class="kw">fn </span>hash&lt;H: Hasher&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>H) {
         state.write(<span class="kw-2">&amp;</span><span class="self">self</span>.to_bytes())
     }
 }
 
-<span class="attr">#[allow(clippy::derive_hash_xor_eq)]
+<span class="attr">#[allow(clippy::derived_hash_with_manual_eq)]
 </span><span class="kw">impl </span>Hash <span class="kw">for </span>Scalar {
     <span class="kw">fn </span>hash&lt;H: Hasher&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>H) {
         state.write(<span class="kw-2">&amp;</span><span class="self">self</span>.to_bytes())

@@ -122,8 +122,6 @@
 <a href="#122" id="122">122</a>
 <a href="#123" id="123">123</a>
 <a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::load::MultiControllerError;
 <span class="kw">use </span><span class="kw">crate</span>::utils::qr::PinReadModeSettings;
 <span class="kw">use </span><span class="kw">crate</span>::MultiController;
@@ -206,8 +204,7 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(qr_codes) = <span class="kw-2">&amp;</span><span class="self">self</span>.qr_codes_folder {
             <span class="kw">let </span>qr_codes: Vec&lt;PathBuf&gt; = std::fs::read_dir(qr_codes)
                 .map_err(|<span class="kw">_</span>| Error::CannotReadQrs(qr_codes.clone()))<span class="question-mark">?
-                </span>.into_iter()
-                .map(|x| x.unwrap().path())
+                </span>.map(|x| x.unwrap().path())
                 .collect();
 
             MultiController::recover_from_qrs(
@@ -223,7 +220,6 @@
         } <span class="kw">else if let </span><span class="prelude-val">Some</span>(secrets_folder) = <span class="kw-2">&amp;</span><span class="self">self</span>.secrets_folder {
             <span class="kw">let </span>secrets: Vec&lt;PathBuf&gt; = std::fs::read_dir(secrets_folder)
                 .unwrap()
-                .into_iter()
                 .map(|x| x.unwrap().path())
                 .collect();
             MultiController::recover_from_sks(<span class="kw-2">&amp;</span><span class="self">self</span>.address, <span class="kw-2">&amp;</span>secrets, <span class="self">self</span>.rest_settings())

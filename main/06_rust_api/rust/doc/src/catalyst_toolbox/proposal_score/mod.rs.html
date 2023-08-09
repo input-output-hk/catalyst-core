@@ -189,6 +189,17 @@
 <a href="#189" id="189">189</a>
 <a href="#190" id="190">190</a>
 <a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
 </pre><pre class="rust"><code><span class="kw">pub mod </span>load;
 <span class="kw">pub mod </span>store;
 
@@ -196,8 +207,8 @@
 </span><span class="kw">pub struct </span>ProposalId(<span class="kw">pub </span>i32);
 
 <span class="attr">#[derive(Debug)]
-</span><span class="kw">pub struct </span>AligmentReviews(<span class="kw">pub </span>Vec&lt;Review&gt;);
-<span class="kw">pub struct </span>AligmentScore(f64);
+</span><span class="kw">pub struct </span>AlignmentReviews(<span class="kw">pub </span>Vec&lt;Review&gt;);
+<span class="kw">pub struct </span>AlignmentScore(f64);
 <span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>FeasibilityReviews(<span class="kw">pub </span>Vec&lt;Review&gt;);
 <span class="kw">pub struct </span>FeasibilityScore(f64);
@@ -208,14 +219,14 @@
 <span class="kw">pub fn </span>calc_score(
     allocated_weight: f64,
     not_allocated_weight: f64,
-    aligment_reviews: <span class="kw-2">&amp;</span>AligmentReviews,
+    alignment_reviews: <span class="kw-2">&amp;</span>AlignmentReviews,
     feasibility_reviews: <span class="kw-2">&amp;</span>FeasibilityReviews,
     auditability_review: <span class="kw-2">&amp;</span>AuditabilityReviews,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(AligmentScore, FeasibilityScore, AuditabilityScore), Error&gt; {
-    <span class="kw">let </span>aligment_score = AligmentScore(weighted_avarage_score(
+) -&gt; <span class="prelude-ty">Result</span>&lt;(AlignmentScore, FeasibilityScore, AuditabilityScore), Error&gt; {
+    <span class="kw">let </span>alignment_score = AlignmentScore(weighted_avarage_score(
         allocated_weight,
         not_allocated_weight,
-        <span class="kw-2">&amp;</span>aligment_reviews.<span class="number">0</span>,
+        <span class="kw-2">&amp;</span>alignment_reviews.<span class="number">0</span>,
     )<span class="question-mark">?</span>);
     <span class="kw">let </span>feasibility_score = FeasibilityScore(weighted_avarage_score(
         allocated_weight,
@@ -228,7 +239,7 @@
         <span class="kw-2">&amp;</span>auditability_review.<span class="number">0</span>,
     )<span class="question-mark">?</span>);
 
-    <span class="prelude-val">Ok</span>((aligment_score, feasibility_score, auditability_score))
+    <span class="prelude-val">Ok</span>((alignment_score, feasibility_score, auditability_score))
 }
 
 <span class="attr">#[derive(thiserror::Error, Debug)]
@@ -244,7 +255,11 @@
 }
 
 <span class="kw">fn </span>review_weight(weight: f64, reviews_amount: usize) -&gt; f64 {
-    weight / reviews_amount <span class="kw">as </span>f64
+    <span class="kw">if </span>reviews_amount != <span class="number">0 </span>{
+        weight / reviews_amount <span class="kw">as </span>f64
+    } <span class="kw">else </span>{
+        <span class="number">0.0
+    </span>}
 }
 
 <span class="doccomment">/// weighted average score calculation
@@ -353,31 +368,38 @@
         <span class="kw">let </span>allocated_weight = <span class="number">0.8</span>;
         <span class="kw">let </span>not_allocated_weight = <span class="number">0.2</span>;
 
-        <span class="kw">let </span>db = std::path::PathBuf::from(<span class="string">&quot;src/proposal_score/test_data/fund9.sqlite3&quot;</span>);
-        <span class="kw">let </span>reviews = std::path::PathBuf::from(<span class="string">&quot;src/proposal_score/test_data/reviews-example.csv&quot;</span>);
+        <span class="kw">let </span>proposals_file =
+            std::path::PathBuf::from(<span class="string">&quot;src/proposal_score/test_data/proposals.json&quot;</span>);
+        <span class="kw">let </span>reviews_file =
+            std::path::PathBuf::from(<span class="string">&quot;src/proposal_score/test_data/reviews-example.csv&quot;</span>);
 
-        <span class="kw">let </span>reviews = load::load_reviews_from_csv(<span class="kw-2">&amp;</span>reviews).unwrap();
+        <span class="kw">let </span>reviews = load::load_reviews_from_csv(<span class="kw-2">&amp;</span>reviews_file).unwrap();
+        <span class="kw">let </span><span class="kw-2">mut </span>proposals = load::load_proposals_from_json(<span class="kw-2">&amp;</span>proposals_file).unwrap();
 
-        <span class="kw">for </span>(proposal_id, (aligment_reviews, feasibility_reviews, auditability_reviews)) <span class="kw">in </span>reviews
+        <span class="kw">for </span>(proposal_id, (alignment_reviews, feasibility_reviews, auditability_reviews)) <span class="kw">in </span>reviews
         {
-            <span class="kw">let </span>(aligment_score, feasibility_score, auditability_score) = calc_score(
+            <span class="kw">let </span>(alignment_score, feasibility_score, auditability_score) = calc_score(
                 allocated_weight,
                 not_allocated_weight,
-                <span class="kw-2">&amp;</span>aligment_reviews,
+                <span class="kw-2">&amp;</span>alignment_reviews,
                 <span class="kw-2">&amp;</span>feasibility_reviews,
                 <span class="kw-2">&amp;</span>auditability_reviews,
             )
             .unwrap();
 
-            store::store_scores_in_sqllite_db(
-                <span class="kw-2">&amp;</span>db,
-                proposal_id,
-                aligment_score,
-                feasibility_score,
-                auditability_score,
-            )
-            .unwrap();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(proposal) = proposals.get_mut(<span class="kw-2">&amp;</span>proposal_id) {
+                store::store_score_into_proposal(
+                    proposal,
+                    alignment_score,
+                    feasibility_score,
+                    auditability_score,
+                )
+                .unwrap();
+            }
         }
+
+        store::store_proposals_into_file(<span class="kw-2">&amp;</span>proposals_file, proposals.into_values().collect())
+            .unwrap();
     }
 }
 </code></pre></div>

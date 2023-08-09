@@ -147,6 +147,9 @@
 <a href="#147" id="147">147</a>
 <a href="#148" id="148">148</a>
 <a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::{
     extract::MatchedPath,
@@ -162,6 +165,7 @@
 <span class="kw">use </span>tower_http::cors::{Any, CorsLayer};
 
 <span class="kw">mod </span>health;
+<span class="kw">mod </span>v0;
 <span class="kw">mod </span>v1;
 
 <span class="attr">#[derive(thiserror::Error, Debug)]
@@ -179,9 +183,10 @@
 
 <span class="kw">pub fn </span>app(state: Arc&lt;State&gt;) -&gt; Router {
     <span class="comment">// build our application with a route
-    </span><span class="kw">let </span>v1 = v1::v1(state);
+    </span><span class="kw">let </span>v0 = v0::v0(state.clone());
+    <span class="kw">let </span>v1 = v1::v1(state);
     <span class="kw">let </span>health = health::health();
-    Router::new().nest(<span class="string">&quot;/api&quot;</span>, v1).merge(health)
+    Router::new().nest(<span class="string">&quot;/api&quot;</span>, v1.merge(v0)).merge(health)
 }
 
 <span class="kw">fn </span>metrics_app() -&gt; Router {
@@ -193,6 +198,7 @@
     CorsLayer::new()
         .allow_methods([Method::GET, Method::POST])
         .allow_origin(Any)
+        .allow_headers(Any)
 }
 
 <span class="kw">async fn </span>run_service(app: Router, addr: <span class="kw-2">&amp;</span>SocketAddr, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {

@@ -657,8 +657,8 @@
             .take(<span class="number">4</span>)
             .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
         <span class="macro">assert_eq!</span>(
-            serde_json::to_value(<span class="kw-2">&amp;</span>expected_challenges).unwrap(),
-            serde_json::to_value(<span class="kw-2">&amp;</span>challenges).unwrap()
+            serde_json::to_value(expected_challenges).unwrap(),
+            serde_json::to_value(challenges).unwrap()
         );
     }
 }

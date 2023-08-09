@@ -324,6 +324,11 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="review_rewards"  align='text'><font>review_rewards</font><br align='left'/></td>
+                <td port="review_rewards_out"  ><font><i>bigint</i></font></td>
+            </tr>
+            
+            <tr>
                 <td port="start_time"  align='text'><font>start_time</font><br align='left'/></td>
                 <td port="start_time_out"  ><font><i>timestamp</i></font></td>
             </tr>
@@ -455,6 +460,84 @@ digraph erd {
     
         
 
+    "moderation" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>moderation</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+            
+            <tr>
+                <td port="review_id"  align='text'><font>review_id</font><br align='left'/></td>
+                <td port="review_id_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
+                <td port="user_id_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="classification"  align='text'><font>classification</font><br align='left'/></td>
+                <td port="classification_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="rationale"  align='text'><font>rationale</font><br align='left'/></td>
+                <td port="rationale_out"  ><font><i>varchar</i></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "moderation_allocation" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>moderation_allocation</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+            
+            <tr>
+                <td port="review_id"  align='text'><font>review_id</font><br align='left'/></td>
+                <td port="review_id_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
+                <td port="user_id_out"  ><font>integer</font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
     "objective" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
             <tr>
@@ -494,6 +577,11 @@ digraph erd {
             <tr>
                 <td port="description"  align='text'><font>description</font><br align='left'/></td>
                 <td port="description_out"  ><font>text</font></td>
+            </tr>
+            
+            <tr>
+                <td port="deleted"  align='text'><font>deleted</font><br align='left'/></td>
+                <td port="deleted_out"  ><font>boolean</font></td>
             </tr>
             
             <tr>
@@ -674,6 +762,11 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="deleted"  align='text'><font>deleted</font><br align='left'/></td>
+                <td port="deleted_out"  ><font>boolean</font></td>
+            </tr>
+            
+            <tr>
                 <td port="extra"  align='text'><font>extra</font><br align='left'/></td>
                 <td port="extra_out"  ><font><i>jsonb</i></font></td>
             </tr>
@@ -743,6 +836,16 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="assessor_level"  align='text'><font>assessor_level</font><br align='left'/></td>
+                <td port="assessor_level_out"  ><font><i>integer</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="reward_address"  align='text'><font>reward_address</font><br align='left'/></td>
+                <td port="reward_address_out"  ><font><i>text</i></font></td>
+            </tr>
+            
+            <tr>
                 <td port="impact_alignment_rating_given"  align='text'><font>impact_alignment_rating_given</font><br align='left'/></td>
                 <td port="impact_alignment_rating_given_out"  ><font><i>integer</i></font></td>
             </tr>
@@ -775,6 +878,11 @@ digraph erd {
             <tr>
                 <td port="ranking"  align='text'><font>ranking</font><br align='left'/></td>
                 <td port="ranking_out"  ><font><i>integer</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="flags"  align='text'><font>flags</font><br align='left'/></td>
+                <td port="flags_out"  ><font><i>jsonb</i></font></td>
             </tr>
             
 
@@ -917,6 +1025,45 @@ digraph erd {
     
         
 
+    "reviewer_level" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>reviewer_level</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+            
+            <tr>
+                <td port="name"  align='text'><font>name</font><br align='left'/></td>
+                <td port="name_out"  ><font>text</font></td>
+            </tr>
+            
+            <tr>
+                <td port="total_reward_pct"  align='text'><font>total_reward_pct</font><br align='left'/></td>
+                <td port="total_reward_pct_out"  ><font><i>numeric</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="event_id"  align='text'><font>event_id</font><br align='left'/></td>
+                <td port="event_id_out"  ><font>integer</font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
     "snapshot" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
             <tr>
@@ -1035,6 +1182,11 @@ digraph erd {
             <tr>
                 <td port="event"  align='text'><font>event</font><br align='left'/></td>
                 <td port="event_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="committee_pk"  align='text'><font>committee_pk</font><br align='left'/></td>
+                <td port="committee_pk_out"  ><font>text</font></td>
             </tr>
             
             <tr>
@@ -1345,7 +1497,11 @@ digraph erd {
     
     "proposal":"bb_vote_options_out" -> "vote_options":"objective"
     
+    "reviewer_level":"event_id_out" -> "event":"row_id"
+    
     "proposal_review":"proposal_id_out" -> "proposal":"row_id"
+    
+    "proposal_review":"assessor_level_out" -> "reviewer_level":"row_id"
     
     "objective_review_metric":"objective_out" -> "objective":"row_id"
     
@@ -1382,6 +1538,14 @@ digraph erd {
     "tally_committee":"event_out" -> "event":"row_id"
     
     "committee_member":"committee_out" -> "tally_committee":"row_id"
+    
+    "moderation_allocation":"review_id_out" -> "proposal_review":"row_id"
+    
+    "moderation_allocation":"user_id_out" -> "config":"row_id"
+    
+    "moderation":"review_id_out" -> "proposal_review":"row_id"
+    
+    "moderation":"user_id_out" -> "config":"row_id"
     
 
 

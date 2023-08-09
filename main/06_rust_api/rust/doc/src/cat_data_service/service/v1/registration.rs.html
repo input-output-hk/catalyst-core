@@ -341,9 +341,16 @@
 <a href="#341" id="341">341</a>
 <a href="#342" id="342">342</a>
 <a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 <span class="kw">use </span>axum::{
     extract::{Path, Query},
@@ -378,52 +385,57 @@
 
 <span class="attr">#[derive(Deserialize)]
 </span><span class="kw">struct </span>VotersQuery {
-    event_id: <span class="prelude-ty">Option</span>&lt;EventId&gt;,
+    event_id: <span class="prelude-ty">Option</span>&lt;SerdeType&lt;EventId&gt;&gt;,
     with_delegators: <span class="prelude-ty">Option</span>&lt;bool&gt;,
 }
 
 <span class="kw">async fn </span>voter_exec(
     Path(voting_key): Path&lt;String&gt;,
-    voters_query: Query&lt;VotersQuery&gt;,
+    Query(VotersQuery {
+        event_id,
+        with_delegators,
+    }): Query&lt;VotersQuery&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Voter, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;SerdeType&lt;Voter&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;voter_query: voting_key: {0}, event_id: {1:?}&quot;</span>,
         voting_key,
-        voters_query.event_id
+        <span class="kw-2">&amp;</span>event_id
     );
 
     <span class="kw">let </span>voter = state
         .event_db
         .get_voter(
-            <span class="kw-2">&amp;</span>voters_query.event_id,
+            <span class="kw-2">&amp;</span>event_id.map(|val| val.<span class="number">0</span>),
             voting_key,
-            voters_query.with_delegators.unwrap_or(<span class="bool-val">false</span>),
+            with_delegators.unwrap_or(<span class="bool-val">false</span>),
         )
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into();
     <span class="prelude-val">Ok</span>(voter)
 }
 
 <span class="attr">#[derive(Deserialize)]
 </span><span class="kw">struct </span>DelegationsQuery {
-    event_id: <span class="prelude-ty">Option</span>&lt;EventId&gt;,
+    event_id: <span class="prelude-ty">Option</span>&lt;SerdeType&lt;EventId&gt;&gt;,
 }
 
 <span class="kw">async fn </span>delegations_exec(
     Path(stake_public_key): Path&lt;String&gt;,
-    delegations_query: Query&lt;DelegationsQuery&gt;,
+    Query(DelegationsQuery { event_id }): Query&lt;DelegationsQuery&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Delegator, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;SerdeType&lt;Delegator&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;delegator_query: stake_public_key: {0}, eid: {1:?}&quot;</span>,
         stake_public_key,
-        delegations_query.event_id
+        <span class="kw-2">&amp;</span>event_id
     );
 
     <span class="kw">let </span>delegator = state
         .event_db
-        .get_delegator(<span class="kw-2">&amp;</span>delegations_query.event_id, stake_public_key)
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .get_delegator(<span class="kw-2">&amp;</span>event_id.map(|val| val.<span class="number">0</span>), stake_public_key)
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into();
     <span class="prelude-val">Ok</span>(delegator)
 }
 

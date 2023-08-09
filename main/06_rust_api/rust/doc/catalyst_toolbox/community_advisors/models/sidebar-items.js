@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["ProposalStatus","__Field"],"mod":["de"],"struct":["AdvisorReviewRow","ApprovedProposalRow","VeteranRankingRow","__FieldVisitor","__Visitor"],"type":["AdvisorReviewId","VeteranAdvisorId"]};
+window.SIDEBAR_ITEMS = {"enum":["ProposalStatus"],"mod":["de"],"struct":["AdvisorReviewRow","ApprovedProposalRow","VeteranRankingRow"],"type":["AdvisorReviewId","VeteranAdvisorId"]};

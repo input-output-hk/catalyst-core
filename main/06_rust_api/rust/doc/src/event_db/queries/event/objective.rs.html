@@ -260,17 +260,22 @@
 <a href="#260" id="260">260</a>
 <a href="#261" id="261">261</a>
 <a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::{
-        event::{
+        registration::VoterGroupId,
+        {
+            event::EventId,
             objective::{
                 Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType,
                 RewardDefintion, VoterGroup,
             },
-            EventId,
         },
-        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -288,7 +293,7 @@
 
 <span class="kw">impl </span>EventDB {
     <span class="kw">const </span>OBJECTIVES_QUERY: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str =
-        <span class="string">&quot;SELECT objective.row_id, objective.id, objective.title, objective.description, objective.rewards_currency, objective.rewards_total, objective.extra,
+        <span class="string">&quot;SELECT objective.row_id, objective.id, objective.title, objective.description, objective.deleted, objective.rewards_currency, objective.rewards_total, objective.extra,
         objective_category.name, objective_category.description as objective_category_description
         FROM objective
         INNER JOIN objective_category on objective.category = objective_category.name
@@ -329,6 +334,7 @@
                 },
                 title: row.try_get(<span class="string">&quot;title&quot;</span>)<span class="question-mark">?</span>,
                 description: row.try_get(<span class="string">&quot;description&quot;</span>)<span class="question-mark">?</span>,
+                deleted: row.try_get(<span class="string">&quot;deleted&quot;</span>)<span class="question-mark">?</span>,
             };
             <span class="kw">let </span>currency: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;rewards_currency&quot;</span>)<span class="question-mark">?</span>;
             <span class="kw">let </span>value: <span class="prelude-ty">Option</span>&lt;<span class="kw">_</span>&gt; = row.try_get(<span class="string">&quot;rewards_total&quot;</span>)<span class="question-mark">?</span>;
@@ -405,6 +411,7 @@
                         },
                         title: <span class="string">&quot;title 1&quot;</span>.to_string(),
                         description: <span class="string">&quot;description 1&quot;</span>.to_string(),
+                        deleted: <span class="bool-val">false</span>,
                     },
                     details: ObjectiveDetails {
                         groups: <span class="macro">vec!</span>[
@@ -439,6 +446,7 @@
                         },
                         title: <span class="string">&quot;title 2&quot;</span>.to_string(),
                         description: <span class="string">&quot;description 2&quot;</span>.to_string(),
+                        deleted: <span class="bool-val">false</span>,
                     },
                     details: ObjectiveDetails {
                         groups: Vec::new(),
@@ -464,6 +472,7 @@
                     },
                     title: <span class="string">&quot;title 1&quot;</span>.to_string(),
                     description: <span class="string">&quot;description 1&quot;</span>.to_string(),
+                    deleted: <span class="bool-val">false</span>,
                 },
                 details: ObjectiveDetails {
                     groups: <span class="macro">vec!</span>[
@@ -506,6 +515,7 @@
                     },
                     title: <span class="string">&quot;title 2&quot;</span>.to_string(),
                     description: <span class="string">&quot;description 2&quot;</span>.to_string(),
+                    deleted: <span class="bool-val">false</span>,
                 },
                 details: ObjectiveDetails {
                     groups: Vec::new(),

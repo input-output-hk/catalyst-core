@@ -299,16 +299,6 @@
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
-<a href="#302" id="302">302</a>
-<a href="#303" id="303">303</a>
-<a href="#304" id="304">304</a>
-<a href="#305" id="305">305</a>
-<a href="#306" id="306">306</a>
-<a href="#307" id="307">307</a>
-<a href="#308" id="308">308</a>
-<a href="#309" id="309">309</a>
-<a href="#310" id="310">310</a>
-<a href="#311" id="311">311</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::certificate::{PoolId, PoolRegistration, PoolRegistrationHash};
 <span class="kw">use </span><span class="kw">crate</span>::date::Epoch;
 <span class="kw">use </span><span class="kw">crate</span>::value::Value;
@@ -329,21 +319,11 @@
     NotFound(PoolId),
 }
 
-<span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]
+<span class="attr">#[derive(Default, Debug, Clone, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>PoolLastRewards {
     <span class="kw">pub </span>epoch: Epoch,
     <span class="kw">pub </span>value_taxed: Value,
     <span class="kw">pub </span>value_for_stakers: Value,
-}
-
-<span class="kw">impl </span>PoolLastRewards {
-    <span class="kw">pub fn </span>default() -&gt; <span class="self">Self </span>{
-        PoolLastRewards {
-            epoch: <span class="number">0</span>,
-            value_taxed: Value::zero(),
-            value_for_stakers: Value::zero(),
-        }
-    }
 }
 
 <span class="attr">#[derive(Debug, Clone, PartialEq, Eq)]

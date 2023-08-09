@@ -238,19 +238,19 @@
         <span class="self">self</span>.account.confirm_transaction_at_lane(lane).unwrap();
     }
 
-    <span class="kw">pub fn </span>make_witness&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>make_witness(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         block0_hash: <span class="kw-2">&amp;</span>HeaderId,
-        tad: TransactionAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        tad: TransactionAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; Witness {
         <span class="self">self</span>.make_witness_at_lane(block0_hash, <span class="number">0</span>, tad)
     }
 
-    <span class="kw">pub fn </span>make_witness_at_lane&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>make_witness_at_lane(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         block0_hash: <span class="kw-2">&amp;</span>HeaderId,
         lane: usize,
-        tad: TransactionAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        tad: TransactionAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; Witness {
         <span class="self">self</span>.as_account()
             .make_witness_with_lane(block0_hash, lane, tad)

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_MAX_CLIENT_CONNECTIONS","DEFAULT_MAX_CONNECTIONS","DEFAULT_TIMEOUT","FIELDS","VARIANTS"],"enum":["PeerResolveError","Protocol","__Field"],"struct":["Configuration","Listen","Peer","TrustedPeer","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_MAX_CLIENT_CONNECTIONS","DEFAULT_MAX_CONNECTIONS","DEFAULT_TIMEOUT"],"enum":["PeerResolveError","Protocol"],"struct":["Configuration","Listen","Peer","TrustedPeer"]};

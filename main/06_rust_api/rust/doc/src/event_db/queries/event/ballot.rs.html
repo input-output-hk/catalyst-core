@@ -392,19 +392,25 @@
 <a href="#392" id="392">392</a>
 <a href="#393" id="393">393</a>
 <a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     error::Error,
     types::{
-        event::{
+        registration::VoterGroupId,
+        {
             ballot::{
                 Ballot, BallotType, GroupVotePlans, ObjectiveBallots, ObjectiveChoices,
                 ProposalBallot, VotePlan,
             },
+            event::EventId,
             objective::ObjectiveId,
             proposal::ProposalId,
-            EventId,
         },
-        registration::VoterGroupId,
     },
     EventDB,
 };
@@ -488,7 +494,9 @@
         <span class="kw">for </span>row <span class="kw">in </span>rows {
             voteplans.push(VotePlan {
                 chain_proposal_index: row.try_get(<span class="string">&quot;bb_proposal_index&quot;</span>)<span class="question-mark">?</span>,
-                group: VoterGroupId(row.try_get(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?</span>),
+                group: row
+                    .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;String&gt;&gt;(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?
+                    </span>.map(VoterGroupId),
                 ballot_type: BallotType(row.try_get(<span class="string">&quot;category&quot;</span>)<span class="question-mark">?</span>),
                 chain_voteplan_id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
                 encryption_key: row.try_get(<span class="string">&quot;encryption_key&quot;</span>)<span class="question-mark">?</span>,
@@ -530,7 +538,9 @@
             <span class="kw">for </span>row <span class="kw">in </span>rows {
                 voteplans.push(VotePlan {
                     chain_proposal_index: row.try_get(<span class="string">&quot;bb_proposal_index&quot;</span>)<span class="question-mark">?</span>,
-                    group: VoterGroupId(row.try_get(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?</span>),
+                    group: row
+                        .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;String&gt;&gt;(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?
+                        </span>.map(VoterGroupId),
                     ballot_type: BallotType(row.try_get(<span class="string">&quot;category&quot;</span>)<span class="question-mark">?</span>),
                     chain_voteplan_id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
                     encryption_key: row.try_get(<span class="string">&quot;encryption_key&quot;</span>)<span class="question-mark">?</span>,
@@ -570,7 +580,9 @@
             <span class="kw">for </span>row <span class="kw">in </span>rows {
                 voteplans.push(VotePlan {
                     chain_proposal_index: row.try_get(<span class="string">&quot;bb_proposal_index&quot;</span>)<span class="question-mark">?</span>,
-                    group: VoterGroupId(row.try_get(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?</span>),
+                    group: row
+                        .try_get::&lt;<span class="kw">_</span>, <span class="prelude-ty">Option</span>&lt;String&gt;&gt;(<span class="string">&quot;group_id&quot;</span>)<span class="question-mark">?
+                        </span>.map(VoterGroupId),
                     ballot_type: BallotType(row.try_get(<span class="string">&quot;category&quot;</span>)<span class="question-mark">?</span>),
                     chain_voteplan_id: row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>,
                     encryption_key: row.try_get(<span class="string">&quot;encryption_key&quot;</span>)<span class="question-mark">?</span>,
@@ -634,14 +646,14 @@
                 voteplans: GroupVotePlans(<span class="macro">vec!</span>[
                     VotePlan {
                         chain_proposal_index: <span class="number">10</span>,
-                        group: VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string()),
+                        group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
                         ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                         chain_voteplan_id: <span class="string">&quot;1&quot;</span>.to_string(),
                         encryption_key: <span class="prelude-val">None</span>,
                     },
                     VotePlan {
                         chain_proposal_index: <span class="number">12</span>,
-                        group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
+                        group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                         ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                         chain_voteplan_id: <span class="string">&quot;2&quot;</span>.to_string(),
                         encryption_key: <span class="prelude-val">None</span>,
@@ -670,14 +682,14 @@
                         voteplans: GroupVotePlans(<span class="macro">vec!</span>[
                             VotePlan {
                                 chain_proposal_index: <span class="number">10</span>,
-                                group: VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string()),
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
                                 ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                                 chain_voteplan_id: <span class="string">&quot;1&quot;</span>.to_string(),
                                 encryption_key: <span class="prelude-val">None</span>,
                             },
                             VotePlan {
                                 chain_proposal_index: <span class="number">12</span>,
-                                group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                                 ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                                 chain_voteplan_id: <span class="string">&quot;2&quot;</span>.to_string(),
                                 encryption_key: <span class="prelude-val">None</span>,
@@ -692,14 +704,14 @@
                         voteplans: GroupVotePlans(<span class="macro">vec!</span>[
                             VotePlan {
                                 chain_proposal_index: <span class="number">11</span>,
-                                group: VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string()),
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
                                 ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                                 chain_voteplan_id: <span class="string">&quot;1&quot;</span>.to_string(),
                                 encryption_key: <span class="prelude-val">None</span>,
                             },
                             VotePlan {
                                 chain_proposal_index: <span class="number">13</span>,
-                                group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
+                                group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                                 ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                                 chain_voteplan_id: <span class="string">&quot;2&quot;</span>.to_string(),
                                 encryption_key: <span class="prelude-val">None</span>,
@@ -736,14 +748,14 @@
                             voteplans: GroupVotePlans(<span class="macro">vec!</span>[
                                 VotePlan {
                                     chain_proposal_index: <span class="number">10</span>,
-                                    group: VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string()),
+                                    group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
                                     ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                                     chain_voteplan_id: <span class="string">&quot;1&quot;</span>.to_string(),
                                     encryption_key: <span class="prelude-val">None</span>,
                                 },
                                 VotePlan {
                                     chain_proposal_index: <span class="number">12</span>,
-                                    group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
+                                    group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                                     ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                                     chain_voteplan_id: <span class="string">&quot;2&quot;</span>.to_string(),
                                     encryption_key: <span class="prelude-val">None</span>,
@@ -758,14 +770,14 @@
                             voteplans: GroupVotePlans(<span class="macro">vec!</span>[
                                 VotePlan {
                                     chain_proposal_index: <span class="number">11</span>,
-                                    group: VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string()),
+                                    group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;direct&quot;</span>.to_string())),
                                     ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                                     chain_voteplan_id: <span class="string">&quot;1&quot;</span>.to_string(),
                                     encryption_key: <span class="prelude-val">None</span>,
                                 },
                                 VotePlan {
                                     chain_proposal_index: <span class="number">13</span>,
-                                    group: VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string()),
+                                    group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;rep&quot;</span>.to_string())),
                                     ballot_type: BallotType(<span class="string">&quot;public&quot;</span>.to_string()),
                                     chain_voteplan_id: <span class="string">&quot;2&quot;</span>.to_string(),
                                     encryption_key: <span class="prelude-val">None</span>,

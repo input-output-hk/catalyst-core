@@ -191,7 +191,7 @@
 <span class="kw">impl </span>KeyQrCode {
     <span class="kw">pub fn </span>generate(key: SecretKey&lt;Ed25519Extended&gt;, password: <span class="kw-2">&amp;</span>[u8]) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>enc_hex = payload::generate(key, password);
-        <span class="kw">let </span>inner = QrCode::with_error_correction_level(<span class="kw-2">&amp;</span>enc_hex, EcLevel::H).unwrap();
+        <span class="kw">let </span>inner = QrCode::with_error_correction_level(enc_hex, EcLevel::H).unwrap();
 
         KeyQrCode { inner }
     }

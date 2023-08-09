@@ -313,10 +313,6 @@
 <a href="#313" id="313">313</a>
 <a href="#314" id="314">314</a>
 <a href="#315" id="315">315</a>
-<a href="#316" id="316">316</a>
-<a href="#317" id="317">317</a>
-<a href="#318" id="318">318</a>
-<a href="#319" id="319">319</a>
 </pre><pre class="rust"><code><span class="kw">use </span>opentelemetry_otlp::WithExportConfig;
 <span class="attr">#[cfg(feature = <span class="string">&quot;gelf&quot;</span>)]
 </span><span class="kw">use </span>std::net::SocketAddr;
@@ -331,15 +327,11 @@
 <span class="attr">#[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]
 </span><span class="doccomment">/// Format of the logger.
+</span><span class="attr">#[derive(Default)]
 </span><span class="kw">pub enum </span>LogFormat {
-    Plain,
+    <span class="attr">#[default]
+    </span>Plain,
     Json,
-}
-
-<span class="kw">impl </span>Default <span class="kw">for </span>LogFormat {
-    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
-        LogFormat::Plain
-    }
 }
 
 <span class="kw">impl </span>Display <span class="kw">for </span>LogFormat {

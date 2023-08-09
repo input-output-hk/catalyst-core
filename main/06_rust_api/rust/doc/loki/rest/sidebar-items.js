@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["Parent","__Field"],"mod":["handlers"],"struct":["AdversaryRest","Request","__FieldVisitor","__Visitor"],"type":["Context"]};
+window.SIDEBAR_ITEMS = {"enum":["Parent"],"mod":["handlers"],"struct":["AdversaryRest","Request"],"type":["Context"]};

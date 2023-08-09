@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["Error","__Field"],"struct":["Config","ConfigManager","Connection","SecretKey","WalletState","Wallets","__FieldVisitor","__Visitor"],"type":["Alias"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["Config","ConfigManager","Connection","SecretKey","WalletState","Wallets"],"type":["Alias"]};

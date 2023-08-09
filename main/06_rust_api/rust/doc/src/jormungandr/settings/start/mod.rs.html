@@ -656,7 +656,7 @@
 
     <span class="kw">let </span>node_key = <span class="kw">match </span>p2p.bootstrap.node_key_file {
         <span class="prelude-val">Some</span>(node_key_file) =&gt; {
-            &lt;SigningKey&lt;Ed25519&gt;&gt;::from_bech32_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(<span class="kw-2">&amp;</span>node_key_file)<span class="question-mark">?</span>)<span class="question-mark">?
+            &lt;SigningKey&lt;Ed25519&gt;&gt;::from_bech32_str(<span class="kw-2">&amp;</span>std::fs::read_to_string(node_key_file)<span class="question-mark">?</span>)<span class="question-mark">?
         </span>}
         <span class="prelude-val">None </span>=&gt; SigningKey::generate(rand::thread_rng()),
     };

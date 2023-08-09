@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["Error","Protocol","__Field"],"mod":["server"],"struct":["Certs","ValigrindStartupCommand","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["Error","Protocol"],"mod":["server"],"struct":["Certs","ValigrindStartupCommand"]};

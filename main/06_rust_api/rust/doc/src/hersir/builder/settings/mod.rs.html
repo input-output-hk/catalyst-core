@@ -317,7 +317,7 @@
     ) <span class="kw">where
         </span>RNG: RngCore + CryptoRng,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>blockchain_configuration = <span class="kw-2">&amp;mut </span><span class="self">self</span>.block0.blockchain_configuration;
+        <span class="kw">let </span>blockchain_configuration = <span class="kw-2">&amp;mut </span><span class="self">self</span>.block0.blockchain_configuration;
 
         <span class="comment">// TODO blockchain_configuration.block0_date = ;
         </span>blockchain_configuration.linear_fees = blockchain.linear_fee();

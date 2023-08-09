@@ -55,14 +55,24 @@
 <a href="#55" id="55">55</a>
 <a href="#56" id="56">56</a>
 <a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
 </pre><pre class="rust"><code><span class="kw">extern crate </span>core;
 <span class="macro">cfg_if::cfg_if! </span>{
     <span class="kw">if </span><span class="attr">#[cfg(test)] </span>{
-        <span class="kw">pub mod </span>common;
-        <span class="kw">pub mod </span>component;
-        <span class="kw">pub mod </span>non_functional;
-        <span class="kw">pub mod </span>integration;
-        <span class="kw">pub mod </span>e2e;
+        <span class="attr">#[allow(clippy::all)]
+        </span><span class="kw">pub mod </span>common;
+        <span class="attr">#[allow(clippy::all)]
+        </span><span class="kw">pub mod </span>component;
+        <span class="attr">#[allow(clippy::all)]
+        </span><span class="kw">pub mod </span>non_functional;
+        <span class="attr">#[allow(clippy::all)]
+        </span><span class="kw">pub mod </span>integration;
+        <span class="attr">#[allow(clippy::all)]
+        </span><span class="kw">pub mod </span>e2e;
     }
 }
 

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["VotingPowerAlgorithm"],"mod":["ballot","objective","proposal","review","voting_status"],"struct":["Event","EventDetails","EventGoal","EventId","EventRegistration","EventSchedule","EventSummary","VotingPowerSettings","__SerializeWith","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["VotingPowerAlgorithm"],"struct":["Event","EventDetails","EventGoal","EventId","EventRegistration","EventSchedule","EventSummary","VotingPowerSettings"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["Error","__Field"],"fn":["dump_json"],"struct":["FolderDump","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["dump_json"],"struct":["FolderDump"]};

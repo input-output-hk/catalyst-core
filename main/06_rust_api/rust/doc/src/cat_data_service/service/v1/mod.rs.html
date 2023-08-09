@@ -20,12 +20,23 @@
 <a href="#20" id="20">20</a>
 <a href="#21" id="21">21</a>
 <a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::Router;
 <span class="kw">use </span>serde::Deserialize;
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">mod </span>event;
+<span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
+</span><span class="kw">mod </span>jorm_mock;
 <span class="kw">mod </span>registration;
 <span class="kw">mod </span>search;
 
@@ -36,11 +47,18 @@
 }
 
 <span class="kw">pub fn </span>v1(state: Arc&lt;State&gt;) -&gt; Router {
+    <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
+    </span><span class="kw">let </span>jorm_mock = jorm_mock::jorm_mock(state.clone());
+
     <span class="kw">let </span>registration = registration::registration(state.clone());
     <span class="kw">let </span>event = event::event(state.clone());
     <span class="kw">let </span>search = search::search(state);
 
-    Router::new().nest(<span class="string">&quot;/v1&quot;</span>, registration.merge(event).merge(search))
+    <span class="kw">let </span>router = registration.merge(event).merge(search);
+    <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
+    </span><span class="kw">let </span>router = router.merge(jorm_mock);
+
+    Router::new().nest(<span class="string">&quot;/v1&quot;</span>, router)
 }
 </code></pre></div>
 </section></main></body></html>

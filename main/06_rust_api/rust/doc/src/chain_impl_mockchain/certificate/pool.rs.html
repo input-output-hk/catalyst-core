@@ -1151,10 +1151,10 @@
         }
     }
 
-    <span class="kw">pub fn </span>verify&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>verify(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         pool_info: <span class="kw-2">&amp;</span>PoolRegistration,
-        verify_data: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        verify_data: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; Verification {
         <span class="kw">match </span><span class="self">self </span>{
             PoolSignature::Operator(<span class="kw">_</span>) =&gt; Verification::Failed,
@@ -1170,10 +1170,10 @@
         })
     }
 
-    <span class="kw">pub fn </span>verify&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>verify(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         pool_info: <span class="kw-2">&amp;</span>PoolRegistration,
-        verify_data: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        verify_data: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; Verification {
         <span class="comment">// fast track if we don&#39;t meet the management threshold already
         </span><span class="kw">if </span><span class="self">self</span>.signatures.len() &lt; pool_info.management_threshold() <span class="kw">as </span>usize {

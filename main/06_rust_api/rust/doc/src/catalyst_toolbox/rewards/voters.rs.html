@@ -473,14 +473,13 @@
 <a href="#473" id="473">473</a>
 <a href="#474" id="474">474</a>
 <a href="#475" id="475">475</a>
-<a href="#476" id="476">476</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Threshold, VoteCount};
 <span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
 <span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 <span class="kw">use </span>jormungandr_lib::interfaces::Address;
 <span class="kw">use </span>rust_decimal::Decimal;
-<span class="kw">use </span>snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
+<span class="kw">use </span>snapshot_lib::{registration::RewardAddress, SnapshotInfo};
 <span class="kw">use </span>std::collections::{BTreeMap, HashMap, HashSet};
 <span class="kw">use </span>thiserror::Error;
 
@@ -553,7 +552,7 @@
 <span class="kw">fn </span>rewards_to_mainnet_addresses(
     rewards: HashMap&lt;Identifier, Rewards&gt;,
     voters: Vec&lt;SnapshotInfo&gt;,
-) -&gt; BTreeMap&lt;MainnetRewardAddress, Rewards&gt; {
+) -&gt; BTreeMap&lt;RewardAddress, Rewards&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>res = BTreeMap::new();
     <span class="kw">let </span>snapshot_info_by_key = voters
         .into_iter()
@@ -583,7 +582,7 @@
     voters: Vec&lt;SnapshotInfo&gt;,
     vote_threshold: Threshold,
     total_rewards: Rewards,
-) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;MainnetRewardAddress, Rewards&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;RewardAddress, Rewards&gt;, Error&gt; {
     <span class="kw">let </span>unique_voters = voters
         .iter()
         .map(|s| s.hir.voting_key.clone())
@@ -611,7 +610,7 @@
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::utils::assert_are_close;
     <span class="kw">use </span>jormungandr_lib::crypto::{account::Identifier, hash::Hash};
-    <span class="kw">use </span>snapshot_lib::registration::{Delegations, VotingRegistration};
+    <span class="kw">use </span>snapshot_lib::registration::{Delegations, StakeAddress, VotingRegistration};
     <span class="kw">use </span>snapshot_lib::Snapshot;
     <span class="kw">use </span>snapshot_lib::{Fraction, RawSnapshot};
     <span class="kw">use </span>test_strategy::proptest;
@@ -631,7 +630,6 @@
 
         <span class="kw">let </span>votes_count = snapshot
             .voting_keys()
-            .into_iter()
             .map(|key| (key.clone(), HashSet::from([Hash::from([<span class="number">0u8</span>; <span class="number">32</span>])])))
             .collect::&lt;VoteCount&gt;();
 
@@ -775,8 +773,8 @@
         <span class="kw">let </span><span class="kw-2">mut </span>total_stake = <span class="number">0u64</span>;
 
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..<span class="number">10u64 </span>{
-            <span class="kw">let </span>stake_public_key = i.to_string();
-            <span class="kw">let </span>reward_address = i.to_string();
+            <span class="kw">let </span>stake_public_key = StakeAddress(i.to_string());
+            <span class="kw">let </span>reward_address = RewardAddress(i.to_string());
 
             <span class="kw">let </span>delegations = Delegations::New(<span class="macro">vec!</span>[(voting_public_key.clone(), <span class="number">1</span>)]);
             raw_snapshot.push(VotingRegistration {
@@ -824,8 +822,8 @@
 
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..<span class="number">10u64 </span>{
             <span class="kw">let </span>voting_public_key = Identifier::from_hex(<span class="kw-2">&amp;</span>hex::encode([i <span class="kw">as </span>u8; <span class="number">32</span>])).unwrap();
-            <span class="kw">let </span>stake_public_key = i.to_string();
-            <span class="kw">let </span>reward_address = i.to_string();
+            <span class="kw">let </span>stake_public_key = StakeAddress(i.to_string());
+            <span class="kw">let </span>reward_address = RewardAddress(i.to_string());
             <span class="kw">let </span>delegations = Delegations::New(<span class="macro">vec!</span>[(voting_public_key.clone(), <span class="number">1</span>)]);
             raw_snapshot.push(VotingRegistration {
                 stake_public_key,

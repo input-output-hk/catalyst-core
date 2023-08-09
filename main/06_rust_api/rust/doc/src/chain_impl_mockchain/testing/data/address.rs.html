@@ -687,19 +687,19 @@
         AddressData::new(other.private_key, other.spending_counter, user_address)
     }
 
-    <span class="kw">pub fn </span>make_witness&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>make_witness(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         block0_hash: <span class="kw-2">&amp;</span>HeaderId,
-        tad: TransactionAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        tad: TransactionAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; Witness {
         <span class="self">self</span>.make_witness_with_lane(block0_hash, <span class="number">0</span>, tad)
     }
 
-    <span class="kw">pub fn </span>make_witness_with_lane&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>make_witness_with_lane(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         block0_hash: <span class="kw-2">&amp;</span>HeaderId,
         lane: usize,
-        tad: TransactionAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        tad: TransactionAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; Witness {
         <span class="kw">let </span>witness = make_witness_with_lane(block0_hash, <span class="self">self</span>, lane, <span class="kw-2">&amp;</span>tad.hash());
         <span class="self">self</span>.confirm_transaction_at_lane(lane).unwrap();
@@ -824,19 +824,19 @@
         <span class="self">self</span>.address_data.confirm_transaction_at_lane(lane)
     }
 
-    <span class="kw">pub fn </span>make_witness&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>make_witness(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         block0_hash: <span class="kw-2">&amp;</span>HeaderId,
-        tad: TransactionAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        tad: TransactionAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; Witness {
         <span class="self">self</span>.make_witness_with_lane(block0_hash, <span class="number">0</span>, tad)
     }
 
-    <span class="kw">pub fn </span>make_witness_with_lane&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>make_witness_with_lane(
         <span class="kw-2">&amp;mut </span><span class="self">self</span>,
         block0_hash: <span class="kw-2">&amp;</span>HeaderId,
         lane: usize,
-        tad: TransactionAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        tad: TransactionAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; Witness {
         <span class="self">self</span>.address_data
             .make_witness_with_lane(block0_hash, lane, tad)

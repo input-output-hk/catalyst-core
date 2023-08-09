@@ -122,12 +122,20 @@
 <a href="#122" id="122">122</a>
 <a href="#123" id="123">123</a>
 <a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
+    types::SerdeType,
 };
 <span class="kw">use </span>axum::{extract::Path, routing::get, Router};
-<span class="kw">use </span>event_db::types::event::{ballot::ProposalBallot, objective::ObjectiveId, EventId};
+<span class="kw">use </span>event_db::types::{ballot::ProposalBallot, event::EventId, objective::ObjectiveId};
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub fn </span>ballots(state: Arc&lt;State&gt;) -&gt; Router {
@@ -138,9 +146,12 @@
 }
 
 <span class="kw">async fn </span>ballots_exec(
-    Path((event, objective)): Path&lt;(EventId, ObjectiveId)&gt;,
+    Path((SerdeType(event), SerdeType(objective))): Path&lt;(
+        SerdeType&lt;EventId&gt;,
+        SerdeType&lt;ObjectiveId&gt;,
+    )&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;ProposalBallot&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SerdeType&lt;ProposalBallot&gt;&gt;, Error&gt; {
     <span class="macro">tracing::debug!</span>(
         <span class="string">&quot;ballots_query, event: {0}, objective: {1}&quot;</span>,
         event.<span class="number">0</span>,
@@ -150,7 +161,10 @@
     <span class="kw">let </span>ballot = state
         .event_db
         .get_objective_ballots(event, objective)
-        .<span class="kw">await</span><span class="question-mark">?</span>;
+        .<span class="kw">await</span><span class="question-mark">?
+        </span>.into_iter()
+        .map(SerdeType)
+        .collect();
     <span class="prelude-val">Ok</span>(ballot)
 }
 

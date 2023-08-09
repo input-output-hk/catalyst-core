@@ -135,7 +135,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>out_writer = <span class="self">self</span>.output.open()<span class="question-mark">?</span>;
         <span class="kw">let </span>content = <span class="self">self
             </span>.output_format
-            .format_json(serde_json::to_value(<span class="kw-2">&amp;</span>voteplan_status)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
+            .format_json(serde_json::to_value(voteplan_status)<span class="question-mark">?</span>)<span class="question-mark">?</span>;
         out_writer.write_all(content.as_bytes())<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }

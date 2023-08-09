@@ -411,10 +411,6 @@
 <a href="#411" id="411">411</a>
 <a href="#412" id="412">412</a>
 <a href="#413" id="413">413</a>
-<a href="#414" id="414">414</a>
-<a href="#415" id="415">415</a>
-<a href="#416" id="416">416</a>
-<a href="#417" id="417">417</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::logs::compare::LogCmpFields;
 <span class="kw">use </span><span class="kw">crate</span>::recovery::tally::ValidationError;
 
@@ -757,13 +753,9 @@
         <span class="kw">let </span>successful_scan_log = <span class="macro">serde_json::json!</span>({ <span class="string">&quot;message&quot;</span>: REGISTERED_MESSAGE });
         <span class="kw">let </span>unsuccessful_scan_log = <span class="macro">serde_json::json!</span>({ <span class="string">&quot;message&quot;</span>: MALFORMED_QR_MESSAGE });
 
-        <span class="kw">let </span>success_logs = (<span class="number">0</span>..success)
-            .into_iter()
-            .map(|<span class="kw">_</span>| successful_scan_log.clone());
+        <span class="kw">let </span>success_logs = (<span class="number">0</span>..success).map(|<span class="kw">_</span>| successful_scan_log.clone());
 
-        <span class="kw">let </span>unsuccessful_logs = (<span class="number">0</span>..unssucess)
-            .into_iter()
-            .map(|<span class="kw">_</span>| unsuccessful_scan_log.clone());
+        <span class="kw">let </span>unsuccessful_logs = (<span class="number">0</span>..unssucess).map(|<span class="kw">_</span>| unsuccessful_scan_log.clone());
 
         success_logs.chain(unsuccessful_logs).collect()
     }

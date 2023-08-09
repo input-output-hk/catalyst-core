@@ -236,7 +236,7 @@
                 .as_mut()
                 .unwrap()
                 .random_votes()
-                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
             RequestType::Account =&gt; <span class="self">self
                 </span>.account_gen
                 .as_mut()
@@ -262,7 +262,7 @@
                 ids: v,
                 duration: start.elapsed(),
             }),
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
         }
     }
 

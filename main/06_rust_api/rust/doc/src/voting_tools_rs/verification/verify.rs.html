@@ -434,7 +434,7 @@
                     spec_61285: <span class="prelude-val">Some</span>(prefix_hex(<span class="kw-2">&amp;</span>rawreg.bin_sig)),
                     registration: <span class="prelude-val">None</span>,
                     errors: <span class="macro">nonempty!</span>[RegistrationError::CborDeserializationFailed {
-                        err: <span class="macro">format!</span>(<span class="string">&quot;Failed to deserialize Registration CBOR: {}&quot;</span>, err),
+                        err: <span class="macro">format!</span>(<span class="string">&quot;Failed to deserialize Registration CBOR: {err}&quot;</span>),
                     }],
                     registration_bad_bin: <span class="prelude-val">Some</span>(RegistrationCorruptedBin {
                         tx_id: TxId(tx_id <span class="kw">as </span>u64),
@@ -454,7 +454,7 @@
                     spec_61285: <span class="prelude-val">Some</span>(prefix_hex(<span class="kw-2">&amp;</span>rawreg.bin_sig)),
                     registration: <span class="prelude-val">Some</span>(reg),
                     errors: <span class="macro">nonempty!</span>[RegistrationError::SignatureError {
-                        err: <span class="macro">format!</span>(<span class="string">&quot;Signature validation failure: {}&quot;</span>, err),
+                        err: <span class="macro">format!</span>(<span class="string">&quot;Signature validation failure: {err}&quot;</span>),
                     }],
                     registration_bad_bin: <span class="prelude-val">None</span>,
                 });
@@ -533,8 +533,8 @@
     <span class="kw">let </span>addr_net = rewards_address_prefix &amp; <span class="number">0xf</span>;
 
     <span class="comment">// 0 or 1 are valid addrs in the following cases:
-    // type = 0x0 -  network = 0
-    // type = 0x0 -  network = 1
+    // type = 0x0 -  Testnet network
+    // type = 0x1 -  Mainnet network
     </span><span class="kw">match </span>network {
         NetworkId::Mainnet =&gt; {
             <span class="kw">if </span>addr_net != <span class="number">1 </span>{
@@ -564,7 +564,7 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
     cddl::validate_cbor_from_slice(<span class="kw-2">&amp;</span>cddl_config.spec_61284, bin_reg, <span class="prelude-val">None</span>).map_err(|err| {
         RegistrationError::CddlParsingFailed {
-            err: <span class="macro">format!</span>(<span class="string">&quot;reg bytes does not match 61284 spec: {}&quot;</span>, err),
+            err: <span class="macro">format!</span>(<span class="string">&quot;reg bytes does not match 61284 spec: {err}&quot;</span>),
         }
     })<span class="question-mark">?</span>;
 
@@ -582,7 +582,7 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
     cddl::validate_cbor_from_slice(<span class="kw-2">&amp;</span>cddl_config.spec_61285, bin_sig, <span class="prelude-val">None</span>).map_err(|err| {
         RegistrationError::CddlParsingFailed {
-            err: <span class="macro">format!</span>(<span class="string">&quot;sig bytes does not match 61285 spec: {}&quot;</span>, err),
+            err: <span class="macro">format!</span>(<span class="string">&quot;sig bytes does not match 61285 spec: {err}&quot;</span>),
         }
     })<span class="question-mark">?</span>;
 

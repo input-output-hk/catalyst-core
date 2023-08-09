@@ -279,22 +279,42 @@
 <a href="#279" id="279">279</a>
 <a href="#280" id="280">280</a>
 <a href="#281" id="281">281</a>
+<a href="#282" id="282">282</a>
+<a href="#283" id="283">283</a>
+<a href="#284" id="284">284</a>
+<a href="#285" id="285">285</a>
+<a href="#286" id="286">286</a>
+<a href="#287" id="287">287</a>
+<a href="#288" id="288">288</a>
+<a href="#289" id="289">289</a>
+<a href="#290" id="290">290</a>
+<a href="#291" id="291">291</a>
+<a href="#292" id="292">292</a>
+<a href="#293" id="293">293</a>
+<a href="#294" id="294">294</a>
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::SerdeType;
-<span class="kw">use </span>event_db::types::event::proposal::{
+<span class="kw">use </span>event_db::types::proposal::{
     Proposal, ProposalDetails, ProposalId, ProposalSummary, ProposerDetails,
 };
-<span class="kw">use </span>serde::{
-    de::Deserializer,
-    ser::{SerializeStruct, Serializer},
-    Deserialize, Serialize,
-};
+<span class="kw">use </span>serde::{de::Deserializer, ser::Serializer, Deserialize, Serialize};
+<span class="kw">use </span>serde_json::Value;
 
 <span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;<span class="kw-2">&amp;</span>ProposalId&gt; {
     <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="self">self</span>.<span class="number">0</span>.serialize(serializer)
+        <span class="self">self</span>.<span class="number">0 </span>.<span class="number">0</span>.serialize(serializer)
     }
 }
 
@@ -321,11 +341,20 @@
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;ProposalSummary&quot;</span>, <span class="number">3</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;id&quot;</span>, <span class="kw-2">&amp;</span>SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.id))<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;title&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.title)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;summary&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.summary)<span class="question-mark">?</span>;
-        serializer.end()
+        <span class="attr">#[derive(Serialize)]
+        </span><span class="kw">struct </span>ProposalSummarySerde&lt;<span class="lifetime">&#39;a</span>&gt; {
+            id: SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ProposalId&gt;,
+            title: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            summary: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            deleted: bool,
+        }
+        ProposalSummarySerde {
+            id: SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.id),
+            title: <span class="kw-2">&amp;</span><span class="self">self</span>.title,
+            summary: <span class="kw-2">&amp;</span><span class="self">self</span>.summary,
+            deleted: <span class="self">self</span>.deleted,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -343,12 +372,20 @@
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;ProposerDetails&quot;</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;name&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.name)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;email&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.email)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;url&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.url)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;payment_key&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.payment_key)<span class="question-mark">?</span>;
-        serializer.end()
+        <span class="attr">#[derive(Serialize)]
+        </span><span class="kw">struct </span>ProposerDetailsSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
+            name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            email: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            url: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            payment_key: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+        }
+        ProposerDetailsSerde {
+            name: <span class="kw-2">&amp;</span><span class="self">self</span>.name,
+            email: <span class="kw-2">&amp;</span><span class="self">self</span>.email,
+            url: <span class="kw-2">&amp;</span><span class="self">self</span>.url,
+            payment_key: <span class="kw-2">&amp;</span><span class="self">self</span>.payment_key,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -366,18 +403,23 @@
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;ProposalDetails&quot;</span>, <span class="number">5</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;funds&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.funds)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;url&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.url)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;files&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.files)<span class="question-mark">?</span>;
-        serializer.serialize_field(
-            <span class="string">&quot;proposer&quot;</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.proposer.iter().map(SerdeType).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
-        )<span class="question-mark">?</span>;
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(supplemental) = <span class="kw-2">&amp;</span><span class="self">self</span>.supplemental {
-            serializer.serialize_field(<span class="string">&quot;supplemental&quot;</span>, supplemental)<span class="question-mark">?</span>;
+        <span class="attr">#[derive(Serialize)]
+        </span><span class="kw">struct </span>ProposalDetailsSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
+            funds: i64,
+            url: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            files: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            proposer: Vec&lt;SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ProposerDetails&gt;&gt;,
+            <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+            </span>supplemental: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="prelude-ty">Option</span>&lt;Value&gt;,
         }
-        serializer.end()
+        ProposalDetailsSerde {
+            funds: <span class="self">self</span>.funds,
+            url: <span class="kw-2">&amp;</span><span class="self">self</span>.url,
+            files: <span class="kw-2">&amp;</span><span class="self">self</span>.files,
+            proposer: <span class="self">self</span>.proposer.iter().map(SerdeType).collect(),
+            supplemental: <span class="kw-2">&amp;</span><span class="self">self</span>.supplemental,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -396,14 +438,14 @@
         </span>S: Serializer,
     {
         <span class="attr">#[derive(Serialize)]
-        </span><span class="kw">pub struct </span>ProposalImpl&lt;<span class="lifetime">&#39;a</span>&gt; {
+        </span><span class="kw">pub struct </span>ProposalSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
             <span class="attr">#[serde(flatten)]
             </span>summary: SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ProposalSummary&gt;,
             <span class="attr">#[serde(flatten)]
             </span>details: SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ProposalDetails&gt;,
         }
 
-        <span class="kw">let </span>val = ProposalImpl {
+        <span class="kw">let </span>val = ProposalSerde {
             summary: SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.summary),
             details: SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.details),
         };
@@ -442,9 +484,10 @@
             id: ProposalId(<span class="number">1</span>),
             title: <span class="string">&quot;title&quot;</span>.to_string(),
             summary: <span class="string">&quot;summary&quot;</span>.to_string(),
+            deleted: <span class="bool-val">false</span>,
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>proposal_summary).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(proposal_summary).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -452,6 +495,7 @@
                     <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
                     <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title&quot;</span>,
                     <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary&quot;</span>,
+                    <span class="string">&quot;deleted&quot;</span>: <span class="bool-val">false</span>,
                 }
             )
         )
@@ -466,7 +510,7 @@
             payment_key: <span class="string">&quot;proposer payment key&quot;</span>.to_string(),
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>proposer_details).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(proposer_details).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -490,7 +534,7 @@
             supplemental: <span class="prelude-val">Some</span>(<span class="macro">json!</span>({})),
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>proposal_details).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(proposal_details).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -512,7 +556,7 @@
             supplemental: <span class="prelude-val">None</span>,
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>proposal_details).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(proposal_details).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -533,6 +577,7 @@
                 id: ProposalId(<span class="number">1</span>),
                 title: <span class="string">&quot;title&quot;</span>.to_string(),
                 summary: <span class="string">&quot;summary&quot;</span>.to_string(),
+                deleted: <span class="bool-val">false</span>,
             },
             details: ProposalDetails {
                 funds: <span class="number">1</span>,
@@ -543,7 +588,7 @@
             },
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>proposal).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(proposal).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -551,6 +596,7 @@
                     <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
                     <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title&quot;</span>,
                     <span class="string">&quot;summary&quot;</span>: <span class="string">&quot;summary&quot;</span>,
+                    <span class="string">&quot;deleted&quot;</span>: <span class="bool-val">false</span>,
                     <span class="string">&quot;funds&quot;</span>: <span class="number">1</span>,
                     <span class="string">&quot;url&quot;</span>: <span class="string">&quot;url&quot;</span>,
                     <span class="string">&quot;files&quot;</span>: <span class="string">&quot;files&quot;</span>,

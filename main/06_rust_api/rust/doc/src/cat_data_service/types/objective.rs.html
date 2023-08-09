@@ -376,23 +376,56 @@
 <a href="#376" id="376">376</a>
 <a href="#377" id="377">377</a>
 <a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::SerdeType;
-<span class="kw">use </span>event_db::types::event::objective::{
-    Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType, RewardDefintion,
-    VoterGroup,
+<span class="kw">use </span>event_db::types::{
+    objective::{
+        Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType, RewardDefintion,
+        VoterGroup,
+    },
+    registration::VoterGroupId,
 };
-<span class="kw">use </span>serde::{
-    de::Deserializer,
-    ser::{SerializeStruct, Serializer},
-    Deserialize, Serialize,
-};
+<span class="kw">use </span>serde::{de::Deserializer, ser::Serializer, Deserialize, Serialize};
+<span class="kw">use </span>serde_json::Value;
 
 <span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;<span class="kw-2">&amp;</span>ObjectiveId&gt; {
     <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="self">self</span>.<span class="number">0</span>.serialize(serializer)
+        <span class="self">self</span>.<span class="number">0 </span>.<span class="number">0</span>.serialize(serializer)
     }
 }
 
@@ -419,10 +452,16 @@
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;ObjectiveType&quot;</span>, <span class="number">2</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;id&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.id)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;description&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.description)<span class="question-mark">?</span>;
-        serializer.end()
+        <span class="attr">#[derive(Serialize)]
+        </span><span class="kw">struct </span>ObjectiveTypeSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
+            id: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            description: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+        }
+        ObjectiveTypeSerde {
+            id: <span class="kw-2">&amp;</span><span class="self">self</span>.id,
+            description: <span class="kw-2">&amp;</span><span class="self">self</span>.description,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -440,12 +479,23 @@
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;ObjectiveSummary&quot;</span>, <span class="number">4</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;id&quot;</span>, <span class="kw-2">&amp;</span>SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.id))<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;type&quot;</span>, <span class="kw-2">&amp;</span>SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.objective_type))<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;title&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.title)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;description&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.description)<span class="question-mark">?</span>;
-        serializer.end()
+        <span class="attr">#[derive(Serialize)]
+        </span><span class="kw">struct </span>ObjectiveSummarySerde&lt;<span class="lifetime">&#39;a</span>&gt; {
+            id: SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ObjectiveId&gt;,
+            <span class="attr">#[serde(rename = <span class="string">&quot;type&quot;</span>)]
+            </span>objective_type: SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ObjectiveType&gt;,
+            title: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            description: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            deleted: bool,
+        }
+        ObjectiveSummarySerde {
+            id: SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.id),
+            objective_type: SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.objective_type),
+            title: <span class="kw-2">&amp;</span><span class="self">self</span>.title,
+            description: <span class="kw-2">&amp;</span><span class="self">self</span>.description,
+            deleted: <span class="self">self</span>.deleted,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -463,10 +513,16 @@
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;RewardDefintion&quot;</span>, <span class="number">2</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;currency&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.currency)<span class="question-mark">?</span>;
-        serializer.serialize_field(<span class="string">&quot;value&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.value)<span class="question-mark">?</span>;
-        serializer.end()
+        <span class="attr">#[derive(Serialize)]
+        </span><span class="kw">struct </span>RewardDefintionSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
+            currency: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>String,
+            value: i64,
+        }
+        RewardDefintionSerde {
+            currency: <span class="kw-2">&amp;</span><span class="self">self</span>.currency,
+            value: <span class="self">self</span>.value,
+        }
+        .serialize(serializer)
     }
 }
 
@@ -484,14 +540,18 @@
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;VoterGroup&quot;</span>, <span class="number">2</span>)<span class="question-mark">?</span>;
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(group) = <span class="kw-2">&amp;</span><span class="self">self</span>.group {
-            serializer.serialize_field(<span class="string">&quot;group&quot;</span>, group)<span class="question-mark">?</span>;
+        <span class="attr">#[derive(Serialize)]
+        </span><span class="kw">struct </span>VoterGroupSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
+            <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+            </span>group: <span class="prelude-ty">Option</span>&lt;SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>VoterGroupId&gt;&gt;,
+            <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+            </span>voting_token: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="prelude-ty">Option</span>&lt;String&gt;,
         }
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(voting_token) = <span class="kw-2">&amp;</span><span class="self">self</span>.voting_token {
-            serializer.serialize_field(<span class="string">&quot;voting_token&quot;</span>, voting_token)<span class="question-mark">?</span>;
+        VoterGroupSerde {
+            group: <span class="self">self</span>.group.as_ref().map(SerdeType),
+            voting_token: <span class="kw-2">&amp;</span><span class="self">self</span>.voting_token,
         }
-        serializer.end()
+        .serialize(serializer)
     }
 }
 
@@ -509,18 +569,20 @@
     <span class="kw">where
         </span>S: Serializer,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>serializer = serializer.serialize_struct(<span class="string">&quot;ObjectiveDetails&quot;</span>, <span class="number">3</span>)<span class="question-mark">?</span>;
-        serializer.serialize_field(
-            <span class="string">&quot;groups&quot;</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.groups.iter().map(SerdeType).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
-        )<span class="question-mark">?</span>;
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(reward) = <span class="kw-2">&amp;</span><span class="self">self</span>.reward {
-            serializer.serialize_field(<span class="string">&quot;reward&quot;</span>, <span class="kw-2">&amp;</span>SerdeType(reward))<span class="question-mark">?</span>;
+        <span class="attr">#[derive(Serialize)]
+        </span><span class="kw">struct </span>ObjectiveDetailsSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
+            groups: Vec&lt;SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>VoterGroup&gt;&gt;,
+            <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+            </span>reward: <span class="prelude-ty">Option</span>&lt;SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>RewardDefintion&gt;&gt;,
+            <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+            </span>supplemental: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="prelude-ty">Option</span>&lt;Value&gt;,
         }
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(supplemental) = <span class="kw-2">&amp;</span><span class="self">self</span>.supplemental {
-            serializer.serialize_field(<span class="string">&quot;supplemental&quot;</span>, <span class="kw-2">&amp;</span>supplemental)<span class="question-mark">?</span>;
+        ObjectiveDetailsSerde {
+            groups: <span class="self">self</span>.groups.iter().map(SerdeType).collect(),
+            reward: <span class="self">self</span>.reward.as_ref().map(SerdeType),
+            supplemental: <span class="kw-2">&amp;</span><span class="self">self</span>.supplemental,
         }
-        serializer.end()
+        .serialize(serializer)
     }
 }
 
@@ -539,14 +601,14 @@
         </span>S: Serializer,
     {
         <span class="attr">#[derive(Serialize)]
-        </span><span class="kw">pub struct </span>ObjectiveImpl&lt;<span class="lifetime">&#39;a</span>&gt; {
+        </span><span class="kw">pub struct </span>ObjectiveSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
             <span class="attr">#[serde(flatten)]
             </span>summary: SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ObjectiveSummary&gt;,
             <span class="attr">#[serde(flatten)]
             </span>details: SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ObjectiveDetails&gt;,
         }
 
-        <span class="kw">let </span>val = ObjectiveImpl {
+        <span class="kw">let </span>val = ObjectiveSerde {
             summary: SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.summary),
             details: SerdeType(<span class="kw-2">&amp;</span><span class="self">self</span>.details),
         };
@@ -587,7 +649,7 @@
             description: <span class="string">&quot;catalyst native type&quot;</span>.to_string(),
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>objective_type).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(objective_type).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -610,9 +672,10 @@
             },
             title: <span class="string">&quot;objective 1&quot;</span>.to_string(),
             description: <span class="string">&quot;description 1&quot;</span>.to_string(),
+            deleted: <span class="bool-val">false</span>,
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>objective_summary).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(objective_summary).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -624,6 +687,7 @@
                     },
                     <span class="string">&quot;title&quot;</span>: <span class="string">&quot;objective 1&quot;</span>,
                     <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 1&quot;</span>,
+                    <span class="string">&quot;deleted&quot;</span>: <span class="bool-val">false</span>,
                 }
             )
         );
@@ -636,7 +700,7 @@
             value: <span class="number">100</span>,
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>reward_definition).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(reward_definition).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -655,7 +719,7 @@
             voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;token&quot;</span>.to_string()),
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>voter_group).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(voter_group).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -681,7 +745,7 @@
             supplemental: <span class="prelude-val">None</span>,
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>objective_details).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(objective_details).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -713,6 +777,7 @@
                 },
                 title: <span class="string">&quot;objective 1&quot;</span>.to_string(),
                 description: <span class="string">&quot;description 1&quot;</span>.to_string(),
+                deleted: <span class="bool-val">false</span>,
             },
             details: ObjectiveDetails {
                 groups: <span class="macro">vec!</span>[VoterGroup {
@@ -727,7 +792,7 @@
             },
         });
 
-        <span class="kw">let </span>json = serde_json::to_value(<span class="kw-2">&amp;</span>objective).unwrap();
+        <span class="kw">let </span>json = serde_json::to_value(objective).unwrap();
         <span class="macro">assert_eq!</span>(
             json,
             <span class="macro">json!</span>(
@@ -739,6 +804,7 @@
                     },
                     <span class="string">&quot;title&quot;</span>: <span class="string">&quot;objective 1&quot;</span>,
                     <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 1&quot;</span>,
+                    <span class="string">&quot;deleted&quot;</span>: <span class="bool-val">false</span>,
                     <span class="string">&quot;groups&quot;</span>: [
                         {
                             <span class="string">&quot;group&quot;</span>: <span class="string">&quot;group&quot;</span>,

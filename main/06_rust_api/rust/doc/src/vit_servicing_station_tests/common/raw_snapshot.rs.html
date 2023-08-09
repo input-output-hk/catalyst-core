@@ -253,7 +253,7 @@
 <span class="kw">use </span>jormungandr_lib::interfaces::Value;
 <span class="kw">use </span>rand::Rng;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
-<span class="kw">use </span>snapshot_lib::registration::{Delegations, VotingRegistration};
+<span class="kw">use </span>snapshot_lib::registration::{Delegations, RewardAddress, StakeAddress, VotingRegistration};
 <span class="kw">use </span>snapshot_lib::{voting_group::RepsVotersAssigner, Error, Snapshot};
 <span class="kw">use </span>snapshot_lib::{
     voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
@@ -435,9 +435,9 @@
             <span class="self">self</span>.voting_registrations = <span class="prelude-val">Some</span>(
                 std::iter::from_fn(|| {
                     <span class="prelude-val">Some</span>(VotingRegistration {
-                        stake_public_key: TestGen::public_key().to_string(),
+                        stake_public_key: StakeAddress(TestGen::public_key().to_string()),
                         voting_power: rng.gen_range(<span class="number">1u64</span>, <span class="number">1_00u64</span>).into(),
-                        reward_address: TestGen::public_key().to_string(),
+                        reward_address: RewardAddress(TestGen::public_key().to_string()),
                         delegations: <span class="kw">if </span>delegation_type_count &gt; <span class="self">self</span>.voting_registrations_count / <span class="number">2
                         </span>{
                             delegation_type_count += <span class="number">1</span>;

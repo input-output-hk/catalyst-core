@@ -720,7 +720,9 @@
 <a href="#720" id="720">720</a>
 <a href="#721" id="721">721</a>
 <a href="#722" id="722">722</a>
-</pre><pre class="rust"><code><span class="attr">#[allow(clippy::all)]
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+</pre><pre class="rust"><code><span class="attr">#![allow(clippy::all)]
 </span><span class="kw">use </span>std::{error::Error, ffi::OsString, io::Cursor};
 
 <span class="kw">use crate</span>::{
@@ -1057,7 +1059,7 @@
         <span class="prelude-val">Err</span>(err) =&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;ED25119 signature should be 64 bytes {}&quot;</span>, err),
+                    err: <span class="macro">format!</span>(<span class="string">&quot;ED25119 signature should be 64 bytes {err}&quot;</span>),
                 },
             )))
         }
@@ -1065,7 +1067,8 @@
     <span class="prelude-val">Ok</span>(sig)
 }
 
-<span class="kw">fn </span>inspect_metamap_sig(
+<span class="attr">#[allow(clippy::manual_let_else)]
+</span><span class="kw">fn </span>inspect_metamap_sig(
     spec_61285: <span class="kw-2">&amp;</span>[Value],
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>Vec&lt;(Value, Value)&gt;, <span class="prelude-ty">Result</span>&lt;Signature, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
     <span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>spec_61285[KEY_61285] {
@@ -1087,7 +1090,7 @@
         <span class="kw">_ </span>=&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {:?}&quot;</span>, decoded),
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {decoded:?}&quot;</span>),
                 },
             )))
         }
@@ -1173,7 +1176,8 @@
     <span class="prelude-val">Ok</span>(stake_key)
 }
 
-<span class="kw">fn </span>inspect_voting_key(
+<span class="attr">#[allow(clippy::manual_let_else)]
+</span><span class="kw">fn </span>inspect_voting_key(
     metamap: <span class="kw-2">&amp;</span>[(Value, Value)],
 ) -&gt; <span class="prelude-ty">Result</span>&lt;VotingKey, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
     <span class="kw">let </span>voting_key = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[DELEGATIONS_OR_DIRECT] {
@@ -1204,9 +1208,8 @@
                                     <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                                         RegistrationError::RawBinCborRegistrationFailure {
                                             err: <span class="macro">format!</span>(
-                                                <span class="string">&quot;Unable to extract weight for delegation {}&quot;</span>,
-                                                err
-                                            ),
+                                                <span class="string">&quot;Unable to extract weight for delegation {err}&quot;
+                                            </span>),
                                         },
                                     )))
                                 }
@@ -1248,7 +1251,8 @@
     <span class="prelude-val">Ok</span>(voting_key)
 }
 
-<span class="kw">fn </span>inspect_metamap_reg(
+<span class="attr">#[allow(clippy::manual_let_else)]
+</span><span class="kw">fn </span>inspect_metamap_reg(
     spec_61284: <span class="kw-2">&amp;</span>[Value],
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>Vec&lt;(Value, Value)&gt;, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
     <span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>spec_61284[KEY_61284] {
@@ -1270,7 +1274,7 @@
         <span class="kw">_ </span>=&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {:?}&quot;</span>, decoded),
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {decoded:?}&quot;</span>),
                 },
             )))
         }

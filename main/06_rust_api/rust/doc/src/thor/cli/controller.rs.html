@@ -283,7 +283,7 @@
     }
 
     <span class="kw">pub fn </span>refresh_state(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>wallet = <span class="self">self</span>.wallets.wallet_mut()<span class="question-mark">?</span>;
+        <span class="kw">let </span>wallet = <span class="self">self</span>.wallets.wallet_mut()<span class="question-mark">?</span>;
         <span class="kw">let </span>new_state = <span class="self">self</span>.client.account_state_by_pk(<span class="kw-2">&amp;</span>wallet.pk_bech32())<span class="question-mark">?</span>;
         wallet.spending_counters = new_state.counters();
         wallet.value = (<span class="kw-2">*</span>new_state.value()).into();

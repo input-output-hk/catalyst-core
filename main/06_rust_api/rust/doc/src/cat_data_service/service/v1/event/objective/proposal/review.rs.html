@@ -197,6 +197,10 @@
 <a href="#197" id="197">197</a>
 <a href="#198" id="198">198</a>
 <a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -207,8 +211,8 @@
     routing::get,
     Router,
 };
-<span class="kw">use </span>event_db::types::event::{
-    objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview, EventId,
+<span class="kw">use </span>event_db::types::{
+    event::EventId, objective::ObjectiveId, proposal::ProposalId, review::AdvisorReview,
 };
 <span class="kw">use </span>std::sync::Arc;
 
@@ -220,7 +224,11 @@
 }
 
 <span class="kw">async fn </span>reviews_exec(
-    Path((event, objective, proposal)): Path&lt;(EventId, ObjectiveId, ProposalId)&gt;,
+    Path((SerdeType(event), SerdeType(objective), SerdeType(proposal))): Path&lt;(
+        SerdeType&lt;EventId&gt;,
+        SerdeType&lt;ObjectiveId&gt;,
+        SerdeType&lt;ProposalId&gt;,
+    )&gt;,
     lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SerdeType&lt;AdvisorReview&gt;&gt;, Error&gt; {

@@ -449,10 +449,10 @@
         }
     }
 
-    <span class="kw">pub fn </span>verify&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>verify(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         tally_type: PayloadType,
-        verify_data: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        verify_data: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; Verification {
         <span class="kw">match </span><span class="self">self </span>{
             <span class="self">Self</span>::Public { id, signature } =&gt; {

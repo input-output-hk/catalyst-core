@@ -594,7 +594,7 @@
     },
     time::SecondsSinceUnixEpoch,
 };
-<span class="kw">use </span>std::mem;
+
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">use </span>tokio::{
     fs::File,
@@ -653,7 +653,7 @@
     <span class="doccomment">/// Synchronizes the persistent log file contents and metadata
     /// to the file system and closes the file.
     </span><span class="kw">pub async fn </span>close_persistent_log(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>persistent_log) = mem::replace(<span class="kw-2">&amp;mut </span><span class="self">self</span>.persistent_log, <span class="prelude-val">None</span>) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>persistent_log) = <span class="self">self</span>.persistent_log.take() {
             <span class="kw">if let </span><span class="prelude-val">Err</span>(error) = persistent_log.flush().<span class="kw">await </span>{
                 <span class="macro">tracing::error!</span>(%error, <span class="string">&quot;failed to flush persistent log&quot;</span>);
             }

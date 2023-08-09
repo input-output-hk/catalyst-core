@@ -231,7 +231,7 @@
         <span class="kw">let </span>proposal = <span class="self">self</span>.proposals.get(index).unwrap().clone();
         <span class="self">self</span>.client
             .proposal_raw(<span class="kw-2">&amp;</span>proposal.internal_id.to_string())
-            .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e)))
+            .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>)))
     }
 
     <span class="kw">fn </span>random_challenge(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;reqwest::blocking::Response, RequestFailure&gt; {
@@ -239,7 +239,7 @@
         <span class="kw">let </span>challenge = <span class="self">self</span>.challenges.get(index).unwrap().clone();
         <span class="self">self</span>.client
             .challenge_raw(<span class="kw-2">&amp;</span>challenge.id.to_string())
-            .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e)))
+            .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>)))
     }
 
     <span class="kw">pub fn </span>next_request(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;<span class="prelude-ty">Option</span>&lt;Id&gt;&gt;, RequestFailure&gt; {
@@ -248,22 +248,22 @@
                 </span>.client
                 .funds_raw()
                 .map(|_response| <span class="macro">vec!</span>[<span class="prelude-val">None</span>])
-                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
             RequestType::Challenges =&gt; <span class="self">self
                 </span>.client
                 .challenges_raw()
                 .map(|_response| <span class="macro">vec!</span>[<span class="prelude-val">None</span>])
-                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
             RequestType::Challenge =&gt; <span class="self">self
                 </span>.random_challenge()
                 .map(|_response| <span class="macro">vec!</span>[<span class="prelude-val">None</span>])
-                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
             RequestType::Proposal =&gt; <span class="self">self</span>.random_proposal().map(|_response| <span class="macro">vec!</span>[<span class="prelude-val">None</span>]),
             RequestType::Proposals =&gt; <span class="self">self
                 </span>.client
                 .proposals_raw()
                 .map(|_response| <span class="macro">vec!</span>[<span class="prelude-val">None</span>])
-                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+                .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
         }
     }
 }
@@ -276,7 +276,7 @@
                 ids: v,
                 duration: start.elapsed(),
             }),
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
         }
     }
 

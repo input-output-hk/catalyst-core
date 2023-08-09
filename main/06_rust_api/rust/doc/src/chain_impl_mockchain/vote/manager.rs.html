@@ -1926,6 +1926,19 @@
 <a href="#1926" id="1926">1926</a>
 <a href="#1927" id="1927">1927</a>
 <a href="#1928" id="1928">1928</a>
+<a href="#1929" id="1929">1929</a>
+<a href="#1930" id="1930">1930</a>
+<a href="#1931" id="1931">1931</a>
+<a href="#1932" id="1932">1932</a>
+<a href="#1933" id="1933">1933</a>
+<a href="#1934" id="1934">1934</a>
+<a href="#1935" id="1935">1935</a>
+<a href="#1936" id="1936">1936</a>
+<a href="#1937" id="1937">1937</a>
+<a href="#1938" id="1938">1938</a>
+<a href="#1939" id="1939">1939</a>
+<a href="#1940" id="1940">1940</a>
+<a href="#1941" id="1941">1941</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     account,
     certificate::{DecryptedPrivateTally, Proposal, VoteAction, VoteCast, VotePlan, VotePlanId},
@@ -2691,13 +2704,16 @@
             });
         }
 
-        <span class="kw">if </span>!<span class="self">self</span>.can_vote(block_date) {
+        <span class="kw">if </span><span class="macro">cfg!</span>(feature = <span class="string">&quot;audit&quot;</span>) {
+            <span class="comment">// audit feature enabled - fragment replay has no concept of time. Skip check.
+        </span>} <span class="kw">else if </span>!<span class="self">self</span>.can_vote(block_date) {
             <span class="kw">return </span><span class="prelude-val">Err</span>(VoteError::NotVoteTime {
                 start: <span class="self">self</span>.plan().vote_start(),
                 end: <span class="self">self</span>.plan().vote_end(),
                 vote: cast,
             });
         }
+
         <span class="kw">if </span><span class="self">self</span>.plan().payload_type() != cast.payload().payload_type() {
             <span class="kw">return </span><span class="prelude-val">Err</span>(VoteError::InvalidPayloadType {
                 expected: <span class="self">self</span>.plan().payload_type(),
@@ -2732,7 +2748,9 @@
     <span class="kw">where
         </span>F: FnMut(<span class="kw-2">&amp;</span>VoteAction),
     {
-        <span class="kw">if </span>!<span class="self">self</span>.can_committee(block_date) {
+        <span class="kw">if </span><span class="macro">cfg!</span>(feature = <span class="string">&quot;audit&quot;</span>) {
+            <span class="comment">// audit feature enabled - fragment replay has no concept of time. Skip check.
+        </span>} <span class="kw">else if </span>!<span class="self">self</span>.can_committee(block_date) {
             <span class="kw">return </span><span class="prelude-val">Err</span>(VoteError::NotCommitteeTime {
                 start: <span class="self">self</span>.plan().committee_start(),
                 end: <span class="self">self</span>.plan().committee_end(),
@@ -2773,7 +2791,9 @@
     <span class="kw">where
         </span>F: FnMut(<span class="kw-2">&amp;</span>VoteAction),
     {
-        <span class="kw">if </span>!<span class="self">self</span>.can_committee(block_date) {
+        <span class="kw">if </span><span class="macro">cfg!</span>(feature = <span class="string">&quot;audit&quot;</span>) {
+            <span class="comment">// audit feature enabled - fragment replay has no concept of time. Skip check.
+        </span>} <span class="kw">else if </span>!<span class="self">self</span>.can_committee(block_date) {
             <span class="kw">return </span><span class="prelude-val">Err</span>(VoteError::NotCommitteeTime {
                 start: <span class="self">self</span>.plan().committee_start(),
                 end: <span class="self">self</span>.plan().committee_end(),
@@ -3175,6 +3195,7 @@
     }
 
     <span class="attr">#[test]
+    #[cfg(not(feature = <span class="string">&quot;audit&quot;</span>))]
     </span><span class="kw">pub fn </span>vote_plan_manager_tally_invalid_date_public() {
         <span class="kw">let </span>(
             <span class="kw">_</span>,
@@ -3209,6 +3230,8 @@
     }
 
     <span class="attr">#[test]
+    #[cfg(not(feature = <span class="string">&quot;audit&quot;</span>))]
+
     </span><span class="kw">pub fn </span>vote_plan_manager_tally_invalid_date_private() {
         <span class="kw">let </span>(
             members,
@@ -3245,7 +3268,8 @@
         );
     }
 
-    <span class="kw">fn </span>vote_plan_manager_tally_invalid_date_setup(
+    <span class="attr">#[cfg(not(feature = <span class="string">&quot;audit&quot;</span>))]
+    </span><span class="kw">fn </span>vote_plan_manager_tally_invalid_date_setup(
         payload_type: PayloadType,
     ) -&gt; (
         <span class="kw">crate</span>::testing::data::CommitteeMembersManager,
@@ -3710,6 +3734,7 @@
     }
 
     <span class="attr">#[test]
+    #[cfg(not(feature = <span class="string">&quot;audit&quot;</span>))]
     </span><span class="kw">pub fn </span>vote_manager_too_late_to_vote() {
         <span class="kw">let </span>vote_plan = VoteTestGen::vote_plan_with_proposals(<span class="number">1</span>);
         <span class="kw">let </span>vote_cast = VoteCast::new(vote_plan.to_id(), <span class="number">0</span>, VoteTestGen::vote_cast_payload());
@@ -3738,6 +3763,7 @@
     }
 
     <span class="attr">#[test]
+    #[cfg(not(feature = <span class="string">&quot;audit&quot;</span>))]
     </span><span class="kw">pub fn </span>vote_manager_too_early_to_vote() {
         <span class="kw">let </span>vote_plan = VotePlan::new(
             BlockDate::from_epoch_slot_id(<span class="number">1</span>, <span class="number">0</span>),

@@ -74,7 +74,7 @@
     <span class="kw">pub fn </span>settings_request(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), RequestFailure&gt; {
         <span class="self">self</span>.rest
             .settings()
-            .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e)))<span class="question-mark">?</span>;
+            .map_err(|e| RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>)))<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 }
@@ -87,7 +87,7 @@
                 ids: <span class="macro">vec!</span>[],
                 duration: start.elapsed(),
             }),
-            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, e))),
+            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(RequestFailure::General(<span class="macro">format!</span>(<span class="string">&quot;{e:?}&quot;</span>))),
         }
     }
 

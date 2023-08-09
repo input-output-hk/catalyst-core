@@ -418,11 +418,11 @@
         <span class="kw">let </span>bytes_size = codec.get_be_u16()<span class="question-mark">? </span><span class="kw">as </span>usize;
         <span class="kw">if </span>bytes_size &gt; limits::MAX_GOSSIP_SIZE {
             <span class="kw">return </span><span class="prelude-val">Err</span>(property::ReadError::SizeTooBig(
-                limits::MAX_GOSSIP_SIZE <span class="kw">as </span>usize,
+                limits::MAX_GOSSIP_SIZE,
                 bytes_size,
             ));
         }
-        <span class="kw">let </span>bytes = codec.get_bytes(bytes_size <span class="kw">as </span>usize)<span class="question-mark">?</span>;
+        <span class="kw">let </span>bytes = codec.get_bytes(bytes_size)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(Gossip(
             poldercast::GossipSlice::try_from_slice(bytes.as_slice())
                 .map_err(|e| property::ReadError::InvalidData(e.to_string()))<span class="question-mark">?

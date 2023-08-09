@@ -397,8 +397,8 @@
     }
 
     group_by_proposals
-        .into_iter()
-        .map(|(_key, <span class="kw-2">mut </span>group)| {
+        .into_values()
+        .map(|<span class="kw-2">mut </span>group| {
             <span class="kw">let </span>ids = group.iter().map(|group| group.id).collect();
 
             <span class="kw">let </span><span class="kw-2">mut </span>proposals = group

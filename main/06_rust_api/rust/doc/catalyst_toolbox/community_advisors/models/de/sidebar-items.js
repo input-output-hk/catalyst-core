@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["ranking_mux"],"struct":["AdvisorReviewRow","VeteranRankingRow","__DeserializeWith","__FieldVisitor","__Visitor"],"type":["AdvisorReviewId","VeteranAdvisorId"]};
+window.SIDEBAR_ITEMS = {"fn":["ranking_mux"],"struct":["AdvisorReviewRow","VeteranRankingRow"],"type":["AdvisorReviewId","VeteranAdvisorId"]};

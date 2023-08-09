@@ -81,8 +81,6 @@
 <a href="#81" id="81">81</a>
 <a href="#82" id="82">82</a>
 <a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
 </pre><pre class="rust"><code><span class="kw">use </span>rust_decimal::Decimal;
 
 <span class="kw">use </span>dashmap::DashMap;
@@ -112,9 +110,8 @@
         INNER JOIN tx ON tx_out.tx_id = tx.id
         INNER JOIN block ON tx.block_id = block.id
         INNER JOIN stake_address ON stake_address.id = tx_out.stake_address_id
-    WHERE block.slot_no &lt;= {} );&quot;</span>,
-        max_slot
-    );
+    WHERE block.slot_no &lt;= {max_slot} );&quot;
+    </span>);
 
     client.execute(<span class="kw-2">&amp;</span>tx_out, <span class="kw-2">&amp;</span>[])<span class="question-mark">?</span>;
 
@@ -125,9 +122,8 @@
             SELECT tx_in.* FROM tx_in
                   INNER JOIN tx ON tx_in.tx_in_id = tx.id
                   INNER JOIN block ON tx.block_id = block.id
-            WHERE block.slot_no &lt;= {});&quot;</span>,
-        max_slot
-    );
+            WHERE block.slot_no &lt;= {max_slot});&quot;
+    </span>);
 
     client.execute(<span class="kw-2">&amp;</span>tx_in, <span class="kw-2">&amp;</span>[])<span class="question-mark">?</span>;
 

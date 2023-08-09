@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["SigningKeyParseError"],"struct":["Identifier","SigningKey","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["SigningKeyParseError"],"struct":["Identifier","SigningKey"]};

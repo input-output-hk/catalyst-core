@@ -409,9 +409,9 @@
     }
 
     <span class="doccomment">/// Calculate the fees on a given fee algorithm for the current transaction
-    </span><span class="kw">pub fn </span>estimate_fee&lt;<span class="lifetime">&#39;a</span>, P: Payload, F: FeeAlgorithm&gt;(
+    </span><span class="kw">pub fn </span>estimate_fee&lt;P: Payload, F: FeeAlgorithm&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        payload: PayloadSlice&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+        payload: PayloadSlice&lt;<span class="lifetime">&#39;_</span>, P&gt;,
         fee_algorithm: <span class="kw-2">&amp;</span>F,
     ) -&gt; Value {
         fee_algorithm.calculate(
@@ -422,9 +422,9 @@
     }
 
     <span class="doccomment">/// Get balance including current fee.
-    </span><span class="kw">pub fn </span>get_balance&lt;<span class="lifetime">&#39;a</span>, P: Payload, F: FeeAlgorithm&gt;(
+    </span><span class="kw">pub fn </span>get_balance&lt;P: Payload, F: FeeAlgorithm&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        payload: PayloadSlice&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+        payload: PayloadSlice&lt;<span class="lifetime">&#39;_</span>, P&gt;,
         fee_algorithm: <span class="kw-2">&amp;</span>F,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Balance, ValueError&gt; {
         <span class="kw">let </span>fee = <span class="self">self</span>.estimate_fee(payload, fee_algorithm);
@@ -432,9 +432,9 @@
     }
 
     <span class="doccomment">/// Get balance including current fee.
-    </span><span class="kw">pub fn </span>get_balance_with_placeholders&lt;<span class="lifetime">&#39;a</span>, P: Payload, F: FeeAlgorithm&gt;(
+    </span><span class="kw">pub fn </span>get_balance_with_placeholders&lt;P: Payload, F: FeeAlgorithm&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        payload: PayloadSlice&lt;<span class="lifetime">&#39;a</span>, P&gt;,
+        payload: PayloadSlice&lt;<span class="lifetime">&#39;_</span>, P&gt;,
         fee_algorithm: <span class="kw-2">&amp;</span>F,
         inputs_placeholders: u8,
         outputs_placeholders: u8,

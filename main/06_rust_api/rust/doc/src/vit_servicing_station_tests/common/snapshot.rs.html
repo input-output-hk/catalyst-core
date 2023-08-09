@@ -231,12 +231,18 @@
 <a href="#231" id="231">231</a>
 <a href="#232" id="232">232</a>
 <a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_impl_mockchain::testing::TestGen;
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 <span class="kw">use </span>rand::Rng;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
-<span class="kw">use </span>snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
+<span class="kw">use </span>snapshot_lib::{
+    registration::{RewardAddress, StakeAddress},
+    KeyContribution, SnapshotInfo, VoterHIR,
+};
 <span class="kw">use </span>time::OffsetDateTime;
 <span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::SnapshotInfoInput;
 
@@ -317,14 +323,14 @@
                     <span class="prelude-val">Some</span>(SnapshotInfo {
                         contributions: std::iter::from_fn(|| {
                             <span class="prelude-val">Some</span>(KeyContribution {
-                                reward_address: <span class="macro">format!</span>(
+                                reward_address: RewardAddress(<span class="macro">format!</span>(
                                     <span class="string">&quot;address_{:?}&quot;</span>,
                                     rng.gen_range(<span class="number">1u64</span>, <span class="number">1_000u64</span>)
-                                ),
-                                stake_public_key: <span class="macro">format!</span>(
+                                )),
+                                stake_public_key: StakeAddress(<span class="macro">format!</span>(
                                     <span class="string">&quot;address_{:?}&quot;</span>,
                                     rng.gen_range(<span class="number">1u64</span>, <span class="number">1_000u64</span>)
-                                ),
+                                )),
                                 value: rng.gen_range(<span class="number">1u64</span>, <span class="number">1_000u64</span>),
                             })
                         })

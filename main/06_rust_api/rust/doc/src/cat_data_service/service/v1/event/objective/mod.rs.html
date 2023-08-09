@@ -414,6 +414,10 @@
 <a href="#414" id="414">414</a>
 <a href="#415" id="415">415</a>
 <a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, v1::LimitOffset, Error},
     state::State,
@@ -424,7 +428,7 @@
     routing::get,
     Router,
 };
-<span class="kw">use </span>event_db::types::event::{objective::Objective, voting_status::VotingStatus, EventId};
+<span class="kw">use </span>event_db::types::{event::EventId, objective::Objective, voting_status::VotingStatus};
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">mod </span>ballots;
@@ -456,7 +460,7 @@
 }
 
 <span class="kw">async fn </span>objectives_exec(
-    Path(event): Path&lt;EventId&gt;,
+    Path(SerdeType(event)): Path&lt;SerdeType&lt;EventId&gt;&gt;,
     lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SerdeType&lt;Objective&gt;&gt;, Error&gt; {
@@ -514,7 +518,7 @@
 }
 
 <span class="kw">async fn </span>objectives_voting_statuses_exec(
-    Path(event): Path&lt;EventId&gt;,
+    Path(SerdeType(event)): Path&lt;SerdeType&lt;EventId&gt;&gt;,
     lim_ofs: Query&lt;LimitOffset&gt;,
     state: Arc&lt;State&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SerdeType&lt;VotingStatus&gt;&gt;, Error&gt; {
@@ -589,6 +593,7 @@
                         </span>},
                         <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 1&quot;</span>,
                         <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 1&quot;</span>,
+                        <span class="string">&quot;deleted&quot;</span>: <span class="bool-val">false</span>,
                         <span class="string">&quot;groups&quot;</span>: [
                             {
                                 <span class="string">&quot;group&quot;</span>: <span class="string">&quot;direct&quot;</span>,
@@ -617,6 +622,7 @@
                         </span>},
                         <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
                         <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 2&quot;</span>,
+                        <span class="string">&quot;deleted&quot;</span>: <span class="bool-val">false</span>,
                         <span class="string">&quot;groups&quot;</span>: [],
                     }
                 ]
@@ -641,6 +647,7 @@
                         </span>},
                         <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 1&quot;</span>,
                         <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 1&quot;</span>,
+                        <span class="string">&quot;deleted&quot;</span>: <span class="bool-val">false</span>,
                         <span class="string">&quot;groups&quot;</span>: [
                             {
                                 <span class="string">&quot;group&quot;</span>: <span class="string">&quot;direct&quot;</span>,
@@ -683,6 +690,7 @@
                         </span>},
                         <span class="string">&quot;title&quot;</span>: <span class="string">&quot;title 2&quot;</span>,
                         <span class="string">&quot;description&quot;</span>: <span class="string">&quot;description 2&quot;</span>,
+                        <span class="string">&quot;deleted&quot;</span>: <span class="bool-val">false</span>,
                         <span class="string">&quot;groups&quot;</span>: [],
                     }
                 ]

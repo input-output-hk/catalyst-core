@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["LogOutput","__Field"],"struct":["Log","LogEntry","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["LogOutput"],"struct":["Log","LogEntry"]};

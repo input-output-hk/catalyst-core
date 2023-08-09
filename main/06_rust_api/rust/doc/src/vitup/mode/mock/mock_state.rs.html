@@ -393,7 +393,7 @@
 
     <span class="kw">pub fn </span>set_fund_id(<span class="kw-2">&amp;mut </span><span class="self">self</span>, id: i32) {
         <span class="kw">let </span>funds = <span class="self">self</span>.vit_state.funds_mut();
-        <span class="kw">let </span><span class="kw-2">mut </span>fund = funds.first_mut().unwrap();
+        <span class="kw">let </span>fund = funds.first_mut().unwrap();
 
         fund.id = id;
 

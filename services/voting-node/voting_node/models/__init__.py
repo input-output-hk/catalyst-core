@@ -7,10 +7,6 @@ from typing import Any, Self
 
 import yaml
 from aiofile import async_open
-from loguru import logger
-from pydantic import BaseModel
-
-from ..committee import CommitteeMember, CommunicationKeys, ElectionKey, MemberKeys
 
 
 ### Base types
@@ -141,60 +137,6 @@ class LeaderHostInfo:
 
     hostname: str
     consensus_leader_id: str
-
-
-class Committee(BaseModel):
-    """The tallying committee.
-
-    `event_id` the number of committee members.
-    `size` the number of committee members.
-    `threshold` the minimum number of members needed to tally.
-    `committee_pk` the encrypted private key of the Committee address.
-    `committee_id` the hex-encoded public key of the Committee address.
-    `crs` the encrypted Common Reference String shared in the creation of every set of committee member keys.
-    `members` list of containing the communication and member secrets of each member of the commitee.
-    `election_key` public key used to sign every vote in the event. This key is created from the committee member public keys.
-    """
-
-    row_id: int | None = None
-    """`row_id` the unique key for this committee in the DB."""
-    event_id: int
-    size: int
-    threshold: int
-    crs: str
-    committee_pk: str
-    committee_id: str
-    members: list[CommitteeMember] | None = None
-    election_key: ElectionKey
-
-    def as_yaml(self) -> str:
-        """Return the content as YAML."""
-        return yaml.safe_dump(self.dict())
-
-    @classmethod
-    async def read_file(cls, file: Path) -> Self:
-        """Read and return the yaml_type from the file path."""
-        afp = await async_open(file, "r")
-        yaml_str = await afp.read()
-        await afp.close()
-        yaml_dict = yaml.safe_load(yaml_str)
-        try:
-            members_list = yaml_dict["members"]
-
-            def committee_member(member: dict) -> CommitteeMember:
-                comm_keys = [print(keys) for keys in member["communication_keys"]]
-                comm_keys = [CommunicationKeys(**keys) for keys in member["communication_keys"]]
-                logger.debug(f"comm_keys: {comm_keys}")
-                member["communication_keys"] = comm_keys
-                member_keys = [MemberKeys(**keys) for keys in member["member_keys"]]
-                member["member_keys"] = member_keys
-                return CommitteeMember(**member)
-
-            yaml_dict["members"] = [committee_member(member) for member in members_list]
-            committee = cls(**yaml_dict)
-            return committee
-        except Exception as e:
-            raise Exception(f"invalid committee in {file}: {e}")
 
 
 @dataclass

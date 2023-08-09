@@ -5,9 +5,8 @@ from asyncpg import Connection, Record
 from loguru import logger
 from pydantic import BaseModel
 
-from .committee import ElectionKey
 from .envvar import SECRET_SECRET
-from .models import Committee
+from .models.committee import Committee, ElectionKey
 from .utils import decrypt_secret, encrypt_secret
 
 

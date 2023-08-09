@@ -12,7 +12,6 @@ from pydantic import BaseModel
 
 from .models import (
     Block0,
-    Committee,
     Event,
     FundsForToken,
     Genesis,
@@ -24,6 +23,7 @@ from .models import (
     Proposal,
     VotePlanCertificate,
 )
+from .models.committee import Committee
 
 
 class BaseNode(BaseModel):

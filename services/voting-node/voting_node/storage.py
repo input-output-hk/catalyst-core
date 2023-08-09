@@ -67,6 +67,7 @@ class SecretDBStorage(BaseModel):
             threshold=record["threshold"],
             crs=crs,
             committee_id=record["committee_id"],
+            committee_pk=record["committee_pk"],
             election_key=ElectionKey(pubkey=record["election_key"]),
         )
         # fetch committee members

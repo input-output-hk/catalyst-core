@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["DbConnection",""],["DbConnectionPool",""]],"fn":[["load_db_connection_pool",""]],"mod":[["migrations",""],["models",""],["queries",""],["schema",""],["views_schema",""]],"type":[["Error",""]]};

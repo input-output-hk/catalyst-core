@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["MockClientError",""]],"struct":[["JormungandrClient",""],["JormungandrWatchClient",""]],"type":[["WatchTipNotifier",""]]};

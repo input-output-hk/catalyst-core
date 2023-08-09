@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["VOTE_PLAN_ID_LENGTH"],"enum":["ErrorCode","ErrorKind","Fragment","PayloadType","PayloadTypeConfig"],"mod":["c","error","tx_builder","vote","wallet"],"struct":["Choice","Error","Options","Proposal","Result","Settings","TxBuilder","Value","Wallet"],"type":["FragmentId"]};

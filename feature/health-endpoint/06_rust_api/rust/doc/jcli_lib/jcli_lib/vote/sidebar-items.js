@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","Vote"],"mod":["committee","election_public_key","tally"],"struct":["MergedVotePlan","Seed"]};

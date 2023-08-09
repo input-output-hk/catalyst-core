@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CATALYST_VOTING_PURPOSE_TAG","FIELDS"],"enum":["Error","__Field"],"mod":["influence_cap","registration","tests","voter_hir","voting_group"],"opaque":[""],"struct":["KeyContribution","RawSnapshot","Snapshot","SnapshotInfo","VoterHIR","__FieldVisitor","__Visitor"],"type":["Fraction","VotingGroup"]};

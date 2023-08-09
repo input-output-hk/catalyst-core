@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Treasury","An amount of value owned by the treasury."]]};

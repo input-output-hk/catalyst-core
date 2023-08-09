@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_all_proposals","get_proposal","get_proposals_by_voteplan_id_and_index"],"opaque":[""]};

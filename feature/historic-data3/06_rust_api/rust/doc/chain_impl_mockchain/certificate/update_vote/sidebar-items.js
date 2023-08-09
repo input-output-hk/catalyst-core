@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_strategy_of_proposal_id","_strategy_of_voter_id","_to_fn_ptr"],"opaque":[""],"struct":["UpdateVote"],"type":["UpdateProposalId","UpdateVoterId"]};

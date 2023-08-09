@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["address","hash","protocol_parameters","sign","stake_address","stake_certificate","submit","tip","transaction","utxo"],"struct":["QueryUTxO","Tip","UTxO","__FieldVisitor","__Visitor"]};

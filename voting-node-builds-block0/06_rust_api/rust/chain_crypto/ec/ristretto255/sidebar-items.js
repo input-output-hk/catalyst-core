@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["GroupElement",""],["Scalar",""],["ScalarExp","Provides an iterator over the powers of a `Scalar`."]]};

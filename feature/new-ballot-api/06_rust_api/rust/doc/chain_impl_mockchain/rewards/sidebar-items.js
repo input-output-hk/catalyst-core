@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SCALE"],"enum":["CompoundingType","Limit"],"fn":["_strategy_of_denominator","_strategy_of_fixed","_strategy_of_max_limit","_strategy_of_numerator","_strategy_of_ratio","_to_fn_ptr","rewards_contribution_calculation","tax_cut"],"mod":["tests"],"opaque":[""],"struct":["Parameters","Ratio","SystemInformation","TaxDistribution","TaxType"]};

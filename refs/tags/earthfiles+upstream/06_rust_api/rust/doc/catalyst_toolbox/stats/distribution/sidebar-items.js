@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["format_big_number","levels"],"struct":["Record","Stats"]};

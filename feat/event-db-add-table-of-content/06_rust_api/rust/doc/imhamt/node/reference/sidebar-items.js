@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Entry","LookupRet"],"fn":["insert_rec","lookup_one","remove_eq_rec","remove_rec","replace_rec","replace_with_rec","size_rec","update_rec"],"mod":["debug"],"struct":["Collision","Node"],"type":["NodeIter"]};

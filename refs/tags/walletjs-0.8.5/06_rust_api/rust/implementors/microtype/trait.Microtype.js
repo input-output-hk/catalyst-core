@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"voting_tools_rs":[["impl Microtype for <a class=\"struct\" href=\"voting_tools_rs/struct.SlotNo.html\" title=\"struct voting_tools_rs::SlotNo\">SlotNo</a>"],["impl Microtype for <a class=\"struct\" href=\"voting_tools_rs/struct.VotingPurpose.html\" title=\"struct voting_tools_rs::VotingPurpose\">VotingPurpose</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

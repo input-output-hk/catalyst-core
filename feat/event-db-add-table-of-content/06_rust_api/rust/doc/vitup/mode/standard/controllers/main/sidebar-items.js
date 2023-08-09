@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["wait_for_bootstrap"],"struct":["VitController","VitControllerBuilder"]};

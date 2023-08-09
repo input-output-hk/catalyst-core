@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["VrfEvalFailure",""]],"struct":[["LeadershipData","Genesis Praos leadership data for a specific epoch"],["Threshold","Threshold between 0.0 and 1.0"]],"type":[["Witness","Witness"],["WitnessOutput",""]]};

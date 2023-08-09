@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["CompoundingTypeDef","DiscriminationDef","LimitDef","__Field"],"struct":["ParametersDef","RatioDef","SettingsDto","TaxTypeDef","TaxTypeSerde","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["ABS_MAX_SLOT","ABS_MIN_SLOT"],"fn":["convert_to_snapshot_entry","stake_addrs","voting_power"],"mod":["args"]};

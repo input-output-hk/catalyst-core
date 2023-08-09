@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":[["DATABASE_SCHEMA_VERSION","Database version this crate matches. Must equal the last Migrations Version Number."]],"fn":[["establish_connection","Establish a connection to the database, and check the schema is up-to-date."]],"struct":[["EventDB","Connection to the Election Database"]]};

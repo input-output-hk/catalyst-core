@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["iohk_jormungandr_wallet_settings_block0_hash","iohk_jormungandr_wallet_settings_discrimination","iohk_jormungandr_wallet_settings_fees","iohk_jormungandr_wallet_settings_new"]};

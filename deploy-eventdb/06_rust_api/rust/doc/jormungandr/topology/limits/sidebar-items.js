@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAX_GOSSIP_SIZE","MAX_ID_SIZE"]};

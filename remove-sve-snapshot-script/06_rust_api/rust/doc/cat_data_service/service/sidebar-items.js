@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["app","handle_result","run_service"],"mod":["health","v1"],"opaque":[""],"static":["CALLSITE","META"],"struct":["ErrorMessage"]};

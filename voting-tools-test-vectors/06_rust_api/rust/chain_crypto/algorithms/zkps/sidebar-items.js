@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["dleq","Non-interactive Zero Knowledge proof of Discrete Logarithm EQuality (DLEQ)."]]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Fragment","All possible messages recordable in the content"]],"mod":[["selection",""]],"struct":[["Logs",""],["Pool",""],["PoolEntry",""],["Process",""]],"type":[["FragmentId",""]]};

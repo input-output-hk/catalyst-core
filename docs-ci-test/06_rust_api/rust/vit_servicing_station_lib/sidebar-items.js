@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":[["execute_q",""],["q",""]],"mod":[["db",""],["server",""],["utils",""],["v0",""]]};

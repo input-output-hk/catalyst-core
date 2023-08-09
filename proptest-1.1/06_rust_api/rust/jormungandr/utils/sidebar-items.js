@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["async_msg","Multiple producer, single-consumer in-memory FIFO channels with asynchronous reading."],["fire_forget_scheduler",""],["task","Task management"]]};

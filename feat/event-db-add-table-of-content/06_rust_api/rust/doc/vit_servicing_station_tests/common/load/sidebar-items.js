@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["rest","voting_power"],"struct":["SnapshotRandomizer","VitRestRequestGenerator","VotingPowerRequestGenerator"]};

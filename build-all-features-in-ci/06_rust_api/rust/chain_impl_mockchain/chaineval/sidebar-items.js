@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["ConsensusEvalContext","Consensus related data extract from the header"]],"struct":[["HeaderContentEvalContext","This is the data extracted from a header related to content evaluation"],["PraosNonce","PraosNonce gathered per block"]]};

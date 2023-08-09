@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["InitializeDbWithMigrationError",""]],"fn":[["initialize_db_with_migration",""]]};

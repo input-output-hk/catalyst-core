@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","WitnessType"],"mod":["api","command","data","services"],"struct":["CertificateBuilder","FragmentCheck","FragmentSender","FragmentsCheck","JCli","JCliCommand","TransactionBuilder","Witness","WitnessData"]};

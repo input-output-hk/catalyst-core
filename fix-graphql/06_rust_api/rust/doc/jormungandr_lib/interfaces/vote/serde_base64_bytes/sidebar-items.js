@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["deserialize","serialize"],"struct":["ByteArrayVisitor","ByteStringVisitor"]};

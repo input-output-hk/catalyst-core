@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["WitnessMode"],"fn":["evm_mapping_sign","plan_sign","pool_owner_sign","pool_owner_signed","tally_sign","update_proposal_sign","update_vote_sign"],"struct":["FaultTolerantTxCertBuilder","TestTxCertBuilder"]};

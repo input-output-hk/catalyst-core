@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["validate_signature","validate_stake_key","validate_voting_power","validate_voting_purpose"],"mod":["cbor","hash"],"struct":["ValidationCtx"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["Error",""]],"fn":[["build_challenges",""],["build_fund",""],["build_proposals",""],["fetch_all",""]],"struct":[["CustomFieldTags",""],["IdeaScaleData",""]],"type":[["Scores",""],["Sponsors",""]]};

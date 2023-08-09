@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["api_token_filter","authorize_token"],"opaque":[""]};

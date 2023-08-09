@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":[["json_from_file",""],["json_from_network",""],["load_data",""],["vecs_to_maps",""],["write_results",""]]};

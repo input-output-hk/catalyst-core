@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["ConfigError",""],["Error",""]],"struct":[["CliController",""],["Config",""],["ConfigManager",""],["Connection",""],["WalletController",""],["WalletState",""]],"type":[["Alias",""]]};

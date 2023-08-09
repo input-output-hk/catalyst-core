@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["GitHubApiError",""]],"struct":[["Asset",""],["AssetDto",""],["CachedReleases",""],["GitHubApi",""],["GitHubApiBuilder",""],["Release",""],["ReleaseDto",""]]};

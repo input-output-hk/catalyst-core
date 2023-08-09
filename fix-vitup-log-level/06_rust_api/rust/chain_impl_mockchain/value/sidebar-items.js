@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":[["ValueError",""]],"struct":[["SplitValueIn",""],["Value","Unspent transaction value."]]};

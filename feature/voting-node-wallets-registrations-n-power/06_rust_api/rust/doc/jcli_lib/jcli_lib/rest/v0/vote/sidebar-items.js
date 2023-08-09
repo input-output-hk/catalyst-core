@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Vote"],"mod":["active","committees","plans"]};

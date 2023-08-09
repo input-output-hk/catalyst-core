@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":[["vrf","Verifiable Random Function (VRF) implementation using the 2-Hash-DH verifiable oblivious PRF defined in the Ouroboros Praos paper"]],"struct":[["RistrettoGroup2HashDh","VRF"]]};

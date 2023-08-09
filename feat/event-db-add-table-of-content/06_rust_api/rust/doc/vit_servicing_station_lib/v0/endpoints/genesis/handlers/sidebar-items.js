@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_genesis","get_genesis_for_fund","get_genesis_response"],"opaque":[""]};

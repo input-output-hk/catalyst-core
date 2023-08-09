@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":[["Codec","The structure to support (de)serialization of binary data format used by jormungandr."]]};

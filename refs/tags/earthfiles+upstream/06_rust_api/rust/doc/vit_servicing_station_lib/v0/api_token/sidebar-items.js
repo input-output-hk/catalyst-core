@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["API_TOKEN_HEADER"],"fn":["api_token_filter","authorize_token"],"opaque":[""],"static":["CALLSITE","META"],"struct":["ApiToken","ApiTokenManager"]};

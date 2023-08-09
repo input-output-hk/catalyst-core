@@ -41,7 +41,6 @@ KEEP_DATA = False
 SCHEDULE_RESET_MSG = "schedule was reset"
 
 LEADER_NODE_SCHEDULE: Final = [
-    "connect_db",
     "fetch_upcoming_event",
     "wait_for_start_time",
     "fetch_host_keys",
@@ -57,7 +56,6 @@ LEADER_NODE_SCHEDULE: Final = [
     "cleanup",
 ]
 LEADER0_NODE_SCHEDULE: Final = [
-    "connect_db",
     "fetch_upcoming_event",
     "wait_for_start_time",
     "fetch_host_keys",
@@ -77,7 +75,6 @@ LEADER0_NODE_SCHEDULE: Final = [
     "cleanup",
 ]
 FOLLOWER_NODE_SCHEDULE: Final = [
-    "connect_db",
     "fetch_upcoming_event",
     "wait_for_start_time",
     "fetch_host_keys",
@@ -182,10 +179,6 @@ class NodeTaskSchedule(ScheduleRunner):
     def jorm(self) -> Jormungandr:
         """Return the wrapper to the 'jormungandr' shell command."""
         return Jormungandr(self.settings.jorm_path_str)
-
-    async def connect_db(self):
-        """Async connection to the DB."""
-        await self.db.connect()
 
     async def fetch_upcoming_event(self):
         """Fetch the upcoming event from the DB."""
@@ -368,11 +361,8 @@ class NodeTaskSchedule(ScheduleRunner):
     async def cleanup(self):
         """Execute cleanup chores to stop the voting node service.
 
-        * Close the DB connection.
         * ...
         """
-        # close the DB connection
-        await self.db.close()
 
 
 class LeaderSchedule(NodeTaskSchedule):

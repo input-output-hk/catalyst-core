@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DIRECT_VOTING_GROUP","REP_VOTING_GROUP"],"enum":["Error","Role"],"mod":["block0"],"struct":["Initials"]};

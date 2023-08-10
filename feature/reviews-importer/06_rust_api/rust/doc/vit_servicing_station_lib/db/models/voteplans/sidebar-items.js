@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["_impl_queryable_for_voteplan"],"struct":["Voteplan"]};

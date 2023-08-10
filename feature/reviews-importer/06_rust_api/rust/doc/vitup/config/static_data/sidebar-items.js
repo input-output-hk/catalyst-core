@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["current","info","next"],"struct":["StaticData"]};

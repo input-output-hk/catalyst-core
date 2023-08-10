@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Actor","Error"],"fn":["delegator","registration","representative"],"struct":["DelegatorBuilder","Registration","RegistrationBuilder","RepresentativeBuilder","Target"],"type":["RepNameOrVotingKey"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AddrType","NetType"],"struct":["DelegationsVisitor","IdentifierDef","VotingKeyVisitor"]};

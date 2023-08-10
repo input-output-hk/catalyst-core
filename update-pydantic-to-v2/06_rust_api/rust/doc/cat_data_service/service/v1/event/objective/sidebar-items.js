@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["mocked_voting_status_data","objective","objectives_exec","objectives_voting_statuses_exec"],"mod":["ballots","proposal","review_type"],"opaque":[""],"static":["CALLSITE","META"]};

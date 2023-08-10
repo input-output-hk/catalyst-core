@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["ada_rewards","approval","challenge_title","clean_string"],"struct":["Challenge","Fund","Funnel","Proposal","ProposalCustomFieldsByKey","Proposer","Stage"]};

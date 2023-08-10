@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["WalletTemplate"],"fn":["default_discrimination","default_wallet_type"],"mod":["builder"]};

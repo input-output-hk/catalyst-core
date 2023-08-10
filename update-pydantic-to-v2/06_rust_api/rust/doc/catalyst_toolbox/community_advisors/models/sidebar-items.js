@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ProposalStatus"],"mod":["de"],"struct":["AdvisorReviewRow","ApprovedProposalRow","VeteranRankingRow"],"type":["AdvisorReviewId","VeteranAdvisorId"]};

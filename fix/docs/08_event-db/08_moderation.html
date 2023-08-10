@@ -1,0 +1,435 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Moderation Stage - Catalyst Voting System - Core Technology</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href=".././book/assets/css/mdbook-admonish.css">
+        <link rel="stylesheet" href=".././book/assets/css/open-in.css">
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item affix "><a href="../00_prologue.html">Prologue</a></li><li class="chapter-item "><a href="../01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item "><a href="../02_core_ledger/index.html"><strong aria-hidden="true">2.</strong> Core Ledger</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/01_concepts/index.html"><strong aria-hidden="true">2.1.</strong> General Concepts</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/01_concepts/blockchain.html"><strong aria-hidden="true">2.1.1.</strong> Blockchain concepts</a></li><li class="chapter-item "><a href="../02_core_ledger/01_concepts/network.html"><strong aria-hidden="true">2.1.2.</strong> Network overview</a></li><li class="chapter-item "><a href="../02_core_ledger/01_concepts/node.html"><strong aria-hidden="true">2.1.3.</strong> Node organization</a></li><li class="chapter-item "><a href="../02_core_ledger/01_concepts/stake.html"><strong aria-hidden="true">2.1.4.</strong> Stake</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/index.html"><strong aria-hidden="true">2.2.</strong> Quickstart</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/01_command_line.html"><strong aria-hidden="true">2.2.1.</strong> Command line tools</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/02_passive_node.html"><strong aria-hidden="true">2.2.2.</strong> Starting a passive node</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/03_rest_api.html"><strong aria-hidden="true">2.2.3.</strong> REST Api</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/04_explorer.html"><strong aria-hidden="true">2.2.4.</strong> Explorer mode</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/05_leader_candidate.html"><strong aria-hidden="true">2.2.5.</strong> How to start a node as a leader candidate</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/index.html"><strong aria-hidden="true">2.3.</strong> Configuration</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/03_configuration/leadership.html"><strong aria-hidden="true">2.3.1.</strong> Leadership</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/logging.html"><strong aria-hidden="true">2.3.2.</strong> Logging</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/mempool.html"><strong aria-hidden="true">2.3.3.</strong> Mempool</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/network.html"><strong aria-hidden="true">2.3.4.</strong> Node network</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/prometheus.html"><strong aria-hidden="true">2.3.5.</strong> Prometheus</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/index.html"><strong aria-hidden="true">2.4.</strong> jcli</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/04_jcli/address.html"><strong aria-hidden="true">2.4.1.</strong> Address</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/certificate.html"><strong aria-hidden="true">2.4.2.</strong> Certificate</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/genesis.html"><strong aria-hidden="true">2.4.3.</strong> Genesis</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/key.html"><strong aria-hidden="true">2.4.4.</strong> cryptographic keys</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/rest.html"><strong aria-hidden="true">2.4.5.</strong> REST</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/transaction.html"><strong aria-hidden="true">2.4.6.</strong> Transaction</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/vote.html"><strong aria-hidden="true">2.4.7.</strong> Voting</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/index.html"><strong aria-hidden="true">2.5.</strong> Staking with Jörmungandr</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/delegating_stake.html"><strong aria-hidden="true">2.5.1.</strong> Delegating your stake</a></li><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/registering_stake_pool.html"><strong aria-hidden="true">2.5.2.</strong> Registering a stake pool</a></li><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/retiring_stake_pool.html"><strong aria-hidden="true">2.5.3.</strong> Retiring a stake pool</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/index.html"><strong aria-hidden="true">2.6.</strong> Advanced</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/06_advanced/01_the_genesis_block.html"><strong aria-hidden="true">2.6.1.</strong> genesis file</a></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/02_starting_bft_blockchain.html"><strong aria-hidden="true">2.6.2.</strong> starting a bft node</a></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/03_starting_genesis_praos_blockchain.html"><strong aria-hidden="true">2.6.3.</strong> starting a genesis blockchain</a></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/04_vote_fragments_voteplan_blockchain_relationships.html"><strong aria-hidden="true">2.6.4.</strong> How Vote plans, Vote Fragments and the blockchain transaction work and inter-relate</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/07_specs/index.html"><strong aria-hidden="true">2.7.</strong> Jormungandr Specifications</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/07_specs/migration.html"><strong aria-hidden="true">2.7.1.</strong> MIGRATION</a></li><li class="chapter-item "><a href="../02_core_ledger/07_specs/network.html"><strong aria-hidden="true">2.7.2.</strong> Network</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/index.html"><strong aria-hidden="true">2.8.</strong> testing</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/08_testing/automation.html"><strong aria-hidden="true">2.8.1.</strong> jormungandr-automation</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/hersir.html"><strong aria-hidden="true">2.8.2.</strong> Hersir</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/integration_tests.html"><strong aria-hidden="true">2.8.3.</strong> jormungandr-integration-tests</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/loki.html"><strong aria-hidden="true">2.8.4.</strong> Loki</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/mjolnir.html"><strong aria-hidden="true">2.8.5.</strong> Mjolnir</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/thor.html"><strong aria-hidden="true">2.8.6.</strong> Thor</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/09_internal_design/index.html"><strong aria-hidden="true">2.9.</strong> Internal Design</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/09_internal_design/01_auto-start.html"><strong aria-hidden="true">2.9.1.</strong> Automatic deployment of the voting blockchain</a></li><li class="chapter-item "><a href="../02_core_ledger/09_internal_design/02_permissionless_auth.html"><strong aria-hidden="true">2.9.2.</strong> Permissionless Auth</a></li></ol></li></ol></li><li class="chapter-item "><a href="../03_core_testing/index.html"><strong aria-hidden="true">3.</strong> Catalyst testing User Guide</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/iapyx/index.html"><strong aria-hidden="true">3.1.</strong> Iapyx</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/iapyx/iapyx.html"><strong aria-hidden="true">3.1.1.</strong> Iapyx</a></li><li class="chapter-item "><a href="../03_core_testing/iapyx/load.html"><strong aria-hidden="true">3.1.2.</strong> Iapyx Load</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/integration-tests/index.html"><strong aria-hidden="true">3.2.</strong> integration-tests</a></li><li class="chapter-item "><a href="../03_core_testing/registration-service/index.html"><strong aria-hidden="true">3.3.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/registration-service/cli.html"><strong aria-hidden="true">3.3.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../03_core_testing/registration-service/configuration.html"><strong aria-hidden="true">3.3.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/registration-verify-service/index.html"><strong aria-hidden="true">3.4.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/registration-verify-service/cli.html"><strong aria-hidden="true">3.4.1.</strong> Registration Verify CLI</a></li><li class="chapter-item "><a href="../03_core_testing/registration-verify-service/configuration.html"><strong aria-hidden="true">3.4.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/snapshot-service/index.html"><strong aria-hidden="true">3.5.</strong> Snapshot trigger service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/snapshot-service/cli.html"><strong aria-hidden="true">3.5.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../03_core_testing/snapshot-service/configuration.html"><strong aria-hidden="true">3.5.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/snapshot-wormhole/index.html"><strong aria-hidden="true">3.6.</strong> snapshot wormhole</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/snapshot-wormhole/configuration.html"><strong aria-hidden="true">3.6.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/valgrind/index.html"><strong aria-hidden="true">3.7.</strong> valgrind</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/valgrind/configuration.html"><strong aria-hidden="true">3.7.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/vitup/index.html"><strong aria-hidden="true">3.8.</strong> vitup</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/vitup/configuration.html"><strong aria-hidden="true">3.8.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation/index.html"><strong aria-hidden="true">3.8.2.</strong> Data Generation</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation/reset.html"><strong aria-hidden="true">3.8.2.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation/snapshot.html"><strong aria-hidden="true">3.8.2.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation.html"><strong aria-hidden="true">3.8.3.</strong> Data Generation</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/mock.html"><strong aria-hidden="true">3.8.4.</strong> Mock</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/mock_farm.html"><strong aria-hidden="true">3.8.5.</strong> Mock Farm</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/run_modes.html"><strong aria-hidden="true">3.8.6.</strong> Configuration modes</a></li></ol></li></ol></li><li class="chapter-item "><a href="../04_core_vitss/index.html"><strong aria-hidden="true">4.</strong> Core VIT Servicing Station</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../04_core_vitss/testing.html"><strong aria-hidden="true">4.1.</strong> vit-servicing-station-tests</a></li></ol></li><li class="chapter-item "><a href="../05_unified_platform/index.html"><strong aria-hidden="true">5.</strong> Unified Platform</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/index.html"><strong aria-hidden="true">5.1.</strong> Overview</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/01_cardano_nodes.html"><strong aria-hidden="true">5.1.1.</strong> Cardano Nodes</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/index.html"><strong aria-hidden="true">5.1.2.</strong> Bridge Pipeline</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/01_block_reader.html"><strong aria-hidden="true">5.1.2.1.</strong> Block Reader</a></li></ol></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/03_rest_http_service.html"><strong aria-hidden="true">5.1.3.</strong> REST HTTP Service</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/04_event_stream.html"><strong aria-hidden="true">5.1.4.</strong> Event Stream</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/index.html"><strong aria-hidden="true">5.1.5.</strong> Database</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/01_registration_db.html"><strong aria-hidden="true">5.1.5.1.</strong> Registrations Database</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/02_staked_ada_db.html"><strong aria-hidden="true">5.1.5.2.</strong> Staked ADA Database</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/03_transaction_state.html"><strong aria-hidden="true">5.1.5.3.</strong> Transaction State Database</a></li></ol></li></ol></li></ol></li><li class="chapter-item "><a href="../06_rust_api/index.html"><strong aria-hidden="true">6.</strong> Rust API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../06_rust_api/rust_style_guide.html"><strong aria-hidden="true">6.1.</strong> 🦀 Rust Style Guide</a></li></ol></li><li class="chapter-item "><a href="../07_web_api/index.html"><strong aria-hidden="true">7.</strong> Web API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../07_web_api/catalyst-core-api.html"><strong aria-hidden="true">7.1.</strong> Catalyst Core API V1</a></li><li class="chapter-item "><a href="../07_web_api/dbsync-explorer.html"><strong aria-hidden="true">7.2.</strong> dbSync Explorer HTTP/REST API V1</a></li><li class="chapter-item "><a href="../07_web_api/vit-servicing-station-v0.html"><strong aria-hidden="true">7.3.</strong> VIT Servicing Station HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vit-testing-mock-farm-v0.html"><strong aria-hidden="true">7.4.</strong> VIT Testing Mock Farm HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vit-testing-mock-v0.html"><strong aria-hidden="true">7.5.</strong> VIT Testing Mock HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vote-ledger-v0.html"><strong aria-hidden="true">7.6.</strong> Vote Ledger HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vote-ledger-v1.html"><strong aria-hidden="true">7.7.</strong> Vote Ledger HTTP/REST API V1</a></li></ol></li><li class="chapter-item expanded "><a href="../08_event-db/index.html"><strong aria-hidden="true">8.</strong> Event DB crate</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../08_event-db/01_development.html"><strong aria-hidden="true">8.1.</strong> Event DB Local Development</a></li><li class="chapter-item "><a href="../08_event-db/02_config-tables.html"><strong aria-hidden="true">8.2.</strong> General Configuration</a></li><li class="chapter-item "><a href="../08_event-db/03_event-table.html"><strong aria-hidden="true">8.3.</strong> Event Definition Table</a></li><li class="chapter-item "><a href="../08_event-db/04_objective_tables.html"><strong aria-hidden="true">8.4.</strong> Objective and Proposal  Tables</a></li><li class="chapter-item "><a href="../08_event-db/05_vote_plans.html"><strong aria-hidden="true">8.5.</strong> Vote Plan Tables</a></li><li class="chapter-item "><a href="../08_event-db/06_snapshot_tables.html"><strong aria-hidden="true">8.6.</strong> Voter Voting Power Snapshot and Vote Storage Table</a></li><li class="chapter-item "><a href="../08_event-db/07_automation_support.html"><strong aria-hidden="true">8.7.</strong> Catalyst Automation Support Tables</a></li><li class="chapter-item expanded "><a href="../08_event-db/08_moderation.html" class="active"><strong aria-hidden="true">8.8.</strong> Moderation Stage</a></li></ol></li><li class="chapter-item "><a href="../97_CONTRIBUTING.html"><strong aria-hidden="true">9.</strong> Contributing to Catalyst Core</a></li><li class="chapter-item "><a href="../98_CODE_OF_CONDUCT.html"><strong aria-hidden="true">10.</strong> Contributor Covenant Code of Conduct</a></li><li class="chapter-item "><a href="../99_example_enhanced_markup.html"><strong aria-hidden="true">11.</strong> Example Enhanced Markup</a></li><li class="chapter-item affix "><a href="../ZZ_suffix.html">Suffix</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Catalyst Voting System - Core Technology</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/input-output-hk/catalyst-core" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="moderation-stage"><a class="header" href="#moderation-stage">Moderation Stage</a></h1>
+<p>Tables for storing moderation stage data. WIP.</p>
+<h2 id="moderation-stage-diagram"><a class="header" href="#moderation-stage-diagram">Moderation Stage Diagram</a></h2>
+<pre><svg width="718pt" height="687pt"
+ viewBox="0.00 0.00 718.00 686.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 682.5)">
+<title>erd</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-682.5 714,-682.5 714,4 -4,4"/>
+<text text-anchor="middle" x="355" y="-646" font-family="Times,serif" font-size="30.00" fill="blue">Catalyst Event Database Moderation Stage</text>
+<!-- moderation -->
+<g id="node1" class="node">
+<title>moderation</title>
+<polygon fill="#009879" stroke="none" points="0,-396 0,-426 492,-426 492,-396 0,-396"/>
+<polygon fill="none" stroke="black" points="0,-396 0,-426 492,-426 492,-396 0,-396"/>
+<text text-anchor="start" x="189" y="-405" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">moderation</text>
+<polygon fill="none" stroke="black" points="0,-369 0,-396 91,-396 91,-369 0,-369"/>
+<text text-anchor="start" x="11" y="-376.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="91,-369 91,-396 150,-396 150,-369 91,-369"/>
+<text text-anchor="start" x="100" y="-376.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="150,-369 150,-396 492,-396 492,-369 150,-369"/>
+<text text-anchor="start" x="270.5" y="-376.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="0,-344 0,-369 91,-369 91,-344 0,-344"/>
+<polygon fill="none" stroke="black" points="0,-344 0,-369 91,-369 91,-344 0,-344"/>
+<text text-anchor="start" x="3" y="-350.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="91,-344 91,-369 150,-369 150,-344 91,-344"/>
+<polygon fill="none" stroke="black" points="91,-344 91,-369 150,-369 150,-344 91,-344"/>
+<text text-anchor="start" x="94" y="-350.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="#54ff9f" stroke="none" points="150,-344 150,-369 492,-369 492,-344 150,-344"/>
+<polygon fill="none" stroke="black" points="150,-344 150,-369 492,-369 492,-344 150,-344"/>
+<text text-anchor="start" x="153" y="-352.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic ID of this moderation.</text>
+<polygon fill="none" stroke="black" points="0,-319 0,-344 91,-344 91,-319 0,-319"/>
+<text text-anchor="start" x="3" y="-325.8" font-family="Times,serif" font-size="16.00">review_id</text>
+<polygon fill="none" stroke="black" points="91,-319 91,-344 150,-344 150,-319 91,-319"/>
+<text text-anchor="start" x="98.5" y="-325.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="150,-319 150,-344 492,-344 492,-319 150,-319"/>
+<text text-anchor="start" x="153" y="-327.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The review the moderation is related to.</text>
+<polygon fill="none" stroke="black" points="0,-285 0,-319 91,-319 91,-285 0,-285"/>
+<text text-anchor="start" x="3" y="-296.4" font-family="Times,serif" font-size="16.00">user_id</text>
+<polygon fill="none" stroke="black" points="91,-285 91,-319 150,-319 150,-285 91,-285"/>
+<text text-anchor="start" x="98.5" y="-296.4" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="150,-285 150,-319 492,-319 492,-285 150,-285"/>
+<text text-anchor="start" x="153" y="-303.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The user the moderation is submitted</text>
+<text text-anchor="start" x="153" y="-289.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">from.</text>
+<polygon fill="none" stroke="black" points="0,-237 0,-285 91,-285 91,-237 0,-237"/>
+<text text-anchor="start" x="3" y="-255.4" font-family="Times,serif" font-size="16.00">classification</text>
+<polygon fill="none" stroke="black" points="91,-237 91,-285 150,-285 150,-237 91,-237"/>
+<text text-anchor="start" x="98.5" y="-255.4" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="150,-237 150,-285 492,-285 492,-237 150,-237"/>
+<text text-anchor="start" x="153" y="-269.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The value used to describe the</text>
+<text text-anchor="start" x="153" y="-255.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">moderation (e.g. 0: excluded, 1:</text>
+<text text-anchor="start" x="153" y="-241.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">included).</text>
+<polygon fill="none" stroke="black" points="0,-203 0,-237 91,-237 91,-203 0,-203"/>
+<text text-anchor="start" x="3" y="-214.4" font-family="Times,serif" font-size="16.00">rationale</text>
+<polygon fill="none" stroke="black" points="91,-203 91,-237 150,-237 150,-203 91,-203"/>
+<text text-anchor="start" x="96.5" y="-215.4" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="150,-203 150,-237 492,-237 492,-203 150,-203"/>
+<text text-anchor="start" x="153" y="-221.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The rationale for the given</text>
+<text text-anchor="start" x="153" y="-207.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">classification.</text>
+<polygon fill="#333333" stroke="none" points="0,-181 0,-203 492,-203 492,-181 0,-181"/>
+<polygon fill="none" stroke="black" points="0,-181 0,-203 492,-203 492,-181 0,-181"/>
+<text text-anchor="start" x="3" y="-187.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">An individual moderation for a proposal review.</text>
+</g>
+<!-- config -->
+<g id="node3" class="node">
+<title>config</title>
+<polygon fill="#009879" stroke="none" points="581.5,-116.5 581.5,-146.5 656.5,-146.5 656.5,-116.5 581.5,-116.5"/>
+<polygon fill="none" stroke="black" points="581.5,-116.5 581.5,-146.5 656.5,-146.5 656.5,-116.5 581.5,-116.5"/>
+<text text-anchor="start" x="588.5" y="-125.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">config</text>
+<polygon fill="none" stroke="black" points="581.5,-89.5 581.5,-116.5 656.5,-116.5 656.5,-89.5 581.5,-89.5"/>
+<text text-anchor="start" x="584.5" y="-97.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="581.5,-64.5 581.5,-89.5 656.5,-89.5 656.5,-64.5 581.5,-64.5"/>
+<text text-anchor="start" x="584.5" y="-71.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#333333" stroke="none" points="581.5,-42.5 581.5,-64.5 656.5,-64.5 656.5,-42.5 581.5,-42.5"/>
+<polygon fill="none" stroke="black" points="581.5,-42.5 581.5,-64.5 656.5,-64.5 656.5,-42.5 581.5,-42.5"/>
+<text text-anchor="start" x="584.5" y="-49.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+</g>
+<!-- moderation&#45;&gt;config -->
+<g id="edge4" class="edge">
+<title>moderation:user_id_out&#45;&gt;config:row_id</title>
+<path fill="none" stroke="black" d="M492,-301.5C541.91,-301.5 528.68,-107.03 569.71,-79.68"/>
+<polygon fill="black" stroke="black" points="570.48,-82.8 579,-76.5 568.41,-76.11 570.48,-82.8"/>
+</g>
+<!-- proposal_review -->
+<g id="node4" class="node">
+<title>proposal_review</title>
+<polygon fill="#009879" stroke="none" points="536,-329.5 536,-359.5 702,-359.5 702,-329.5 536,-329.5"/>
+<polygon fill="none" stroke="black" points="536,-329.5 536,-359.5 702,-359.5 702,-329.5 536,-329.5"/>
+<text text-anchor="start" x="539" y="-338.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal_review</text>
+<polygon fill="none" stroke="black" points="536,-302.5 536,-329.5 702,-329.5 702,-302.5 536,-302.5"/>
+<text text-anchor="start" x="584.5" y="-310.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="536,-277.5 536,-302.5 702,-302.5 702,-277.5 536,-277.5"/>
+<text text-anchor="start" x="539" y="-284.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#333333" stroke="none" points="536,-255.5 536,-277.5 702,-277.5 702,-255.5 536,-255.5"/>
+<polygon fill="none" stroke="black" points="536,-255.5 536,-277.5 702,-277.5 702,-255.5 536,-255.5"/>
+<text text-anchor="start" x="539" y="-262.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+</g>
+<!-- moderation&#45;&gt;proposal_review -->
+<g id="edge3" class="edge">
+<title>moderation:review_id_out&#45;&gt;proposal_review:row_id</title>
+<path fill="none" stroke="black" d="M492,-331.5C514.33,-331.5 510.71,-302.15 524.52,-292.52"/>
+<polygon fill="black" stroke="black" points="525.36,-295.63 534,-289.5 523.42,-288.91 525.36,-295.63"/>
+</g>
+<!-- moderation_allocation -->
+<g id="node2" class="node">
+<title>moderation_allocation</title>
+<polygon fill="#009879" stroke="none" points="8,-133 8,-163 484,-163 484,-133 8,-133"/>
+<polygon fill="none" stroke="black" points="8,-133 8,-163 484,-163 484,-133 8,-133"/>
+<text text-anchor="start" x="135.5" y="-142" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">moderation_allocation</text>
+<polygon fill="none" stroke="black" points="8,-106 8,-133 83,-133 83,-106 8,-106"/>
+<text text-anchor="start" x="11" y="-113.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="83,-106 83,-133 142,-133 142,-106 83,-106"/>
+<text text-anchor="start" x="92" y="-113.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="142,-106 142,-133 484,-133 484,-106 142,-106"/>
+<text text-anchor="start" x="262.5" y="-113.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="8,-81 8,-106 83,-106 83,-81 8,-81"/>
+<polygon fill="none" stroke="black" points="8,-81 8,-106 83,-106 83,-81 8,-81"/>
+<text text-anchor="start" x="11" y="-87.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="83,-81 83,-106 142,-106 142,-81 83,-81"/>
+<polygon fill="none" stroke="black" points="83,-81 83,-106 142,-106 142,-81 83,-81"/>
+<text text-anchor="start" x="86" y="-87.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="#54ff9f" stroke="none" points="142,-81 142,-106 484,-106 484,-81 142,-81"/>
+<polygon fill="none" stroke="black" points="142,-81 142,-106 484,-106 484,-81 142,-81"/>
+<text text-anchor="start" x="145" y="-89.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic ID of this relationship.</text>
+<polygon fill="none" stroke="black" points="8,-47 8,-81 83,-81 83,-47 8,-47"/>
+<text text-anchor="start" x="11" y="-58.4" font-family="Times,serif" font-size="16.00">review_id</text>
+<polygon fill="none" stroke="black" points="83,-47 83,-81 142,-81 142,-47 83,-47"/>
+<text text-anchor="start" x="90.5" y="-58.4" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="142,-47 142,-81 484,-81 484,-47 142,-47"/>
+<text text-anchor="start" x="145" y="-65.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The review the relationship is related</text>
+<text text-anchor="start" x="145" y="-51.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">to.</text>
+<polygon fill="none" stroke="black" points="8,-22 8,-47 83,-47 83,-22 8,-22"/>
+<text text-anchor="start" x="11" y="-28.8" font-family="Times,serif" font-size="16.00">user_id</text>
+<polygon fill="none" stroke="black" points="83,-22 83,-47 142,-47 142,-22 83,-22"/>
+<text text-anchor="start" x="90.5" y="-28.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="142,-22 142,-47 484,-47 484,-22 142,-22"/>
+<text text-anchor="start" x="145" y="-30.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The user the relationship is related to.</text>
+<polygon fill="#333333" stroke="none" points="8,0 8,-22 484,-22 484,0 8,0"/>
+<polygon fill="none" stroke="black" points="8,0 8,-22 484,-22 484,0 8,0"/>
+<text text-anchor="start" x="11" y="-6.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">The relationship between users and proposals_reviews.</text>
+</g>
+<!-- moderation_allocation&#45;&gt;config -->
+<g id="edge2" class="edge">
+<title>moderation_allocation:user_id_out&#45;&gt;config:row_id</title>
+<path fill="none" stroke="black" d="M485,-34.5C527.38,-34.5 533.1,-69.89 569.47,-75.7"/>
+<polygon fill="black" stroke="black" points="568.76,-79.23 579,-76.5 569.29,-72.25 568.76,-79.23"/>
+</g>
+<!-- moderation_allocation&#45;&gt;proposal_review -->
+<g id="edge1" class="edge">
+<title>moderation_allocation:review_id_out&#45;&gt;proposal_review:row_id</title>
+<path fill="none" stroke="black" d="M485,-63.5C583.85,-63.5 443.9,-272.19 524.1,-288.49"/>
+<polygon fill="black" stroke="black" points="523.72,-292.06 534,-289.5 524.36,-285.09 523.72,-292.06"/>
+</g>
+<!-- LEGEND -->
+<g id="node5" class="node">
+<title>LEGEND</title>
+<polygon fill="Pink" stroke="none" points="135,-600.5 135,-630.5 357,-630.5 357,-600.5 135,-600.5"/>
+<polygon fill="none" stroke="black" points="135,-600.5 135,-630.5 357,-630.5 357,-600.5 135,-600.5"/>
+<text text-anchor="start" x="206" y="-609.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">LEGEND</text>
+<polygon fill="none" stroke="black" points="135,-573.5 135,-600.5 274,-600.5 274,-573.5 135,-573.5"/>
+<text text-anchor="start" x="184" y="-581.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="274,-573.5 274,-600.5 357,-600.5 357,-573.5 274,-573.5"/>
+<text text-anchor="start" x="277" y="-581.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Example</text>
+<polygon fill="#54ff9f" stroke="none" points="135,-548.5 135,-573.5 274,-573.5 274,-548.5 135,-548.5"/>
+<polygon fill="none" stroke="black" points="135,-548.5 135,-573.5 274,-573.5 274,-548.5 135,-548.5"/>
+<text text-anchor="start" x="138" y="-555.3" font-family="Times,serif" font-size="16.00">Primary Key</text>
+<polygon fill="#54ff9f" stroke="none" points="274,-548.5 274,-573.5 357,-573.5 357,-548.5 274,-548.5"/>
+<polygon fill="none" stroke="black" points="274,-548.5 274,-573.5 357,-573.5 357,-548.5 274,-548.5"/>
+<text text-anchor="start" x="289" y="-555.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="135,-523.5 135,-548.5 274,-548.5 274,-523.5 135,-523.5"/>
+<text text-anchor="start" x="138" y="-530.3" font-family="Times,serif" font-size="16.00">Standard Field</text>
+<polygon fill="none" stroke="black" points="274,-523.5 274,-548.5 357,-548.5 357,-523.5 274,-523.5"/>
+<text text-anchor="start" x="298.5" y="-530.3" font-family="Times,serif" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="135,-498.5 135,-523.5 274,-523.5 274,-498.5 135,-498.5"/>
+<text text-anchor="start" x="138" y="-505.3" font-family="Times,serif" font-size="16.00">Nullable Field</text>
+<polygon fill="none" stroke="black" points="274,-498.5 274,-523.5 357,-523.5 357,-498.5 274,-498.5"/>
+<text text-anchor="start" x="303.5" y="-506.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="135,-473.5 135,-498.5 274,-498.5 274,-473.5 135,-473.5"/>
+<text text-anchor="start" x="138" y="-480.3" font-family="Times,serif" font-size="16.00">Sized Field</text>
+<polygon fill="none" stroke="black" points="274,-473.5 274,-498.5 357,-498.5 357,-473.5 274,-473.5"/>
+<text text-anchor="start" x="278.5" y="-480.3" font-family="Times,serif" font-size="16.00">varchar(32)</text>
+<polygon fill="none" stroke="black" points="135,-448.5 135,-473.5 274,-473.5 274,-448.5 135,-448.5"/>
+<text text-anchor="start" x="138" y="-455.3" font-family="Times,serif" font-size="16.00">Autoincrement Field</text>
+<polygon fill="none" stroke="black" points="274,-448.5 274,-473.5 357,-473.5 357,-448.5 274,-448.5"/>
+<text text-anchor="start" x="289" y="-455.3" font-family="Times,serif" font-size="16.00">integer+</text>
+</g>
+</g>
+</svg>
+</pre>
+<h2 id="schema"><a class="header" href="#schema">Schema</a></h2>
+<pre><code class="language-sql">-- Catalyst Event Database
+
+-- ModerationAllocation - Defines the relationship between users and proposals_reviews
+-- to describe the allocation of moderations that needs to be done.
+
+CREATE TABLE moderation_allocation (
+  row_id SERIAL PRIMARY KEY,
+  review_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+
+  FOREIGN KEY (review_id) REFERENCES proposal_review(row_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES config(row_id) ON DELETE CASCADE
+);
+
+
+COMMENT ON TABLE moderation_allocation IS 'The relationship between users and proposals_reviews.';
+COMMENT ON COLUMN moderation_allocation.row_id IS 'Synthetic ID of this relationship.';
+COMMENT ON COLUMN moderation_allocation.review_id IS 'The review the relationship is related to.';
+COMMENT ON COLUMN moderation_allocation.user_id IS 'The user the relationship is related to.';
+
+
+-- Moderation - Defines the moderation submitted by users for each proposal_review.
+
+CREATE TABLE moderation (
+  row_id SERIAL PRIMARY KEY,
+  review_id INTEGER NOT NULL,
+  user_id INTEGER NOT NULL,
+  classification INTEGER NOT NULL,
+  rationale VARCHAR,
+  UNIQUE (review_id, user_id),
+
+  FOREIGN KEY (review_id) REFERENCES proposal_review(row_id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES config(row_id) ON DELETE CASCADE
+);
+
+
+COMMENT ON TABLE moderation IS 'An individual moderation for a proposal review.';
+COMMENT ON COLUMN moderation.row_id IS 'Synthetic ID of this moderation.';
+COMMENT ON COLUMN moderation.review_id IS 'The review the moderation is related to.';
+COMMENT ON COLUMN moderation.user_id IS 'The user the moderation is submitted from.';
+COMMENT ON COLUMN moderation.classification IS 'The value used to describe the moderation (e.g. 0: excluded, 1: included).';
+COMMENT ON COLUMN moderation.rationale IS 'The rationale for the given classification.';
+</code></pre>
+<footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/08_event-db/08_moderation.md">Edit this page on GitHub.</a></footer>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../08_event-db/07_automation_support.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../97_CONTRIBUTING.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../08_event-db/07_automation_support.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../97_CONTRIBUTING.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

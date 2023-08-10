@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_MAX_CLIENT_CONNECTIONS","DEFAULT_MAX_CONNECTIONS","DEFAULT_TIMEOUT"],"enum":["PeerResolveError","Protocol"],"struct":["Configuration","Listen","Peer","TrustedPeer"]};

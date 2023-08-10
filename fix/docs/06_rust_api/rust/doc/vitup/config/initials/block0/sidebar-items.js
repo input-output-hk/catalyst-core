@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["GRACE_VALUE"],"enum":["Initial"],"fn":["convert_to_external_utxo"],"struct":["Initials"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["NodeSecretFromFileError"],"mod":["enclave"],"struct":["Bft","GenesisPraos","NodePublic","NodeSecret","OwnerKey"]};

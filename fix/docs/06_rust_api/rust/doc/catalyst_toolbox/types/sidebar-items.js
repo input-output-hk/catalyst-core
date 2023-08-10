@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["advisor_review","challenge","proposal"]};

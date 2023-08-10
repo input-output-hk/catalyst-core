@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["calc_score","review_weight","weighted_avarage_score"],"mod":["load","store"],"struct":["AlignmentReviews","AlignmentScore","AuditabilityReviews","AuditabilityScore","FeasibilityReviews","FeasibilityScore","ProposalId","Review"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAINNET_PAYMENT_PREFIX","MAINNET_STAKE_PREFIX","TESTNET_PAYMENT_PREFIX","TESTNET_STAKE_PREFIX"],"enum":["Delegations"],"mod":["serde_impl","tests"],"struct":["RewardAddress","StakeAddress","VotingRegistration"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["archive","console","csv","env","file","github","load","measurement","openssl","predicates","prelude","process","string","web"]};

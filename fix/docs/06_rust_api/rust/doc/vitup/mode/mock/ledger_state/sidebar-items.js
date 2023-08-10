@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","FragmentRecieveStrategy"],"fn":["is_fragment_valid","is_transaction_valid","override_fragment_status"],"struct":["LedgerState"]};

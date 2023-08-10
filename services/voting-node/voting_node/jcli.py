@@ -2,7 +2,7 @@
 import asyncio
 from pathlib import Path
 
-from .committee import ElectionKey
+from .models.committee import ElectionKey
 
 
 class JCli:

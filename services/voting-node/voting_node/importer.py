@@ -102,9 +102,11 @@ class ExternalDataImporter:
                     snapshot_tool_output_dir=snapshot_tool_out_dir,
                 )
             else:
-                raise Exception("SSH_SNAPSHOT_TOOL_PATH, SSH_SNAPSHOT_TOOL_OUTPUT_DIR, "
-                                "SSH_SNAPSHOT_TOOL_OUTPUT_DIR and SSH_SNAPSHOT_TOOL_DESTINATION "
-                                "are all required when SNAPSHOT_TOOL_SSH is set")
+                raise Exception(
+                    "SSH_SNAPSHOT_TOOL_PATH, SSH_SNAPSHOT_TOOL_OUTPUT_DIR, "
+                    "SSH_SNAPSHOT_TOOL_OUTPUT_DIR and SSH_SNAPSHOT_TOOL_DESTINATION "
+                    "are all required when SNAPSHOT_TOOL_SSH is set"
+                )
         else:
             ssh_config = None
 

@@ -17,16 +17,16 @@ python = "^3.11"
 click = "^8.1.3"
 asyncio = "^3.4.3"
 asyncpg = "^0.27.0"
-fastapi = "^0.93.0"
+fastapi = "^0.101.0"
 opentelemetry-distro = {extras = ["otlp"], version = "^0.37b0"}
 opentelemetry-instrumentation = "^0.37b0"
 opentelemetry-instrumentation-fastapi = "^0.37b0"
 opentelemetry-instrumentation-asyncpg = "^0.37b0"
 prometheus-fastapi-instrumentator = "^5.10.0"
 PyYAML = "^6.0"
-uvicorn = {extras = ["standard"], version = "^0.20.0"}
+uvicorn = {extras = ["standard"], version = "~0.23.2"}
 aiofile = "^3.8.5"
-pydantic = "~1.10.7"
+pydantic = "~2.1"
 cryptography = "^40.0.1"
 loguru = "^0.6.0"
 ideascale-importer = {path = "../../utilities/ideascale-importer"}

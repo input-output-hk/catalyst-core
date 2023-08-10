@@ -1,9 +1,8 @@
-# VitSS Compatibility
+# Moderation Stage
 
-Compatibility with the legacy VitSS service is being provided via views on the new Catalyst Event Database.
-Eventually, these views will be eliminated when VitSS is finally sunset.
+Tables for storing moderation stage data. WIP.
 
-## VitSS Compatibility Diagram
+## Moderation Stage Diagram
 
 ![Event DB Moderation](kroki-graphviz:./db-diagrams/event-db-moderation.dot)
 

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["KeyQrCodeError","QrDecodeError"],"struct":["KeyQrCode"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["FundedStatus","NotFundedReason","OutputFormat","YesNo"],"macro":["bool_enum"],"struct":["Calculation","ProposerRewards"]};

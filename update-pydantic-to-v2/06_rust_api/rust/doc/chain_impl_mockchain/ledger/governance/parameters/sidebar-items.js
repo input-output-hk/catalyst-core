@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ParametersGovernanceAction","ParametersGovernanceActionType"],"opaque":[""],"struct":["ParametersGovernance"]};

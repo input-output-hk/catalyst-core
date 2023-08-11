@@ -39,7 +39,6 @@ yarl = "1.8.2"
 loguru = "^0.6.0"
 brotlipy = "^0.7.0"
 lxml = "4.9.0"
-requests = "2.31.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1"

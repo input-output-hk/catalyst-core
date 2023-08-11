@@ -153,10 +153,11 @@ class HttpClient:
         self.request_counter = 0
         self.session = aiohttp.ClientSession()
 
-    def close(self):
-        self.session.close()
+    async def close(self):
+        await self.session.close()
 
     async def json_get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
+        """Execute a GET request and returns a JSON result."""
         content = await self.get(path, headers)
         # Doing this so we can describe schemas with types and
         # not worry about field names not being in snake case format.
@@ -165,7 +166,7 @@ class HttpClient:
         return parsed_json
 
     async def get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
-        """Execute a GET request and returns a JSON result."""
+        """Execute a GET request"""
         api_url = self.api_url
         if api_url.endswith("/"):
             api_url = api_url[:-1]
@@ -181,6 +182,36 @@ class HttpClient:
 
         self.request_progress_observer.request_start(req_id, "GET", url)
         async with self.session.get(url, headers=headers) as r:
+            content = b""
+
+            async for c, _ in r.content.iter_chunks():
+                content += c
+                self.request_progress_observer.request_progress(req_id, len(c))
+
+            self.request_progress_observer.request_end(req_id)
+
+            if r.status == 200:
+                return content
+            else:
+                raise GetFailed(r.status, content.decode())
+
+    async def post(self, path: str, data: Dict[str, str] = {}, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
+        """Execute a POST request."""
+        api_url = self.api_url
+        if api_url.endswith("/"):
+            api_url = api_url[:-1]
+
+        if not path.startswith("/"):
+            path = "/" + path
+
+        url = f"{api_url}{path}"
+
+        # Store request id
+        self.request_counter += 1
+        req_id = self.request_counter
+
+        self.request_progress_observer.request_start(req_id, "GET", url)
+        async with self.session.post(url, data = data, headers=headers) as r:
             content = b""
 
             async for c, _ in r.content.iter_chunks():

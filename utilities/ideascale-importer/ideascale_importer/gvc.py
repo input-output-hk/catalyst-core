@@ -29,8 +29,8 @@ class Client:
         """Initialize the client."""
         self.inner = utils.HttpClient(api_url)
 
-    def close(self):
-        self.inner.close()
+    async def close(self):
+        await self.inner.close()
 
     async def dreps(self) -> List[Drep]:
         """Get all DREPs."""

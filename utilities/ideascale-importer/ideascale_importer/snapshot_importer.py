@@ -367,7 +367,7 @@ class Importer:
             dreps = await gvc_client.dreps()
         except Exception as e:
             logger.error("Failed to get dreps, using drep cache", error=str(e))
-        gvc_client.close()
+        await gvc_client.close()
 
         self.dreps_json = json.dumps([dataclasses.asdict(d) for d in dreps])
 

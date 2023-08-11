@@ -55,9 +55,9 @@ def import_reviews(
         )
 
         try:
-            importer.connect()
-            importer.run()
-            importer.close()
+            await importer.connect()
+            await importer.run()
+            await importer.close()
         except Exception as e:
             logger.error(e)
 

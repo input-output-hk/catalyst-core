@@ -92,6 +92,10 @@ class Importer:
         self.client.login(self.email, self.password)
 
     def run(self):
+        """Run the importer."""
+        if self.client is None:
+            raise Exception("Not connected to the ideascale")
+
         self.client.download_reviews(self.funnel_id, self.out_dir)
 
     def close(self):

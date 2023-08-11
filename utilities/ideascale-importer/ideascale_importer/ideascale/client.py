@@ -111,6 +111,9 @@ class Client:
         self.api_token = api_token
         self.inner = utils.JsonHttpClient(api_url)
 
+    def close(self):
+        self.inner.close()
+
     async def campaigns(self, group_id: int) -> List[Campaign]:
         """Get all campaigns from the campaign group with the given id."""
         res = await self._get(f"/a/rest/v1/campaigns/groups/{group_id}")

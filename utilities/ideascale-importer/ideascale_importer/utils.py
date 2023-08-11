@@ -151,6 +151,10 @@ class JsonHttpClient:
         self.api_url = api_url
         self.request_progress_observer = RequestProgressObserver()
         self.request_counter = 0
+        self.session = aiohttp.ClientSession()
+
+    def close(self):
+        self.session.close()
 
     async def get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
         """Execute a GET request on IdeaScale API."""
@@ -167,25 +171,24 @@ class JsonHttpClient:
         self.request_counter += 1
         req_id = self.request_counter
 
-        async with aiohttp.ClientSession() as session:
-            self.request_progress_observer.request_start(req_id, "GET", url)
-            async with session.get(url, headers=headers) as r:
-                content = b""
+        self.request_progress_observer.request_start(req_id, "GET", url)
+        async with self.session.get(url, headers=headers) as r:
+            content = b""
 
-                async for c, _ in r.content.iter_chunks():
-                    content += c
-                    self.request_progress_observer.request_progress(req_id, len(c))
+            async for c, _ in r.content.iter_chunks():
+                content += c
+                self.request_progress_observer.request_progress(req_id, len(c))
 
-                self.request_progress_observer.request_end(req_id)
+            self.request_progress_observer.request_end(req_id)
 
-                if r.status == 200:
-                    # Doing this so we can describe schemas with types and
-                    # not worry about field names not being in snake case format.
-                    parsed_json = json.loads(content)
-                    snake_case_keys(parsed_json)
-                    return parsed_json
-                else:
-                    raise GetFailed(r.status, content.decode())
+            if r.status == 200:
+                # Doing this so we can describe schemas with types and
+                # not worry about field names not being in snake case format.
+                parsed_json = json.loads(content)
+                snake_case_keys(parsed_json)
+                return parsed_json
+            else:
+                raise GetFailed(r.status, content.decode())
 
 
 log_level_colors = {

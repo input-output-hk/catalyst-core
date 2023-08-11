@@ -212,7 +212,7 @@ dbviz -d CatalystEventDocs \
         > ./book/src/08_event-db/db-diagrams/event-db-overview.dot
 '''
 
-[tasks.build-db-docs-vitss-diagram]
+[tasks.build-db-docs-moderation-diagram]
 workspace = false
 category = "docs"
 dependencies = [
@@ -223,21 +223,12 @@ script = '''
 cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}
 dbviz -d CatalystEventDocs \
     -h postgres \
-    --title "Catalyst Event Database VitSS Compatibility" \
+    --title "Catalyst Event Database Moderation Stage" \
     --comments \
     --column-description-wrap 40 \
-    -i  funds proposals \
-        proposals_voteplans \
-        proposal_simple_challenge \
-        proposal_community_choice_challenge \
-        voteplans \
-        api_tokens \
-        challenges \
-        community_advisors_reviews \
-        goals \
-        groups \
-        full_proposals_info \
-        > ./book/src/08_event-db/db-diagrams/event-db-vitss-views.dot
+    -i  moderation_allocation \
+        moderation \
+        > ./book/src/08_event-db/db-diagrams/event-db-moderation.dot
 '''
 
 [tasks.build-db-docs-config-diagram]
@@ -373,13 +364,13 @@ category = "docs"
 dependencies = [
     "doc-event-db-setup",
     "build-db-docs-overview-diagram",
-    "build-db-docs-vitss-diagram",
     "build-db-docs-config-diagram",
     "build-db-docs-event-diagram",
     "build-db-docs-objective-proposal-diagram",
     "build-db-docs-vote-plan-diagram",
     "build-db-docs-snapshot-diagram",
     "build-db-docs-automation-diagram",
+    "build-db-docs-moderation-diagram",
 ]
 
 

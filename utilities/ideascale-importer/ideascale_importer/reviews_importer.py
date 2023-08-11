@@ -8,11 +8,17 @@ def random_string(string_length=6):
     random = random.replace("-","") # Remove the UUID '-'.
     return random[0:string_length] # Return the random string.
 
-class IdeaScaleClient:
+class Client:
+    """IdeaScale front-end API client."""
+
+    DEFAULT_API_URL = "https://cardano.ideascale.com"
 
     def __init__(self, ideascale_url):
         self.ideascale_url = ideascale_url
         self.client = requests.Session()
+
+    def close(self):
+        self.client.close()
 
     def login(self,  email, password):
         login = "/a/community/login"
@@ -24,7 +30,7 @@ class IdeaScaleClient:
             'rememberMe': 'true',
         }
 
-        response = self.client.post(f"{self.ideascale_url}{login}", data=data)
+        self.client.post(f"{self.ideascale_url}{login}", data=data)
 
     def download_reviews(self, funnel_id, out_dir):
         def download_file(self, funnel_id, id, out_dir):
@@ -40,24 +46,22 @@ class IdeaScaleClient:
 
             export_data_endpoint = "/a/reporting/export-data/"
             while True:
-                res = self.client.get(f"{ideascale_url}{export_data_endpoint}{item}")
+                res = self.client.get(f"{self.ideascale_url}{export_data_endpoint}{item}")
                 if "Finished Processing" in res.text:
                     download_endpoint = "/a/download-export-file/"
 
-                    res = self.client.get(f"{ideascale_url}{download_endpoint}{item}")
+                    res = self.client.get(f"{self.ideascale_url}{download_endpoint}{item}")
                     f = open(f"{out_dir}/{file_name}.xls", "wb")
                     f.write(res.content)
                     return file_name
 
 
         funnel_endpoint = "/a/admin/workflow/stages/funnel/"
-
         res = self.client.get(f"{self.ideascale_url}{funnel_endpoint}{funnel_id}")
-        print(res.text)
-        tree = html.fromstring(res.content)
 
         # we are looking for '<a href="/a/admin/workflow/survey-tools/assessment/report/statistic/139?fromStage=1">Assessments</a>'
         # where we need to get url
+        tree = html.fromstring(res.content)
         items = tree.findall('.//a')
         files = []
         for item in items:
@@ -68,14 +72,27 @@ class IdeaScaleClient:
                 files.append(download_file(self, funnel_id, id, out_dir))
         return files
 
-ideascale_url = "https://temp-cardano-sandbox.ideascale.com"
-email = "alex.pozhylenkov@iohk.io"
-password = "poghilenkov1995"
-out_dir = "tmp"
-funnel_id = 138
+class Importer:
+    def __init__(
+        self,
+        ideascale_url,
+        email,
+        password,
+        funnel_id,
+        out_dir,
+    ):
+        self.ideascale_url = ideascale_url
+        self.email = email
+        self.password = password
+        self.out_dir = out_dir
+        self.funnel_id = funnel_id
 
-client = IdeaScaleClient(ideascale_url)
+    def connect(self):
+        self.client = Client(self.ideascale_url)
+        self.client.login(self.email, self.password)
 
-client.login(email, password)
-files = client.download_reviews(funnel_id, out_dir)
-print(len(files))
+    def run(self):
+        self.client.download_reviews(self.funnel_id, self.out_dir)
+
+    def close(self):
+        self.client.close()

@@ -157,6 +157,14 @@ class HttpClient:
         self.session.close()
 
     async def json_get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
+        content = await self.get(path, headers)
+        # Doing this so we can describe schemas with types and
+        # not worry about field names not being in snake case format.
+        parsed_json = json.loads(content)
+        snake_case_keys(parsed_json)
+        return parsed_json
+
+    async def get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
         """Execute a GET request and returns a JSON result."""
         api_url = self.api_url
         if api_url.endswith("/"):
@@ -182,11 +190,7 @@ class HttpClient:
             self.request_progress_observer.request_end(req_id)
 
             if r.status == 200:
-                # Doing this so we can describe schemas with types and
-                # not worry about field names not being in snake case format.
-                parsed_json = json.loads(content)
-                snake_case_keys(parsed_json)
-                return parsed_json
+                return content
             else:
                 raise GetFailed(r.status, content.decode())
 

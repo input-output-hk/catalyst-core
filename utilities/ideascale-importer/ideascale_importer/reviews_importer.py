@@ -15,10 +15,10 @@ class Client:
 
     def __init__(self, ideascale_url):
         self.ideascale_url = ideascale_url
-        self.client = requests.Session()
+        self.inner = requests.Session()
 
     def close(self):
-        self.client.close()
+        self.inner.close()
 
     def login(self,  email, password):
         login = "/a/community/login"
@@ -30,14 +30,14 @@ class Client:
             'rememberMe': 'true',
         }
 
-        self.client.post(f"{self.ideascale_url}{login}", data=data)
+        self.inner.post(f"{self.ideascale_url}{login}", data=data)
 
     def download_reviews(self, funnel_id, out_dir):
         def download_file(self, funnel_id, id, out_dir):
             export_endpoint = "/a/admin/workflow/survey-tools/assessment/report/statistic/export/assessment-details/"
             file_name = f"{funnel_id}_{random_string()}"
 
-            res = self.client.get(f"{self.ideascale_url}{export_endpoint}{id}") 
+            res = self.inner.get(f"{self.ideascale_url}{export_endpoint}{id}") 
             tree = html.fromstring(res.content)
 
             # we are looking for '<div class="card panel export-result-progress" data-features="refresh-processing-item" data-processing-item-id="15622">'
@@ -46,18 +46,18 @@ class Client:
 
             export_data_endpoint = "/a/reporting/export-data/"
             while True:
-                res = self.client.get(f"{self.ideascale_url}{export_data_endpoint}{item}")
+                res = self.inner.get(f"{self.ideascale_url}{export_data_endpoint}{item}")
                 if "Finished Processing" in res.text:
                     download_endpoint = "/a/download-export-file/"
 
-                    res = self.client.get(f"{self.ideascale_url}{download_endpoint}{item}")
+                    res = self.inner.get(f"{self.ideascale_url}{download_endpoint}{item}")
                     f = open(f"{out_dir}/{file_name}.xls", "wb")
                     f.write(res.content)
                     return file_name
 
 
         funnel_endpoint = "/a/admin/workflow/stages/funnel/"
-        res = self.client.get(f"{self.ideascale_url}{funnel_endpoint}{funnel_id}")
+        res = self.inner.get(f"{self.ideascale_url}{funnel_endpoint}{funnel_id}")
 
         # we are looking for '<a href="/a/admin/workflow/survey-tools/assessment/report/statistic/139?fromStage=1">Assessments</a>'
         # where we need to get url

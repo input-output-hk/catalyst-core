@@ -109,7 +109,7 @@ class Client:
     def __init__(self, api_token: str, api_url: str = DEFAULT_API_URL):
         """Create an IdeaScale API client which connects to the given API URL."""
         self.api_token = api_token
-        self.inner = utils.JsonHttpClient(api_url)
+        self.inner = utils.HttpClient(api_url)
 
     def close(self):
         self.inner.close()
@@ -219,4 +219,4 @@ class Client:
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
         """Execute a GET request on IdeaScale API."""
         headers = {"api_token": self.api_token}
-        return await self.inner.get(path, headers)
+        return await self.inner.json_get(path, headers)

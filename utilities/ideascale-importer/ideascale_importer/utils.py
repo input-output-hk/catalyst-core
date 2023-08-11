@@ -143,11 +143,11 @@ class GetFailed(Exception):
         self.content = content
 
 
-class JsonHttpClient:
-    """HTTP Client for JSON APIs."""
+class HttpClient:
+    """HTTP Client for APIs."""
 
     def __init__(self, api_url: str):
-        """Initialize a new instance of JsonHttpClient."""
+        """Initialize a new instance of HttpClient."""
         self.api_url = api_url
         self.request_progress_observer = RequestProgressObserver()
         self.request_counter = 0
@@ -156,8 +156,8 @@ class JsonHttpClient:
     def close(self):
         self.session.close()
 
-    async def get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
-        """Execute a GET request on IdeaScale API."""
+    async def json_get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
+        """Execute a GET request and returns a JSON result."""
         api_url = self.api_url
         if api_url.endswith("/"):
             api_url = api_url[:-1]

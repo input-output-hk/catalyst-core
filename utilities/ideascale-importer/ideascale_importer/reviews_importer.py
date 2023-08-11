@@ -25,8 +25,8 @@ class Client:
 
         data = {
             'target-content-type': 'json',
-            'emailAddress': 'alex.pozhylenkov@iohk.io',
-            'password': 'poghilenkov1995',
+            'emailAddress': email,
+            'password': password,
             'rememberMe': 'true',
         }
 

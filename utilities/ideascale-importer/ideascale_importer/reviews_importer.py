@@ -1,13 +1,7 @@
 from lxml import html
-import uuid
+import secrets
 
 from ideascale_importer import utils
-
-def random_string(string_length=6):
-    """Returns a random string of length string_length."""
-    random = str(uuid.uuid4()) # Convert UUID format to a Python string.
-    random = random.replace("-","") # Remove the UUID '-'.
-    return random[0:string_length] # Return the random string.
 
 class Client:
     """IdeaScale front-end API client."""
@@ -35,7 +29,7 @@ class Client:
     async def download_reviews(self, funnel_id, out_dir):
         async def download_file(self, funnel_id, id, out_dir):
             export_endpoint = "/a/admin/workflow/survey-tools/assessment/report/statistic/export/assessment-details/"
-            file_name = f"{funnel_id}_{random_string()}"
+            file_name = f"{funnel_id}_{secrets.token_hex(6)}"
 
             content = await self.inner.get(f"{export_endpoint}{id}") 
             tree = html.fromstring(content)

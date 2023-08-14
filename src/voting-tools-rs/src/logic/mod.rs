@@ -21,23 +21,6 @@ pub use args::VotingPowerArgs;
 
 /// Calculate voting power info by querying a db-sync instance
 ///
-/// ```no_run
-/// # use voting_tools_rs::{Db, VotingPowerArgs};
-/// # fn connect() -> Db { unimplemented!() }
-/// let db: Db = connect();  // get a database connection
-/// let args = VotingPowerArgs::default();
-/// let (valids, invalids) = voting_power(db, args);
-///
-/// // `valids` contains all successful registrations
-/// // `invalids` contains failed registrations, with a reason:
-/// for invalid in invalids {
-///     println!("failed registration - reasons: ")
-///     for error in invalid.error {
-///         // ...
-///     }
-/// }
-/// ```
-///
 /// Returns a tuple containing the successful snapshot entries, as well as any registrations which
 /// failed verification in some way (along with some reason why they failed).
 ///

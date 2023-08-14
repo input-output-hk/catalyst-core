@@ -37,7 +37,6 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 rust_decimal = { version = "1.26", features = ["serde", "db-postgres"] }
 
-mainnet-lib = { path = "../vit-testing/mainnet-lib"}
 cardano-serialization-lib = "11.3.1"
 
 rand = "0.6"
@@ -64,7 +63,7 @@ tempdir = "0.3"
 tracing-test.workspace = true
 insta = { version = "1", features = ["json"] }
 postgres = "0.19"  # just to create the reference db in case it doesn't already exist
-jormungandr-lib = { workspace = true }
+# jormungandr-lib = { workspace = true }
 
 [features]
 all_tests = ["reference_tests", "e2e_tests"]

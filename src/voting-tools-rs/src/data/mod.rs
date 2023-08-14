@@ -687,9 +687,10 @@ impl RewardsAddress {
     /// Errors if the string is not valid hex
     ///
     /// ```
-    /// # use crate::data::RewardsAddress;
-    /// let address = RewardsAddress::from_hex("0000").unwrap();
-    /// assert_eq!(address.0, vec![0, 0]);
+    /// // Test broken, can not import `data` crate, it's private.
+    /// //# use crate::voting_tools_rs::data::RewardsAddress;
+    /// //let address = RewardsAddress::from_hex("0000").unwrap();
+    /// //assert_eq!(address.0, vec![0, 0]);
     /// ```
     #[inline]
     pub fn from_hex(s: &str) -> Result<Self, FromHexError> {

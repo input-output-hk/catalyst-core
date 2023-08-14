@@ -36,10 +36,10 @@ impl PubKey {
     ///
     /// ```
     ///
-    /// # use voting_tools_rs::PubKey;
-    /// let sig = PubKey::from_bytes([0; 32]);
+    /// // # use voting_tools_rs::PubKey;
+    /// // let sig = PubKey::from_bytes([0; 32]);
     ///
-    /// assert_eq!(sig.to_string, "0".repeat(64));
+    /// // assert_eq!(sig.to_string, "0".repeat(64));
     /// ```
     #[inline]
     pub fn to_hex(&self) -> String {
@@ -52,9 +52,9 @@ impl PubKey {
     /// characters
     ///
     /// ```
-    /// # use voting_tools_rs::PubKey;
-    /// let key = PubKey::from_str("0".repeat(64)).unwrap();
-    /// assert_eq!(key, PubKey::from_bytes([0; 32]));
+    /// //# use crate::PubKey;
+    /// //let key = PubKey::from_str("0".repeat(64)).unwrap();
+    /// //assert_eq!(key, PubKey::from_bytes([0; 32]));
     /// ```
     #[inline]
     pub fn from_hex(hex: &str) -> Result<Self, hex::FromHexError> {

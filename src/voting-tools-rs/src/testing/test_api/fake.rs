@@ -11,6 +11,8 @@ use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
 use cardano_serialization_lib::utils::BigNum;
 use dashmap::DashMap;
+// This library is garbage and pulls in almost everything from cat-core.  We should NOT be using it for tests like this.
+/*
 use mainnet_lib::{
     InMemoryDbSync, METADATUM_1, METADATUM_2, METADATUM_3, METADATUM_4,
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
@@ -151,3 +153,4 @@ impl From<InMemoryDbSync> for MockDbProvider {
         }
     }
 }
+*/

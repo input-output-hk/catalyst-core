@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DbInserterError"],"fn":["_impl_queryable_by_name_for_rowid"],"struct":["DbInserter","RowId"]};

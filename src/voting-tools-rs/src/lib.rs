@@ -28,8 +28,6 @@
 
 #[macro_use]
 extern crate tracing;
-#[macro_use]
-extern crate diesel;
 
 mod cli;
 mod data;
@@ -47,7 +45,7 @@ mod exports {
     pub use crate::cli::{show_error_warning, Args, DryRunCommand};
     pub use crate::data::{Sig, Signature, SlotNo, SnapshotEntry, VotingKey, VotingPurpose};
     pub use crate::data_provider::DataProvider;
-    pub use crate::db::{Conn, Db, DbConfig};
+    pub use crate::db::DbConfig;
     pub use crate::error::*;
     pub use crate::logic::{voting_power, VotingPowerArgs};
     pub use crate::testing::*;

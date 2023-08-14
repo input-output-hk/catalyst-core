@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["authorize_admin_token","authorize_api_token","filter_admin_token","filter_api_token"],"opaque":[""]};

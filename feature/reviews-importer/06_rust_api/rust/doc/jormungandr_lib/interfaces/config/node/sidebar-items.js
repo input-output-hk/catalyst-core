@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_PREFERRED_VIEW_MAX"],"struct":["Bootstrap","Connection","Cors","CorsOrigin","CorsOriginVisitor","HeaderName","HeaderNameVisitor","HttpMethod","JRpc","LayersConfig","NodeConfig","P2p","Policy","PreferredListConfig","PreferredViewMax","Rest","Tls","TopicsOfInterest","TrustedPeer","Visitor"],"type":["NodeId"]};

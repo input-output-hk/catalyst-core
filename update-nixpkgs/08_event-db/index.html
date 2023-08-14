@@ -1,0 +1,1520 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Event DB crate - Catalyst Voting System - Core Technology</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href=".././book/assets/css/mdbook-admonish.css">
+        <link rel="stylesheet" href=".././book/assets/css/open-in.css">
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item affix "><a href="../00_prologue.html">Prologue</a></li><li class="chapter-item "><a href="../01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item "><a href="../02_core_ledger/index.html"><strong aria-hidden="true">2.</strong> Core Ledger</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/01_concepts/index.html"><strong aria-hidden="true">2.1.</strong> General Concepts</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/01_concepts/blockchain.html"><strong aria-hidden="true">2.1.1.</strong> Blockchain concepts</a></li><li class="chapter-item "><a href="../02_core_ledger/01_concepts/network.html"><strong aria-hidden="true">2.1.2.</strong> Network overview</a></li><li class="chapter-item "><a href="../02_core_ledger/01_concepts/node.html"><strong aria-hidden="true">2.1.3.</strong> Node organization</a></li><li class="chapter-item "><a href="../02_core_ledger/01_concepts/stake.html"><strong aria-hidden="true">2.1.4.</strong> Stake</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/index.html"><strong aria-hidden="true">2.2.</strong> Quickstart</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/01_command_line.html"><strong aria-hidden="true">2.2.1.</strong> Command line tools</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/02_passive_node.html"><strong aria-hidden="true">2.2.2.</strong> Starting a passive node</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/03_rest_api.html"><strong aria-hidden="true">2.2.3.</strong> REST Api</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/04_explorer.html"><strong aria-hidden="true">2.2.4.</strong> Explorer mode</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/05_leader_candidate.html"><strong aria-hidden="true">2.2.5.</strong> How to start a node as a leader candidate</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/index.html"><strong aria-hidden="true">2.3.</strong> Configuration</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/03_configuration/leadership.html"><strong aria-hidden="true">2.3.1.</strong> Leadership</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/logging.html"><strong aria-hidden="true">2.3.2.</strong> Logging</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/mempool.html"><strong aria-hidden="true">2.3.3.</strong> Mempool</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/network.html"><strong aria-hidden="true">2.3.4.</strong> Node network</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/prometheus.html"><strong aria-hidden="true">2.3.5.</strong> Prometheus</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/index.html"><strong aria-hidden="true">2.4.</strong> jcli</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/04_jcli/address.html"><strong aria-hidden="true">2.4.1.</strong> Address</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/certificate.html"><strong aria-hidden="true">2.4.2.</strong> Certificate</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/genesis.html"><strong aria-hidden="true">2.4.3.</strong> Genesis</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/key.html"><strong aria-hidden="true">2.4.4.</strong> cryptographic keys</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/rest.html"><strong aria-hidden="true">2.4.5.</strong> REST</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/transaction.html"><strong aria-hidden="true">2.4.6.</strong> Transaction</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/vote.html"><strong aria-hidden="true">2.4.7.</strong> Voting</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/index.html"><strong aria-hidden="true">2.5.</strong> Staking with Jörmungandr</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/delegating_stake.html"><strong aria-hidden="true">2.5.1.</strong> Delegating your stake</a></li><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/registering_stake_pool.html"><strong aria-hidden="true">2.5.2.</strong> Registering a stake pool</a></li><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/retiring_stake_pool.html"><strong aria-hidden="true">2.5.3.</strong> Retiring a stake pool</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/index.html"><strong aria-hidden="true">2.6.</strong> Advanced</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/06_advanced/01_the_genesis_block.html"><strong aria-hidden="true">2.6.1.</strong> genesis file</a></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/02_starting_bft_blockchain.html"><strong aria-hidden="true">2.6.2.</strong> starting a bft node</a></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/03_starting_genesis_praos_blockchain.html"><strong aria-hidden="true">2.6.3.</strong> starting a genesis blockchain</a></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/04_vote_fragments_voteplan_blockchain_relationships.html"><strong aria-hidden="true">2.6.4.</strong> How Vote plans, Vote Fragments and the blockchain transaction work and inter-relate</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/07_specs/index.html"><strong aria-hidden="true">2.7.</strong> Jormungandr Specifications</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/07_specs/migration.html"><strong aria-hidden="true">2.7.1.</strong> MIGRATION</a></li><li class="chapter-item "><a href="../02_core_ledger/07_specs/network.html"><strong aria-hidden="true">2.7.2.</strong> Network</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/index.html"><strong aria-hidden="true">2.8.</strong> testing</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/08_testing/automation.html"><strong aria-hidden="true">2.8.1.</strong> jormungandr-automation</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/hersir.html"><strong aria-hidden="true">2.8.2.</strong> Hersir</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/integration_tests.html"><strong aria-hidden="true">2.8.3.</strong> jormungandr-integration-tests</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/loki.html"><strong aria-hidden="true">2.8.4.</strong> Loki</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/mjolnir.html"><strong aria-hidden="true">2.8.5.</strong> Mjolnir</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/thor.html"><strong aria-hidden="true">2.8.6.</strong> Thor</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/09_internal_design/index.html"><strong aria-hidden="true">2.9.</strong> Internal Design</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/09_internal_design/01_auto-start.html"><strong aria-hidden="true">2.9.1.</strong> Automatic deployment of the voting blockchain</a></li><li class="chapter-item "><a href="../02_core_ledger/09_internal_design/02_permissionless_auth.html"><strong aria-hidden="true">2.9.2.</strong> Permissionless Auth</a></li></ol></li></ol></li><li class="chapter-item "><a href="../03_core_testing/index.html"><strong aria-hidden="true">3.</strong> Catalyst testing User Guide</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/iapyx/index.html"><strong aria-hidden="true">3.1.</strong> Iapyx</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/iapyx/iapyx.html"><strong aria-hidden="true">3.1.1.</strong> Iapyx</a></li><li class="chapter-item "><a href="../03_core_testing/iapyx/load.html"><strong aria-hidden="true">3.1.2.</strong> Iapyx Load</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/integration-tests/index.html"><strong aria-hidden="true">3.2.</strong> integration-tests</a></li><li class="chapter-item "><a href="../03_core_testing/registration-service/index.html"><strong aria-hidden="true">3.3.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/registration-service/cli.html"><strong aria-hidden="true">3.3.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../03_core_testing/registration-service/configuration.html"><strong aria-hidden="true">3.3.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/registration-verify-service/index.html"><strong aria-hidden="true">3.4.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/registration-verify-service/cli.html"><strong aria-hidden="true">3.4.1.</strong> Registration Verify CLI</a></li><li class="chapter-item "><a href="../03_core_testing/registration-verify-service/configuration.html"><strong aria-hidden="true">3.4.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/snapshot-service/index.html"><strong aria-hidden="true">3.5.</strong> Snapshot trigger service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/snapshot-service/cli.html"><strong aria-hidden="true">3.5.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../03_core_testing/snapshot-service/configuration.html"><strong aria-hidden="true">3.5.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/snapshot-wormhole/index.html"><strong aria-hidden="true">3.6.</strong> snapshot wormhole</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/snapshot-wormhole/configuration.html"><strong aria-hidden="true">3.6.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/valgrind/index.html"><strong aria-hidden="true">3.7.</strong> valgrind</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/valgrind/configuration.html"><strong aria-hidden="true">3.7.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/vitup/index.html"><strong aria-hidden="true">3.8.</strong> vitup</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/vitup/configuration.html"><strong aria-hidden="true">3.8.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation/index.html"><strong aria-hidden="true">3.8.2.</strong> Data Generation</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation/reset.html"><strong aria-hidden="true">3.8.2.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation/snapshot.html"><strong aria-hidden="true">3.8.2.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation.html"><strong aria-hidden="true">3.8.3.</strong> Data Generation</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/mock.html"><strong aria-hidden="true">3.8.4.</strong> Mock</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/mock_farm.html"><strong aria-hidden="true">3.8.5.</strong> Mock Farm</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/run_modes.html"><strong aria-hidden="true">3.8.6.</strong> Configuration modes</a></li></ol></li></ol></li><li class="chapter-item "><a href="../04_core_vitss/index.html"><strong aria-hidden="true">4.</strong> Core VIT Servicing Station</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../04_core_vitss/testing.html"><strong aria-hidden="true">4.1.</strong> vit-servicing-station-tests</a></li></ol></li><li class="chapter-item "><a href="../05_unified_platform/index.html"><strong aria-hidden="true">5.</strong> Unified Platform</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/index.html"><strong aria-hidden="true">5.1.</strong> Overview</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/01_cardano_nodes.html"><strong aria-hidden="true">5.1.1.</strong> Cardano Nodes</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/index.html"><strong aria-hidden="true">5.1.2.</strong> Bridge Pipeline</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/01_block_reader.html"><strong aria-hidden="true">5.1.2.1.</strong> Block Reader</a></li></ol></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/03_rest_http_service.html"><strong aria-hidden="true">5.1.3.</strong> REST HTTP Service</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/04_event_stream.html"><strong aria-hidden="true">5.1.4.</strong> Event Stream</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/index.html"><strong aria-hidden="true">5.1.5.</strong> Database</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/01_registration_db.html"><strong aria-hidden="true">5.1.5.1.</strong> Registrations Database</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/02_staked_ada_db.html"><strong aria-hidden="true">5.1.5.2.</strong> Staked ADA Database</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/03_transaction_state.html"><strong aria-hidden="true">5.1.5.3.</strong> Transaction State Database</a></li></ol></li></ol></li></ol></li><li class="chapter-item "><a href="../06_rust_api/index.html"><strong aria-hidden="true">6.</strong> Rust API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../06_rust_api/rust_style_guide.html"><strong aria-hidden="true">6.1.</strong> 🦀 Rust Style Guide</a></li></ol></li><li class="chapter-item "><a href="../07_web_api/index.html"><strong aria-hidden="true">7.</strong> Web API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../07_web_api/catalyst-core-api.html"><strong aria-hidden="true">7.1.</strong> Catalyst Core API V1</a></li><li class="chapter-item "><a href="../07_web_api/dbsync-explorer.html"><strong aria-hidden="true">7.2.</strong> dbSync Explorer HTTP/REST API V1</a></li><li class="chapter-item "><a href="../07_web_api/vit-servicing-station-v0.html"><strong aria-hidden="true">7.3.</strong> VIT Servicing Station HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vit-testing-mock-farm-v0.html"><strong aria-hidden="true">7.4.</strong> VIT Testing Mock Farm HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vit-testing-mock-v0.html"><strong aria-hidden="true">7.5.</strong> VIT Testing Mock HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vote-ledger-v0.html"><strong aria-hidden="true">7.6.</strong> Vote Ledger HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vote-ledger-v1.html"><strong aria-hidden="true">7.7.</strong> Vote Ledger HTTP/REST API V1</a></li></ol></li><li class="chapter-item expanded "><a href="../08_event-db/index.html" class="active"><strong aria-hidden="true">8.</strong> Event DB crate</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../08_event-db/01_development.html"><strong aria-hidden="true">8.1.</strong> Event DB Local Development</a></li><li class="chapter-item "><a href="../08_event-db/02_config-tables.html"><strong aria-hidden="true">8.2.</strong> General Configuration</a></li><li class="chapter-item "><a href="../08_event-db/03_event-table.html"><strong aria-hidden="true">8.3.</strong> Event Definition Table</a></li><li class="chapter-item "><a href="../08_event-db/04_objective_tables.html"><strong aria-hidden="true">8.4.</strong> Objective and Proposal  Tables</a></li><li class="chapter-item "><a href="../08_event-db/05_vote_plans.html"><strong aria-hidden="true">8.5.</strong> Vote Plan Tables</a></li><li class="chapter-item "><a href="../08_event-db/06_snapshot_tables.html"><strong aria-hidden="true">8.6.</strong> Voter Voting Power Snapshot and Vote Storage Table</a></li><li class="chapter-item "><a href="../08_event-db/07_automation_support.html"><strong aria-hidden="true">8.7.</strong> Catalyst Automation Support Tables</a></li><li class="chapter-item "><a href="../08_event-db/08_moderation.html"><strong aria-hidden="true">8.8.</strong> Moderation Stage</a></li></ol></li><li class="chapter-item "><a href="../97_CONTRIBUTING.html"><strong aria-hidden="true">9.</strong> Contributing to Catalyst Core</a></li><li class="chapter-item "><a href="../98_CODE_OF_CONDUCT.html"><strong aria-hidden="true">10.</strong> Contributor Covenant Code of Conduct</a></li><li class="chapter-item "><a href="../99_example_enhanced_markup.html"><strong aria-hidden="true">11.</strong> Example Enhanced Markup</a></li><li class="chapter-item affix "><a href="../ZZ_suffix.html">Suffix</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Catalyst Voting System - Core Technology</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/input-output-hk/catalyst-core" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="event-db-crate"><a class="header" href="#event-db-crate">Event DB crate</a></h1>
+<p>The <code>event-db</code> crate abstracts all database operations.</p>
+<p>This will allow us to iterate the backend data storage without requiring large changes to the consuming services.</p>
+<h2 id="overview-diagram"><a class="header" href="#overview-diagram">Overview Diagram</a></h2>
+<pre><svg width="1534pt" height="2135pt"
+ viewBox="0.00 0.00 1534.00 2135.30" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 2131.3)">
+<title>erd</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-2131.3 1530,-2131.3 1530,4 -4,4"/>
+<text text-anchor="middle" x="763" y="-2094.8" font-family="Times,serif" font-size="30.00" fill="blue">Catalyst Event Database Overview</text>
+<!-- ballot -->
+<g id="node1" class="node">
+<title>ballot</title>
+<polygon fill="#009879" stroke="none" points="357.5,-1926.5 357.5,-1956.5 525.5,-1956.5 525.5,-1926.5 357.5,-1926.5"/>
+<polygon fill="none" stroke="black" points="357.5,-1926.5 357.5,-1956.5 525.5,-1956.5 525.5,-1926.5 357.5,-1926.5"/>
+<text text-anchor="start" x="414" y="-1935.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">ballot</text>
+<polygon fill="none" stroke="black" points="357.5,-1899.5 357.5,-1926.5 452.5,-1926.5 452.5,-1899.5 357.5,-1899.5"/>
+<text text-anchor="start" x="370.5" y="-1907.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="452.5,-1899.5 452.5,-1926.5 525.5,-1926.5 525.5,-1899.5 452.5,-1899.5"/>
+<text text-anchor="start" x="468.5" y="-1907.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="357.5,-1874.5 357.5,-1899.5 452.5,-1899.5 452.5,-1874.5 357.5,-1874.5"/>
+<polygon fill="none" stroke="black" points="357.5,-1874.5 357.5,-1899.5 452.5,-1899.5 452.5,-1874.5 357.5,-1874.5"/>
+<text text-anchor="start" x="360.5" y="-1881.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="452.5,-1874.5 452.5,-1899.5 525.5,-1899.5 525.5,-1874.5 452.5,-1874.5"/>
+<polygon fill="none" stroke="black" points="452.5,-1874.5 452.5,-1899.5 525.5,-1899.5 525.5,-1874.5 452.5,-1874.5"/>
+<text text-anchor="start" x="466" y="-1881.3" font-family="Times,serif" font-size="16.00">bigint+</text>
+<polygon fill="none" stroke="black" points="357.5,-1849.5 357.5,-1874.5 452.5,-1874.5 452.5,-1849.5 357.5,-1849.5"/>
+<text text-anchor="start" x="360.5" y="-1856.3" font-family="Times,serif" font-size="16.00">objective</text>
+<polygon fill="none" stroke="black" points="452.5,-1849.5 452.5,-1874.5 525.5,-1874.5 525.5,-1849.5 452.5,-1849.5"/>
+<text text-anchor="start" x="467" y="-1856.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="357.5,-1824.5 357.5,-1849.5 452.5,-1849.5 452.5,-1824.5 357.5,-1824.5"/>
+<text text-anchor="start" x="360.5" y="-1831.3" font-family="Times,serif" font-size="16.00">proposal</text>
+<polygon fill="none" stroke="black" points="452.5,-1824.5 452.5,-1849.5 525.5,-1849.5 525.5,-1824.5 452.5,-1824.5"/>
+<text text-anchor="start" x="467" y="-1832.3" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="357.5,-1799.5 357.5,-1824.5 452.5,-1824.5 452.5,-1799.5 357.5,-1799.5"/>
+<text text-anchor="start" x="360.5" y="-1806.3" font-family="Times,serif" font-size="16.00">voter</text>
+<polygon fill="none" stroke="black" points="452.5,-1799.5 452.5,-1824.5 525.5,-1824.5 525.5,-1799.5 452.5,-1799.5"/>
+<text text-anchor="start" x="467" y="-1806.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="357.5,-1774.5 357.5,-1799.5 452.5,-1799.5 452.5,-1774.5 357.5,-1774.5"/>
+<text text-anchor="start" x="360.5" y="-1781.3" font-family="Times,serif" font-size="16.00">fragment_id</text>
+<polygon fill="none" stroke="black" points="452.5,-1774.5 452.5,-1799.5 525.5,-1799.5 525.5,-1774.5 452.5,-1774.5"/>
+<text text-anchor="start" x="477" y="-1781.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="357.5,-1749.5 357.5,-1774.5 452.5,-1774.5 452.5,-1749.5 357.5,-1749.5"/>
+<text text-anchor="start" x="360.5" y="-1756.3" font-family="Times,serif" font-size="16.00">cast_at</text>
+<polygon fill="none" stroke="black" points="452.5,-1749.5 452.5,-1774.5 525.5,-1774.5 525.5,-1749.5 452.5,-1749.5"/>
+<text text-anchor="start" x="455.5" y="-1756.3" font-family="Times,serif" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="357.5,-1724.5 357.5,-1749.5 452.5,-1749.5 452.5,-1724.5 357.5,-1724.5"/>
+<text text-anchor="start" x="360.5" y="-1731.3" font-family="Times,serif" font-size="16.00">choice</text>
+<polygon fill="none" stroke="black" points="452.5,-1724.5 452.5,-1749.5 525.5,-1749.5 525.5,-1724.5 452.5,-1724.5"/>
+<text text-anchor="start" x="463" y="-1732.3" font-family="Times,serif" font-style="italic" font-size="16.00">smallint</text>
+<polygon fill="none" stroke="black" points="357.5,-1699.5 357.5,-1724.5 452.5,-1724.5 452.5,-1699.5 357.5,-1699.5"/>
+<text text-anchor="start" x="360.5" y="-1706.3" font-family="Times,serif" font-size="16.00">raw_fragment</text>
+<polygon fill="none" stroke="black" points="452.5,-1699.5 452.5,-1724.5 525.5,-1724.5 525.5,-1699.5 452.5,-1699.5"/>
+<text text-anchor="start" x="472" y="-1706.3" font-family="Times,serif" font-size="16.00">bytea</text>
+</g>
+<!-- objective -->
+<g id="node10" class="node">
+<title>objective</title>
+<polygon fill="#009879" stroke="none" points="969.5,-1830 969.5,-1860 1183.5,-1860 1183.5,-1830 969.5,-1830"/>
+<polygon fill="none" stroke="black" points="969.5,-1830 969.5,-1860 1183.5,-1860 1183.5,-1830 969.5,-1830"/>
+<text text-anchor="start" x="1031" y="-1839" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">objective</text>
+<polygon fill="none" stroke="black" points="969.5,-1803 969.5,-1830 1124.5,-1830 1124.5,-1803 969.5,-1803"/>
+<text text-anchor="start" x="1012.5" y="-1810.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1124.5,-1803 1124.5,-1830 1183.5,-1830 1183.5,-1803 1124.5,-1803"/>
+<text text-anchor="start" x="1133.5" y="-1810.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="969.5,-1778 969.5,-1803 1124.5,-1803 1124.5,-1778 969.5,-1778"/>
+<polygon fill="none" stroke="black" points="969.5,-1778 969.5,-1803 1124.5,-1803 1124.5,-1778 969.5,-1778"/>
+<text text-anchor="start" x="972.5" y="-1784.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="1124.5,-1778 1124.5,-1803 1183.5,-1803 1183.5,-1778 1124.5,-1778"/>
+<polygon fill="none" stroke="black" points="1124.5,-1778 1124.5,-1803 1183.5,-1803 1183.5,-1778 1124.5,-1778"/>
+<text text-anchor="start" x="1127.5" y="-1784.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="969.5,-1753 969.5,-1778 1124.5,-1778 1124.5,-1753 969.5,-1753"/>
+<text text-anchor="start" x="972.5" y="-1759.8" font-family="Times,serif" font-size="16.00">id</text>
+<polygon fill="none" stroke="black" points="1124.5,-1753 1124.5,-1778 1183.5,-1778 1183.5,-1753 1124.5,-1753"/>
+<text text-anchor="start" x="1132" y="-1759.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="969.5,-1728 969.5,-1753 1124.5,-1753 1124.5,-1728 969.5,-1728"/>
+<text text-anchor="start" x="972.5" y="-1734.8" font-family="Times,serif" font-size="16.00">event</text>
+<polygon fill="none" stroke="black" points="1124.5,-1728 1124.5,-1753 1183.5,-1753 1183.5,-1728 1124.5,-1728"/>
+<text text-anchor="start" x="1132" y="-1734.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="969.5,-1703 969.5,-1728 1124.5,-1728 1124.5,-1703 969.5,-1703"/>
+<text text-anchor="start" x="972.5" y="-1709.8" font-family="Times,serif" font-size="16.00">category</text>
+<polygon fill="none" stroke="black" points="1124.5,-1703 1124.5,-1728 1183.5,-1728 1183.5,-1703 1124.5,-1703"/>
+<text text-anchor="start" x="1142" y="-1709.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="969.5,-1678 969.5,-1703 1124.5,-1703 1124.5,-1678 969.5,-1678"/>
+<text text-anchor="start" x="972.5" y="-1684.8" font-family="Times,serif" font-size="16.00">title</text>
+<polygon fill="none" stroke="black" points="1124.5,-1678 1124.5,-1703 1183.5,-1703 1183.5,-1678 1124.5,-1678"/>
+<text text-anchor="start" x="1142" y="-1684.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="969.5,-1653 969.5,-1678 1124.5,-1678 1124.5,-1653 969.5,-1653"/>
+<text text-anchor="start" x="972.5" y="-1659.8" font-family="Times,serif" font-size="16.00">description</text>
+<polygon fill="none" stroke="black" points="1124.5,-1653 1124.5,-1678 1183.5,-1678 1183.5,-1653 1124.5,-1653"/>
+<text text-anchor="start" x="1142" y="-1659.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="969.5,-1628 969.5,-1653 1124.5,-1653 1124.5,-1628 969.5,-1628"/>
+<text text-anchor="start" x="972.5" y="-1634.8" font-family="Times,serif" font-size="16.00">deleted</text>
+<polygon fill="none" stroke="black" points="1124.5,-1628 1124.5,-1653 1183.5,-1653 1183.5,-1628 1124.5,-1628"/>
+<text text-anchor="start" x="1129" y="-1634.8" font-family="Times,serif" font-size="16.00">boolean</text>
+<polygon fill="none" stroke="black" points="969.5,-1603 969.5,-1628 1124.5,-1628 1124.5,-1603 969.5,-1603"/>
+<text text-anchor="start" x="972.5" y="-1609.8" font-family="Times,serif" font-size="16.00">rewards_currency</text>
+<polygon fill="none" stroke="black" points="1124.5,-1603 1124.5,-1628 1183.5,-1628 1183.5,-1603 1124.5,-1603"/>
+<text text-anchor="start" x="1142" y="-1610.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="969.5,-1578 969.5,-1603 1124.5,-1603 1124.5,-1578 969.5,-1578"/>
+<text text-anchor="start" x="972.5" y="-1584.8" font-family="Times,serif" font-size="16.00">rewards_total</text>
+<polygon fill="none" stroke="black" points="1124.5,-1578 1124.5,-1603 1183.5,-1603 1183.5,-1578 1124.5,-1578"/>
+<text text-anchor="start" x="1135.5" y="-1585.8" font-family="Times,serif" font-style="italic" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="969.5,-1553 969.5,-1578 1124.5,-1578 1124.5,-1553 969.5,-1553"/>
+<text text-anchor="start" x="972.5" y="-1559.8" font-family="Times,serif" font-size="16.00">rewards_total_lovelace</text>
+<polygon fill="none" stroke="black" points="1124.5,-1553 1124.5,-1578 1183.5,-1578 1183.5,-1553 1124.5,-1553"/>
+<text text-anchor="start" x="1135.5" y="-1560.8" font-family="Times,serif" font-style="italic" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="969.5,-1528 969.5,-1553 1124.5,-1553 1124.5,-1528 969.5,-1528"/>
+<text text-anchor="start" x="972.5" y="-1534.8" font-family="Times,serif" font-size="16.00">proposers_rewards</text>
+<polygon fill="none" stroke="black" points="1124.5,-1528 1124.5,-1553 1183.5,-1553 1183.5,-1528 1124.5,-1528"/>
+<text text-anchor="start" x="1135.5" y="-1535.8" font-family="Times,serif" font-style="italic" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="969.5,-1503 969.5,-1528 1124.5,-1528 1124.5,-1503 969.5,-1503"/>
+<text text-anchor="start" x="972.5" y="-1509.8" font-family="Times,serif" font-size="16.00">vote_options</text>
+<polygon fill="none" stroke="black" points="1124.5,-1503 1124.5,-1528 1183.5,-1528 1183.5,-1503 1124.5,-1503"/>
+<text text-anchor="start" x="1132" y="-1510.8" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="969.5,-1478 969.5,-1503 1124.5,-1503 1124.5,-1478 969.5,-1478"/>
+<text text-anchor="start" x="972.5" y="-1484.8" font-family="Times,serif" font-size="16.00">extra</text>
+<polygon fill="none" stroke="black" points="1124.5,-1478 1124.5,-1503 1183.5,-1503 1183.5,-1478 1124.5,-1478"/>
+<text text-anchor="start" x="1136.5" y="-1485.8" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+</g>
+<!-- ballot&#45;&gt;objective -->
+<g id="edge24" class="edge">
+<title>ballot:objective_out&#45;&gt;objective:row_id</title>
+<path fill="none" stroke="black" d="M526.5,-1862C576.86,-1862 571.89,-1911.11 620,-1926 736.76,-1962.13 789.93,-1988.43 895,-1926 950.29,-1893.15 906.07,-1802.51 957.7,-1792"/>
+<polygon fill="black" stroke="black" points="957.86,-1795.41 967.5,-1791 957.22,-1788.43 957.86,-1795.41"/>
+</g>
+<!-- proposal -->
+<g id="node13" class="node">
+<title>proposal</title>
+<polygon fill="#009879" stroke="none" points="628,-1883 628,-1913 887,-1913 887,-1883 628,-1883"/>
+<polygon fill="none" stroke="black" points="628,-1883 628,-1913 887,-1913 887,-1883 628,-1883"/>
+<text text-anchor="start" x="715.5" y="-1892" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal</text>
+<polygon fill="none" stroke="black" points="628,-1856 628,-1883 826,-1883 826,-1856 628,-1856"/>
+<text text-anchor="start" x="692.5" y="-1863.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="826,-1856 826,-1883 887,-1883 887,-1856 826,-1856"/>
+<text text-anchor="start" x="836" y="-1863.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="628,-1831 628,-1856 826,-1856 826,-1831 628,-1831"/>
+<polygon fill="none" stroke="black" points="628,-1831 628,-1856 826,-1856 826,-1831 628,-1831"/>
+<text text-anchor="start" x="631" y="-1837.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="826,-1831 826,-1856 887,-1856 887,-1831 826,-1831"/>
+<polygon fill="none" stroke="black" points="826,-1831 826,-1856 887,-1856 887,-1831 826,-1831"/>
+<text text-anchor="start" x="830" y="-1837.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="628,-1806 628,-1831 826,-1831 826,-1806 628,-1806"/>
+<text text-anchor="start" x="631" y="-1812.8" font-family="Times,serif" font-size="16.00">id</text>
+<polygon fill="none" stroke="black" points="826,-1806 826,-1831 887,-1831 887,-1806 826,-1806"/>
+<text text-anchor="start" x="834.5" y="-1812.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="628,-1781 628,-1806 826,-1806 826,-1781 628,-1781"/>
+<text text-anchor="start" x="631" y="-1787.8" font-family="Times,serif" font-size="16.00">objective</text>
+<polygon fill="none" stroke="black" points="826,-1781 826,-1806 887,-1806 887,-1781 826,-1781"/>
+<text text-anchor="start" x="834.5" y="-1787.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="628,-1756 628,-1781 826,-1781 826,-1756 628,-1756"/>
+<text text-anchor="start" x="631" y="-1762.8" font-family="Times,serif" font-size="16.00">title</text>
+<polygon fill="none" stroke="black" points="826,-1756 826,-1781 887,-1781 887,-1756 826,-1756"/>
+<text text-anchor="start" x="844.5" y="-1762.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1731 628,-1756 826,-1756 826,-1731 628,-1731"/>
+<text text-anchor="start" x="631" y="-1737.8" font-family="Times,serif" font-size="16.00">summary</text>
+<polygon fill="none" stroke="black" points="826,-1731 826,-1756 887,-1756 887,-1731 826,-1731"/>
+<text text-anchor="start" x="844.5" y="-1737.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1706 628,-1731 826,-1731 826,-1706 628,-1706"/>
+<text text-anchor="start" x="631" y="-1712.8" font-family="Times,serif" font-size="16.00">category</text>
+<polygon fill="none" stroke="black" points="826,-1706 826,-1731 887,-1731 887,-1706 826,-1706"/>
+<text text-anchor="start" x="844.5" y="-1712.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1681 628,-1706 826,-1706 826,-1681 628,-1681"/>
+<text text-anchor="start" x="631" y="-1687.8" font-family="Times,serif" font-size="16.00">public_key</text>
+<polygon fill="none" stroke="black" points="826,-1681 826,-1706 887,-1706 887,-1681 826,-1681"/>
+<text text-anchor="start" x="844.5" y="-1687.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1656 628,-1681 826,-1681 826,-1656 628,-1656"/>
+<text text-anchor="start" x="631" y="-1662.8" font-family="Times,serif" font-size="16.00">funds</text>
+<polygon fill="none" stroke="black" points="826,-1656 826,-1681 887,-1681 887,-1656 826,-1656"/>
+<text text-anchor="start" x="838" y="-1662.8" font-family="Times,serif" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="628,-1631 628,-1656 826,-1656 826,-1631 628,-1631"/>
+<text text-anchor="start" x="631" y="-1637.8" font-family="Times,serif" font-size="16.00">url</text>
+<polygon fill="none" stroke="black" points="826,-1631 826,-1656 887,-1656 887,-1631 826,-1631"/>
+<text text-anchor="start" x="844.5" y="-1637.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1606 628,-1631 826,-1631 826,-1606 628,-1606"/>
+<text text-anchor="start" x="631" y="-1612.8" font-family="Times,serif" font-size="16.00">files_url</text>
+<polygon fill="none" stroke="black" points="826,-1606 826,-1631 887,-1631 887,-1606 826,-1606"/>
+<text text-anchor="start" x="844.5" y="-1612.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1581 628,-1606 826,-1606 826,-1581 628,-1581"/>
+<text text-anchor="start" x="631" y="-1587.8" font-family="Times,serif" font-size="16.00">impact_score</text>
+<polygon fill="none" stroke="black" points="826,-1581 826,-1606 887,-1606 887,-1581 826,-1581"/>
+<text text-anchor="start" x="838" y="-1587.8" font-family="Times,serif" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="628,-1556 628,-1581 826,-1581 826,-1556 628,-1556"/>
+<text text-anchor="start" x="631" y="-1562.8" font-family="Times,serif" font-size="16.00">deleted</text>
+<polygon fill="none" stroke="black" points="826,-1556 826,-1581 887,-1581 887,-1556 826,-1556"/>
+<text text-anchor="start" x="831.5" y="-1562.8" font-family="Times,serif" font-size="16.00">boolean</text>
+<polygon fill="none" stroke="black" points="628,-1531 628,-1556 826,-1556 826,-1531 628,-1531"/>
+<text text-anchor="start" x="631" y="-1537.8" font-family="Times,serif" font-size="16.00">extra</text>
+<polygon fill="none" stroke="black" points="826,-1531 826,-1556 887,-1556 887,-1531 826,-1531"/>
+<text text-anchor="start" x="839" y="-1538.8" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+<polygon fill="none" stroke="black" points="628,-1506 628,-1531 826,-1531 826,-1506 628,-1506"/>
+<text text-anchor="start" x="631" y="-1512.8" font-family="Times,serif" font-size="16.00">proposer_name</text>
+<polygon fill="none" stroke="black" points="826,-1506 826,-1531 887,-1531 887,-1506 826,-1506"/>
+<text text-anchor="start" x="844.5" y="-1512.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1481 628,-1506 826,-1506 826,-1481 628,-1481"/>
+<text text-anchor="start" x="631" y="-1487.8" font-family="Times,serif" font-size="16.00">proposer_contact</text>
+<polygon fill="none" stroke="black" points="826,-1481 826,-1506 887,-1506 887,-1481 826,-1481"/>
+<text text-anchor="start" x="844.5" y="-1487.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1456 628,-1481 826,-1481 826,-1456 628,-1456"/>
+<text text-anchor="start" x="631" y="-1462.8" font-family="Times,serif" font-size="16.00">proposer_url</text>
+<polygon fill="none" stroke="black" points="826,-1456 826,-1481 887,-1481 887,-1456 826,-1456"/>
+<text text-anchor="start" x="844.5" y="-1462.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1431 628,-1456 826,-1456 826,-1431 628,-1431"/>
+<text text-anchor="start" x="631" y="-1437.8" font-family="Times,serif" font-size="16.00">proposer_relevant_experience</text>
+<polygon fill="none" stroke="black" points="826,-1431 826,-1456 887,-1456 887,-1431 826,-1431"/>
+<text text-anchor="start" x="844.5" y="-1437.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="628,-1406 628,-1431 826,-1431 826,-1406 628,-1406"/>
+<text text-anchor="start" x="631" y="-1412.8" font-family="Times,serif" font-size="16.00">bb_proposal_id</text>
+<polygon fill="none" stroke="black" points="826,-1406 826,-1431 887,-1431 887,-1406 826,-1406"/>
+<text text-anchor="start" x="839.5" y="-1413.8" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="628,-1381 628,-1406 826,-1406 826,-1381 628,-1381"/>
+<text text-anchor="start" x="631" y="-1387.8" font-family="Times,serif" font-size="16.00">bb_vote_options</text>
+<polygon fill="none" stroke="black" points="826,-1381 826,-1406 887,-1406 887,-1381 826,-1381"/>
+<text text-anchor="start" x="829" y="-1388.8" font-family="Times,serif" font-style="italic" font-size="16.00">ARRAY</text>
+</g>
+<!-- ballot&#45;&gt;proposal -->
+<g id="edge25" class="edge">
+<title>ballot:proposal_out&#45;&gt;proposal:row_id</title>
+<path fill="none" stroke="black" d="M526.5,-1837C567.22,-1837 579.83,-1842.85 615.72,-1843.85"/>
+<polygon fill="black" stroke="black" points="615.45,-1847.36 625.5,-1844 615.55,-1840.36 615.45,-1847.36"/>
+</g>
+<!-- voter -->
+<g id="node24" class="node">
+<title>voter</title>
+<polygon fill="#009879" stroke="none" points="684.5,-1325 684.5,-1355 830.5,-1355 830.5,-1325 684.5,-1325"/>
+<polygon fill="none" stroke="black" points="684.5,-1325 684.5,-1355 830.5,-1355 830.5,-1325 684.5,-1325"/>
+<text text-anchor="start" x="731.5" y="-1334" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voter</text>
+<polygon fill="none" stroke="black" points="684.5,-1298 684.5,-1325 778.5,-1325 778.5,-1298 684.5,-1298"/>
+<text text-anchor="start" x="697" y="-1305.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="778.5,-1298 778.5,-1325 830.5,-1325 830.5,-1298 778.5,-1298"/>
+<text text-anchor="start" x="784" y="-1305.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="684.5,-1273 684.5,-1298 778.5,-1298 778.5,-1273 684.5,-1273"/>
+<polygon fill="none" stroke="black" points="684.5,-1273 684.5,-1298 778.5,-1298 778.5,-1273 684.5,-1273"/>
+<text text-anchor="start" x="687.5" y="-1279.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="778.5,-1273 778.5,-1298 830.5,-1298 830.5,-1273 778.5,-1273"/>
+<polygon fill="none" stroke="black" points="778.5,-1273 778.5,-1298 830.5,-1298 830.5,-1273 778.5,-1273"/>
+<text text-anchor="start" x="781.5" y="-1279.8" font-family="Times,serif" font-size="16.00">bigint+</text>
+<polygon fill="none" stroke="black" points="684.5,-1248 684.5,-1273 778.5,-1273 778.5,-1248 684.5,-1248"/>
+<text text-anchor="start" x="687.5" y="-1254.8" font-family="Times,serif" font-size="16.00">voting_key</text>
+<polygon fill="none" stroke="black" points="778.5,-1248 778.5,-1273 830.5,-1273 830.5,-1248 778.5,-1248"/>
+<text text-anchor="start" x="792.5" y="-1254.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="684.5,-1223 684.5,-1248 778.5,-1248 778.5,-1223 684.5,-1223"/>
+<text text-anchor="start" x="687.5" y="-1229.8" font-family="Times,serif" font-size="16.00">snapshot_id</text>
+<polygon fill="none" stroke="black" points="778.5,-1223 778.5,-1248 830.5,-1248 830.5,-1223 778.5,-1223"/>
+<text text-anchor="start" x="782.5" y="-1229.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="684.5,-1198 684.5,-1223 778.5,-1223 778.5,-1198 684.5,-1198"/>
+<text text-anchor="start" x="687.5" y="-1204.8" font-family="Times,serif" font-size="16.00">voting_group</text>
+<polygon fill="none" stroke="black" points="778.5,-1198 778.5,-1223 830.5,-1223 830.5,-1198 778.5,-1198"/>
+<text text-anchor="start" x="792.5" y="-1204.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="684.5,-1173 684.5,-1198 778.5,-1198 778.5,-1173 684.5,-1173"/>
+<text text-anchor="start" x="687.5" y="-1179.8" font-family="Times,serif" font-size="16.00">voting_power</text>
+<polygon fill="none" stroke="black" points="778.5,-1173 778.5,-1198 830.5,-1198 830.5,-1173 778.5,-1173"/>
+<text text-anchor="start" x="786" y="-1179.8" font-family="Times,serif" font-size="16.00">bigint</text>
+</g>
+<!-- ballot&#45;&gt;voter -->
+<g id="edge23" class="edge">
+<title>ballot:voter_out&#45;&gt;voter:row_id</title>
+<path fill="none" stroke="black" d="M526.5,-1812C587.65,-1812 567.59,-1745.91 584,-1687 622.3,-1549.56 566.33,-1500.2 620,-1368 635.85,-1328.96 637.27,-1292.78 672.6,-1286.85"/>
+<polygon fill="black" stroke="black" points="672.8,-1290.26 682.5,-1286 672.26,-1283.29 672.8,-1290.26"/>
+</g>
+<!-- committee_member -->
+<g id="node2" class="node">
+<title>committee_member</title>
+<polygon fill="#009879" stroke="none" points="653.5,-367.5 653.5,-397.5 861.5,-397.5 861.5,-367.5 653.5,-367.5"/>
+<polygon fill="none" stroke="black" points="653.5,-367.5 653.5,-397.5 861.5,-397.5 861.5,-367.5 653.5,-367.5"/>
+<text text-anchor="start" x="656.5" y="-376.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">committee_member</text>
+<polygon fill="none" stroke="black" points="653.5,-340.5 653.5,-367.5 778.5,-367.5 778.5,-340.5 653.5,-340.5"/>
+<text text-anchor="start" x="681.5" y="-348.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="778.5,-340.5 778.5,-367.5 861.5,-367.5 861.5,-340.5 778.5,-340.5"/>
+<text text-anchor="start" x="799.5" y="-348.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="653.5,-315.5 653.5,-340.5 778.5,-340.5 778.5,-315.5 653.5,-315.5"/>
+<polygon fill="none" stroke="black" points="653.5,-315.5 653.5,-340.5 778.5,-340.5 778.5,-315.5 653.5,-315.5"/>
+<text text-anchor="start" x="656.5" y="-322.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="778.5,-315.5 778.5,-340.5 861.5,-340.5 861.5,-315.5 778.5,-315.5"/>
+<polygon fill="none" stroke="black" points="778.5,-315.5 778.5,-340.5 861.5,-340.5 861.5,-315.5 778.5,-315.5"/>
+<text text-anchor="start" x="793.5" y="-322.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="653.5,-290.5 653.5,-315.5 778.5,-315.5 778.5,-290.5 653.5,-290.5"/>
+<text text-anchor="start" x="656.5" y="-297.3" font-family="Times,serif" font-size="16.00">committee</text>
+<polygon fill="none" stroke="black" points="778.5,-290.5 778.5,-315.5 861.5,-315.5 861.5,-290.5 778.5,-290.5"/>
+<text text-anchor="start" x="798" y="-297.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="653.5,-265.5 653.5,-290.5 778.5,-290.5 778.5,-265.5 653.5,-265.5"/>
+<text text-anchor="start" x="656.5" y="-272.3" font-family="Times,serif" font-size="16.00">member_index</text>
+<polygon fill="none" stroke="black" points="778.5,-265.5 778.5,-290.5 861.5,-290.5 861.5,-265.5 778.5,-265.5"/>
+<text text-anchor="start" x="798" y="-272.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="653.5,-240.5 653.5,-265.5 778.5,-265.5 778.5,-240.5 653.5,-240.5"/>
+<text text-anchor="start" x="656.5" y="-247.3" font-family="Times,serif" font-size="16.00">threshold</text>
+<polygon fill="none" stroke="black" points="778.5,-240.5 778.5,-265.5 861.5,-265.5 861.5,-240.5 778.5,-240.5"/>
+<text text-anchor="start" x="798" y="-247.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="653.5,-215.5 653.5,-240.5 778.5,-240.5 778.5,-215.5 653.5,-215.5"/>
+<text text-anchor="start" x="656.5" y="-222.3" font-family="Times,serif" font-size="16.00">comm_pk</text>
+<polygon fill="none" stroke="black" points="778.5,-215.5 778.5,-240.5 861.5,-240.5 861.5,-215.5 778.5,-215.5"/>
+<text text-anchor="start" x="808" y="-222.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="653.5,-190.5 653.5,-215.5 778.5,-215.5 778.5,-190.5 653.5,-190.5"/>
+<text text-anchor="start" x="656.5" y="-197.3" font-family="Times,serif" font-size="16.00">comm_sk</text>
+<polygon fill="none" stroke="black" points="778.5,-190.5 778.5,-215.5 861.5,-215.5 861.5,-190.5 778.5,-190.5"/>
+<text text-anchor="start" x="808" y="-197.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="653.5,-165.5 653.5,-190.5 778.5,-190.5 778.5,-165.5 653.5,-165.5"/>
+<text text-anchor="start" x="656.5" y="-172.3" font-family="Times,serif" font-size="16.00">member_pk</text>
+<polygon fill="none" stroke="black" points="778.5,-165.5 778.5,-190.5 861.5,-190.5 861.5,-165.5 778.5,-165.5"/>
+<text text-anchor="start" x="808" y="-172.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="653.5,-140.5 653.5,-165.5 778.5,-165.5 778.5,-140.5 653.5,-140.5"/>
+<text text-anchor="start" x="656.5" y="-147.3" font-family="Times,serif" font-size="16.00">member_sk</text>
+<polygon fill="none" stroke="black" points="778.5,-140.5 778.5,-165.5 861.5,-165.5 861.5,-140.5 778.5,-140.5"/>
+<text text-anchor="start" x="808" y="-147.3" font-family="Times,serif" font-size="16.00">text</text>
+</g>
+<!-- tally_committee -->
+<g id="node20" class="node">
+<title>tally_committee</title>
+<polygon fill="#009879" stroke="none" points="993,-373.5 993,-403.5 1160,-403.5 1160,-373.5 993,-373.5"/>
+<polygon fill="none" stroke="black" points="993,-373.5 993,-403.5 1160,-403.5 1160,-373.5 993,-373.5"/>
+<text text-anchor="start" x="996" y="-382.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">tally_committee</text>
+<polygon fill="none" stroke="black" points="993,-346.5 993,-373.5 1095,-373.5 1095,-346.5 993,-346.5"/>
+<text text-anchor="start" x="1009.5" y="-354.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1095,-346.5 1095,-373.5 1160,-373.5 1160,-346.5 1095,-346.5"/>
+<text text-anchor="start" x="1107" y="-354.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="993,-321.5 993,-346.5 1095,-346.5 1095,-321.5 993,-321.5"/>
+<polygon fill="none" stroke="black" points="993,-321.5 993,-346.5 1095,-346.5 1095,-321.5 993,-321.5"/>
+<text text-anchor="start" x="996" y="-328.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="1095,-321.5 1095,-346.5 1160,-346.5 1160,-321.5 1095,-321.5"/>
+<polygon fill="none" stroke="black" points="1095,-321.5 1095,-346.5 1160,-346.5 1160,-321.5 1095,-321.5"/>
+<text text-anchor="start" x="1101" y="-328.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="993,-296.5 993,-321.5 1095,-321.5 1095,-296.5 993,-296.5"/>
+<text text-anchor="start" x="996" y="-303.3" font-family="Times,serif" font-size="16.00">event</text>
+<polygon fill="none" stroke="black" points="1095,-296.5 1095,-321.5 1160,-321.5 1160,-296.5 1095,-296.5"/>
+<text text-anchor="start" x="1105.5" y="-303.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="993,-271.5 993,-296.5 1095,-296.5 1095,-271.5 993,-271.5"/>
+<text text-anchor="start" x="996" y="-278.3" font-family="Times,serif" font-size="16.00">committee_pk</text>
+<polygon fill="none" stroke="black" points="1095,-271.5 1095,-296.5 1160,-296.5 1160,-271.5 1095,-271.5"/>
+<text text-anchor="start" x="1115.5" y="-278.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="993,-246.5 993,-271.5 1095,-271.5 1095,-246.5 993,-246.5"/>
+<text text-anchor="start" x="996" y="-253.3" font-family="Times,serif" font-size="16.00">committee_id</text>
+<polygon fill="none" stroke="black" points="1095,-246.5 1095,-271.5 1160,-271.5 1160,-246.5 1095,-246.5"/>
+<text text-anchor="start" x="1115.5" y="-253.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="993,-221.5 993,-246.5 1095,-246.5 1095,-221.5 993,-221.5"/>
+<text text-anchor="start" x="996" y="-228.3" font-family="Times,serif" font-size="16.00">member_crs</text>
+<polygon fill="none" stroke="black" points="1095,-221.5 1095,-246.5 1160,-246.5 1160,-221.5 1095,-221.5"/>
+<text text-anchor="start" x="1115.5" y="-229.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="993,-196.5 993,-221.5 1095,-221.5 1095,-196.5 993,-196.5"/>
+<text text-anchor="start" x="996" y="-203.3" font-family="Times,serif" font-size="16.00">election_key</text>
+<polygon fill="none" stroke="black" points="1095,-196.5 1095,-221.5 1160,-221.5 1160,-196.5 1095,-196.5"/>
+<text text-anchor="start" x="1115.5" y="-204.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+</g>
+<!-- committee_member&#45;&gt;tally_committee -->
+<g id="edge28" class="edge">
+<title>committee_member:committee_out&#45;&gt;tally_committee:row_id</title>
+<path fill="none" stroke="black" d="M862.5,-303C917.67,-303 930.91,-330.13 980.67,-333.63"/>
+<polygon fill="black" stroke="black" points="980.39,-337.16 990.5,-334 980.63,-330.16 980.39,-337.16"/>
+</g>
+<!-- config -->
+<g id="node3" class="node">
+<title>config</title>
+<polygon fill="#009879" stroke="none" points="374.5,-819 374.5,-849 508.5,-849 508.5,-819 374.5,-819"/>
+<polygon fill="none" stroke="black" points="374.5,-819 374.5,-849 508.5,-849 508.5,-819 374.5,-819"/>
+<text text-anchor="start" x="411" y="-828" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">config</text>
+<polygon fill="none" stroke="black" points="374.5,-792 374.5,-819 449.5,-819 449.5,-792 374.5,-792"/>
+<text text-anchor="start" x="377.5" y="-799.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="449.5,-792 449.5,-819 508.5,-819 508.5,-792 449.5,-792"/>
+<text text-anchor="start" x="458.5" y="-799.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="374.5,-767 374.5,-792 449.5,-792 449.5,-767 374.5,-767"/>
+<polygon fill="none" stroke="black" points="374.5,-767 374.5,-792 449.5,-792 449.5,-767 374.5,-767"/>
+<text text-anchor="start" x="377.5" y="-773.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="449.5,-767 449.5,-792 508.5,-792 508.5,-767 449.5,-767"/>
+<polygon fill="none" stroke="black" points="449.5,-767 449.5,-792 508.5,-792 508.5,-767 449.5,-767"/>
+<text text-anchor="start" x="452.5" y="-773.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="374.5,-742 374.5,-767 449.5,-767 449.5,-742 374.5,-742"/>
+<text text-anchor="start" x="377.5" y="-748.8" font-family="Times,serif" font-size="16.00">id</text>
+<polygon fill="none" stroke="black" points="449.5,-742 449.5,-767 508.5,-767 508.5,-742 449.5,-742"/>
+<text text-anchor="start" x="455" y="-748.8" font-family="Times,serif" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="374.5,-717 374.5,-742 449.5,-742 449.5,-717 374.5,-717"/>
+<text text-anchor="start" x="377.5" y="-723.8" font-family="Times,serif" font-size="16.00">id2</text>
+<polygon fill="none" stroke="black" points="449.5,-717 449.5,-742 508.5,-742 508.5,-717 449.5,-717"/>
+<text text-anchor="start" x="455" y="-723.8" font-family="Times,serif" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="374.5,-692 374.5,-717 449.5,-717 449.5,-692 374.5,-692"/>
+<text text-anchor="start" x="377.5" y="-698.8" font-family="Times,serif" font-size="16.00">id3</text>
+<polygon fill="none" stroke="black" points="449.5,-692 449.5,-717 508.5,-717 508.5,-692 449.5,-692"/>
+<text text-anchor="start" x="455" y="-698.8" font-family="Times,serif" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="374.5,-667 374.5,-692 449.5,-692 449.5,-667 374.5,-667"/>
+<text text-anchor="start" x="377.5" y="-673.8" font-family="Times,serif" font-size="16.00">value</text>
+<polygon fill="none" stroke="black" points="449.5,-667 449.5,-692 508.5,-692 508.5,-667 449.5,-667"/>
+<text text-anchor="start" x="461.5" y="-674.8" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+</g>
+<!-- contribution -->
+<g id="node4" class="node">
+<title>contribution</title>
+<polygon fill="#009879" stroke="none" points="672.5,-1117 672.5,-1147 842.5,-1147 842.5,-1117 672.5,-1117"/>
+<polygon fill="none" stroke="black" points="672.5,-1117 672.5,-1147 842.5,-1147 842.5,-1117 672.5,-1117"/>
+<text text-anchor="start" x="697" y="-1126" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">contribution</text>
+<polygon fill="none" stroke="black" points="672.5,-1090 672.5,-1117 790.5,-1117 790.5,-1090 672.5,-1090"/>
+<text text-anchor="start" x="697" y="-1097.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="790.5,-1090 790.5,-1117 842.5,-1117 842.5,-1090 790.5,-1090"/>
+<text text-anchor="start" x="796" y="-1097.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="672.5,-1065 672.5,-1090 790.5,-1090 790.5,-1065 672.5,-1065"/>
+<polygon fill="none" stroke="black" points="672.5,-1065 672.5,-1090 790.5,-1090 790.5,-1065 672.5,-1065"/>
+<text text-anchor="start" x="675.5" y="-1071.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="790.5,-1065 790.5,-1090 842.5,-1090 842.5,-1065 790.5,-1065"/>
+<polygon fill="none" stroke="black" points="790.5,-1065 790.5,-1090 842.5,-1090 842.5,-1065 790.5,-1065"/>
+<text text-anchor="start" x="793.5" y="-1071.8" font-family="Times,serif" font-size="16.00">bigint+</text>
+<polygon fill="none" stroke="black" points="672.5,-1040 672.5,-1065 790.5,-1065 790.5,-1040 672.5,-1040"/>
+<text text-anchor="start" x="675.5" y="-1046.8" font-family="Times,serif" font-size="16.00">stake_public_key</text>
+<polygon fill="none" stroke="black" points="790.5,-1040 790.5,-1065 842.5,-1065 842.5,-1040 790.5,-1040"/>
+<text text-anchor="start" x="804.5" y="-1046.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="672.5,-1015 672.5,-1040 790.5,-1040 790.5,-1015 672.5,-1015"/>
+<text text-anchor="start" x="675.5" y="-1021.8" font-family="Times,serif" font-size="16.00">snapshot_id</text>
+<polygon fill="none" stroke="black" points="790.5,-1015 790.5,-1040 842.5,-1040 842.5,-1015 790.5,-1015"/>
+<text text-anchor="start" x="794.5" y="-1021.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="672.5,-990 672.5,-1015 790.5,-1015 790.5,-990 672.5,-990"/>
+<text text-anchor="start" x="675.5" y="-996.8" font-family="Times,serif" font-size="16.00">voting_key</text>
+<polygon fill="none" stroke="black" points="790.5,-990 790.5,-1015 842.5,-1015 842.5,-990 790.5,-990"/>
+<text text-anchor="start" x="804.5" y="-997.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="672.5,-965 672.5,-990 790.5,-990 790.5,-965 672.5,-965"/>
+<text text-anchor="start" x="675.5" y="-971.8" font-family="Times,serif" font-size="16.00">voting_weight</text>
+<polygon fill="none" stroke="black" points="790.5,-965 790.5,-990 842.5,-990 842.5,-965 790.5,-965"/>
+<text text-anchor="start" x="794.5" y="-972.8" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="672.5,-940 672.5,-965 790.5,-965 790.5,-940 672.5,-940"/>
+<text text-anchor="start" x="675.5" y="-946.8" font-family="Times,serif" font-size="16.00">voting_key_idx</text>
+<polygon fill="none" stroke="black" points="790.5,-940 790.5,-965 842.5,-965 842.5,-940 790.5,-940"/>
+<text text-anchor="start" x="794.5" y="-947.8" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="672.5,-915 672.5,-940 790.5,-940 790.5,-915 672.5,-915"/>
+<text text-anchor="start" x="675.5" y="-921.8" font-family="Times,serif" font-size="16.00">value</text>
+<polygon fill="none" stroke="black" points="790.5,-915 790.5,-940 842.5,-940 842.5,-915 790.5,-915"/>
+<text text-anchor="start" x="798" y="-921.8" font-family="Times,serif" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="672.5,-890 672.5,-915 790.5,-915 790.5,-890 672.5,-890"/>
+<text text-anchor="start" x="675.5" y="-896.8" font-family="Times,serif" font-size="16.00">voting_group</text>
+<polygon fill="none" stroke="black" points="790.5,-890 790.5,-915 842.5,-915 842.5,-890 790.5,-890"/>
+<text text-anchor="start" x="804.5" y="-896.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="672.5,-865 672.5,-890 790.5,-890 790.5,-865 672.5,-865"/>
+<text text-anchor="start" x="675.5" y="-871.8" font-family="Times,serif" font-size="16.00">reward_address</text>
+<polygon fill="none" stroke="black" points="790.5,-865 790.5,-890 842.5,-890 842.5,-865 790.5,-865"/>
+<text text-anchor="start" x="804.5" y="-872.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+</g>
+<!-- snapshot -->
+<g id="node19" class="node">
+<title>snapshot</title>
+<polygon fill="#009879" stroke="none" points="939,-1345.5 939,-1375.5 1214,-1375.5 1214,-1345.5 939,-1345.5"/>
+<polygon fill="none" stroke="black" points="939,-1345.5 939,-1375.5 1214,-1375.5 1214,-1345.5 939,-1345.5"/>
+<text text-anchor="start" x="1031" y="-1354.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">snapshot</text>
+<polygon fill="none" stroke="black" points="939,-1318.5 939,-1345.5 1141,-1345.5 1141,-1318.5 939,-1318.5"/>
+<text text-anchor="start" x="1005.5" y="-1326.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1141,-1318.5 1141,-1345.5 1214,-1345.5 1214,-1318.5 1141,-1318.5"/>
+<text text-anchor="start" x="1157" y="-1326.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="939,-1293.5 939,-1318.5 1141,-1318.5 1141,-1293.5 939,-1293.5"/>
+<polygon fill="none" stroke="black" points="939,-1293.5 939,-1318.5 1141,-1318.5 1141,-1293.5 939,-1293.5"/>
+<text text-anchor="start" x="942" y="-1300.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="1141,-1293.5 1141,-1318.5 1214,-1318.5 1214,-1293.5 1141,-1293.5"/>
+<polygon fill="none" stroke="black" points="1141,-1293.5 1141,-1318.5 1214,-1318.5 1214,-1293.5 1141,-1293.5"/>
+<text text-anchor="start" x="1151" y="-1300.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="939,-1268.5 939,-1293.5 1141,-1293.5 1141,-1268.5 939,-1268.5"/>
+<text text-anchor="start" x="942" y="-1275.3" font-family="Times,serif" font-size="16.00">event</text>
+<polygon fill="none" stroke="black" points="1141,-1268.5 1141,-1293.5 1214,-1293.5 1214,-1268.5 1141,-1268.5"/>
+<text text-anchor="start" x="1155.5" y="-1275.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="939,-1243.5 939,-1268.5 1141,-1268.5 1141,-1243.5 939,-1243.5"/>
+<text text-anchor="start" x="942" y="-1250.3" font-family="Times,serif" font-size="16.00">as_at</text>
+<polygon fill="none" stroke="black" points="1141,-1243.5 1141,-1268.5 1214,-1268.5 1214,-1243.5 1141,-1243.5"/>
+<text text-anchor="start" x="1144" y="-1250.3" font-family="Times,serif" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="939,-1218.5 939,-1243.5 1141,-1243.5 1141,-1218.5 939,-1218.5"/>
+<text text-anchor="start" x="942" y="-1225.3" font-family="Times,serif" font-size="16.00">as_at_slotno</text>
+<polygon fill="none" stroke="black" points="1141,-1218.5 1141,-1243.5 1214,-1243.5 1214,-1218.5 1141,-1218.5"/>
+<text text-anchor="start" x="1155.5" y="-1225.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="939,-1193.5 939,-1218.5 1141,-1218.5 1141,-1193.5 939,-1193.5"/>
+<text text-anchor="start" x="942" y="-1200.3" font-family="Times,serif" font-size="16.00">last_updated</text>
+<polygon fill="none" stroke="black" points="1141,-1193.5 1141,-1218.5 1214,-1218.5 1214,-1193.5 1141,-1193.5"/>
+<text text-anchor="start" x="1144" y="-1200.3" font-family="Times,serif" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="939,-1168.5 939,-1193.5 1141,-1193.5 1141,-1168.5 939,-1168.5"/>
+<text text-anchor="start" x="942" y="-1175.3" font-family="Times,serif" font-size="16.00">last_updated_slotno</text>
+<polygon fill="none" stroke="black" points="1141,-1168.5 1141,-1193.5 1214,-1193.5 1214,-1168.5 1141,-1168.5"/>
+<text text-anchor="start" x="1155.5" y="-1175.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="939,-1143.5 939,-1168.5 1141,-1168.5 1141,-1143.5 939,-1143.5"/>
+<text text-anchor="start" x="942" y="-1150.3" font-family="Times,serif" font-size="16.00">final</text>
+<polygon fill="none" stroke="black" points="1141,-1143.5 1141,-1168.5 1214,-1168.5 1214,-1143.5 1141,-1143.5"/>
+<text text-anchor="start" x="1152.5" y="-1150.3" font-family="Times,serif" font-size="16.00">boolean</text>
+<polygon fill="none" stroke="black" points="939,-1118.5 939,-1143.5 1141,-1143.5 1141,-1118.5 939,-1118.5"/>
+<text text-anchor="start" x="942" y="-1125.3" font-family="Times,serif" font-size="16.00">dbsync_snapshot_cmd</text>
+<polygon fill="none" stroke="black" points="1141,-1118.5 1141,-1143.5 1214,-1143.5 1214,-1118.5 1141,-1118.5"/>
+<text text-anchor="start" x="1165.5" y="-1126.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="939,-1093.5 939,-1118.5 1141,-1118.5 1141,-1093.5 939,-1093.5"/>
+<text text-anchor="start" x="942" y="-1100.3" font-family="Times,serif" font-size="16.00">dbsync_snapshot_params</text>
+<polygon fill="none" stroke="black" points="1141,-1093.5 1141,-1118.5 1214,-1118.5 1214,-1093.5 1141,-1093.5"/>
+<text text-anchor="start" x="1160" y="-1101.3" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+<polygon fill="none" stroke="black" points="939,-1068.5 939,-1093.5 1141,-1093.5 1141,-1068.5 939,-1068.5"/>
+<text text-anchor="start" x="942" y="-1075.3" font-family="Times,serif" font-size="16.00">dbsync_snapshot_data</text>
+<polygon fill="none" stroke="black" points="1141,-1068.5 1141,-1093.5 1214,-1093.5 1214,-1068.5 1141,-1068.5"/>
+<text text-anchor="start" x="1160.5" y="-1076.3" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="939,-1043.5 939,-1068.5 1141,-1068.5 1141,-1043.5 939,-1043.5"/>
+<text text-anchor="start" x="942" y="-1050.3" font-family="Times,serif" font-size="16.00">dbsync_snapshot_error</text>
+<polygon fill="none" stroke="black" points="1141,-1043.5 1141,-1068.5 1214,-1068.5 1214,-1043.5 1141,-1043.5"/>
+<text text-anchor="start" x="1160.5" y="-1051.3" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="939,-1018.5 939,-1043.5 1141,-1043.5 1141,-1018.5 939,-1018.5"/>
+<text text-anchor="start" x="942" y="-1025.3" font-family="Times,serif" font-size="16.00">dbsync_snapshot_unregistered</text>
+<polygon fill="none" stroke="black" points="1141,-1018.5 1141,-1043.5 1214,-1043.5 1214,-1018.5 1141,-1018.5"/>
+<text text-anchor="start" x="1160.5" y="-1026.3" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="939,-993.5 939,-1018.5 1141,-1018.5 1141,-993.5 939,-993.5"/>
+<text text-anchor="start" x="942" y="-1000.3" font-family="Times,serif" font-size="16.00">drep_data</text>
+<polygon fill="none" stroke="black" points="1141,-993.5 1141,-1018.5 1214,-1018.5 1214,-993.5 1141,-993.5"/>
+<text text-anchor="start" x="1160.5" y="-1001.3" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="939,-968.5 939,-993.5 1141,-993.5 1141,-968.5 939,-968.5"/>
+<text text-anchor="start" x="942" y="-975.3" font-family="Times,serif" font-size="16.00">catalyst_snapshot_cmd</text>
+<polygon fill="none" stroke="black" points="1141,-968.5 1141,-993.5 1214,-993.5 1214,-968.5 1141,-968.5"/>
+<text text-anchor="start" x="1165.5" y="-976.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="939,-943.5 939,-968.5 1141,-968.5 1141,-943.5 939,-943.5"/>
+<text text-anchor="start" x="942" y="-950.3" font-family="Times,serif" font-size="16.00">catalyst_snapshot_params</text>
+<polygon fill="none" stroke="black" points="1141,-943.5 1141,-968.5 1214,-968.5 1214,-943.5 1141,-943.5"/>
+<text text-anchor="start" x="1160" y="-951.3" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+<polygon fill="none" stroke="black" points="939,-918.5 939,-943.5 1141,-943.5 1141,-918.5 939,-918.5"/>
+<text text-anchor="start" x="942" y="-925.3" font-family="Times,serif" font-size="16.00">catalyst_snapshot_data</text>
+<polygon fill="none" stroke="black" points="1141,-918.5 1141,-943.5 1214,-943.5 1214,-918.5 1141,-918.5"/>
+<text text-anchor="start" x="1160.5" y="-926.3" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+</g>
+<!-- contribution&#45;&gt;snapshot -->
+<g id="edge22" class="edge">
+<title>contribution:snapshot_id_out&#45;&gt;snapshot:row_id</title>
+<path fill="none" stroke="black" d="M843.5,-1028C906.47,-1028 874.74,-1100.38 895,-1160 915.47,-1220.24 875.17,-1296.45 926.76,-1305.18"/>
+<polygon fill="black" stroke="black" points="926.26,-1308.72 936.5,-1306 926.8,-1301.74 926.26,-1308.72"/>
+</g>
+<!-- currency -->
+<g id="node5" class="node">
+<title>currency</title>
+<polygon fill="#009879" stroke="none" points="1330,-1652.5 1330,-1682.5 1454,-1682.5 1454,-1652.5 1330,-1652.5"/>
+<polygon fill="none" stroke="black" points="1330,-1652.5 1330,-1682.5 1454,-1682.5 1454,-1652.5 1330,-1652.5"/>
+<text text-anchor="start" x="1348.5" y="-1661.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">currency</text>
+<polygon fill="none" stroke="black" points="1330,-1625.5 1330,-1652.5 1407,-1652.5 1407,-1625.5 1330,-1625.5"/>
+<text text-anchor="start" x="1334" y="-1633.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1407,-1625.5 1407,-1652.5 1454,-1652.5 1454,-1625.5 1407,-1625.5"/>
+<text text-anchor="start" x="1410" y="-1633.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="1330,-1600.5 1330,-1625.5 1407,-1625.5 1407,-1600.5 1330,-1600.5"/>
+<polygon fill="none" stroke="black" points="1330,-1600.5 1330,-1625.5 1407,-1625.5 1407,-1600.5 1330,-1600.5"/>
+<text text-anchor="start" x="1333" y="-1607.3" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="#54ff9f" stroke="none" points="1407,-1600.5 1407,-1625.5 1454,-1625.5 1454,-1600.5 1407,-1600.5"/>
+<polygon fill="none" stroke="black" points="1407,-1600.5 1407,-1625.5 1454,-1625.5 1454,-1600.5 1407,-1600.5"/>
+<text text-anchor="start" x="1418.5" y="-1607.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="1330,-1575.5 1330,-1600.5 1407,-1600.5 1407,-1575.5 1330,-1575.5"/>
+<text text-anchor="start" x="1333" y="-1582.3" font-family="Times,serif" font-size="16.00">description</text>
+<polygon fill="none" stroke="black" points="1407,-1575.5 1407,-1600.5 1454,-1600.5 1454,-1575.5 1407,-1575.5"/>
+<text text-anchor="start" x="1418.5" y="-1583.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+</g>
+<!-- event -->
+<g id="node6" class="node">
+<title>event</title>
+<polygon fill="#009879" stroke="none" points="1266,-656 1266,-686 1518,-686 1518,-656 1266,-656"/>
+<polygon fill="none" stroke="black" points="1266,-656 1266,-686 1518,-686 1518,-656 1266,-656"/>
+<text text-anchor="start" x="1364" y="-665" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">event</text>
+<polygon fill="none" stroke="black" points="1266,-629 1266,-656 1445,-656 1445,-629 1266,-629"/>
+<text text-anchor="start" x="1321" y="-636.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1445,-629 1445,-656 1518,-656 1518,-629 1445,-629"/>
+<text text-anchor="start" x="1461" y="-636.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="1266,-604 1266,-629 1445,-629 1445,-604 1266,-604"/>
+<polygon fill="none" stroke="black" points="1266,-604 1266,-629 1445,-629 1445,-604 1266,-604"/>
+<text text-anchor="start" x="1269" y="-610.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="1445,-604 1445,-629 1518,-629 1518,-604 1445,-604"/>
+<polygon fill="none" stroke="black" points="1445,-604 1445,-629 1518,-629 1518,-604 1445,-604"/>
+<text text-anchor="start" x="1455" y="-610.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="1266,-579 1266,-604 1445,-604 1445,-579 1266,-579"/>
+<text text-anchor="start" x="1269" y="-585.8" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="none" stroke="black" points="1445,-579 1445,-604 1518,-604 1518,-579 1445,-579"/>
+<text text-anchor="start" x="1469.5" y="-585.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="1266,-554 1266,-579 1445,-579 1445,-554 1266,-554"/>
+<text text-anchor="start" x="1269" y="-560.8" font-family="Times,serif" font-size="16.00">description</text>
+<polygon fill="none" stroke="black" points="1445,-554 1445,-579 1518,-579 1518,-554 1445,-554"/>
+<text text-anchor="start" x="1469.5" y="-560.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="1266,-529 1266,-554 1445,-554 1445,-529 1266,-529"/>
+<text text-anchor="start" x="1269" y="-535.8" font-family="Times,serif" font-size="16.00">registration_snapshot_time</text>
+<polygon fill="none" stroke="black" points="1445,-529 1445,-554 1518,-554 1518,-529 1445,-529"/>
+<text text-anchor="start" x="1448" y="-536.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-504 1266,-529 1445,-529 1445,-504 1266,-504"/>
+<text text-anchor="start" x="1269" y="-510.8" font-family="Times,serif" font-size="16.00">snapshot_start</text>
+<polygon fill="none" stroke="black" points="1445,-504 1445,-529 1518,-529 1518,-504 1445,-504"/>
+<text text-anchor="start" x="1448" y="-511.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-479 1266,-504 1445,-504 1445,-479 1266,-479"/>
+<text text-anchor="start" x="1269" y="-485.8" font-family="Times,serif" font-size="16.00">voting_power_threshold</text>
+<polygon fill="none" stroke="black" points="1445,-479 1445,-504 1518,-504 1518,-479 1445,-479"/>
+<text text-anchor="start" x="1463" y="-486.8" font-family="Times,serif" font-style="italic" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="1266,-454 1266,-479 1445,-479 1445,-454 1266,-454"/>
+<text text-anchor="start" x="1269" y="-460.8" font-family="Times,serif" font-size="16.00">max_voting_power_pct</text>
+<polygon fill="none" stroke="black" points="1445,-454 1445,-479 1518,-479 1518,-454 1445,-454"/>
+<text text-anchor="start" x="1455.5" y="-461.8" font-family="Times,serif" font-style="italic" font-size="16.00">numeric</text>
+<polygon fill="none" stroke="black" points="1266,-429 1266,-454 1445,-454 1445,-429 1266,-429"/>
+<text text-anchor="start" x="1269" y="-435.8" font-family="Times,serif" font-size="16.00">review_rewards</text>
+<polygon fill="none" stroke="black" points="1445,-429 1445,-454 1518,-454 1518,-429 1445,-429"/>
+<text text-anchor="start" x="1463" y="-436.8" font-family="Times,serif" font-style="italic" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="1266,-404 1266,-429 1445,-429 1445,-404 1266,-404"/>
+<text text-anchor="start" x="1269" y="-410.8" font-family="Times,serif" font-size="16.00">start_time</text>
+<polygon fill="none" stroke="black" points="1445,-404 1445,-429 1518,-429 1518,-404 1445,-404"/>
+<text text-anchor="start" x="1448" y="-411.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-379 1266,-404 1445,-404 1445,-379 1266,-379"/>
+<text text-anchor="start" x="1269" y="-385.8" font-family="Times,serif" font-size="16.00">end_time</text>
+<polygon fill="none" stroke="black" points="1445,-379 1445,-404 1518,-404 1518,-379 1445,-379"/>
+<text text-anchor="start" x="1448" y="-386.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-354 1266,-379 1445,-379 1445,-354 1266,-354"/>
+<text text-anchor="start" x="1269" y="-360.8" font-family="Times,serif" font-size="16.00">insight_sharing_start</text>
+<polygon fill="none" stroke="black" points="1445,-354 1445,-379 1518,-379 1518,-354 1445,-354"/>
+<text text-anchor="start" x="1448" y="-361.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-329 1266,-354 1445,-354 1445,-329 1266,-329"/>
+<text text-anchor="start" x="1269" y="-335.8" font-family="Times,serif" font-size="16.00">proposal_submission_start</text>
+<polygon fill="none" stroke="black" points="1445,-329 1445,-354 1518,-354 1518,-329 1445,-329"/>
+<text text-anchor="start" x="1448" y="-336.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-304 1266,-329 1445,-329 1445,-304 1266,-304"/>
+<text text-anchor="start" x="1269" y="-310.8" font-family="Times,serif" font-size="16.00">refine_proposals_start</text>
+<polygon fill="none" stroke="black" points="1445,-304 1445,-329 1518,-329 1518,-304 1445,-304"/>
+<text text-anchor="start" x="1448" y="-311.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-279 1266,-304 1445,-304 1445,-279 1266,-279"/>
+<text text-anchor="start" x="1269" y="-285.8" font-family="Times,serif" font-size="16.00">finalize_proposals_start</text>
+<polygon fill="none" stroke="black" points="1445,-279 1445,-304 1518,-304 1518,-279 1445,-279"/>
+<text text-anchor="start" x="1448" y="-286.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-254 1266,-279 1445,-279 1445,-254 1266,-254"/>
+<text text-anchor="start" x="1269" y="-260.8" font-family="Times,serif" font-size="16.00">proposal_assessment_start</text>
+<polygon fill="none" stroke="black" points="1445,-254 1445,-279 1518,-279 1518,-254 1445,-254"/>
+<text text-anchor="start" x="1448" y="-261.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-229 1266,-254 1445,-254 1445,-229 1266,-229"/>
+<text text-anchor="start" x="1269" y="-235.8" font-family="Times,serif" font-size="16.00">assessment_qa_start</text>
+<polygon fill="none" stroke="black" points="1445,-229 1445,-254 1518,-254 1518,-229 1445,-229"/>
+<text text-anchor="start" x="1448" y="-236.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-204 1266,-229 1445,-229 1445,-204 1266,-204"/>
+<text text-anchor="start" x="1269" y="-210.8" font-family="Times,serif" font-size="16.00">voting_start</text>
+<polygon fill="none" stroke="black" points="1445,-204 1445,-229 1518,-229 1518,-204 1445,-204"/>
+<text text-anchor="start" x="1448" y="-211.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-179 1266,-204 1445,-204 1445,-179 1266,-179"/>
+<text text-anchor="start" x="1269" y="-185.8" font-family="Times,serif" font-size="16.00">voting_end</text>
+<polygon fill="none" stroke="black" points="1445,-179 1445,-204 1518,-204 1518,-179 1445,-179"/>
+<text text-anchor="start" x="1448" y="-186.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-154 1266,-179 1445,-179 1445,-154 1266,-154"/>
+<text text-anchor="start" x="1269" y="-160.8" font-family="Times,serif" font-size="16.00">tallying_end</text>
+<polygon fill="none" stroke="black" points="1445,-154 1445,-179 1518,-179 1518,-154 1445,-154"/>
+<text text-anchor="start" x="1448" y="-161.8" font-family="Times,serif" font-style="italic" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1266,-129 1266,-154 1445,-154 1445,-129 1266,-129"/>
+<text text-anchor="start" x="1269" y="-135.8" font-family="Times,serif" font-size="16.00">block0</text>
+<polygon fill="none" stroke="black" points="1445,-129 1445,-154 1518,-154 1518,-129 1445,-129"/>
+<text text-anchor="start" x="1464.5" y="-136.8" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="1266,-104 1266,-129 1445,-129 1445,-104 1266,-104"/>
+<text text-anchor="start" x="1269" y="-110.8" font-family="Times,serif" font-size="16.00">block0_hash</text>
+<polygon fill="none" stroke="black" points="1445,-104 1445,-129 1518,-129 1518,-104 1445,-104"/>
+<text text-anchor="start" x="1469.5" y="-111.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="1266,-79 1266,-104 1445,-104 1445,-79 1266,-79"/>
+<text text-anchor="start" x="1269" y="-85.8" font-family="Times,serif" font-size="16.00">committee_size</text>
+<polygon fill="none" stroke="black" points="1445,-79 1445,-104 1518,-104 1518,-79 1445,-79"/>
+<text text-anchor="start" x="1459.5" y="-85.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="1266,-54 1266,-79 1445,-79 1445,-54 1266,-54"/>
+<text text-anchor="start" x="1269" y="-60.8" font-family="Times,serif" font-size="16.00">committee_threshold</text>
+<polygon fill="none" stroke="black" points="1445,-54 1445,-79 1518,-79 1518,-54 1445,-54"/>
+<text text-anchor="start" x="1459.5" y="-60.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="1266,-29 1266,-54 1445,-54 1445,-29 1266,-29"/>
+<text text-anchor="start" x="1269" y="-35.8" font-family="Times,serif" font-size="16.00">extra</text>
+<polygon fill="none" stroke="black" points="1445,-29 1445,-54 1518,-54 1518,-29 1445,-29"/>
+<text text-anchor="start" x="1464" y="-36.8" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+<polygon fill="none" stroke="black" points="1266,-4 1266,-29 1445,-29 1445,-4 1266,-4"/>
+<text text-anchor="start" x="1269" y="-10.8" font-family="Times,serif" font-size="16.00">cast_to</text>
+<polygon fill="none" stroke="black" points="1445,-4 1445,-29 1518,-29 1518,-4 1445,-4"/>
+<text text-anchor="start" x="1464" y="-11.8" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+</g>
+<!-- goal -->
+<g id="node7" class="node">
+<title>goal</title>
+<polygon fill="#009879" stroke="none" points="1009.5,-140.5 1009.5,-170.5 1143.5,-170.5 1143.5,-140.5 1009.5,-140.5"/>
+<polygon fill="none" stroke="black" points="1009.5,-140.5 1009.5,-170.5 1143.5,-170.5 1143.5,-140.5 1009.5,-140.5"/>
+<text text-anchor="start" x="1055.5" y="-149.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">goal</text>
+<polygon fill="none" stroke="black" points="1009.5,-113.5 1009.5,-140.5 1084.5,-140.5 1084.5,-113.5 1009.5,-113.5"/>
+<text text-anchor="start" x="1012.5" y="-121.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1084.5,-113.5 1084.5,-140.5 1143.5,-140.5 1143.5,-113.5 1084.5,-113.5"/>
+<text text-anchor="start" x="1093.5" y="-121.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="1009.5,-88.5 1009.5,-113.5 1084.5,-113.5 1084.5,-88.5 1009.5,-88.5"/>
+<polygon fill="none" stroke="black" points="1009.5,-88.5 1009.5,-113.5 1084.5,-113.5 1084.5,-88.5 1009.5,-88.5"/>
+<text text-anchor="start" x="1012.5" y="-95.3" font-family="Times,serif" font-size="16.00">id</text>
+<polygon fill="#54ff9f" stroke="none" points="1084.5,-88.5 1084.5,-113.5 1143.5,-113.5 1143.5,-88.5 1084.5,-88.5"/>
+<polygon fill="none" stroke="black" points="1084.5,-88.5 1084.5,-113.5 1143.5,-113.5 1143.5,-88.5 1084.5,-88.5"/>
+<text text-anchor="start" x="1087.5" y="-95.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="1009.5,-63.5 1009.5,-88.5 1084.5,-88.5 1084.5,-63.5 1009.5,-63.5"/>
+<text text-anchor="start" x="1012.5" y="-70.3" font-family="Times,serif" font-size="16.00">event_id</text>
+<polygon fill="none" stroke="black" points="1084.5,-63.5 1084.5,-88.5 1143.5,-88.5 1143.5,-63.5 1084.5,-63.5"/>
+<text text-anchor="start" x="1092" y="-70.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="1009.5,-38.5 1009.5,-63.5 1084.5,-63.5 1084.5,-38.5 1009.5,-38.5"/>
+<text text-anchor="start" x="1012.5" y="-45.3" font-family="Times,serif" font-size="16.00">idx</text>
+<polygon fill="none" stroke="black" points="1084.5,-38.5 1084.5,-63.5 1143.5,-63.5 1143.5,-38.5 1084.5,-38.5"/>
+<text text-anchor="start" x="1092" y="-45.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="1009.5,-13.5 1009.5,-38.5 1084.5,-38.5 1084.5,-13.5 1009.5,-13.5"/>
+<text text-anchor="start" x="1012.5" y="-20.3" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="none" stroke="black" points="1084.5,-13.5 1084.5,-38.5 1143.5,-38.5 1143.5,-13.5 1084.5,-13.5"/>
+<text text-anchor="start" x="1090" y="-20.3" font-family="Times,serif" font-size="16.00">varchar</text>
+</g>
+<!-- goal&#45;&gt;event -->
+<g id="edge1" class="edge">
+<title>goal:event_id_out&#45;&gt;event:row_id</title>
+<path fill="none" stroke="black" d="M1144.5,-76C1203.22,-76 1201.16,-128.1 1222,-183 1237.99,-225.12 1219.53,-564.04 1255.79,-611.49"/>
+<polygon fill="black" stroke="black" points="1253.62,-614.87 1264,-617 1257.22,-608.86 1253.62,-614.87"/>
+</g>
+<!-- moderation -->
+<g id="node8" class="node">
+<title>moderation</title>
+<polygon fill="#009879" stroke="none" points="56.5,-1209 56.5,-1239 206.5,-1239 206.5,-1209 56.5,-1209"/>
+<polygon fill="none" stroke="black" points="56.5,-1209 56.5,-1239 206.5,-1239 206.5,-1209 56.5,-1209"/>
+<text text-anchor="start" x="74.5" y="-1218" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">moderation</text>
+<polygon fill="none" stroke="black" points="56.5,-1182 56.5,-1209 147.5,-1209 147.5,-1182 56.5,-1182"/>
+<text text-anchor="start" x="67.5" y="-1189.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="147.5,-1182 147.5,-1209 206.5,-1209 206.5,-1182 147.5,-1182"/>
+<text text-anchor="start" x="156.5" y="-1189.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="56.5,-1157 56.5,-1182 147.5,-1182 147.5,-1157 56.5,-1157"/>
+<polygon fill="none" stroke="black" points="56.5,-1157 56.5,-1182 147.5,-1182 147.5,-1157 56.5,-1157"/>
+<text text-anchor="start" x="59.5" y="-1163.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="147.5,-1157 147.5,-1182 206.5,-1182 206.5,-1157 147.5,-1157"/>
+<polygon fill="none" stroke="black" points="147.5,-1157 147.5,-1182 206.5,-1182 206.5,-1157 147.5,-1157"/>
+<text text-anchor="start" x="150.5" y="-1163.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="56.5,-1132 56.5,-1157 147.5,-1157 147.5,-1132 56.5,-1132"/>
+<text text-anchor="start" x="59.5" y="-1138.8" font-family="Times,serif" font-size="16.00">review_id</text>
+<polygon fill="none" stroke="black" points="147.5,-1132 147.5,-1157 206.5,-1157 206.5,-1132 147.5,-1132"/>
+<text text-anchor="start" x="155" y="-1138.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="56.5,-1107 56.5,-1132 147.5,-1132 147.5,-1107 56.5,-1107"/>
+<text text-anchor="start" x="59.5" y="-1113.8" font-family="Times,serif" font-size="16.00">user_id</text>
+<polygon fill="none" stroke="black" points="147.5,-1107 147.5,-1132 206.5,-1132 206.5,-1107 147.5,-1107"/>
+<text text-anchor="start" x="155" y="-1113.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="56.5,-1082 56.5,-1107 147.5,-1107 147.5,-1082 56.5,-1082"/>
+<text text-anchor="start" x="59.5" y="-1088.8" font-family="Times,serif" font-size="16.00">classification</text>
+<polygon fill="none" stroke="black" points="147.5,-1082 147.5,-1107 206.5,-1107 206.5,-1082 147.5,-1082"/>
+<text text-anchor="start" x="155" y="-1088.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="56.5,-1057 56.5,-1082 147.5,-1082 147.5,-1057 56.5,-1057"/>
+<text text-anchor="start" x="59.5" y="-1063.8" font-family="Times,serif" font-size="16.00">rationale</text>
+<polygon fill="none" stroke="black" points="147.5,-1057 147.5,-1082 206.5,-1082 206.5,-1057 147.5,-1057"/>
+<text text-anchor="start" x="153" y="-1064.8" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+</g>
+<!-- moderation&#45;&gt;config -->
+<g id="edge32" class="edge">
+<title>moderation:user_id_out&#45;&gt;config:row_id</title>
+<path fill="none" stroke="black" d="M207.5,-1119C371.49,-1119 213.18,-795.06 362.7,-780.51"/>
+<polygon fill="black" stroke="black" points="362.67,-783.96 372.5,-780 362.35,-776.97 362.67,-783.96"/>
+</g>
+<!-- proposal_review -->
+<g id="node14" class="node">
+<title>proposal_review</title>
+<polygon fill="#009879" stroke="none" points="307,-1227 307,-1257 576,-1257 576,-1227 307,-1227"/>
+<polygon fill="none" stroke="black" points="307,-1227 307,-1257 576,-1257 576,-1227 307,-1227"/>
+<text text-anchor="start" x="361.5" y="-1236" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal_review</text>
+<polygon fill="none" stroke="black" points="307,-1200 307,-1227 517,-1227 517,-1200 307,-1200"/>
+<text text-anchor="start" x="377.5" y="-1207.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="517,-1200 517,-1227 576,-1227 576,-1200 517,-1200"/>
+<text text-anchor="start" x="526" y="-1207.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="307,-1175 307,-1200 517,-1200 517,-1175 307,-1175"/>
+<polygon fill="none" stroke="black" points="307,-1175 307,-1200 517,-1200 517,-1175 307,-1175"/>
+<text text-anchor="start" x="310" y="-1181.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="517,-1175 517,-1200 576,-1200 576,-1175 517,-1175"/>
+<polygon fill="none" stroke="black" points="517,-1175 517,-1200 576,-1200 576,-1175 517,-1175"/>
+<text text-anchor="start" x="520" y="-1181.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="307,-1150 307,-1175 517,-1175 517,-1150 307,-1150"/>
+<text text-anchor="start" x="310" y="-1156.8" font-family="Times,serif" font-size="16.00">proposal_id</text>
+<polygon fill="none" stroke="black" points="517,-1150 517,-1175 576,-1175 576,-1150 517,-1150"/>
+<text text-anchor="start" x="524.5" y="-1156.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="307,-1125 307,-1150 517,-1150 517,-1125 307,-1125"/>
+<text text-anchor="start" x="310" y="-1131.8" font-family="Times,serif" font-size="16.00">assessor</text>
+<polygon fill="none" stroke="black" points="517,-1125 517,-1150 576,-1150 576,-1125 517,-1125"/>
+<text text-anchor="start" x="522.5" y="-1131.8" font-family="Times,serif" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="307,-1100 307,-1125 517,-1125 517,-1100 307,-1100"/>
+<text text-anchor="start" x="310" y="-1106.8" font-family="Times,serif" font-size="16.00">assessor_level</text>
+<polygon fill="none" stroke="black" points="517,-1100 517,-1125 576,-1125 576,-1100 517,-1100"/>
+<text text-anchor="start" x="524.5" y="-1107.8" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="307,-1075 307,-1100 517,-1100 517,-1075 307,-1075"/>
+<text text-anchor="start" x="310" y="-1081.8" font-family="Times,serif" font-size="16.00">reward_address</text>
+<polygon fill="none" stroke="black" points="517,-1075 517,-1100 576,-1100 576,-1075 517,-1075"/>
+<text text-anchor="start" x="534.5" y="-1082.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="307,-1050 307,-1075 517,-1075 517,-1050 307,-1050"/>
+<text text-anchor="start" x="310" y="-1056.8" font-family="Times,serif" font-size="16.00">impact_alignment_rating_given</text>
+<polygon fill="none" stroke="black" points="517,-1050 517,-1075 576,-1075 576,-1050 517,-1050"/>
+<text text-anchor="start" x="524.5" y="-1057.8" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="307,-1025 307,-1050 517,-1050 517,-1025 307,-1025"/>
+<text text-anchor="start" x="310" y="-1031.8" font-family="Times,serif" font-size="16.00">impact_alignment_note</text>
+<polygon fill="none" stroke="black" points="517,-1025 517,-1050 576,-1050 576,-1025 517,-1025"/>
+<text text-anchor="start" x="522.5" y="-1032.8" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="307,-1000 307,-1025 517,-1025 517,-1000 307,-1000"/>
+<text text-anchor="start" x="310" y="-1006.8" font-family="Times,serif" font-size="16.00">feasibility_rating_given</text>
+<polygon fill="none" stroke="black" points="517,-1000 517,-1025 576,-1025 576,-1000 517,-1000"/>
+<text text-anchor="start" x="524.5" y="-1007.8" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="307,-975 307,-1000 517,-1000 517,-975 307,-975"/>
+<text text-anchor="start" x="310" y="-981.8" font-family="Times,serif" font-size="16.00">feasibility_note</text>
+<polygon fill="none" stroke="black" points="517,-975 517,-1000 576,-1000 576,-975 517,-975"/>
+<text text-anchor="start" x="522.5" y="-982.8" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="307,-950 307,-975 517,-975 517,-950 307,-950"/>
+<text text-anchor="start" x="310" y="-956.8" font-family="Times,serif" font-size="16.00">auditability_rating_given</text>
+<polygon fill="none" stroke="black" points="517,-950 517,-975 576,-975 576,-950 517,-950"/>
+<text text-anchor="start" x="524.5" y="-957.8" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="307,-925 307,-950 517,-950 517,-925 307,-925"/>
+<text text-anchor="start" x="310" y="-931.8" font-family="Times,serif" font-size="16.00">auditability_note</text>
+<polygon fill="none" stroke="black" points="517,-925 517,-950 576,-950 576,-925 517,-925"/>
+<text text-anchor="start" x="522.5" y="-932.8" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="307,-900 307,-925 517,-925 517,-900 307,-900"/>
+<text text-anchor="start" x="310" y="-906.8" font-family="Times,serif" font-size="16.00">ranking</text>
+<polygon fill="none" stroke="black" points="517,-900 517,-925 576,-925 576,-900 517,-900"/>
+<text text-anchor="start" x="524.5" y="-907.8" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="307,-875 307,-900 517,-900 517,-875 307,-875"/>
+<text text-anchor="start" x="310" y="-881.8" font-family="Times,serif" font-size="16.00">flags</text>
+<polygon fill="none" stroke="black" points="517,-875 517,-900 576,-900 576,-875 517,-875"/>
+<text text-anchor="start" x="529" y="-882.8" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+</g>
+<!-- moderation&#45;&gt;proposal_review -->
+<g id="edge31" class="edge">
+<title>moderation:review_id_out&#45;&gt;proposal_review:row_id</title>
+<path fill="none" stroke="black" d="M207.5,-1144C251.33,-1144 257.04,-1181.08 294.61,-1187.16"/>
+<polygon fill="black" stroke="black" points="294.26,-1190.72 304.5,-1188 294.8,-1183.74 294.26,-1190.72"/>
+</g>
+<!-- moderation_allocation -->
+<g id="node9" class="node">
+<title>moderation_allocation</title>
+<polygon fill="#009879" stroke="none" points="18,-914 18,-944 245,-944 245,-914 18,-914"/>
+<polygon fill="none" stroke="black" points="18,-914 18,-944 245,-944 245,-914 18,-914"/>
+<text text-anchor="start" x="21" y="-923" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">moderation_allocation</text>
+<polygon fill="none" stroke="black" points="18,-887 18,-914 139,-914 139,-887 18,-887"/>
+<text text-anchor="start" x="44" y="-894.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="139,-887 139,-914 245,-914 245,-887 139,-887"/>
+<text text-anchor="start" x="171.5" y="-894.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="18,-862 18,-887 139,-887 139,-862 18,-862"/>
+<polygon fill="none" stroke="black" points="18,-862 18,-887 139,-887 139,-862 18,-862"/>
+<text text-anchor="start" x="21" y="-868.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="139,-862 139,-887 245,-887 245,-862 139,-862"/>
+<polygon fill="none" stroke="black" points="139,-862 139,-887 245,-887 245,-862 139,-862"/>
+<text text-anchor="start" x="165.5" y="-868.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="18,-837 18,-862 139,-862 139,-837 18,-837"/>
+<text text-anchor="start" x="21" y="-843.8" font-family="Times,serif" font-size="16.00">review_id</text>
+<polygon fill="none" stroke="black" points="139,-837 139,-862 245,-862 245,-837 139,-837"/>
+<text text-anchor="start" x="170" y="-843.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="18,-812 18,-837 139,-837 139,-812 18,-812"/>
+<text text-anchor="start" x="21" y="-818.8" font-family="Times,serif" font-size="16.00">user_id</text>
+<polygon fill="none" stroke="black" points="139,-812 139,-837 245,-837 245,-812 139,-812"/>
+<text text-anchor="start" x="170" y="-818.8" font-family="Times,serif" font-size="16.00">integer</text>
+</g>
+<!-- moderation_allocation&#45;&gt;config -->
+<g id="edge30" class="edge">
+<title>moderation_allocation:user_id_out&#45;&gt;config:row_id</title>
+<path fill="none" stroke="black" d="M246.5,-824C302.39,-824 312.58,-785.49 362.57,-780.52"/>
+<polygon fill="black" stroke="black" points="362.68,-783.98 372.5,-780 362.34,-776.98 362.68,-783.98"/>
+</g>
+<!-- moderation_allocation&#45;&gt;proposal_review -->
+<g id="edge29" class="edge">
+<title>moderation_allocation:review_id_out&#45;&gt;proposal_review:row_id</title>
+<path fill="none" stroke="black" d="M246.5,-849C319.08,-849 238.13,-1154.44 295.12,-1185.47"/>
+<polygon fill="black" stroke="black" points="293.96,-1189.03 304.5,-1188 295.62,-1182.23 293.96,-1189.03"/>
+</g>
+<!-- objective&#45;&gt;currency -->
+<g id="edge4" class="edge">
+<title>objective:rewards_currency_out&#45;&gt;currency:name</title>
+<path fill="none" stroke="black" d="M1184.5,-1615C1244.96,-1615 1262.73,-1613.23 1318.19,-1613.02"/>
+<polygon fill="black" stroke="black" points="1318.01,-1616.52 1328,-1613 1317.99,-1609.52 1318.01,-1616.52"/>
+</g>
+<!-- objective&#45;&gt;event -->
+<g id="edge2" class="edge">
+<title>objective:event_out&#45;&gt;event:row_id</title>
+<path fill="none" stroke="black" d="M1184.5,-1741C1263.16,-1741 1215.64,-1467.41 1222,-1389 1225.26,-1348.78 1222.43,-702.78 1257.7,-624.71"/>
+<polygon fill="black" stroke="black" points="1259.66,-627.67 1264,-618 1254.58,-622.85 1259.66,-627.67"/>
+</g>
+<!-- objective_category -->
+<g id="node11" class="node">
+<title>objective_category</title>
+<polygon fill="#009879" stroke="none" points="1294.5,-1785.5 1294.5,-1815.5 1489.5,-1815.5 1489.5,-1785.5 1294.5,-1785.5"/>
+<polygon fill="none" stroke="black" points="1294.5,-1785.5 1294.5,-1815.5 1489.5,-1815.5 1489.5,-1785.5 1294.5,-1785.5"/>
+<text text-anchor="start" x="1297.5" y="-1794.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">objective_category</text>
+<polygon fill="none" stroke="black" points="1294.5,-1758.5 1294.5,-1785.5 1406.5,-1785.5 1406.5,-1758.5 1294.5,-1758.5"/>
+<text text-anchor="start" x="1316" y="-1766.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1406.5,-1758.5 1406.5,-1785.5 1489.5,-1785.5 1489.5,-1758.5 1406.5,-1758.5"/>
+<text text-anchor="start" x="1427.5" y="-1766.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="1294.5,-1733.5 1294.5,-1758.5 1406.5,-1758.5 1406.5,-1733.5 1294.5,-1733.5"/>
+<polygon fill="none" stroke="black" points="1294.5,-1733.5 1294.5,-1758.5 1406.5,-1758.5 1406.5,-1733.5 1294.5,-1733.5"/>
+<text text-anchor="start" x="1297.5" y="-1740.3" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="#54ff9f" stroke="none" points="1406.5,-1733.5 1406.5,-1758.5 1489.5,-1758.5 1489.5,-1733.5 1406.5,-1733.5"/>
+<polygon fill="none" stroke="black" points="1406.5,-1733.5 1406.5,-1758.5 1489.5,-1758.5 1489.5,-1733.5 1406.5,-1733.5"/>
+<text text-anchor="start" x="1436" y="-1740.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="1294.5,-1708.5 1294.5,-1733.5 1406.5,-1733.5 1406.5,-1708.5 1294.5,-1708.5"/>
+<text text-anchor="start" x="1297.5" y="-1715.3" font-family="Times,serif" font-size="16.00">description</text>
+<polygon fill="none" stroke="black" points="1406.5,-1708.5 1406.5,-1733.5 1489.5,-1733.5 1489.5,-1708.5 1406.5,-1708.5"/>
+<text text-anchor="start" x="1436" y="-1716.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+</g>
+<!-- objective&#45;&gt;objective_category -->
+<g id="edge3" class="edge">
+<title>objective:category_out&#45;&gt;objective_category:name</title>
+<path fill="none" stroke="black" d="M1184.5,-1716C1230.72,-1716 1241.44,-1741.6 1282.25,-1745.5"/>
+<polygon fill="black" stroke="black" points="1281.85,-1749.04 1292,-1746 1282.17,-1742.04 1281.85,-1749.04"/>
+</g>
+<!-- vote_options -->
+<g id="node21" class="node">
+<title>vote_options</title>
+<polygon fill="#009879" stroke="none" points="1324,-1513 1324,-1543 1460,-1543 1460,-1513 1324,-1513"/>
+<polygon fill="none" stroke="black" points="1324,-1513 1324,-1543 1460,-1543 1460,-1513 1324,-1513"/>
+<text text-anchor="start" x="1328.5" y="-1522" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">vote_options</text>
+<polygon fill="none" stroke="black" points="1324,-1486 1324,-1513 1399,-1513 1399,-1486 1324,-1486"/>
+<text text-anchor="start" x="1327" y="-1493.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1399,-1486 1399,-1513 1460,-1513 1460,-1486 1399,-1486"/>
+<text text-anchor="start" x="1409" y="-1493.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="1324,-1461 1324,-1486 1399,-1486 1399,-1461 1324,-1461"/>
+<polygon fill="none" stroke="black" points="1324,-1461 1324,-1486 1399,-1486 1399,-1461 1324,-1461"/>
+<text text-anchor="start" x="1327" y="-1467.8" font-family="Times,serif" font-size="16.00">id</text>
+<polygon fill="#54ff9f" stroke="none" points="1399,-1461 1399,-1486 1460,-1486 1460,-1461 1399,-1461"/>
+<polygon fill="none" stroke="black" points="1399,-1461 1399,-1486 1460,-1486 1460,-1461 1399,-1461"/>
+<text text-anchor="start" x="1403" y="-1467.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="1324,-1436 1324,-1461 1399,-1461 1399,-1436 1324,-1436"/>
+<text text-anchor="start" x="1327" y="-1442.8" font-family="Times,serif" font-size="16.00">idea_scale</text>
+<polygon fill="none" stroke="black" points="1399,-1436 1399,-1461 1460,-1461 1460,-1436 1399,-1436"/>
+<text text-anchor="start" x="1402" y="-1443.8" font-family="Times,serif" font-style="italic" font-size="16.00">ARRAY</text>
+<polygon fill="none" stroke="black" points="1324,-1411 1324,-1436 1399,-1436 1399,-1411 1324,-1411"/>
+<text text-anchor="start" x="1327" y="-1417.8" font-family="Times,serif" font-size="16.00">objective</text>
+<polygon fill="none" stroke="black" points="1399,-1411 1399,-1436 1460,-1436 1460,-1411 1399,-1411"/>
+<text text-anchor="start" x="1402" y="-1418.8" font-family="Times,serif" font-style="italic" font-size="16.00">ARRAY</text>
+</g>
+<!-- objective&#45;&gt;vote_options -->
+<g id="edge5" class="edge">
+<title>objective:vote_options_out&#45;&gt;vote_options:id</title>
+<path fill="none" stroke="black" d="M1184.5,-1515C1245.05,-1515 1257.33,-1477.78 1312.23,-1473.42"/>
+<polygon fill="black" stroke="black" points="1312.14,-1476.88 1322,-1473 1311.87,-1469.89 1312.14,-1476.88"/>
+</g>
+<!-- objective_review_metric -->
+<g id="node12" class="node">
+<title>objective_review_metric</title>
+<polygon fill="#009879" stroke="none" points="8,-1830 8,-1860 255,-1860 255,-1830 8,-1830"/>
+<polygon fill="none" stroke="black" points="8,-1830 8,-1860 255,-1860 255,-1830 8,-1830"/>
+<text text-anchor="start" x="11" y="-1839" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">objective_review_metric</text>
+<polygon fill="none" stroke="black" points="8,-1803 8,-1830 149,-1830 149,-1803 8,-1803"/>
+<text text-anchor="start" x="44" y="-1810.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="149,-1803 149,-1830 255,-1830 255,-1803 149,-1803"/>
+<text text-anchor="start" x="181.5" y="-1810.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="8,-1778 8,-1803 149,-1803 149,-1778 8,-1778"/>
+<polygon fill="none" stroke="black" points="8,-1778 8,-1803 149,-1803 149,-1778 8,-1778"/>
+<text text-anchor="start" x="11" y="-1784.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="149,-1778 149,-1803 255,-1803 255,-1778 149,-1778"/>
+<polygon fill="none" stroke="black" points="149,-1778 149,-1803 255,-1803 255,-1778 149,-1778"/>
+<text text-anchor="start" x="175.5" y="-1784.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="8,-1753 8,-1778 149,-1778 149,-1753 8,-1753"/>
+<text text-anchor="start" x="11" y="-1759.8" font-family="Times,serif" font-size="16.00">objective</text>
+<polygon fill="none" stroke="black" points="149,-1753 149,-1778 255,-1778 255,-1753 149,-1753"/>
+<text text-anchor="start" x="180" y="-1759.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="8,-1728 8,-1753 149,-1753 149,-1728 8,-1728"/>
+<text text-anchor="start" x="11" y="-1734.8" font-family="Times,serif" font-size="16.00">metric</text>
+<polygon fill="none" stroke="black" points="149,-1728 149,-1753 255,-1753 255,-1728 149,-1728"/>
+<text text-anchor="start" x="180" y="-1734.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="8,-1703 8,-1728 149,-1728 149,-1703 8,-1703"/>
+<text text-anchor="start" x="11" y="-1709.8" font-family="Times,serif" font-size="16.00">note</text>
+<polygon fill="none" stroke="black" points="149,-1703 149,-1728 255,-1728 255,-1703 149,-1703"/>
+<text text-anchor="start" x="177" y="-1710.8" font-family="Times,serif" font-style="italic" font-size="16.00">boolean</text>
+<polygon fill="none" stroke="black" points="8,-1678 8,-1703 149,-1703 149,-1678 8,-1678"/>
+<text text-anchor="start" x="11" y="-1684.8" font-family="Times,serif" font-size="16.00">review_group</text>
+<polygon fill="none" stroke="black" points="149,-1678 149,-1703 255,-1703 255,-1678 149,-1678"/>
+<text text-anchor="start" x="178" y="-1685.8" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+</g>
+<!-- objective_review_metric&#45;&gt;objective -->
+<g id="edge11" class="edge">
+<title>objective_review_metric:objective_out&#45;&gt;objective:row_id</title>
+<path fill="none" stroke="black" d="M256.5,-1765C349.55,-1765 226.83,-1911.26 299,-1970 504.48,-2137.25 675.94,-2107.02 895,-1958 958.77,-1914.61 894.36,-1802.67 957.7,-1791.85"/>
+<polygon fill="black" stroke="black" points="957.8,-1795.27 967.5,-1791 957.26,-1788.29 957.8,-1795.27"/>
+</g>
+<!-- review_metric -->
+<g id="node16" class="node">
+<title>review_metric</title>
+<polygon fill="#009879" stroke="none" points="369,-1460.5 369,-1490.5 514,-1490.5 514,-1460.5 369,-1460.5"/>
+<polygon fill="none" stroke="black" points="369,-1460.5 369,-1490.5 514,-1490.5 514,-1460.5 369,-1460.5"/>
+<text text-anchor="start" x="372" y="-1469.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">review_metric</text>
+<polygon fill="none" stroke="black" points="369,-1433.5 369,-1460.5 449,-1460.5 449,-1433.5 369,-1433.5"/>
+<text text-anchor="start" x="374.5" y="-1441.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="449,-1433.5 449,-1460.5 514,-1460.5 514,-1433.5 449,-1433.5"/>
+<text text-anchor="start" x="461" y="-1441.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="369,-1408.5 369,-1433.5 449,-1433.5 449,-1408.5 369,-1408.5"/>
+<polygon fill="none" stroke="black" points="369,-1408.5 369,-1433.5 449,-1433.5 449,-1408.5 369,-1408.5"/>
+<text text-anchor="start" x="372" y="-1415.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="449,-1408.5 449,-1433.5 514,-1433.5 514,-1408.5 449,-1408.5"/>
+<polygon fill="none" stroke="black" points="449,-1408.5 449,-1433.5 514,-1433.5 514,-1408.5 449,-1408.5"/>
+<text text-anchor="start" x="455" y="-1415.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="369,-1383.5 369,-1408.5 449,-1408.5 449,-1383.5 369,-1383.5"/>
+<text text-anchor="start" x="372" y="-1390.3" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="none" stroke="black" points="449,-1383.5 449,-1408.5 514,-1408.5 514,-1383.5 449,-1383.5"/>
+<text text-anchor="start" x="457.5" y="-1390.3" font-family="Times,serif" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="369,-1358.5 369,-1383.5 449,-1383.5 449,-1358.5 369,-1358.5"/>
+<text text-anchor="start" x="372" y="-1365.3" font-family="Times,serif" font-size="16.00">description</text>
+<polygon fill="none" stroke="black" points="449,-1358.5 449,-1383.5 514,-1383.5 514,-1358.5 449,-1358.5"/>
+<text text-anchor="start" x="457.5" y="-1366.3" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="369,-1333.5 369,-1358.5 449,-1358.5 449,-1333.5 369,-1333.5"/>
+<text text-anchor="start" x="372" y="-1340.3" font-family="Times,serif" font-size="16.00">min</text>
+<polygon fill="none" stroke="black" points="449,-1333.5 449,-1358.5 514,-1358.5 514,-1333.5 449,-1333.5"/>
+<text text-anchor="start" x="459.5" y="-1340.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="369,-1308.5 369,-1333.5 449,-1333.5 449,-1308.5 369,-1308.5"/>
+<text text-anchor="start" x="372" y="-1315.3" font-family="Times,serif" font-size="16.00">max</text>
+<polygon fill="none" stroke="black" points="449,-1308.5 449,-1333.5 514,-1333.5 514,-1308.5 449,-1308.5"/>
+<text text-anchor="start" x="459.5" y="-1315.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="369,-1283.5 369,-1308.5 449,-1308.5 449,-1283.5 369,-1283.5"/>
+<text text-anchor="start" x="372" y="-1290.3" font-family="Times,serif" font-size="16.00">map</text>
+<polygon fill="none" stroke="black" points="449,-1283.5 449,-1308.5 514,-1308.5 514,-1283.5 449,-1283.5"/>
+<text text-anchor="start" x="454" y="-1291.3" font-family="Times,serif" font-style="italic" font-size="16.00">ARRAY</text>
+</g>
+<!-- objective_review_metric&#45;&gt;review_metric -->
+<g id="edge12" class="edge">
+<title>objective_review_metric:metric_out&#45;&gt;review_metric:row_id</title>
+<path fill="none" stroke="black" d="M256.5,-1740C309.79,-1740 276.59,-1552.35 299,-1504 317.47,-1464.17 319.45,-1427.52 356.65,-1421.78"/>
+<polygon fill="black" stroke="black" points="356.78,-1425.21 366.5,-1421 356.27,-1418.23 356.78,-1425.21"/>
+</g>
+<!-- proposal&#45;&gt;objective -->
+<g id="edge6" class="edge">
+<title>proposal:objective_out&#45;&gt;objective:row_id</title>
+<path fill="none" stroke="black" d="M888.5,-1794C920.19,-1794 930.67,-1791.62 957.71,-1791.1"/>
+<polygon fill="black" stroke="black" points="957.53,-1794.59 967.5,-1791 957.47,-1787.59 957.53,-1794.59"/>
+</g>
+<!-- proposal&#45;&gt;vote_options -->
+<g id="edge7" class="edge">
+<title>proposal:bb_vote_options_out&#45;&gt;vote_options:objective</title>
+<path fill="none" stroke="black" d="M888.5,-1393C1078.38,-1393 1127.57,-1421.87 1312.1,-1422.97"/>
+<polygon fill="black" stroke="black" points="1311.99,-1426.47 1322,-1423 1312.01,-1419.47 1311.99,-1426.47"/>
+</g>
+<!-- proposal_review&#45;&gt;proposal -->
+<g id="edge9" class="edge">
+<title>proposal_review:proposal_id_out&#45;&gt;proposal:row_id</title>
+<path fill="none" stroke="black" d="M577.5,-1163C649.66,-1163 560.24,-1779.12 616.62,-1839.29"/>
+<polygon fill="black" stroke="black" points="614.97,-1842.85 625.5,-1844 617.98,-1836.53 614.97,-1842.85"/>
+</g>
+<!-- reviewer_level -->
+<g id="node18" class="node">
+<title>reviewer_level</title>
+<polygon fill="#009879" stroke="none" points="671,-550.5 671,-580.5 844,-580.5 844,-550.5 671,-550.5"/>
+<polygon fill="none" stroke="black" points="671,-550.5 671,-580.5 844,-580.5 844,-550.5 671,-550.5"/>
+<text text-anchor="start" x="686.5" y="-559.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">reviewer_level</text>
+<polygon fill="none" stroke="black" points="671,-523.5 671,-550.5 785,-550.5 785,-523.5 671,-523.5"/>
+<text text-anchor="start" x="693.5" y="-531.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="785,-523.5 785,-550.5 844,-550.5 844,-523.5 785,-523.5"/>
+<text text-anchor="start" x="794" y="-531.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="671,-498.5 671,-523.5 785,-523.5 785,-498.5 671,-498.5"/>
+<polygon fill="none" stroke="black" points="671,-498.5 671,-523.5 785,-523.5 785,-498.5 671,-498.5"/>
+<text text-anchor="start" x="674" y="-505.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="785,-498.5 785,-523.5 844,-523.5 844,-498.5 785,-498.5"/>
+<polygon fill="none" stroke="black" points="785,-498.5 785,-523.5 844,-523.5 844,-498.5 785,-498.5"/>
+<text text-anchor="start" x="788" y="-505.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="671,-473.5 671,-498.5 785,-498.5 785,-473.5 671,-473.5"/>
+<text text-anchor="start" x="674" y="-480.3" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="none" stroke="black" points="785,-473.5 785,-498.5 844,-498.5 844,-473.5 785,-473.5"/>
+<text text-anchor="start" x="802.5" y="-480.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="671,-448.5 671,-473.5 785,-473.5 785,-448.5 671,-448.5"/>
+<text text-anchor="start" x="674" y="-455.3" font-family="Times,serif" font-size="16.00">total_reward_pct</text>
+<polygon fill="none" stroke="black" points="785,-448.5 785,-473.5 844,-473.5 844,-448.5 785,-448.5"/>
+<text text-anchor="start" x="788.5" y="-456.3" font-family="Times,serif" font-style="italic" font-size="16.00">numeric</text>
+<polygon fill="none" stroke="black" points="671,-423.5 671,-448.5 785,-448.5 785,-423.5 671,-423.5"/>
+<text text-anchor="start" x="674" y="-430.3" font-family="Times,serif" font-size="16.00">event_id</text>
+<polygon fill="none" stroke="black" points="785,-423.5 785,-448.5 844,-448.5 844,-423.5 785,-423.5"/>
+<text text-anchor="start" x="792.5" y="-430.3" font-family="Times,serif" font-size="16.00">integer</text>
+</g>
+<!-- proposal_review&#45;&gt;reviewer_level -->
+<g id="edge10" class="edge">
+<title>proposal_review:assessor_level_out&#45;&gt;reviewer_level:row_id</title>
+<path fill="none" stroke="black" d="M577.5,-1113C635.36,-1113 602.36,-649.11 620,-594 631.86,-556.93 627.6,-518.88 658.67,-512.07"/>
+<polygon fill="black" stroke="black" points="658.89,-515.47 668.5,-511 658.2,-508.5 658.89,-515.47"/>
+</g>
+<!-- proposal_voteplan -->
+<g id="node15" class="node">
+<title>proposal_voteplan</title>
+<polygon fill="#009879" stroke="none" points="347.5,-1643.5 347.5,-1673.5 535.5,-1673.5 535.5,-1643.5 347.5,-1643.5"/>
+<polygon fill="none" stroke="black" points="347.5,-1643.5 347.5,-1673.5 535.5,-1673.5 535.5,-1643.5 347.5,-1643.5"/>
+<text text-anchor="start" x="350.5" y="-1652.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal_voteplan</text>
+<polygon fill="none" stroke="black" points="347.5,-1616.5 347.5,-1643.5 475.5,-1643.5 475.5,-1616.5 347.5,-1616.5"/>
+<text text-anchor="start" x="377" y="-1624.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="475.5,-1616.5 475.5,-1643.5 535.5,-1643.5 535.5,-1616.5 475.5,-1616.5"/>
+<text text-anchor="start" x="485" y="-1624.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="347.5,-1591.5 347.5,-1616.5 475.5,-1616.5 475.5,-1591.5 347.5,-1591.5"/>
+<polygon fill="none" stroke="black" points="347.5,-1591.5 347.5,-1616.5 475.5,-1616.5 475.5,-1591.5 347.5,-1591.5"/>
+<text text-anchor="start" x="350.5" y="-1598.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="475.5,-1591.5 475.5,-1616.5 535.5,-1616.5 535.5,-1591.5 475.5,-1591.5"/>
+<polygon fill="none" stroke="black" points="475.5,-1591.5 475.5,-1616.5 535.5,-1616.5 535.5,-1591.5 475.5,-1591.5"/>
+<text text-anchor="start" x="479" y="-1598.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="347.5,-1566.5 347.5,-1591.5 475.5,-1591.5 475.5,-1566.5 347.5,-1566.5"/>
+<text text-anchor="start" x="350.5" y="-1573.3" font-family="Times,serif" font-size="16.00">proposal_id</text>
+<polygon fill="none" stroke="black" points="475.5,-1566.5 475.5,-1591.5 535.5,-1591.5 535.5,-1566.5 475.5,-1566.5"/>
+<text text-anchor="start" x="483.5" y="-1574.3" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="347.5,-1541.5 347.5,-1566.5 475.5,-1566.5 475.5,-1541.5 347.5,-1541.5"/>
+<text text-anchor="start" x="350.5" y="-1548.3" font-family="Times,serif" font-size="16.00">voteplan_id</text>
+<polygon fill="none" stroke="black" points="475.5,-1541.5 475.5,-1566.5 535.5,-1566.5 535.5,-1541.5 475.5,-1541.5"/>
+<text text-anchor="start" x="483.5" y="-1549.3" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="347.5,-1516.5 347.5,-1541.5 475.5,-1541.5 475.5,-1516.5 347.5,-1516.5"/>
+<text text-anchor="start" x="350.5" y="-1523.3" font-family="Times,serif" font-size="16.00">bb_proposal_index</text>
+<polygon fill="none" stroke="black" points="475.5,-1516.5 475.5,-1541.5 535.5,-1541.5 535.5,-1516.5 475.5,-1516.5"/>
+<text text-anchor="start" x="487" y="-1524.3" font-family="Times,serif" font-style="italic" font-size="16.00">bigint</text>
+</g>
+<!-- proposal_voteplan&#45;&gt;proposal -->
+<g id="edge18" class="edge">
+<title>proposal_voteplan:proposal_id_out&#45;&gt;proposal:row_id</title>
+<path fill="none" stroke="black" d="M536.5,-1579C588.94,-1579 566.54,-1637.55 584,-1687 606.75,-1751.44 559.87,-1834.35 615.74,-1843.22"/>
+<polygon fill="black" stroke="black" points="615.27,-1846.77 625.5,-1844 615.78,-1839.79 615.27,-1846.77"/>
+</g>
+<!-- voteplan -->
+<g id="node22" class="node">
+<title>voteplan</title>
+<polygon fill="#009879" stroke="none" points="675.5,-809 675.5,-839 839.5,-839 839.5,-809 675.5,-809"/>
+<polygon fill="none" stroke="black" points="675.5,-809 675.5,-839 839.5,-839 839.5,-809 675.5,-809"/>
+<text text-anchor="start" x="714" y="-818" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voteplan</text>
+<polygon fill="none" stroke="black" points="675.5,-782 675.5,-809 780.5,-809 780.5,-782 675.5,-782"/>
+<text text-anchor="start" x="693.5" y="-789.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="780.5,-782 780.5,-809 839.5,-809 839.5,-782 780.5,-782"/>
+<text text-anchor="start" x="789.5" y="-789.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="675.5,-757 675.5,-782 780.5,-782 780.5,-757 675.5,-757"/>
+<polygon fill="none" stroke="black" points="675.5,-757 675.5,-782 780.5,-782 780.5,-757 675.5,-757"/>
+<text text-anchor="start" x="678.5" y="-763.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="780.5,-757 780.5,-782 839.5,-782 839.5,-757 780.5,-757"/>
+<polygon fill="none" stroke="black" points="780.5,-757 780.5,-782 839.5,-782 839.5,-757 780.5,-757"/>
+<text text-anchor="start" x="783.5" y="-763.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="675.5,-732 675.5,-757 780.5,-757 780.5,-732 675.5,-732"/>
+<text text-anchor="start" x="678.5" y="-738.8" font-family="Times,serif" font-size="16.00">objective_id</text>
+<polygon fill="none" stroke="black" points="780.5,-732 780.5,-757 839.5,-757 839.5,-732 780.5,-732"/>
+<text text-anchor="start" x="788" y="-738.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="675.5,-707 675.5,-732 780.5,-732 780.5,-707 675.5,-707"/>
+<text text-anchor="start" x="678.5" y="-713.8" font-family="Times,serif" font-size="16.00">id</text>
+<polygon fill="none" stroke="black" points="780.5,-707 780.5,-732 839.5,-732 839.5,-707 780.5,-707"/>
+<text text-anchor="start" x="786" y="-713.8" font-family="Times,serif" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="675.5,-682 675.5,-707 780.5,-707 780.5,-682 675.5,-682"/>
+<text text-anchor="start" x="678.5" y="-688.8" font-family="Times,serif" font-size="16.00">category</text>
+<polygon fill="none" stroke="black" points="780.5,-682 780.5,-707 839.5,-707 839.5,-682 780.5,-682"/>
+<text text-anchor="start" x="798" y="-688.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="675.5,-657 675.5,-682 780.5,-682 780.5,-657 675.5,-657"/>
+<text text-anchor="start" x="678.5" y="-663.8" font-family="Times,serif" font-size="16.00">encryption_key</text>
+<polygon fill="none" stroke="black" points="780.5,-657 780.5,-682 839.5,-682 839.5,-657 780.5,-657"/>
+<text text-anchor="start" x="786" y="-664.8" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="675.5,-632 675.5,-657 780.5,-657 780.5,-632 675.5,-632"/>
+<text text-anchor="start" x="678.5" y="-638.8" font-family="Times,serif" font-size="16.00">group_id</text>
+<polygon fill="none" stroke="black" points="780.5,-632 780.5,-657 839.5,-657 839.5,-632 780.5,-632"/>
+<text text-anchor="start" x="798" y="-639.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="675.5,-607 675.5,-632 780.5,-632 780.5,-607 675.5,-607"/>
+<text text-anchor="start" x="678.5" y="-613.8" font-family="Times,serif" font-size="16.00">token_id</text>
+<polygon fill="none" stroke="black" points="780.5,-607 780.5,-632 839.5,-632 839.5,-607 780.5,-607"/>
+<text text-anchor="start" x="798" y="-614.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+</g>
+<!-- proposal_voteplan&#45;&gt;voteplan -->
+<g id="edge19" class="edge">
+<title>proposal_voteplan:voteplan_id_out&#45;&gt;voteplan:row_id</title>
+<path fill="none" stroke="black" d="M536.5,-1554C709.6,-1554 506.69,-803.33 663.63,-771.07"/>
+<polygon fill="black" stroke="black" points="663.89,-774.46 673.5,-770 663.21,-767.5 663.89,-774.46"/>
+</g>
+<!-- review_rating -->
+<g id="node17" class="node">
+<title>review_rating</title>
+<polygon fill="#009879" stroke="none" points="61.5,-1442 61.5,-1472 201.5,-1472 201.5,-1442 61.5,-1442"/>
+<polygon fill="none" stroke="black" points="61.5,-1442 61.5,-1472 201.5,-1472 201.5,-1442 61.5,-1442"/>
+<text text-anchor="start" x="64.5" y="-1451" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">review_rating</text>
+<polygon fill="none" stroke="black" points="61.5,-1415 61.5,-1442 139.5,-1442 139.5,-1415 61.5,-1415"/>
+<text text-anchor="start" x="66" y="-1422.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="139.5,-1415 139.5,-1442 201.5,-1442 201.5,-1415 139.5,-1415"/>
+<text text-anchor="start" x="150" y="-1422.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="61.5,-1390 61.5,-1415 139.5,-1415 139.5,-1390 61.5,-1390"/>
+<polygon fill="none" stroke="black" points="61.5,-1390 61.5,-1415 139.5,-1415 139.5,-1390 61.5,-1390"/>
+<text text-anchor="start" x="64.5" y="-1396.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="139.5,-1390 139.5,-1415 201.5,-1415 201.5,-1390 139.5,-1390"/>
+<polygon fill="none" stroke="black" points="139.5,-1390 139.5,-1415 201.5,-1415 201.5,-1390 139.5,-1390"/>
+<text text-anchor="start" x="144" y="-1396.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="61.5,-1365 61.5,-1390 139.5,-1390 139.5,-1365 61.5,-1365"/>
+<text text-anchor="start" x="64.5" y="-1371.8" font-family="Times,serif" font-size="16.00">review_id</text>
+<polygon fill="none" stroke="black" points="139.5,-1365 139.5,-1390 201.5,-1390 201.5,-1365 139.5,-1365"/>
+<text text-anchor="start" x="148.5" y="-1371.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="61.5,-1340 61.5,-1365 139.5,-1365 139.5,-1340 61.5,-1340"/>
+<text text-anchor="start" x="64.5" y="-1346.8" font-family="Times,serif" font-size="16.00">metric</text>
+<polygon fill="none" stroke="black" points="139.5,-1340 139.5,-1365 201.5,-1365 201.5,-1340 139.5,-1340"/>
+<text text-anchor="start" x="148.5" y="-1346.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="61.5,-1315 61.5,-1340 139.5,-1340 139.5,-1315 61.5,-1315"/>
+<text text-anchor="start" x="64.5" y="-1321.8" font-family="Times,serif" font-size="16.00">rating</text>
+<polygon fill="none" stroke="black" points="139.5,-1315 139.5,-1340 201.5,-1340 201.5,-1315 139.5,-1315"/>
+<text text-anchor="start" x="148.5" y="-1321.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="61.5,-1290 61.5,-1315 139.5,-1315 139.5,-1290 61.5,-1290"/>
+<text text-anchor="start" x="64.5" y="-1296.8" font-family="Times,serif" font-size="16.00">note</text>
+<polygon fill="none" stroke="black" points="139.5,-1290 139.5,-1315 201.5,-1315 201.5,-1290 139.5,-1290"/>
+<text text-anchor="start" x="146.5" y="-1297.8" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+</g>
+<!-- review_rating&#45;&gt;proposal_review -->
+<g id="edge13" class="edge">
+<title>review_rating:review_id_out&#45;&gt;proposal_review:row_id</title>
+<path fill="none" stroke="black" d="M202.5,-1377C246.78,-1377 256.36,-1215.01 295.49,-1190.97"/>
+<polygon fill="black" stroke="black" points="295.91,-1194.2 304.5,-1188 293.92,-1187.49 295.91,-1194.2"/>
+</g>
+<!-- review_rating&#45;&gt;review_metric -->
+<g id="edge14" class="edge">
+<title>review_rating:metric_out&#45;&gt;review_metric:row_id</title>
+<path fill="none" stroke="black" d="M202.5,-1352C278.26,-1352 287.29,-1414.68 356.79,-1420.56"/>
+<polygon fill="black" stroke="black" points="356.36,-1424.09 366.5,-1421 356.65,-1417.09 356.36,-1424.09"/>
+</g>
+<!-- reviewer_level&#45;&gt;event -->
+<g id="edge8" class="edge">
+<title>reviewer_level:event_id_out&#45;&gt;event:row_id</title>
+<path fill="none" stroke="black" d="M845.5,-436C929.27,-436 1156.91,-402.27 1222,-455 1276.72,-499.33 1199.84,-604.61 1254.2,-616"/>
+<polygon fill="black" stroke="black" points="1253.72,-619.56 1264,-617 1254.37,-612.59 1253.72,-619.56"/>
+</g>
+<!-- snapshot&#45;&gt;event -->
+<g id="edge20" class="edge">
+<title>snapshot:event_out&#45;&gt;event:row_id</title>
+<path fill="none" stroke="black" d="M1215.5,-1281C1285.87,-1281 1200.22,-680.26 1255.36,-621.59"/>
+<polygon fill="black" stroke="black" points="1256.48,-624.46 1264,-617 1253.47,-618.14 1256.48,-624.46"/>
+</g>
+<!-- tally_committee&#45;&gt;event -->
+<g id="edge27" class="edge">
+<title>tally_committee:event_out&#45;&gt;event:row_id</title>
+<path fill="none" stroke="black" d="M1161.5,-309C1218.47,-309 1202.24,-368.57 1222,-422 1236.07,-460.04 1223.27,-591.46 1254.86,-613.77"/>
+<polygon fill="black" stroke="black" points="1253.41,-617.3 1264,-617 1255.53,-610.63 1253.41,-617.3"/>
+</g>
+<!-- voteplan&#45;&gt;objective -->
+<g id="edge15" class="edge">
+<title>voteplan:objective_id_out&#45;&gt;objective:row_id</title>
+<path fill="none" stroke="black" d="M840.5,-745C893.87,-745 880.82,-800.55 895,-852 921.84,-949.34 867.89,-1732.98 958.06,-1787.96"/>
+<polygon fill="black" stroke="black" points="956.92,-1791.57 967.5,-1791 958.88,-1784.84 956.92,-1791.57"/>
+</g>
+<!-- voteplan_category -->
+<g id="node23" class="node">
+<title>voteplan_category</title>
+<polygon fill="#009879" stroke="none" points="981,-653.5 981,-683.5 1172,-683.5 1172,-653.5 981,-653.5"/>
+<polygon fill="none" stroke="black" points="981,-653.5 981,-683.5 1172,-683.5 1172,-653.5 981,-653.5"/>
+<text text-anchor="start" x="984" y="-662.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voteplan_category</text>
+<polygon fill="none" stroke="black" points="981,-626.5 981,-653.5 1087,-653.5 1087,-626.5 981,-626.5"/>
+<text text-anchor="start" x="999.5" y="-634.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1087,-626.5 1087,-653.5 1172,-653.5 1172,-626.5 1087,-626.5"/>
+<text text-anchor="start" x="1109" y="-634.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="981,-601.5 981,-626.5 1087,-626.5 1087,-601.5 981,-601.5"/>
+<polygon fill="none" stroke="black" points="981,-601.5 981,-626.5 1087,-626.5 1087,-601.5 981,-601.5"/>
+<text text-anchor="start" x="984" y="-608.3" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="#54ff9f" stroke="none" points="1087,-601.5 1087,-626.5 1172,-626.5 1172,-601.5 1087,-601.5"/>
+<polygon fill="none" stroke="black" points="1087,-601.5 1087,-626.5 1172,-626.5 1172,-601.5 1087,-601.5"/>
+<text text-anchor="start" x="1117.5" y="-608.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="981,-576.5 981,-601.5 1087,-601.5 1087,-576.5 981,-576.5"/>
+<text text-anchor="start" x="984" y="-583.3" font-family="Times,serif" font-size="16.00">public_key</text>
+<polygon fill="none" stroke="black" points="1087,-576.5 1087,-601.5 1172,-601.5 1172,-576.5 1087,-576.5"/>
+<text text-anchor="start" x="1104.5" y="-584.3" font-family="Times,serif" font-style="italic" font-size="16.00">boolean</text>
+</g>
+<!-- voteplan&#45;&gt;voteplan_category -->
+<g id="edge16" class="edge">
+<title>voteplan:category_out&#45;&gt;voteplan_category:name</title>
+<path fill="none" stroke="black" d="M840.5,-694C908.02,-694 908.39,-622.22 968.83,-614.64"/>
+<polygon fill="black" stroke="black" points="968.73,-618.1 978.5,-614 968.31,-611.11 968.73,-618.1"/>
+</g>
+<!-- voting_group -->
+<g id="node25" class="node">
+<title>voting_group</title>
+<polygon fill="#009879" stroke="none" points="1008,-520 1008,-550 1145,-550 1145,-520 1008,-520"/>
+<polygon fill="none" stroke="black" points="1008,-520 1008,-550 1145,-550 1145,-520 1008,-520"/>
+<text text-anchor="start" x="1011" y="-529" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voting_group</text>
+<polygon fill="none" stroke="black" points="1008,-493 1008,-520 1090,-520 1090,-493 1008,-493"/>
+<text text-anchor="start" x="1014.5" y="-500.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1090,-493 1090,-520 1145,-520 1145,-493 1090,-493"/>
+<text text-anchor="start" x="1097" y="-500.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="1008,-468 1008,-493 1090,-493 1090,-468 1008,-468"/>
+<polygon fill="none" stroke="black" points="1008,-468 1008,-493 1090,-493 1090,-468 1008,-468"/>
+<text text-anchor="start" x="1011" y="-474.8" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="#54ff9f" stroke="none" points="1090,-468 1090,-493 1145,-493 1145,-468 1090,-468"/>
+<polygon fill="none" stroke="black" points="1090,-468 1090,-493 1145,-493 1145,-468 1090,-468"/>
+<text text-anchor="start" x="1105.5" y="-474.8" font-family="Times,serif" font-size="16.00">text</text>
+</g>
+<!-- voteplan&#45;&gt;voting_group -->
+<g id="edge17" class="edge">
+<title>voteplan:group_id_out&#45;&gt;voting_group:name</title>
+<path fill="none" stroke="black" d="M840.5,-644C940.36,-644 905.66,-491.95 995.54,-480.66"/>
+<polygon fill="black" stroke="black" points="995.73,-484.1 1005.5,-480 995.31,-477.11 995.73,-484.1"/>
+</g>
+<!-- voter&#45;&gt;snapshot -->
+<g id="edge21" class="edge">
+<title>voter:snapshot_id_out&#45;&gt;snapshot:row_id</title>
+<path fill="none" stroke="black" d="M831.5,-1235C884.33,-1235 881.51,-1296.62 926.73,-1305.05"/>
+<polygon fill="black" stroke="black" points="926.23,-1308.61 936.5,-1306 926.85,-1301.63 926.23,-1308.61"/>
+</g>
+<!-- voting_node -->
+<g id="node26" class="node">
+<title>voting_node</title>
+<polygon fill="#009879" stroke="none" points="1012.5,-862 1012.5,-892 1140.5,-892 1140.5,-862 1012.5,-862"/>
+<polygon fill="none" stroke="black" points="1012.5,-862 1012.5,-892 1140.5,-892 1140.5,-862 1012.5,-862"/>
+<text text-anchor="start" x="1015.5" y="-871" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voting_node</text>
+<polygon fill="none" stroke="black" points="1012.5,-835 1012.5,-862 1088.5,-862 1088.5,-835 1012.5,-835"/>
+<text text-anchor="start" x="1016" y="-842.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1088.5,-835 1088.5,-862 1140.5,-862 1140.5,-835 1088.5,-835"/>
+<text text-anchor="start" x="1094" y="-842.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="#54ff9f" stroke="none" points="1012.5,-810 1012.5,-835 1088.5,-835 1088.5,-810 1012.5,-810"/>
+<polygon fill="none" stroke="black" points="1012.5,-810 1012.5,-835 1088.5,-835 1088.5,-810 1012.5,-810"/>
+<text text-anchor="start" x="1015.5" y="-816.8" font-family="Times,serif" font-size="16.00">hostname</text>
+<polygon fill="#54ff9f" stroke="none" points="1088.5,-810 1088.5,-835 1140.5,-835 1140.5,-810 1088.5,-810"/>
+<polygon fill="none" stroke="black" points="1088.5,-810 1088.5,-835 1140.5,-835 1140.5,-810 1088.5,-810"/>
+<text text-anchor="start" x="1102.5" y="-816.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="#54ff9f" stroke="none" points="1012.5,-785 1012.5,-810 1088.5,-810 1088.5,-785 1012.5,-785"/>
+<polygon fill="none" stroke="black" points="1012.5,-785 1012.5,-810 1088.5,-810 1088.5,-785 1012.5,-785"/>
+<text text-anchor="start" x="1015.5" y="-791.8" font-family="Times,serif" font-size="16.00">event</text>
+<polygon fill="#54ff9f" stroke="none" points="1088.5,-785 1088.5,-810 1140.5,-810 1140.5,-785 1088.5,-785"/>
+<polygon fill="none" stroke="black" points="1088.5,-785 1088.5,-810 1140.5,-810 1140.5,-785 1088.5,-785"/>
+<text text-anchor="start" x="1092.5" y="-791.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="1012.5,-760 1012.5,-785 1088.5,-785 1088.5,-760 1012.5,-760"/>
+<text text-anchor="start" x="1015.5" y="-766.8" font-family="Times,serif" font-size="16.00">pubkey</text>
+<polygon fill="none" stroke="black" points="1088.5,-760 1088.5,-785 1140.5,-785 1140.5,-760 1088.5,-760"/>
+<text text-anchor="start" x="1102.5" y="-766.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="1012.5,-735 1012.5,-760 1088.5,-760 1088.5,-735 1012.5,-735"/>
+<text text-anchor="start" x="1015.5" y="-741.8" font-family="Times,serif" font-size="16.00">seckey</text>
+<polygon fill="none" stroke="black" points="1088.5,-735 1088.5,-760 1140.5,-760 1140.5,-735 1088.5,-735"/>
+<text text-anchor="start" x="1102.5" y="-741.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="1012.5,-710 1012.5,-735 1088.5,-735 1088.5,-710 1012.5,-710"/>
+<text text-anchor="start" x="1015.5" y="-716.8" font-family="Times,serif" font-size="16.00">netkey</text>
+<polygon fill="none" stroke="black" points="1088.5,-710 1088.5,-735 1140.5,-735 1140.5,-710 1088.5,-710"/>
+<text text-anchor="start" x="1102.5" y="-716.8" font-family="Times,serif" font-size="16.00">text</text>
+</g>
+<!-- voting_node&#45;&gt;event -->
+<g id="edge26" class="edge">
+<title>voting_node:event_out&#45;&gt;event:row_id</title>
+<path fill="none" stroke="black" d="M1141.5,-797C1198.56,-797 1190.47,-744.55 1222,-697 1241.95,-666.91 1228.32,-626.64 1254.11,-618.48"/>
+<polygon fill="black" stroke="black" points="1254.56,-621.81 1264,-617 1253.62,-614.88 1254.56,-621.81"/>
+</g>
+<!-- LEGEND -->
+<g id="node27" class="node">
+<title>LEGEND</title>
+<polygon fill="Pink" stroke="none" points="20.5,-2038 20.5,-2068 242.5,-2068 242.5,-2038 20.5,-2038"/>
+<polygon fill="none" stroke="black" points="20.5,-2038 20.5,-2068 242.5,-2068 242.5,-2038 20.5,-2038"/>
+<text text-anchor="start" x="91.5" y="-2047" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">LEGEND</text>
+<polygon fill="none" stroke="black" points="20.5,-2011 20.5,-2038 159.5,-2038 159.5,-2011 20.5,-2011"/>
+<text text-anchor="start" x="69.5" y="-2018.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="159.5,-2011 159.5,-2038 242.5,-2038 242.5,-2011 159.5,-2011"/>
+<text text-anchor="start" x="162.5" y="-2018.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Example</text>
+<polygon fill="#54ff9f" stroke="none" points="20.5,-1986 20.5,-2011 159.5,-2011 159.5,-1986 20.5,-1986"/>
+<polygon fill="none" stroke="black" points="20.5,-1986 20.5,-2011 159.5,-2011 159.5,-1986 20.5,-1986"/>
+<text text-anchor="start" x="23.5" y="-1992.8" font-family="Times,serif" font-size="16.00">Primary Key</text>
+<polygon fill="#54ff9f" stroke="none" points="159.5,-1986 159.5,-2011 242.5,-2011 242.5,-1986 159.5,-1986"/>
+<polygon fill="none" stroke="black" points="159.5,-1986 159.5,-2011 242.5,-2011 242.5,-1986 159.5,-1986"/>
+<text text-anchor="start" x="174.5" y="-1992.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="20.5,-1961 20.5,-1986 159.5,-1986 159.5,-1961 20.5,-1961"/>
+<text text-anchor="start" x="23.5" y="-1967.8" font-family="Times,serif" font-size="16.00">Standard Field</text>
+<polygon fill="none" stroke="black" points="159.5,-1961 159.5,-1986 242.5,-1986 242.5,-1961 159.5,-1961"/>
+<text text-anchor="start" x="184" y="-1967.8" font-family="Times,serif" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="20.5,-1936 20.5,-1961 159.5,-1961 159.5,-1936 20.5,-1936"/>
+<text text-anchor="start" x="23.5" y="-1942.8" font-family="Times,serif" font-size="16.00">Nullable Field</text>
+<polygon fill="none" stroke="black" points="159.5,-1936 159.5,-1961 242.5,-1961 242.5,-1936 159.5,-1936"/>
+<text text-anchor="start" x="189" y="-1943.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="20.5,-1911 20.5,-1936 159.5,-1936 159.5,-1911 20.5,-1911"/>
+<text text-anchor="start" x="23.5" y="-1917.8" font-family="Times,serif" font-size="16.00">Sized Field</text>
+<polygon fill="none" stroke="black" points="159.5,-1911 159.5,-1936 242.5,-1936 242.5,-1911 159.5,-1911"/>
+<text text-anchor="start" x="164" y="-1917.8" font-family="Times,serif" font-size="16.00">varchar(32)</text>
+<polygon fill="none" stroke="black" points="20.5,-1886 20.5,-1911 159.5,-1911 159.5,-1886 20.5,-1886"/>
+<text text-anchor="start" x="23.5" y="-1892.8" font-family="Times,serif" font-size="16.00">Autoincrement Field</text>
+<polygon fill="none" stroke="black" points="159.5,-1886 159.5,-1911 242.5,-1911 242.5,-1886 159.5,-1886"/>
+<text text-anchor="start" x="174.5" y="-1892.8" font-family="Times,serif" font-size="16.00">integer+</text>
+</g>
+</g>
+</svg>
+</pre>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../07_web_api/vote-ledger-v1.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../08_event-db/01_development.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../07_web_api/vote-ledger-v1.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../08_event-db/01_development.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

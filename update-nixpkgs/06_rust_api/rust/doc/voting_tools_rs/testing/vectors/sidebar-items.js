@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["generate_signed_registration"],"mod":["cip15"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["VoteCastCmd"],"struct":["PrivateVoteCast","PublicVoteCast"]};

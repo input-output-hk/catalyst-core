@@ -27,11 +27,14 @@ class Client:
 
     def __init__(self, api_url: str):
         """Initialize the client."""
-        self.inner = utils.JsonHttpClient(api_url)
+        self.inner = utils.HttpClient(api_url)
+
+    async def close(self):
+        await self.inner.close()
 
     async def dreps(self) -> List[Drep]:
         """Get all DREPs."""
-        res = await self.inner.get("/dreps")
+        res = await self.inner.json_get("/dreps")
         if not isinstance(res, dict):
             raise utils.BadResponse()
 

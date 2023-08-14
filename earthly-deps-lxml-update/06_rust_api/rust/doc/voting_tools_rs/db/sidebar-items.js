@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["inner","queries","schema","types","utils"],"struct":["DbConfig"]};

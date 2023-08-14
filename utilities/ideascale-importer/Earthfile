@@ -12,7 +12,7 @@ build:
 
     # Install system dependencies
     RUN apt-get update && \
-        apt-get install -y --no-install-recommends curl
+        apt-get install -y --no-install-recommends curl build-essential libxml2-dev libxslt-dev lib32z1-dev python3-lxml
 
     # Install Poetry
     RUN curl -sSL https://install.python-poetry.org | python3 -

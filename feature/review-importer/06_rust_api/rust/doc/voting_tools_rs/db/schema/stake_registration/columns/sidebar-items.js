@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FROM_CLAUSE"],"macro":["__static_cond"],"struct":["addr_id","cert_index","epoch_no","id","star","tx_id"]};

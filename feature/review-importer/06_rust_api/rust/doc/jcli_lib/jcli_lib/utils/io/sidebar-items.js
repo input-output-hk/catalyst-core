@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ReadYamlError"],"fn":["ask_yes_or_no","open_file_read","open_file_write","path_to_path_buf","read_line","read_yaml"]};

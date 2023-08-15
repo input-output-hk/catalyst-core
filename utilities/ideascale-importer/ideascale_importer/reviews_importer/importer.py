@@ -88,7 +88,6 @@ class Importer:
         self.api_token = api_token
         self.funnel_id = funnel_id
         self.nr_allocations =  {i: el for i, el in enumerate(nr_allocations)}
-        self.pa = utils.load_csv_and_serialize(pa_path, ideascale_importer.db.models.Pa, {})
 
         self.frontend_client = None
         self.db = None
@@ -116,6 +115,7 @@ class Importer:
             raise Exception("Not connected to the ideascale")
 
         # await self.download_reviews()
+        await self.prepare_allocations()
 
     async def close(self):
         await self.frontend_client.close()

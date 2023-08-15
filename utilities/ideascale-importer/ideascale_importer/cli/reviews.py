@@ -3,8 +3,7 @@ import typer
 
 from typing import List
 
-from ideascale_importer.reviews_importer import FrontendClient
-from ideascale_importer.reviews_importer import Importer
+from ideascale_importer.reviews_importer.importer import Importer, FrontendClient
 from ideascale_importer.utils import configure_logger
 from loguru import logger
 

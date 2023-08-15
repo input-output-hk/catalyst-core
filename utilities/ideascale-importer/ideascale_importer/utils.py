@@ -274,11 +274,3 @@ def configure_logger(log_level: str, log_format: str):
 
     logger.remove()
     logger.add(sys.stdout, level=log_level.upper(), format=formatter, enqueue=True)
-
-def load_csv_and_serialize(path: str, model: Model, extra: Dict) -> List[Model]:
-    """Given a path of csv and a model it returns a list of models, merging it with extra attributes."""
-    fieldSet = {f.name for f in fields(model) if f.init}
-    with open(path) as f:
-        data = csv.DictReader(f)
-        serialized = [model(**{k : v for k, v in el.items() if k in fieldSet}) for el in data]
-        return serialized

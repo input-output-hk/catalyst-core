@@ -233,17 +233,3 @@ class Config(Model):
     def table() -> str:
         """Return the name of the table that this model is stored in."""
         return "config"
-
-@dataclass
-class Pa(Model):
-    """Represents a PA."""
-
-    ids: str
-    email: Optional[str] = None
-    rewards_address: Optional[str] = None
-    # challenge_ids: List[int] = []
-    level: int = 0
-    name: Optional[str] = None
-    user_name: Optional[str] = None
-    id: Optional[int] = None
-    # allocations: List[Allocation] = Field(default=[])

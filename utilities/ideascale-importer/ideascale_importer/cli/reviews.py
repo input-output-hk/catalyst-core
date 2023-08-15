@@ -23,9 +23,17 @@ def import_reviews(
         ...,
         help="Ideascale user's password (needs admin access)",
     ),
+    api_token: str = typer.Option(...,
+        envvar="IDEASCALE_API_TOKEN",
+        help="IdeaScale API token"
+    ),
     funnel_id: int = typer.Option(
         ...,
         help="Ideascale campaign funnel's id",
+    ),
+    nr_allocations: List[int] = typer.Option(
+        [30, 80], 
+        help="Nr of proposal to allocate"
     ),
     out_dir: str = typer.Option(
         ...,
@@ -50,7 +58,9 @@ def import_reviews(
             ideascale_url,
             email,
             password,
+            api_token,
             funnel_id,
+            nr_allocations,
             out_dir,
         )
 

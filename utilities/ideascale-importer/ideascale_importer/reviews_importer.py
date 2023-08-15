@@ -1,5 +1,7 @@
 from lxml import html
 import secrets
+import time
+from loguru import logger
 
 from ideascale_importer import utils
 
@@ -40,6 +42,7 @@ class Client:
 
             export_data_endpoint = "/a/reporting/export-data/"
             while True:
+                time.sleep(2)
                 content = await self.inner.get(f"{export_data_endpoint}{item}")
                 if "Finished Processing" in str(content):
                     download_endpoint = "/a/download-export-file/"
@@ -72,25 +75,37 @@ class Importer:
         ideascale_url,
         email,
         password,
+        api_token,
         funnel_id,
+        nr_allocations,
         out_dir,
     ):
         self.ideascale_url = ideascale_url
         self.email = email
         self.password = password
-        self.out_dir = out_dir
+        self.api_token = api_token
         self.funnel_id = funnel_id
+        self.nr_allocations = nr_allocations
+        self.out_dir = out_dir
 
     async def connect(self):
         self.client = Client(self.ideascale_url)
         await self.client.login(self.email, self.password)
+
+    async def download_reviews(self):
+        logger.info("Dowload reviews from Ideascale...")
+        await self.client.download_reviews(self.funnel_id, self.out_dir)
+
+    async def prepare_allocations(self):
+        logger.info("Prepare allocations for proposal's reviews...")
+
 
     async def run(self):
         """Run the importer."""
         if self.client is None:
             raise Exception("Not connected to the ideascale")
 
-        await self.client.download_reviews(self.funnel_id, self.out_dir)
+        await self.download_reviews()
 
     async def close(self):
         await self.client.close()

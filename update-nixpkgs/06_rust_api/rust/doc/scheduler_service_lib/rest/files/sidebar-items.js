@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["files_handler","filter"],"opaque":[""],"static":["S"],"struct":["__StaticPath"]};

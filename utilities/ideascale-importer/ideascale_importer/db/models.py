@@ -1,11 +1,11 @@
 """Database models for the vit-servicing-station database."""
 
-import dataclasses
+from dataclasses import dataclass, fields
 from datetime import datetime
 from typing import Any, ClassVar, List, Mapping, Optional, Set
 
 
-@dataclasses.dataclass
+@dataclass
 class Model:
     """Base class for all models."""
 
@@ -17,7 +17,7 @@ class Model:
         raise NotImplementedError()
 
 
-@dataclasses.dataclass
+@dataclass
 class Event(Model):
     """Represents a database objective."""
 
@@ -46,7 +46,7 @@ class Event(Model):
         return "event"
 
 
-@dataclasses.dataclass
+@dataclass
 class Objective(Model):
     """Represents a database objective."""
 
@@ -71,7 +71,7 @@ class Objective(Model):
         return "objective"
 
 
-@dataclasses.dataclass
+@dataclass
 class Proposal(Model):
     """Represents a database proposal."""
 
@@ -103,7 +103,7 @@ class Proposal(Model):
         return "proposal"
 
 
-@dataclasses.dataclass
+@dataclass
 class Goal(Model):
     """Represents a database goal."""
 
@@ -117,7 +117,7 @@ class Goal(Model):
         return "goal"
 
 
-@dataclasses.dataclass
+@dataclass
 class VotingGroup(Model):
     """Represents a database voting_group."""
 
@@ -131,7 +131,7 @@ class VotingGroup(Model):
         return "voting_group"
 
 
-@dataclasses.dataclass
+@dataclass
 class Voteplan(Model):
     """Represents a database voteplan."""
 
@@ -147,7 +147,7 @@ class Voteplan(Model):
         return "voteplan"
 
 
-@dataclasses.dataclass
+@dataclass
 class ProposalVoteplan(Model):
     """Represents a database proposal_voteplan."""
 
@@ -161,7 +161,7 @@ class ProposalVoteplan(Model):
         return "proposal_voteplan"
 
 
-@dataclasses.dataclass
+@dataclass
 class Voter(Model):
     """Represents a database voter."""
 
@@ -176,7 +176,7 @@ class Voter(Model):
         return "voter"
 
 
-@dataclasses.dataclass
+@dataclass
 class Contribution(Model):
     """Represents a database contribution."""
 
@@ -195,7 +195,7 @@ class Contribution(Model):
         return "contribution"
 
 
-@dataclasses.dataclass
+@dataclass
 class Snapshot(Model):
     """Represents a database snapshot."""
 
@@ -219,7 +219,7 @@ class Snapshot(Model):
         """Return the name of the table that this model is stored in."""
         return "snapshot"
 
-@dataclasses.dataclass
+@dataclass
 class Config(Model):
     """Represents a database config."""
 
@@ -233,3 +233,17 @@ class Config(Model):
     def table() -> str:
         """Return the name of the table that this model is stored in."""
         return "config"
+
+@dataclass
+class Pa(Model):
+    """Represents a PA."""
+
+    ids: str
+    email: Optional[str] = None
+    rewards_address: Optional[str] = None
+    # challenge_ids: List[int] = []
+    level: int = 0
+    name: Optional[str] = None
+    user_name: Optional[str] = None
+    id: Optional[int] = None
+    # allocations: List[Allocation] = Field(default=[])

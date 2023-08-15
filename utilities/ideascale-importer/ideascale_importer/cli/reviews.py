@@ -1,7 +1,9 @@
 import asyncio
 import typer
 
-from ideascale_importer.reviews_importer import Client
+from typing import List
+
+from ideascale_importer.reviews_importer import FrontendClient
 from ideascale_importer.reviews_importer import Importer
 from ideascale_importer.utils import configure_logger
 from loguru import logger
@@ -11,9 +13,14 @@ app = typer.Typer(add_completion=False)
 @app.command(name="import")
 def import_reviews(
     ideascale_url: str = typer.Option(
-        Client.DEFAULT_API_URL,
+        FrontendClient.DEFAULT_API_URL,
         envvar="IDEASCALE_API_URL",
         help="IdeaScale API URL",
+    ),
+    database_url: str = typer.Option(
+        ...,
+        envvar="EVENTDB_URL",
+        help="Postgres database URL"
     ),
     email: str = typer.Option(
         ...,
@@ -35,9 +42,9 @@ def import_reviews(
         [30, 80], 
         help="Nr of proposal to allocate"
     ),
-    out_dir: str = typer.Option(
+    pa_path: str = typer.Option(
         ...,
-        help="Output directoy for storing review's files",
+        help="PAs file"
     ),
     log_level: str = typer.Option(
         "info",
@@ -56,12 +63,13 @@ def import_reviews(
     async def inner():
         importer = Importer(
             ideascale_url,
+            database_url,
             email,
             password,
             api_token,
             funnel_id,
             nr_allocations,
-            out_dir,
+            pa_path
         )
 
         try:

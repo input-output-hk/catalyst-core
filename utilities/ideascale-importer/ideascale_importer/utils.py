@@ -6,10 +6,12 @@ import sys
 import aiohttp
 import asyncio
 import json
+import csv
 from loguru import logger
 import re
 from typing import Any, Dict, Iterable, List, TypeVar, TYPE_CHECKING
 
+from .db.models import Model
 
 DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
 

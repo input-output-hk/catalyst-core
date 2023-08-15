@@ -1,10 +1,14 @@
 from lxml import html
 import secrets
+import time
+from loguru import logger
 
 from ideascale_importer import utils
+import ideascale_importer.db
 
-class Client:
-    """IdeaScale front-end API client."""
+
+class FrontendClient:
+    """IdeaScale front-end client."""
 
     DEFAULT_API_URL = "https://cardano.ideascale.com"
 
@@ -26,8 +30,8 @@ class Client:
 
         await self.inner.post(f"{login}", data=data)
 
-    async def download_reviews(self, funnel_id, out_dir):
-        async def download_file(self, funnel_id, id, out_dir):
+    async def download_reviews(self, funnel_id):
+        async def download_file(self, funnel_id, id):
             export_endpoint = "/a/admin/workflow/survey-tools/assessment/report/statistic/export/assessment-details/"
             file_name = f"{funnel_id}_{secrets.token_hex(6)}"
 
@@ -40,14 +44,13 @@ class Client:
 
             export_data_endpoint = "/a/reporting/export-data/"
             while True:
+                time.sleep(2)
                 content = await self.inner.get(f"{export_data_endpoint}{item}")
                 if "Finished Processing" in str(content):
                     download_endpoint = "/a/download-export-file/"
 
                     content = await self.inner.get(f"{download_endpoint}{item}")
-                    f = open(f"{out_dir}/{file_name}.xls", "wb")
-                    f.write(content)
-                    return file_name
+                    return content
 
 
         funnel_endpoint = "/a/admin/workflow/stages/funnel/"
@@ -63,34 +66,57 @@ class Client:
                 id = int(item.get("href").replace("/a/admin/workflow/survey-tools/assessment/report/reviews/", "").split("?")[0])
 
                 # we are intrested in only assessed reviews 
-                files.append(await download_file(self, funnel_id, id, out_dir))
+                files.append(await download_file(self, funnel_id, id))
         return files
 
 class Importer:
     def __init__(
         self,
         ideascale_url,
+        database_url,
         email,
         password,
+        api_token,
         funnel_id,
-        out_dir,
+        nr_allocations,
+        pa_path,
     ):
         self.ideascale_url = ideascale_url
+        self.database_url = database_url
         self.email = email
         self.password = password
-        self.out_dir = out_dir
+        self.api_token = api_token
         self.funnel_id = funnel_id
+        self.nr_allocations =  {i: el for i, el in enumerate(nr_allocations)}
+
+        self.frontend_client = None
+        self.db = None
 
     async def connect(self):
-        self.client = Client(self.ideascale_url)
-        await self.client.login(self.email, self.password)
+        if self.frontend_client is None:
+            logger.info("Connecting to the Ideascale frontend")
+            self.frontend_client = FrontendClient(self.ideascale_url)
+            await self.frontend_client.login(self.email, self.password)
+        if self.db is None:
+            logger.info("Connecting to the database")
+            self.db = await ideascale_importer.db.connect(self.database_url)
+
+    async def download_reviews(self):
+        logger.info("Dowload reviews from Ideascale...")
+        await self.frontend_client.download_reviews(self.funnel_id)
+
+    async def prepare_allocations(self):
+        logger.info("Prepare allocations for proposal's reviews...")
+
 
     async def run(self):
         """Run the importer."""
-        if self.client is None:
+        if self.frontend_client is None:
             raise Exception("Not connected to the ideascale")
 
-        await self.client.download_reviews(self.funnel_id, self.out_dir)
+        # await self.download_reviews()
+        await self.prepare_allocations()
 
     async def close(self):
-        await self.client.close()
+        await self.frontend_client.close()
+

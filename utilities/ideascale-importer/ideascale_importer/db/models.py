@@ -1,6 +1,6 @@
 """Database models for the vit-servicing-station database."""
 
-from dataclasses import dataclass, fields
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, ClassVar, List, Mapping, Optional, Set
 

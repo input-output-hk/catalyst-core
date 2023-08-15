@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"opaque":[""],"struct":["Client"],"type":["BlockSubscription","SyncMultiverseStream","TipSubscription"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_BLOCK_HARD_DEADLINE","DEFAULT_NO_BLOCKCHAIN_UPDATES_WARNING_INTERVAL"],"enum":["Error"],"fn":["generate_network","resolve_trusted_peers"],"mod":["config","network"],"static":["CALLSITE","META"],"struct":["Cors","JRpc","Mempool","RawSettings","Rest","Settings","Tls"]};

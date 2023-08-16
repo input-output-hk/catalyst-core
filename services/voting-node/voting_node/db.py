@@ -208,9 +208,7 @@ class EventDb(BaseModel):
     async def fetch_voting_groups(self) -> list[VotingGroup]:
         """Fetch the voters registered for the event_id."""
         conn = await self.connect()
-        query = """
-        SELECT * FROM voting_group)
-        """
+        query = "SELECT * FROM voting_group"
         result = await conn.fetch(query)
         await conn.close()
 

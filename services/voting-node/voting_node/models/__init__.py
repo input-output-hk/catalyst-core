@@ -400,6 +400,7 @@ class Objective:
 
     extra: Mapping[str, Any] | None
 
+
 @dataclass
 class Contribution:
     """Individual contributions from the stake public key to the voting key."""

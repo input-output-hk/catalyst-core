@@ -39,18 +39,6 @@ services:
       db:
         condition: service_healthy
 
-  graphql:
-    image: event-db-graphql:latest
-    environment:
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@db/CatalystEventDev
-      - JWT_SECRET=CHANGE_ME
-      - GRAPHQL_PORT=5000
-    ports:
-      - 5000:5000
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
-
   cat-data-service:
     image: cat-data-service:latest
     environment:

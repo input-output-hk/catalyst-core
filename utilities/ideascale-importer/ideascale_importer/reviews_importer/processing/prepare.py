@@ -50,29 +50,6 @@ async def allocate(
 
     return await _allocate()
 
-
-async def update_emails(
-    pas_path: str = typer.Option("", help="PAs file"),
-    ideascale_api_key: str = typer.Option("", help="IdeaScale API key"),
-    ideascale_api_url: str = typer.Option("https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"),
-    output_path: str = typer.Option("", help="Output file"),
-):
-    
-    importer = Importer()
-    ideascale = IdeascaleImporter(ideascale_api_key, ideascale_api_url)
-    
-    async def _update_emails():
-        
-        importer.load_pas(pas_path)
-    
-    await _update_emails()
-    ideascale.update_comrevs_emails(historic_pas=importer.pas)
-    keys = ideascale.new_pas[0].keys()
-    with open(output_path, "w", newline="") as f:
-        dict_writer = csv.DictWriter(f, keys)
-        dict_writer.writeheader()
-        dict_writer.writerows(ideascale.new_pas)
-
 async def process_ideascale_reviews(
     ideascale_xlsx_path: str = typer.Option("", help="Review export from Ideascale."),
     ideascale_api_key: str = typer.Option("", help="IdeaScale API key"),

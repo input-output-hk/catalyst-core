@@ -22,7 +22,11 @@
 <a href="#22" id="22">22</a>
 <a href="#23" id="23">23</a>
 <a href="#24" id="24">24</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::logger::{LogLevel, LOG_LEVEL_DEFAULT};
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::logger::{LogFormat, LogLevel, LOG_FORMAT_DEFAULT, LOG_LEVEL_DEFAULT};
 <span class="kw">use </span>clap::Args;
 <span class="kw">use </span>std::net::SocketAddr;
 
@@ -41,6 +45,10 @@
     <span class="doccomment">/// Url to the postgres event db
     </span><span class="attr">#[clap(long, env)]
     </span><span class="kw">pub </span>database_url: String,
+
+    <span class="doccomment">/// Logging format
+    </span><span class="attr">#[clap(long, default_value = LOG_FORMAT_DEFAULT)]
+    </span><span class="kw">pub </span>log_format: LogFormat,
 
     <span class="doccomment">/// Logging level
     </span><span class="attr">#[clap(long, default_value = LOG_LEVEL_DEFAULT)]

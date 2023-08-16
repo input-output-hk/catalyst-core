@@ -44,14 +44,8 @@ servers:
     variables:
       port:
         default: '8123'
-  - url: 'https://dev.xxxxxxxxxxxxxx.io'
-    description: Unstable Development Test Environment
-  - url: 'https://qa.xxxxxxxxxxxxxx.io'
-    description: QA Testing Environment
-  - url: 'https://preprod.xxxxxxxxxxxxxx.io'
-    description: Preprod Stable Continuous Testing Environment
-  - url: 'https://prod.xxxxxxxxxxxxxx.io'
-    description: Production Environment
+  - url: 'https://api.testnet.projectcatalyst.io'
+    description: Unstable Catalyst Testnet Environment
 paths:
   /health/ready:
     get:
@@ -1505,7 +1499,7 @@ components:
           description: Reward address for this delegation.
         reward_payable:
           type: boolean
-          description: flag which reflects does the `reward_address` valid or not, contains it "addrr" or "addrr_test" prefix or not.
+          description: flag which reflects does the `reward_address` valid or not, contains it "addr" or "addr_test" prefix or not.
         raw_power:
           type: number
           description: Raw total voting power from stake address

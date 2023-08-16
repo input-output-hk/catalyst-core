@@ -240,7 +240,7 @@
 <span class="kw">use </span>rand::Rng;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
 <span class="kw">use </span>snapshot_lib::{
-    registration::{StakeAddress, TestnetRewardAddress},
+    registration::{RewardAddress, StakeAddress},
     KeyContribution, SnapshotInfo, VoterHIR,
 };
 <span class="kw">use </span>time::OffsetDateTime;
@@ -249,7 +249,7 @@
 <span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>Snapshot {
     <span class="kw">pub </span>tag: String,
-    <span class="kw">pub </span>content: SnapshotInfoInput&lt;TestnetRewardAddress&gt;,
+    <span class="kw">pub </span>content: SnapshotInfoInput,
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>Snapshot {
@@ -323,7 +323,7 @@
                     <span class="prelude-val">Some</span>(SnapshotInfo {
                         contributions: std::iter::from_fn(|| {
                             <span class="prelude-val">Some</span>(KeyContribution {
-                                reward_address: TestnetRewardAddress(<span class="macro">format!</span>(
+                                reward_address: RewardAddress(<span class="macro">format!</span>(
                                     <span class="string">&quot;address_{:?}&quot;</span>,
                                     rng.gen_range(<span class="number">1u64</span>, <span class="number">1_000u64</span>)
                                 )),
@@ -385,8 +385,8 @@
 
 <span class="kw">impl </span>Eq <span class="kw">for </span>VotingPower {}
 
-<span class="kw">impl</span>&lt;RewardAddressType&gt; From&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt; <span class="kw">for </span>VotingPower {
-    <span class="kw">fn </span>from(snapshot_info: SnapshotInfo&lt;RewardAddressType&gt;) -&gt; <span class="self">Self </span>{
+<span class="kw">impl </span>From&lt;SnapshotInfo&gt; <span class="kw">for </span>VotingPower {
+    <span class="kw">fn </span>from(snapshot_info: SnapshotInfo) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>delegations_power: u64 = snapshot_info
             .contributions
             .iter()
@@ -441,7 +441,7 @@
 
     <span class="kw">pub fn </span>add_contributions_to_voter(
         <span class="kw-2">mut </span><span class="self">self</span>,
-        contributions: Vec&lt;KeyContribution&lt;TestnetRewardAddress&gt;&gt;,
+        contributions: Vec&lt;KeyContribution&gt;,
         voting_key: <span class="kw-2">&amp;</span>Identifier,
     ) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>voter = <span class="self">self

@@ -533,8 +533,8 @@
     <span class="kw">let </span>addr_net = rewards_address_prefix &amp; <span class="number">0xf</span>;
 
     <span class="comment">// 0 or 1 are valid addrs in the following cases:
-    // type = 0x0 -  network = 0
-    // type = 0x0 -  network = 1
+    // type = 0x0 -  Testnet network
+    // type = 0x1 -  Mainnet network
     </span><span class="kw">match </span>network {
         NetworkId::Mainnet =&gt; {
             <span class="kw">if </span>addr_net != <span class="number">1 </span>{

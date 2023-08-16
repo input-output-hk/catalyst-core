@@ -152,10 +152,6 @@
 <a href="#152" id="152">152</a>
 <a href="#153" id="153">153</a>
 <a href="#154" id="154">154</a>
-<a href="#155" id="155">155</a>
-<a href="#156" id="156">156</a>
-<a href="#157" id="157">157</a>
-<a href="#158" id="158">158</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 <span class="kw">use </span>vit_servicing_station_tests::common::raw_snapshot::RawSnapshot <span class="kw">as </span>RawSnapshotRequest;
 
@@ -240,7 +236,7 @@
 <span class="kw">use </span>mainnet_lib::{MainnetNetworkBuilder, SnapshotParameters};
 <span class="kw">use </span>num_traits::ToPrimitive;
 <span class="kw">use </span>snapshot_lib::registration::{
-    Delegations <span class="kw">as </span>VotingDelegations, MainnetRewardAddress, StakeAddress, VotingRegistration,
+    Delegations <span class="kw">as </span>VotingDelegations, RewardAddress, StakeAddress, VotingRegistration,
 };
 <span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 <span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
@@ -253,15 +249,11 @@
     /// # Errors
     ///
     /// At any internal error while creating a voting registration from output
-    </span><span class="kw">fn </span>try_into_voting_registration(
-        <span class="self">self</span>,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;VotingRegistration&lt;MainnetRewardAddress&gt;, Error&gt;;
+    </span><span class="kw">fn </span>try_into_voting_registration(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;VotingRegistration, Error&gt;;
 }
 
 <span class="kw">impl </span>OutputExtension <span class="kw">for </span>SnapshotEntry {
-    <span class="kw">fn </span>try_into_voting_registration(
-        <span class="self">self</span>,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;VotingRegistration&lt;MainnetRewardAddress&gt;, Error&gt; {
+    <span class="kw">fn </span>try_into_voting_registration(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;VotingRegistration, Error&gt; {
         <span class="prelude-val">Ok</span>(VotingRegistration {
             stake_public_key: StakeAddress(<span class="self">self</span>.stake_key.to_string()),
             voting_power: <span class="self">self
@@ -271,7 +263,7 @@
                     Error::CannotConvertFromOutput(<span class="string">&quot;cannot extract voting power&quot;</span>.to_string())
                 })<span class="question-mark">?
                 </span>.into(),
-            reward_address: MainnetRewardAddress(hex::encode(<span class="kw-2">&amp;</span><span class="self">self</span>.rewards_address.<span class="number">0</span>)),
+            reward_address: RewardAddress(hex::encode(<span class="kw-2">&amp;</span><span class="self">self</span>.rewards_address.<span class="number">0</span>)),
             delegations: <span class="kw">match </span><span class="self">self</span>.voting_key {
                 VotingKey::Direct(legacy) =&gt; VotingDelegations::Legacy(
                     Identifier::from_hex(<span class="kw-2">&amp;</span>legacy.to_hex())

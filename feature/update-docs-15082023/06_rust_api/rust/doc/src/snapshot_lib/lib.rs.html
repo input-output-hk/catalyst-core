@@ -454,38 +454,17 @@
 <a href="#454" id="454">454</a>
 <a href="#455" id="455">455</a>
 <a href="#456" id="456">456</a>
-<a href="#457" id="457">457</a>
-<a href="#458" id="458">458</a>
-<a href="#459" id="459">459</a>
-<a href="#460" id="460">460</a>
-<a href="#461" id="461">461</a>
-<a href="#462" id="462">462</a>
-<a href="#463" id="463">463</a>
-<a href="#464" id="464">464</a>
-<a href="#465" id="465">465</a>
-<a href="#466" id="466">466</a>
-<a href="#467" id="467">467</a>
-<a href="#468" id="468">468</a>
-<a href="#469" id="469">469</a>
-<a href="#470" id="470">470</a>
-<a href="#471" id="471">471</a>
-<a href="#472" id="472">472</a>
-<a href="#473" id="473">473</a>
-<a href="#474" id="474">474</a>
-<a href="#475" id="475">475</a>
-<a href="#476" id="476">476</a>
-<a href="#477" id="477">477</a>
-<a href="#478" id="478">478</a>
 </pre><pre class="rust"><code><span class="kw">pub use </span>fraction::Fraction;
 <span class="kw">use </span>jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
-<span class="kw">use </span>registration::{serde_impl::IdentifierDef, Delegations, StakeAddress, VotingRegistration};
+<span class="kw">use </span>registration::{
+    serde_impl::IdentifierDef, Delegations, RewardAddress, StakeAddress, VotingRegistration,
+};
 <span class="kw">use </span>serde::{Deserialize, Deserializer, Serialize, Serializer};
 <span class="kw">use </span>std::{
     borrow::Borrow,
     collections::{BTreeMap, HashSet},
     iter::Iterator,
     num::NonZeroU64,
-    str::FromStr,
 };
 <span class="kw">use </span>thiserror::Error;
 <span class="kw">pub use </span>voter_hir::VoterHIR;
@@ -500,30 +479,11 @@
 
 <span class="kw">pub const </span>CATALYST_VOTING_PURPOSE_TAG: u64 = <span class="number">0</span>;
 
-<span class="attr">#[derive(Clone, Debug)]
-</span><span class="kw">pub enum </span>NetworkType {
-    Mainnet,
-    Testnet,
-}
-
-<span class="kw">impl </span>FromStr <span class="kw">for </span>NetworkType {
-    <span class="kw">type </span><span class="prelude-val">Err </span>= String;
-    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
-        <span class="kw">match </span>s {
-            <span class="string">&quot;mainnet&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Mainnet),
-            <span class="string">&quot;testnet&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Testnet),
-            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="string">&quot;unknown network type&quot;</span>.to_string()),
-        }
-    }
-}
-
 <span class="attr">#[derive(Serialize, Deserialize, Clone, Debug)]
-</span><span class="kw">pub struct </span>RawSnapshot&lt;RewardAddressType&gt;(Vec&lt;VotingRegistration&lt;RewardAddressType&gt;&gt;);
+</span><span class="kw">pub struct </span>RawSnapshot(Vec&lt;VotingRegistration&gt;);
 
-<span class="kw">impl</span>&lt;RewardAddressType&gt; From&lt;Vec&lt;VotingRegistration&lt;RewardAddressType&gt;&gt;&gt;
-    <span class="kw">for </span>RawSnapshot&lt;RewardAddressType&gt;
-{
-    <span class="kw">fn </span>from(from: Vec&lt;VotingRegistration&lt;RewardAddressType&gt;&gt;) -&gt; <span class="self">Self </span>{
+<span class="kw">impl </span>From&lt;Vec&lt;VotingRegistration&gt;&gt; <span class="kw">for </span>RawSnapshot {
+    <span class="kw">fn </span>from(from: Vec&lt;VotingRegistration&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>(from)
     }
 }
@@ -573,33 +533,33 @@
 
 <span class="doccomment">/// Contribution to a voting key for some registration
 </span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-</span><span class="kw">pub struct </span>KeyContribution&lt;RewardAddressType&gt; {
+</span><span class="kw">pub struct </span>KeyContribution {
     <span class="kw">pub </span>stake_public_key: StakeAddress,
-    <span class="kw">pub </span>reward_address: RewardAddressType,
+    <span class="kw">pub </span>reward_address: RewardAddress,
     <span class="kw">pub </span>value: u64,
 }
 
 <span class="attr">#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-</span><span class="kw">pub struct </span>SnapshotInfo&lt;RewardAddressType&gt; {
+</span><span class="kw">pub struct </span>SnapshotInfo {
     <span class="doccomment">/// The values in the contributions are the original values in the registration transactions and
     /// thus retain the original proportions.
     /// However, it&#39;s possible that the sum of those values is greater than the voting power assigned in the
     /// VoterHIR, due to voting power caps or additional transformations.
-    </span><span class="kw">pub </span>contributions: Vec&lt;KeyContribution&lt;RewardAddressType&gt;&gt;,
+    </span><span class="kw">pub </span>contributions: Vec&lt;KeyContribution&gt;,
     <span class="kw">pub </span>hir: VoterHIR,
 }
 
 <span class="attr">#[derive(Clone, Debug, PartialEq, Eq)]
-</span><span class="kw">pub struct </span>Snapshot&lt;RewardAddressType&gt; {
+</span><span class="kw">pub struct </span>Snapshot {
     <span class="comment">// a raw public key is preferred so that we don&#39;t have to worry about discrimination when deserializing from
     // a CIP-36 compatible encoding
-    </span>inner: BTreeMap&lt;Identifier, SnapshotInfo&lt;RewardAddressType&gt;&gt;,
+    </span>inner: BTreeMap&lt;Identifier, SnapshotInfo&gt;,
     stake_threshold: Value,
 }
 
-<span class="kw">impl</span>&lt;RewardAddressType: Clone&gt; Snapshot&lt;RewardAddressType&gt; {
+<span class="kw">impl </span>Snapshot {
     <span class="kw">pub fn </span>from_raw_snapshot(
-        raw_snapshot: RawSnapshot&lt;RewardAddressType&gt;,
+        raw_snapshot: RawSnapshot,
         stake_threshold: Value,
         cap: Fraction,
         voting_group_assigner: <span class="kw-2">&amp;</span><span class="kw">impl </span>VotingGroupAssigner,
@@ -682,9 +642,9 @@
     }
 
     <span class="kw">fn </span>apply_voting_power_cap(
-        voters: Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;,
+        voters: Vec&lt;SnapshotInfo&gt;,
         cap: Fraction,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&gt;, Error&gt; {
         <span class="prelude-val">Ok</span>(influence_cap::cap_voting_influence(voters, cap)<span class="question-mark">?
             </span>.into_iter()
             .collect())
@@ -701,7 +661,7 @@
             .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
     }
 
-    <span class="kw">pub fn </span>to_full_snapshot_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt; {
+    <span class="kw">pub fn </span>to_full_snapshot_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;SnapshotInfo&gt; {
         <span class="self">self</span>.inner.values().cloned().collect()
     }
 
@@ -712,7 +672,7 @@
     <span class="kw">pub fn </span>contributions_for_voting_key&lt;I: Borrow&lt;Identifier&gt;&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         voting_public_key: I,
-    ) -&gt; Vec&lt;KeyContribution&lt;RewardAddressType&gt;&gt; {
+    ) -&gt; Vec&lt;KeyContribution&gt; {
         <span class="self">self</span>.inner
             .get(voting_public_key.borrow())
             .cloned()
@@ -723,8 +683,6 @@
 
 <span class="attr">#[cfg(any(test, feature = <span class="string">&quot;proptest&quot;</span>))]
 </span><span class="kw">pub mod </span>tests {
-    <span class="kw">use </span><span class="kw">crate</span>::registration::TestnetRewardAddress;
-
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span>chain_addr::{Discrimination, Kind};
     <span class="kw">use </span>jormungandr_lib::interfaces::{Address, InitialUTxO};
@@ -739,7 +697,7 @@
         }
     }
 
-    <span class="kw">impl</span>&lt;RewardAddressType&gt; Snapshot&lt;RewardAddressType&gt; {
+    <span class="kw">impl </span>Snapshot {
         <span class="kw">pub fn </span>to_block0_initials(<span class="kw-2">&amp;</span><span class="self">self</span>, discrimination: Discrimination) -&gt; Vec&lt;InitialUTxO&gt; {
             <span class="self">self</span>.inner
                 .iter()
@@ -754,22 +712,20 @@
         }
     }
 
-    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>RawSnapshot&lt;TestnetRewardAddress&gt; {
+    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>RawSnapshot {
         <span class="kw">type </span>Parameters = ();
-        <span class="kw">type </span>Strategy = BoxedStrategy&lt;RawSnapshot&lt;TestnetRewardAddress&gt;&gt;;
+        <span class="kw">type </span>Strategy = BoxedStrategy&lt;RawSnapshot&gt;;
 
         <span class="kw">fn </span>arbitrary_with(_args: <span class="self">Self</span>::Parameters) -&gt; <span class="self">Self</span>::Strategy {
-            any::&lt;Vec&lt;VotingRegistration&lt;TestnetRewardAddress&gt;&gt;&gt;()
-                .prop_map(<span class="self">Self</span>)
-                .boxed()
+            any::&lt;Vec&lt;VotingRegistration&gt;&gt;().prop_map(<span class="self">Self</span>).boxed()
         }
     }
 
     <span class="attr">#[proptest]
     </span><span class="kw">fn </span>test_threshold(
-        _raw: RawSnapshot&lt;TestnetRewardAddress&gt;,
+        _raw: RawSnapshot,
         _stake_threshold: u64,
-        _additional_reg: VotingRegistration&lt;TestnetRewardAddress&gt;,
+        _additional_reg: VotingRegistration,
     ) {
         <span class="kw">let </span><span class="kw-2">mut </span>add = _raw.clone();
         add.<span class="number">0</span>.push(_additional_reg.clone());
@@ -792,12 +748,12 @@
         );
     }
 
-    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>Snapshot&lt;TestnetRewardAddress&gt; {
+    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>Snapshot {
         <span class="kw">type </span>Parameters = ();
-        <span class="kw">type </span>Strategy = BoxedStrategy&lt;Snapshot&lt;TestnetRewardAddress&gt;&gt;;
+        <span class="kw">type </span>Strategy = BoxedStrategy&lt;Snapshot&gt;;
 
         <span class="kw">fn </span>arbitrary_with(_args: <span class="self">Self</span>::Parameters) -&gt; <span class="self">Self</span>::Strategy {
-            (any::&lt;RawSnapshot&lt;TestnetRewardAddress&gt;&gt;(), <span class="number">1</span>..u64::MAX)
+            (any::&lt;RawSnapshot&gt;(), <span class="number">1</span>..u64::MAX)
                 .prop_map(|(raw_snapshot, threshold)| {
                     <span class="self">Self</span>::from_raw_snapshot(
                         raw_snapshot,
@@ -813,7 +769,7 @@
 
     <span class="comment">// Test all voting power is distributed among delegated keys
     </span><span class="attr">#[proptest]
-    </span><span class="kw">fn </span>test_voting_power_all_distributed(_reg: VotingRegistration&lt;TestnetRewardAddress&gt;) {
+    </span><span class="kw">fn </span>test_voting_power_all_distributed(_reg: VotingRegistration) {
         <span class="kw">let </span>snapshot = Snapshot::from_raw_snapshot(
             <span class="macro">vec!</span>[_reg.clone()].into(),
             <span class="number">0</span>.into(),
@@ -830,7 +786,7 @@
     }
 
     <span class="attr">#[proptest]
-    </span><span class="kw">fn </span>test_non_catalyst_regs_are_ignored(<span class="kw-2">mut </span>_reg: VotingRegistration&lt;TestnetRewardAddress&gt;) {
+    </span><span class="kw">fn </span>test_non_catalyst_regs_are_ignored(<span class="kw-2">mut </span>_reg: VotingRegistration) {
         _reg.voting_purpose = <span class="number">1</span>;
         <span class="macro">assert_eq!</span>(
             Snapshot::from_raw_snapshot(
@@ -865,7 +821,7 @@
             raw_snapshot.push(VotingRegistration {
                 stake_public_key: StakeAddress(String::new()),
                 voting_power: i.into(),
-                reward_address: TestnetRewardAddress(String::new()),
+                reward_address: RewardAddress(String::new()),
                 delegations,
                 voting_purpose: <span class="number">0</span>,
                 nonce: <span class="number">0</span>,
@@ -895,7 +851,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>test_raw_snapshot_parsing() {
-        <span class="kw">let </span>raw: RawSnapshot&lt;TestnetRewardAddress&gt; = serde_json::from_str(
+        <span class="kw">let </span>raw: RawSnapshot = serde_json::from_str(
             <span class="string">r#&quot;[
             {
                 &quot;rewards_address&quot;: &quot;0xe1ffff2912572257b59dca84c965e4638a09f1524af7a15787eb0d8a46&quot;,

@@ -473,21 +473,13 @@
 <a href="#473" id="473">473</a>
 <a href="#474" id="474">474</a>
 <a href="#475" id="475">475</a>
-<a href="#476" id="476">476</a>
-<a href="#477" id="477">477</a>
-<a href="#478" id="478">478</a>
-<a href="#479" id="479">479</a>
-<a href="#480" id="480">480</a>
-<a href="#481" id="481">481</a>
-<a href="#482" id="482">482</a>
-<a href="#483" id="483">483</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Threshold, VoteCount};
 <span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
 <span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 <span class="kw">use </span>jormungandr_lib::interfaces::Address;
 <span class="kw">use </span>rust_decimal::Decimal;
-<span class="kw">use </span>snapshot_lib::SnapshotInfo;
+<span class="kw">use </span>snapshot_lib::{registration::RewardAddress, SnapshotInfo};
 <span class="kw">use </span>std::collections::{BTreeMap, HashMap, HashSet};
 <span class="kw">use </span>thiserror::Error;
 
@@ -522,11 +514,11 @@
         .collect()
 }
 
-<span class="kw">fn </span>filter_active_addresses&lt;RewardAddressType&gt;(
+<span class="kw">fn </span>filter_active_addresses(
     vote_count: VoteCount,
-    snapshot_info: Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;,
+    snapshot_info: Vec&lt;SnapshotInfo&gt;,
     threshold: Threshold,
-) -&gt; Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt; {
+) -&gt; Vec&lt;SnapshotInfo&gt; {
     snapshot_info
         .into_iter()
         .filter(|v| {
@@ -557,13 +549,10 @@
     )))
 }
 
-<span class="kw">fn </span>rewards_to_mainnet_addresses&lt;RewardAddressType&gt;(
+<span class="kw">fn </span>rewards_to_mainnet_addresses(
     rewards: HashMap&lt;Identifier, Rewards&gt;,
-    voters: Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;,
-) -&gt; BTreeMap&lt;RewardAddressType, Rewards&gt;
-<span class="kw">where
-    </span>RewardAddressType: Clone + Default + PartialEq + Eq + PartialOrd + Ord,
-{
+    voters: Vec&lt;SnapshotInfo&gt;,
+) -&gt; BTreeMap&lt;RewardAddress, Rewards&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>res = BTreeMap::new();
     <span class="kw">let </span>snapshot_info_by_key = voters
         .into_iter()
@@ -588,15 +577,12 @@
     res
 }
 
-<span class="kw">pub fn </span>calc_voter_rewards&lt;RewardAddressType&gt;(
+<span class="kw">pub fn </span>calc_voter_rewards(
     vote_count: VoteCount,
-    voters: Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;,
+    voters: Vec&lt;SnapshotInfo&gt;,
     vote_threshold: Threshold,
     total_rewards: Rewards,
-) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;RewardAddressType, Rewards&gt;, Error&gt;
-<span class="kw">where
-    </span>RewardAddressType: Clone + Default + PartialEq + Eq + PartialOrd + Ord,
-{
+) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;RewardAddress, Rewards&gt;, Error&gt; {
     <span class="kw">let </span>unique_voters = voters
         .iter()
         .map(|s| s.hir.voting_key.clone())
@@ -624,9 +610,7 @@
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span><span class="kw">crate</span>::utils::assert_are_close;
     <span class="kw">use </span>jormungandr_lib::crypto::{account::Identifier, hash::Hash};
-    <span class="kw">use </span>snapshot_lib::registration::{
-        Delegations, StakeAddress, TestnetRewardAddress, VotingRegistration,
-    };
+    <span class="kw">use </span>snapshot_lib::registration::{Delegations, StakeAddress, VotingRegistration};
     <span class="kw">use </span>snapshot_lib::Snapshot;
     <span class="kw">use </span>snapshot_lib::{Fraction, RawSnapshot};
     <span class="kw">use </span>test_strategy::proptest;
@@ -635,7 +619,7 @@
     <span class="kw">const </span>DEFAULT_SNAPSHOT_THRESHOLD: u64 = <span class="number">1</span>;
 
     <span class="attr">#[proptest]
-    </span><span class="kw">fn </span>test_all_active_voters(raw_snapshot: RawSnapshot&lt;TestnetRewardAddress&gt;) {
+    </span><span class="kw">fn </span>test_all_active_voters(raw_snapshot: RawSnapshot) {
         <span class="kw">let </span>snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
@@ -667,7 +651,7 @@
     }
 
     <span class="attr">#[proptest]
-    </span><span class="kw">fn </span>test_all_inactive_voters(raw_snapshot: RawSnapshot&lt;TestnetRewardAddress&gt;) {
+    </span><span class="kw">fn </span>test_all_inactive_voters(raw_snapshot: RawSnapshot) {
         <span class="kw">let </span>snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
@@ -690,7 +674,7 @@
     }
 
     <span class="attr">#[proptest]
-    </span><span class="kw">fn </span>test_active_and_inactive_voters(raw_snapshot: RawSnapshot&lt;TestnetRewardAddress&gt;) {
+    </span><span class="kw">fn </span>test_active_and_inactive_voters(raw_snapshot: RawSnapshot) {
         <span class="kw">let </span>snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
@@ -790,7 +774,7 @@
 
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..<span class="number">10u64 </span>{
             <span class="kw">let </span>stake_public_key = StakeAddress(i.to_string());
-            <span class="kw">let </span>reward_address = TestnetRewardAddress(i.to_string());
+            <span class="kw">let </span>reward_address = RewardAddress(i.to_string());
 
             <span class="kw">let </span>delegations = Delegations::New(<span class="macro">vec!</span>[(voting_public_key.clone(), <span class="number">1</span>)]);
             raw_snapshot.push(VotingRegistration {
@@ -839,7 +823,7 @@
         <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..<span class="number">10u64 </span>{
             <span class="kw">let </span>voting_public_key = Identifier::from_hex(<span class="kw-2">&amp;</span>hex::encode([i <span class="kw">as </span>u8; <span class="number">32</span>])).unwrap();
             <span class="kw">let </span>stake_public_key = StakeAddress(i.to_string());
-            <span class="kw">let </span>reward_address = TestnetRewardAddress(i.to_string());
+            <span class="kw">let </span>reward_address = RewardAddress(i.to_string());
             <span class="kw">let </span>delegations = Delegations::New(<span class="macro">vec!</span>[(voting_public_key.clone(), <span class="number">1</span>)]);
             raw_snapshot.push(VotingRegistration {
                 stake_public_key,
@@ -875,7 +859,7 @@
     }
 
     <span class="attr">#[proptest]
-    </span><span class="kw">fn </span>test_per_category_threshold(raw_snapshot: RawSnapshot&lt;TestnetRewardAddress&gt;) {
+    </span><span class="kw">fn </span>test_per_category_threshold(raw_snapshot: RawSnapshot) {
         <span class="kw">let </span>snapshot = Snapshot::from_raw_snapshot(
             raw_snapshot,
             DEFAULT_SNAPSHOT_THRESHOLD.into(),

@@ -262,12 +262,12 @@
     </span>MultipleEntries,
 }
 
-<span class="kw">fn </span>filter_requirements&lt;RewardAddressType&gt;(
-    <span class="kw-2">mut </span>dreps: Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;,
+<span class="kw">fn </span>filter_requirements(
+    <span class="kw-2">mut </span>dreps: Vec&lt;SnapshotInfo&gt;,
     votes: VoteCount,
     top_dreps_to_reward: usize,
     votes_threshold: Threshold,
-) -&gt; Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt; {
+) -&gt; Vec&lt;SnapshotInfo&gt; {
     <span class="comment">// only the top `top_dreps_to_reward` representatives get rewards
     </span>dreps.sort_by_key(|v| v.hir.voting_power);
     dreps.reverse();
@@ -281,8 +281,8 @@
         .collect()
 }
 
-<span class="kw">pub fn </span>calc_dreps_rewards&lt;RewardAddressType&gt;(
-    snapshot: Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;,
+<span class="kw">pub fn </span>calc_dreps_rewards(
+    snapshot: Vec&lt;SnapshotInfo&gt;,
     votes: VoteCount,
     drep_voting_group: VotingGroup,
     top_dreps_to_reward: usize,
@@ -339,12 +339,12 @@
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
     <span class="kw">use </span>jormungandr_lib::crypto::hash::Hash;
     <span class="kw">use </span>proptest::prop_assert_eq;
-    <span class="kw">use </span>snapshot_lib::{registration::TestnetRewardAddress, <span class="kw-2">*</span>};
+    <span class="kw">use </span>snapshot_lib::<span class="kw-2">*</span>;
     <span class="kw">use </span>std::collections::HashMap;
     <span class="kw">use </span>test_strategy::proptest;
 
     <span class="attr">#[proptest]
-    </span><span class="kw">fn </span>test_small(snapshot: Snapshot&lt;TestnetRewardAddress&gt;) {
+    </span><span class="kw">fn </span>test_small(snapshot: Snapshot) {
         <span class="kw">let </span>voting_keys = snapshot.voting_keys().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
         <span class="kw">let </span>votes_count = voting_keys
@@ -393,7 +393,7 @@
     }
 
     <span class="attr">#[proptest]
-    </span><span class="kw">fn </span>test_threshold(snapshot: Snapshot&lt;TestnetRewardAddress&gt;) {
+    </span><span class="kw">fn </span>test_threshold(snapshot: Snapshot) {
         <span class="kw">let </span>voters = snapshot.to_full_snapshot_info();
 
         <span class="kw">let </span>rewards = calc_dreps_rewards(
@@ -409,7 +409,7 @@
     }
 
     <span class="attr">#[proptest]
-    </span><span class="kw">fn </span>test_per_category_threshold(snapshot: Snapshot&lt;TestnetRewardAddress&gt;) {
+    </span><span class="kw">fn </span>test_per_category_threshold(snapshot: Snapshot) {
         <span class="kw">use </span>vit_servicing_station_tests::common::data::ArbitrarySnapshotGenerator;
 
         <span class="kw">let </span>voters = snapshot.to_full_snapshot_info();

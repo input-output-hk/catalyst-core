@@ -247,17 +247,13 @@
 <a href="#247" id="247">247</a>
 <a href="#248" id="248">248</a>
 <a href="#249" id="249">249</a>
-<a href="#250" id="250">250</a>
-<a href="#251" id="251">251</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::convert::TryInto;
 
 <span class="kw">use </span>chain_impl_mockchain::testing::TestGen;
 <span class="kw">use </span>jormungandr_lib::interfaces::Value;
 <span class="kw">use </span>rand::Rng;
 <span class="kw">use </span>serde::{Deserialize, Serialize};
-<span class="kw">use </span>snapshot_lib::registration::{
-    Delegations, MainnetRewardAddress, StakeAddress, VotingRegistration,
-};
+<span class="kw">use </span>snapshot_lib::registration::{Delegations, RewardAddress, StakeAddress, VotingRegistration};
 <span class="kw">use </span>snapshot_lib::{voting_group::RepsVotersAssigner, Error, Snapshot};
 <span class="kw">use </span>snapshot_lib::{
     voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
@@ -270,7 +266,7 @@
 <span class="attr">#[derive(Debug, Clone, Serialize, Deserialize)]
 </span><span class="kw">pub struct </span>RawSnapshot {
     <span class="kw">pub </span>tag: String,
-    <span class="kw">pub </span>content: RawSnapshotInput&lt;MainnetRewardAddress&gt;,
+    <span class="kw">pub </span>content: RawSnapshotInput,
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>RawSnapshot {
@@ -296,18 +292,18 @@
     }
 }
 
-<span class="kw">pub trait </span>RawSnapshotExtension&lt;RewardAddressType&gt; {
+<span class="kw">pub trait </span>RawSnapshotExtension {
     <span class="kw">fn </span>into_full_snapshot_infos(
         <span class="self">self</span>,
         assigner: <span class="kw-2">&amp;</span>RepsVotersAssigner,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;, Error&gt;;
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&gt;, Error&gt;;
 }
 
-<span class="kw">impl </span>RawSnapshotExtension&lt;MainnetRewardAddress&gt; <span class="kw">for </span>RawSnapshot {
+<span class="kw">impl </span>RawSnapshotExtension <span class="kw">for </span>RawSnapshot {
     <span class="kw">fn </span>into_full_snapshot_infos(
         <span class="self">self</span>,
         assigner: <span class="kw-2">&amp;</span>RepsVotersAssigner,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&lt;MainnetRewardAddress&gt;&gt;, Error&gt; {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&gt;, Error&gt; {
         <span class="prelude-val">Ok</span>(Snapshot::from_raw_snapshot(
             <span class="self">self</span>.content.snapshot,
             <span class="self">self</span>.content.min_stake_threshold,
@@ -333,9 +329,9 @@
     }
 }
 
-<span class="kw">impl </span>TryInto&lt;Vec&lt;SnapshotInfo&lt;MainnetRewardAddress&gt;&gt;&gt; <span class="kw">for </span>RawSnapshot {
+<span class="kw">impl </span>TryInto&lt;Vec&lt;SnapshotInfo&gt;&gt; <span class="kw">for </span>RawSnapshot {
     <span class="kw">type </span>Error = Error;
-    <span class="kw">fn </span>try_into(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&lt;MainnetRewardAddress&gt;&gt;, <span class="self">Self</span>::Error&gt; {
+    <span class="kw">fn </span>try_into(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&gt;, <span class="self">Self</span>::Error&gt; {
         <span class="kw">let </span>direct_voter = <span class="self">self
             </span>.content
             .direct_voters_group
@@ -365,7 +361,7 @@
     direct_voters_group: <span class="prelude-ty">Option</span>&lt;String&gt;,
     representatives_group: <span class="prelude-ty">Option</span>&lt;String&gt;,
     voting_registrations_count: usize,
-    voting_registrations: <span class="prelude-ty">Option</span>&lt;Vec&lt;VotingRegistration&lt;MainnetRewardAddress&gt;&gt;&gt;,
+    voting_registrations: <span class="prelude-ty">Option</span>&lt;Vec&lt;VotingRegistration&gt;&gt;,
     dreps: <span class="prelude-ty">Option</span>&lt;Dreps&gt;,
 }
 
@@ -401,7 +397,7 @@
     <span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>with_voting_registrations(
         <span class="kw-2">mut </span><span class="self">self</span>,
-        voting_registrations: Vec&lt;VotingRegistration&lt;MainnetRewardAddress&gt;&gt;,
+        voting_registrations: Vec&lt;VotingRegistration&gt;,
     ) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.voting_registrations = <span class="prelude-val">Some</span>(voting_registrations);
         <span class="self">self
@@ -441,7 +437,7 @@
                     <span class="prelude-val">Some</span>(VotingRegistration {
                         stake_public_key: StakeAddress(TestGen::public_key().to_string()),
                         voting_power: rng.gen_range(<span class="number">1u64</span>, <span class="number">1_00u64</span>).into(),
-                        reward_address: MainnetRewardAddress(TestGen::public_key().to_string()),
+                        reward_address: RewardAddress(TestGen::public_key().to_string()),
                         delegations: <span class="kw">if </span>delegation_type_count &gt; <span class="self">self</span>.voting_registrations_count / <span class="number">2
                         </span>{
                             delegation_type_count += <span class="number">1</span>;

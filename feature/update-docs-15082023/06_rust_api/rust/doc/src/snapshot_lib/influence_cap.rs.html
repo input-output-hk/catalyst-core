@@ -194,8 +194,6 @@
 <a href="#194" id="194">194</a>
 <a href="#195" id="195">195</a>
 <a href="#196" id="196">196</a>
-<a href="#197" id="197">197</a>
-<a href="#198" id="198">198</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Error, SnapshotInfo};
 <span class="kw">use </span>fraction::{BigFraction, Fraction};
 <span class="kw">use </span>rust_decimal::prelude::ToPrimitive;
@@ -243,10 +241,10 @@
 ///       It&#39;s easy to see we need to repeat step 2.1 at most min(ceil(1/T), N) times.
 ///
 /// Complexity: O(NlogN + min(ceil(1/T), N))
-</span><span class="kw">pub fn </span>cap_voting_influence&lt;RewardAddressType&gt;(
-    <span class="kw-2">mut </span>voters: Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;,
+</span><span class="kw">pub fn </span>cap_voting_influence(
+    <span class="kw-2">mut </span>voters: Vec&lt;SnapshotInfo&gt;,
     threshold: Fraction,
-) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&lt;RewardAddressType&gt;&gt;, Error&gt; {
+) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;SnapshotInfo&gt;, Error&gt; {
     voters.retain(|v| v.hir.voting_power &gt; <span class="number">0</span>.into());
 
     <span class="kw">if </span>voters.is_empty() {
@@ -307,7 +305,7 @@
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use crate</span>::{registration::TestnetRewardAddress, voter_hir::tests::VpRange, VoterHIR};
+    <span class="kw">use crate</span>::{voter_hir::tests::VpRange, VoterHIR};
     <span class="kw">use </span>proptest::{collection::vec, prelude::<span class="kw-2">*</span>};
     <span class="kw">use </span>test_strategy::proptest;
 
@@ -315,9 +313,7 @@
 
     <span class="attr">#[proptest]
     </span><span class="kw">fn </span>test_insufficient_voters(
-        <span class="attr">#[strategy(vec(any::&lt;SnapshotInfo&lt;TestnetRewardAddress&gt;&gt;(), <span class="number">1</span>..<span class="number">100</span>))] </span>voters: Vec&lt;
-            SnapshotInfo&lt;TestnetRewardAddress&gt;,
-        &gt;,
+        <span class="attr">#[strategy(vec(any::&lt;SnapshotInfo&gt;(), <span class="number">1</span>..<span class="number">100</span>))] </span>voters: Vec&lt;SnapshotInfo&gt;,
     ) {
         <span class="kw">let </span>cap = Fraction::new(<span class="number">1u64</span>, voters.len() <span class="kw">as </span>u64 + <span class="number">1</span>);
         <span class="macro">assert!</span>(cap_voting_influence(voters, cap).is_err());
@@ -325,8 +321,8 @@
 
     <span class="attr">#[proptest]
     </span><span class="kw">fn </span>test_exact_voters(
-        <span class="attr">#[strategy(vec(any_with::&lt;SnapshotInfo&lt;TestnetRewardAddress&gt;&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">1</span>..<span class="number">100</span>))]
-        </span>voters: Vec&lt;SnapshotInfo&lt;TestnetRewardAddress&gt;&gt;,
+        <span class="attr">#[strategy(vec(any_with::&lt;SnapshotInfo&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">1</span>..<span class="number">100</span>))]
+        </span>voters: Vec&lt;SnapshotInfo&gt;,
     ) {
         <span class="kw">let </span>cap = Fraction::new(<span class="number">1u64</span>, voters.len() <span class="kw">as </span>u64);
         <span class="kw">let </span>min = voters.iter().map(|v| v.hir.voting_power).min().unwrap();
@@ -339,8 +335,8 @@
 
     <span class="attr">#[proptest]
     </span><span class="kw">fn </span>test_exact_voters_fixed_at_threshold(
-        <span class="attr">#[strategy(vec(any_with::&lt;SnapshotInfo&lt;TestnetRewardAddress&gt;&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">101</span>..=<span class="number">101</span>))]
-        </span>voters: Vec&lt;SnapshotInfo&lt;TestnetRewardAddress&gt;&gt;,
+        <span class="attr">#[strategy(vec(any_with::&lt;SnapshotInfo&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">101</span>..=<span class="number">101</span>))]
+        </span>voters: Vec&lt;SnapshotInfo&gt;,
     ) {
         <span class="kw">let </span>cap = Fraction::new(<span class="number">999u64</span>, <span class="number">100000u64</span>);
         <span class="kw">let </span>res = cap_voting_influence(voters, cap).unwrap();
@@ -356,8 +352,8 @@
 
     <span class="attr">#[proptest]
     </span><span class="kw">fn </span>test_exact_voters_fixed_below_threshold(
-        <span class="attr">#[strategy(vec(any_with::&lt;SnapshotInfo&lt;TestnetRewardAddress&gt;&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">100</span>..=<span class="number">100</span>))]
-        </span>voters: Vec&lt;SnapshotInfo&lt;TestnetRewardAddress&gt;&gt;,
+        <span class="attr">#[strategy(vec(any_with::&lt;SnapshotInfo&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">100</span>..=<span class="number">100</span>))]
+        </span>voters: Vec&lt;SnapshotInfo&gt;,
     ) {
         <span class="kw">let </span>cap = Fraction::new(<span class="number">9u64</span>, <span class="number">1000u64</span>);
         <span class="macro">assert!</span>(cap_voting_influence(voters, cap).is_err());
@@ -365,8 +361,8 @@
 
     <span class="attr">#[proptest]
     </span><span class="kw">fn </span>test_below_threshold(
-        <span class="attr">#[strategy(vec(any_with::&lt;SnapshotInfo&lt;TestnetRewardAddress&gt;&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">100</span>..<span class="number">300</span>))]
-        </span>voters: Vec&lt;SnapshotInfo&lt;TestnetRewardAddress&gt;&gt;,
+        <span class="attr">#[strategy(vec(any_with::&lt;SnapshotInfo&gt;((Default::default(), DEFAULT_VP_STRATEGY)), <span class="number">100</span>..<span class="number">300</span>))]
+        </span>voters: Vec&lt;SnapshotInfo&gt;,
     ) {
         <span class="kw">let </span>cap = Fraction::new(<span class="number">1u64</span>, <span class="number">100u64</span>);
         <span class="kw">let </span>res = cap_voting_influence(voters, cap).unwrap();
@@ -380,7 +376,7 @@
         }
     }
 
-    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>SnapshotInfo&lt;TestnetRewardAddress&gt; {
+    <span class="kw">impl </span>Arbitrary <span class="kw">for </span>SnapshotInfo {
         <span class="kw">type </span>Parameters = (String, VpRange);
         <span class="kw">type </span>Strategy = BoxedStrategy&lt;<span class="self">Self</span>&gt;;
 

@@ -1,4 +1,4 @@
-use crate::logger::{LogLevel, LOG_LEVEL_DEFAULT};
+use crate::logger::{LogFormat, LogLevel, LOG_FORMAT_DEFAULT, LOG_LEVEL_DEFAULT};
 use clap::Args;
 use std::net::SocketAddr;
 
@@ -17,6 +17,10 @@ pub struct Settings {
     /// Url to the postgres event db
     #[clap(long, env)]
     pub database_url: String,
+
+    /// Logging format
+    #[clap(long, default_value = LOG_FORMAT_DEFAULT)]
+    pub log_format: LogFormat,
 
     /// Logging level
     #[clap(long, default_value = LOG_LEVEL_DEFAULT)]

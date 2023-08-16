@@ -4,13 +4,12 @@ use catalyst_toolbox::{
 };
 use color_eyre::Result;
 use config::*;
-use snapshot_lib::registration::RewardAddressTrait;
 use std::path::Path;
 use tracing::info;
 
 mod config;
 
-pub(super) fn full_rewards<RewardAddressType: RewardAddressTrait>(path: &Path) -> Result<()> {
+pub(super) fn full_rewards(path: &Path) -> Result<()> {
     let config = json_from_file(path)?;
     let Config {
         inputs:
@@ -45,7 +44,7 @@ pub(super) fn full_rewards<RewardAddressType: RewardAddressTrait>(path: &Path) -
     } = config;
 
     info!("calculating voter rewards");
-    super::voters::voter_rewards::<RewardAddressType>(
+    super::voters::voter_rewards(
         &Some(voter_rewards_output),
         &vote_count_path,
         &snapshot_path,

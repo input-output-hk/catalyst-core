@@ -1,8 +1,8 @@
 use crate::common::{clients::RestClient, raw_snapshot::RawSnapshot, snapshot::VotingPower};
-use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
+use snapshot_lib::SnapshotInfo;
 
 pub fn assert_raw_against_full_snapshot(
-    snapshot_entry: &SnapshotInfo<MainnetRewardAddress>,
+    snapshot_entry: &SnapshotInfo,
     raw_snapshot: &RawSnapshot,
     rest_client: &RestClient,
 ) {
@@ -24,7 +24,7 @@ pub fn assert_raw_against_full_snapshot(
 }
 
 pub fn assert_is_empty_raw_against_full_snapshot(
-    snapshot_entry: &SnapshotInfo<MainnetRewardAddress>,
+    snapshot_entry: &SnapshotInfo,
     raw_snapshot: &RawSnapshot,
     timestamp: i64,
     rest_client: &RestClient,

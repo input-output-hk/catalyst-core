@@ -4,9 +4,7 @@ use chain_impl_mockchain::testing::TestGen;
 use jormungandr_lib::interfaces::Value;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use snapshot_lib::registration::{
-    Delegations, MainnetRewardAddress, StakeAddress, VotingRegistration,
-};
+use snapshot_lib::registration::{Delegations, RewardAddress, StakeAddress, VotingRegistration};
 use snapshot_lib::{voting_group::RepsVotersAssigner, Error, Snapshot};
 use snapshot_lib::{
     voting_group::{DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
@@ -19,7 +17,7 @@ use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RawSnapshot {
     pub tag: String,
-    pub content: RawSnapshotInput<MainnetRewardAddress>,
+    pub content: RawSnapshotInput,
 }
 
 impl Default for RawSnapshot {
@@ -45,18 +43,18 @@ impl RawSnapshot {
     }
 }
 
-pub trait RawSnapshotExtension<RewardAddressType> {
+pub trait RawSnapshotExtension {
     fn into_full_snapshot_infos(
         self,
         assigner: &RepsVotersAssigner,
-    ) -> Result<Vec<SnapshotInfo<RewardAddressType>>, Error>;
+    ) -> Result<Vec<SnapshotInfo>, Error>;
 }
 
-impl RawSnapshotExtension<MainnetRewardAddress> for RawSnapshot {
+impl RawSnapshotExtension for RawSnapshot {
     fn into_full_snapshot_infos(
         self,
         assigner: &RepsVotersAssigner,
-    ) -> Result<Vec<SnapshotInfo<MainnetRewardAddress>>, Error> {
+    ) -> Result<Vec<SnapshotInfo>, Error> {
         Ok(Snapshot::from_raw_snapshot(
             self.content.snapshot,
             self.content.min_stake_threshold,
@@ -82,9 +80,9 @@ impl From<RawSnapshot> for RepsVotersAssigner {
     }
 }
 
-impl TryInto<Vec<SnapshotInfo<MainnetRewardAddress>>> for RawSnapshot {
+impl TryInto<Vec<SnapshotInfo>> for RawSnapshot {
     type Error = Error;
-    fn try_into(self) -> Result<Vec<SnapshotInfo<MainnetRewardAddress>>, Self::Error> {
+    fn try_into(self) -> Result<Vec<SnapshotInfo>, Self::Error> {
         let direct_voter = self
             .content
             .direct_voters_group
@@ -114,7 +112,7 @@ pub struct RawSnapshotBuilder {
     direct_voters_group: Option<String>,
     representatives_group: Option<String>,
     voting_registrations_count: usize,
-    voting_registrations: Option<Vec<VotingRegistration<MainnetRewardAddress>>>,
+    voting_registrations: Option<Vec<VotingRegistration>>,
     dreps: Option<Dreps>,
 }
 
@@ -150,7 +148,7 @@ impl RawSnapshotBuilder {
     #[must_use]
     pub fn with_voting_registrations(
         mut self,
-        voting_registrations: Vec<VotingRegistration<MainnetRewardAddress>>,
+        voting_registrations: Vec<VotingRegistration>,
     ) -> Self {
         self.voting_registrations = Some(voting_registrations);
         self
@@ -190,7 +188,7 @@ impl RawSnapshotBuilder {
                     Some(VotingRegistration {
                         stake_public_key: StakeAddress(TestGen::public_key().to_string()),
                         voting_power: rng.gen_range(1u64, 1_00u64).into(),
-                        reward_address: MainnetRewardAddress(TestGen::public_key().to_string()),
+                        reward_address: RewardAddress(TestGen::public_key().to_string()),
                         delegations: if delegation_type_count > self.voting_registrations_count / 2
                         {
                             delegation_type_count += 1;

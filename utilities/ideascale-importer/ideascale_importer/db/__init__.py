@@ -71,7 +71,7 @@ async def select(conn: asyncpg.Connection, model: Model, cond: Dict[str, str] = 
     cols = [field.name for field in dataclasses.fields(model)]
 
     cols_str = ",".join(cols)
-    cond_str = ",".join([f"{col} {cond}" for col, cond in cond.items()])
+    cond_str = " ".join([f"{col} {cond}" for col, cond in cond.items()])
 
     stmt_template = f"""
         SELECT {cols_str}
@@ -121,7 +121,7 @@ async def upsert_many(
     conflict_cols_str = ",".join(conflict_cols)
     do_update_set_str = ",".join([f"{col} = EXCLUDED.{col}" for col in insert_cols if col not in exclude_update_cols])
     pre_update_set_str = ",".join([f"{col} = {val}" for col, val in pre_update_cols.items()])
-    pre_update_cond_str = ",".join([f"{col} {cond}" for col, cond in pre_update_cond.items()])
+    pre_update_cond_str = " ".join([f"{col} {cond}" for col, cond in pre_update_cond.items()])
 
     pre_update_template = f"""
         WITH updated AS ({ f"UPDATE {models[0].table()} SET {pre_update_set_str} {f' WHERE {pre_update_cond_str}' if pre_update_cond_str else ' '}" })

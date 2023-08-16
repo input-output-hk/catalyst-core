@@ -132,4 +132,3 @@ local:
 
     RUN mkdir -p ./local
     COPY ./containers/dev-local+build/docker-compose.yml ./local/
-    COPY ./utilities/ideascale-importer+build/src/ideascale-importer-config.json ./local/

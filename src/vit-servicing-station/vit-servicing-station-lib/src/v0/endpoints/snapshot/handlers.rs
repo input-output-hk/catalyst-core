@@ -29,8 +29,8 @@ pub async fn get_delegator_info(
 
 /// Snapshot information update with timestamp.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
-pub struct SnapshotInfoInput<RewardAddressType> {
-    pub snapshot: Vec<SnapshotInfo<RewardAddressType>>,
+pub struct SnapshotInfoInput {
+    pub snapshot: Vec<SnapshotInfo>,
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     pub update_timestamp: i64,
@@ -38,8 +38,8 @@ pub struct SnapshotInfoInput<RewardAddressType> {
 
 /// Raw Snapshot information update with timestamp.
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct RawSnapshotInput<RewardAddressType> {
-    pub snapshot: RawSnapshot<RewardAddressType>,
+pub struct RawSnapshotInput {
+    pub snapshot: RawSnapshot,
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]
     #[serde(serialize_with = "crate::utils::serde::serialize_unix_timestamp_as_rfc3339")]
     pub update_timestamp: i64,

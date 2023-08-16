@@ -1,6 +1,6 @@
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Value;
-use snapshot_lib::registration::{Delegations, MainnetRewardAddress, VotingRegistration};
+use snapshot_lib::registration::{Delegations, VotingRegistration};
 use snapshot_lib::VoterHIR;
 
 pub trait RegistrationAsserts {
@@ -8,7 +8,7 @@ pub trait RegistrationAsserts {
     fn assert_not_contain_voting_key(&self, identifier: &Identifier);
 }
 
-impl RegistrationAsserts for Vec<VotingRegistration<MainnetRewardAddress>> {
+impl RegistrationAsserts for Vec<VotingRegistration> {
     fn assert_contains_voting_key_and_value(&self, identifier: &Identifier, value: Value) {
         assert!(self.iter().any(|x| {
             value == x.voting_power

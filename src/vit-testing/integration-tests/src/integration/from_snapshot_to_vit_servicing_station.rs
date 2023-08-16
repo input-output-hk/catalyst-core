@@ -3,7 +3,6 @@ use crate::common::snapshot::mock;
 use crate::common::CardanoWallet;
 use assert_fs::TempDir;
 use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder};
-use snapshot_lib::registration::MainnetRewardAddress;
 use snapshot_lib::SnapshotInfo;
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
@@ -81,8 +80,7 @@ pub fn put_raw_snapshot() {
         "expected tags vs tags taken from REST API"
     );
 
-    let snapshot_infos: Vec<SnapshotInfo<MainnetRewardAddress>> =
-        raw_snapshot.clone().try_into().unwrap();
+    let snapshot_infos: Vec<SnapshotInfo> = raw_snapshot.clone().try_into().unwrap();
 
     for snapshot_info in snapshot_infos.iter() {
         let voting_power = VotingPower::from(snapshot_info.clone());

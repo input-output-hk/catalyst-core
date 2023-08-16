@@ -20,7 +20,7 @@ impl Cli {
     pub async fn exec(self) -> Result<(), Error> {
         match self {
             Self::Run(settings) => {
-                logger::init(settings.log_level).unwrap();
+                logger::init(settings.log_format, settings.log_level).unwrap();
 
                 let state = Arc::new(State::new(Some(settings.database_url)).await?);
                 service::run(&settings.address, &settings.metrics_address, state).await?;

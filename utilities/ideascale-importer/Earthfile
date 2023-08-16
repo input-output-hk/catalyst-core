@@ -12,7 +12,7 @@ build:
 
     # Install system dependencies
     RUN apt-get update && \
-        apt-get install -y --no-install-recommends curl
+        apt-get install -y --no-install-recommends curl build-essential libxml2-dev libxslt-dev zlib1g-dev python3-lxml
 
     # Install Poetry
     RUN curl -sSL https://install.python-poetry.org | python3 -
@@ -24,7 +24,6 @@ build:
     COPY pyproject.toml .
     COPY poetry.lock .
     COPY --dir ideascale_importer README.md ./
-    COPY ideascale-importer-config.json ./
 
     # Install package dependencies
     RUN poetry env use python
@@ -45,7 +44,7 @@ docker:
 
     # Install system dependencies
     RUN apt-get update && \
-        apt-get install -y --no-install-recommends libpq5
+        apt-get install -y --no-install-recommends libpq5 build-essential libxml2-dev libxslt-dev zlib1g-dev python3-lxml
 
     ## apt cleanup
     RUN apt-get clean && \

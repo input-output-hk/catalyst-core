@@ -47,14 +47,15 @@ class ProposalsScoresCsvConfig:
 class Config:
     """Represents the available configuration fields."""
 
+    campaign_group_id: int
+    stage_ids: List[int]
     proposals: ProposalsConfig
     proposals_scores_csv: ProposalsScoresCsvConfig
-
+    
     @staticmethod
-    def from_json_file(path: str) -> "Config":
-        """Load configuration from a JSON file."""
-        with open(path) as f:
-            return pydantic.tools.parse_obj_as(Config, json.load(f))
+    def from_json(val: dict):
+        """Load configuration from a JSON object."""
+        return pydantic.tools.parse_obj_as(Config, val)
 
 
 class ReadConfigException(Exception):
@@ -222,10 +223,7 @@ class Importer:
         self,
         api_token: str,
         database_url: str,
-        config_path: Optional[str],
         event_id: int,
-        campaign_group_id: int,
-        stage_ids: [int],
         proposals_scores_csv_path: Optional[str],
         ideascale_api_url: str,
     ):
@@ -233,17 +231,8 @@ class Importer:
         self.api_token = api_token
         self.database_url = database_url
         self.event_id = event_id
-        self.campaign_group_id = campaign_group_id
-        self.stage_ids = stage_ids
         self.conn: asyncpg.Connection | None = None
         self.ideascale_api_url = ideascale_api_url
-
-        try:
-            config_file_path = config_path or "ideascale-importer-config.json"
-            logger.debug("Reading configuration file", path=config_file_path)
-            self.config = Config.from_json_file(config_file_path)
-        except Exception as e:
-            raise ReadConfigException(repr(e)) from e
 
         self.proposals_impact_scores: Dict[int, int] = {}
         if proposals_scores_csv_path is not None:
@@ -263,6 +252,20 @@ class Importer:
             except Exception as e:
                 raise ReadProposalsScoresCsv(repr(e)) from e
 
+    async def load_config(self):
+        """Load the configuration setting from the event db."""
+
+        logger.debug("Loading ideascale config from the event-db")
+
+        config = ideascale_importer.db.models.Config(row_id=0, id="ideascale", id2=f"{self.event_id}", id3="", value=None)
+        res = await ideascale_importer.db.select(self.conn, config,  cond={
+            "id": f"= '{config.id}'",
+            "AND id2": f"= '{config.id2}'"
+            })
+        if len(res) == 0:
+            raise Exception("Cannot find ideascale config in the event-db database")
+        self.config = Config.from_json(res[0].value)
+        
     async def connect(self, *args, **kwargs):
         """Connect to the database."""
         if self.conn is None:
@@ -279,6 +282,8 @@ class Importer:
         if self.conn is None:
             raise Exception("Not connected to the database")
 
+        await self.load_config()
+
         if not await ideascale_importer.db.event_exists(self.conn, self.event_id):
             logger.error("No event exists with the given id")
             return
@@ -292,7 +297,7 @@ class Importer:
 
         group: Optional[CampaignGroup] = None
         for g in groups:
-            if g.id == self.campaign_group_id:
+            if g.id == self.config.campaign_group_id:
                 group = g
                 break
 
@@ -301,8 +306,9 @@ class Importer:
             return
 
         ideas = []
-        for stage_id in self.stage_ids:
+        for stage_id in self.config.stage_ids:
             ideas.extend(await client.stage_ideas(stage_id=stage_id))
+        await client.close()
 
         vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, ["yes", "no"])
         mapper = Mapper(vote_options_id, self.config)

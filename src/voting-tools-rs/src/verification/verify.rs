@@ -205,8 +205,8 @@ pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId)
     let addr_net = rewards_address_prefix & 0xf;
 
     // 0 or 1 are valid addrs in the following cases:
-    // type = 0x0 -  network = 0
-    // type = 0x0 -  network = 1
+    // type = 0x0 -  Testnet network
+    // type = 0x1 -  Mainnet network
     match network {
         NetworkId::Mainnet => {
             if addr_net != 1 {

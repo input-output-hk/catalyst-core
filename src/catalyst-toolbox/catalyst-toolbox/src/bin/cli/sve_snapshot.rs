@@ -6,12 +6,7 @@ use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, OutputFormat};
 use jormungandr_lib::interfaces::{InitialUTxO, Value};
 use serde::Serialize;
-use snapshot_lib::{
-    registration::{
-        MainnetRewardAddress, RewardAddressTrait, TestnetRewardAddress, VotingRegistration,
-    },
-    RawSnapshot,
-};
+use snapshot_lib::{registration::VotingRegistration, RawSnapshot};
 
 #[derive(Serialize)]
 struct OutputInitial {
@@ -49,7 +44,7 @@ pub struct SveSnapshotCmd {
 }
 
 impl SveSnapshotCmd {
-    fn exec_impl<RewardAddressType: RewardAddressTrait>(self) -> Result<(), Report> {
+    pub fn exec(self) -> Result<(), Report> {
         // Make voting_purpose = 0 if voting_purpose is null in the original JSON file.
         let mut registratons: serde_json::Value =
             serde_json::from_reader(std::fs::File::open(&self.file)?)?;
@@ -69,8 +64,7 @@ impl SveSnapshotCmd {
         }
 
         // Filter CIP-36 registrations with more than 1 delegation.
-        let registrations =
-            serde_json::from_value::<Vec<VotingRegistration<RewardAddressType>>>(registratons)?;
+        let registrations = serde_json::from_value::<Vec<VotingRegistration>>(registratons)?;
 
         let raw_snapshot = RawSnapshot::from(registrations);
         let (snapshot, total_registrations_rejected) =
@@ -91,12 +85,5 @@ impl SveSnapshotCmd {
         out_writer.write_all(content.as_bytes())?;
 
         Ok(())
-    }
-
-    pub fn exec(self) -> Result<(), Report> {
-        match self.discrimination {
-            Discrimination::Production => self.exec_impl::<MainnetRewardAddress>(),
-            Discrimination::Test => self.exec_impl::<TestnetRewardAddress>(),
-        }
     }
 }

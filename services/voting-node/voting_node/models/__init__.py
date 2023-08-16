@@ -7,10 +7,6 @@ from typing import Any, Self
 
 import yaml
 from aiofile import async_open
-from loguru import logger
-from pydantic import BaseModel
-
-from .committee import CommitteeMember, CommunicationKeys, ElectionKey, MemberKeys
 
 
 ### Base types
@@ -143,60 +139,6 @@ class LeaderHostInfo:
     consensus_leader_id: str
 
 
-class Committee(BaseModel):
-    """The tallying committee.
-
-    `event_id` the number of committee members.
-    `size` the number of committee members.
-    `threshold` the minimum number of members needed to tally.
-    `committee_pk` the encrypted private key of the Committee address.
-    `committee_id` the hex-encoded public key of the Committee address.
-    `crs` the encrypted Common Reference String shared in the creation of every set of committee member keys.
-    `members` list of containing the communication and member secrets of each member of the commitee.
-    `election_key` public key used to sign every vote in the event. This key is created from the committee member public keys.
-    """
-
-    row_id: int | None = None
-    """`row_id` the unique key for this committee in the DB."""
-    event_id: int
-    size: int
-    threshold: int
-    crs: str
-    committee_pk: str
-    committee_id: str
-    members: list[CommitteeMember] | None = None
-    election_key: ElectionKey
-
-    def as_yaml(self) -> str:
-        """Return the content as YAML."""
-        return yaml.safe_dump(self.dict())
-
-    @classmethod
-    async def read_file(cls, file: Path) -> Self:
-        """Read and return the yaml_type from the file path."""
-        afp = await async_open(file, "r")
-        yaml_str = await afp.read()
-        await afp.close()
-        yaml_dict = yaml.safe_load(yaml_str)
-        try:
-            members_list = yaml_dict["members"]
-
-            def committee_member(member: dict) -> CommitteeMember:
-                comm_keys = [print(keys) for keys in member["communication_keys"]]
-                comm_keys = [CommunicationKeys(**keys) for keys in member["communication_keys"]]
-                logger.debug(f"comm_keys: {comm_keys}")
-                member["communication_keys"] = comm_keys
-                member_keys = [MemberKeys(**keys) for keys in member["member_keys"]]
-                member["member_keys"] = member_keys
-                return CommitteeMember(**member)
-
-            yaml_dict["members"] = [committee_member(member) for member in members_list]
-            committee = cls(**yaml_dict)
-            return committee
-        except Exception as e:
-            raise Exception(f"invalid committee in {file}: {e}")
-
-
 @dataclass
 class Block0:
     """Represents the path to 'block0.bin' and its hash."""
@@ -240,6 +182,13 @@ class Event:
     registration_snapshot_time: datetime | None
     voting_power_threshold: int | None
     max_voting_power_pct: int | None
+    """The Minimum number of Lovelace staked at the time of snapshot, to be eligible to vote.
+
+    `None` means that it is not yet defined.
+    """
+
+    review_rewards: int | None
+    """The total reward pool to pay for community reviewers for their valid reviews of the proposals assigned to this event."""
 
     # The Time (UTC) Registrations are taken from Cardano main net.
     # Registrations after this date are not valid for voting on the event.
@@ -306,6 +255,14 @@ class Event:
         if self.snapshot_start is None:
             raise Exception("event has no snapshot start time")
         return self.snapshot_start
+
+    def has_snapshot_started(self) -> bool:
+        """Return True when current time is equal or greater to the voting start time.
+
+        This method raises exception if the timestamp is None.
+        """
+        snapshot_start = self.get_snapshot_start()
+        return datetime.utcnow() >= snapshot_start
 
     def get_voting_start(self) -> datetime:
         """Get the timestamp for when the event voting starts.
@@ -428,6 +385,30 @@ class Voter:
     voting_group: str
     # The voting power associated with this key
     voting_power: int
+
+
+@dataclass
+class Contribution:
+    """Individual contributions from the stake public key to the voting key."""
+
+    row_id: str
+    # Stake Public key for the voter.
+    stake_public_key: str
+    # The ID of the snapshot this record belongs to
+    snapshot_id: str
+
+    # The voting key. If None, it is the raw staked ADA.
+    voting_key: str | None
+    # The weight that this key gets from the total.
+    voting_weight: int | None
+    # The index from 0 of the keys in the delegation array.
+    voting_key_idx: int | None
+    # The amount of ADA contributed to this voting key from the stake address.
+    value: int
+    # The group that this contribution goes to.
+    voting_group: str
+    # Currently unused.
+    reward_address: str | None
 
 
 @dataclass

@@ -13,10 +13,7 @@ Common to IdeaScale and DBSync snapshots:
 ## Specific to Ideascale snapshot
 
 * `IDEASCALE_API_TOKEN` - API token from ideascale.com.
-* `IDEASCALE_CAMPAIGN_GROUP` - Group ID for the IdeaScale campaign.
-* `IDEASCALE_STAGE_ID` - Stage ID for IdeaScale.
 * `IDEASCALE_API_URL` - URL for IdeaScale API.
-* `IDEASCALE_CONFIG_PATH` - Path to the ideascale command configuration file.
 
 ## Specific to DBSync Snapshot
 
@@ -47,19 +44,13 @@ class ExternalDataImporter:
 
         * `EVENTDB_URL` sets `--database-url`.
         * `IDEASCALE_API_TOKEN` sets `--api-token`.
-        * `IDEASCALE_CAMPAIGN_GROUP` sets `--campaing-group-id`.
-        * `IDEASCALE_STAGE_ID` sets `--stage-id`.
         * `IDEASCALE_API_URL` sets `--ideascale-api-url`.
-        * `IDEASCALE_CONFIG_PATH` sets `--config-path`.
         """
         logger.info(f"Running ideascale for event {event_id}")
         importer = IdeascaleImporter(
             api_token=os.environ["IDEASCALE_API_TOKEN"],
             database_url=os.environ["EVENTDB_URL"],
-            config_path=os.environ["IDEASCALE_CONFIG_PATH"],
             event_id=event_id,
-            campaign_group_id=int(os.environ["IDEASCALE_CAMPAIGN_GROUP"]),
-            stage_ids=[int(os.environ["IDEASCALE_STAGE_ID"])],
             proposals_scores_csv_path=None,
             ideascale_api_url=os.environ["IDEASCALE_API_URL"],
         )
@@ -111,9 +102,11 @@ class ExternalDataImporter:
                     snapshot_tool_output_dir=snapshot_tool_out_dir,
                 )
             else:
-                raise Exception("SSH_SNAPSHOT_TOOL_PATH, SSH_SNAPSHOT_TOOL_OUTPUT_DIR, "
-                                "SSH_SNAPSHOT_TOOL_OUTPUT_DIR and SSH_SNAPSHOT_TOOL_DESTINATION "
-                                "are all required when SNAPSHOT_TOOL_SSH is set")
+                raise Exception(
+                    "SSH_SNAPSHOT_TOOL_PATH, SSH_SNAPSHOT_TOOL_OUTPUT_DIR, "
+                    "SSH_SNAPSHOT_TOOL_OUTPUT_DIR and SSH_SNAPSHOT_TOOL_DESTINATION "
+                    "are all required when SNAPSHOT_TOOL_SSH is set"
+                )
         else:
             ssh_config = None
 

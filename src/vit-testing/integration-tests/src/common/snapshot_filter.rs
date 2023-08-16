@@ -5,7 +5,6 @@ use fraction::Fraction;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::InitialUTxO;
 use jormungandr_lib::interfaces::Value;
-use snapshot_lib::registration::MainnetRewardAddress;
 use snapshot_lib::registration::VotingRegistration;
 use snapshot_lib::voting_group::VotingGroupAssigner;
 use snapshot_lib::{RawSnapshot, Snapshot, VoterHIR};
@@ -37,7 +36,7 @@ impl SnapshotFilterSource for SnapshotResult {
 }
 
 pub struct SnapshotFilter {
-    snapshot: Snapshot<MainnetRewardAddress>,
+    snapshot: Snapshot,
 }
 
 impl SnapshotFilter {
@@ -70,7 +69,7 @@ impl SnapshotFilter {
     }
 
     pub fn from_voting_registrations(
-        voting_registrations: Vec<VotingRegistration<MainnetRewardAddress>>,
+        voting_registrations: Vec<VotingRegistration>,
         voting_threshold: Value,
         cap: Fraction,
         voting_group_assigner: &impl VotingGroupAssigner,
@@ -99,7 +98,7 @@ impl SnapshotFilter {
         self.snapshot.to_block0_initials(Discrimination::Production)
     }
 
-    pub fn snapshot(&self) -> Snapshot<MainnetRewardAddress> {
+    pub fn snapshot(&self) -> Snapshot {
         self.snapshot.clone()
     }
 }

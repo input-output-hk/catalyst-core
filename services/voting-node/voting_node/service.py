@@ -106,3 +106,5 @@ class VotingService(uvicorn.Server):
                 return tasks.LeaderSchedule(self.settings)
             case ("follower", _):
                 return tasks.FollowerSchedule(self.settings)
+            case _:
+                return None

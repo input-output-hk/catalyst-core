@@ -3,9 +3,8 @@ use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
 use snapshot_lib::{
-    registration::{MainnetRewardAddress, RewardAddressTrait, TestnetRewardAddress},
     voting_group::{RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
-    NetworkType, RawSnapshot, Snapshot,
+    Snapshot,
 };
 use snapshot_lib::{Dreps, Fraction};
 use std::fs::File;
@@ -46,16 +45,11 @@ pub struct SnapshotCmd {
 
     #[clap(flatten)]
     output_format: OutputFormat,
-
-    /// Specify network type of the, could be "mainnet" or "testnet"
-    #[clap(long, default_value = "mainnet")]
-    net_type: NetworkType,
 }
 
 impl SnapshotCmd {
-    pub fn exec_impl<RewardAddressType: RewardAddressTrait>(self) -> Result<(), Report> {
-        let raw_snapshot: RawSnapshot<RewardAddressType> =
-            serde_json::from_reader(File::open(&self.snapshot)?)?;
+    pub fn exec(self) -> Result<(), Report> {
+        let raw_snapshot = serde_json::from_reader(File::open(&self.snapshot)?)?;
         let dreps = if let Some(dreps) = &self.dreps {
             serde_json::from_reader(File::open(dreps)?)?
         } else {
@@ -81,12 +75,5 @@ impl SnapshotCmd {
             .format_json(serde_json::to_value(initials)?)?;
         out_writer.write_all(content.as_bytes())?;
         Ok(())
-    }
-
-    pub fn exec(self) -> Result<(), Report> {
-        match self.net_type {
-            NetworkType::Mainnet => self.exec_impl::<MainnetRewardAddress>(),
-            NetworkType::Testnet => self.exec_impl::<TestnetRewardAddress>(),
-        }
     }
 }

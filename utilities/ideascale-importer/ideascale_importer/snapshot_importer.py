@@ -367,6 +367,7 @@ class Importer:
             dreps = await gvc_client.dreps()
         except Exception as e:
             logger.error("Failed to get dreps, using drep cache", error=str(e))
+        await gvc_client.close()
 
         self.dreps_json = json.dumps([dataclasses.asdict(d) for d in dreps])
 
@@ -465,7 +466,7 @@ class Importer:
                 "min_stake_threshold and voting_power_cap must be set either as CLI arguments or in the database"
             )
 
-        for network_id, params in self.network_params.items():
+        for params in self.network_params.values():
             catalyst_toolbox_cmd = (
                 f"{self.catalyst_toolbox_path} snapshot"
                 f" -s {params.snapshot_tool_out_file}"
@@ -473,7 +474,6 @@ class Importer:
                 f" -v {self.voting_power_cap}"
                 f" --dreps {self.dreps_out_file}"
                 f" --output-format json {params.catalyst_toolbox_out_file}"
-                f" --net-type {network_id}"
             )
 
             await run_cmd("catalyst-toolbox", catalyst_toolbox_cmd)

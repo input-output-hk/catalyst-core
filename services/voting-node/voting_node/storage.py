@@ -5,9 +5,8 @@ from asyncpg import Connection, Record
 from loguru import logger
 from pydantic import BaseModel
 
-from .committee import ElectionKey
 from .envvar import SECRET_SECRET
-from .models import Committee
+from .models.committee import Committee, ElectionKey
 from .utils import decrypt_secret, encrypt_secret
 
 
@@ -67,6 +66,7 @@ class SecretDBStorage(BaseModel):
             threshold=record["threshold"],
             crs=crs,
             committee_id=record["committee_id"],
+            committee_pk=record["committee_pk"],
             election_key=ElectionKey(pubkey=record["election_key"]),
         )
         # fetch committee members

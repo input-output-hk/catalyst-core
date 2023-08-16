@@ -44,7 +44,17 @@
 
 ## What's inside?
 
-- [Catalyst Core Governance Engine](catalyst-core/README.md)
+- [Audit Tooling](https://github.com/input-output-hk/catalyst-core/blob/main/src/audit/README.md)
+- [Catalyst Event Data Service](https://github.com/input-output-hk/catalyst-core/blob/main/src/cat-data-service/README.md)
+- [Catalyst Toolbox](https://github.com/input-output-hk/catalyst-core/blob/main/src/catalyst-toolbox/README.md)
+- [Chain Libraries](https://github.com/input-output-hk/catalyst-core/tree/main/src/chain-libs)
+- [Chain Wallet Libraries](https://github.com/input-output-hk/catalyst-core/blob/main/src/chain-wallet-libs/README.md)
+- [Catalyst Event Database](https://github.com/input-output-hk/catalyst-core/blob/main/src/event-db/Readme.md)
+- [Jormungandr Node](https://github.com/input-output-hk/catalyst-core/blob/main/src/jormungandr/README.md)
+- [Jortestkit](https://github.com/input-output-hk/catalyst-core/tree/main/src/jortestkit)
+- [Vit Servicing Station](https://github.com/input-output-hk/catalyst-core/blob/main/src/vit-servicing-station/README.md)
+- [Vit Testing](https://github.com/input-output-hk/catalyst-core/blob/main/src/vit-testing/README.md)
+- [Voting Tools](https://github.com/input-output-hk/catalyst-core/blob/main/src/voting-tools-rs/README.md)
 
 ## Requirements
 

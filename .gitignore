@@ -117,6 +117,4 @@ lefthook.yml
 treefmt.toml
 
 # local earthly Environments
-./local/
-local/docker-compose.yml
-local/ideascale-importer-config.json
+local/*

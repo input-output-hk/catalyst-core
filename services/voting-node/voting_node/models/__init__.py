@@ -48,20 +48,27 @@ class ServiceSettings:
     """Settings for the node service."""
 
     # ports
-    rest_port: int
-    jrpc_port: int
-    p2p_port: int
-    # Jormungandr node storage directory
-    storage: str
+    rest_port: int = 10080
+    """REST listening port for jormungandr."""
+    jrpc_port: int = 10085
+    """REST listening port for jormungandr."""
+    p2p_port: int = 10090
+    """P2P listening port for jormungandr."""
+    storage: str = "./node_storage"
+    """Jormungandr node storage directory."""
     # use JCli to make calls
-    jcli_path_str: str
+    jcli_path_str: str = "jcli"
+    """Path to jcli executable."""
     # use Jormungandr to run the server
-    jorm_path_str: str
+    jorm_path_str: str = "jormungandr"
+    """Path to jormungandr executable."""
     # URL to Event DB
-    db_url: str
+    db_url: str = "postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev"
+    """URL to Event DB."""
     # Should the service reload if the current event
     # has changed.
-    reloadable: bool
+    reloadable: bool = False
+    """Enable resetting and reloading the node service during runtime."""
 
 
 @dataclass
@@ -176,49 +183,49 @@ class Event:
     # A detailed description of the purpose of the event. eg. the events "Goal".
     description: str
 
+    committee_size: int
+    committee_threshold: int
+
     # The Time (UTC) Registrations are taken from Cardano main net.
     # Registrations after this date are not valid for voting on the event.
     # NULL = Not yet defined or Not Applicable
-    registration_snapshot_time: datetime | None
-    voting_power_threshold: int | None
-    max_voting_power_pct: int | None
+    registration_snapshot_time: datetime | None = None
+    voting_power_threshold: int | None = None
+    max_voting_power_pct: int | None = None
     """The Minimum number of Lovelace staked at the time of snapshot, to be eligible to vote.
 
     `None` means that it is not yet defined.
     """
 
-    review_rewards: int | None
+    review_rewards: int | None = None
     """The total reward pool to pay for community reviewers for their valid reviews of the proposals assigned to this event."""
 
     # The Time (UTC) Registrations are taken from Cardano main net.
     # Registrations after this date are not valid for voting on the event.
     # NULL = Not yet defined or Not Applicable
-    start_time: datetime | None
-    end_time: datetime | None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
 
     # The Time (UTC) Registrations taken from Cardano main net are considered stable.
     # This is not the Time of the Registration Snapshot,
     # This is the time after which the registration snapshot will be stable.
     # NULL = Not yet defined or Not Applicable
-    insight_sharing_start: datetime | None
-    proposal_submission_start: datetime | None
-    refine_proposals_start: datetime | None
-    finalize_proposals_start: datetime | None
-    proposal_assessment_start: datetime | None
-    assessment_qa_start: datetime | None
-    snapshot_start: datetime | None
-    voting_start: datetime | None
-    voting_end: datetime | None
-    tallying_end: datetime | None
+    insight_sharing_start: datetime | None = None
+    proposal_submission_start: datetime | None = None
+    refine_proposals_start: datetime | None = None
+    finalize_proposals_start: datetime | None = None
+    proposal_assessment_start: datetime | None = None
+    assessment_qa_start: datetime | None = None
+    snapshot_start: datetime | None = None
+    voting_start: datetime | None = None
+    voting_end: datetime | None = None
+    tallying_end: datetime | None = None
 
-    block0: bytes | None
-    block0_hash: str | None
+    block0: bytes | None = None
+    block0_hash: str | None = None
 
-    committee_size: int
-    committee_threshold: int
-
-    extra: Mapping[str, Any] | None
-    cast_to: Mapping[str, Any] | None
+    extra: Mapping[str, Any] | None = None
+    cast_to: Mapping[str, Any] | None = None
 
     def get_start_time(self) -> datetime:
         """Get the timestamp for the event start time.

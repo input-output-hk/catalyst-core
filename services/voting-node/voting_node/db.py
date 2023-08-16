@@ -18,8 +18,8 @@ class EventDb(BaseModel):
     Each method that queries the EventDB opens and closes its own connection.
     """
 
+    db_url: str = ""
     connection: Connection | None = None
-    db_url: str
 
     class Config:
         """Pydantic model configuration parameters."""
@@ -155,7 +155,7 @@ class EventDb(BaseModel):
 
         if result is None:
             raise Exception("proposals DB error")
-        logger.debug(f"proposals retrieved from DB", objective=objective_id)
+        logger.debug("proposals retrieved from DB", objective=objective_id)
         match result:
             case None:
                 raise Exception("DB error fetching proposals")

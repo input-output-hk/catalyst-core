@@ -3,12 +3,10 @@
 Scheduled tasks are defined for Leader and Follower Nodes, with Leader0 being a special case,
 as it is the only one responsible for initializing block0 for a voting event.
 """
-import json
 import os
 import secrets
 from typing import Final, Mapping, NoReturn
 
-import brotli
 from loguru import logger
 
 from . import utils
@@ -162,19 +160,19 @@ class NodeTaskSchedule(ScheduleRunner):
     """
 
     # runtime settings for the service
-    settings: ServiceSettings
+    settings: ServiceSettings = ServiceSettings()
     # connection to DB
-    db: EventDb
+    db: EventDb = EventDb()
     # Voting Node data
     node: BaseNode = BaseNode()
     # List of tasks that the schedule should run. The name of each task must
     # match the name of method to execute.
     tasks: list[str] = []
 
-    def __init__(self, settings: ServiceSettings) -> None:
+    def __init__(self, settings: ServiceSettings = ServiceSettings()) -> None:
         """Set the schedule settings, bootstraps node storage, and initializes the node."""
         self.settings = settings
-        self.db = EventDb(db_url=settings.db_url)
+        self.db.db_url = settings.db_url
         self.node.set_file_storage(settings.storage)
 
     def reset_data(self) -> None:

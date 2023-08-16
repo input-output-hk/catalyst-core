@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["GenesisError","VrfError","VrfEvalFailure"],"mod":["vrfeval"],"struct":["LeadershipData","Threshold"],"type":["Witness","WitnessOutput"]};

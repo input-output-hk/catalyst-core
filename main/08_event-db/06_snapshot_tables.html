@@ -157,597 +157,597 @@
 <li>The record of all votes cast by voters.</li>
 </ul>
 <h2 id="snapshot--vote-table-diagram"><a class="header" href="#snapshot--vote-table-diagram">Snapshot &amp; Vote Table Diagram</a></h2>
-<pre><svg width="1842pt" height="1442pt"
- viewBox="0.00 0.00 1842.00 1442.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 1438)">
+<pre><svg width="1959pt" height="1429pt"
+ viewBox="0.00 0.00 1959.00 1428.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 1424.5)">
 <title>erd</title>
-<polygon fill="white" stroke="none" points="-4,4 -4,-1438 1838,-1438 1838,4 -4,4"/>
-<text text-anchor="middle" x="917" y="-1401.5" font-family="Times,serif" font-size="30.00" fill="blue">Catalyst Event Database &#45; Snapshot</text>
+<polygon fill="white" stroke="none" points="-4,4 -4,-1424.5 1955,-1424.5 1955,4 -4,4"/>
+<text text-anchor="middle" x="975.5" y="-1388" font-family="Times,serif" font-size="30.00" fill="blue">Catalyst Event Database &#45; Snapshot</text>
 <!-- ballot -->
 <g id="node1" class="node">
 <title>ballot</title>
-<polygon fill="#009879" stroke="none" points="0,-890 0,-920 484,-920 484,-890 0,-890"/>
-<polygon fill="none" stroke="black" points="0,-890 0,-920 484,-920 484,-890 0,-890"/>
-<text text-anchor="start" x="214.5" y="-899" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">ballot</text>
-<polygon fill="none" stroke="black" points="0,-863 0,-890 95,-890 95,-863 0,-863"/>
-<text text-anchor="start" x="13" y="-870.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="95,-863 95,-890 168,-890 168,-863 95,-863"/>
-<text text-anchor="start" x="111" y="-870.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
-<polygon fill="none" stroke="black" points="168,-863 168,-890 484,-890 484,-863 168,-863"/>
-<text text-anchor="start" x="275.5" y="-870.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
-<polygon fill="#54ff9f" stroke="none" points="0,-838 0,-863 95,-863 95,-838 0,-838"/>
-<polygon fill="none" stroke="black" points="0,-838 0,-863 95,-863 95,-838 0,-838"/>
-<text text-anchor="start" x="3" y="-844.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#54ff9f" stroke="none" points="95,-838 95,-863 168,-863 168,-838 95,-838"/>
-<polygon fill="none" stroke="black" points="95,-838 95,-863 168,-863 168,-838 95,-838"/>
-<text text-anchor="start" x="108.5" y="-844.8" font-family="Times,serif" font-size="16.00">bigint+</text>
-<polygon fill="#54ff9f" stroke="none" points="168,-838 168,-863 484,-863 484,-838 168,-838"/>
-<polygon fill="none" stroke="black" points="168,-838 168,-863 484,-863 484,-838 168,-838"/>
-<text text-anchor="start" x="171" y="-846.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
-<polygon fill="none" stroke="black" points="0,-804 0,-838 95,-838 95,-804 0,-804"/>
-<text text-anchor="start" x="3" y="-815.4" font-family="Times,serif" font-size="16.00">objective</text>
-<polygon fill="none" stroke="black" points="95,-804 95,-838 168,-838 168,-804 95,-804"/>
-<text text-anchor="start" x="109.5" y="-815.4" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="168,-804 168,-838 484,-838 484,-804 168,-804"/>
-<text text-anchor="start" x="171" y="-822.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Reference to the Objective the ballot</text>
-<text text-anchor="start" x="171" y="-808.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">was for.</text>
-<polygon fill="none" stroke="black" points="0,-742 0,-804 95,-804 95,-742 0,-742"/>
-<text text-anchor="start" x="3" y="-767.4" font-family="Times,serif" font-size="16.00">proposal</text>
-<polygon fill="none" stroke="black" points="95,-742 95,-804 168,-804 168,-742 95,-742"/>
-<text text-anchor="start" x="109.5" y="-768.4" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="168,-742 168,-804 484,-804 484,-742 168,-742"/>
-<text text-anchor="start" x="171" y="-788.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Reference to the Proposal the ballot</text>
-<text text-anchor="start" x="171" y="-774.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">was for.</text>
-<text text-anchor="start" x="171" y="-760.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">May be NULL if this ballot covers ALL</text>
-<text text-anchor="start" x="171" y="-746.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">proposals in the challenge.</text>
-<polygon fill="none" stroke="black" points="0,-708 0,-742 95,-742 95,-708 0,-708"/>
-<text text-anchor="start" x="3" y="-719.4" font-family="Times,serif" font-size="16.00">voter</text>
-<polygon fill="none" stroke="black" points="95,-708 95,-742 168,-742 168,-708 95,-708"/>
-<text text-anchor="start" x="109.5" y="-719.4" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="168,-708 168,-742 484,-742 484,-708 168,-708"/>
-<text text-anchor="start" x="171" y="-726.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Reference to the Voter who cast the</text>
-<text text-anchor="start" x="171" y="-712.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ballot</text>
-<polygon fill="none" stroke="black" points="0,-683 0,-708 95,-708 95,-683 0,-683"/>
-<text text-anchor="start" x="3" y="-689.8" font-family="Times,serif" font-size="16.00">fragment_id</text>
-<polygon fill="none" stroke="black" points="95,-683 95,-708 168,-708 168,-683 95,-683"/>
-<text text-anchor="start" x="119.5" y="-689.8" font-family="Times,serif" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="168,-683 168,-708 484,-708 484,-683 168,-683"/>
-<text text-anchor="start" x="171" y="-691.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Unique ID of this Ballot</text>
-<polygon fill="none" stroke="black" points="0,-649 0,-683 95,-683 95,-649 0,-649"/>
-<text text-anchor="start" x="3" y="-660.4" font-family="Times,serif" font-size="16.00">cast_at</text>
-<polygon fill="none" stroke="black" points="95,-649 95,-683 168,-683 168,-649 95,-649"/>
-<text text-anchor="start" x="98" y="-660.4" font-family="Times,serif" font-size="16.00">timestamp</text>
-<polygon fill="none" stroke="black" points="168,-649 168,-683 484,-683 484,-649 168,-649"/>
-<text text-anchor="start" x="171" y="-667.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">When this ballot was recorded as</text>
-<text text-anchor="start" x="171" y="-653.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">properly cast</text>
-<polygon fill="none" stroke="black" points="0,-615 0,-649 95,-649 95,-615 0,-615"/>
-<text text-anchor="start" x="3" y="-626.4" font-family="Times,serif" font-size="16.00">choice</text>
-<polygon fill="none" stroke="black" points="95,-615 95,-649 168,-649 168,-615 95,-615"/>
-<text text-anchor="start" x="105.5" y="-627.4" font-family="Times,serif" font-style="italic" font-size="16.00">smallint</text>
-<polygon fill="none" stroke="black" points="168,-615 168,-649 484,-649 484,-615 168,-615"/>
-<text text-anchor="start" x="171" y="-633.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">If a public vote, the choice on the</text>
-<text text-anchor="start" x="171" y="-619.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ballot, otherwise NULL.</text>
-<polygon fill="none" stroke="black" points="0,-590 0,-615 95,-615 95,-590 0,-590"/>
-<text text-anchor="start" x="3" y="-596.8" font-family="Times,serif" font-size="16.00">raw_fragment</text>
-<polygon fill="none" stroke="black" points="95,-590 95,-615 168,-615 168,-590 95,-590"/>
-<text text-anchor="start" x="114.5" y="-596.8" font-family="Times,serif" font-size="16.00">bytea</text>
-<polygon fill="none" stroke="black" points="168,-590 168,-615 484,-615 484,-590 168,-590"/>
-<text text-anchor="start" x="171" y="-598.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The raw ballot record.</text>
-<polygon fill="#333333" stroke="none" points="0,-568 0,-590 484,-590 484,-568 0,-568"/>
-<polygon fill="none" stroke="black" points="0,-568 0,-590 484,-590 484,-568 0,-568"/>
-<text text-anchor="start" x="3" y="-574.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">All Ballots cast on an event.</text>
+<polygon fill="#009879" stroke="none" points="0,-892.5 0,-919.5 524,-919.5 524,-892.5 0,-892.5"/>
+<polygon fill="none" stroke="black" points="0,-892.5 0,-919.5 524,-919.5 524,-892.5 0,-892.5"/>
+<text text-anchor="start" x="226" y="-898.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">ballot</text>
+<polygon fill="none" stroke="black" points="0,-868.5 0,-892.5 120,-892.5 120,-868.5 0,-868.5"/>
+<text text-anchor="start" x="28.5" y="-873.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="120,-868.5 120,-892.5 213,-892.5 213,-868.5 120,-868.5"/>
+<text text-anchor="start" x="145.5" y="-873.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="213,-868.5 213,-892.5 524,-892.5 524,-868.5 213,-868.5"/>
+<text text-anchor="start" x="310.75" y="-873.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="0,-843.5 0,-868.5 120,-868.5 120,-843.5 0,-843.5"/>
+<polygon fill="none" stroke="black" points="0,-843.5 0,-868.5 120,-868.5 120,-843.5 0,-843.5"/>
+<text text-anchor="start" x="3" y="-850.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="120,-843.5 120,-868.5 213,-868.5 213,-843.5 120,-843.5"/>
+<polygon fill="none" stroke="black" points="120,-843.5 120,-868.5 213,-868.5 213,-843.5 120,-843.5"/>
+<text text-anchor="start" x="135.38" y="-850.3" font-family="Times,serif" font-size="16.00">bigint+</text>
+<polygon fill="#54ff9f" stroke="none" points="213,-843.5 213,-868.5 524,-868.5 524,-843.5 213,-843.5"/>
+<polygon fill="none" stroke="black" points="213,-843.5 213,-868.5 524,-868.5 524,-843.5 213,-843.5"/>
+<text text-anchor="start" x="216" y="-852.33" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="none" stroke="black" points="0,-809.5 0,-843.5 120,-843.5 120,-809.5 0,-809.5"/>
+<text text-anchor="start" x="3" y="-821.05" font-family="Times,serif" font-size="16.00">objective</text>
+<polygon fill="none" stroke="black" points="120,-809.5 120,-843.5 213,-843.5 213,-809.5 120,-809.5"/>
+<text text-anchor="start" x="136.5" y="-821.05" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="213,-809.5 213,-843.5 524,-843.5 524,-809.5 213,-809.5"/>
+<text text-anchor="start" x="216" y="-828.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Reference to the Objective the ballot</text>
+<text text-anchor="start" x="216" y="-814.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">was for.</text>
+<polygon fill="none" stroke="black" points="0,-747.5 0,-809.5 120,-809.5 120,-747.5 0,-747.5"/>
+<text text-anchor="start" x="3" y="-773.05" font-family="Times,serif" font-size="16.00">proposal</text>
+<polygon fill="none" stroke="black" points="120,-747.5 120,-809.5 213,-809.5 213,-747.5 120,-747.5"/>
+<text text-anchor="start" x="136.5" y="-774.05" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="213,-747.5 213,-809.5 524,-809.5 524,-747.5 213,-747.5"/>
+<text text-anchor="start" x="216" y="-794.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Reference to the Proposal the ballot</text>
+<text text-anchor="start" x="216" y="-780.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">was for.</text>
+<text text-anchor="start" x="216" y="-766.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">May be NULL if this ballot covers ALL</text>
+<text text-anchor="start" x="216" y="-752.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">proposals in the challenge.</text>
+<polygon fill="none" stroke="black" points="0,-713.5 0,-747.5 120,-747.5 120,-713.5 0,-713.5"/>
+<text text-anchor="start" x="3" y="-725.05" font-family="Times,serif" font-size="16.00">voter</text>
+<polygon fill="none" stroke="black" points="120,-713.5 120,-747.5 213,-747.5 213,-713.5 120,-713.5"/>
+<text text-anchor="start" x="136.5" y="-725.05" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="213,-713.5 213,-747.5 524,-747.5 524,-713.5 213,-713.5"/>
+<text text-anchor="start" x="216" y="-732.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Reference to the Voter who cast the</text>
+<text text-anchor="start" x="216" y="-718.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ballot</text>
+<polygon fill="none" stroke="black" points="0,-688.5 0,-713.5 120,-713.5 120,-688.5 0,-688.5"/>
+<text text-anchor="start" x="3" y="-695.3" font-family="Times,serif" font-size="16.00">fragment_id</text>
+<polygon fill="none" stroke="black" points="120,-688.5 120,-713.5 213,-713.5 213,-688.5 120,-688.5"/>
+<text text-anchor="start" x="150.38" y="-695.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="213,-688.5 213,-713.5 524,-713.5 524,-688.5 213,-688.5"/>
+<text text-anchor="start" x="216" y="-697.33" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Unique ID of this Ballot</text>
+<polygon fill="none" stroke="black" points="0,-654.5 0,-688.5 120,-688.5 120,-654.5 0,-654.5"/>
+<text text-anchor="start" x="3" y="-666.05" font-family="Times,serif" font-size="16.00">cast_at</text>
+<polygon fill="none" stroke="black" points="120,-654.5 120,-688.5 213,-688.5 213,-654.5 120,-654.5"/>
+<text text-anchor="start" x="123" y="-666.05" font-family="Times,serif" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="213,-654.5 213,-688.5 524,-688.5 524,-654.5 213,-654.5"/>
+<text text-anchor="start" x="216" y="-673.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">When this ballot was recorded as</text>
+<text text-anchor="start" x="216" y="-659.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">properly cast</text>
+<polygon fill="none" stroke="black" points="0,-620.5 0,-654.5 120,-654.5 120,-620.5 0,-620.5"/>
+<text text-anchor="start" x="3" y="-632.05" font-family="Times,serif" font-size="16.00">choice</text>
+<polygon fill="none" stroke="black" points="120,-620.5 120,-654.5 213,-654.5 213,-620.5 120,-620.5"/>
+<text text-anchor="start" x="133.5" y="-633.05" font-family="Times,serif" font-style="italic" font-size="16.00">smallint</text>
+<polygon fill="none" stroke="black" points="213,-620.5 213,-654.5 524,-654.5 524,-620.5 213,-620.5"/>
+<text text-anchor="start" x="216" y="-639.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">If a public vote, the choice on the</text>
+<text text-anchor="start" x="216" y="-625.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ballot, otherwise NULL.</text>
+<polygon fill="none" stroke="black" points="0,-595.5 0,-620.5 120,-620.5 120,-595.5 0,-595.5"/>
+<text text-anchor="start" x="3" y="-602.3" font-family="Times,serif" font-size="16.00">raw_fragment</text>
+<polygon fill="none" stroke="black" points="120,-595.5 120,-620.5 213,-620.5 213,-595.5 120,-595.5"/>
+<text text-anchor="start" x="143.62" y="-602.3" font-family="Times,serif" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="213,-595.5 213,-620.5 524,-620.5 524,-595.5 213,-595.5"/>
+<text text-anchor="start" x="216" y="-604.33" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The raw ballot record.</text>
+<polygon fill="#333333" stroke="none" points="0,-572.5 0,-595.5 524,-595.5 524,-572.5 0,-572.5"/>
+<polygon fill="none" stroke="black" points="0,-572.5 0,-595.5 524,-595.5 524,-572.5 0,-572.5"/>
+<text text-anchor="start" x="3" y="-580.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">All Ballots cast on an event.</text>
 </g>
 <!-- voter -->
 <g id="node5" class="node">
 <title>voter</title>
-<polygon fill="#009879" stroke="none" points="547.5,-710 547.5,-740 1026.5,-740 1026.5,-710 547.5,-710"/>
-<polygon fill="none" stroke="black" points="547.5,-710 547.5,-740 1026.5,-740 1026.5,-710 547.5,-710"/>
-<text text-anchor="start" x="761" y="-719" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voter</text>
-<polygon fill="none" stroke="black" points="547.5,-683 547.5,-710 641.5,-710 641.5,-683 547.5,-683"/>
-<text text-anchor="start" x="560" y="-690.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="641.5,-683 641.5,-710 693.5,-710 693.5,-683 641.5,-683"/>
-<text text-anchor="start" x="647" y="-690.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
-<polygon fill="none" stroke="black" points="693.5,-683 693.5,-710 1026.5,-710 1026.5,-683 693.5,-683"/>
-<text text-anchor="start" x="809.5" y="-690.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
-<polygon fill="#54ff9f" stroke="none" points="547.5,-658 547.5,-683 641.5,-683 641.5,-658 547.5,-658"/>
-<polygon fill="none" stroke="black" points="547.5,-658 547.5,-683 641.5,-683 641.5,-658 547.5,-658"/>
-<text text-anchor="start" x="550.5" y="-664.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#54ff9f" stroke="none" points="641.5,-658 641.5,-683 693.5,-683 693.5,-658 641.5,-658"/>
-<polygon fill="none" stroke="black" points="641.5,-658 641.5,-683 693.5,-683 693.5,-658 641.5,-658"/>
-<text text-anchor="start" x="644.5" y="-664.8" font-family="Times,serif" font-size="16.00">bigint+</text>
-<polygon fill="#54ff9f" stroke="none" points="693.5,-658 693.5,-683 1026.5,-683 1026.5,-658 693.5,-658"/>
-<polygon fill="none" stroke="black" points="693.5,-658 693.5,-683 1026.5,-683 1026.5,-658 693.5,-658"/>
-<text text-anchor="start" x="696.5" y="-666.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
-<polygon fill="none" stroke="black" points="547.5,-633 547.5,-658 641.5,-658 641.5,-633 547.5,-633"/>
-<text text-anchor="start" x="550.5" y="-639.8" font-family="Times,serif" font-size="16.00">voting_key</text>
-<polygon fill="none" stroke="black" points="641.5,-633 641.5,-658 693.5,-658 693.5,-633 641.5,-633"/>
-<text text-anchor="start" x="655.5" y="-639.8" font-family="Times,serif" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="693.5,-633 693.5,-658 1026.5,-658 1026.5,-633 693.5,-633"/>
-<text text-anchor="start" x="696.5" y="-641.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Either the voting key.</text>
-<polygon fill="none" stroke="black" points="547.5,-599 547.5,-633 641.5,-633 641.5,-599 547.5,-599"/>
-<text text-anchor="start" x="550.5" y="-610.4" font-family="Times,serif" font-size="16.00">snapshot_id</text>
-<polygon fill="none" stroke="black" points="641.5,-599 641.5,-633 693.5,-633 693.5,-599 641.5,-599"/>
-<text text-anchor="start" x="645.5" y="-610.4" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="693.5,-599 693.5,-633 1026.5,-633 1026.5,-599 693.5,-599"/>
-<text text-anchor="start" x="696.5" y="-617.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The ID of the snapshot this record</text>
-<text text-anchor="start" x="696.5" y="-603.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">belongs to.</text>
-<polygon fill="none" stroke="black" points="547.5,-574 547.5,-599 641.5,-599 641.5,-574 547.5,-574"/>
-<text text-anchor="start" x="550.5" y="-580.8" font-family="Times,serif" font-size="16.00">voting_group</text>
-<polygon fill="none" stroke="black" points="641.5,-574 641.5,-599 693.5,-599 693.5,-574 641.5,-574"/>
-<text text-anchor="start" x="655.5" y="-580.8" font-family="Times,serif" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="693.5,-574 693.5,-599 1026.5,-599 1026.5,-574 693.5,-574"/>
-<text text-anchor="start" x="696.5" y="-582.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The voter group the voter belongs to.</text>
-<polygon fill="none" stroke="black" points="547.5,-540 547.5,-574 641.5,-574 641.5,-540 547.5,-540"/>
-<text text-anchor="start" x="550.5" y="-551.4" font-family="Times,serif" font-size="16.00">voting_power</text>
-<polygon fill="none" stroke="black" points="641.5,-540 641.5,-574 693.5,-574 693.5,-540 641.5,-540"/>
-<text text-anchor="start" x="649" y="-551.4" font-family="Times,serif" font-size="16.00">bigint</text>
-<polygon fill="none" stroke="black" points="693.5,-540 693.5,-574 1026.5,-574 1026.5,-540 693.5,-540"/>
-<text text-anchor="start" x="696.5" y="-558.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Calculated Voting Power associated with</text>
-<text text-anchor="start" x="696.5" y="-544.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">this key.</text>
-<polygon fill="#333333" stroke="none" points="547.5,-518 547.5,-540 1026.5,-540 1026.5,-518 547.5,-518"/>
-<polygon fill="none" stroke="black" points="547.5,-518 547.5,-540 1026.5,-540 1026.5,-518 547.5,-518"/>
-<text text-anchor="start" x="550.5" y="-524.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">Voting Power for every voting key.</text>
+<polygon fill="#009879" stroke="none" points="574.5,-714.5 574.5,-741.5 1086.5,-741.5 1086.5,-714.5 574.5,-714.5"/>
+<polygon fill="none" stroke="black" points="574.5,-714.5 574.5,-741.5 1086.5,-741.5 1086.5,-714.5 574.5,-714.5"/>
+<text text-anchor="start" x="800.5" y="-720.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voter</text>
+<polygon fill="none" stroke="black" points="574.5,-690.5 574.5,-714.5 691.5,-714.5 691.5,-690.5 574.5,-690.5"/>
+<text text-anchor="start" x="601.5" y="-695.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="691.5,-690.5 691.5,-714.5 759.5,-714.5 759.5,-690.5 691.5,-690.5"/>
+<text text-anchor="start" x="704.5" y="-695.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="759.5,-690.5 759.5,-714.5 1086.5,-714.5 1086.5,-690.5 759.5,-690.5"/>
+<text text-anchor="start" x="865.25" y="-695.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="574.5,-665.5 574.5,-690.5 691.5,-690.5 691.5,-665.5 574.5,-665.5"/>
+<polygon fill="none" stroke="black" points="574.5,-665.5 574.5,-690.5 691.5,-690.5 691.5,-665.5 574.5,-665.5"/>
+<text text-anchor="start" x="577.5" y="-672.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="691.5,-665.5 691.5,-690.5 759.5,-690.5 759.5,-665.5 691.5,-665.5"/>
+<polygon fill="none" stroke="black" points="691.5,-665.5 691.5,-690.5 759.5,-690.5 759.5,-665.5 691.5,-665.5"/>
+<text text-anchor="start" x="694.38" y="-672.3" font-family="Times,serif" font-size="16.00">bigint+</text>
+<polygon fill="#54ff9f" stroke="none" points="759.5,-665.5 759.5,-690.5 1086.5,-690.5 1086.5,-665.5 759.5,-665.5"/>
+<polygon fill="none" stroke="black" points="759.5,-665.5 759.5,-690.5 1086.5,-690.5 1086.5,-665.5 759.5,-665.5"/>
+<text text-anchor="start" x="762.5" y="-674.33" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="none" stroke="black" points="574.5,-640.5 574.5,-665.5 691.5,-665.5 691.5,-640.5 574.5,-640.5"/>
+<text text-anchor="start" x="577.5" y="-647.3" font-family="Times,serif" font-size="16.00">voting_key</text>
+<polygon fill="none" stroke="black" points="691.5,-640.5 691.5,-665.5 759.5,-665.5 759.5,-640.5 691.5,-640.5"/>
+<text text-anchor="start" x="709.38" y="-647.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="759.5,-640.5 759.5,-665.5 1086.5,-665.5 1086.5,-640.5 759.5,-640.5"/>
+<text text-anchor="start" x="762.5" y="-649.33" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Either the voting key.</text>
+<polygon fill="none" stroke="black" points="574.5,-606.5 574.5,-640.5 691.5,-640.5 691.5,-606.5 574.5,-606.5"/>
+<text text-anchor="start" x="577.5" y="-618.05" font-family="Times,serif" font-size="16.00">snapshot_id</text>
+<polygon fill="none" stroke="black" points="691.5,-606.5 691.5,-640.5 759.5,-640.5 759.5,-606.5 691.5,-606.5"/>
+<text text-anchor="start" x="695.5" y="-618.05" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="759.5,-606.5 759.5,-640.5 1086.5,-640.5 1086.5,-606.5 759.5,-606.5"/>
+<text text-anchor="start" x="762.5" y="-625.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The ID of the snapshot this record</text>
+<text text-anchor="start" x="762.5" y="-611.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">belongs to.</text>
+<polygon fill="none" stroke="black" points="574.5,-581.5 574.5,-606.5 691.5,-606.5 691.5,-581.5 574.5,-581.5"/>
+<text text-anchor="start" x="577.5" y="-588.3" font-family="Times,serif" font-size="16.00">voting_group</text>
+<polygon fill="none" stroke="black" points="691.5,-581.5 691.5,-606.5 759.5,-606.5 759.5,-581.5 691.5,-581.5"/>
+<text text-anchor="start" x="709.38" y="-588.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="759.5,-581.5 759.5,-606.5 1086.5,-606.5 1086.5,-581.5 759.5,-581.5"/>
+<text text-anchor="start" x="762.5" y="-590.33" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The voter group the voter belongs to.</text>
+<polygon fill="none" stroke="black" points="574.5,-547.5 574.5,-581.5 691.5,-581.5 691.5,-547.5 574.5,-547.5"/>
+<text text-anchor="start" x="577.5" y="-559.05" font-family="Times,serif" font-size="16.00">voting_power</text>
+<polygon fill="none" stroke="black" points="691.5,-547.5 691.5,-581.5 759.5,-581.5 759.5,-547.5 691.5,-547.5"/>
+<text text-anchor="start" x="701.12" y="-559.05" font-family="Times,serif" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="759.5,-547.5 759.5,-581.5 1086.5,-581.5 1086.5,-547.5 759.5,-547.5"/>
+<text text-anchor="start" x="762.5" y="-566.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Calculated Voting Power associated with</text>
+<text text-anchor="start" x="762.5" y="-552.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">this key.</text>
+<polygon fill="#333333" stroke="none" points="574.5,-524.5 574.5,-547.5 1086.5,-547.5 1086.5,-524.5 574.5,-524.5"/>
+<polygon fill="none" stroke="black" points="574.5,-524.5 574.5,-547.5 1086.5,-547.5 1086.5,-524.5 574.5,-524.5"/>
+<text text-anchor="start" x="577.5" y="-532.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">Voting Power for every voting key.</text>
 </g>
 <!-- ballot&#45;&gt;voter -->
 <g id="edge7" class="edge">
 <title>ballot:voter_out&#45;&gt;voter:row_id</title>
-<path fill="none" stroke="black" d="M484,-725C516.4,-725 511.36,-682.54 535.28,-672.92"/>
-<polygon fill="black" stroke="black" points="535.77,-676.21 545,-671 534.54,-669.32 535.77,-676.21"/>
+<path fill="none" stroke="black" d="M524,-730C551.67,-730 544.58,-690.9 563.02,-680.51"/>
+<polygon fill="black" stroke="black" points="563.59,-683.73 572.5,-678 561.96,-676.92 563.59,-683.73"/>
 </g>
 <!-- objective -->
 <g id="node7" class="node">
 <title>objective</title>
-<polygon fill="#009879" stroke="none" points="738.5,-836 738.5,-866 835.5,-866 835.5,-836 738.5,-836"/>
-<polygon fill="none" stroke="black" points="738.5,-836 738.5,-866 835.5,-866 835.5,-836 738.5,-836"/>
-<text text-anchor="start" x="741.5" y="-845" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">objective</text>
-<polygon fill="none" stroke="black" points="738.5,-809 738.5,-836 835.5,-836 835.5,-809 738.5,-809"/>
-<text text-anchor="start" x="752.5" y="-816.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="738.5,-784 738.5,-809 835.5,-809 835.5,-784 738.5,-784"/>
-<text text-anchor="start" x="741.5" y="-790.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#333333" stroke="none" points="738.5,-762 738.5,-784 835.5,-784 835.5,-762 738.5,-762"/>
-<polygon fill="none" stroke="black" points="738.5,-762 738.5,-784 835.5,-784 835.5,-762 738.5,-762"/>
-<text text-anchor="start" x="741.5" y="-768.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+<polygon fill="#009879" stroke="none" points="773.5,-835.5 773.5,-862.5 887.5,-862.5 887.5,-835.5 773.5,-835.5"/>
+<polygon fill="none" stroke="black" points="773.5,-835.5 773.5,-862.5 887.5,-862.5 887.5,-835.5 773.5,-835.5"/>
+<text text-anchor="start" x="776.5" y="-841.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">objective</text>
+<polygon fill="none" stroke="black" points="773.5,-811.5 773.5,-835.5 887.5,-835.5 887.5,-811.5 773.5,-811.5"/>
+<text text-anchor="start" x="799" y="-816.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="773.5,-786.5 773.5,-811.5 887.5,-811.5 887.5,-786.5 773.5,-786.5"/>
+<text text-anchor="start" x="776.5" y="-793.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#333333" stroke="none" points="773.5,-763.5 773.5,-786.5 887.5,-786.5 887.5,-763.5 773.5,-763.5"/>
+<polygon fill="none" stroke="black" points="773.5,-763.5 773.5,-786.5 887.5,-786.5 887.5,-763.5 773.5,-763.5"/>
+<text text-anchor="start" x="776.5" y="-771.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
 </g>
 <!-- ballot&#45;&gt;objective -->
 <g id="edge8" class="edge">
 <title>ballot:objective_out&#45;&gt;objective:row_id</title>
-<path fill="none" stroke="black" d="M484,-821C593.24,-821 622.12,-797.63 726.02,-796.08"/>
-<polygon fill="black" stroke="black" points="726.03,-799.57 736,-796 725.97,-792.57 726.03,-799.57"/>
+<path fill="none" stroke="black" d="M524,-827C631.45,-827 659.52,-800.83 761.7,-799.09"/>
+<polygon fill="black" stroke="black" points="761.53,-802.58 771.5,-799 761.47,-795.58 761.53,-802.58"/>
 </g>
 <!-- proposal -->
 <g id="node8" class="node">
 <title>proposal</title>
-<polygon fill="#009879" stroke="none" points="742,-966 742,-996 832,-996 832,-966 742,-966"/>
-<polygon fill="none" stroke="black" points="742,-966 742,-996 832,-996 832,-966 742,-966"/>
-<text text-anchor="start" x="745" y="-975" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal</text>
-<polygon fill="none" stroke="black" points="742,-939 742,-966 832,-966 832,-939 742,-939"/>
-<text text-anchor="start" x="752.5" y="-946.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="742,-914 742,-939 832,-939 832,-914 742,-914"/>
-<text text-anchor="start" x="745" y="-920.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#333333" stroke="none" points="742,-892 742,-914 832,-914 832,-892 742,-892"/>
-<polygon fill="none" stroke="black" points="742,-892 742,-914 832,-914 832,-892 742,-892"/>
-<text text-anchor="start" x="745" y="-898.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+<polygon fill="#009879" stroke="none" points="779.5,-960.5 779.5,-987.5 881.5,-987.5 881.5,-960.5 779.5,-960.5"/>
+<polygon fill="none" stroke="black" points="779.5,-960.5 779.5,-987.5 881.5,-987.5 881.5,-960.5 779.5,-960.5"/>
+<text text-anchor="start" x="782.5" y="-966.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal</text>
+<polygon fill="none" stroke="black" points="779.5,-936.5 779.5,-960.5 881.5,-960.5 881.5,-936.5 779.5,-936.5"/>
+<text text-anchor="start" x="799" y="-941.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="779.5,-911.5 779.5,-936.5 881.5,-936.5 881.5,-911.5 779.5,-911.5"/>
+<text text-anchor="start" x="782.5" y="-918.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#333333" stroke="none" points="779.5,-888.5 779.5,-911.5 881.5,-911.5 881.5,-888.5 779.5,-888.5"/>
+<polygon fill="none" stroke="black" points="779.5,-888.5 779.5,-911.5 881.5,-911.5 881.5,-888.5 779.5,-888.5"/>
+<text text-anchor="start" x="782.5" y="-896.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
 </g>
 <!-- ballot&#45;&gt;proposal -->
 <g id="edge9" class="edge">
 <title>ballot:proposal_out&#45;&gt;proposal:row_id</title>
-<path fill="none" stroke="black" d="M484,-773C533.75,-773 482.81,-845.95 520,-879 592.28,-943.23 637.16,-927.34 730.04,-926.08"/>
-<polygon fill="black" stroke="black" points="730.02,-929.57 740,-926 729.98,-922.57 730.02,-929.57"/>
+<path fill="none" stroke="black" d="M524,-779C569.98,-779 525.3,-845.82 560,-876 632.24,-938.83 675.76,-925.17 767.66,-924.07"/>
+<polygon fill="black" stroke="black" points="767.52,-927.56 777.5,-924 767.48,-920.56 767.52,-927.56"/>
 </g>
 <!-- contribution -->
 <g id="node2" class="node">
 <title>contribution</title>
-<polygon fill="#009879" stroke="none" points="520,-1360 520,-1390 1054,-1390 1054,-1360 520,-1360"/>
-<polygon fill="none" stroke="black" points="520,-1360 520,-1390 1054,-1390 1054,-1360 520,-1360"/>
-<text text-anchor="start" x="726.5" y="-1369" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">contribution</text>
-<polygon fill="none" stroke="black" points="520,-1333 520,-1360 653,-1360 653,-1333 520,-1333"/>
-<text text-anchor="start" x="552" y="-1340.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="653,-1333 653,-1360 713,-1360 713,-1333 653,-1333"/>
-<text text-anchor="start" x="662.5" y="-1340.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
-<polygon fill="none" stroke="black" points="713,-1333 713,-1360 1054,-1360 1054,-1333 713,-1333"/>
-<text text-anchor="start" x="833" y="-1340.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
-<polygon fill="#54ff9f" stroke="none" points="520,-1308 520,-1333 653,-1333 653,-1308 520,-1308"/>
-<polygon fill="none" stroke="black" points="520,-1308 520,-1333 653,-1333 653,-1308 520,-1308"/>
-<text text-anchor="start" x="523" y="-1314.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#54ff9f" stroke="none" points="653,-1308 653,-1333 713,-1333 713,-1308 653,-1308"/>
-<polygon fill="none" stroke="black" points="653,-1308 653,-1333 713,-1333 713,-1308 653,-1308"/>
-<text text-anchor="start" x="660" y="-1314.8" font-family="Times,serif" font-size="16.00">bigint+</text>
-<polygon fill="#54ff9f" stroke="none" points="713,-1308 713,-1333 1054,-1333 1054,-1308 713,-1308"/>
-<polygon fill="none" stroke="black" points="713,-1308 713,-1333 1054,-1333 1054,-1308 713,-1308"/>
-<text text-anchor="start" x="716" y="-1316.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic Unique Row Key</text>
-<polygon fill="none" stroke="black" points="520,-1283 520,-1308 653,-1308 653,-1283 520,-1283"/>
-<text text-anchor="start" x="523" y="-1289.8" font-family="Times,serif" font-size="16.00">stake_public_key</text>
-<polygon fill="none" stroke="black" points="653,-1283 653,-1308 713,-1308 713,-1283 653,-1283"/>
-<text text-anchor="start" x="671" y="-1289.8" font-family="Times,serif" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="713,-1283 713,-1308 1054,-1308 1054,-1283 713,-1283"/>
-<text text-anchor="start" x="716" y="-1291.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The voters Stake Public Key</text>
-<polygon fill="none" stroke="black" points="520,-1249 520,-1283 653,-1283 653,-1249 520,-1249"/>
-<text text-anchor="start" x="523" y="-1260.4" font-family="Times,serif" font-size="16.00">snapshot_id</text>
-<polygon fill="none" stroke="black" points="653,-1249 653,-1283 713,-1283 713,-1249 653,-1249"/>
-<text text-anchor="start" x="661" y="-1260.4" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="713,-1249 713,-1283 1054,-1283 1054,-1249 713,-1249"/>
-<text text-anchor="start" x="716" y="-1267.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The snapshot this contribution was</text>
-<text text-anchor="start" x="716" y="-1253.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">recorded from.</text>
-<polygon fill="none" stroke="black" points="520,-1215 520,-1249 653,-1249 653,-1215 520,-1215"/>
-<text text-anchor="start" x="523" y="-1226.4" font-family="Times,serif" font-size="16.00">voting_key</text>
-<polygon fill="none" stroke="black" points="653,-1215 653,-1249 713,-1249 713,-1215 653,-1215"/>
-<text text-anchor="start" x="671" y="-1227.4" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="713,-1215 713,-1249 1054,-1249 1054,-1215 713,-1215"/>
-<text text-anchor="start" x="716" y="-1233.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The voting key. &#160;If this is NULL it is</text>
-<text text-anchor="start" x="716" y="-1219.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the raw staked ADA.</text>
-<polygon fill="none" stroke="black" points="520,-1181 520,-1215 653,-1215 653,-1181 520,-1181"/>
-<text text-anchor="start" x="523" y="-1192.4" font-family="Times,serif" font-size="16.00">voting_weight</text>
-<polygon fill="none" stroke="black" points="653,-1181 653,-1215 713,-1215 713,-1181 653,-1181"/>
-<text text-anchor="start" x="661" y="-1193.4" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="713,-1181 713,-1215 1054,-1215 1054,-1181 713,-1181"/>
-<text text-anchor="start" x="716" y="-1199.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The weight this voting key gets of the</text>
-<text text-anchor="start" x="716" y="-1185.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">total.</text>
-<polygon fill="none" stroke="black" points="520,-1147 520,-1181 653,-1181 653,-1147 520,-1147"/>
-<text text-anchor="start" x="523" y="-1158.4" font-family="Times,serif" font-size="16.00">voting_key_idx</text>
-<polygon fill="none" stroke="black" points="653,-1147 653,-1181 713,-1181 713,-1147 653,-1147"/>
-<text text-anchor="start" x="661" y="-1159.4" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="713,-1147 713,-1181 1054,-1181 1054,-1147 713,-1147"/>
-<text text-anchor="start" x="716" y="-1165.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The index from 0 of the keys in the</text>
-<text text-anchor="start" x="716" y="-1151.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">delegation array.</text>
-<polygon fill="none" stroke="black" points="520,-1113 520,-1147 653,-1147 653,-1113 520,-1113"/>
-<text text-anchor="start" x="523" y="-1124.4" font-family="Times,serif" font-size="16.00">value</text>
-<polygon fill="none" stroke="black" points="653,-1113 653,-1147 713,-1147 713,-1113 653,-1113"/>
-<text text-anchor="start" x="664.5" y="-1124.4" font-family="Times,serif" font-size="16.00">bigint</text>
-<polygon fill="none" stroke="black" points="713,-1113 713,-1147 1054,-1147 1054,-1113 713,-1113"/>
-<text text-anchor="start" x="716" y="-1131.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The amount of ADA contributed to this</text>
-<text text-anchor="start" x="716" y="-1117.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">voting key from the stake address</text>
-<polygon fill="none" stroke="black" points="520,-1088 520,-1113 653,-1113 653,-1088 520,-1088"/>
-<text text-anchor="start" x="523" y="-1094.8" font-family="Times,serif" font-size="16.00">voting_group</text>
-<polygon fill="none" stroke="black" points="653,-1088 653,-1113 713,-1113 713,-1088 653,-1088"/>
-<text text-anchor="start" x="671" y="-1094.8" font-family="Times,serif" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="713,-1088 713,-1113 1054,-1113 1054,-1088 713,-1088"/>
-<text text-anchor="start" x="716" y="-1096.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The group this contribution goes to.</text>
-<polygon fill="none" stroke="black" points="520,-1040 520,-1088 653,-1088 653,-1040 520,-1040"/>
-<text text-anchor="start" x="523" y="-1058.4" font-family="Times,serif" font-size="16.00">reward_address</text>
-<polygon fill="none" stroke="black" points="653,-1040 653,-1088 713,-1088 713,-1040 653,-1040"/>
-<text text-anchor="start" x="671" y="-1059.4" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="713,-1040 713,-1088 1054,-1088 1054,-1040 713,-1040"/>
-<text text-anchor="start" x="716" y="-1072.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Currently Unused. &#160;Should be the Stake</text>
-<text text-anchor="start" x="716" y="-1058.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Rewards address of the voter (currently</text>
-<text text-anchor="start" x="716" y="-1044.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">unknown.)</text>
-<polygon fill="#333333" stroke="none" points="520,-1018 520,-1040 1054,-1040 1054,-1018 520,-1018"/>
-<polygon fill="none" stroke="black" points="520,-1018 520,-1040 1054,-1040 1054,-1018 520,-1018"/>
-<text text-anchor="start" x="523" y="-1024.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">Individual Contributions from stake public keys to voting keys.</text>
+<polygon fill="#009879" stroke="none" points="560,-1349.5 560,-1376.5 1101,-1376.5 1101,-1349.5 560,-1349.5"/>
+<polygon fill="none" stroke="black" points="560,-1349.5 560,-1376.5 1101,-1376.5 1101,-1349.5 560,-1349.5"/>
+<text text-anchor="start" x="758.5" y="-1355.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">contribution</text>
+<polygon fill="none" stroke="black" points="560,-1325.5 560,-1349.5 706,-1349.5 706,-1325.5 560,-1325.5"/>
+<text text-anchor="start" x="601.5" y="-1330.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="706,-1325.5 706,-1349.5 774,-1349.5 774,-1325.5 706,-1325.5"/>
+<text text-anchor="start" x="719" y="-1330.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="774,-1325.5 774,-1349.5 1101,-1349.5 1101,-1325.5 774,-1325.5"/>
+<text text-anchor="start" x="879.75" y="-1330.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="560,-1300.5 560,-1325.5 706,-1325.5 706,-1300.5 560,-1300.5"/>
+<polygon fill="none" stroke="black" points="560,-1300.5 560,-1325.5 706,-1325.5 706,-1300.5 560,-1300.5"/>
+<text text-anchor="start" x="563" y="-1307.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="706,-1300.5 706,-1325.5 774,-1325.5 774,-1300.5 706,-1300.5"/>
+<polygon fill="none" stroke="black" points="706,-1300.5 706,-1325.5 774,-1325.5 774,-1300.5 706,-1300.5"/>
+<text text-anchor="start" x="708.88" y="-1307.3" font-family="Times,serif" font-size="16.00">bigint+</text>
+<polygon fill="#54ff9f" stroke="none" points="774,-1300.5 774,-1325.5 1101,-1325.5 1101,-1300.5 774,-1300.5"/>
+<polygon fill="none" stroke="black" points="774,-1300.5 774,-1325.5 1101,-1325.5 1101,-1300.5 774,-1300.5"/>
+<text text-anchor="start" x="777" y="-1309.33" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic Unique Row Key</text>
+<polygon fill="none" stroke="black" points="560,-1275.5 560,-1300.5 706,-1300.5 706,-1275.5 560,-1275.5"/>
+<text text-anchor="start" x="563" y="-1282.3" font-family="Times,serif" font-size="16.00">stake_public_key</text>
+<polygon fill="none" stroke="black" points="706,-1275.5 706,-1300.5 774,-1300.5 774,-1275.5 706,-1275.5"/>
+<text text-anchor="start" x="723.88" y="-1282.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="774,-1275.5 774,-1300.5 1101,-1300.5 1101,-1275.5 774,-1275.5"/>
+<text text-anchor="start" x="777" y="-1284.33" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The voters Stake Public Key</text>
+<polygon fill="none" stroke="black" points="560,-1241.5 560,-1275.5 706,-1275.5 706,-1241.5 560,-1241.5"/>
+<text text-anchor="start" x="563" y="-1253.05" font-family="Times,serif" font-size="16.00">snapshot_id</text>
+<polygon fill="none" stroke="black" points="706,-1241.5 706,-1275.5 774,-1275.5 774,-1241.5 706,-1241.5"/>
+<text text-anchor="start" x="710" y="-1253.05" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="774,-1241.5 774,-1275.5 1101,-1275.5 1101,-1241.5 774,-1241.5"/>
+<text text-anchor="start" x="777" y="-1260.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The snapshot this contribution was</text>
+<text text-anchor="start" x="777" y="-1246.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">recorded from.</text>
+<polygon fill="none" stroke="black" points="560,-1207.5 560,-1241.5 706,-1241.5 706,-1207.5 560,-1207.5"/>
+<text text-anchor="start" x="563" y="-1219.05" font-family="Times,serif" font-size="16.00">voting_key</text>
+<polygon fill="none" stroke="black" points="706,-1207.5 706,-1241.5 774,-1241.5 774,-1207.5 706,-1207.5"/>
+<text text-anchor="start" x="723.88" y="-1220.05" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="774,-1207.5 774,-1241.5 1101,-1241.5 1101,-1207.5 774,-1207.5"/>
+<text text-anchor="start" x="777" y="-1226.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The voting key. &#160;If this is NULL it is</text>
+<text text-anchor="start" x="777" y="-1212.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the raw staked ADA.</text>
+<polygon fill="none" stroke="black" points="560,-1173.5 560,-1207.5 706,-1207.5 706,-1173.5 560,-1173.5"/>
+<text text-anchor="start" x="563" y="-1185.05" font-family="Times,serif" font-size="16.00">voting_weight</text>
+<polygon fill="none" stroke="black" points="706,-1173.5 706,-1207.5 774,-1207.5 774,-1173.5 706,-1173.5"/>
+<text text-anchor="start" x="710" y="-1186.05" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="774,-1173.5 774,-1207.5 1101,-1207.5 1101,-1173.5 774,-1173.5"/>
+<text text-anchor="start" x="777" y="-1192.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The weight this voting key gets of the</text>
+<text text-anchor="start" x="777" y="-1178.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">total.</text>
+<polygon fill="none" stroke="black" points="560,-1139.5 560,-1173.5 706,-1173.5 706,-1139.5 560,-1139.5"/>
+<text text-anchor="start" x="563" y="-1151.05" font-family="Times,serif" font-size="16.00">voting_key_idx</text>
+<polygon fill="none" stroke="black" points="706,-1139.5 706,-1173.5 774,-1173.5 774,-1139.5 706,-1139.5"/>
+<text text-anchor="start" x="710" y="-1152.05" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="774,-1139.5 774,-1173.5 1101,-1173.5 1101,-1139.5 774,-1139.5"/>
+<text text-anchor="start" x="777" y="-1158.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The index from 0 of the keys in the</text>
+<text text-anchor="start" x="777" y="-1144.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">delegation array.</text>
+<polygon fill="none" stroke="black" points="560,-1105.5 560,-1139.5 706,-1139.5 706,-1105.5 560,-1105.5"/>
+<text text-anchor="start" x="563" y="-1117.05" font-family="Times,serif" font-size="16.00">value</text>
+<polygon fill="none" stroke="black" points="706,-1105.5 706,-1139.5 774,-1139.5 774,-1105.5 706,-1105.5"/>
+<text text-anchor="start" x="715.62" y="-1117.05" font-family="Times,serif" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="774,-1105.5 774,-1139.5 1101,-1139.5 1101,-1105.5 774,-1105.5"/>
+<text text-anchor="start" x="777" y="-1124.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The amount of ADA contributed to this</text>
+<text text-anchor="start" x="777" y="-1110.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">voting key from the stake address</text>
+<polygon fill="none" stroke="black" points="560,-1080.5 560,-1105.5 706,-1105.5 706,-1080.5 560,-1080.5"/>
+<text text-anchor="start" x="563" y="-1087.3" font-family="Times,serif" font-size="16.00">voting_group</text>
+<polygon fill="none" stroke="black" points="706,-1080.5 706,-1105.5 774,-1105.5 774,-1080.5 706,-1080.5"/>
+<text text-anchor="start" x="723.88" y="-1087.3" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="774,-1080.5 774,-1105.5 1101,-1105.5 1101,-1080.5 774,-1080.5"/>
+<text text-anchor="start" x="777" y="-1089.33" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The group this contribution goes to.</text>
+<polygon fill="none" stroke="black" points="560,-1032.5 560,-1080.5 706,-1080.5 706,-1032.5 560,-1032.5"/>
+<text text-anchor="start" x="563" y="-1051.05" font-family="Times,serif" font-size="16.00">reward_address</text>
+<polygon fill="none" stroke="black" points="706,-1032.5 706,-1080.5 774,-1080.5 774,-1032.5 706,-1032.5"/>
+<text text-anchor="start" x="723.88" y="-1052.05" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="774,-1032.5 774,-1080.5 1101,-1080.5 1101,-1032.5 774,-1032.5"/>
+<text text-anchor="start" x="777" y="-1065.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Currently Unused. &#160;Should be the Stake</text>
+<text text-anchor="start" x="777" y="-1051.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Rewards address of the voter (currently</text>
+<text text-anchor="start" x="777" y="-1037.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">unknown.)</text>
+<polygon fill="#333333" stroke="none" points="560,-1009.5 560,-1032.5 1101,-1032.5 1101,-1009.5 560,-1009.5"/>
+<polygon fill="none" stroke="black" points="560,-1009.5 560,-1032.5 1101,-1032.5 1101,-1009.5 560,-1009.5"/>
+<text text-anchor="start" x="563" y="-1017.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">Individual Contributions from stake public keys to voting keys.</text>
 </g>
 <!-- snapshot -->
 <g id="node3" class="node">
 <title>snapshot</title>
-<polygon fill="#009879" stroke="none" points="1090,-980 1090,-1010 1707,-1010 1707,-980 1090,-980"/>
-<polygon fill="none" stroke="black" points="1090,-980 1090,-1010 1707,-1010 1707,-980 1090,-980"/>
-<text text-anchor="start" x="1353" y="-989" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">snapshot</text>
-<polygon fill="none" stroke="black" points="1090,-953 1090,-980 1292,-980 1292,-953 1090,-953"/>
-<text text-anchor="start" x="1156.5" y="-960.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="1292,-953 1292,-980 1365,-980 1365,-953 1292,-953"/>
-<text text-anchor="start" x="1308" y="-960.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
-<polygon fill="none" stroke="black" points="1365,-953 1365,-980 1707,-980 1707,-953 1365,-953"/>
-<text text-anchor="start" x="1485.5" y="-960.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
-<polygon fill="#54ff9f" stroke="none" points="1090,-928 1090,-953 1292,-953 1292,-928 1090,-928"/>
-<polygon fill="none" stroke="black" points="1090,-928 1090,-953 1292,-953 1292,-928 1090,-928"/>
-<text text-anchor="start" x="1093" y="-934.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#54ff9f" stroke="none" points="1292,-928 1292,-953 1365,-953 1365,-928 1292,-928"/>
-<polygon fill="none" stroke="black" points="1292,-928 1292,-953 1365,-953 1365,-928 1292,-928"/>
-<text text-anchor="start" x="1302" y="-934.8" font-family="Times,serif" font-size="16.00">integer+</text>
-<polygon fill="#54ff9f" stroke="none" points="1365,-928 1365,-953 1707,-953 1707,-928 1365,-928"/>
-<polygon fill="none" stroke="black" points="1365,-928 1365,-953 1707,-953 1707,-928 1365,-928"/>
-<text text-anchor="start" x="1368" y="-936.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
-<polygon fill="none" stroke="black" points="1090,-903 1090,-928 1292,-928 1292,-903 1090,-903"/>
-<text text-anchor="start" x="1093" y="-909.8" font-family="Times,serif" font-size="16.00">event</text>
-<polygon fill="none" stroke="black" points="1292,-903 1292,-928 1365,-928 1365,-903 1292,-903"/>
-<text text-anchor="start" x="1306.5" y="-909.8" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="1365,-903 1365,-928 1707,-928 1707,-903 1365,-903"/>
-<text text-anchor="start" x="1368" y="-911.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The event id this snapshot was for.</text>
-<polygon fill="none" stroke="black" points="1090,-813 1090,-903 1292,-903 1292,-813 1090,-813"/>
-<text text-anchor="start" x="1093" y="-852.4" font-family="Times,serif" font-size="16.00">as_at</text>
-<polygon fill="none" stroke="black" points="1292,-813 1292,-903 1365,-903 1365,-813 1292,-813"/>
-<text text-anchor="start" x="1295" y="-852.4" font-family="Times,serif" font-size="16.00">timestamp</text>
-<polygon fill="none" stroke="black" points="1365,-813 1365,-903 1707,-903 1707,-813 1365,-813"/>
-<text text-anchor="start" x="1368" y="-887.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The time the snapshot was collected</text>
-<text text-anchor="start" x="1368" y="-873.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">from dbsync.</text>
-<text text-anchor="start" x="1368" y="-859.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">This is the snapshot *DEADLINE*, i.e the</text>
-<text text-anchor="start" x="1368" y="-845.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">time when registrations are final.</text>
-<text text-anchor="start" x="1368" y="-831.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(Should be the slot time the</text>
-<text text-anchor="start" x="1368" y="-817.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">dbsync_snapshot_cmd was run against.)</text>
-<polygon fill="none" stroke="black" points="1090,-788 1090,-813 1292,-813 1292,-788 1090,-788"/>
-<text text-anchor="start" x="1093" y="-794.8" font-family="Times,serif" font-size="16.00">as_at_slotno</text>
-<polygon fill="none" stroke="black" points="1292,-788 1292,-813 1365,-813 1365,-788 1292,-788"/>
-<text text-anchor="start" x="1306.5" y="-794.8" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="1365,-788 1365,-813 1707,-813 1707,-788 1365,-788"/>
-<text text-anchor="start" x="1368" y="-796.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
-<polygon fill="none" stroke="black" points="1090,-726 1090,-788 1292,-788 1292,-726 1090,-726"/>
-<text text-anchor="start" x="1093" y="-751.4" font-family="Times,serif" font-size="16.00">last_updated</text>
-<polygon fill="none" stroke="black" points="1292,-726 1292,-788 1365,-788 1365,-726 1292,-726"/>
-<text text-anchor="start" x="1295" y="-751.4" font-family="Times,serif" font-size="16.00">timestamp</text>
-<polygon fill="none" stroke="black" points="1365,-726 1365,-788 1707,-788 1707,-726 1365,-726"/>
-<text text-anchor="start" x="1368" y="-772.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The last time the snapshot was run</text>
-<text text-anchor="start" x="1368" y="-758.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(Should be the latest block time taken</text>
-<text text-anchor="start" x="1368" y="-744.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">from dbsync just before the snapshot</text>
-<text text-anchor="start" x="1368" y="-730.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">was run.)</text>
-<polygon fill="none" stroke="black" points="1090,-701 1090,-726 1292,-726 1292,-701 1090,-701"/>
-<text text-anchor="start" x="1093" y="-707.8" font-family="Times,serif" font-size="16.00">last_updated_slotno</text>
-<polygon fill="none" stroke="black" points="1292,-701 1292,-726 1365,-726 1365,-701 1292,-701"/>
-<text text-anchor="start" x="1306.5" y="-707.8" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="1365,-701 1365,-726 1707,-726 1707,-701 1365,-701"/>
-<text text-anchor="start" x="1368" y="-709.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
-<polygon fill="none" stroke="black" points="1090,-653 1090,-701 1292,-701 1292,-653 1090,-653"/>
-<text text-anchor="start" x="1093" y="-671.4" font-family="Times,serif" font-size="16.00">final</text>
-<polygon fill="none" stroke="black" points="1292,-653 1292,-701 1365,-701 1365,-653 1292,-653"/>
-<text text-anchor="start" x="1303.5" y="-671.4" font-family="Times,serif" font-size="16.00">boolean</text>
-<polygon fill="none" stroke="black" points="1365,-653 1365,-701 1707,-701 1707,-653 1365,-653"/>
-<text text-anchor="start" x="1368" y="-685.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Is the snapshot Final?</text>
-<text text-anchor="start" x="1368" y="-671.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">No more updates will occur to this</text>
-<text text-anchor="start" x="1368" y="-657.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">record once set.</text>
-<polygon fill="none" stroke="black" points="1090,-619 1090,-653 1292,-653 1292,-619 1090,-619"/>
-<text text-anchor="start" x="1093" y="-630.4" font-family="Times,serif" font-size="16.00">dbsync_snapshot_cmd</text>
-<polygon fill="none" stroke="black" points="1292,-619 1292,-653 1365,-653 1365,-619 1292,-619"/>
-<text text-anchor="start" x="1316.5" y="-631.4" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="1365,-619 1365,-653 1707,-653 1707,-619 1365,-619"/>
-<text text-anchor="start" x="1368" y="-637.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The name of the command run to collect</text>
-<text text-anchor="start" x="1368" y="-623.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the snapshot from dbsync.</text>
-<polygon fill="none" stroke="black" points="1090,-571 1090,-619 1292,-619 1292,-571 1090,-571"/>
-<text text-anchor="start" x="1093" y="-589.4" font-family="Times,serif" font-size="16.00">dbsync_snapshot_params</text>
-<polygon fill="none" stroke="black" points="1292,-571 1292,-619 1365,-619 1365,-571 1292,-571"/>
-<text text-anchor="start" x="1311" y="-590.4" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
-<polygon fill="none" stroke="black" points="1365,-571 1365,-619 1707,-619 1707,-571 1365,-571"/>
-<text text-anchor="start" x="1368" y="-603.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The parameters passed to the command,</text>
-<text text-anchor="start" x="1368" y="-589.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">each parameter is a key and its value is</text>
-<text text-anchor="start" x="1368" y="-575.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the value of the parameter.</text>
-<polygon fill="none" stroke="black" points="1090,-481 1090,-571 1292,-571 1292,-481 1090,-481"/>
-<text text-anchor="start" x="1093" y="-520.4" font-family="Times,serif" font-size="16.00">dbsync_snapshot_data</text>
-<polygon fill="none" stroke="black" points="1292,-481 1292,-571 1365,-571 1365,-481 1292,-481"/>
-<text text-anchor="start" x="1311.5" y="-521.4" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
-<polygon fill="none" stroke="black" points="1365,-481 1365,-571 1707,-571 1707,-481 1365,-481"/>
-<text text-anchor="start" x="1368" y="-555.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The BROTLI COMPRESSED raw json result</text>
-<text text-anchor="start" x="1368" y="-541.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">stored as BINARY from the dbsync</text>
-<text text-anchor="start" x="1368" y="-527.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">snapshot.</text>
-<text text-anchor="start" x="1368" y="-513.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(This is JSON data but we store as raw</text>
-<text text-anchor="start" x="1368" y="-499.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">text to prevent any processing of it,</text>
-<text text-anchor="start" x="1368" y="-485.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and BROTLI compress to save space).</text>
-<polygon fill="none" stroke="black" points="1090,-391 1090,-481 1292,-481 1292,-391 1090,-391"/>
-<text text-anchor="start" x="1093" y="-430.4" font-family="Times,serif" font-size="16.00">dbsync_snapshot_error</text>
-<polygon fill="none" stroke="black" points="1292,-391 1292,-481 1365,-481 1365,-391 1292,-391"/>
-<text text-anchor="start" x="1311.5" y="-431.4" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
-<polygon fill="none" stroke="black" points="1365,-391 1365,-481 1707,-481 1707,-391 1365,-391"/>
-<text text-anchor="start" x="1368" y="-465.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The BROTLI COMPRESSED raw json errors</text>
-<text text-anchor="start" x="1368" y="-451.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">stored as BINARY from the dbsync</text>
-<text text-anchor="start" x="1368" y="-437.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">snapshot.</text>
-<text text-anchor="start" x="1368" y="-423.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(This is JSON data but we store as raw</text>
-<text text-anchor="start" x="1368" y="-409.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">text to prevent any processing of it,</text>
-<text text-anchor="start" x="1368" y="-395.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and BROTLI compress to save space).</text>
-<polygon fill="none" stroke="black" points="1090,-301 1090,-391 1292,-391 1292,-301 1090,-301"/>
-<text text-anchor="start" x="1093" y="-340.4" font-family="Times,serif" font-size="16.00">dbsync_snapshot_unregistered</text>
-<polygon fill="none" stroke="black" points="1292,-301 1292,-391 1365,-391 1365,-301 1292,-301"/>
-<text text-anchor="start" x="1311.5" y="-341.4" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
-<polygon fill="none" stroke="black" points="1365,-301 1365,-391 1707,-391 1707,-301 1365,-301"/>
-<text text-anchor="start" x="1368" y="-375.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The BROTLI COMPRESSED unregistered</text>
-<text text-anchor="start" x="1368" y="-361.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">voting power stored as BINARY from the</text>
-<text text-anchor="start" x="1368" y="-347.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">dbsync snapshot.</text>
-<text text-anchor="start" x="1368" y="-333.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(This is JSON data but we store as raw</text>
-<text text-anchor="start" x="1368" y="-319.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">text to prevent any processing of it,</text>
-<text text-anchor="start" x="1368" y="-305.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and BROTLI compress to save space).</text>
-<polygon fill="none" stroke="black" points="1090,-197 1090,-301 1292,-301 1292,-197 1090,-197"/>
-<text text-anchor="start" x="1093" y="-243.4" font-family="Times,serif" font-size="16.00">drep_data</text>
-<polygon fill="none" stroke="black" points="1292,-197 1292,-301 1365,-301 1365,-197 1292,-197"/>
-<text text-anchor="start" x="1311.5" y="-244.4" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
-<polygon fill="none" stroke="black" points="1365,-197 1365,-301 1707,-301 1707,-197 1365,-197"/>
-<text text-anchor="start" x="1368" y="-285.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The latest drep data obtained from GVC,</text>
-<text text-anchor="start" x="1368" y="-271.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and used in this snapshot calculation.</text>
-<text text-anchor="start" x="1368" y="-257.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Should be in a form directly usable by</text>
-<text text-anchor="start" x="1368" y="-243.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the `catalyst_snapshot_cmd`</text>
-<text text-anchor="start" x="1368" y="-229.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">However, in order to save space this</text>
-<text text-anchor="start" x="1368" y="-215.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">data is stored as BROTLI COMPRESSED</text>
-<text text-anchor="start" x="1368" y="-201.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">BINARY.</text>
-<polygon fill="none" stroke="black" points="1090,-149 1090,-197 1292,-197 1292,-149 1090,-149"/>
-<text text-anchor="start" x="1093" y="-167.4" font-family="Times,serif" font-size="16.00">catalyst_snapshot_cmd</text>
-<polygon fill="none" stroke="black" points="1292,-149 1292,-197 1365,-197 1365,-149 1292,-149"/>
-<text text-anchor="start" x="1316.5" y="-168.4" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="1365,-149 1365,-197 1707,-197 1707,-149 1365,-149"/>
-<text text-anchor="start" x="1368" y="-181.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The actual name of the command run</text>
-<text text-anchor="start" x="1368" y="-167.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">to produce the catalyst voting power</text>
-<text text-anchor="start" x="1368" y="-153.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">snapshot.</text>
-<polygon fill="none" stroke="black" points="1090,-124 1090,-149 1292,-149 1292,-124 1090,-124"/>
-<text text-anchor="start" x="1093" y="-130.8" font-family="Times,serif" font-size="16.00">catalyst_snapshot_params</text>
-<polygon fill="none" stroke="black" points="1292,-124 1292,-149 1365,-149 1365,-124 1292,-124"/>
-<text text-anchor="start" x="1311" y="-131.8" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
-<polygon fill="none" stroke="black" points="1365,-124 1365,-149 1707,-149 1707,-124 1365,-124"/>
-<text text-anchor="start" x="1368" y="-132.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
-<polygon fill="none" stroke="black" points="1090,-34 1090,-124 1292,-124 1292,-34 1090,-34"/>
-<text text-anchor="start" x="1093" y="-73.4" font-family="Times,serif" font-size="16.00">catalyst_snapshot_data</text>
-<polygon fill="none" stroke="black" points="1292,-34 1292,-124 1365,-124 1365,-34 1292,-34"/>
-<text text-anchor="start" x="1311.5" y="-74.4" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
-<polygon fill="none" stroke="black" points="1365,-34 1365,-124 1707,-124 1707,-34 1365,-34"/>
-<text text-anchor="start" x="1368" y="-108.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The BROTLI COMPRESSED raw yaml result</text>
-<text text-anchor="start" x="1368" y="-94.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">stored as BINARY from the catalyst</text>
-<text text-anchor="start" x="1368" y="-80.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">snapshot calculation.</text>
-<text text-anchor="start" x="1368" y="-66.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(This is YAML data but we store as raw</text>
-<text text-anchor="start" x="1368" y="-52.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">text to prevent any processing of it,</text>
-<text text-anchor="start" x="1368" y="-38.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and BROTLI compress to save space).</text>
-<polygon fill="#333333" stroke="none" points="1090,0 1090,-34 1707,-34 1707,0 1090,0"/>
-<polygon fill="none" stroke="black" points="1090,0 1090,-34 1707,-34 1707,0 1090,0"/>
-<text text-anchor="start" x="1093" y="-18.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">Raw snapshot data for an event.</text>
-<text text-anchor="start" x="1093" y="-4.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">Only the latests snapshot per event is stored.</text>
+<polygon fill="#009879" stroke="none" points="1137,-977 1137,-1004 1827,-1004 1827,-977 1137,-977"/>
+<polygon fill="none" stroke="black" points="1137,-977 1137,-1004 1827,-1004 1827,-977 1137,-977"/>
+<text text-anchor="start" x="1434" y="-983" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">snapshot</text>
+<polygon fill="none" stroke="black" points="1137,-953 1137,-977 1398,-977 1398,-953 1137,-953"/>
+<text text-anchor="start" x="1236" y="-957.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1398,-953 1398,-977 1491,-977 1491,-953 1398,-953"/>
+<text text-anchor="start" x="1423.5" y="-957.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="1491,-953 1491,-977 1827,-977 1827,-953 1491,-953"/>
+<text text-anchor="start" x="1601.25" y="-957.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="1137,-928 1137,-953 1398,-953 1398,-928 1137,-928"/>
+<polygon fill="none" stroke="black" points="1137,-928 1137,-953 1398,-953 1398,-928 1137,-928"/>
+<text text-anchor="start" x="1140" y="-934.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="1398,-928 1398,-953 1491,-953 1491,-928 1398,-928"/>
+<polygon fill="none" stroke="black" points="1398,-928 1398,-953 1491,-953 1491,-928 1398,-928"/>
+<text text-anchor="start" x="1407.75" y="-934.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="#54ff9f" stroke="none" points="1491,-928 1491,-953 1827,-953 1827,-928 1491,-928"/>
+<polygon fill="none" stroke="black" points="1491,-928 1491,-953 1827,-953 1827,-928 1491,-928"/>
+<text text-anchor="start" x="1494" y="-936.83" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="none" stroke="black" points="1137,-903 1137,-928 1398,-928 1398,-903 1137,-903"/>
+<text text-anchor="start" x="1140" y="-909.8" font-family="Times,serif" font-size="16.00">event</text>
+<polygon fill="none" stroke="black" points="1398,-903 1398,-928 1491,-928 1491,-903 1398,-903"/>
+<text text-anchor="start" x="1414.5" y="-909.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="1491,-903 1491,-928 1827,-928 1827,-903 1491,-903"/>
+<text text-anchor="start" x="1494" y="-911.83" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The event id this snapshot was for.</text>
+<polygon fill="none" stroke="black" points="1137,-813 1137,-903 1398,-903 1398,-813 1137,-813"/>
+<text text-anchor="start" x="1140" y="-852.55" font-family="Times,serif" font-size="16.00">as_at</text>
+<polygon fill="none" stroke="black" points="1398,-813 1398,-903 1491,-903 1491,-813 1398,-813"/>
+<text text-anchor="start" x="1401" y="-852.55" font-family="Times,serif" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1491,-813 1491,-903 1827,-903 1827,-813 1491,-813"/>
+<text text-anchor="start" x="1494" y="-887.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The time the snapshot was collected</text>
+<text text-anchor="start" x="1494" y="-873.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">from dbsync.</text>
+<text text-anchor="start" x="1494" y="-859.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">This is the snapshot *DEADLINE*, i.e the</text>
+<text text-anchor="start" x="1494" y="-845.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">time when registrations are final.</text>
+<text text-anchor="start" x="1494" y="-831.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(Should be the slot time the</text>
+<text text-anchor="start" x="1494" y="-817.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">dbsync_snapshot_cmd was run against.)</text>
+<polygon fill="none" stroke="black" points="1137,-788 1137,-813 1398,-813 1398,-788 1137,-788"/>
+<text text-anchor="start" x="1140" y="-794.8" font-family="Times,serif" font-size="16.00">as_at_slotno</text>
+<polygon fill="none" stroke="black" points="1398,-788 1398,-813 1491,-813 1491,-788 1398,-788"/>
+<text text-anchor="start" x="1414.5" y="-794.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="1491,-788 1491,-813 1827,-813 1827,-788 1491,-788"/>
+<text text-anchor="start" x="1494" y="-796.83" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="none" stroke="black" points="1137,-726 1137,-788 1398,-788 1398,-726 1137,-726"/>
+<text text-anchor="start" x="1140" y="-751.55" font-family="Times,serif" font-size="16.00">last_updated</text>
+<polygon fill="none" stroke="black" points="1398,-726 1398,-788 1491,-788 1491,-726 1398,-726"/>
+<text text-anchor="start" x="1401" y="-751.55" font-family="Times,serif" font-size="16.00">timestamp</text>
+<polygon fill="none" stroke="black" points="1491,-726 1491,-788 1827,-788 1827,-726 1491,-726"/>
+<text text-anchor="start" x="1494" y="-772.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The last time the snapshot was run</text>
+<text text-anchor="start" x="1494" y="-758.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(Should be the latest block time taken</text>
+<text text-anchor="start" x="1494" y="-744.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">from dbsync just before the snapshot</text>
+<text text-anchor="start" x="1494" y="-730.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">was run.)</text>
+<polygon fill="none" stroke="black" points="1137,-701 1137,-726 1398,-726 1398,-701 1137,-701"/>
+<text text-anchor="start" x="1140" y="-707.8" font-family="Times,serif" font-size="16.00">last_updated_slotno</text>
+<polygon fill="none" stroke="black" points="1398,-701 1398,-726 1491,-726 1491,-701 1398,-701"/>
+<text text-anchor="start" x="1414.5" y="-707.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="1491,-701 1491,-726 1827,-726 1827,-701 1491,-701"/>
+<text text-anchor="start" x="1494" y="-709.83" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="none" stroke="black" points="1137,-653 1137,-701 1398,-701 1398,-653 1137,-653"/>
+<text text-anchor="start" x="1140" y="-671.55" font-family="Times,serif" font-size="16.00">final</text>
+<polygon fill="none" stroke="black" points="1398,-653 1398,-701 1491,-701 1491,-653 1398,-653"/>
+<text text-anchor="start" x="1411.88" y="-671.55" font-family="Times,serif" font-size="16.00">boolean</text>
+<polygon fill="none" stroke="black" points="1491,-653 1491,-701 1827,-701 1827,-653 1491,-653"/>
+<text text-anchor="start" x="1494" y="-685.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Is the snapshot Final?</text>
+<text text-anchor="start" x="1494" y="-671.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">No more updates will occur to this</text>
+<text text-anchor="start" x="1494" y="-657.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">record once set.</text>
+<polygon fill="none" stroke="black" points="1137,-619 1137,-653 1398,-653 1398,-619 1137,-619"/>
+<text text-anchor="start" x="1140" y="-630.55" font-family="Times,serif" font-size="16.00">dbsync_snapshot_cmd</text>
+<polygon fill="none" stroke="black" points="1398,-619 1398,-653 1491,-653 1491,-619 1398,-619"/>
+<text text-anchor="start" x="1428.38" y="-631.55" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="1491,-619 1491,-653 1827,-653 1827,-619 1491,-619"/>
+<text text-anchor="start" x="1494" y="-637.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The name of the command run to collect</text>
+<text text-anchor="start" x="1494" y="-623.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the snapshot from dbsync.</text>
+<polygon fill="none" stroke="black" points="1137,-571 1137,-619 1398,-619 1398,-571 1137,-571"/>
+<text text-anchor="start" x="1140" y="-589.55" font-family="Times,serif" font-size="16.00">dbsync_snapshot_params</text>
+<polygon fill="none" stroke="black" points="1398,-571 1398,-619 1491,-619 1491,-571 1398,-571"/>
+<text text-anchor="start" x="1422.38" y="-590.55" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+<polygon fill="none" stroke="black" points="1491,-571 1491,-619 1827,-619 1827,-571 1491,-571"/>
+<text text-anchor="start" x="1494" y="-603.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The parameters passed to the command,</text>
+<text text-anchor="start" x="1494" y="-589.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">each parameter is a key and its value is</text>
+<text text-anchor="start" x="1494" y="-575.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the value of the parameter.</text>
+<polygon fill="none" stroke="black" points="1137,-481 1137,-571 1398,-571 1398,-481 1137,-481"/>
+<text text-anchor="start" x="1140" y="-520.55" font-family="Times,serif" font-size="16.00">dbsync_snapshot_data</text>
+<polygon fill="none" stroke="black" points="1398,-481 1398,-571 1491,-571 1491,-481 1398,-481"/>
+<text text-anchor="start" x="1421.62" y="-521.55" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="1491,-481 1491,-571 1827,-571 1827,-481 1491,-481"/>
+<text text-anchor="start" x="1494" y="-555.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The BROTLI COMPRESSED raw json result</text>
+<text text-anchor="start" x="1494" y="-541.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">stored as BINARY from the dbsync</text>
+<text text-anchor="start" x="1494" y="-527.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">snapshot.</text>
+<text text-anchor="start" x="1494" y="-513.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(This is JSON data but we store as raw</text>
+<text text-anchor="start" x="1494" y="-499.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">text to prevent any processing of it,</text>
+<text text-anchor="start" x="1494" y="-485.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and BROTLI compress to save space).</text>
+<polygon fill="none" stroke="black" points="1137,-391 1137,-481 1398,-481 1398,-391 1137,-391"/>
+<text text-anchor="start" x="1140" y="-430.55" font-family="Times,serif" font-size="16.00">dbsync_snapshot_error</text>
+<polygon fill="none" stroke="black" points="1398,-391 1398,-481 1491,-481 1491,-391 1398,-391"/>
+<text text-anchor="start" x="1421.62" y="-431.55" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="1491,-391 1491,-481 1827,-481 1827,-391 1491,-391"/>
+<text text-anchor="start" x="1494" y="-465.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The BROTLI COMPRESSED raw json errors</text>
+<text text-anchor="start" x="1494" y="-451.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">stored as BINARY from the dbsync</text>
+<text text-anchor="start" x="1494" y="-437.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">snapshot.</text>
+<text text-anchor="start" x="1494" y="-423.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(This is JSON data but we store as raw</text>
+<text text-anchor="start" x="1494" y="-409.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">text to prevent any processing of it,</text>
+<text text-anchor="start" x="1494" y="-395.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and BROTLI compress to save space).</text>
+<polygon fill="none" stroke="black" points="1137,-301 1137,-391 1398,-391 1398,-301 1137,-301"/>
+<text text-anchor="start" x="1140" y="-340.55" font-family="Times,serif" font-size="16.00">dbsync_snapshot_unregistered</text>
+<polygon fill="none" stroke="black" points="1398,-301 1398,-391 1491,-391 1491,-301 1398,-301"/>
+<text text-anchor="start" x="1421.62" y="-341.55" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="1491,-301 1491,-391 1827,-391 1827,-301 1491,-301"/>
+<text text-anchor="start" x="1494" y="-375.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The BROTLI COMPRESSED unregistered</text>
+<text text-anchor="start" x="1494" y="-361.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">voting power stored as BINARY from the</text>
+<text text-anchor="start" x="1494" y="-347.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">dbsync snapshot.</text>
+<text text-anchor="start" x="1494" y="-333.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(This is JSON data but we store as raw</text>
+<text text-anchor="start" x="1494" y="-319.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">text to prevent any processing of it,</text>
+<text text-anchor="start" x="1494" y="-305.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and BROTLI compress to save space).</text>
+<polygon fill="none" stroke="black" points="1137,-197 1137,-301 1398,-301 1398,-197 1137,-197"/>
+<text text-anchor="start" x="1140" y="-243.55" font-family="Times,serif" font-size="16.00">drep_data</text>
+<polygon fill="none" stroke="black" points="1398,-197 1398,-301 1491,-301 1491,-197 1398,-197"/>
+<text text-anchor="start" x="1421.62" y="-244.55" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="1491,-197 1491,-301 1827,-301 1827,-197 1491,-197"/>
+<text text-anchor="start" x="1494" y="-285.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The latest drep data obtained from GVC,</text>
+<text text-anchor="start" x="1494" y="-271.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and used in this snapshot calculation.</text>
+<text text-anchor="start" x="1494" y="-257.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Should be in a form directly usable by</text>
+<text text-anchor="start" x="1494" y="-243.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the `catalyst_snapshot_cmd`</text>
+<text text-anchor="start" x="1494" y="-229.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">However, in order to save space this</text>
+<text text-anchor="start" x="1494" y="-215.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">data is stored as BROTLI COMPRESSED</text>
+<text text-anchor="start" x="1494" y="-201.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">BINARY.</text>
+<polygon fill="none" stroke="black" points="1137,-149 1137,-197 1398,-197 1398,-149 1137,-149"/>
+<text text-anchor="start" x="1140" y="-167.55" font-family="Times,serif" font-size="16.00">catalyst_snapshot_cmd</text>
+<polygon fill="none" stroke="black" points="1398,-149 1398,-197 1491,-197 1491,-149 1398,-149"/>
+<text text-anchor="start" x="1428.38" y="-168.55" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="1491,-149 1491,-197 1827,-197 1827,-149 1491,-149"/>
+<text text-anchor="start" x="1494" y="-181.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The actual name of the command run</text>
+<text text-anchor="start" x="1494" y="-167.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">to produce the catalyst voting power</text>
+<text text-anchor="start" x="1494" y="-153.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">snapshot.</text>
+<polygon fill="none" stroke="black" points="1137,-124 1137,-149 1398,-149 1398,-124 1137,-124"/>
+<text text-anchor="start" x="1140" y="-130.8" font-family="Times,serif" font-size="16.00">catalyst_snapshot_params</text>
+<polygon fill="none" stroke="black" points="1398,-124 1398,-149 1491,-149 1491,-124 1398,-124"/>
+<text text-anchor="start" x="1422.38" y="-131.8" font-family="Times,serif" font-style="italic" font-size="16.00">jsonb</text>
+<polygon fill="none" stroke="black" points="1491,-124 1491,-149 1827,-149 1827,-124 1491,-124"/>
+<text text-anchor="start" x="1494" y="-132.82" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="none" stroke="black" points="1137,-34 1137,-124 1398,-124 1398,-34 1137,-34"/>
+<text text-anchor="start" x="1140" y="-73.55" font-family="Times,serif" font-size="16.00">catalyst_snapshot_data</text>
+<polygon fill="none" stroke="black" points="1398,-34 1398,-124 1491,-124 1491,-34 1398,-34"/>
+<text text-anchor="start" x="1421.62" y="-74.55" font-family="Times,serif" font-style="italic" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="1491,-34 1491,-124 1827,-124 1827,-34 1491,-34"/>
+<text text-anchor="start" x="1494" y="-108.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The BROTLI COMPRESSED raw yaml result</text>
+<text text-anchor="start" x="1494" y="-94.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">stored as BINARY from the catalyst</text>
+<text text-anchor="start" x="1494" y="-80.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">snapshot calculation.</text>
+<text text-anchor="start" x="1494" y="-66.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">(This is YAML data but we store as raw</text>
+<text text-anchor="start" x="1494" y="-52.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">text to prevent any processing of it,</text>
+<text text-anchor="start" x="1494" y="-38.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">and BROTLI compress to save space).</text>
+<polygon fill="#333333" stroke="none" points="1137,0 1137,-34 1827,-34 1827,0 1137,0"/>
+<polygon fill="none" stroke="black" points="1137,0 1137,-34 1827,-34 1827,0 1137,0"/>
+<text text-anchor="start" x="1140" y="-18.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">Raw snapshot data for an event.</text>
+<text text-anchor="start" x="1140" y="-4.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">Only the latests snapshot per event is stored.</text>
 </g>
 <!-- contribution&#45;&gt;snapshot -->
 <g id="edge6" class="edge">
 <title>contribution:snapshot_id_out&#45;&gt;snapshot:row_id</title>
-<path fill="none" stroke="black" d="M1054,-1266C1122.69,-1266 1028.75,-975.57 1079.65,-943.81"/>
-<polygon fill="black" stroke="black" points="1080.27,-947 1089,-941 1078.43,-940.24 1080.27,-947"/>
+<path fill="none" stroke="black" d="M1101,-1259C1168.09,-1259 1077.35,-976 1126.56,-943.95"/>
+<polygon fill="black" stroke="black" points="1127.33,-947.08 1136,-941 1125.43,-940.35 1127.33,-947.08"/>
 </g>
 <!-- event -->
 <g id="node6" class="node">
 <title>event</title>
-<polygon fill="#009879" stroke="none" points="1751,-956 1751,-986 1826,-986 1826,-956 1751,-956"/>
-<polygon fill="none" stroke="black" points="1751,-956 1751,-986 1826,-986 1826,-956 1751,-956"/>
-<text text-anchor="start" x="1760.5" y="-965" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">event</text>
-<polygon fill="none" stroke="black" points="1751,-929 1751,-956 1826,-956 1826,-929 1751,-929"/>
-<text text-anchor="start" x="1754" y="-936.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="1751,-904 1751,-929 1826,-929 1826,-904 1751,-904"/>
-<text text-anchor="start" x="1754" y="-910.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#333333" stroke="none" points="1751,-882 1751,-904 1826,-904 1826,-882 1751,-882"/>
-<polygon fill="none" stroke="black" points="1751,-882 1751,-904 1826,-904 1826,-882 1751,-882"/>
-<text text-anchor="start" x="1754" y="-888.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+<polygon fill="#009879" stroke="none" points="1871,-952.5 1871,-979.5 1941,-979.5 1941,-952.5 1871,-952.5"/>
+<polygon fill="none" stroke="black" points="1871,-952.5 1871,-979.5 1941,-979.5 1941,-952.5 1871,-952.5"/>
+<text text-anchor="start" x="1876" y="-958.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">event</text>
+<polygon fill="none" stroke="black" points="1871,-928.5 1871,-952.5 1941,-952.5 1941,-928.5 1871,-928.5"/>
+<text text-anchor="start" x="1874.5" y="-933.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1871,-903.5 1871,-928.5 1941,-928.5 1941,-903.5 1871,-903.5"/>
+<text text-anchor="start" x="1874" y="-910.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#333333" stroke="none" points="1871,-880.5 1871,-903.5 1943,-903.5 1943,-880.5 1871,-880.5"/>
+<polygon fill="none" stroke="black" points="1871,-880.5 1871,-903.5 1943,-903.5 1943,-880.5 1871,-880.5"/>
+<text text-anchor="start" x="1874" y="-888.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
 </g>
 <!-- snapshot&#45;&gt;event -->
 <g id="edge4" class="edge">
 <title>snapshot:event_out&#45;&gt;event:row_id</title>
-<path fill="none" stroke="black" d="M1707,-916C1721.61,-916 1727.74,-916 1738.51,-916"/>
-<polygon fill="black" stroke="black" points="1738.5,-919.5 1748.5,-916 1738.5,-912.5 1738.5,-919.5"/>
+<path fill="none" stroke="black" d="M1827,-916C1841.93,-916 1848.11,-916 1859.22,-916"/>
+<polygon fill="black" stroke="black" points="1859,-919.5 1869,-916 1859,-912.5 1859,-919.5"/>
 </g>
 <!-- voteplan -->
 <g id="node4" class="node">
 <title>voteplan</title>
-<polygon fill="#009879" stroke="none" points="2,-520 2,-550 482,-550 482,-520 2,-520"/>
-<polygon fill="none" stroke="black" points="2,-520 2,-550 482,-550 482,-520 2,-520"/>
-<text text-anchor="start" x="198.5" y="-529" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voteplan</text>
-<polygon fill="none" stroke="black" points="2,-493 2,-520 107,-520 107,-493 2,-493"/>
-<text text-anchor="start" x="20" y="-500.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="107,-493 107,-520 166,-520 166,-493 107,-493"/>
-<text text-anchor="start" x="116" y="-500.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
-<polygon fill="none" stroke="black" points="166,-493 166,-520 482,-520 482,-493 166,-493"/>
-<text text-anchor="start" x="273.5" y="-500.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
-<polygon fill="#54ff9f" stroke="none" points="2,-468 2,-493 107,-493 107,-468 2,-468"/>
-<polygon fill="none" stroke="black" points="2,-468 2,-493 107,-493 107,-468 2,-468"/>
-<text text-anchor="start" x="5" y="-474.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#54ff9f" stroke="none" points="107,-468 107,-493 166,-493 166,-468 107,-468"/>
-<polygon fill="none" stroke="black" points="107,-468 107,-493 166,-493 166,-468 107,-468"/>
-<text text-anchor="start" x="110" y="-474.8" font-family="Times,serif" font-size="16.00">integer+</text>
-<polygon fill="#54ff9f" stroke="none" points="166,-468 166,-493 482,-493 482,-468 166,-468"/>
-<polygon fill="none" stroke="black" points="166,-468 166,-493 482,-493 482,-468 166,-468"/>
-<text text-anchor="start" x="169" y="-476.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic Unique Key</text>
-<polygon fill="none" stroke="black" points="2,-443 2,-468 107,-468 107,-443 2,-443"/>
-<text text-anchor="start" x="5" y="-449.8" font-family="Times,serif" font-size="16.00">objective_id</text>
-<polygon fill="none" stroke="black" points="107,-443 107,-468 166,-468 166,-443 107,-443"/>
-<text text-anchor="start" x="114.5" y="-449.8" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="166,-443 166,-468 482,-468 482,-443 166,-443"/>
-<text text-anchor="start" x="169" y="-451.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
-<polygon fill="none" stroke="black" points="2,-395 2,-443 107,-443 107,-395 2,-395"/>
-<text text-anchor="start" x="5" y="-413.4" font-family="Times,serif" font-size="16.00">id</text>
-<polygon fill="none" stroke="black" points="107,-395 107,-443 166,-443 166,-395 107,-395"/>
-<text text-anchor="start" x="112.5" y="-413.4" font-family="Times,serif" font-size="16.00">varchar</text>
-<polygon fill="none" stroke="black" points="166,-395 166,-443 482,-443 482,-395 166,-395"/>
-<text text-anchor="start" x="169" y="-427.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The ID of the Vote plan in the voting</text>
-<text text-anchor="start" x="169" y="-413.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ledger/bulletin board.</text>
-<text text-anchor="start" x="169" y="-399.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">A Binary value encoded as hex.</text>
-<polygon fill="none" stroke="black" points="2,-361 2,-395 107,-395 107,-361 2,-361"/>
-<text text-anchor="start" x="5" y="-372.4" font-family="Times,serif" font-size="16.00">category</text>
-<polygon fill="none" stroke="black" points="107,-361 107,-395 166,-395 166,-361 107,-361"/>
-<text text-anchor="start" x="124.5" y="-372.4" font-family="Times,serif" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="166,-361 166,-395 482,-395 482,-361 166,-361"/>
-<text text-anchor="start" x="169" y="-379.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The kind of vote which can be cast on</text>
-<text text-anchor="start" x="169" y="-365.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">this vote plan.</text>
-<polygon fill="none" stroke="black" points="2,-313 2,-361 107,-361 107,-313 2,-313"/>
-<text text-anchor="start" x="5" y="-331.4" font-family="Times,serif" font-size="16.00">encryption_key</text>
-<polygon fill="none" stroke="black" points="107,-313 107,-361 166,-361 166,-313 107,-313"/>
-<text text-anchor="start" x="112.5" y="-332.4" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
-<polygon fill="none" stroke="black" points="166,-313 166,-361 482,-361 482,-313 166,-313"/>
-<text text-anchor="start" x="169" y="-345.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The public encryption key used.</text>
-<text text-anchor="start" x="169" y="-331.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ONLY if required by the voteplan</text>
-<text text-anchor="start" x="169" y="-317.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">category.</text>
-<polygon fill="none" stroke="black" points="2,-279 2,-313 107,-313 107,-279 2,-279"/>
-<text text-anchor="start" x="5" y="-290.4" font-family="Times,serif" font-size="16.00">group_id</text>
-<polygon fill="none" stroke="black" points="107,-279 107,-313 166,-313 166,-279 107,-279"/>
-<text text-anchor="start" x="124.5" y="-291.4" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="166,-279 166,-313 482,-313 482,-279 166,-279"/>
-<text text-anchor="start" x="169" y="-297.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The identifier of voting power token</text>
-<text text-anchor="start" x="169" y="-283.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">used withing this plan.</text>
-<polygon fill="none" stroke="black" points="2,-254 2,-279 107,-279 107,-254 2,-254"/>
-<text text-anchor="start" x="5" y="-260.8" font-family="Times,serif" font-size="16.00">token_id</text>
-<polygon fill="none" stroke="black" points="107,-254 107,-279 166,-279 166,-254 107,-254"/>
-<text text-anchor="start" x="124.5" y="-261.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="166,-254 166,-279 482,-279 482,-254 166,-254"/>
-<text text-anchor="start" x="169" y="-262.6" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
-<polygon fill="#333333" stroke="none" points="2,-232 2,-254 482,-254 482,-232 2,-232"/>
-<polygon fill="none" stroke="black" points="2,-232 2,-254 482,-254 482,-232 2,-232"/>
-<text text-anchor="start" x="5" y="-238.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">All Vote plans.</text>
+<polygon fill="#009879" stroke="none" points="1.5,-527.5 1.5,-554.5 522.5,-554.5 522.5,-527.5 1.5,-527.5"/>
+<polygon fill="none" stroke="black" points="1.5,-527.5 1.5,-554.5 522.5,-554.5 522.5,-527.5 1.5,-527.5"/>
+<text text-anchor="start" x="214" y="-533.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voteplan</text>
+<polygon fill="none" stroke="black" points="1.5,-503.5 1.5,-527.5 132.5,-527.5 132.5,-503.5 1.5,-503.5"/>
+<text text-anchor="start" x="35.5" y="-508.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="132.5,-503.5 132.5,-527.5 211.5,-527.5 211.5,-503.5 132.5,-503.5"/>
+<text text-anchor="start" x="151" y="-508.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="211.5,-503.5 211.5,-527.5 522.5,-527.5 522.5,-503.5 211.5,-503.5"/>
+<text text-anchor="start" x="309.25" y="-508.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="1.5,-478.5 1.5,-503.5 132.5,-503.5 132.5,-478.5 1.5,-478.5"/>
+<polygon fill="none" stroke="black" points="1.5,-478.5 1.5,-503.5 132.5,-503.5 132.5,-478.5 1.5,-478.5"/>
+<text text-anchor="start" x="4.5" y="-485.3" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="132.5,-478.5 132.5,-503.5 211.5,-503.5 211.5,-478.5 132.5,-478.5"/>
+<polygon fill="none" stroke="black" points="132.5,-478.5 132.5,-503.5 211.5,-503.5 211.5,-478.5 132.5,-478.5"/>
+<text text-anchor="start" x="135.25" y="-485.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="#54ff9f" stroke="none" points="211.5,-478.5 211.5,-503.5 522.5,-503.5 522.5,-478.5 211.5,-478.5"/>
+<polygon fill="none" stroke="black" points="211.5,-478.5 211.5,-503.5 522.5,-503.5 522.5,-478.5 211.5,-478.5"/>
+<text text-anchor="start" x="214.5" y="-487.32" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic Unique Key</text>
+<polygon fill="none" stroke="black" points="1.5,-453.5 1.5,-478.5 132.5,-478.5 132.5,-453.5 1.5,-453.5"/>
+<text text-anchor="start" x="4.5" y="-460.3" font-family="Times,serif" font-size="16.00">objective_id</text>
+<polygon fill="none" stroke="black" points="132.5,-453.5 132.5,-478.5 211.5,-478.5 211.5,-453.5 132.5,-453.5"/>
+<text text-anchor="start" x="142" y="-460.3" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="211.5,-453.5 211.5,-478.5 522.5,-478.5 522.5,-453.5 211.5,-453.5"/>
+<text text-anchor="start" x="214.5" y="-462.32" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="none" stroke="black" points="1.5,-405.5 1.5,-453.5 132.5,-453.5 132.5,-405.5 1.5,-405.5"/>
+<text text-anchor="start" x="4.5" y="-424.05" font-family="Times,serif" font-size="16.00">id</text>
+<polygon fill="none" stroke="black" points="132.5,-405.5 132.5,-453.5 211.5,-453.5 211.5,-405.5 132.5,-405.5"/>
+<text text-anchor="start" x="140.5" y="-424.05" font-family="Times,serif" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="211.5,-405.5 211.5,-453.5 522.5,-453.5 522.5,-405.5 211.5,-405.5"/>
+<text text-anchor="start" x="214.5" y="-438.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The ID of the Vote plan in the voting</text>
+<text text-anchor="start" x="214.5" y="-424.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ledger/bulletin board.</text>
+<text text-anchor="start" x="214.5" y="-410.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">A Binary value encoded as hex.</text>
+<polygon fill="none" stroke="black" points="1.5,-371.5 1.5,-405.5 132.5,-405.5 132.5,-371.5 1.5,-371.5"/>
+<text text-anchor="start" x="4.5" y="-383.05" font-family="Times,serif" font-size="16.00">category</text>
+<polygon fill="none" stroke="black" points="132.5,-371.5 132.5,-405.5 211.5,-405.5 211.5,-371.5 132.5,-371.5"/>
+<text text-anchor="start" x="155.88" y="-383.05" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="211.5,-371.5 211.5,-405.5 522.5,-405.5 522.5,-371.5 211.5,-371.5"/>
+<text text-anchor="start" x="214.5" y="-390.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The kind of vote which can be cast on</text>
+<text text-anchor="start" x="214.5" y="-376.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">this vote plan.</text>
+<polygon fill="none" stroke="black" points="1.5,-323.5 1.5,-371.5 132.5,-371.5 132.5,-323.5 1.5,-323.5"/>
+<text text-anchor="start" x="4.5" y="-342.05" font-family="Times,serif" font-size="16.00">encryption_key</text>
+<polygon fill="none" stroke="black" points="132.5,-323.5 132.5,-371.5 211.5,-371.5 211.5,-323.5 132.5,-323.5"/>
+<text text-anchor="start" x="140.5" y="-343.05" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="211.5,-323.5 211.5,-371.5 522.5,-371.5 522.5,-323.5 211.5,-323.5"/>
+<text text-anchor="start" x="214.5" y="-356.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The public encryption key used.</text>
+<text text-anchor="start" x="214.5" y="-342.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ONLY if required by the voteplan</text>
+<text text-anchor="start" x="214.5" y="-328.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">category.</text>
+<polygon fill="none" stroke="black" points="1.5,-289.5 1.5,-323.5 132.5,-323.5 132.5,-289.5 1.5,-289.5"/>
+<text text-anchor="start" x="4.5" y="-301.05" font-family="Times,serif" font-size="16.00">group_id</text>
+<polygon fill="none" stroke="black" points="132.5,-289.5 132.5,-323.5 211.5,-323.5 211.5,-289.5 132.5,-289.5"/>
+<text text-anchor="start" x="155.88" y="-302.05" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="211.5,-289.5 211.5,-323.5 522.5,-323.5 522.5,-289.5 211.5,-289.5"/>
+<text text-anchor="start" x="214.5" y="-308.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The identifier of voting power token</text>
+<text text-anchor="start" x="214.5" y="-294.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">used withing this plan.</text>
+<polygon fill="none" stroke="black" points="1.5,-264.5 1.5,-289.5 132.5,-289.5 132.5,-264.5 1.5,-264.5"/>
+<text text-anchor="start" x="4.5" y="-271.3" font-family="Times,serif" font-size="16.00">token_id</text>
+<polygon fill="none" stroke="black" points="132.5,-264.5 132.5,-289.5 211.5,-289.5 211.5,-264.5 132.5,-264.5"/>
+<text text-anchor="start" x="155.88" y="-272.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="211.5,-264.5 211.5,-289.5 522.5,-289.5 522.5,-264.5 211.5,-264.5"/>
+<text text-anchor="start" x="214.5" y="-273.32" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="#333333" stroke="none" points="1.5,-241.5 1.5,-264.5 522.5,-264.5 522.5,-241.5 1.5,-241.5"/>
+<polygon fill="none" stroke="black" points="1.5,-241.5 1.5,-264.5 522.5,-264.5 522.5,-241.5 1.5,-241.5"/>
+<text text-anchor="start" x="4.5" y="-249.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">All Vote plans.</text>
 </g>
 <!-- voteplan&#45;&gt;objective -->
 <g id="edge1" class="edge">
 <title>voteplan:objective_id_out&#45;&gt;objective:row_id</title>
-<path fill="none" stroke="black" d="M483,-456C548.63,-456 475.67,-700.6 520,-749 584.18,-819.07 634.46,-797.78 726.21,-796.1"/>
-<polygon fill="black" stroke="black" points="726.03,-799.59 736,-796 725.97,-792.59 726.03,-799.59"/>
+<path fill="none" stroke="black" d="M524,-466C587.84,-466 517.09,-703.74 560,-751 622.6,-819.96 671.8,-800.67 761.63,-799.1"/>
+<polygon fill="black" stroke="black" points="761.53,-802.59 771.5,-799 761.47,-795.59 761.53,-802.59"/>
 </g>
 <!-- voteplan_category -->
 <g id="node9" class="node">
 <title>voteplan_category</title>
-<polygon fill="#009879" stroke="none" points="691.5,-442 691.5,-472 882.5,-472 882.5,-442 691.5,-442"/>
-<polygon fill="none" stroke="black" points="691.5,-442 691.5,-472 882.5,-472 882.5,-442 691.5,-442"/>
-<text text-anchor="start" x="694.5" y="-451" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voteplan_category</text>
-<polygon fill="none" stroke="black" points="691.5,-415 691.5,-442 882.5,-442 882.5,-415 691.5,-415"/>
-<text text-anchor="start" x="752.5" y="-422.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="691.5,-390 691.5,-415 882.5,-415 882.5,-390 691.5,-390"/>
-<text text-anchor="start" x="694.5" y="-396.8" font-family="Times,serif" font-size="16.00">name</text>
-<polygon fill="#333333" stroke="none" points="691.5,-368 691.5,-390 882.5,-390 882.5,-368 691.5,-368"/>
-<polygon fill="none" stroke="black" points="691.5,-368 691.5,-390 882.5,-390 882.5,-368 691.5,-368"/>
-<text text-anchor="start" x="694.5" y="-374.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+<polygon fill="#009879" stroke="none" points="725.5,-446.5 725.5,-473.5 935.5,-473.5 935.5,-446.5 725.5,-446.5"/>
+<polygon fill="none" stroke="black" points="725.5,-446.5 725.5,-473.5 935.5,-473.5 935.5,-446.5 725.5,-446.5"/>
+<text text-anchor="start" x="728.5" y="-452.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voteplan_category</text>
+<polygon fill="none" stroke="black" points="725.5,-422.5 725.5,-446.5 935.5,-446.5 935.5,-422.5 725.5,-422.5"/>
+<text text-anchor="start" x="799" y="-427.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="725.5,-397.5 725.5,-422.5 935.5,-422.5 935.5,-397.5 725.5,-397.5"/>
+<text text-anchor="start" x="728.5" y="-404.3" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="#333333" stroke="none" points="725.5,-374.5 725.5,-397.5 935.5,-397.5 935.5,-374.5 725.5,-374.5"/>
+<polygon fill="none" stroke="black" points="725.5,-374.5 725.5,-397.5 935.5,-397.5 935.5,-374.5 725.5,-374.5"/>
+<text text-anchor="start" x="728.5" y="-382.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
 </g>
 <!-- voteplan&#45;&gt;voteplan_category -->
 <g id="edge2" class="edge">
 <title>voteplan:category_out&#45;&gt;voteplan_category:name</title>
-<path fill="none" stroke="black" d="M483,-378C571.91,-378 595.53,-400.12 679.21,-401.89"/>
-<polygon fill="black" stroke="black" points="678.96,-405.4 689,-402 679.04,-398.4 678.96,-405.4"/>
+<path fill="none" stroke="black" d="M524,-388C609.97,-388 633,-408.23 713.81,-409.89"/>
+<polygon fill="black" stroke="black" points="713.47,-413.4 723.5,-410 713.54,-406.4 713.47,-413.4"/>
 </g>
 <!-- voting_group -->
 <g id="node10" class="node">
 <title>voting_group</title>
-<polygon fill="#009879" stroke="none" points="718.5,-312 718.5,-342 855.5,-342 855.5,-312 718.5,-312"/>
-<polygon fill="none" stroke="black" points="718.5,-312 718.5,-342 855.5,-342 855.5,-312 718.5,-312"/>
-<text text-anchor="start" x="721.5" y="-321" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voting_group</text>
-<polygon fill="none" stroke="black" points="718.5,-285 718.5,-312 855.5,-312 855.5,-285 718.5,-285"/>
-<text text-anchor="start" x="752.5" y="-292.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="718.5,-260 718.5,-285 855.5,-285 855.5,-260 718.5,-260"/>
-<text text-anchor="start" x="721.5" y="-266.8" font-family="Times,serif" font-size="16.00">name</text>
-<polygon fill="#333333" stroke="none" points="718.5,-238 718.5,-260 855.5,-260 855.5,-238 718.5,-238"/>
-<polygon fill="none" stroke="black" points="718.5,-238 718.5,-260 855.5,-260 855.5,-238 718.5,-238"/>
-<text text-anchor="start" x="721.5" y="-244.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+<polygon fill="#009879" stroke="none" points="755.5,-321.5 755.5,-348.5 905.5,-348.5 905.5,-321.5 755.5,-321.5"/>
+<polygon fill="none" stroke="black" points="755.5,-321.5 755.5,-348.5 905.5,-348.5 905.5,-321.5 755.5,-321.5"/>
+<text text-anchor="start" x="758.5" y="-327.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voting_group</text>
+<polygon fill="none" stroke="black" points="755.5,-297.5 755.5,-321.5 905.5,-321.5 905.5,-297.5 755.5,-297.5"/>
+<text text-anchor="start" x="799" y="-302.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="755.5,-272.5 755.5,-297.5 905.5,-297.5 905.5,-272.5 755.5,-272.5"/>
+<text text-anchor="start" x="758.5" y="-279.3" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="#333333" stroke="none" points="755.5,-249.5 755.5,-272.5 905.5,-272.5 905.5,-249.5 755.5,-249.5"/>
+<polygon fill="none" stroke="black" points="755.5,-249.5 755.5,-272.5 905.5,-272.5 905.5,-249.5 755.5,-249.5"/>
+<text text-anchor="start" x="758.5" y="-257.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
 </g>
 <!-- voteplan&#45;&gt;voting_group -->
 <g id="edge3" class="edge">
 <title>voteplan:group_id_out&#45;&gt;voting_group:name</title>
-<path fill="none" stroke="black" d="M483,-296C583.87,-296 610.6,-273.66 706.26,-272.09"/>
-<polygon fill="black" stroke="black" points="706.03,-275.58 716,-272 705.97,-268.58 706.03,-275.58"/>
+<path fill="none" stroke="black" d="M524,-306C623.15,-306 649.74,-286.49 743.65,-285.08"/>
+<polygon fill="black" stroke="black" points="743.53,-288.57 753.5,-285 743.47,-281.57 743.53,-288.57"/>
 </g>
 <!-- voter&#45;&gt;snapshot -->
 <g id="edge5" class="edge">
 <title>voter:snapshot_id_out&#45;&gt;snapshot:row_id</title>
-<path fill="none" stroke="black" d="M1028,-616C1097.65,-616 1025,-907.63 1079.64,-938.38"/>
-<polygon fill="black" stroke="black" points="1078.45,-941.94 1089,-941 1080.16,-935.16 1078.45,-941.94"/>
+<path fill="none" stroke="black" d="M1087.5,-623C1155.11,-623 1075.22,-907.17 1126.69,-938.25"/>
+<polygon fill="black" stroke="black" points="1125.44,-941.8 1136,-941 1127.24,-935.04 1125.44,-941.8"/>
 </g>
 <!-- LEGEND -->
 <g id="node11" class="node">
 <title>LEGEND</title>
-<polygon fill="Pink" stroke="none" points="131,-1094 131,-1124 353,-1124 353,-1094 131,-1094"/>
-<polygon fill="none" stroke="black" points="131,-1094 131,-1124 353,-1124 353,-1094 131,-1094"/>
-<text text-anchor="start" x="202" y="-1103" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">LEGEND</text>
-<polygon fill="none" stroke="black" points="131,-1067 131,-1094 270,-1094 270,-1067 131,-1067"/>
-<text text-anchor="start" x="180" y="-1074.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
-<polygon fill="none" stroke="black" points="270,-1067 270,-1094 353,-1094 353,-1067 270,-1067"/>
-<text text-anchor="start" x="273" y="-1074.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Example</text>
-<polygon fill="#54ff9f" stroke="none" points="131,-1042 131,-1067 270,-1067 270,-1042 131,-1042"/>
-<polygon fill="none" stroke="black" points="131,-1042 131,-1067 270,-1067 270,-1042 131,-1042"/>
-<text text-anchor="start" x="134" y="-1048.8" font-family="Times,serif" font-size="16.00">Primary Key</text>
-<polygon fill="#54ff9f" stroke="none" points="270,-1042 270,-1067 353,-1067 353,-1042 270,-1042"/>
-<polygon fill="none" stroke="black" points="270,-1042 270,-1067 353,-1067 353,-1042 270,-1042"/>
-<text text-anchor="start" x="285" y="-1048.8" font-family="Times,serif" font-size="16.00">integer+</text>
-<polygon fill="none" stroke="black" points="131,-1017 131,-1042 270,-1042 270,-1017 131,-1017"/>
-<text text-anchor="start" x="134" y="-1023.8" font-family="Times,serif" font-size="16.00">Standard Field</text>
-<polygon fill="none" stroke="black" points="270,-1017 270,-1042 353,-1042 353,-1017 270,-1017"/>
-<text text-anchor="start" x="294.5" y="-1023.8" font-family="Times,serif" font-size="16.00">bytea</text>
-<polygon fill="none" stroke="black" points="131,-992 131,-1017 270,-1017 270,-992 131,-992"/>
-<text text-anchor="start" x="134" y="-998.8" font-family="Times,serif" font-size="16.00">Nullable Field</text>
-<polygon fill="none" stroke="black" points="270,-992 270,-1017 353,-1017 353,-992 270,-992"/>
-<text text-anchor="start" x="299.5" y="-999.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="131,-967 131,-992 270,-992 270,-967 131,-967"/>
-<text text-anchor="start" x="134" y="-973.8" font-family="Times,serif" font-size="16.00">Sized Field</text>
-<polygon fill="none" stroke="black" points="270,-967 270,-992 353,-992 353,-967 270,-967"/>
-<text text-anchor="start" x="274.5" y="-973.8" font-family="Times,serif" font-size="16.00">varchar(32)</text>
-<polygon fill="none" stroke="black" points="131,-942 131,-967 270,-967 270,-942 131,-942"/>
-<text text-anchor="start" x="134" y="-948.8" font-family="Times,serif" font-size="16.00">Autoincrement Field</text>
-<polygon fill="none" stroke="black" points="270,-942 270,-967 353,-967 353,-942 270,-942"/>
-<text text-anchor="start" x="285" y="-948.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="Pink" stroke="none" points="123.5,-1091 123.5,-1118 400.5,-1118 400.5,-1091 123.5,-1091"/>
+<polygon fill="none" stroke="black" points="123.5,-1091 123.5,-1118 400.5,-1118 400.5,-1091 123.5,-1091"/>
+<text text-anchor="start" x="226" y="-1097" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">LEGEND</text>
+<polygon fill="none" stroke="black" points="123.5,-1067 123.5,-1091 298.5,-1091 298.5,-1067 123.5,-1067"/>
+<text text-anchor="start" x="190" y="-1071.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="298.5,-1067 298.5,-1091 400.5,-1091 400.5,-1067 298.5,-1067"/>
+<text text-anchor="start" x="312.75" y="-1071.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Example</text>
+<polygon fill="#54ff9f" stroke="none" points="123.5,-1042 123.5,-1067 298.5,-1067 298.5,-1042 123.5,-1042"/>
+<polygon fill="none" stroke="black" points="123.5,-1042 123.5,-1067 298.5,-1067 298.5,-1042 123.5,-1042"/>
+<text text-anchor="start" x="126.5" y="-1048.8" font-family="Times,serif" font-size="16.00">Primary Key</text>
+<polygon fill="#54ff9f" stroke="none" points="298.5,-1042 298.5,-1067 400.5,-1067 400.5,-1042 298.5,-1042"/>
+<polygon fill="none" stroke="black" points="298.5,-1042 298.5,-1067 400.5,-1067 400.5,-1042 298.5,-1042"/>
+<text text-anchor="start" x="312.75" y="-1048.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="123.5,-1017 123.5,-1042 298.5,-1042 298.5,-1017 123.5,-1017"/>
+<text text-anchor="start" x="126.5" y="-1023.8" font-family="Times,serif" font-size="16.00">Standard Field</text>
+<polygon fill="none" stroke="black" points="298.5,-1017 298.5,-1042 400.5,-1042 400.5,-1017 298.5,-1017"/>
+<text text-anchor="start" x="326.62" y="-1023.8" font-family="Times,serif" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="123.5,-992 123.5,-1017 298.5,-1017 298.5,-992 123.5,-992"/>
+<text text-anchor="start" x="126.5" y="-998.8" font-family="Times,serif" font-size="16.00">Nullable Field</text>
+<polygon fill="none" stroke="black" points="298.5,-992 298.5,-1017 400.5,-1017 400.5,-992 298.5,-992"/>
+<text text-anchor="start" x="333.38" y="-999.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="123.5,-967 123.5,-992 298.5,-992 298.5,-967 123.5,-967"/>
+<text text-anchor="start" x="126.5" y="-973.8" font-family="Times,serif" font-size="16.00">Sized Field</text>
+<polygon fill="none" stroke="black" points="298.5,-967 298.5,-992 400.5,-992 400.5,-967 298.5,-967"/>
+<text text-anchor="start" x="301.5" y="-973.8" font-family="Times,serif" font-size="16.00">varchar(32)</text>
+<polygon fill="none" stroke="black" points="123.5,-942 123.5,-967 298.5,-967 298.5,-942 123.5,-942"/>
+<text text-anchor="start" x="126.5" y="-948.8" font-family="Times,serif" font-size="16.00">Autoincrement Field</text>
+<polygon fill="none" stroke="black" points="298.5,-942 298.5,-967 400.5,-967 400.5,-942 298.5,-942"/>
+<text text-anchor="start" x="312.75" y="-948.8" font-family="Times,serif" font-size="16.00">integer+</text>
 </g>
 </g>
 </svg>

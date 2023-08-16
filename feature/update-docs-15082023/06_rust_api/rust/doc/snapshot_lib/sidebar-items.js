@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CATALYST_VOTING_PURPOSE_TAG"],"enum":["Error","NetworkType"],"fn":["deserialize_identifiers","serialize_identifiers"],"mod":["influence_cap","registration","sve","tests","voter_hir","voting_group"],"opaque":[""],"struct":["Dreps","KeyContribution","RawSnapshot","Snapshot","SnapshotInfo","VoterHIR"],"type":["Fraction","VotingGroup"]};

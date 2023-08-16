@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["fragment_delete","fragment_from_raw","fragment_id"]};

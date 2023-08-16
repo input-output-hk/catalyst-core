@@ -26,11 +26,9 @@ def load_json_and_serialize(path: str, model: Type[T]) -> List[T]:
 
 def load_csv_and_serialize(path: str, model: Type[T], extra: Dict = {}) -> List[T]:
     """Given a path of csv and a model it returns a list of models, merging it with extra attributes."""
-    fieldSet = model.__dict__["model_fields"].keys()
-    extraFields = {k : v for k, v in extra.items() if k in fieldSet}
     with open(path) as f:
         data = csv.DictReader(f)
-        serialized = [model(**{k : v for k, v in el.items() if k in fieldSet}, **extra) for el in data]
+        serialized = [model(**el, **extra) for el in data]
         return serialized
 
 

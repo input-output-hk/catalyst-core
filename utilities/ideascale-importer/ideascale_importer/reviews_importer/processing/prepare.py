@@ -16,8 +16,8 @@ async def allocate(
     ideascale_api_key: str,
     ideascale_api_url: str,
     output_path: str,
-    group_id: int = 1,
-    challenges_group_id: int = 1,
+    group_id: int = 31051, 
+    challenges_group_id: int = 63,
     anonymize_start_id: int = 5000,
     stage_ids: List[int] = [],
     nr_allocations: List[int] = [30, 80],
@@ -31,8 +31,8 @@ async def allocate(
         allocator = Allocator(importer, nr_allocations_map(), seed, ideascale)
         importer.load_pas(pas_path)
         await ideascale.import_challenges(challenges_group_id)
-        await ideascale.import_com_revs(group_id=group_id, start_id=anonymize_start_id, historic_pas=importer.pas)
         await ideascale.import_proposals(stage_ids=stage_ids)
+        await ideascale.import_com_revs(group_id=group_id, start_id=anonymize_start_id, historic_pas=importer.pas)
         allocator.allocate()
         allocator.export_allocations(allocator.source.pas, f"{output_path}/allocations-by-pa.xlsx")
         groups = allocator.generate_challenges_groups()

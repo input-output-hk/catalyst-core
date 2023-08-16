@@ -12,13 +12,13 @@ class Pa(Model):
     """Represents a PA."""
 
     anon_id: str = Field(alias="ids")
-    email: Optional[str]
-    rewards_address: Optional[str]
-    challenge_ids: List[int]
+    email: Optional[str] = Field(default=None)
+    rewards_address: Optional[str] = Field(default=None)
+    challenge_ids: List[int] = Field(default=[])
     level: int = Field(default=0)
-    name: Optional[str]
-    user_name: Optional[str]
-    id: Optional[int]
+    name: Optional[str] = Field(default=None)
+    user_name: Optional[str] = Field(default=None)
+    id: Optional[int] = Field(default=None)
     allocations: List[Allocation] = Field(default=[])
 
     @validator("anon_id", pre=True)
@@ -63,7 +63,7 @@ class Challenge(Model):
 
     id: int
     title: str
-    funds: Optional[int]
+    funds: Optional[int] = Field(default=None)
 
 
 class Proposal(Model):
@@ -222,14 +222,14 @@ class AiDetection(Model):
 class IdeascaleComRev(Model):
     """Represent a Community Reviewer in Ideascale."""
 
-    id: int
-    email: str
-    rewards_address: Optional[str]
-    preferred_challenges: List[str]
-    subscribed: bool
-    name: Optional[str]
-    user_name: Optional[str]
-    id: Optional[str]
+    id: int = Field(default=0)
+    email: str = Field(default="")
+    rewards_address: Optional[str] = Field(default=None)
+    preferred_challenges: List[str] = Field(default=[])
+    subscribed: bool = Field(default=False)
+    name: Optional[str] = Field(default=None)
+    user_name: Optional[str] = Field(default=None)
+    id: Optional[str] = Field(default=None)
 
     @root_validator(pre=True)
     @classmethod

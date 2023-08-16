@@ -38,18 +38,6 @@ def import_reviews(
         ...,
         help="Ideascale campaign funnel's id",
     ),
-    nr_allocations: List[int] = typer.Option(
-        [30, 80], 
-        help="Nr of proposal to allocate"
-    ),
-    stage_ids: List[int] = typer.Option(
-        [], 
-        help="Stage ID"
-    ),
-    pa_path: str = typer.Option(
-        ...,
-        help="PAs file"
-    ),
     output_path: str = typer.Option(
         ...,
         help="output path"
@@ -76,9 +64,6 @@ def import_reviews(
             password=password,
             api_token=api_token,
             funnel_id=funnel_id,
-            nr_allocations=nr_allocations,
-            stage_ids=stage_ids,
-            pa_path=pa_path,
             output_path=output_path
         )
 

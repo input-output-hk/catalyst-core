@@ -79,9 +79,6 @@ class Importer:
         password,
         api_token,
         funnel_id,
-        nr_allocations,
-        stage_ids,
-        pa_path,
         output_path,
     ):
         self.ideascale_url = ideascale_url
@@ -116,14 +113,14 @@ class Importer:
     async def prepare_allocations(self):
         logger.info("Prepare allocations for proposal's reviews...")
 
-        await allocate(
-            nr_allocations=self.nr_allocations,
-            pas_path=self.pa_path,
-            ideascale_api_key=self.api_token,
-            ideascale_api_url=self.ideascale_url,
-            stage_ids=self.stage_ids,
-            output_path=self.output_path,
-        )
+        # await allocate(
+        #     nr_allocations=self.nr_allocations,
+        #     pas_path=self.pa_path,
+        #     ideascale_api_key=self.api_token,
+        #     ideascale_api_url=self.ideascale_url,
+        #     stage_ids=self.stage_ids,
+        #     output_path=self.output_path,
+        # )
 
 
     async def run(self):

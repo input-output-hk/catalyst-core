@@ -6,9 +6,7 @@ install_crate = { crate_name = "refinery_cli", binary = "refinery", test_arg = "
 # All the prerequisite tooling needed to work with the DB.
 [tasks.install-db-prereqs]
 workspace = false
-run_task = { name = [
-        "install-refinery-cli",
-    ], parallel = true }
+run_task = { name = ["install-refinery-cli"], parallel = true }
 
 # Setup the local database ready to run the migrations.
 [tasks.local-event-db-init]
@@ -75,36 +73,14 @@ psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_5.sql ${@}
 # psql -U catalyst-event-dev -d CatalystEventDev -f historic_data/fund_9.sql ${@}
 '''
 
-# Setup the local database graphql configuration.
-[tasks.local-event-db-graphql-init]
-workspace = false
-category = "db"
-script_runner = "@shell"
-script = '''
-cd ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/src/event-db
-export ADMIN_ROLE_PW="CHANGE_ME"
-export ANON_ROLE_PW="CHANGE_ME"
-export ADMIN_USER_PW="CHANGE_ME"
-
-psql -U postgres -f setup/graphql-setup.sql \
-    -v dbName=CatalystEventDev \
-    -v dbUser="catalyst-event-dev" \
-    -v adminUserFirstName="Admin" \
-    -v adminUserLastName="Default" \
-    -v adminUserAbout="Default Admin User" \
-    -v adminUserEmail="admin.default@projectcatalyst.io" ${@}
-'''
-
-
 # Setup the local database ready to run the migrations.
 [tasks.local-event-db-setup]
 workspace = false
 category = "db"
 dependencies = [
     "local-event-db-init",
-    "local-event-db-graphql-init",
     "run-event-db-migration",
-    "local-db-historic-data-setup"
+    "local-db-historic-data-setup",
 ]
 
 # Setup the local database with the test data.
@@ -114,9 +90,8 @@ category = "db"
 dependencies = [
     "local-event-db-init",
     "run-event-db-migration",
-    "local-db-test-data-setup"
+    "local-db-test-data-setup",
 ]
-
 
 
 # Run Diesel Migrations, for documentation purposes.
@@ -147,7 +122,4 @@ psql -e -f setup/setup-db.sql \
 [tasks.doc-event-db-setup]
 workspace = false
 category = "db"
-dependencies = [
-    "doc-event-db-init",
-    "run-event-doc-db-migration"
-]
+dependencies = ["doc-event-db-init", "run-event-doc-db-migration"]

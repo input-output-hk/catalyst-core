@@ -125,7 +125,6 @@ class Importer:
             stage_ids=self.stage_ids,
             challenges_group_id=self.challenges_group_id,
             group_id=self.group_id,
-            output_path=self.output_path,
         )
 
 

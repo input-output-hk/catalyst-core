@@ -14,7 +14,6 @@ async def allocate(
     pas_path: str,
     ideascale_api_key: str,
     ideascale_api_url: str,
-    output_path: str,
     group_id: int, 
     challenges_group_id: int,
     stage_ids: List[int],
@@ -33,12 +32,15 @@ async def allocate(
         await ideascale.import_proposals(stage_ids=stage_ids)
         await ideascale.import_com_revs(group_id=group_id, start_id=anonymize_start_id, historic_pas=importer.pas)
         allocator.allocate()
-        allocator.export_allocations(allocator.source.pas, f"{output_path}/allocations-by-pa.xlsx")
-        groups = allocator.generate_challenges_groups()
-        for group in groups:
-            allocator.export_allocations(group["pas"], f"{output_path}/{group['challenge']}.xlsx")
-        allocator.export_single_allocations(allocator.allocations, f"{output_path}/allocations.csv")
+        # This data is not used by our core system, it is only consumed by Ideascale
+
+        # allocator.export_allocations(allocator.source.pas, f"{output_path}/allocations-by-pa.xlsx")
+        # groups = allocator.generate_challenges_groups()
+        # for group in groups:
+        #     allocator.export_allocations(group["pas"], f"{output_path}/{group['challenge']}.xlsx")
+
         allocator.allocation_stats()
+        return allocator.allocations
 
     def nr_allocations_map():
         res = {}
@@ -46,7 +48,7 @@ async def allocate(
             res[i] = el
         return res
 
-    await _allocate()
+    return await _allocate()
 
 
 async def update_emails(

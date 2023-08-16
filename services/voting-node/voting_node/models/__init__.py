@@ -333,7 +333,7 @@ class Proposal:
     proposer_url: str
     proposer_relevant_experience: str
     bb_proposal_id: bytes | None
-    bb_vote_options: str | None
+    bb_vote_options: list[str] | None
 
 
 @dataclass
@@ -361,22 +361,19 @@ class FundsForToken:
 
 @dataclass
 class VotingGroup:
-    """A voting group for this event."""
+    """A voting group."""
 
-    row_id: str
-    # The ID of this group
+    row_id: int
+    """The row ID of this group."""
     group_id: str
-    # The event (row_id) this group belongs to
-    event_id: int
-    # The ID of the voting token used by this group
-    token_id: str | None
+    """The unique name of this group."""
 
 
 @dataclass
 class Voter:
     """A registered voter for this event."""
 
-    row_id: str
+    row_id: int
     # Either the voting key
     voting_key: str
     # The ID of the snapshot this record belongs to
@@ -386,12 +383,28 @@ class Voter:
     # The voting power associated with this key
     voting_power: int
 
+@dataclass
+class Objective:
+    row_id: int
+    id: int
+    event: int
+    category: str
+    title: str
+    description: str
+    deleted: bool
+    rewards_currency: str | None
+    rewards_total: int | None
+    rewards_total_lovelace: int | None
+    proposers_rewards: int | None
+    vote_options: int | None
+
+    extra: Mapping[str, Any] | None
 
 @dataclass
 class Contribution:
     """Individual contributions from the stake public key to the voting key."""
 
-    row_id: str
+    row_id: int
     # Stake Public key for the voter.
     stake_public_key: str
     # The ID of the snapshot this record belongs to
@@ -415,7 +428,7 @@ class Contribution:
 class VotePlan:
     """A vote plan for this event."""
 
-    row_id: str
+    row_id: int
     # The event (row_id) this plan belongs to
     event_id: int
     # The ID of the plan in the voting ledger/bulletin board.

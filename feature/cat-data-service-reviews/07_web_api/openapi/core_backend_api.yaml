@@ -44,14 +44,8 @@ servers:
     variables:
       port:
         default: '8123'
-  - url: 'https://dev.xxxxxxxxxxxxxx.io'
-    description: Unstable Development Test Environment
-  - url: 'https://qa.xxxxxxxxxxxxxx.io'
-    description: QA Testing Environment
-  - url: 'https://preprod.xxxxxxxxxxxxxx.io'
-    description: Preprod Stable Continuous Testing Environment
-  - url: 'https://prod.xxxxxxxxxxxxxx.io'
-    description: Production Environment
+  - url: 'https://api.testnet.projectcatalyst.io'
+    description: Unstable Catalyst Testnet Environment
 paths:
   /health/ready:
     get:

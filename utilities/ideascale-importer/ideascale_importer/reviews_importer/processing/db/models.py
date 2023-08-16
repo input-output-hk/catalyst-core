@@ -229,7 +229,7 @@ class IdeascaleComRev(Model):
     subscribed: bool = Field(default=False)
     name: Optional[str] = Field(default=None)
     user_name: Optional[str] = Field(default=None)
-    id: Optional[str] = Field(default=None)
+    id: Optional[int] = Field(default=None)
 
     @root_validator(pre=True)
     @classmethod

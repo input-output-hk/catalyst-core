@@ -112,6 +112,7 @@ class Importer:
         logger.info("Dowload reviews from Ideascale...")
         await self.frontend_client.download_reviews(self.funnel_id)
 
+    # This step does not using right now, need to getting PAs files and uploading some results to Ideascale
     async def prepare_allocations(self):
         logger.info("Prepare allocations for proposal's reviews...")
 

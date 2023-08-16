@@ -5,7 +5,7 @@ import random
 import rich
 from loguru import logger
 
-from ..db import models
+from ..types import models
 from .. import utils
 from .importer import Importer, IdeascaleImporter
 

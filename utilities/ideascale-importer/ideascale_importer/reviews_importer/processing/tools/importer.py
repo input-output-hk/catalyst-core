@@ -1,6 +1,6 @@
 """Module to import and manage data."""
 from typing import List
-from ..db import models
+from ..types import models
 from .. import utils
 
 from loguru import logger

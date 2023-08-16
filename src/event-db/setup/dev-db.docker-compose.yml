@@ -1,9 +1,8 @@
 # Start a local development postgres-14 DB
 # Default username/password = postgres:postgres
-version: '3.1'
+version: "3.1"
 
 services:
-
   db:
     image: postgres:14
     restart: always
@@ -36,18 +35,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-  graphql:
-    image: event-db-graphql:latest
-    environment:
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@db/CatalystEventDev
-      - JWT_SECRET=CHANGE_ME
-      - GRAPHQL_PORT=5000
-    ports:
-      - 5000:5000
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
 
   adminer:
     image: adminer

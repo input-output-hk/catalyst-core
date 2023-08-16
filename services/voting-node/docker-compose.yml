@@ -39,18 +39,6 @@ services:
       postgres:
         condition: service_healthy
 
-  graphql:
-    image: event-db-graphql:latest
-    environment:
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JWT_SECRET=CHANGE_ME
-      - GRAPHQL_PORT=5000
-    ports:
-      - 5000:5000
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
-
   cat-data-service:
     image: cat-data-service:latest
     environment:
@@ -151,7 +139,7 @@ services:
 
   otel-collector:
     image: otel/opentelemetry-collector:latest
-    command: [ "--config=/etc/otel-collector.yaml" ]
+    command: ["--config=/etc/otel-collector.yaml"]
     volumes:
       - ./extras/otel-collector.yaml:/etc/otel-collector.yaml
     ports:
@@ -174,13 +162,13 @@ services:
 
   tempo:
     image: grafana/tempo:latest
-    command: [ "-config.file=/etc/tempo.yaml" ]
+    command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./extras/tempo-local.yaml:/etc/tempo.yaml
       - ./extras/tempo-data:/tmp/tempo
     ports:
-      - "3200:3200"  # tempo
-      - "4317"  # otlp grpc
+      - "3200:3200" # tempo
+      - "4317" # otlp grpc
     profiles:
       - "donotstart"
 

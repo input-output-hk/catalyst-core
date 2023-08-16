@@ -118,3 +118,6 @@ treefmt.toml
 
 # local earthly Environments
 ./local/
+local/docker-compose.yml
+.gitignore
+local/ideascale-importer-config.json

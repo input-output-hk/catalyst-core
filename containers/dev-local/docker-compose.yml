@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 10
     ports:
-      - 5432:5432
+      - 5555:5555
     volumes:
       - eventdb:/var/lib/postgresql/data
 
@@ -26,7 +26,7 @@ services:
     environment:
       # Required environment variables for migrations
       - DB_HOST=db
-      - DB_PORT=5432
+      - DB_PORT=5555
       - DB_NAME=CatalystEventDev
       - DB_SUPERUSER=postgres
       - DB_SUPERUSER_PASSWORD=postgres
@@ -38,18 +38,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
-  graphql:
-    image: event-db-graphql:latest
-    environment:
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@db/CatalystEventDev
-      - JWT_SECRET=CHANGE_ME
-      - GRAPHQL_PORT=5000
-    ports:
-      - 5000:5000
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
 
   cat-data-service:
     image: cat-data-service:latest

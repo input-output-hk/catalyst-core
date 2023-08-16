@@ -6,7 +6,6 @@ from typing import List
 from .tools.importer import Importer, IdeascaleImporter
 from .tools.allocator import Allocator
 from .tools.postprocessor import Postprocessor
-from .tools.sql_generator import SQLGenerator
 
 app = typer.Typer()
 
@@ -16,11 +15,11 @@ async def allocate(
     ideascale_api_key: str,
     ideascale_api_url: str,
     output_path: str,
-    group_id: int = 31051, 
-    challenges_group_id: int = 63,
+    group_id: int, 
+    challenges_group_id: int,
+    stage_ids: List[int],
+    nr_allocations: List[int],
     anonymize_start_id: int = 5000,
-    stage_ids: List[int] = [],
-    nr_allocations: List[int] = [30, 80],
     seed: int = 7,
 ):
     """Run the allocator check."""
@@ -98,26 +97,3 @@ async def process_ideascale_reviews(
         postprocessor.export_pas(f"{output_path}/active-pas.csv")
 
     await _process_ideascale_reviews()
-
-
-async def generate_sqls(
-    ideascale_api_key: str = typer.Option("", help="IdeaScale API key"),
-    ideascale_api_url: str = typer.Option("https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"),
-    challenges_group_id: int = typer.Option(1, help="Challenges group ID"),
-    fund: int = typer.Option(10, help="Fund ID"),
-    stage_ids: int = typer.Option([], help="Stage ID"),
-    reviews_path: str = typer.Option("", help="Active PAs file"),
-    output_path: str = typer.Option("", help="Output folder"),
-):
-    """Generate SQLs for the moderation backend."""
-
-    async def _generate_sqls():
-        importer = Importer()
-        ideascale = IdeascaleImporter(ideascale_api_key, ideascale_api_url)
-        sql_generator = SQLGenerator(importer, ideascale, output_path)
-        sql_generator.funds(fund)
-        await sql_generator.challenges(fund, challenges_group_id)
-        await sql_generator.proposals(fund, stage_ids)
-        sql_generator.reviews(reviews_path, fund)
-
-    await _generate_sqls()

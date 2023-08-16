@@ -87,11 +87,15 @@ class Importer:
         self.password = password
         self.api_token = api_token
         self.funnel_id = funnel_id
-        self.nr_allocations =  {i: el for i, el in enumerate(nr_allocations)}
-        self.stage_ids = stage_ids
 
-        self.pa_path = pa_path
         self.output_path = output_path
+
+        # hardcoded data for testing
+        self.nr_allocations =  [30, 80]
+        self.stage_ids = [4650, 4656, 4662, 4591, 4597, 4603, 4609, 4615, 4621, 4627, 4633, 4639, 4645, 4651, 4657, 4663, 4592, 4598, 4604, 4610, 4616, 4622, 4628, 4634, 4640, 4646, 4652, 4658, 4664]
+        self.pa_path = "./ideascale_importer/reviews_importer/pa.csv"
+        self.group_id = 31051
+        self.challenges_group_id = 63
 
         self.frontend_client = None
         self.db = None
@@ -113,14 +117,16 @@ class Importer:
     async def prepare_allocations(self):
         logger.info("Prepare allocations for proposal's reviews...")
 
-        # await allocate(
-        #     nr_allocations=self.nr_allocations,
-        #     pas_path=self.pa_path,
-        #     ideascale_api_key=self.api_token,
-        #     ideascale_api_url=self.ideascale_url,
-        #     stage_ids=self.stage_ids,
-        #     output_path=self.output_path,
-        # )
+        await allocate(
+            nr_allocations=self.nr_allocations,
+            pas_path=self.pa_path,
+            ideascale_api_key=self.api_token,
+            ideascale_api_url=self.ideascale_url,
+            stage_ids=self.stage_ids,
+            challenges_group_id=self.challenges_group_id,
+            group_id=self.group_id,
+            output_path=self.output_path,
+        )
 
 
     async def run(self):

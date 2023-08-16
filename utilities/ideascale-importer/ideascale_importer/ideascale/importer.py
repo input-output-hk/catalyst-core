@@ -308,6 +308,7 @@ class Importer:
         ideas = []
         for stage_id in self.config.stage_ids:
             ideas.extend(await client.stage_ideas(stage_id=stage_id))
+        await client.close()
 
         vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, ["yes", "no"])
         mapper = Mapper(vote_options_id, self.config)

@@ -36,7 +36,7 @@
       rustToolchain
       # rustNightly
       protobuf
-      uniffi-bindgen
+      #uniffi-bindgen
       postgresql
 
       # Misc tools

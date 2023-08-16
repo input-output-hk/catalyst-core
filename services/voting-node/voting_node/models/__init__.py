@@ -182,6 +182,13 @@ class Event:
     registration_snapshot_time: datetime | None
     voting_power_threshold: int | None
     max_voting_power_pct: int | None
+    """The Minimum number of Lovelace staked at the time of snapshot, to be eligible to vote.
+
+    `None` means that it is not yet defined.
+    """
+
+    review_rewards: int | None
+    """The total reward pool to pay for community reviewers for their valid reviews of the proposals assigned to this event."""
 
     # The Time (UTC) Registrations are taken from Cardano main net.
     # Registrations after this date are not valid for voting on the event.

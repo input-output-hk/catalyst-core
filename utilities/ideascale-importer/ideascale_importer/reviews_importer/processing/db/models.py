@@ -8,7 +8,6 @@ import re
 class Model(BaseModel):
     """Base class for all models."""
 
-
 class Pa(Model):
     """Represents a PA."""
 

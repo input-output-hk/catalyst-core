@@ -1,5 +1,6 @@
 import asyncio
 import typer
+import traceback
 
 from typing import List
 
@@ -41,9 +42,17 @@ def import_reviews(
         [30, 80], 
         help="Nr of proposal to allocate"
     ),
+    stage_ids: List[int] = typer.Option(
+        [], 
+        help="Stage ID"
+    ),
     pa_path: str = typer.Option(
         ...,
         help="PAs file"
+    ),
+    output_path: str = typer.Option(
+        ...,
+        help="output path"
     ),
     log_level: str = typer.Option(
         "info",
@@ -61,14 +70,16 @@ def import_reviews(
 
     async def inner():
         importer = Importer(
-            ideascale_url,
-            database_url,
-            email,
-            password,
-            api_token,
-            funnel_id,
-            nr_allocations,
-            pa_path
+            ideascale_url=ideascale_url,
+            database_url=database_url,
+            email=email,
+            password=password,
+            api_token=api_token,
+            funnel_id=funnel_id,
+            nr_allocations=nr_allocations,
+            stage_ids=stage_ids,
+            pa_path=pa_path,
+            output_path=output_path
         )
 
         try:
@@ -76,6 +87,7 @@ def import_reviews(
             await importer.run()
             await importer.close()
         except Exception as e:
+            traceback.print_exc()
             logger.error(e)
 
     asyncio.run(inner())

@@ -5,6 +5,7 @@ from loguru import logger
 
 from ideascale_importer import utils
 import ideascale_importer.db
+from .processing.prepare import allocate
 
 
 class FrontendClient:
@@ -79,7 +80,9 @@ class Importer:
         api_token,
         funnel_id,
         nr_allocations,
+        stage_ids,
         pa_path,
+        output_path,
     ):
         self.ideascale_url = ideascale_url
         self.database_url = database_url
@@ -88,6 +91,10 @@ class Importer:
         self.api_token = api_token
         self.funnel_id = funnel_id
         self.nr_allocations =  {i: el for i, el in enumerate(nr_allocations)}
+        self.stage_ids = stage_ids
+
+        self.pa_path = pa_path
+        self.output_path = output_path
 
         self.frontend_client = None
         self.db = None
@@ -107,6 +114,15 @@ class Importer:
 
     async def prepare_allocations(self):
         logger.info("Prepare allocations for proposal's reviews...")
+
+        await allocate(
+            nr_allocations=self.nr_allocations,
+            pas_path=self.pa_path,
+            ideascale_api_key=self.api_token,
+            ideascale_api_url=self.ideascale_url,
+            stage_ids=self.stage_ids,
+            output_path=self.output_path,
+        )
 
 
     async def run(self):

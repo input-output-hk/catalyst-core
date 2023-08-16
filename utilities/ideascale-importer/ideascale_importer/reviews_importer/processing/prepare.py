@@ -2,31 +2,26 @@
 import typer
 import csv
 from typing import List
-from rich import print
-from asyncio import run as aiorun
 
-from review_stage.tools.importer import Importer, IdeascaleImporter
-from review_stage.tools.allocator import Allocator
-from review_stage.tools.postprocessor import Postprocessor
-from review_stage.tools.sql_generator import SQLGenerator
+from .tools.importer import Importer, IdeascaleImporter
+from .tools.allocator import Allocator
+from .tools.postprocessor import Postprocessor
+from .tools.sql_generator import SQLGenerator
 
 app = typer.Typer()
 
 
-@app.command()
-def allocate(
-    nr_allocations: List[int] = typer.Option([30, 80], help="Nr of proposal to allocate"),
-    seed: int = typer.Option(7, help="Seed number for random allocations"),
-    proposals_path: str = typer.Option("", help="Proposals file"),
-    challenges_path: str = typer.Option("", help="Challenges file"),
-    pas_path: str = typer.Option("", help="PAs file"),
-    ideascale_api_key: str = typer.Option("", help="IdeaScale API key"),
-    ideascale_api_url: str = typer.Option("https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"),
-    group_id: int = typer.Option(1, help="Reviewers group ID"),
-    challenges_group_id: int = typer.Option(1, help="Challenges group ID"),
-    anonymize_start_id: int = typer.Option(5000, help="ID to start with to assign anonymized IDs"),
-    stage_ids: List[int] = typer.Option([], help="Stage ID"),
-    output_path: str = typer.Option("", help="Output folder"),
+async def allocate(
+    pas_path: str,
+    ideascale_api_key: str,
+    ideascale_api_url: str,
+    output_path: str,
+    group_id: int = 1,
+    challenges_group_id: int = 1,
+    anonymize_start_id: int = 5000,
+    stage_ids: List[int] = [],
+    nr_allocations: List[int] = [30, 80],
+    seed: int = 7,
 ):
     """Run the allocator check."""
 
@@ -45,7 +40,6 @@ def allocate(
             allocator.export_allocations(group["pas"], f"{output_path}/{group['challenge']}.xlsx")
         allocator.export_single_allocations(allocator.allocations, f"{output_path}/allocations.csv")
         allocator.allocation_stats()
-        print("[bold green]Proposals allocated.[/bold green]")
 
     def nr_allocations_map():
         res = {}
@@ -53,10 +47,10 @@ def allocate(
             res[i] = el
         return res
 
-    aiorun(_allocate())
+    await _allocate()
 
-@app.command()
-def update_emails(
+
+async def update_emails(
     pas_path: str = typer.Option("", help="PAs file"),
     ideascale_api_key: str = typer.Option("", help="IdeaScale API key"),
     ideascale_api_url: str = typer.Option("https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"),
@@ -70,7 +64,7 @@ def update_emails(
         
         importer.load_pas(pas_path)
     
-    aiorun(_update_emails())
+    await _update_emails()
     ideascale.update_comrevs_emails(historic_pas=importer.pas)
     keys = ideascale.new_pas[0].keys()
     with open(output_path, "w", newline="") as f:
@@ -78,8 +72,7 @@ def update_emails(
         dict_writer.writeheader()
         dict_writer.writerows(ideascale.new_pas)
 
-@app.command()
-def process_ideascale_reviews(
+async def process_ideascale_reviews(
     ideascale_xlsx_path: str = typer.Option("", help="Review export from Ideascale."),
     ideascale_api_key: str = typer.Option("", help="IdeaScale API key"),
     ideascale_api_url: str = typer.Option("https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"),
@@ -104,11 +97,10 @@ def process_ideascale_reviews(
         postprocessor.export_reviews(postprocessor.data.reviews, f"{output_path}/postprocessed-reviews.csv")
         postprocessor.export_pas(f"{output_path}/active-pas.csv")
 
-    aiorun(_process_ideascale_reviews())
+    await _process_ideascale_reviews()
 
 
-@app.command()
-def generate_sqls(
+async def generate_sqls(
     ideascale_api_key: str = typer.Option("", help="IdeaScale API key"),
     ideascale_api_url: str = typer.Option("https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"),
     challenges_group_id: int = typer.Option(1, help="Challenges group ID"),
@@ -128,4 +120,4 @@ def generate_sqls(
         await sql_generator.proposals(fund, stage_ids)
         sql_generator.reviews(reviews_path, fund)
 
-    aiorun(_generate_sqls())
+    await _generate_sqls()

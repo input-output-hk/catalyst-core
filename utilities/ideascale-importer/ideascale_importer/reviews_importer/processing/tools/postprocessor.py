@@ -1,9 +1,9 @@
 """Module to postprocess reviews."""
 from typing import List
 
-from review_stage.db import models
-from review_stage import utils
-from review_stage.tools.importer import Importer
+from ..db import models
+from .. import utils
+from .importer import Importer
 
 
 class Postprocessor:

@@ -1,7 +1,7 @@
 """Module to import and manage data."""
 from typing import List
-from review_stage.db import models
-from review_stage import utils
+from ..db import models
+from .. import utils
 
 from loguru import logger
 

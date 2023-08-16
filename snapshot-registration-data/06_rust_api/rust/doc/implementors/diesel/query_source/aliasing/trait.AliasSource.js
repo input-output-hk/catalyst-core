@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"voting_tools_rs":[["impl AliasSource for <a class=\"struct\" href=\"voting_tools_rs/db/queries/vote_registrations/struct.meta_table.html\" title=\"struct voting_tools_rs::db::queries::vote_registrations::meta_table\">meta_table</a>"],["impl AliasSource for <a class=\"struct\" href=\"voting_tools_rs/db/queries/vote_registrations/struct.sig_table.html\" title=\"struct voting_tools_rs::db::queries::vote_registrations::sig_table\">sig_table</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

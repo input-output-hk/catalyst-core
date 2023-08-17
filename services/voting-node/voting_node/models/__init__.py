@@ -368,12 +368,8 @@ class FundsForToken:
 
 @dataclass
 class VotingGroup:
-    """A voting group."""
-
-    row_id: int
-    """The row ID of this group."""
-    group_id: str
-    """The unique name of this group."""
+    name: str
+    """The ID of this voting group."""
 
 
 @dataclass
@@ -384,7 +380,7 @@ class Voter:
     # Either the voting key
     voting_key: str
     # The ID of the snapshot this record belongs to
-    snapshot_id: str
+    snapshot_id: int
     # The voting group this voter belongs to
     voting_group: str
     # The voting power associated with this key

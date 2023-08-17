@@ -3,7 +3,7 @@ from pathlib import Path
 import socket
 import pytest
 from voting_node.db import EventDb
-from voting_node.models import Event, HostInfo, ServiceSettings, Voter, VotingGroup
+from voting_node.models import Contribution, Event, HostInfo, Objective, Proposal, ServiceSettings, Voter, VotingGroup
 
 from voting_node.tasks import Leader0Schedule
 
@@ -45,6 +45,41 @@ def mock_voters():
         Voter(4, "votekey", 1, "rep", 5000),
         Voter(5, "votekey", 1, "direct", 5000),
         Voter(6, "votekey", 1, "direct", 5000),
+    ]
+
+
+@pytest.fixture
+def mock_contributions():
+    return [
+        Contribution(1, "stakekey", 1, "direct", 5000, "votekey", 1),
+        Contribution(2, "stakekey", 1, "rep", 5000, "votekey", 1),
+        Contribution(3, "stakekey", 1, "direct", 5000, "votekey", 1),
+        Contribution(4, "stakekey", 1, "rep", 5000, "votekey", 1),
+        Contribution(5, "stakekey", 1, "direct", 5000, "votekey", 1),
+        Contribution(6, "stakekey", 1, "direct", 5000, "votekey", 1),
+    ]
+
+
+@pytest.fixture
+def mock_objectives():
+    return [
+        Objective(1, 1001, 1, "Category", "Title", "Description", False, "ADA"),
+        Objective(2, 1002, 1, "Category", "Title", "Description", False, "ADA"),
+        Objective(3, 1003, 1, "Category", "Title", "Description", False, "ADA"),
+        Objective(4, 1004, 1, "Category", "Title", "Description", False, "ADA"),
+    ]
+
+
+@pytest.fixture
+def mock_proposals():
+    return [
+        Proposal(1, 301, 1, "Title", "Summary", "Category", "publickey", 7000000, "http://url", "http://files", 1.0, "Name", "Contact", "http://proposer", "Experience"),
+        Proposal(2, 302, 1, "Title", "Summary", "Category", "publickey", 7000000, "http://url", "http://files", 1.0, "Name", "Contact", "http://proposer", "Experience"),
+        Proposal(3, 303, 1, "Title", "Summary", "Category", "publickey", 7000000, "http://url", "http://files", 1.0, "Name", "Contact", "http://proposer", "Experience"),
+        Proposal(4, 304, 2, "Title", "Summary", "Category", "publickey", 7000000, "http://url", "http://files", 1.0, "Name", "Contact", "http://proposer", "Experience"),
+        Proposal(5, 305, 2, "Title", "Summary", "Category", "publickey", 7000000, "http://url", "http://files", 1.0, "Name", "Contact", "http://proposer", "Experience"),
+        Proposal(6, 306, 3, "Title", "Summary", "Category", "publickey", 7000000, "http://url", "http://files", 1.0, "Name", "Contact", "http://proposer", "Experience"),
+        Proposal(7, 307, 4, "Title", "Summary", "Category", "publickey", 7000000, "http://url", "http://files", 1.0, "Name", "Contact", "http://proposer", "Experience"),
     ]
 
 
@@ -96,6 +131,30 @@ def mock_db_fetch_voters(monkeypatch, mock_voters):
     monkeypatch.setattr(EventDb, "fetch_voters", mock_db_call)
 
 
+@pytest.fixture
+def mock_db_fetch_contributions(monkeypatch, mock_contributions):
+    async def mock_db_call(*args, **kwargs):
+        return mock_contributions
+
+    monkeypatch.setattr(EventDb, "fetch_contributions", mock_db_call)
+
+
+@pytest.fixture
+def mock_db_fetch_objectives(monkeypatch, mock_objectives):
+    async def mock_db_call(*args, **kwargs):
+        return mock_objectives
+
+    monkeypatch.setattr(EventDb, "fetch_objectives", mock_db_call)
+
+
+@pytest.fixture
+def mock_db_fetch_proposals(monkeypatch, mock_proposals):
+    async def mock_db_call(*args, **kwargs):
+        return mock_proposals
+
+    monkeypatch.setattr(EventDb, "fetch_proposals", mock_db_call)
+
+
 # TESTS
 
 
@@ -131,12 +190,11 @@ async def test_task_node_fetch_host_keys(leader0_host_info, mock_event, mock_db_
 
 @pytest.mark.asyncio
 async def test_task_node_snapshot_data(
-    mock_event, mock_db_check_if_snapshot_is_final, mock_db_fetch_voting_groups, mock_db_fetch_voters
+    mock_event, mock_db_check_if_snapshot_is_final, mock_db_fetch_voting_groups, mock_db_fetch_voters, mock_db_fetch_contributions, mock_db_fetch_objectives, mock_db_fetch_proposals
 ):
     schedule = Leader0Schedule()
-
-    # test_event = mock_event
 
     schedule.node.event = mock_event
 
     await schedule.node_snapshot_data()
+    ...

@@ -334,13 +334,13 @@ class Proposal:
     url: str
     files_url: str
     impact_score: float
-    extra: Mapping[str, str] | None
     proposer_name: str
     proposer_contact: str
     proposer_url: str
     proposer_relevant_experience: str
-    bb_proposal_id: bytes | None
-    bb_vote_options: list[str] | None
+    extra: Mapping[str, str] | None = None
+    bb_proposal_id: bytes | None = None
+    bb_vote_options: list[str] | None = None
 
 
 @dataclass
@@ -395,13 +395,13 @@ class Objective:
     title: str
     description: str
     deleted: bool
-    rewards_currency: str | None
-    rewards_total: int | None
-    rewards_total_lovelace: int | None
-    proposers_rewards: int | None
-    vote_options: int | None
+    rewards_currency: str | None = None
+    rewards_total: int | None = None
+    rewards_total_lovelace: int | None = None
+    proposers_rewards: int | None = None
+    vote_options: int | None = None
 
-    extra: Mapping[str, Any] | None
+    extra: Mapping[str, Any] | None = None
 
 
 @dataclass
@@ -412,20 +412,20 @@ class Contribution:
     # Stake Public key for the voter.
     stake_public_key: str
     # The ID of the snapshot this record belongs to
-    snapshot_id: str
-
-    # The voting key. If None, it is the raw staked ADA.
-    voting_key: str | None
-    # The weight that this key gets from the total.
-    voting_weight: int | None
-    # The index from 0 of the keys in the delegation array.
-    voting_key_idx: int | None
-    # The amount of ADA contributed to this voting key from the stake address.
-    value: int
+    snapshot_id: int
     # The group that this contribution goes to.
     voting_group: str
+    # The amount of ADA contributed to this voting key from the stake address.
+    value: int
+
+    # The voting key. If None, it is the raw staked ADA.
+    voting_key: str | None = None
+    # The weight that this key gets from the total.
+    voting_weight: int | None = None
+    # The index from 0 of the keys in the delegation array.
+    voting_key_idx: int | None = None
     # Currently unused.
-    reward_address: str | None
+    reward_address: str | None = None
 
 
 @dataclass

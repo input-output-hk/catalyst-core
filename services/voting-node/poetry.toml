@@ -5,3 +5,8 @@ prefer-active-python = true
 [virtualenvs.options]
 no-pip = true
 no-setuptools = true
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+]

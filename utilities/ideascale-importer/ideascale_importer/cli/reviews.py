@@ -1,12 +1,11 @@
 import asyncio
 import typer
 import traceback
-
 from typing import List
+from loguru import logger
 
 from ideascale_importer.reviews_importer.importer import Importer, FrontendClient
 from ideascale_importer.utils import configure_logger
-from loguru import logger
 
 app = typer.Typer(add_completion=False)
 
@@ -30,13 +29,17 @@ def import_reviews(
         ...,
         help="Ideascale user's password (needs admin access)",
     ),
+    event_id: int = typer.Option(
+        ...,
+        help="Database row id of the event which data will be imported",
+    ),
     api_token: str = typer.Option(...,
         envvar="IDEASCALE_API_TOKEN",
         help="IdeaScale API token"
     ),
-    funnel_id: int = typer.Option(
-        ...,
-        help="Ideascale campaign funnel's id",
+    pa_path: str = typer.Option(
+        ..., 
+        help="PAs file"
     ),
     output_path: str = typer.Option(
         ...,
@@ -63,7 +66,8 @@ def import_reviews(
             email=email,
             password=password,
             api_token=api_token,
-            funnel_id=funnel_id,
+            event_id=event_id,
+            pa_path=pa_path,
             output_path=output_path
         )
 

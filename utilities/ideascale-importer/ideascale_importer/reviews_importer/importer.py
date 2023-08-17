@@ -2,6 +2,9 @@ from lxml import html
 import secrets
 import time
 from loguru import logger
+from dataclasses import dataclass
+from typing import List
+import pydantic
 
 from ideascale_importer import utils
 import ideascale_importer.db
@@ -77,28 +80,37 @@ class Importer:
         database_url,
         email,
         password,
+        event_id,
         api_token,
-        funnel_id,
+        pa_path,
         output_path,
     ):
         self.ideascale_url = ideascale_url
         self.database_url = database_url
         self.email = email
         self.password = password
+        self.event_id = event_id
         self.api_token = api_token
-        self.funnel_id = funnel_id
 
+        self.pa_path = pa_path
         self.output_path = output_path
-
-        # hardcoded data for testing
-        self.nr_allocations =  [30, 80]
-        self.stage_ids = [4650, 4656, 4662, 4591, 4597, 4603, 4609, 4615, 4621, 4627, 4633, 4639, 4645, 4651, 4657, 4663, 4592, 4598, 4604, 4610, 4616, 4622, 4628, 4634, 4640, 4646, 4652, 4658, 4664]
-        self.pa_path = "./ideascale_importer/reviews_importer/pa.csv"
-        self.group_id = 31051
-        self.challenges_group_id = 63
 
         self.frontend_client = None
         self.db = None
+
+    async def load_config(self):
+        """Load the configuration setting from the event db."""
+
+        logger.info("Loading ideascale config from the event-db")
+
+        config = ideascale_importer.db.models.Config(row_id=0, id="ideascale", id2=f"{self.event_id}", id3="", value=None)
+        res = await ideascale_importer.db.select(self.db, config,  cond={
+            "id": f"= '{config.id}'",
+            "AND id2": f"= '{config.id2}'"
+            })
+        if len(res) == 0:
+            raise Exception("Cannot find ideascale config in the event-db database")
+        self.config = Config.from_json(res[0].value)
 
     async def connect(self):
         if self.frontend_client is None:
@@ -118,13 +130,13 @@ class Importer:
         logger.info("Prepare allocations for proposal's reviews...")
 
         await allocate(
-            nr_allocations=self.nr_allocations,
+            nr_allocations=self.config.nr_allocations,
             pas_path=self.pa_path,
             ideascale_api_key=self.api_token,
             ideascale_api_url=self.ideascale_url,
-            stage_ids=self.stage_ids,
-            challenges_group_id=self.challenges_group_id,
-            group_id=self.group_id,
+            stage_ids=self.config.stage_ids,
+            challenges_group_id=self.config.campaign_group_id,
+            group_id=self.config.group_id,
         )
 
 
@@ -133,9 +145,26 @@ class Importer:
         if self.frontend_client is None:
             raise Exception("Not connected to the ideascale")
 
+        await self.load_config()
+
         # await self.download_reviews()
         await self.prepare_allocations()
 
     async def close(self):
         await self.frontend_client.close()
+
+@dataclass
+class Config:
+    """Represents the available configuration fields."""
+
+    group_id: int
+    campaign_group_id: int
+    funnel_id: int
+    stage_ids: List[int]
+    nr_allocations: List[int]
+    
+    @staticmethod
+    def from_json(val: dict):
+        """Load configuration from a JSON object."""
+        return pydantic.tools.parse_obj_as(Config, val)
 

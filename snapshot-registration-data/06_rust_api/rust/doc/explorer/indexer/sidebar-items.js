@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["IndexerError"],"opaque":[""],"static":["CALLSITE","META"],"struct":["Indexer"]};

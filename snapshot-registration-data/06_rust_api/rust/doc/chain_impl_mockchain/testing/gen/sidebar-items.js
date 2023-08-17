@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["vote"],"opaque":[""],"struct":["TestGen"]};

@@ -18,6 +18,7 @@ async def allocate(
     challenges_group_id: int,
     stage_ids: List[int],
     nr_allocations: List[int],
+    output_path: str,
     anonymize_start_id: int = 5000,
     seed: int = 7,
 ):
@@ -32,6 +33,7 @@ async def allocate(
         await ideascale.import_proposals(stage_ids=stage_ids)
         await ideascale.import_com_revs(group_id=group_id, start_id=anonymize_start_id, historic_pas=importer.pas)
         allocator.allocate()
+
         # This data is not used by our core system, it is only consumed by Ideascale
 
         # allocator.export_allocations(allocator.source.pas, f"{output_path}/allocations-by-pa.xlsx")
@@ -39,8 +41,10 @@ async def allocate(
         # for group in groups:
         #     allocator.export_allocations(group["pas"], f"{output_path}/{group['challenge']}.xlsx")
 
+        file_name = f"{output_path}/allocations.csv"
+        allocator.export_single_allocations(allocator.allocations, file_name)
         allocator.allocation_stats()
-        return allocator.allocations
+        return file_name
 
     def nr_allocations_map():
         res = {}
@@ -51,13 +55,13 @@ async def allocate(
     return await _allocate()
 
 async def process_ideascale_reviews(
-    ideascale_xlsx_path: str = typer.Option("", help="Review export from Ideascale."),
-    ideascale_api_key: str = typer.Option("", help="IdeaScale API key"),
-    ideascale_api_url: str = typer.Option("https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"),
-    allocation_path: str = typer.Option("", help="Allocation file"),
-    challenges_group_id: int = typer.Option(1, help="Challenges group ID"),
-    output_path: str = typer.Option("", help="Output folder"),
-    fund: int = typer.Option(10, help="Fund"),
+    ideascale_xlsx_path: str,
+    ideascale_api_key: str,
+    ideascale_api_url: str,
+    allocation_path: str,
+    challenges_group_id: int,
+    output_path: str,
+    fund: int,
 ):
     """Process Ideascale export."""
 

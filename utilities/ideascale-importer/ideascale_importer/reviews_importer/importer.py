@@ -5,10 +5,12 @@ from loguru import logger
 from dataclasses import dataclass
 from typing import List
 import pydantic
+from io import BytesIO
+import tempfile
 
 from ideascale_importer import utils
 import ideascale_importer.db
-from .processing.prepare import allocate
+from .processing.prepare import allocate, process_ideascale_reviews
 
 
 class FrontendClient:
@@ -34,10 +36,11 @@ class FrontendClient:
 
         await self.inner.post(f"{login}", data=data)
 
-    async def download_reviews(self, funnel_id):
+    async def download_reviews(self, dir, funnel_id):
         async def download_file(self, funnel_id, id):
             export_endpoint = "/a/admin/workflow/survey-tools/assessment/report/statistic/export/assessment-details/"
             file_name = f"{funnel_id}_{secrets.token_hex(6)}"
+            file_name = f"{dir.name}/{file_name}.xlsx"
 
             content = await self.inner.get(f"{export_endpoint}{id}") 
             tree = html.fromstring(content)
@@ -54,7 +57,9 @@ class FrontendClient:
                     download_endpoint = "/a/download-export-file/"
 
                     content = await self.inner.get(f"{download_endpoint}{item}")
-                    return content
+                    f = open(file_name, "wb")
+                    f.write(content)
+                    return file_name
 
 
         funnel_endpoint = "/a/admin/workflow/stages/funnel/"
@@ -95,6 +100,8 @@ class Importer:
         self.pa_path = pa_path
         self.output_path = output_path
 
+        self.dir = tempfile.TemporaryDirectory()
+
         self.frontend_client = None
         self.db = None
 
@@ -123,13 +130,13 @@ class Importer:
 
     async def download_reviews(self):
         logger.info("Dowload reviews from Ideascale...")
-        await self.frontend_client.download_reviews(self.funnel_id)
 
-    # This step does not using right now, need to getting PAs files and uploading some results to Ideascale
+        self.reviews = await self.frontend_client.download_reviews(self.dir, self.config.funnel_id)
+
     async def prepare_allocations(self):
         logger.info("Prepare allocations for proposal's reviews...")
 
-        await allocate(
+        self.allocations = await allocate(
             nr_allocations=self.config.nr_allocations,
             pas_path=self.pa_path,
             ideascale_api_key=self.api_token,
@@ -137,8 +144,22 @@ class Importer:
             stage_ids=self.config.stage_ids,
             challenges_group_id=self.config.campaign_group_id,
             group_id=self.config.group_id,
+            output_path=self.dir.name,
         )
+    
+    async def prepare_reviews(self):
+        logger.info("Prepare proposal's reviews...")
 
+        for review in self.reviews:
+            await process_ideascale_reviews(
+                ideascale_xlsx_path=review,
+                ideascale_api_url=self.ideascale_url,
+                ideascale_api_key=self.api_token,
+                allocation_path=self.allocations,
+                challenges_group_id=self.config.campaign_group_id,
+                fund=self.event_id,
+                output_path=self.output_path
+            )
 
     async def run(self):
         """Run the importer."""
@@ -147,10 +168,12 @@ class Importer:
 
         await self.load_config()
 
-        # await self.download_reviews()
+        await self.download_reviews()
         await self.prepare_allocations()
+        await self.prepare_reviews()
 
     async def close(self):
+        self.dir.cleanup()
         await self.frontend_client.close()
 
 @dataclass

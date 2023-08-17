@@ -271,15 +271,15 @@ class IdeascaleChallenge(Model):
 class IdeascaleExportedReview(Model):
     """Represents a review exported from Ideascale Excel file."""
 
-    idea_id: Optional[int]
-    idea_title: str = Field(alias="Idea Title")
-    idea_url: str = Field(alias="Idea URL")
-    idea_challenge: Optional[str]
-    question: str = Field(alias="Question")
-    email: str = Field(alias="Assessor")
-    note: str = Field(alias="Assessment Note")
+    idea_id: Optional[int] = Field(default=None)
+    idea_title: str = Field(alias="Idea Title", default="")
+    idea_url: str = Field(alias="Idea URL", default="")
+    idea_challenge: Optional[str] = Field(default=None)
+    question: str = Field(alias="Question", default="")
+    email: str = Field(alias="Assessor", default="")
+    note: str = Field(alias="Assessment Note", default="")
     score: int = Field(1, alias="Rating Given")
-    date: str = Field(alias="Date")
+    date: str = Field(alias="Date", default="")
 
     @validator("score", pre=True)
     @classmethod
@@ -304,12 +304,12 @@ class IdeascaleExportedReview(Model):
 class IdeascaleExportedReviewResult(Model):
     """Represents a review exported from Ideascale Excel file."""
 
-    idea_id: int = Field(alias="Idea ID")
-    idea_title: str = Field(alias="Idea Title")
-    campaign_title: str = Field(alias="Idea Campaign")
-    question: str = Field(alias="Assessment Question")
-    email: str = Field(alias="Email")
-    date: str = Field(alias="Date")
+    idea_id: int = Field(alias="Idea ID", default=0)
+    idea_title: str = Field(alias="Idea Title", default="")
+    campaign_title: str = Field(alias="Idea Campaign", default="")
+    question: str = Field(alias="Assessment Question", default="")
+    email: str = Field(alias="Email", default="")
+    date: str = Field(alias="Date", default="")
 
     @validator("email", pre=True)
     @classmethod

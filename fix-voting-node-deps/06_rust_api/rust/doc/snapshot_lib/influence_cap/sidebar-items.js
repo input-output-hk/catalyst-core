@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["calc_vp_to_remove","cap_voting_influence","int_ceil"]};

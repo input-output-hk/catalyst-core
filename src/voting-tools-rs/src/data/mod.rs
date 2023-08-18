@@ -197,7 +197,7 @@ impl SignedRegistration {
     }
 }
 
-/// A Raw Registration from the DB.arbitrary_signed_registration
+/// A Raw Registration from the `DB.arbitrary_signed_registration`
 ///
 #[derive(Debug, Clone)]
 pub struct RawRegistration {
@@ -703,9 +703,9 @@ impl RewardsAddress {
     ///
     ///
     /// Test broken, can not import `data` crate, it's private.
-    /// # use crate::voting_tools_rs::data::RewardsAddress;
-    /// let address = RewardsAddress::from_hex("0000").unwrap();
-    /// assert_eq!(address.0, vec![0, 0]);
+    /// # use `crate::voting_tools_rs::data::RewardsAddress`;
+    /// let address = `RewardsAddress::from_hex("0000").unwrap`();
+    /// `assert_eq!(address.0`, vec![0, 0]);
     ///
     #[inline]
     pub fn from_hex(s: &str) -> Result<Self, FromHexError> {

@@ -1,11 +1,9 @@
 from lxml import html
-import secrets
 import time
 from loguru import logger
 from dataclasses import dataclass
 from typing import List
 import pydantic
-from io import BytesIO
 import tempfile
 
 from ideascale_importer import utils
@@ -36,13 +34,12 @@ class FrontendClient:
 
         await self.inner.post(f"{login}", data=data)
 
-    async def download_reviews(self, dir, funnel_id):
-        async def download_file(self, funnel_id, id):
+    async def download_reviews(self, reviews_path, review_stage_ids):
+        async def download_file(self, review_stage_id):
             export_endpoint = "/a/admin/workflow/survey-tools/assessment/report/statistic/export/assessment-details/"
-            file_name = f"{funnel_id}_{secrets.token_hex(6)}"
-            file_name = f"{dir.name}/{file_name}.xlsx"
+            file_name = f"{reviews_path}/{review_stage_id}.xlsx"
 
-            content = await self.inner.get(f"{export_endpoint}{id}") 
+            content = await self.inner.get(f"{export_endpoint}{review_stage_id}") 
             tree = html.fromstring(content)
 
             # we are looking for '<div class="card panel export-result-progress" data-features="refresh-processing-item" data-processing-item-id="15622">'
@@ -60,24 +57,11 @@ class FrontendClient:
                     f = open(file_name, "wb")
                     f.write(content)
                     return file_name
-
-
-        funnel_endpoint = "/a/admin/workflow/stages/funnel/"
-        content = await self.inner.get(f"{funnel_endpoint}{funnel_id}")
-
-        # we are looking for '<a href="/a/admin/workflow/survey-tools/assessment/report/statistic/139?fromStage=1">Assessments</a>'
-        # where we need to get url
-        tree = html.fromstring(content)
-        items = tree.findall('.//a')
         files = []
-        for item in items:
-            if item.text and "Assessments" in item.text:
-                id = int(item.get("href").replace("/a/admin/workflow/survey-tools/assessment/report/reviews/", "").split("?")[0])
-
-                # we are intrested in only assessed reviews 
-                files.append(await download_file(self, funnel_id, id))
+        for review_stage_id in review_stage_ids:
+            # we are interested in only assessed reviews 
+            files.append(await download_file(self, review_stage_id))
         return files
-
 class Importer:
     def __init__(
         self,
@@ -100,7 +84,8 @@ class Importer:
         self.pa_path = pa_path
         self.output_path = output_path
 
-        self.dir = tempfile.TemporaryDirectory()
+        self.reviews_dir = tempfile.TemporaryDirectory()
+        self.allocations_dir = tempfile.TemporaryDirectory()
 
         self.frontend_client = None
         self.db = None
@@ -131,12 +116,12 @@ class Importer:
     async def download_reviews(self):
         logger.info("Dowload reviews from Ideascale...")
 
-        self.reviews = await self.frontend_client.download_reviews(self.dir, self.config.funnel_id)
+        self.reviews = await self.frontend_client.download_reviews(self.reviews_dir.name, self.config.review_stage_ids)
 
     async def prepare_allocations(self):
         logger.info("Prepare allocations for proposal's reviews...")
 
-        self.allocations = await allocate(
+        self.allocations_path = await allocate(
             nr_allocations=self.config.nr_allocations,
             pas_path=self.pa_path,
             ideascale_api_key=self.api_token,
@@ -144,7 +129,7 @@ class Importer:
             stage_ids=self.config.stage_ids,
             challenges_group_id=self.config.campaign_group_id,
             group_id=self.config.group_id,
-            output_path=self.dir.name,
+            output_path=self.allocations_dir.name,
         )
     
     async def prepare_reviews(self):
@@ -155,7 +140,7 @@ class Importer:
                 ideascale_xlsx_path=review,
                 ideascale_api_url=self.ideascale_url,
                 ideascale_api_key=self.api_token,
-                allocation_path=self.allocations,
+                allocation_path=self.allocations_path,
                 challenges_group_id=self.config.campaign_group_id,
                 fund=self.event_id,
                 output_path=self.output_path
@@ -173,7 +158,8 @@ class Importer:
         await self.prepare_reviews()
 
     async def close(self):
-        self.dir.cleanup()
+        self.reviews_dir.cleanup()
+        self.allocations_dir.cleanup()
         await self.frontend_client.close()
 
 @dataclass
@@ -182,7 +168,7 @@ class Config:
 
     group_id: int
     campaign_group_id: int
-    funnel_id: int
+    review_stage_ids: List[int]
     stage_ids: List[int]
     nr_allocations: List[int]
     

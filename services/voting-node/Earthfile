@@ -9,7 +9,14 @@ ENV PYTHONUNBUFFERED=true
 build:
     # Install voting-node system dependencies
     RUN apt-get update && \
-        apt-get install -y --no-install-recommends curl
+        apt-get install -y --no-install-recommends \
+            curl \
+            libpq5 \
+            openssh-client \
+            build-essential \
+            libxml2-dev \
+            libxslt-dev \
+            zlib1g-dev
 
     # Set the working directory
     WORKDIR /src/services/voting-node
@@ -46,7 +53,13 @@ docker:
 
     # Install voting-node system dependencies
     RUN apt-get update && \
-        apt-get install -y --no-install-recommends libpq5 openssh-client build-essential libxml2-dev libxslt-dev zlib1g-dev python3-lxml
+        apt-get install -y --no-install-recommends \
+        libpq5 \
+        openssh-client \
+        build-essential \
+        libxml2-dev \
+        libxslt-dev \
+        zlib1g-dev
 
     ## apt cleanup
     RUN apt-get clean && \

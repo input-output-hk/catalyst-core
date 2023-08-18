@@ -81,7 +81,7 @@ impl OutputsExtension for Vec<SnapshotEntry> {
 
 use jormungandr_lib::crypto::account::Identifier;
 use mainnet_lib::wallet_state::{MainnetWalletState, TemplateError};
-use mainnet_lib::{MainnetNetworkBuilder, SnapshotParameters};
+use mainnet_lib::SnapshotParameters;
 use num_traits::ToPrimitive;
 use snapshot_lib::registration::{
     Delegations as VotingDelegations, RewardAddress, StakeAddress, VotingRegistration,

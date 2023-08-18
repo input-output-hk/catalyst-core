@@ -19,6 +19,7 @@ impl MainnetWalletStateExtension for Vec<MainnetWalletState> {
         self,
         _parameters: SnapshotParameters,
     ) -> Result<RawSnapshotRequest, Error> {
+        /*
         let (db_sync, _, _) = self
             .into_iter()
             .fold(
@@ -27,6 +28,7 @@ impl MainnetWalletStateExtension for Vec<MainnetWalletState> {
             )
             .build();
         let _db = MockDbProvider::from(db_sync);
+        */
         //let (outputs, _errs) =
         //    voting_tools_rs::voting_power(&db, VotingPowerArgs::default()).unwrap();
         //outputs.try_into_raw_snapshot_request(parameters)
@@ -85,7 +87,6 @@ use snapshot_lib::registration::{
     Delegations as VotingDelegations, RewardAddress, StakeAddress, VotingRegistration,
 };
 use vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
-use voting_tools_rs::test_api::MockDbProvider;
 use voting_tools_rs::{SnapshotEntry, VotingKey, VotingPurpose};
 
 /// Extensions for voting tools `Output` struct

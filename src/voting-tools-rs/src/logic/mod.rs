@@ -42,6 +42,7 @@ pub fn voting_power(
         max_slot,
         network_id,
         expected_voting_purpose: _,
+        cip_36_multidelegations,
     }: VotingPowerArgs,
 ) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>, Unregistered)> {
     const ABS_MIN_SLOT: SlotNo = SlotNo(0);
@@ -57,7 +58,14 @@ pub fn voting_power(
 
     info!("starting registrations job");
     let registrations = thread::spawn(move || {
-        filter_registrations(min_slot, max_slot, db_client_registrations, network_id).unwrap()
+        filter_registrations(
+            min_slot,
+            max_slot,
+            db_client_registrations,
+            network_id,
+            cip_36_multidelegations,
+        )
+        .unwrap()
     });
 
     let (valids, invalids) = registrations.join().unwrap();

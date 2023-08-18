@@ -15,6 +15,8 @@ pub struct VotingPowerArgs {
     pub network_id: NetworkId,
     /// The voting purpose we expect registrations to have
     pub expected_voting_purpose: VotingPurpose,
+    /// Are Multiple Delegations supported or not.
+    pub cip_36_multidelegations: bool,
 }
 
 impl Default for VotingPowerArgs {
@@ -24,6 +26,7 @@ impl Default for VotingPowerArgs {
             max_slot: None,
             network_id: NetworkId::Mainnet,
             expected_voting_purpose: VotingPurpose::CATALYST,
+            cip_36_multidelegations: false,
         }
     }
 }

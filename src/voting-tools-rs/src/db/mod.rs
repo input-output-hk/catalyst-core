@@ -24,4 +24,3 @@ pub struct DbConfig {
     /// The maximum number of TCP keepalive probes that will be sent before dropping a connection.
     pub keepalives_retries: u32,
 }
-

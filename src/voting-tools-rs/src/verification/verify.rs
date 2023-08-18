@@ -43,6 +43,7 @@ pub fn filter_registrations(
     max_slot: SlotNo,
     mut client: Client,
     network_id: NetworkId,
+    cip_36_multidelegations: bool,
 ) -> Result<(Valids, Invalids), Box<dyn std::error::Error>> {
     let mut valids: Valids = vec![];
     let mut invalids: Invalids = vec![];
@@ -119,7 +120,7 @@ pub fn filter_registrations(
         };
 
         match reg.validate_signature_bin(rawreg.bin_reg.clone()) {
-            Ok(_) => valids.push(reg),
+            Ok(_) => (),
             Err(err) => {
                 invalids.push(InvalidRegistration {
                     spec_61284: Some(prefix_hex(&rawreg.bin_reg)),
@@ -133,6 +134,22 @@ pub fn filter_registrations(
                 continue;
             }
         }
+
+        match reg.validate_multi_delegation(cip_36_multidelegations) {
+            Ok(_) => (),
+            Err(err) => {
+                invalids.push(InvalidRegistration {
+                    spec_61284: Some(prefix_hex(&rawreg.bin_reg)),
+                    spec_61285: Some(prefix_hex(&rawreg.bin_sig)),
+                    registration: Some(reg),
+                    errors: nonempty![err],
+                    registration_bad_bin: None,
+                });
+                continue;
+            }
+        }
+
+        valids.push(reg);
     }
 
     Ok((latest_registrations(&valids, &mut invalids), invalids))

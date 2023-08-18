@@ -1,10 +1,9 @@
-use cryptoxide::{digest::Digest, blake2b::Blake2b};
+use cryptoxide::{blake2b::Blake2b, digest::Digest};
 
 pub(crate) const BLAKE_2B_256_HASH_SIZE: usize = 256 / 8;
 
 /// Helper function to generate the `blake2b_256` hash of a byte slice
 pub(crate) fn hash(bytes: &[u8]) -> [u8; BLAKE_2B_256_HASH_SIZE] {
-
     let mut digest = [0u8; BLAKE_2B_256_HASH_SIZE];
     let mut context = Blake2b::new(BLAKE_2B_256_HASH_SIZE);
     context.input(bytes);

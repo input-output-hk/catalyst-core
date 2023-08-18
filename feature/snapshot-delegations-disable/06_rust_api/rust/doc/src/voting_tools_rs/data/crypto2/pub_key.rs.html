@@ -126,9 +126,9 @@
 <span class="kw">impl </span>PubKey {
     <span class="doccomment">/// Convert this to the hex representation (without leading &quot;0x&quot;)
     ///
-    /// # use voting_tools_rs::PubKey;
-    /// let sig = PubKey::from_bytes([0; 32]);
-    /// assert_eq!(sig.to_string, &quot;0&quot;.repeat(64));
+    /// # use `voting_tools_rs::PubKey`;
+    /// let sig = `PubKey::from_bytes`([0; 32]);
+    /// `assert_eq!(sig.to_string`, &quot;0&quot;.repeat(64));
     ///
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>to_hex(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
@@ -140,9 +140,9 @@
     /// Will return an error if the string contains invalid hex, or doesn&#39;t contain exactly 32
     /// characters
     ///
-    /// # use crate::PubKey;
-    /// let key = PubKey::from_str(&quot;0&quot;.repeat(64)).unwrap();
-    /// assert_eq!(key, PubKey::from_bytes([0; 32]));
+    /// # use `crate::PubKey`;
+    /// let key = `PubKey::from_str(&quot;0&quot;.repeat(64)).unwrap`();
+    /// `assert_eq!(key`, `PubKey::from_bytes`([0; 32]));
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>from_hex(hex: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, hex::FromHexError&gt; {
         <span class="kw">let </span>bytes = hex::decode(hex)<span class="question-mark">?</span>;

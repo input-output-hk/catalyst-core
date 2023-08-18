@@ -937,7 +937,7 @@
     }
 }
 
-<span class="doccomment">/// A Raw Registration from the DB.arbitrary_signed_registration
+<span class="doccomment">/// A Raw Registration from the `DB.arbitrary_signed_registration`
 ///
 </span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>RawRegistration {
@@ -1443,9 +1443,9 @@
     ///
     ///
     /// Test broken, can not import `data` crate, it&#39;s private.
-    /// # use crate::voting_tools_rs::data::RewardsAddress;
-    /// let address = RewardsAddress::from_hex(&quot;0000&quot;).unwrap();
-    /// assert_eq!(address.0, vec![0, 0]);
+    /// # use `crate::voting_tools_rs::data::RewardsAddress`;
+    /// let address = `RewardsAddress::from_hex(&quot;0000&quot;).unwrap`();
+    /// `assert_eq!(address.0`, vec![0, 0]);
     ///
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>from_hex(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FromHexError&gt; {

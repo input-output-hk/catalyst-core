@@ -31,12 +31,11 @@ extern crate tracing;
 
 mod cli;
 mod data;
-mod data_provider;
+// mod data_provider;
 mod db;
 mod error;
 mod logic;
 mod testing;
-mod validation;
 pub mod verification;
 
 // this export style forces us to be explicit about what is in the public API
@@ -44,7 +43,6 @@ pub use exports::*;
 mod exports {
     pub use crate::cli::{show_error_warning, Args, DryRunCommand};
     pub use crate::data::{Sig, Signature, SlotNo, SnapshotEntry, VotingKey, VotingPurpose};
-    pub use crate::data_provider::DataProvider;
     pub use crate::db::DbConfig;
     pub use crate::error::*;
     pub use crate::logic::{voting_power, VotingPowerArgs};

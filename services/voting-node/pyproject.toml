@@ -38,6 +38,8 @@ black = "^23.1.0"
 # linting
 ruff = "^0.0.254"
 pdoc = "^13.1.0"
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.1"
 
 [tool.poetry.scripts]
 voting-node = "voting_node.main:voting_node_cli"

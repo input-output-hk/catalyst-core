@@ -38,6 +38,7 @@ typing-extensions = "~4.7.1"
 yarl = "1.8.2"
 loguru = "^0.6.0"
 brotlipy = "^0.7.0"
+lxml = "4.9.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1"

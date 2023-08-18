@@ -48,20 +48,27 @@ class ServiceSettings:
     """Settings for the node service."""
 
     # ports
-    rest_port: int
-    jrpc_port: int
-    p2p_port: int
-    # Jormungandr node storage directory
-    storage: str
+    rest_port: int = 10080
+    """REST listening port for jormungandr."""
+    jrpc_port: int = 10085
+    """REST listening port for jormungandr."""
+    p2p_port: int = 10090
+    """P2P listening port for jormungandr."""
+    storage: str = "./node_storage"
+    """Jormungandr node storage directory."""
     # use JCli to make calls
-    jcli_path_str: str
+    jcli_path_str: str = "jcli"
+    """Path to jcli executable."""
     # use Jormungandr to run the server
-    jorm_path_str: str
+    jorm_path_str: str = "jormungandr"
+    """Path to jormungandr executable."""
     # URL to Event DB
-    db_url: str
+    db_url: str = "postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev"
+    """URL to Event DB."""
     # Should the service reload if the current event
     # has changed.
-    reloadable: bool
+    reloadable: bool = False
+    """Enable resetting and reloading the node service during runtime."""
 
 
 @dataclass
@@ -176,49 +183,49 @@ class Event:
     # A detailed description of the purpose of the event. eg. the events "Goal".
     description: str
 
+    committee_size: int
+    committee_threshold: int
+
     # The Time (UTC) Registrations are taken from Cardano main net.
     # Registrations after this date are not valid for voting on the event.
     # NULL = Not yet defined or Not Applicable
-    registration_snapshot_time: datetime | None
-    voting_power_threshold: int | None
-    max_voting_power_pct: int | None
+    registration_snapshot_time: datetime | None = None
+    voting_power_threshold: int | None = None
+    max_voting_power_pct: int | None = None
     """The Minimum number of Lovelace staked at the time of snapshot, to be eligible to vote.
 
     `None` means that it is not yet defined.
     """
 
-    review_rewards: int | None
+    review_rewards: int | None = None
     """The total reward pool to pay for community reviewers for their valid reviews of the proposals assigned to this event."""
 
     # The Time (UTC) Registrations are taken from Cardano main net.
     # Registrations after this date are not valid for voting on the event.
     # NULL = Not yet defined or Not Applicable
-    start_time: datetime | None
-    end_time: datetime | None
+    start_time: datetime | None = None
+    end_time: datetime | None = None
 
     # The Time (UTC) Registrations taken from Cardano main net are considered stable.
     # This is not the Time of the Registration Snapshot,
     # This is the time after which the registration snapshot will be stable.
     # NULL = Not yet defined or Not Applicable
-    insight_sharing_start: datetime | None
-    proposal_submission_start: datetime | None
-    refine_proposals_start: datetime | None
-    finalize_proposals_start: datetime | None
-    proposal_assessment_start: datetime | None
-    assessment_qa_start: datetime | None
-    snapshot_start: datetime | None
-    voting_start: datetime | None
-    voting_end: datetime | None
-    tallying_end: datetime | None
+    insight_sharing_start: datetime | None = None
+    proposal_submission_start: datetime | None = None
+    refine_proposals_start: datetime | None = None
+    finalize_proposals_start: datetime | None = None
+    proposal_assessment_start: datetime | None = None
+    assessment_qa_start: datetime | None = None
+    snapshot_start: datetime | None = None
+    voting_start: datetime | None = None
+    voting_end: datetime | None = None
+    tallying_end: datetime | None = None
 
-    block0: bytes | None
-    block0_hash: str | None
+    block0: bytes | None = None
+    block0_hash: str | None = None
 
-    committee_size: int
-    committee_threshold: int
-
-    extra: Mapping[str, Any] | None
-    cast_to: Mapping[str, Any] | None
+    extra: Mapping[str, Any] | None = None
+    cast_to: Mapping[str, Any] | None = None
 
     def get_start_time(self) -> datetime:
         """Get the timestamp for the event start time.
@@ -327,13 +334,13 @@ class Proposal:
     url: str
     files_url: str
     impact_score: float
-    extra: Mapping[str, str] | None
     proposer_name: str
     proposer_contact: str
     proposer_url: str
     proposer_relevant_experience: str
-    bb_proposal_id: bytes | None
-    bb_vote_options: str | None
+    extra: Mapping[str, str] | None = None
+    bb_proposal_id: bytes | None = None
+    bb_vote_options: list[str] | None = None
 
 
 @dataclass
@@ -361,61 +368,71 @@ class FundsForToken:
 
 @dataclass
 class VotingGroup:
-    """A voting group for this event."""
-
-    row_id: str
-    # The ID of this group
-    group_id: str
-    # The event (row_id) this group belongs to
-    event_id: int
-    # The ID of the voting token used by this group
-    token_id: str | None
+    name: str
+    """The ID of this voting group."""
 
 
 @dataclass
 class Voter:
     """A registered voter for this event."""
 
-    row_id: str
+    row_id: int
     # Either the voting key
     voting_key: str
     # The ID of the snapshot this record belongs to
-    snapshot_id: str
+    snapshot_id: int
     # The voting group this voter belongs to
     voting_group: str
     # The voting power associated with this key
     voting_power: int
+
+@dataclass
+class Objective:
+    row_id: int
+    id: int
+    event: int
+    category: str
+    title: str
+    description: str
+    deleted: bool
+    rewards_currency: str | None = None
+    rewards_total: int | None = None
+    rewards_total_lovelace: int | None = None
+    proposers_rewards: int | None = None
+    vote_options: int | None = None
+
+    extra: Mapping[str, Any] | None = None
 
 
 @dataclass
 class Contribution:
     """Individual contributions from the stake public key to the voting key."""
 
-    row_id: str
+    row_id: int
     # Stake Public key for the voter.
     stake_public_key: str
     # The ID of the snapshot this record belongs to
-    snapshot_id: str
-
-    # The voting key. If None, it is the raw staked ADA.
-    voting_key: str | None
-    # The weight that this key gets from the total.
-    voting_weight: int | None
-    # The index from 0 of the keys in the delegation array.
-    voting_key_idx: int | None
-    # The amount of ADA contributed to this voting key from the stake address.
-    value: int
+    snapshot_id: int
     # The group that this contribution goes to.
     voting_group: str
+    # The amount of ADA contributed to this voting key from the stake address.
+    value: int
+
+    # The voting key. If None, it is the raw staked ADA.
+    voting_key: str | None = None
+    # The weight that this key gets from the total.
+    voting_weight: int | None = None
+    # The index from 0 of the keys in the delegation array.
+    voting_key_idx: int | None = None
     # Currently unused.
-    reward_address: str | None
+    reward_address: str | None = None
 
 
 @dataclass
 class VotePlan:
     """A vote plan for this event."""
 
-    row_id: str
+    row_id: int
     # The event (row_id) this plan belongs to
     event_id: int
     # The ID of the plan in the voting ledger/bulletin board.

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["stake_value","staked_utxo_ada","vote_registrations"]};
+window.SIDEBAR_ITEMS = {"mod":["staked_utxo_ada"]};

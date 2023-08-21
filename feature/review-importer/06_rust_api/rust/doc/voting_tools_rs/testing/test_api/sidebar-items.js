@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["fake","output_assertions"]};
+window.SIDEBAR_ITEMS = {"mod":["output_assertions"]};

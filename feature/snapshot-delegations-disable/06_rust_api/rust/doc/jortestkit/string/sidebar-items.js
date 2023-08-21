@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["rem_first"],"trait":["StringExtension"]};

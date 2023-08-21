@@ -47,6 +47,7 @@ fn main() -> Result<()> {
         dry_run,
         network_id,
         expected_voting_purpose,
+        enable_cip36_multiple_delegations,
         ..
     } = Args::parse();
 
@@ -66,6 +67,7 @@ fn main() -> Result<()> {
     args.max_slot = max_slot;
     args.network_id = network_id;
     args.expected_voting_purpose = expected_voting_purpose;
+    args.cip_36_multidelegations = enable_cip36_multiple_delegations;
 
     let db_client_registrations = db_conn(db_config.clone())?;
     let db_client_stakes = db_conn(db_config)?;

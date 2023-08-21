@@ -14,8 +14,6 @@ from .processing.prepare import allocate, process_ideascale_reviews
 class FrontendClient:
     """IdeaScale front-end client."""
 
-    DEFAULT_API_URL = "https://cardano.ideascale.com"
-
     def __init__(self, ideascale_url):
         self.inner = utils.HttpClient(ideascale_url)
 
@@ -145,6 +143,9 @@ class Importer:
                 fund=self.event_id,
                 output_path=self.output_path
             )
+
+    async def import_reviews(self):
+        logger.info("Import reviews into Event db")
 
     async def run(self):
         """Run the importer."""

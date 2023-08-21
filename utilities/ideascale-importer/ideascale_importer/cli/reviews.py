@@ -4,7 +4,7 @@ import traceback
 from typing import List
 from loguru import logger
 
-from ideascale_importer.reviews_importer.importer import Importer, FrontendClient
+from ideascale_importer.reviews_importer.importer import Importer
 from ideascale_importer.utils import configure_logger
 
 app = typer.Typer(add_completion=False)
@@ -12,7 +12,7 @@ app = typer.Typer(add_completion=False)
 @app.command(name="import")
 def import_reviews(
     ideascale_url: str = typer.Option(
-        FrontendClient.DEFAULT_API_URL,
+        ...,
         envvar="IDEASCALE_API_URL",
         help="IdeaScale API URL",
     ),

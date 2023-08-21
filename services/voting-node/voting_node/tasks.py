@@ -3,12 +3,10 @@
 Scheduled tasks are defined for Leader and Follower Nodes, with Leader0 being a special case,
 as it is the only one responsible for initializing block0 for a voting event.
 """
-import json
 import os
 import secrets
-from typing import Final, NoReturn
+from typing import Final, Mapping, NoReturn
 
-import brotli
 from loguru import logger
 
 from . import utils
@@ -25,7 +23,11 @@ from .models import (
     NodeConfigYaml,
     NodeSecretYaml,
     NodeTopologyKey,
+    Objective,
+    Proposal,
     ServiceSettings,
+    Voter,
+    VotingGroup,
     YamlType,
 )
 from .node import (
@@ -158,19 +160,19 @@ class NodeTaskSchedule(ScheduleRunner):
     """
 
     # runtime settings for the service
-    settings: ServiceSettings
+    settings: ServiceSettings = ServiceSettings()
     # connection to DB
-    db: EventDb
+    db: EventDb = EventDb()
     # Voting Node data
     node: BaseNode = BaseNode()
     # List of tasks that the schedule should run. The name of each task must
     # match the name of method to execute.
     tasks: list[str] = []
 
-    def __init__(self, settings: ServiceSettings) -> None:
+    def __init__(self, settings: ServiceSettings = ServiceSettings()) -> None:
         """Set the schedule settings, bootstraps node storage, and initializes the node."""
         self.settings = settings
-        self.db = EventDb(db_url=settings.db_url)
+        self.db.db_url = settings.db_url
         self.node.set_file_storage(settings.storage)
 
     def reset_data(self) -> None:
@@ -461,7 +463,7 @@ class Leader0Schedule(LeaderSchedule):
         registration_time = event.get_registration_snapshot_time()
         snapshot_start = event.get_snapshot_start()
         runner = SnapshotRunner(registration_snapshot_time=registration_time, snapshot_start=snapshot_start)
-        logger.info(f"Execute snapshot runner for event in row {event.row_id}.")
+        logger.info("Execute snapshot runner for event in row {event_id}.", event_id=event.row_id)
         await runner.take_snapshots(event.row_id)
 
     async def node_snapshot_data(self):
@@ -477,33 +479,62 @@ class Leader0Schedule(LeaderSchedule):
         if not is_final:
             logger.warning("snapshot is not final")
 
-        try:
-            # fetch the stable snapshot data
-            snapshot = await self.db.fetch_snapshot(event.row_id)
-            compressed_data: bytes | None = snapshot.dbsync_snapshot_data
-            if compressed_data is None:
-                raise Exception("dbsync snapsthot data is missing")
-            data = brotli.decompress(compressed_data)
-            json.loads(data)
-            logger.debug("dbsync snapshot data retrieved")
-        except Exception as e:
-            logger.error(f"expected snapshot:\n{e}")
+        async def collect_voting_groups() -> list[VotingGroup]:
+            groups = []
+            try:
+                groups = await self.db.fetch_voting_groups()
+            except Exception:
+                logger.exception("failed to collect voting groups")
+            finally:
+                return groups
 
-            # gets event vote plans, raises exception if none is found.
-        try:
-            await self.db.fetch_voteplans(event.row_id)
-            # logger.debug(f"voteplans:\n{voteplans}")
-        except Exception as e:
-            logger.error(f"expected voteplans:\n{e}")
+        async def collect_voter_registrations() -> list[Voter]:
+            """Collect voter registration information."""
+            voters = []
+            try:
+                voters = await self.db.fetch_voters(event.row_id)
+            except Exception:
+                logger.exception("failed to collect voter registration")
+            finally:
+                return voters
 
-        try:
-            # gets event proposals, raises exception if none is found.
-            proposals = await self.db.fetch_proposals()
-            # logger.debug(f"proposals:\n{proposals}")
-            self.proposals = proposals
-        except Exception:
-            logger.warning("no proposals were found")
-            # raise Exception(f"failed to fetch proposals from DB: {e}") from e
+        async def collect_contributions():
+            contributions = []
+            try:
+                contributions = await self.db.fetch_contributions(event.row_id)
+            except Exception:
+                logger.exception("failed to collect voter contributions")
+            finally:
+                return contributions
+
+        async def collect_objectives():
+            objectives = []
+            try:
+                objectives = await self.db.fetch_objectives(event.row_id)
+            except Exception:
+                logger.exception("failed to collect objectives")
+            finally:
+                return objectives
+
+        async def collect_proposals(objectives: list[Objective]) -> Mapping[int, list[Proposal]]:
+            objective_proposals: Mapping[int, list[Proposal]] = {}
+            for objective in objectives:
+                objective_id = objective.row_id
+                try:
+                    proposals = await self.db.fetch_proposals(objective_id)
+                    objective_proposals[objective_id] = proposals
+                except Exception:
+                    logger.exception("failed to collect proposals for objective {objective_row}", objective_row=objective_id)
+            return objective_proposals
+
+        # Collect registration information needed for block0
+        await collect_voting_groups()
+        await collect_voter_registrations()
+        await collect_contributions()
+
+        # Collect voteplan information needed for block0
+        objectives = await collect_objectives()
+        objective_proposals = await collect_proposals(objectives)
 
     async def block0_tally_committee(self):
         """Fetch or create tally committee data.

@@ -95,8 +95,8 @@
     ///
     /// ```
     /// # use voting_tools_rs::Sig;
-    /// let key = Sig::from_hex(&quot;0&quot;.repeat(64)).unwrap();
-    /// assert_eq!(key, Sig([0; 32]));
+    /// let key = Sig::from_hex(&quot;0&quot;.repeat(128).as_str()).unwrap();
+    /// assert_eq!(key, Sig([0; 64]));
     /// ```
     ///
     /// # Errors

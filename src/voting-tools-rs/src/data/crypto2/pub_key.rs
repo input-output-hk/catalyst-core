@@ -34,13 +34,10 @@ impl<'de> Deserialize<'de> for PubKey {
 impl PubKey {
     /// Convert this to the hex representation (without leading "0x")
     ///
-    /// ```
+    /// # use `voting_tools_rs::PubKey`;
+    /// let sig = `PubKey::from_bytes`([0; 32]);
+    /// `assert_eq!(sig.to_string`, "0".repeat(64));
     ///
-    /// # use voting_tools_rs::PubKey;
-    /// let sig = PubKey::from_bytes([0; 32]);
-    ///
-    /// assert_eq!(sig.to_string, "0".repeat(64));
-    /// ```
     #[inline]
     pub fn to_hex(&self) -> String {
         hex::encode(&self.0)
@@ -51,11 +48,9 @@ impl PubKey {
     /// Will return an error if the string contains invalid hex, or doesn't contain exactly 32
     /// characters
     ///
-    /// ```
-    /// # use voting_tools_rs::PubKey;
-    /// let key = PubKey::from_str("0".repeat(64)).unwrap();
-    /// assert_eq!(key, PubKey::from_bytes([0; 32]));
-    /// ```
+    /// # use `crate::PubKey`;
+    /// let key = `PubKey::from_str("0".repeat(64)).unwrap`();
+    /// `assert_eq!(key`, `PubKey::from_bytes`([0; 32]));
     #[inline]
     pub fn from_hex(hex: &str) -> Result<Self, hex::FromHexError> {
         let bytes = hex::decode(hex)?;

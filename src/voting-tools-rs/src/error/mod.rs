@@ -53,6 +53,9 @@ pub enum RegistrationError {
     #[error("stake key has wrong type: {0}, expected 14 or 15")]
     StakeKeyWrongType(u8),
 
+    #[error("delegation key error {err}")]
+    DelegationError { err: String },
+
     #[error("stake public key error {err}")]
     StakePublicKeyError { err: String },
 

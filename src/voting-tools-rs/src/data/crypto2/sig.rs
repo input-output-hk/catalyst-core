@@ -36,8 +36,8 @@ impl Sig {
     ///
     /// ```
     /// # use voting_tools_rs::Sig;
-    /// let key = Sig::from_hex("0".repeat(64)).unwrap();
-    /// assert_eq!(key, Sig([0; 32]));
+    /// let key = Sig::from_hex("0".repeat(128).as_str()).unwrap();
+    /// assert_eq!(key, Sig([0; 64]));
     /// ```
     ///
     /// # Errors

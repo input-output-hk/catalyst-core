@@ -1,10 +1,8 @@
 #![allow(clippy::all)]
 use std::{error::Error, ffi::OsString, io::Cursor};
 
-use crate::{
-    validation::hash,
-    verify::{is_valid_rewards_address, stake_key_hash, StakeKeyHash},
-};
+use crate::verify::{is_valid_rewards_address, stake_key_hash, StakeKeyHash};
+
 use bytekind::{Bytes, HexString};
 use ciborium::value::Value;
 use clap::builder::OsStr;
@@ -14,17 +12,17 @@ use microtype::microtype;
 
 use serde::{Deserialize, Serialize, Serializer};
 
-pub(crate) mod arbitrary;
-mod cbor;
-// mod crypto;
 pub use crypto2::{PubKey, Sig};
 mod crypto2;
-// pub use crypto::{PubKey, Sig};
+
 pub mod hex_bytes;
 mod network_id;
 pub use network_id::NetworkId;
 
 use test_strategy::Arbitrary;
+
+use hash::hash;
+mod hash;
 
 // Networks
 const NETWORK_ID: usize = 0;
@@ -168,7 +166,7 @@ impl SignedRegistration {
     ///  - signing the hash with the private key used to generate the stake key
     pub fn validate_signature_bin(&self, bin_reg: Vec<u8>) -> Result<(), RegistrationError> {
         let bytes = bin_reg;
-        let hash_bytes = hash::hash(&bytes);
+        let hash_bytes = hash(&bytes);
 
         let pub_key = Ed25519::public_from_binary(self.registration.stake_key.as_ref())
             .map_err(|e| RegistrationError::StakePublicKeyError { err: e.to_string() })?;
@@ -180,9 +178,26 @@ impl SignedRegistration {
             Verification::Failed => Err(RegistrationError::MismatchedSignature { hash_bytes }),
         }
     }
+
+    pub fn validate_multi_delegation(
+        &self,
+        multi_delegation_enabled: bool,
+    ) -> Result<(), RegistrationError> {
+        match &self.registration.voting_key {
+            VotingKey::Direct(_) => (),
+            VotingKey::Delegated(delegation) => {
+                if !multi_delegation_enabled && delegation.len() != 1 {
+                    return Err(RegistrationError::DelegationError {
+                        err: "CIP-36 Multiple Delegations are unsupported.".to_string(),
+                    });
+                }
+            }
+        }
+        Ok(())
+    }
 }
 
-/// A Raw Registration from the DB.
+/// A Raw Registration from the `DB.arbitrary_signed_registration`
 ///
 #[derive(Debug, Clone)]
 pub struct RawRegistration {
@@ -686,11 +701,12 @@ impl RewardsAddress {
     ///
     /// Errors if the string is not valid hex
     ///
-    /// ```
-    /// # use crate::data::RewardsAddress;
-    /// let address = RewardsAddress::from_hex("0000").unwrap();
-    /// assert_eq!(address.0, vec![0, 0]);
-    /// ```
+    ///
+    /// Test broken, can not import `data` crate, it's private.
+    /// # use `crate::voting_tools_rs::data::RewardsAddress`;
+    /// let address = `RewardsAddress::from_hex("0000").unwrap`();
+    /// `assert_eq!(address.0`, vec![0, 0]);
+    ///
     #[inline]
     pub fn from_hex(s: &str) -> Result<Self, FromHexError> {
         let bytes = hex::decode(s)?;

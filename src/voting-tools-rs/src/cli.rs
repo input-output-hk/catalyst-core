@@ -56,6 +56,10 @@ pub struct Args {
     /// The voting purpose to use in queries
     #[clap(long, default_value = VotingPurpose::CATALYST)]
     pub expected_voting_purpose: VotingPurpose,
+
+    /// Enable Multiple delegations in CIP-36 registrations
+    #[clap(long)]
+    pub enable_cip36_multiple_delegations: bool,
 }
 
 /// Sub command for internal testing or dry runs
@@ -137,6 +141,7 @@ mod tests {
             "0",
             "--network-id",
             "mainnet",
+            "--enable-cip36-multiple-delegations",
         ]);
 
         assert_eq!(
@@ -152,6 +157,7 @@ mod tests {
                 dry_run: None,
                 network_id: NetworkId::Mainnet,
                 expected_voting_purpose: VotingPurpose::CATALYST,
+                enable_cip36_multiple_delegations: true,
             }
         );
     }

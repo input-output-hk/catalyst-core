@@ -34,13 +34,16 @@ install-deps:
     COPY pyproject.toml .
     COPY poetry.lock .
     # Install local python dependencies in the expected relative path
-    COPY --dir voting_node development.md ./
     COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
     # Configure poetry
     RUN poetry env use python
     RUN poetry config installer.max-workers 10
-    # Install package dependencies
+    # Install package dependencies without the voting_node package
     RUN poetry install --only main --no-root
+
+    # Copy the voting_node source code
+    COPY --dir voting_node ./
+
     SAVE ARTIFACT .venv .venv
     SAVE IMAGE --cache-hint
 
@@ -59,7 +62,7 @@ build-dev:
     FROM +install-deps
     RUN poetry install
     COPY tests tests
-    COPY readme.md leader0-schedule.md .
+    COPY development.md readme.md leader0-schedule.md .
 
 pytest:
     FROM +build-dev

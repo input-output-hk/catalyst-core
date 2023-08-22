@@ -1,12 +1,13 @@
 # Set the Earthly version to 0.7
 VERSION 0.7
 
-# Use current debian stable with python
-FROM python:3.11-slim-bullseye
-# Environment variables for python
-ENV PYTHONUNBUFFERED=true
+builder:
+    FROM python:3.11-slim-bullseye
 
-build:
+    # Environment variables for python
+    ENV PYTHONUNBUFFERED=true
+    # Set path to poetry
+    ENV PATH=/root/.local/bin:$PATH
     # Install voting-node system dependencies
     RUN apt-get update && \
         apt-get install -y --no-install-recommends \
@@ -18,36 +19,49 @@ build:
             libxslt-dev \
             zlib1g-dev
 
+    # Install Poetry
+    RUN curl -sSL https://install.python-poetry.org | python3 -
+
     # Set the working directory
     WORKDIR /src/services/voting-node
 
-    # Install Poetry
-    RUN curl -sSL https://install.python-poetry.org | python3 -
-    # Set path to poetry
-    ENV PATH=/root/.local/bin:$PATH
+    SAVE IMAGE --cache-hint
+
+install-deps:
+    FROM +builder
 
     # Copy the pyproject.toml and poetry.lock files to the container
     COPY pyproject.toml .
     COPY poetry.lock .
     # Install local python dependencies in the expected relative path
-    COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
     COPY --dir voting_node development.md ./
-
+    COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
     # Configure poetry
     RUN poetry env use python
     RUN poetry config installer.max-workers 10
     # Install package dependencies
-    RUN poetry install --no-cache --no-root
+    RUN poetry install --only main --no-root
+    SAVE ARTIFACT .venv .venv
+    SAVE IMAGE --cache-hint
 
+build:
+    FROM +install-deps
     # Build the distribution wheels and save them as artifacts
     RUN poetry export --without-hashes -f requirements.txt --output requirements.txt
-    RUN poetry build --no-cache -f wheel
+    RUN poetry build -f wheel
     RUN mkdir -p /wheels && mv dist/*.whl /wheels && rm -rf dist
     SAVE ARTIFACT /src/services/voting-node src
     SAVE ARTIFACT /wheels wheels
     SAVE ARTIFACT requirements.txt
 
+pytest:
+    FROM +install-deps
+    RUN poetry install
+    COPY tests tests
+    RUN poetry run pytest -v
+
 docker:
+    FROM python:3.11-slim-bullseye
     ARG tag="latest"
     ARG registry
 

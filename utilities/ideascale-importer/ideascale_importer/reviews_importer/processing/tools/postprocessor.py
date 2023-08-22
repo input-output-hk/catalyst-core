@@ -12,6 +12,7 @@ class Postprocessor:
     def __init__(self, importer: Importer):
         """Initialize entities."""
         self.data = importer
+        self.active_pas = []
 
     def postprocess_reviews(self) -> List[models.Review]:
         """Anonymize, assign level and allocation to reviews."""
@@ -30,21 +31,39 @@ class Postprocessor:
             else:
                 review.allocated = False
             if review.assessor in anonymized_map:
+                self.track_active_pas(review, anonymized_map[review.assessor])
                 review.level = anonymized_map[review.assessor].pa_level
                 review.assessor = anonymized_map[review.assessor].pa_anon_id
             else:
                 review.level = 0
         # return [review.anonymize() for review in self.reviews]
+    
+    def track_active_pas(self, review, assessor):
+        _active_pa = next(
+            (_a for _a in self.active_pas if (_a.pa_email == review.assessor)),
+            None
+        )
+        if not _active_pa:
+            _active_pa = models.LightPa(**assessor.dict())
+            self.active_pas.append(_active_pa)
+        _active_pa.reviews_count += 1
+        if review.allocated:
+            _active_pa.allocated_reviews_count += 1
+        else:
+            _active_pa.unallocated_reviews_count += 1
 
     def export_pas(self, path: str):
         """Export the PAs active."""
         utils.deserialize_and_save_csv(
             path,
-            self.data.pas,
+            self.active_pas,
             {
                 "pa_anon_id": True,
                 "pa_email": True,
                 "pa_level": True,
+                "reviews_count": True,
+                "allocated_reviews_count": True,
+                "unallocated_reviews_count": True
             },
             "",
         )

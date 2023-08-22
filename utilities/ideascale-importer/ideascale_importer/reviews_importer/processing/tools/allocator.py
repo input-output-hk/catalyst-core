@@ -5,9 +5,9 @@ import random
 import rich
 from loguru import logger
 
-from review_stage.db import models
-from review_stage import utils
-from review_stage.tools.importer import Importer, IdeascaleImporter
+from ..types import models
+from .. import utils
+from .importer import Importer, IdeascaleImporter
 
 
 class Allocator:

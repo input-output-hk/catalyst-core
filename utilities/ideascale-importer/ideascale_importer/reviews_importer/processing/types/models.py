@@ -8,18 +8,17 @@ import re
 class Model(BaseModel):
     """Base class for all models."""
 
-
 class Pa(Model):
     """Represents a PA."""
 
     anon_id: str = Field(alias="ids")
-    email: Optional[str]
-    rewards_address: Optional[str]
-    challenge_ids: List[int]
+    email: Optional[str] = Field(default=None)
+    rewards_address: Optional[str] = Field(default=None)
+    challenge_ids: List[int] = Field(default=[])
     level: int = Field(default=0)
-    name: Optional[str]
-    user_name: Optional[str]
-    id: Optional[int]
+    name: Optional[str] = Field(default=None)
+    user_name: Optional[str] = Field(default=None)
+    id: Optional[int] = Field(default=None)
     allocations: List[Allocation] = Field(default=[])
 
     @validator("anon_id", pre=True)
@@ -64,7 +63,7 @@ class Challenge(Model):
 
     id: int
     title: str
-    funds: Optional[int]
+    funds: Optional[int] = Field(default=None)
 
 
 class Proposal(Model):
@@ -223,14 +222,14 @@ class AiDetection(Model):
 class IdeascaleComRev(Model):
     """Represent a Community Reviewer in Ideascale."""
 
-    id: int
-    email: str
-    rewards_address: Optional[str]
-    preferred_challenges: List[str]
-    subscribed: bool
-    name: Optional[str]
-    user_name: Optional[str]
-    id: Optional[str]
+    id: int = Field(default=0)
+    email: str = Field(default="")
+    rewards_address: Optional[str] = Field(default=None)
+    preferred_challenges: List[str] = Field(default=[])
+    subscribed: bool = Field(default=False)
+    name: Optional[str] = Field(default=None)
+    user_name: Optional[str] = Field(default=None)
+    id: Optional[int] = Field(default=None)
 
     @root_validator(pre=True)
     @classmethod
@@ -272,15 +271,15 @@ class IdeascaleChallenge(Model):
 class IdeascaleExportedReview(Model):
     """Represents a review exported from Ideascale Excel file."""
 
-    idea_id: Optional[int]
-    idea_title: str = Field(alias="Idea Title")
-    idea_url: str = Field(alias="Idea URL")
-    idea_challenge: Optional[str]
-    question: str = Field(alias="Question")
-    email: str = Field(alias="Assessor")
-    note: str = Field(alias="Assessment Note")
+    idea_id: Optional[int] = Field(default=None)
+    idea_title: str = Field(alias="Idea Title", default="")
+    idea_url: str = Field(alias="Idea URL", default="")
+    idea_challenge: Optional[str] = Field(default=None)
+    question: str = Field(alias="Question", default="")
+    email: str = Field(alias="Assessor", default="")
+    note: str = Field(alias="Assessment Note", default="")
     score: int = Field(1, alias="Rating Given")
-    date: str = Field(alias="Date")
+    date: str = Field(alias="Date", default="")
 
     @validator("score", pre=True)
     @classmethod
@@ -305,12 +304,12 @@ class IdeascaleExportedReview(Model):
 class IdeascaleExportedReviewResult(Model):
     """Represents a review exported from Ideascale Excel file."""
 
-    idea_id: int = Field(alias="Idea ID")
-    idea_title: str = Field(alias="Idea Title")
-    campaign_title: str = Field(alias="Idea Campaign")
-    question: str = Field(alias="Assessment Question")
-    email: str = Field(alias="Email")
-    date: str = Field(alias="Date")
+    idea_id: int = Field(alias="Idea ID", default=0)
+    idea_title: str = Field(alias="Idea Title", default="")
+    campaign_title: str = Field(alias="Idea Campaign", default="")
+    question: str = Field(alias="Assessment Question", default="")
+    email: str = Field(alias="Email", default="")
+    date: str = Field(alias="Date", default="")
 
     @validator("email", pre=True)
     @classmethod

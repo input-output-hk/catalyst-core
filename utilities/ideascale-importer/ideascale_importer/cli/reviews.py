@@ -1,18 +1,18 @@
 import asyncio
 import typer
-
+import traceback
 from typing import List
-
-from ideascale_importer.reviews_importer.importer import Importer, FrontendClient
-from ideascale_importer.utils import configure_logger
 from loguru import logger
+
+from ideascale_importer.reviews_importer.importer import Importer
+from ideascale_importer.utils import configure_logger
 
 app = typer.Typer(add_completion=False)
 
 @app.command(name="import")
 def import_reviews(
     ideascale_url: str = typer.Option(
-        FrontendClient.DEFAULT_API_URL,
+        ...,
         envvar="IDEASCALE_API_URL",
         help="IdeaScale API URL",
     ),
@@ -29,21 +29,21 @@ def import_reviews(
         ...,
         help="Ideascale user's password (needs admin access)",
     ),
+    event_id: int = typer.Option(
+        ...,
+        help="Database row id of the event which data will be imported",
+    ),
     api_token: str = typer.Option(...,
         envvar="IDEASCALE_API_TOKEN",
         help="IdeaScale API token"
     ),
-    funnel_id: int = typer.Option(
-        ...,
-        help="Ideascale campaign funnel's id",
-    ),
-    nr_allocations: List[int] = typer.Option(
-        [30, 80], 
-        help="Nr of proposal to allocate"
-    ),
     pa_path: str = typer.Option(
-        ...,
+        ..., 
         help="PAs file"
+    ),
+    output_path: str = typer.Option(
+        ...,
+        help="output path"
     ),
     log_level: str = typer.Option(
         "info",
@@ -61,14 +61,14 @@ def import_reviews(
 
     async def inner():
         importer = Importer(
-            ideascale_url,
-            database_url,
-            email,
-            password,
-            api_token,
-            funnel_id,
-            nr_allocations,
-            pa_path
+            ideascale_url=ideascale_url,
+            database_url=database_url,
+            email=email,
+            password=password,
+            api_token=api_token,
+            event_id=event_id,
+            pa_path=pa_path,
+            output_path=output_path
         )
 
         try:
@@ -76,6 +76,7 @@ def import_reviews(
             await importer.run()
             await importer.close()
         except Exception as e:
+            traceback.print_exc()
             logger.error(e)
 
     asyncio.run(inner())

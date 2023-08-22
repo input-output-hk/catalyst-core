@@ -57,14 +57,6 @@ class Config:
         """Load configuration from a JSON object."""
         return pydantic.tools.parse_obj_as(Config, val)
 
-
-class ReadConfigException(Exception):
-    """Raised when the configuration file cannot be read."""
-
-    def __init__(self, cause: str):
-        super().__init__(f"Failed to read config file: {cause}")
-
-
 class ReadProposalsScoresCsv(Exception):
     """Raised when the proposals impact scores csv cannot be read."""
 

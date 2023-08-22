@@ -1,5 +1,6 @@
 """Utilities to manage data."""
 from dataclasses import dataclass
+import inspect
 import json
 import csv
 from openpyxl import Workbook, load_workbook
@@ -23,7 +24,7 @@ def load_json_and_serialize(path: str, model: Type[T]) -> List[T]:
         return serialized
 
 
-def load_csv_and_serialize(path: str, model: Type[T], extra: Dict) -> List[T]:
+def load_csv_and_serialize(path: str, model: Type[T], extra: Dict = {}) -> List[T]:
     """Given a path of csv and a model it returns a list of models, merging it with extra attributes."""
     with open(path) as f:
         data = csv.DictReader(f)

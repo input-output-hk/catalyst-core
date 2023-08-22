@@ -42,7 +42,7 @@ install-deps:
     RUN poetry install --only main --no-root
 
     # Copy the voting_node source code
-    COPY --dir voting_node ./
+    COPY --dir voting_node development.md ./
 
     SAVE ARTIFACT .venv .venv
     SAVE IMAGE --cache-hint
@@ -62,7 +62,7 @@ build-dev:
     FROM +install-deps
     RUN poetry install
     COPY tests tests
-    COPY development.md readme.md leader0-schedule.md .
+    COPY readme.md leader0-schedule.md .
 
 pytest:
     FROM +build-dev

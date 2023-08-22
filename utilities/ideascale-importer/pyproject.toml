@@ -40,6 +40,8 @@ loguru = "^0.6.0"
 brotlipy = "^0.7.0"
 lxml = "4.9.0"
 
+openpyxl = "^3.1.2"
+
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1"
 mypy-extensions = ">=1"

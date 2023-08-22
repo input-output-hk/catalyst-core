@@ -324,8 +324,13 @@ class NodeTaskSchedule(ScheduleRunner):
 
         #  modify node config for all nodes
         host_name = utils.get_hostname()
+
+        role_str = self.settings.role
+        if role_str is None:
+            role_str = host_name
+
         host_ip = utils.get_hostname_addr()
-        role_n_digits = utils.get_hostname_role_n_digits(host_name)
+        role: utils.NodeRole = utils.parse_node_role(role_str)
         p2p_port = self.settings.p2p_port
 
         listen_rest = f"{host_ip}:{self.settings.rest_port}"
@@ -334,28 +339,29 @@ class NodeTaskSchedule(ScheduleRunner):
         trusted_peers = []
 
         for peer in self.node.leaders:
-            match role_n_digits:
-                case ("leader", "0"):
-                    # this node does not trust peers
-                    pass
-                case ("leader", host_digits):
-                    match utils.get_hostname_role_n_digits(peer.hostname):
-                        # only append if peer digits are smaller than host digits
-                        # This is to say that a example node "leader000" will
-                        # append "leader00", but not "leader0000".
-                        case ("leader", peer_digits) if peer_digits < host_digits:
-                            peer_addr = f"/dns4/{peer.hostname}/tcp/{p2p_port}"
-                            trusted_peers.append({"address": peer_addr})
-                        case _:
-                            pass
-                case ("follower", _):
-                    # append all leaders
+            if role.name == "leader" and role.n == 0:
+                # this node does not trust peers
+                pass
+            elif role.name == "leader":
+                peer_role_str = peer.role
+                if peer_role_str is None:
+                    peer_role_str = peer.hostname
+
+                peer_role = utils.parse_node_role(peer_role_str)
+                # only append if peer digits are smaller than host digits
+                # This is to say that a example node "leader000" will
+                # append "leader00", but not "leader0000".
+                if peer_role == "leader" and peer_role.n < role.n:
                     peer_addr = f"/dns4/{peer.hostname}/tcp/{p2p_port}"
                     trusted_peers.append({"address": peer_addr})
+            elif role.name == "follower":
+                # append all leaders
+                peer_addr = f"/dns4/{peer.hostname}/tcp/{p2p_port}"
+                trusted_peers.append({"address": peer_addr})
 
         # node config from default template
         config = utils.make_node_config(
-            role_n_digits,
+            role,
             listen_rest,
             listen_jrpc,
             listen_p2p,

@@ -18,6 +18,7 @@ from .envvar import (
     VOTING_HOST,
     VOTING_LOG_LEVEL,
     VOTING_LOG_FORMAT,
+    VOTING_NODE_ROLE,
     VOTING_NODE_STORAGE,
     VOTING_PORT,
 )
@@ -95,6 +96,13 @@ def voting_node_cli():
     If left unset, it will look for envvar `JORM_PATH`.""",
 )
 @click.option(
+    "--node-role",
+    envvar=VOTING_NODE_ROLE,
+    help="""Role which the node will assume (e.g. leader0).
+
+    if let unset, it will look for envvar `VOTING_NODE_ROLE`.""",
+)
+@click.option(
     "--jorm-path",
     envvar=JORM_PATH,
     default="jormungandr",
@@ -142,6 +150,7 @@ def start(
     log_format,
     database_url,
     node_storage,
+    node_role,
     jorm_path,
     jcli_path,
     jorm_port_rest,
@@ -161,6 +170,7 @@ def start(
         jorm_path,
         database_url,
         reloadable,
+        node_role,
     )
 
     voting = service.VotingService(api_config, settings)

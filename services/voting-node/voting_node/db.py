@@ -138,7 +138,8 @@ class EventDb(BaseModel):
             case [*leaders]:
 
                 def extract_leader_info(leader):
-                    host_info = LeaderHostInfo(*leader["row"])
+                    row = leader["row"]
+                    host_info = LeaderHostInfo(hostname=row[0], consensus_leader_id=row[1], role=None)
                     logger.debug(f"{host_info.hostname}")
                     return host_info
 

@@ -13,6 +13,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from loguru import logger
+from pydantic.dataclasses import dataclass
 
 from .jcli import JCli
 from .models import Event, Genesis, LeaderHostInfo, NodeConfig
@@ -73,23 +74,27 @@ async def get_network_secret(secret_file: Path, jcli_path: str) -> str:
             raise e
 
 
-def get_hostname_role_n_digits(
-    host_name: str,
-) -> tuple[Literal["leader", "follower"], str]:
-    """."""
+@dataclass
+class NodeRole:
+    """Represents the role a node is assuming."""
 
-    def match_hostname_leadership_pattern(host_name: str) -> Match[str] | None:
-        return re.match(LEADERSHIP_REGEX, host_name)
+    name: Literal["leader", "follower"]
+    n: int
 
-    res = match_hostname_leadership_pattern(host_name)
-    exc = Exception(f"hostname {host_name} must conform to '{LEADERSHIP_REGEX}'")
+
+def parse_node_role(
+    s: str,
+) -> NodeRole:
+    """Parse a node role from a string."""
+    res = re.match(LEADERSHIP_REGEX, s)
+    exc = Exception(f"Role string '{s}' must conform to '{LEADERSHIP_REGEX}'")
     if res is None:
         raise exc
     match res.groups():
         case ("leader", n):
-            return ("leader", n)
+            return NodeRole("leader", int(n))
         case ("follower", n):
-            return ("follower", n)
+            return NodeRole("follower", int(n))
         case _:
             raise exc
 
@@ -177,7 +182,7 @@ def follower_node_config(
 
 
 def make_node_config(
-    leadership: tuple[Literal["leader", "follower"], str],
+    leadership: NodeRole,
     listen_rest: str,
     listen_jrpc: str,
     listen_p2p: str,
@@ -187,7 +192,7 @@ def make_node_config(
 ) -> NodeConfig:
     """Configure a node from template, depending on its leadership and number."""
     match leadership:
-        case ("leader", "0"):
+        case NodeRole("leader", 0):
             return leader0_node_config(
                 listen_rest,
                 listen_jrpc,
@@ -196,7 +201,7 @@ def make_node_config(
                 storage,
                 topology_key,
             )
-        case ("leader", _):
+        case NodeRole("leader", _):
             return leader_node_config(
                 listen_rest,
                 listen_jrpc,
@@ -205,7 +210,7 @@ def make_node_config(
                 storage,
                 topology_key,
             )
-        case ("follower", _):
+        case NodeRole("follower", _):
             return follower_node_config(
                 listen_rest,
                 listen_jrpc,

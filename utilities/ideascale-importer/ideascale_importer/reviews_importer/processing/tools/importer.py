@@ -201,25 +201,15 @@ class IdeascaleImporter:
 
         return reviews
 
-    def group_triplets(self, _reviews, start_id: int = 0):
+    def group_triplets(self, reviews, questions, start_id: int = 0):
         """Given a list of reviews divided by criteria, group them for the complete review."""
         groups = {}
-        _questions = {
-            """You are reviewing the positive IMPACT this project will have on the Cardano Ecosystem.
-
-Has this project clearly demonstrated in all aspects of the proposal that it will have a positive impact on the Cardano Ecosystem?""": "Impact / Alignment",
-            """You are reviewing the FEASIBILITY of this project.
-
-Is this project feasible based on the proposal submitted? Does the plan and associated budget and milestones look achievable? Does the team have the skills, experience, capability and capacity to complete the project successfully?""": "Feasibility",
-            """You are reviewing the VALUE FOR MONEY this represents for the Treasury and the Community
-
-Is the funding amount requested for this project reasonable and does it provide good Value for Money to the Treasury?""": "Auditability",
-        }
-        questions = {}
-        for q in _questions:
-            questions[q.replace('\n', '').replace('\r', '').replace(' ', '')] = _questions[q]
+        _questions = {}
+        for q in questions:
+            _questions[q.replace('\n', '').replace('\r', '').replace(' ', '')] = questions[q]
+        questions = _questions
         logger.info("Group triplets...")
-        for review in _reviews:
+        for review in reviews:
             key = f"{review.idea_id}-{review.email}"
             if review.question in questions:
                 if key not in groups:
@@ -228,26 +218,26 @@ Is the funding amount requested for this project reasonable and does it provide 
 
         reviews = []
         logger.info("Parse reviews...")
-        _questions = list(questions.values())
+        questions = list(questions.values())
         counter = 0
         for idx, g in enumerate(groups.keys()):
             if len(groups[g].keys()) == 3:
                 triplet = groups[g]
                 review_dict = {
                     "id": counter + start_id,
-                    "Assessor": triplet[_questions[0]].email,
-                    "Impact / Alignment Note": triplet[_questions[0]].note,
-                    "Impact / Alignment Rating": triplet[_questions[0]].score,
-                    "Feasibility Note": triplet[_questions[1]].note,
-                    "Feasibility Rating": triplet[_questions[1]].score,
-                    "Auditability Note": triplet[_questions[2]].note,
-                    "Auditability Rating": triplet[_questions[2]].score,
+                    "Assessor": triplet[questions[0]].email,
+                    "Impact / Alignment Note": triplet[questions[0]].note,
+                    "Impact / Alignment Rating": triplet[questions[0]].score,
+                    "Feasibility Note": triplet[questions[1]].note,
+                    "Feasibility Rating": triplet[questions[1]].score,
+                    "Auditability Note": triplet[questions[2]].note,
+                    "Auditability Rating": triplet[questions[2]].score,
                 }
                 proposal_dict = {
-                    "id": triplet[_questions[0]].idea_id,
-                    "url": triplet[_questions[0]].idea_url,
-                    "title": triplet[_questions[0]].idea_title,
-                    "campaign_id": triplet[_questions[0]].idea_challenge.id,
+                    "id": triplet[questions[0]].idea_id,
+                    "url": triplet[questions[0]].idea_url,
+                    "title": triplet[questions[0]].idea_title,
+                    "campaign_id": triplet[questions[0]].idea_challenge.id,
                 }
                 reviews.append(models.Review(**review_dict, proposal=models.Proposal(**proposal_dict)))
                 counter = counter + 1

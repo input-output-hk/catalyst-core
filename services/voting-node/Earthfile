@@ -42,7 +42,7 @@ install-deps:
     RUN poetry install --only main --no-root
 
     # Copy the voting_node source code
-    COPY --dir voting_node development.md ./
+    COPY --dir voting_node readme.md ./
 
     SAVE ARTIFACT .venv .venv
     SAVE IMAGE --cache-hint
@@ -70,8 +70,8 @@ pytest:
 
 pdoc:
     FROM +build-dev
-    RUN poetry run pdoc -o /apidoc ./voting_node
-    SAVE ARTIFACT /apidoc doc
+    RUN poetry run pdoc -o /doc ./voting_node
+    SAVE ARTIFACT /doc AS LOCAL ./doc
 
 docker:
     FROM python:3.11-slim-bullseye
@@ -92,6 +92,12 @@ docker:
     RUN apt-get clean && \
         rm -rf /var/lib/apt/lists/*
 
+    # Copy the rest of the application code to the container
+    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
+    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
+    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
+    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
+
     # Set the working directory
     WORKDIR /app
 
@@ -99,18 +105,12 @@ docker:
     COPY +build/wheels /app
     COPY +build/requirements.txt /app
     COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
-    COPY entry.sh /app
-    RUN chmod +x /app/entry.sh
-
     # Install the package
     RUN pip3 install --no-cache -r requirements.txt
     RUN pip3 install --no-cache *.whl
 
-    # Copy the rest of the application code to the container
-    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
-    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
-    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
-    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
+    COPY entry.sh /app
+    RUN chmod +x /app/entry.sh
 
     ENV PATH=/app:$PATH
 

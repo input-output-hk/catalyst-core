@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["default_vote_options"],"struct":["Challenge","Fund","Highlight","Proposal"]};

@@ -53,12 +53,22 @@ build:
     SAVE ARTIFACT /src/services/voting-node src
     SAVE ARTIFACT /wheels wheels
     SAVE ARTIFACT requirements.txt
+    SAVE IMAGE --cache-hint
 
-pytest:
+build-dev:
     FROM +install-deps
     RUN poetry install
     COPY tests tests
+    COPY readme.md leader0-schedule.md .
+
+pytest:
+    FROM +build-dev
     RUN poetry run pytest -v
+
+pdoc:
+    FROM +build-dev
+    RUN poetry run pdoc -o /apidoc ./voting_node
+    SAVE ARTIFACT /apidoc doc
 
 docker:
     FROM python:3.11-slim-bullseye

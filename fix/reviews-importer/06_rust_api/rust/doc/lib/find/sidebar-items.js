@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MAIN_TAG"],"enum":["Error"],"fn":["find_vote","id_from_pub"],"static":["CALLSITE","META"],"struct":["AccountId"]};

@@ -1,0 +1,113 @@
+openapi: 3.0.2
+
+info:
+  title: Mock farm REST API
+  description: Mock Farm Rest API v0
+  version: 0.0.1
+  contact:
+    url: 'https://github.com/input-output-hk/vit-testing/'
+
+servers:
+  - url: 'https://localhost'
+
+tags:
+  - name: active
+  - name: start
+  - name: shutdown
+
+paths:
+  '/api/v0/active':
+    get:
+      description: Lists active mock environments
+      operationId: Active
+      tags:
+        - active
+      responses:
+        '200':
+            description: Success
+            content:
+              application/json:
+                schema:
+                  description: assigned port number
+                  type: string
+                  format: text
+        '400':
+            description: Mock env with given ID or port already exists
+
+  '/api/v0/start/{env_name}':
+    post:
+      description: Starts new mock env with random free port
+      operationId: StartEnvRandomPort
+      tags:
+        - start
+      parameters:
+        - name: env_name
+          in: path
+          required: true
+          schema:
+            description: Environment name
+            type: string
+            pattern: '[0-9a-f]+'
+      responses:
+        '200':
+            description: Success
+            content:
+              application/json:
+                schema:
+                  description: assigned port number
+                  type: string
+                  format: text
+        '400':
+            description: Mock env with given ID or port already exists
+
+  '/api/v0/start/{env_name}/{port}':
+    post:
+      description: Starts new mock env with random free port
+      operationId: StartEnv
+      tags:
+        - start
+      parameters:
+        - name: env_name
+          in: path
+          required: true
+          schema:
+            description: Environment name
+            type: string
+            pattern: '[0-9a-f]+'
+      responses:
+        '200':
+            description: Success
+            content:
+              application/json:
+                schema:
+                  description: assigned port number
+                  type: string
+                  format: text
+        '400':
+          description: Mock env with given ID or port already exists
+
+  '/api/v0/shutdown/{env_name}':
+    post:
+      description: Shutdown new mock env with random free port
+      operationId: ShutdownEnv
+      tags:
+        - shutdown
+      parameters:
+        - name: env_name
+          in: path
+          required: true
+          schema:
+            description: Environment name
+            type: string
+            pattern: '[0-9a-f]+'
+    responses:
+      '200':
+        description: Success
+        content:
+          application/json:
+            schema:
+              description: assigned port number
+              type: string
+              format: text
+      '404':
+        description: Mock env with given ID was not found

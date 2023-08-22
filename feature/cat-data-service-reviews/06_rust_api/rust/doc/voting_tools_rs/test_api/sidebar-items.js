@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["MockDbProvider","SnapshotOutputAssert"],"trait":["VerifiableSnapshotOutput"]};
+window.SIDEBAR_ITEMS = {"struct":["SnapshotOutputAssert"],"trait":["VerifiableSnapshotOutput"]};

@@ -152,6 +152,7 @@
 <a href="#152" id="152">152</a>
 <a href="#153" id="153">153</a>
 <a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::{SystemTime, UNIX_EPOCH};
 <span class="kw">use </span>vit_servicing_station_tests::common::raw_snapshot::RawSnapshot <span class="kw">as </span>RawSnapshotRequest;
 
@@ -173,15 +174,17 @@
         <span class="self">self</span>,
         _parameters: SnapshotParameters,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;RawSnapshotRequest, Error&gt; {
-        <span class="kw">let </span>(db_sync, <span class="kw">_</span>, <span class="kw">_</span>) = <span class="self">self
-            </span>.into_iter()
+        <span class="comment">/*
+        let (db_sync, _, _) = self
+            .into_iter()
             .fold(
                 MainnetNetworkBuilder::default(),
                 MainnetNetworkBuilder::with,
             )
             .build();
-        <span class="kw">let </span>_db = MockDbProvider::from(db_sync);
-        <span class="comment">//let (outputs, _errs) =
+        let _db = MockDbProvider::from(db_sync);
+        */
+        //let (outputs, _errs) =
         //    voting_tools_rs::voting_power(&amp;db, VotingPowerArgs::default()).unwrap();
         //outputs.try_into_raw_snapshot_request(parameters)
         </span><span class="prelude-val">Ok</span>(RawSnapshotRequest::default())
@@ -233,13 +236,12 @@
 
 <span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 <span class="kw">use </span>mainnet_lib::wallet_state::{MainnetWalletState, TemplateError};
-<span class="kw">use </span>mainnet_lib::{MainnetNetworkBuilder, SnapshotParameters};
+<span class="kw">use </span>mainnet_lib::SnapshotParameters;
 <span class="kw">use </span>num_traits::ToPrimitive;
 <span class="kw">use </span>snapshot_lib::registration::{
     Delegations <span class="kw">as </span>VotingDelegations, RewardAddress, StakeAddress, VotingRegistration,
 };
 <span class="kw">use </span>vit_servicing_station_lib::v0::endpoints::snapshot::RawSnapshotInput;
-<span class="kw">use </span>voting_tools_rs::test_api::MockDbProvider;
 <span class="kw">use </span>voting_tools_rs::{SnapshotEntry, VotingKey, VotingPurpose};
 
 <span class="doccomment">/// Extensions for voting tools `Output` struct

@@ -722,13 +722,27 @@
 <a href="#722" id="722">722</a>
 <a href="#723" id="723">723</a>
 <a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
 </pre><pre class="rust"><code><span class="attr">#![allow(clippy::all)]
 </span><span class="kw">use </span>std::{error::Error, ffi::OsString, io::Cursor};
 
-<span class="kw">use crate</span>::{
-    validation::hash,
-    verify::{is_valid_rewards_address, stake_key_hash, StakeKeyHash},
-};
+<span class="kw">use </span><span class="kw">crate</span>::verify::{is_valid_rewards_address, stake_key_hash, StakeKeyHash};
+
 <span class="kw">use </span>bytekind::{Bytes, HexString};
 <span class="kw">use </span>ciborium::value::Value;
 <span class="kw">use </span>clap::builder::OsStr;
@@ -738,17 +752,17 @@
 
 <span class="kw">use </span>serde::{Deserialize, Serialize, Serializer};
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>arbitrary;
-<span class="kw">mod </span>cbor;
-<span class="comment">// mod crypto;
-</span><span class="kw">pub use </span>crypto2::{PubKey, Sig};
+<span class="kw">pub use </span>crypto2::{PubKey, Sig};
 <span class="kw">mod </span>crypto2;
-<span class="comment">// pub use crypto::{PubKey, Sig};
-</span><span class="kw">pub mod </span>hex_bytes;
+
+<span class="kw">pub mod </span>hex_bytes;
 <span class="kw">mod </span>network_id;
 <span class="kw">pub use </span>network_id::NetworkId;
 
 <span class="kw">use </span>test_strategy::Arbitrary;
+
+<span class="kw">use </span>hash::hash;
+<span class="kw">mod </span>hash;
 
 <span class="comment">// Networks
 </span><span class="kw">const </span>NETWORK_ID: usize = <span class="number">0</span>;
@@ -892,7 +906,7 @@
     ///  - signing the hash with the private key used to generate the stake key
     </span><span class="kw">pub fn </span>validate_signature_bin(<span class="kw-2">&amp;</span><span class="self">self</span>, bin_reg: Vec&lt;u8&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
         <span class="kw">let </span>bytes = bin_reg;
-        <span class="kw">let </span>hash_bytes = hash::hash(<span class="kw-2">&amp;</span>bytes);
+        <span class="kw">let </span>hash_bytes = hash(<span class="kw-2">&amp;</span>bytes);
 
         <span class="kw">let </span>pub_key = Ed25519::public_from_binary(<span class="self">self</span>.registration.stake_key.as_ref())
             .map_err(|e| RegistrationError::StakePublicKeyError { err: e.to_string() })<span class="question-mark">?</span>;
@@ -904,9 +918,26 @@
             Verification::Failed =&gt; <span class="prelude-val">Err</span>(RegistrationError::MismatchedSignature { hash_bytes }),
         }
     }
+
+    <span class="kw">pub fn </span>validate_multi_delegation(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        multi_delegation_enabled: bool,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.registration.voting_key {
+            VotingKey::Direct(<span class="kw">_</span>) =&gt; (),
+            VotingKey::Delegated(delegation) =&gt; {
+                <span class="kw">if </span>!multi_delegation_enabled &amp;&amp; delegation.len() != <span class="number">1 </span>{
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(RegistrationError::DelegationError {
+                        err: <span class="string">&quot;CIP-36 Multiple Delegations are unsupported.&quot;</span>.to_string(),
+                    });
+                }
+            }
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
 }
 
-<span class="doccomment">/// A Raw Registration from the DB.
+<span class="doccomment">/// A Raw Registration from the `DB.arbitrary_signed_registration`
 ///
 </span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>RawRegistration {
@@ -1410,11 +1441,12 @@
     ///
     /// Errors if the string is not valid hex
     ///
-    /// ```
-    /// # use crate::data::RewardsAddress;
-    /// let address = RewardsAddress::from_hex(&quot;0000&quot;).unwrap();
-    /// assert_eq!(address.0, vec![0, 0]);
-    /// ```
+    ///
+    /// Test broken, can not import `data` crate, it&#39;s private.
+    /// # use `crate::voting_tools_rs::data::RewardsAddress`;
+    /// let address = `RewardsAddress::from_hex(&quot;0000&quot;).unwrap`();
+    /// `assert_eq!(address.0`, vec![0, 0]);
+    ///
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>from_hex(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FromHexError&gt; {
         <span class="kw">let </span>bytes = hex::decode(s)<span class="question-mark">?</span>;

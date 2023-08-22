@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_BALANCE"],"fn":["baby_step_giant_step"],"struct":["BabyStepsTable","MaxLogExceeded"]};

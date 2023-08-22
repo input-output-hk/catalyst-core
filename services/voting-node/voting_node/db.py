@@ -8,7 +8,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 from .envvar import SECRET_SECRET
-from .models import Contribution, Event, HostInfo, LeaderHostInfo, Proposal, Snapshot, VotePlan, Voter
+from .models import Contribution, Event, HostInfo, LeaderHostInfo, Objective, Proposal, Snapshot, VotePlan, Voter, VotingGroup
 from .utils import LEADER_REGEX, decrypt_secret, encrypt_secret, get_hostname
 
 
@@ -18,8 +18,8 @@ class EventDb(BaseModel):
     Each method that queries the EventDB opens and closes its own connection.
     """
 
+    db_url: str = ""
     connection: Connection | None = None
-    db_url: str
 
     class Config:
         """Pydantic model configuration parameters."""
@@ -138,7 +138,8 @@ class EventDb(BaseModel):
             case [*leaders]:
 
                 def extract_leader_info(leader):
-                    host_info = LeaderHostInfo(*leader["row"])
+                    row = leader["row"]
+                    host_info = LeaderHostInfo(hostname=row[0], consensus_leader_id=row[1], role=None)
                     logger.debug(f"{host_info.hostname}")
                     return host_info
 
@@ -146,16 +147,16 @@ class EventDb(BaseModel):
                 extracted_leaders = [extract_leader_info(leader) for leader in leaders]
                 return extracted_leaders
 
-    async def fetch_proposals(self) -> list[Proposal]:
+    async def fetch_proposals(self, objective_id: int) -> list[Proposal]:
         """Return a list of proposals ."""
         conn = await self.connect()
-        query = "SELECT * FROM proposal ORDER BY id ASC"
-        result = await conn.fetch(query)
+        query = "SELECT * FROM proposal WHERE objective = $1"
+        result = await conn.fetch(query, objective_id)
         await conn.close()
 
         if result is None:
             raise Exception("proposals DB error")
-        logger.debug(f"proposals retrieved from DB: {len(result)}")
+        logger.debug("proposals retrieved from DB", objective=objective_id)
         match result:
             case None:
                 raise Exception("DB error fetching proposals")
@@ -205,6 +206,20 @@ class EventDb(BaseModel):
                 logger.debug("snapshot retrieved from DB")
                 return snapshot
 
+    async def fetch_voting_groups(self) -> list[VotingGroup]:
+        """Fetch the voters registered for the event_id."""
+        conn = await self.connect()
+        query = "SELECT * FROM voting_group"
+        result = await conn.fetch(query)
+        await conn.close()
+
+        match result:
+            case None:
+                raise Exception("DB error fetching voting groups")
+            case [*items]:
+                logger.debug("voting groups retrieved from DB: {group_count}", group_count=len(items))
+                return [VotingGroup(**dict(r)) for r in items]
+
     async def fetch_voters(self, event_id: int) -> list[Voter]:
         """Fetch the voters registered for the event_id."""
         conn = await self.connect()
@@ -236,6 +251,20 @@ class EventDb(BaseModel):
             case [*contributions]:
                 logger.debug(f"contributions retrieved from DB: {len(contributions)}")
                 return [Contribution(**dict(r)) for r in contributions]
+
+    async def fetch_objectives(self, event_id: int) -> list[Objective]:
+        """Fetch the objectives for the event_id."""
+        conn = await self.connect()
+        query = "SELECT * FROM objective WHERE event = $1"
+        result = await conn.fetch(query, event_id)
+        await conn.close()
+
+        match result:
+            case None:
+                raise Exception("DB error fetching voteplans")
+            case [*items]:
+                logger.debug("voteplans retrieved from DB: {objective_count}", objective_count=len(items))
+                return [Objective(**dict(r)) for r in items]
 
     async def fetch_voteplans(self, event_id: int) -> list[VotePlan]:
         """Fetch the voteplans for the event_id."""

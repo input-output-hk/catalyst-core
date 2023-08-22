@@ -2,7 +2,6 @@
 
 use crate::data::SnapshotEntry;
 use crate::VotingKey;
-use bigdecimal::ToPrimitive;
 use cardano_serialization_lib::address::RewardAddress;
 use cardano_serialization_lib::crypto::PublicKey;
 
@@ -28,21 +27,6 @@ impl<'a> SnapshotOutputAssert<'a> {
     #[must_use]
     pub fn new(output: &'a SnapshotEntry) -> Self {
         Self { output }
-    }
-
-    /// Asserts expected voting power field from [`SnapshotEntry`]
-    /// # Panics
-    ///
-    /// Panics on assertion failed
-    pub fn voting_power(&self, voting_power: u64) {
-        assert_eq!(
-            voting_power,
-            self.output
-                .voting_power
-                .to_u64()
-                .expect("cannot convert voting power to u64"),
-            "wrong voting power"
-        );
     }
 
     /// Asserts delegations address field from [`SnapshotEntry`]

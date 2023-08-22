@@ -98,13 +98,16 @@ class VotingService(uvicorn.Server):
         # checks the hostname and returns the schedule
         # according to its leadership role.
         # raises exception is something goes wrong with the hostname
-        host_name: str = utils.get_hostname().lower()
-        match utils.get_hostname_role_n_digits(host_name):
-            case ("leader", "0"):
+        role_str = self.settings.role
+        if role_str is None:
+            role_str = utils.get_hostname().lower()
+
+        match utils.parse_node_role(role_str):
+            case utils.NodeRole("leader", 0):
                 return tasks.Leader0Schedule(self.settings)
-            case ("leader", _):
+            case utils.NodeRole("leader", _):
                 return tasks.LeaderSchedule(self.settings)
-            case ("follower", _):
+            case utils.NodeRole("follower", _):
                 return tasks.FollowerSchedule(self.settings)
             case _:
                 return None

@@ -8,7 +8,7 @@ build:
     SAVE ARTIFACT target/release/jormungandr jormungandr
     SAVE IMAGE --cache-hint
 
-docker:
+docker-local:
     FROM ../../../+deployment
     WORKDIR /app
     ARG tag="latest"

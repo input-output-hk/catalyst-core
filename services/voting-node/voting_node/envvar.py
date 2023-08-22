@@ -17,6 +17,9 @@ VOTING_LOG_FORMAT: Final = "VOTING_LOG_FORMAT"
 VOTING_NODE_STORAGE: Final = "VOTING_NODE_STORAGE"
 """Path to the voting node storage."""
 
+VOTING_NODE_ROLE: Final = "VOTING_NODE_ROLE"
+"""Role which this node will assume (e.g. leader0)."""
+
 IS_NODE_RELOADABLE: Final = "IS_NODE_RELOADABLE"
 """Set the voting node mode to 'reloadable' if set to True."""
 

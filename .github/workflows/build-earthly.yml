@@ -1,0 +1,81 @@
+name: Build - Earthly
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+      - "src/**/**.md"
+      - "Makefiles/**"
+      - "nix/**"
+      - "book/**"
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+      - "book/**"
+      - "src/**/**.md"
+      - "Makefiles/**"
+      - "nix/**"
+      - "book/**"
+
+env:
+  RUST_LATEST_STABLE_VERSION: 1.71
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+  RUST_BACKTRACE: 1
+  CARGO_INCREMENTAL: 0
+  CARGO_FLAGS: --verbose --locked
+  SEGMENT_DOWNLOAD_TIMEOUT_MINS: 15
+
+jobs:
+  cancel:
+    name: "Cancel Previous Runs"
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          access_token: ${{ github.token }}
+
+  build_on_linux:
+    name: Build Catalyst Core on Linux - With Earthly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Free disk space
+        # https://github.com/actions/virtual-environments/issues/709
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
+      - uses: earthly/actions-setup@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version: "latest" # or pin to an specific version, e.g. "0.7.1"
+          use-cache: true
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: what version is installed?
+        run: earthly --version
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build everything with Earthly
+        run: |
+          earthly --remote-cache=ghcr.io/${{ github.repository }}:cache +all
+

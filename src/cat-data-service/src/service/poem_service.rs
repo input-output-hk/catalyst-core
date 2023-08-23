@@ -1,5 +1,6 @@
 //! Poem Service for cat-data-service endpoints.
 
+use crate::service::ui::stoplight_elements;
 use crate::service::Error;
 
 use poem::{listener::TcpListener, middleware::Cors, EndpointExt, Route};
@@ -19,7 +20,6 @@ impl Api {
     }
 }
 
-
 pub async fn run_service(
     addr: &SocketAddr,
     metrics_addr: &Option<SocketAddr>,
@@ -32,14 +32,17 @@ pub async fn run_service(
 
     let api_service = OpenApiService::new(Api, "Hello World", "1.0").server(server_host);
 
+    let spec = api_service.spec();
+
     let swagger_ui = api_service.swagger_ui();
     let rapidoc_ui = api_service.rapidoc();
     let redoc_ui = api_service.redoc();
     let openapi_explorer = api_service.openapi_explorer();
-    let spec = api_service.spec();
+    let stoplight_ui = stoplight_elements::create_endpoint(&spec);
 
     let app = Route::new()
         .nest("/api", api_service)
+        .nest("/docs/", stoplight_ui)
         .nest("/docs/swagger_ui", swagger_ui)
         .nest("/docs/redoc", redoc_ui)
         .nest("/docs/rapidoc", rapidoc_ui)

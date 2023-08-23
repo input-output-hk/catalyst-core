@@ -13,9 +13,10 @@ use std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
 use tower_http::cors::{Any, CorsLayer};
 
 mod health;
+mod poem_service;
+mod ui;
 mod v0;
 mod v1;
-mod poem_service;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {

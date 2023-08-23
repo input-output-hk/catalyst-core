@@ -68,6 +68,14 @@ jobs:
       - name: what version is installed?
         run: earthly --version
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build everything with Earthly
-        run: earthly +all
+        run: |
+          earthly --remote-cache=ghcr.io/${{ github.repository }}:cache +all
 

@@ -81,7 +81,7 @@ build-dev:
 # Run tests
 pytest:
     FROM +build-dev
-    RUN poetry run pytest -v --doctest-modules tests
+    RUN poetry run pytest -v --doctest-modules
 
 # Generate API docs
 pdoc:

@@ -55,9 +55,13 @@
 <a href="#55" id="55">55</a>
 <a href="#56" id="56">56</a>
 <a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Poem Service for cat-data-service endpoints.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::service::Error;
+</span><span class="kw">use </span><span class="kw">crate</span>::service::ui::stoplight_elements;
+<span class="kw">use </span><span class="kw">crate</span>::service::Error;
 
 <span class="kw">use </span>poem::{listener::TcpListener, middleware::Cors, EndpointExt, Route};
 <span class="kw">use </span>poem_openapi::{param::Query, payload::PlainText, OpenApi, OpenApiService};
@@ -76,7 +80,6 @@
     }
 }
 
-
 <span class="kw">pub async fn </span>run_service(
     addr: <span class="kw-2">&amp;</span>SocketAddr,
     metrics_addr: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
@@ -89,14 +92,17 @@
 
     <span class="kw">let </span>api_service = OpenApiService::new(Api, <span class="string">&quot;Hello World&quot;</span>, <span class="string">&quot;1.0&quot;</span>).server(server_host);
 
+    <span class="kw">let </span>spec = api_service.spec();
+
     <span class="kw">let </span>swagger_ui = api_service.swagger_ui();
     <span class="kw">let </span>rapidoc_ui = api_service.rapidoc();
     <span class="kw">let </span>redoc_ui = api_service.redoc();
     <span class="kw">let </span>openapi_explorer = api_service.openapi_explorer();
-    <span class="kw">let </span>spec = api_service.spec();
+    <span class="kw">let </span>stoplight_ui = stoplight_elements::create_endpoint(<span class="kw-2">&amp;</span>spec);
 
     <span class="kw">let </span>app = Route::new()
         .nest(<span class="string">&quot;/api&quot;</span>, api_service)
+        .nest(<span class="string">&quot;/docs/&quot;</span>, stoplight_ui)
         .nest(<span class="string">&quot;/docs/swagger_ui&quot;</span>, swagger_ui)
         .nest(<span class="string">&quot;/docs/redoc&quot;</span>, redoc_ui)
         .nest(<span class="string">&quot;/docs/rapidoc&quot;</span>, rapidoc_ui)

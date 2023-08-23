@@ -15,6 +15,7 @@ use tower_http::cors::{Any, CorsLayer};
 mod health;
 mod v0;
 mod v1;
+mod poem_service;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -22,6 +23,8 @@ pub enum Error {
     CannotRunService(String),
     #[error(transparent)]
     EventDbError(#[from] event_db::error::Error),
+    #[error(transparent)]
+    IoError(#[from] std::io::Error),
 }
 
 #[derive(Serialize, Debug)]
@@ -66,6 +69,14 @@ pub async fn run(
     state: Arc<State>,
 ) -> Result<(), Error> {
     let cors = cors_layer();
+
+    // Create service addresses to be used during poem migration.
+    // Metrics address does not change.
+    // Service address is same as official address but +1 to the port.
+    let poem_metrics = metrics_addr.clone();
+    let mut poem_service = service_addr.clone();
+    poem_service.set_port(poem_service.port() + 1);
+
     if let Some(metrics_addr) = metrics_addr {
         let service_app = app(state)
             .layer(cors.clone())
@@ -75,11 +86,15 @@ pub async fn run(
         tokio::try_join!(
             run_service(service_app, service_addr, "service"),
             run_service(metrics_app, metrics_addr, "metrics"),
+            poem_service::run_service(&poem_service, &poem_metrics),
         )?;
     } else {
         let service_app = app(state).layer(cors);
 
-        run_service(service_app, service_addr, "service").await?;
+        tokio::try_join!(
+            run_service(service_app, service_addr, "service"),
+            poem_service::run_service(&poem_service, &poem_metrics),
+        )?;
     }
     Ok(())
 }

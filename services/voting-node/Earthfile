@@ -1,6 +1,7 @@
 # Set the Earthly version to 0.7
 VERSION 0.7
 
+# Base target with poetry and system dependencies
 builder:
     FROM python:3.11-slim-bullseye
 
@@ -22,13 +23,14 @@ builder:
     # Install Poetry
     RUN curl -sSL https://install.python-poetry.org | python3 -
 
-    # Set the working directory
-    WORKDIR /src/services/voting-node
-
     SAVE IMAGE --cache-hint
 
+# Install external python dependencies
 install-deps:
     FROM +builder
+
+    # Set the working directory
+    WORKDIR /src/services/voting-node
 
     # Copy the pyproject.toml and poetry.lock files to the container
     COPY pyproject.toml .
@@ -47,6 +49,7 @@ install-deps:
     SAVE ARTIFACT .venv .venv
     SAVE IMAGE --cache-hint
 
+# Build for distribution
 build:
     FROM +install-deps
     # Build the distribution wheels and save them as artifacts
@@ -58,21 +61,26 @@ build:
     SAVE ARTIFACT requirements.txt
     SAVE IMAGE --cache-hint
 
+# Build for development
 build-dev:
     FROM +install-deps
     RUN poetry install
     COPY tests tests
-    COPY readme.md leader0-schedule.md .
+    COPY readme.md leader0-schedule.md snapshot-data.md .
+    SAVE IMAGE --cache-hint
 
+# Run tests
 pytest:
     FROM +build-dev
     RUN poetry run pytest -v tests
 
+# Generate API docs
 pdoc:
     FROM +build-dev
     RUN poetry run pdoc -o /doc ./voting_node
-    SAVE ARTIFACT /doc AS LOCAL ./doc
+    SAVE ARTIFACT /doc
 
+# Docker image built for distribution and use in production.
 docker:
     FROM python:3.11-slim-bullseye
     ARG tag="latest"
@@ -118,3 +126,40 @@ docker:
     ENTRYPOINT ["/app/entry.sh"]
 
     SAVE IMAGE --push ${registry}voting-node:$tag
+
+# Docker image built for development and testing. Do not use in production.
+docker-dev:
+    FROM +build-dev
+
+    # Copy the rest of the application code to the container
+    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
+    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
+    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
+    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
+
+    ENV PATH=/app:$PATH
+
+    CMD poetry run voting-node start
+
+    SAVE IMAGE voting-node:dev-latest
+
+# Save the docker-compose for testing and development
+docker-compose:
+    FROM scratch
+    COPY docker-compose.yml .
+    SAVE ARTIFACT docker-compose.yml
+
+# WIP: Run tests using docker-compose services
+integration-test:
+    FROM earthly/dind:alpine
+
+    COPY +docker-compose/docker-compose.yml .
+    WITH DOCKER --compose docker-compose.yml \
+                --pull postgres:14 \
+                --load migrations:latest=(../../containers/event-db-migrations+docker) \
+                --load voting-node:dev-latest=(+docker-dev) \
+                --service postgres \
+                --service migrations \
+                --service leader0
+        RUN docker-compose run leader0 echo "<<<INTEGRATION TESTING GOES HERE>>>"
+    END

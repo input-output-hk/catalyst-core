@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["LOG_FORMAT_DEFAULT","LOG_LEVEL_DEFAULT"],"enum":["LogFormat","LogLevel"],"fn":["init","init_impl"]};

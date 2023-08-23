@@ -67,6 +67,15 @@ build-dev:
     RUN poetry install
     COPY tests tests
     COPY readme.md leader0-schedule.md snapshot-data.md .
+
+    # Copy the rest of the application code to the container
+    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
+    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
+    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
+    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
+
+    ENV PATH=/app:$PATH
+
     SAVE IMAGE --cache-hint
 
 # Run tests
@@ -130,12 +139,6 @@ docker:
 # Docker image built for development and testing. Do not use in production.
 docker-dev:
     FROM +build-dev
-
-    # Copy the rest of the application code to the container
-    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
-    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
-    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
-    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
 
     ENV PATH=/app:$PATH
 

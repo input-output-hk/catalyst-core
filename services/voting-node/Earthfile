@@ -44,7 +44,7 @@ install-deps:
     RUN poetry install --only main --no-root
 
     # Copy the voting_node source code
-    COPY --dir voting_node readme.md ./
+    COPY --dir voting_node README.md ./
 
     SAVE ARTIFACT .venv .venv
     SAVE IMAGE --cache-hint
@@ -66,7 +66,7 @@ build-dev:
     FROM +install-deps
     RUN poetry install
     COPY tests tests
-    COPY readme.md leader0-schedule.md snapshot-data.md .
+    COPY README.md leader0-schedule.md snapshot-data.md .
 
     # Copy the rest of the application code to the container
     COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr

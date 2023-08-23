@@ -4,7 +4,7 @@ version = "0.0.1"
 description = ""
 authors = ["Catalyst Core Developers <dev@iohk.io>"]
 license = "MIT or Apache License 2.0"
-readme = "readme.md"
+readme = "README.md"
 packages = [{include = "voting_node"}]
 
 [build-system]

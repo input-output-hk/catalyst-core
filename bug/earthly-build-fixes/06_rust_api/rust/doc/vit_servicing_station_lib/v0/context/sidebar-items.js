@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["new_shared_context"],"struct":["Context"],"type":["SharedContext"]};

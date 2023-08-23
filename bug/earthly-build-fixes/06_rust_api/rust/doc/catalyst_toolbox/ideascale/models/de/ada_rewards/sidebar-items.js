@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"static":["REGEX"],"struct":["AdaRewards","V"]};

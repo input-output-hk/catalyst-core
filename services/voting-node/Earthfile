@@ -42,7 +42,7 @@ build:
     # Build the distribution wheels and save them as artifacts
     RUN poetry export --without-hashes -f requirements.txt --output requirements.txt
     RUN poetry build --no-cache -f wheel
-    RUN mkdir -p /wheels && mv dist/*.whl /wheels && rm -rf dist
+    RUN mkdir -p /wheels && cp dist/*.whl /wheels && rm -rf dist
     SAVE ARTIFACT /src/services/voting-node src
     SAVE ARTIFACT /wheels wheels
     SAVE ARTIFACT requirements.txt

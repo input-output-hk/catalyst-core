@@ -1,6 +1,8 @@
 #!/bin/bash
+echo "Starting to build Event DB diagrams."
 # doc-event-db-setup
 pushd src/event-db
+echo "Initializing Event DB."
 # [tasks.doc-event-db-init]
 while ! psql -e -f setup/setup-db.sql \
     -v dbName=CatalystEventDocs \
@@ -15,8 +17,8 @@ refinery migrate -e DATABASE_URL -c refinery.toml -p ./migrations
 
 ## Build the Event DB Documentation (Images of Schema)
 popd
+echo "Building Event DB diagrams."
 # [tasks.build-db-docs-overview-diagram]
-echo "Building event-db-overview.dot"
 dbviz -d CatalystEventDocs \
     -h postgres \
     --title "Catalyst Event Database Overview" \
@@ -113,3 +115,4 @@ dbviz -d CatalystEventDocs \
         moderation \
         > /db-diagrams/event-db-moderation.dot
 
+echo "Finished building Event DB diagrams."

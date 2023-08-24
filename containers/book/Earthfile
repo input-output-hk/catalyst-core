@@ -50,14 +50,12 @@ build-chapter-6:
 builder-chapter-8:
     FROM +builder
 
-    COPY build-db-docs.sh .
-    RUN chmod ugo+x ./build-db-docs.sh
+    COPY build-db-diagrams.sh .
+    RUN chmod ugo+x ./build-db-diagrams.sh
 
     RUN mkdir /db-diagrams
 
-    CMD ["./build-db-docs.sh"]
-
-    SAVE ARTIFACT build-db-docs.sh
+    CMD ["./build-db-diagrams.sh"]
     
 # Need to be run with the -P flag
 build-chapter-8:

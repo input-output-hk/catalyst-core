@@ -89,6 +89,7 @@ mdbook:
 
     COPY +build-chapter-6/doc ./book/src/06_rust_api/rust/doc
     COPY +build-chapter-8/diagrams ./book/src/08_event-db/db-diagrams
+    COPY ../../services/voting-node+pdoc/doc ./book/src/09_python_api/voting_node/doc
 
     # Add an empty '.git' folder, needed by mdbook-open-on-gh for relative path calculation
     RUN mkdir .git

@@ -1,8 +1,8 @@
 #!/bin/bash
 echo "Starting to build Event DB diagrams."
 # doc-event-db-setup
-pushd src/event-db
 echo "Initializing Event DB."
+pushd src/event-db
 # [tasks.doc-event-db-init]
 while ! psql -e -f setup/setup-db.sql \
     -v dbName=CatalystEventDocs \

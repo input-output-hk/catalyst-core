@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["account","accounting","block","certificate","chaineval","chaintypes","config","date","error","evm","fee","fragment","header","key","leadership","ledger","legacy","milli","multisig","multiverse","rewards","setting","stake","testing","tokens","transaction","treasury","update","utxo","value","vote"]};

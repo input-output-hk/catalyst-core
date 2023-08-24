@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["arbitrary_decrypted_private_tally"]};

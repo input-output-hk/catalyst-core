@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ConnectError"],"fn":["connect","match_block0","validate_peer_auth"],"static":["CALLSITE","META"],"struct":["ConnectFuture","ConnectHandle"],"type":["ConnectCanceled"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["document"],"mod":["committee","explorer","rng","settings","stake_pool","topology","vote","wallet"],"struct":["NetworkBuilder","Wallet"],"type":["NodeAlias"]};

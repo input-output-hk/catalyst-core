@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["custom_fields","de","se"]};

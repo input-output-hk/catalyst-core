@@ -1,12 +1,14 @@
 # Set the Earthly version to 0.7
 VERSION 0.7
 
-# Use current debian stable with python
-FROM python:3.11-slim-bullseye
-# Environment variables for python
-ENV PYTHONUNBUFFERED=true
+# Base target with poetry and system dependencies
+builder:
+    FROM python:3.11-slim-bullseye
 
-build:
+    # Environment variables for python
+    ENV PYTHONUNBUFFERED=true
+    # Set path to poetry
+    ENV PATH=/root/.local/bin:$PATH
     # Install voting-node system dependencies
     RUN apt-get update && \
         apt-get install -y --no-install-recommends \
@@ -18,27 +20,38 @@ build:
             libxslt-dev \
             zlib1g-dev
 
-    # Set the working directory
-    WORKDIR /src/services/voting-node
-
     # Install Poetry
     RUN curl -sSL https://install.python-poetry.org | python3 -
-    # Set path to poetry
-    ENV PATH=/root/.local/bin:$PATH
+
+    SAVE IMAGE --cache-hint
+
+# Install external python dependencies
+install-deps:
+    FROM +builder
+
+    # Set the working directory
+    WORKDIR /src/services/voting-node
 
     # Copy the pyproject.toml and poetry.lock files to the container
     COPY pyproject.toml .
     COPY poetry.lock .
     # Install local python dependencies in the expected relative path
     COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
-    COPY --dir voting_node development.md ./
-
     # Configure poetry
     RUN poetry env use python
     RUN poetry config installer.max-workers 10
-    # Install package dependencies
-    RUN poetry install --no-cache --no-root
+    # Install package dependencies without the voting_node package
+    RUN poetry install --only main --no-root
 
+    # Copy the voting_node source code
+    COPY --dir voting_node README.md ./
+
+    SAVE ARTIFACT .venv .venv
+    SAVE IMAGE --cache-hint
+
+# Build for distribution
+build:
+    FROM +install-deps
     # Build the distribution wheels and save them as artifacts
     RUN poetry export --without-hashes -f requirements.txt --output requirements.txt
     RUN poetry build --no-cache -f wheel
@@ -46,8 +59,39 @@ build:
     SAVE ARTIFACT /src/services/voting-node src
     SAVE ARTIFACT /wheels wheels
     SAVE ARTIFACT requirements.txt
+    SAVE IMAGE --cache-hint
 
+# Build for development
+build-dev:
+    FROM +install-deps
+    RUN poetry install
+    COPY tests tests
+    COPY README.md leader0-schedule.md snapshot-data.md .
+
+    # Copy the rest of the application code to the container
+    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
+    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
+    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
+    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
+
+    ENV PATH=/app:$PATH
+
+    SAVE IMAGE --cache-hint
+
+# Run tests
+pytest:
+    FROM +build-dev
+    RUN poetry run pytest -v --doctest-modules
+
+# Generate API docs
+pdoc:
+    FROM +build-dev
+    RUN poetry run pdoc -o /doc ./voting_node
+    SAVE ARTIFACT /doc
+
+# Docker image built for distribution and use in production.
 docker:
+    FROM python:3.11-slim-bullseye
     ARG tag="latest"
     ARG registry
 
@@ -65,6 +109,12 @@ docker:
     RUN apt-get clean && \
         rm -rf /var/lib/apt/lists/*
 
+    # Copy the rest of the application code to the container
+    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
+    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
+    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
+    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
+
     # Set the working directory
     WORKDIR /app
 
@@ -72,18 +122,12 @@ docker:
     COPY +build/wheels /app
     COPY +build/requirements.txt /app
     COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
-    COPY entry.sh /app
-    RUN chmod +x /app/entry.sh
-
     # Install the package
     RUN pip3 install --no-cache -r requirements.txt
     RUN pip3 install --no-cache *.whl
 
-    # Copy the rest of the application code to the container
-    COPY ../../src/jormungandr/jormungandr+build/jormungandr /app/jormungandr
-    COPY ../../src/jormungandr/jcli+build/jcli /app/jcli
-    COPY ../../src/catalyst-toolbox/catalyst-toolbox+build/catalyst-toolbox /app/catalyst-toolbox
-    COPY ../../src/voting-tools-rs+build/snapshot_tool /app/snapshot_tool
+    COPY entry.sh /app
+    RUN chmod +x /app/entry.sh
 
     ENV PATH=/app:$PATH
 
@@ -91,3 +135,34 @@ docker:
     ENTRYPOINT ["/app/entry.sh"]
 
     SAVE IMAGE --push ${registry}voting-node:$tag
+
+# Docker image built for development and testing. Do not use in production.
+docker-dev:
+    FROM +build-dev
+
+    ENV PATH=/app:$PATH
+
+    CMD poetry run voting-node start
+
+    SAVE IMAGE voting-node:dev-latest
+
+# Save the docker-compose for testing and development
+docker-compose:
+    FROM scratch
+    COPY docker-compose.yml .
+    SAVE ARTIFACT docker-compose.yml
+
+# WIP: Run tests using docker-compose services
+integration-test:
+    FROM earthly/dind:alpine
+
+    COPY +docker-compose/docker-compose.yml .
+    WITH DOCKER --compose docker-compose.yml \
+                --pull postgres:14 \
+                --load migrations:latest=(../../containers/event-db-migrations+docker) \
+                --load voting-node:dev-latest=(+docker-dev) \
+                --service postgres \
+                --service migrations \
+                --service leader0
+        RUN docker-compose run leader0 echo "<<<INTEGRATION TESTING GOES HERE>>>"
+    END

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ArchiveCalculatorError","ArchiveReaderError"],"fn":["load_from_csv","load_from_folder"],"mod":["calculator","loader"],"struct":["ArchiveStats"]};

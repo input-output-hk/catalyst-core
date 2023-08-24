@@ -2,7 +2,7 @@ from lxml import html
 import time
 from loguru import logger
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 import pydantic
 import tempfile
 
@@ -55,11 +55,13 @@ class FrontendClient:
                     f = open(file_name, "wb")
                     f.write(content)
                     return file_name
+
         files = []
         for review_stage_id in review_stage_ids:
             # we are interested in only assessed reviews 
             files.append(await download_file(self, review_stage_id))
         return files
+
 class Importer:
     def __init__(
         self,
@@ -132,17 +134,16 @@ class Importer:
     
     async def prepare_reviews(self):
         logger.info("Prepare proposal's reviews...")
-
-        for review in self.reviews:
-            await process_ideascale_reviews(
-                ideascale_xlsx_path=review,
-                ideascale_api_url=self.ideascale_url,
-                ideascale_api_key=self.api_token,
-                allocation_path=self.allocations_path,
-                challenges_group_id=self.config.campaign_group_id,
-                fund=self.event_id,
-                output_path=self.output_path
-            )
+        await process_ideascale_reviews(
+            ideascale_xlsx_path=self.reviews,
+            ideascale_api_url=self.ideascale_url,
+            ideascale_api_key=self.api_token,
+            allocation_path=self.allocations_path,
+            challenges_group_id=self.config.campaign_group_id,
+            questions=self.config.questions,
+            fund=self.event_id,
+            output_path=self.output_path
+        )
 
     async def import_reviews(self):
         logger.info("Import reviews into Event db")
@@ -172,6 +173,7 @@ class Config:
     review_stage_ids: List[int]
     stage_ids: List[int]
     nr_allocations: List[int]
+    questions: Dict[str, str]
     
     @staticmethod
     def from_json(val: dict):

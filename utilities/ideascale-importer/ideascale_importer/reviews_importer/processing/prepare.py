@@ -1,7 +1,7 @@
 """Set of commands for the preparation of the review stage."""
 import typer
 import csv
-from typing import List
+from typing import List, Dict
 
 from .tools.importer import Importer, IdeascaleImporter
 from .tools.allocator import Allocator
@@ -55,11 +55,12 @@ async def allocate(
     return await _allocate()
 
 async def process_ideascale_reviews(
-    ideascale_xlsx_path: str,
+    ideascale_xlsx_path: List[str],
     ideascale_api_key: str,
     ideascale_api_url: str,
     allocation_path: str,
     challenges_group_id: int,
+    questions: Dict[str, str],
     output_path: str,
     fund: int,
 ):
@@ -71,9 +72,13 @@ async def process_ideascale_reviews(
         importer.load_allocations(allocation_path, fund)
         ideascale = IdeascaleImporter(ideascale_api_key, ideascale_api_url)
         await ideascale.import_challenges(challenges_group_id)
-        reviews = ideascale.raw_reviews_from_file(ideascale_xlsx_path)
-        reviews = ideascale.group_triplets(reviews)
-        importer.reviews = reviews
+        start_id = 1
+        for xlsx in ideascale_xlsx_path:
+            if len(importer.reviews) > 0:
+                start_id = importer.reviews[-1].id + 1
+            reviews = ideascale.raw_reviews_from_file(xlsx)
+            reviews = ideascale.group_triplets(reviews, questions, start_id=start_id)
+            importer.reviews = importer.reviews + reviews
 
         postprocessor.postprocess_reviews()
         postprocessor.export_reviews(postprocessor.data.reviews, f"{output_path}/postprocessed-reviews.csv")

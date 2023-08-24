@@ -37,6 +37,22 @@ build-cache:
     SAVE ARTIFACT $CARGO_HOME cargo_home
     SAVE IMAGE --cache-hint
 
+# workspace source files
+rust-source:
+    FROM scratch
+    COPY --dir src tests Cargo.toml Cargo.lock /source
+    SAVE ARTIFACT /source/src
+    SAVE ARTIFACT /source/tests
+    SAVE ARTIFACT /source/Cargo.toml
+    SAVE ARTIFACT /source/Cargo.lock
+
+# Source files needed to build the book
+book-source:
+    FROM scratch
+    COPY --dir ./book book.toml /source
+    SAVE ARTIFACT /source/book
+    SAVE ARTIFACT /source/book.toml
+
 # This is the default builder that all other builders should inherit from
 builder:
     FROM +rust-toolchain
@@ -49,7 +65,7 @@ builder:
         libsqlite3-dev \
         protobuf-compiler
     RUN rustup component add rustfmt
-    COPY --dir src tests Cargo.lock Cargo.toml .
+    COPY --dir book src tests Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME
     COPY +build-cache/target target
     SAVE ARTIFACT src

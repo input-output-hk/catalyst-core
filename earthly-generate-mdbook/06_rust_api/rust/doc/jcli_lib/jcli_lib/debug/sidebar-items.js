@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Debug","Error"],"mod":["block","message"]};

@@ -288,14 +288,16 @@ pub mod tests {
                 _raw,
                 _stake_threshold.into(),
                 Fraction::from(1u64),
-                &DummyAssigner
+                &DummyAssigner,
+                Discrimination::Production,
             )
             .unwrap()
                 == Snapshot::from_raw_snapshot(
                     add,
                     _stake_threshold.into(),
                     Fraction::from(1u64),
-                    &DummyAssigner
+                    &DummyAssigner,
+                    Discrimination::Production,
                 )
                 .unwrap(),
             _additional_reg.voting_power < _stake_threshold.into()
@@ -343,20 +345,22 @@ pub mod tests {
 
     #[proptest]
     fn test_non_catalyst_regs_are_ignored(mut _reg: VotingRegistration) {
-        _reg.voting_purpose = 1;
+        _reg.voting_purpose = Some(1);
         assert_eq!(
             Snapshot::from_raw_snapshot(
                 vec![_reg].into(),
                 0.into(),
                 Fraction::from(1u64),
-                &DummyAssigner
+                &DummyAssigner,
+                Discrimination::Production,
             )
             .unwrap(),
             Snapshot::from_raw_snapshot(
                 vec![].into(),
                 0.into(),
                 Fraction::from(1u64),
-                &DummyAssigner
+                &DummyAssigner,
+                Discrimination::Production,
             )
             .unwrap(),
         )
@@ -379,7 +383,7 @@ pub mod tests {
                 voting_power: i.into(),
                 reward_address: RewardAddress(String::new()),
                 delegations,
-                voting_purpose: 0,
+                voting_purpose: Some(0),
                 nonce: 0,
             });
         }
@@ -421,9 +425,14 @@ pub mod tests {
             }
         ]"#,
         ).unwrap();
-        let snapshot =
-            Snapshot::from_raw_snapshot(raw, 0.into(), Fraction::from(1u64), &DummyAssigner)
-                .unwrap();
+        let snapshot = Snapshot::from_raw_snapshot(
+            raw,
+            0.into(),
+            Fraction::from(1u64),
+            &DummyAssigner,
+            Discrimination::Production,
+        )
+        .unwrap();
         assert_eq!(
             snapshot.contributions_for_voting_key(
                 Identifier::from_hex(

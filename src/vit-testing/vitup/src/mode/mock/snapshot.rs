@@ -185,15 +185,20 @@ impl Arbitrary for ArbitraryVoterHIR {
         if let Some(voting_group) = args {
             any::<([u8; 32], u64)>()
                 .prop_map(move |(key, voting_power)| {
-                    let identifier = Identifier::from_hex(&hex::encode(key))
-                            .unwrap();
+                    let identifier = Identifier::from_hex(&hex::encode(key)).unwrap();
                     Self(VoterHIR {
                         voting_key: identifier.clone(),
                         voting_power: voting_power.into(),
                         voting_group: voting_group.clone(),
                         address: chain_addr::Address(
                             chain_addr::Discrimination::Production,
-                            chain_addr::Kind::Account(identifier.into()),
+                            chain_addr::Kind::Account(
+                                identifier
+                                    .to_address(chain_addr::Discrimination::Production)
+                                    .public_key()
+                                    .unwrap()
+                                    .to_owned(),
+                            ),
                         )
                         .into(),
                     })
@@ -202,16 +207,20 @@ impl Arbitrary for ArbitraryVoterHIR {
         } else {
             any::<([u8; 32], u64, String)>()
                 .prop_map(|(key, voting_power, voting_group)| {
-                    let identifier =
-                        chain_impl_mockchain::account::Identifier::from_hex(&hex::encode(key))
-                            .unwrap();
+                    let identifier = Identifier::from_hex(&hex::encode(key)).unwrap();
                     Self(VoterHIR {
                         voting_key: identifier.clone(),
                         voting_power: voting_power.into(),
                         voting_group,
                         address: chain_addr::Address(
                             chain_addr::Discrimination::Production,
-                            chain_addr::Kind::Account(identifier.into()),
+                            chain_addr::Kind::Account(
+                                identifier
+                                    .to_address(chain_addr::Discrimination::Production)
+                                    .public_key()
+                                    .unwrap()
+                                    .to_owned(),
+                            ),
                         )
                         .into(),
                     })

@@ -1,5 +1,5 @@
 use ::serde::{Deserialize, Serialize};
-use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
+use jormungandr_lib::{crypto::account::Identifier, interfaces::Address, interfaces::Value};
 
 pub type VotingGroup = String;
 
@@ -17,6 +17,9 @@ pub struct VoterHIR {
     // Keep hex encoding as in CIP-36
     #[serde(with = "serde")]
     pub voting_key: Identifier,
+    // Jormungandr chain address
+    pub address: Address,
+
     /// Voting group this key belongs to.
     /// If this key belong to multiple voting groups, multiple records for the same
     /// key will be used.
@@ -59,7 +62,18 @@ pub mod tests {
         fn arbitrary_with(args: Self::Parameters) -> Self::Strategy {
             (any::<[u8; 32]>(), args.1 .0)
                 .prop_map(move |(key, voting_power)| VoterHIR {
+                    // Two representations of exactly the same key.
                     voting_key: Identifier::from_hex(&hex::encode(key)).unwrap(),
+                    address: chain_addr::Address(
+                        chain_addr::Discrimination::Production,
+                        chain_addr::Kind::Account(
+                            Identifier::from_hex(&hex::encode(key))
+                                .unwrap()
+                                .to_inner()
+                                .into(),
+                        ),
+                    )
+                    .into(),
                     voting_power: voting_power.into(),
                     voting_group: args.0.clone(),
                 })

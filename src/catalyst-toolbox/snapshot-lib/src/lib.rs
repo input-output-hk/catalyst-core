@@ -1,3 +1,4 @@
+use chain_addr::Discrimination;
 pub use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 use registration::{
@@ -107,6 +108,7 @@ impl Snapshot {
         stake_threshold: Value,
         cap: Fraction,
         voting_group_assigner: &impl VotingGroupAssigner,
+        discrimination: Discrimination,
     ) -> Result<Self, Error> {
         let raw_contribs = raw_snapshot
             .0
@@ -116,7 +118,10 @@ impl Snapshot {
             .filter(|reg| reg.voting_power >= std::cmp::max(stake_threshold, 1.into()))
             // TODO: add capability to select voting purpose for a snapshot.
             // At the moment Catalyst is the only one in use
-            .filter(|reg| reg.voting_purpose == CATALYST_VOTING_PURPOSE_TAG)
+            .filter(|reg| {
+                reg.voting_purpose.unwrap_or(CATALYST_VOTING_PURPOSE_TAG)
+                    == CATALYST_VOTING_PURPOSE_TAG
+            })
             .fold(BTreeMap::new(), |mut acc: BTreeMap<_, Vec<_>>, reg| {
                 let VotingRegistration {
                     reward_address,
@@ -170,7 +175,12 @@ impl Snapshot {
             .map(|(k, contributions)| SnapshotInfo {
                 hir: VoterHIR {
                     voting_group: voting_group_assigner.assign(&k),
-                    voting_key: k,
+                    voting_key: k.clone(),
+                    address: chain_addr::Address(
+                        discrimination,
+                        chain_addr::Kind::Account(k.to_inner().into()),
+                    )
+                    .into(),
                     voting_power: contributions.iter().map(|c| c.value).sum::<u64>().into(),
                 },
                 contributions,
@@ -304,6 +314,7 @@ pub mod tests {
                         threshold.into(),
                         Fraction::from(1),
                         &|_vk: &Identifier| String::new(),
+                        Discrimination::Production,
                     )
                     .unwrap()
                 })

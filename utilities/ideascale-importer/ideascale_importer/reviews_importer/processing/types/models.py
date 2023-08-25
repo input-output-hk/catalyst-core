@@ -1,6 +1,6 @@
 """Models for reviews."""
 from __future__ import annotations
-from pydantic import BaseModel, HttpUrl, Field, validator, root_validator
+from pydantic import BaseModel, HttpUrl, Field, field_validator, model_validator
 from typing import List, Optional
 from enum import IntEnum
 import re
@@ -24,20 +24,20 @@ class Pa(Model):
     id: Optional[int] = Field(default=None)
     allocations: List[Allocation] = Field(default=[])
 
-    @validator("anon_id", pre=True)
+    @field_validator("anon_id", mode="before")
     @classmethod
     def parse_anon_id(cls, value):
         """Get anonymized id from a list. The first one is the main that is used."""
         id = value.split(",")[0]
         return id
 
-    @validator("email", pre=True)
+    @field_validator("email", mode="before")
     @classmethod
     def lower_email(cls, value):
         """Use lowercase only for emails."""
         return value.lower()
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     @classmethod
     def assign_all_challenges_if_empty(cls, values):
         """Assign challenges_ids when field is not populated."""
@@ -93,7 +93,7 @@ class Proposal(Model):
     review_stats: Optional[dict] = Field(default=None)
     archived: Optional[bool] = Field(default=False)
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     @classmethod
     def assign_authors_if_any(cls, values):
         """Assign proposers/co-proposers merging different ideascale fields."""
@@ -177,7 +177,7 @@ class Review(Model):
     def valid_by_length(self, min_length):
         return (len(self.impact_note) >= min_length and len(self.feasibility_note) >= min_length and len(self.auditability_note) >= min_length)
     
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     @classmethod
     def adjust_id(cls, values):
         """Set and id based on fund_id if present."""
@@ -204,7 +204,7 @@ class SimilarPair(Model):
     left_criterium: str
     right_criterium: str
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     @classmethod
     def lower_always_left(cls, values):
         """Force the lower score to be on `left` field."""
@@ -271,7 +271,7 @@ class IdeascaleComRev(Model):
     user_name: Optional[str] = Field(default=None)
     id: Optional[int] = Field(default=None)
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     @classmethod
     def parse_custom_fields(cls, values):
         """Parse custom fields into fields."""
@@ -294,7 +294,7 @@ class IdeascaleComRev(Model):
             values["preferred_challenges"] = []
         return values
     
-    @validator("email", pre=True)
+    @field_validator("email", mode="before")
     @classmethod
     def lower_email(cls, value):
         """Use lowercase only for emails."""
@@ -321,7 +321,7 @@ class IdeascaleExportedReview(Model):
     score: int = Field(1, alias="Rating Given")
     date: str = Field(alias="Date", default="")
 
-    @validator("score", pre=True)
+    @field_validator("score", mode="before")
     @classmethod
     def catch_na(cls, value):
         """Catch NA."""
@@ -329,13 +329,13 @@ class IdeascaleExportedReview(Model):
             return 1
         return value
 
-    @validator("email", pre=True)
+    @field_validator("email", mode="before")
     @classmethod
     def lower_email(cls, value):
         """Use lowercase only for emails."""
         return value.lower()
 
-    @validator("question", pre=True)
+    @field_validator("question", mode="before")
     @classmethod
     def tranform_question(cls, value):
         return value.replace('\n', '').replace('\r', '').replace(' ', '')
@@ -356,13 +356,13 @@ class IdeascaleExportedReviewResult(Model):
     email: str = Field(alias="Email", default="")
     date: str = Field(alias="Date", default="")
 
-    @validator("email", pre=True)
+    @field_validator("email", mode="before")
     @classmethod
     def lower_email(cls, value):
         """Use lowercase only for emails."""
         return value.lower()
 
-    @validator("question", pre=True)
+    @field_validator("question", mode="before")
     @classmethod
     def tranform_question(cls, value):
         return value.replace('\n', '').replace('\r', '').replace(' ', '')
@@ -430,7 +430,7 @@ class Moderator(Model):
     hashed_email: Optional[str]
     allocations: Optional[ReviewWithFlags] = Field(default=[])
 
-    @validator("email", pre=True)
+    @field_validator("email", mode="before")
     @classmethod
     def lower_email(cls, value):
         """Use lowercase only for emails."""
@@ -445,7 +445,7 @@ class ModeratorSQL(Model):
     id3: str = Field(alias="salt")
     value: str = Field(alias="extra")
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     @classmethod
     def parse_value(cls, values):
         extra = {

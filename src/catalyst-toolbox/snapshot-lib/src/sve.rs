@@ -66,8 +66,8 @@ impl Snapshot {
                     .into();
 
                 //convert to ADA
-                if !lovelace{
-                    value = (u64::from(value)/1_000_000).into();
+                if !lovelace {
+                    value = (u64::from(value) / 1_000_000).into();
                 }
 
                 let address = chain_addr::Address(

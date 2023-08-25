@@ -330,6 +330,7 @@ pub mod tests {
             0.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
         let total_stake = snapshot
@@ -388,6 +389,7 @@ pub mod tests {
             0.into(),
             Fraction::from(1u64),
             &DummyAssigner,
+            Discrimination::Production,
         )
         .unwrap();
         let vp_1: u64 = snapshot

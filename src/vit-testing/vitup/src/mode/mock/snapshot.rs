@@ -35,6 +35,7 @@ impl VoterSnapshot {
                 parameters.min_stake_threshold,
                 parameters.voting_power_cap,
                 &|_vk: &Identifier| String::new(),
+                Discrimination::Production,
             )?
             .to_full_snapshot_info();
 

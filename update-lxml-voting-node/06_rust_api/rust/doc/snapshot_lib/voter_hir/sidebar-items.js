@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["serde","tests"],"struct":["VoterHIR"],"type":["VotingGroup"]};

@@ -66,7 +66,7 @@ impl Snapshot {
                     .into();
 
                 //convert to ADA
-                if lovelace{
+                if !lovelace{
                     value = (u64::from(value)/1_000_000).into();
                 }
 

@@ -1,0 +1,43 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=CatalystEventDocs
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - 5432:5432
+  kroki:
+    image: yuzutech/kroki
+    environment:
+      KROKI_BLOCKDIAG_HOST: blockdiag
+      KROKI_MERMAID_HOST: mermaid
+      KROKI_BPMN_HOST: bpmn
+      KROKI_EXCALIDRAW_HOST: excalidraw
+      KROKI_SAFE_MODE: unsafe
+      KROKI_MAX_URI_LENGTH: 64000
+    ports:
+      - "8000:8000"
+  blockdiag:
+    image: yuzutech/kroki-blockdiag
+    ports:
+      - "8001:8001"
+  mermaid:
+    image: yuzutech/kroki-mermaid
+    ports:
+      - "8002:8002"
+  bpmn:
+    image: yuzutech/kroki-bpmn
+    ports:
+      - "8003:8003"
+  excalidraw:
+    image: yuzutech/kroki-excalidraw
+    ports:
+      - "8004:8004"

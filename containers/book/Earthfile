@@ -1,0 +1,121 @@
+# Set the Earthly version to 0.7
+VERSION 0.7
+FROM debian:stable-slim
+
+builder:
+    FROM ghcr.io/input-output-hk/catalyst-gh-tools:v1.4.3
+
+    COPY --dir ../..+rust-source/src .
+    COPY --dir ../..+rust-source/tests .
+    COPY ../..+rust-source/Cargo.toml .
+    COPY ../..+rust-source/Cargo.lock .
+    COPY --dir ../..+book-source/book .
+    COPY ../..+book-source/book.toml .
+
+rustdoc-test:
+    FROM +builder
+
+    RUN cargo test --doc
+
+rustdoc:
+    FROM +builder
+
+    RUN rustup component add rustfmt --toolchain nightly-x86_64-unknown-linux-gnu
+    ENV RUSTDOCFLAGS="$RUSTDOCFLAGS --enable-index-page -Zunstable-options"
+    RUN cargo +nightly doc \
+        --workspace \
+        --no-deps \
+        --document-private-items
+
+    SAVE ARTIFACT ./target/doc docs
+
+rustdoc-depgraph:
+    FROM +rustdoc
+
+    RUN cargo depgraph --workspace-only --dedup-transitive-deps > target/doc/workspace.depgraph.dot
+    RUN cargo depgraph --dedup-transitive-deps > target/doc/full.depgraph.dot
+    RUN cargo depgraph --all-deps --dedup-transitive-deps > target/doc/all.depgraph.dot
+
+    SAVE ARTIFACT ./target/doc docs
+
+build-chapter-6:
+    FROM +rustdoc-depgraph
+
+    RUN rm -f ./target/doc/.lock
+    RUN rm -f ./target/doc/static.files/*.md
+
+    SAVE ARTIFACT ./target/doc doc
+    SAVE IMAGE --cache-hint
+
+builder-chapter-8:
+    FROM +builder
+
+    COPY build-db-diagrams.sh .
+    RUN chmod ugo+x ./build-db-diagrams.sh
+
+    RUN mkdir /db-diagrams
+
+    CMD ["./build-db-diagrams.sh"]
+    
+# Need to be run with the -P flag
+build-chapter-8:
+    #FROM +chapter-8
+    FROM earthly/dind:alpine
+
+    COPY docker-compose.yml .
+    RUN mkdir /diagrams
+
+    WITH DOCKER \
+        --compose docker-compose.yml \
+        --service postgres \
+        --load build-chapter-8:latest=(+builder-chapter-8)
+        RUN docker run \
+            --network default_default \
+            -e PGHOST=postgres \
+            -e PGUSER=postgres \
+            -e PGPASSWORD=postgres \
+            -e PGPDATABASE=CatalystEventDocs \
+            -e DATABASE_URL=postgres://postgres:postgres@postgres/CatalystEventDocs \
+            -v /diagrams:/db-diagrams \
+            build-chapter-8
+    END
+    SAVE ARTIFACT /diagrams
+    SAVE IMAGE --cache-hint
+
+mdbook:
+    FROM +builder
+
+    ENV RUST_BACKTRACE=1
+
+    COPY +build-chapter-6/doc ./book/src/06_rust_api/rust/doc
+    COPY +build-chapter-8/diagrams ./book/src/08_event-db/db-diagrams
+    COPY ../../services/voting-node+pdoc/doc ./book/src/09_python_api/voting_node/doc
+
+    # Add an empty '.git' folder, needed by mdbook-open-on-gh for relative path calculation
+    RUN mkdir .git
+    CMD while ! mdbook build; do sleep 1; done;
+
+    #RUN mdbook build
+    SAVE ARTIFACT book
+
+# Need to be run with the -P flag
+build-docs:
+    FROM earthly/dind:alpine
+
+    COPY docker-compose.yml .
+    COPY --dir +mdbook/book /
+
+    WITH DOCKER \
+        --compose docker-compose.yml \
+        --service kroki \
+        --service blockdiag \
+        --service mermaid \
+        --service bpmn \
+        --service excalidraw \
+        --load build-mdbook:latest=(+mdbook)
+        RUN docker run \
+            --network default_default \
+            -v /book:/book \
+            build-mdbook
+    END
+    SAVE ARTIFACT /book/html

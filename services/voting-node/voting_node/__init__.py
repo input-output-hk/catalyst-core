@@ -1,1 +1,4 @@
-"""Service for deploying jormungandr nodes in voting events."""
+"""Service for deploying jormungandr nodes in voting events.
+
+.. include:: ../README.md
+"""

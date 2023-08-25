@@ -149,8 +149,8 @@
                     .into();
 
                 <span class="comment">//convert to ADA
-                </span><span class="kw">if </span>!lovelace{
-                    value = (u64::from(value)/<span class="number">1_000_000</span>).into();
+                </span><span class="kw">if </span>!lovelace {
+                    value = (u64::from(value) / <span class="number">1_000_000</span>).into();
                 }
 
                 <span class="kw">let </span>address = chain_addr::Address(

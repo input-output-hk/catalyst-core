@@ -81,8 +81,6 @@
 <a href="#81" id="81">81</a>
 <a href="#82" id="82">82</a>
 <a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::collections::HashMap;
 
 <span class="kw">use </span>chain_addr::Discrimination;
@@ -144,18 +142,16 @@
         <span class="self">self</span>.inner
             .iter()
             .map(|(vk, regs)| {
-                <span class="kw">let </span>value: Value = regs
+                <span class="kw">let </span><span class="kw-2">mut </span>value: Value = regs
                     .iter()
-                    .map(|reg| {
-                        <span class="kw">let </span>value = u64::from(reg.voting_power);
-                        <span class="kw">if </span>lovelace {
-                            value / <span class="number">1_000_000
-                        </span>} <span class="kw">else </span>{
-                            value
-                        }
-                    })
+                    .map(|reg| u64::from(reg.voting_power))
                     .sum::&lt;u64&gt;()
                     .into();
+
+                <span class="comment">//convert to ADA
+                </span><span class="kw">if </span>!lovelace {
+                    value = (u64::from(value) / <span class="number">1_000_000</span>).into();
+                }
 
                 <span class="kw">let </span>address = chain_addr::Address(
                     discrimination,

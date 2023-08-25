@@ -314,7 +314,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 [
@@ -352,8 +352,8 @@
                         <span class="string">&quot;note&quot;</span>: <span class="bool-val">false</span>,
                     }
                 ]
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -364,7 +364,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 [
@@ -388,8 +388,8 @@
                         <span class="string">&quot;group&quot;</span>: <span class="string">&quot;review_group 2&quot;
                     </span>},
                 ]
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -400,7 +400,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 [
@@ -429,8 +429,8 @@
                         <span class="string">&quot;note&quot;</span>: <span class="bool-val">false</span>,
                     }
                 ]
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -441,7 +441,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 [
@@ -456,8 +456,8 @@
                         <span class="string">&quot;group&quot;</span>: <span class="string">&quot;review_group 2&quot;
                     </span>},
                 ]
-            )
-        ));
+            ),
+        );
     }
 }
 </code></pre></div>

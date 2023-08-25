@@ -475,7 +475,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
@@ -490,8 +490,8 @@
                     <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
                     <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
                 </span>}
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -502,7 +502,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
@@ -518,8 +518,8 @@
                     <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
                     <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
                 </span>}
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -530,7 +530,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
@@ -545,8 +545,8 @@
                     <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
                     <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
                 </span>}
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -557,7 +557,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
@@ -573,8 +573,8 @@
                     <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
                     <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
                 </span>}
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/registration/voter/{0}&quot;</span>, <span class="string">&quot;voting_key&quot;</span>))
@@ -608,7 +608,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
@@ -634,8 +634,8 @@
                     <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
                     <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
                 </span>}
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -646,7 +646,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
@@ -672,8 +672,8 @@
                     <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
                     <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
                 </span>}
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(

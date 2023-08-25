@@ -581,7 +581,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 [
@@ -626,8 +626,8 @@
                         <span class="string">&quot;groups&quot;</span>: [],
                     }
                 ]
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}/objectives?limit={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
@@ -635,7 +635,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 [
@@ -669,8 +669,8 @@
                         </span>}
                     },
                 ]
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}/objectives?offset={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
@@ -678,7 +678,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="macro">serde_json::json!</span>(
                 [
@@ -694,8 +694,8 @@
                         <span class="string">&quot;groups&quot;</span>: [],
                     }
                 ]
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -724,7 +724,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="kw">if let </span><span class="prelude-val">Some</span>(settings) = data.<span class="number">1</span>.clone() {
                 <span class="macro">serde_json::json!</span>(
@@ -754,8 +754,8 @@
                         }
                     ]
                 )
-            }
-        ));
+            },
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -766,7 +766,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="kw">if let </span><span class="prelude-val">Some</span>(settings) = data.<span class="number">1</span>.clone() {
                 <span class="macro">serde_json::json!</span>(
@@ -787,8 +787,8 @@
                         }
                     ]
                 )
-            }
-        ));
+            },
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -799,7 +799,7 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
             <span class="kw">if let </span><span class="prelude-val">Some</span>(settings) = data.<span class="number">1</span>.clone() {
                 <span class="macro">serde_json::json!</span>(
@@ -820,8 +820,8 @@
                         }
                     ]
                 )
-            }
-        ));
+            },
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(

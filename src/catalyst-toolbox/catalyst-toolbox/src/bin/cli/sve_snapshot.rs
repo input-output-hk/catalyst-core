@@ -24,7 +24,7 @@ pub struct SveSnapshotCmd {
     #[clap(short, long)]
     file: PathBuf,
 
-    /// Registrations voting power threshold for eligibility
+    /// Registrations voting power threshold for eligibility expressed in lovelace
     #[clap(short, long)]
     min_stake_threshold: Value,
 
@@ -32,7 +32,7 @@ pub struct SveSnapshotCmd {
     #[clap(short, long)]
     discrimination: Discrimination,
 
-    /// Whether voting power is expressed in lovelace or ada
+    /// Whether voting power in the outputfile is expressed in lovelace or ada
     #[clap(short, long)]
     lovelace: bool,
 

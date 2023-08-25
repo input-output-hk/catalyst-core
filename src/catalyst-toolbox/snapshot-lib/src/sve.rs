@@ -59,18 +59,16 @@ impl Snapshot {
         self.inner
             .iter()
             .map(|(vk, regs)| {
-                let value: Value = regs
+                let mut value: Value = regs
                     .iter()
-                    .map(|reg| {
-                        let value = u64::from(reg.voting_power);
-                        if lovelace {
-                            value / 1_000_000
-                        } else {
-                            value
-                        }
-                    })
+                    .map(|reg| u64::from(reg.voting_power))
                     .sum::<u64>()
                     .into();
+
+                //convert to ADA
+                if lovelace{
+                    value = (u64::from(value)/1_000_000).into();
+                }
 
                 let address = chain_addr::Address(
                     discrimination,

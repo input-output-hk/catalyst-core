@@ -77,7 +77,7 @@ nonempty = { version = "0.8", features = ["serialize"] }
 validity = "0.3.1"
 
 # Observability tools to instrument, generate, collect, and export telemetry data.
-opentelemetry = { version = "0.18", features = ["rt-tokio"] }
+opentelemetry = { version = "0.19", features = ["rt-tokio"] }
 opentelemetry-otlp = "0.11.0"
 opentelemetry-semantic-conventions = "0.10.0"
 

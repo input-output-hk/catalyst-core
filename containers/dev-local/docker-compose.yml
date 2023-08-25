@@ -39,6 +39,14 @@ services:
       db:
         condition: service_healthy
 
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    environment:
+     - GF_INSTALL_PLUGINS=grafana-clock-panel
+    ports:
+     - '3000:3000'
+
   cat-data-service:
     image: cat-data-service:latest
     environment:

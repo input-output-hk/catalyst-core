@@ -145,8 +145,10 @@ async fn track_metrics<T>(req: Request<T>, next: Next<T>) -> impl IntoResponse {
 pub mod tests {
     use std::str::FromStr;
 
-    pub fn body_data_json_check(body_data: Vec<u8>, expected_json: serde_json::Value) -> bool {
-        serde_json::Value::from_str(String::from_utf8(body_data).unwrap().as_str()).unwrap()
-            == expected_json
+    pub fn body_data_json_check(body_data: Vec<u8>, expected_json: serde_json::Value) {
+        assert_eq!(
+            serde_json::Value::from_str(String::from_utf8(body_data).unwrap().as_str()).unwrap(),
+            expected_json
+        );
     }
 }

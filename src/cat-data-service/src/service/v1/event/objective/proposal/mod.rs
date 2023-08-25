@@ -130,7 +130,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -155,8 +155,8 @@ mod tests {
                         "importance": "The importance of the proposal",
                     }
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -180,7 +180,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
@@ -201,8 +201,8 @@ mod tests {
                     "summary": "summary 3",
                     "deleted": false
                 }
-            ])
-        ));
+            ]),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -213,7 +213,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
@@ -228,8 +228,8 @@ mod tests {
                     "summary": "summary 2",
                     "deleted": false
                 },
-            ])
-        ));
+            ]),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -240,7 +240,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
@@ -255,8 +255,8 @@ mod tests {
                     "summary": "summary 3",
                     "deleted": false
                 }
-            ])
-        ));
+            ]),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -267,7 +267,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
@@ -276,7 +276,7 @@ mod tests {
                     "summary": "summary 2",
                     "deleted": false
                 },
-            ])
-        ));
+            ]),
+        );
     }
 }

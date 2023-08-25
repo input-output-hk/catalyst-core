@@ -94,11 +94,18 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!({
-                "total": 5,
+                "total": 6,
                 "results": [
+                    {
+                        "id": 10,
+                        "name": "Fund 10",
+                        "starts": "2023-06-16T19:56:00+00:00",
+                        "ends": "2023-09-18T00:00:00+00:00",
+                        "final": false
+                    },
                     {
                         "id": 1,
                         "name": "Test Fund 1",
@@ -136,8 +143,8 @@ mod tests {
                         "final": false
                     }
                 ]
-            })
-        ));
+            }),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -159,12 +166,12 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!({
-                "total": 5,
-            })
-        ));
+                "total": 6,
+            }),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -187,10 +194,10 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!({
-                "total": 5,
+                "total": 6,
                 "results": [
                     {
                         "id": 5,
@@ -227,10 +234,17 @@ mod tests {
                         "ends": "2020-06-01T12:00:00+00:00",
                         "reg_checked": "2020-03-31T12:00:00+00:00",
                         "final": true
+                    },
+                    {
+                        "id": 10,
+                        "name": "Fund 10",
+                        "starts": "2023-06-16T19:56:00+00:00",
+                        "ends": "2023-09-18T00:00:00+00:00",
+                        "final": false
                     }
                 ]
-            })
-        ));
+            }),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -253,7 +267,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -274,7 +288,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -297,11 +311,11 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
-                    "total": 3,
+                    "total": 4,
                     "results": [
                         {
                             "id": 3,
@@ -326,11 +340,18 @@ mod tests {
                             "ends": "2020-06-01T12:00:00+00:00",
                             "reg_checked": "2020-03-31T12:00:00+00:00",
                             "final": true
-                        }
+                        },
+                        {
+                            "id": 10,
+                            "name": "Fund 10",
+                            "starts": "2023-06-16T19:56:00+00:00",
+                            "ends": "2023-09-18T00:00:00+00:00",
+                            "final": false
+                        },
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -353,7 +374,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -368,8 +389,8 @@ mod tests {
                         },
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -415,7 +436,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -464,7 +485,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -486,14 +507,14 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
                     "total": 4,
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -516,7 +537,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -564,8 +585,8 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -588,7 +609,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -607,8 +628,8 @@ mod tests {
                     ]
 
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -631,7 +652,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -669,8 +690,8 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -716,7 +737,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -743,7 +764,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -765,14 +786,14 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
                     "total": 3,
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -795,7 +816,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -821,8 +842,8 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -845,7 +866,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -866,7 +887,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -889,7 +910,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -910,7 +931,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -933,7 +954,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -947,8 +968,8 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)

@@ -309,6 +309,26 @@ mod tests {
                     ends: None,
                     reg_checked: None,
                     is_final: false,
+                },
+                EventSummary {
+                    id: EventId(10),
+                    name: "Fund 10".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2023, 6, 16).unwrap(),
+                            NaiveTime::from_hms_opt(19, 56, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2023, 9, 18).unwrap(),
+                            NaiveTime::from_hms_opt(0, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: None,
+                    is_final: false,
                 }
             ]
         );
@@ -554,7 +574,7 @@ mod tests {
         );
 
         assert_eq!(
-            event_db.get_event(EventId(10)).await,
+            event_db.get_event(EventId(100)).await,
             Err(Error::NotFound("can not find event value".to_string()))
         );
     }

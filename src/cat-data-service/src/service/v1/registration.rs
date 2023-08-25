@@ -126,7 +126,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -141,8 +141,8 @@ mod tests {
                     "last_updated": "2022-03-31T12:00:00+00:00",
                     "final": true
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -153,7 +153,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -169,8 +169,8 @@ mod tests {
                     "last_updated": "2022-03-31T12:00:00+00:00",
                     "final": true
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -181,7 +181,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -196,8 +196,8 @@ mod tests {
                     "last_updated": "2020-03-31T12:00:00+00:00",
                     "final": true
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -208,7 +208,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -224,8 +224,8 @@ mod tests {
                     "last_updated": "2020-03-31T12:00:00+00:00",
                     "final": true
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!("/api/v1/registration/voter/{0}", "voting_key"))
@@ -259,7 +259,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -285,8 +285,8 @@ mod tests {
                     "last_updated": "2022-03-31T12:00:00+00:00",
                     "final": true
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -297,7 +297,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -323,8 +323,8 @@ mod tests {
                     "last_updated": "2020-03-31T12:00:00+00:00",
                     "final": true
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!(

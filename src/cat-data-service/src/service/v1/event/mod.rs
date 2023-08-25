@@ -105,7 +105,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
@@ -154,11 +154,11 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}", 10))
+            .uri(format!("/api/v1/event/{0}", 100))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -176,7 +176,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
@@ -216,9 +216,16 @@ mod tests {
                         "name": "Test Fund 5",
                         "final": false
                     },
+                    {
+                        "id": 10,
+                        "name": "Fund 10",
+                        "starts": "2023-06-16T19:56:00+00:00",
+                        "ends": "2023-09-18T00:00:00+00:00",
+                        "final": false
+                    }
                 ]
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?offset={0}", 1))
@@ -226,7 +233,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
@@ -258,9 +265,16 @@ mod tests {
                         "name": "Test Fund 5",
                         "final": false
                     },
+                    {
+                        "id": 10,
+                        "name": "Fund 10",
+                        "starts": "2023-06-16T19:56:00+00:00",
+                        "ends": "2023-09-18T00:00:00+00:00",
+                        "final": false
+                    }
                 ]
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?limit={0}", 1))
@@ -268,7 +282,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
@@ -281,8 +295,8 @@ mod tests {
                         "final": true,
                     },
                 ]
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?limit={0}&offset={1}", 1, 1))
@@ -290,7 +304,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 [
@@ -303,8 +317,8 @@ mod tests {
                         "final": true,
                     },
                 ]
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?offset={0}", 10))

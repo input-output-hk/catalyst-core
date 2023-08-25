@@ -57,128 +57,37 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!(
                 {
-                    "id": 4,
-                    "fund_name": "Test Fund 4",
-                    "fund_goal": "Test Fund 4 description",
-                    "voting_power_threshold": 1,
-                    "fund_start_time": "2022-05-01T12:00:00+00:00",
-                    "fund_end_time": "2024-06-01T12:00:00+00:00",
+                    "id": 10,
+                    "fund_name": "Fund 10",
+                    "fund_goal": "Catalyst Dev Environment - Fund 10",
+                    "voting_power_threshold": 450000000,
+                    "fund_start_time": "2023-06-16T19:56:00+00:00",
+                    "fund_end_time": "2023-09-18T00:00:00+00:00",
                     "next_fund_start_time": "1970-01-01T00:00:00+00:00",
-                    "registration_snapshot_time": "2022-03-31T12:00:00+00:00",
+                    "registration_snapshot_time": "2023-08-18T21:00:00+00:00",
                     "next_registration_snapshot_time": "1970-01-01T00:00:00+00:00",
-                    "chain_vote_plans": [
-                        {
-                            "id": 5,
-                            "chain_voteplan_id": "1",
-                            "chain_vote_start_time": "2022-05-01T12:00:00+00:00",
-                            "chain_vote_end_time": "2024-06-01T12:00:00+00:00",
-                            "chain_committee_end_time": "2024-07-01T12:00:00+00:00",
-                            "chain_voteplan_payload": "public",
-                            "chain_vote_encryption_key": "",
-                            "fund_id": 4,
-                            "token_identifier": "voting token 3",
-                        },
-                        {
-                            "id": 6,
-                            "chain_voteplan_id": "2",
-                            "chain_vote_start_time": "2022-05-01T12:00:00+00:00",
-                            "chain_vote_end_time": "2024-06-01T12:00:00+00:00",
-                            "chain_committee_end_time": "2024-07-01T12:00:00+00:00",
-                            "chain_voteplan_payload": "public",
-                            "chain_vote_encryption_key": "",
-                            "fund_id": 4,
-                            "token_identifier": "",
-                        }
-                    ],
-                    "challenges": [
-                        {
-                            "internal_id": 3,
-                            "id": 3,
-                            "challenge_type": "catalyst-simple",
-                            "title": "title 3",
-                            "description": "description 3",
-                            "rewards_total": 100,
-                            "proposers_rewards": 100,
-                            "challenge_url": "objective 3 url",
-                            "fund_id": 4,
-                            "highlights": {
-                                "sponsor": "objective 3 sponsor"
-                            },
-                        },
-                        {
-                            "internal_id": 4,
-                            "id": 4,
-                            "challenge_type": "catalyst-native",
-                            "title": "title 4",
-                            "description": "description 4",
-                            "rewards_total": 0,
-                            "proposers_rewards": 0,
-                            "challenge_url": "",
-                            "fund_id": 4,
-                            "highlights": null,
-                        }
-                    ],
-                    "insight_sharing_start": "2022-03-01T12:00:00+00:00",
-                    "proposal_submission_start": "2022-03-01T12:00:00+00:00",
-                    "refine_proposals_start": "2022-03-01T12:00:00+00:00",
-                    "finalize_proposals_start": "2022-03-01T12:00:00+00:00",
-                    "proposal_assessment_start": "2022-03-01T12:00:00+00:00",
-                    "assessment_qa_start": "2022-03-01T12:00:00+00:00",
-                    "snapshot_start": "2022-03-31T12:00:00+00:00",
-                    "voting_start": "2022-05-01T12:00:00+00:00",
-                    "voting_end": "2024-06-01T12:00:00+00:00",
-                    "tallying_end": "2024-07-01T12:00:00+00:00",
-                    "goals": [
-                        {
-                            "id": 13,
-                            "goal_name": "goal 13",
-                            "fund_id": 4
-                        },
-                        {
-                            "id": 14,
-                            "goal_name": "goal 14",
-                            "fund_id": 4
-                        },
-                        {
-                            "id": 15,
-                            "goal_name": "goal 15",
-                            "fund_id": 4
-                        },
-                        {
-                            "id": 16,
-                            "goal_name": "goal 16",
-                            "fund_id": 4
-                        }
-                    ],
-                    "groups": [
-                        {
-                            "group_id": "direct",
-                            "token_identifier": "voting token 3",
-                            "fund_id": 4,
-                        }
-                    ],
+                    "chain_vote_plans": [],
+                    "challenges": [],
+                    "insight_sharing_start": "2023-06-22T00:00:00+00:00",
+                    "proposal_submission_start": "2023-06-22T00:00:00+00:00",
+                    "refine_proposals_start": "2023-06-22T00:00:00+00:00",
+                    "finalize_proposals_start": "2023-07-13T00:00:00+00:00",
+                    "proposal_assessment_start": "2023-07-20T00:00:00+00:00",
+                    "assessment_qa_start": "2023-08-10T00:00:00+00:00",
+                    "snapshot_start": "2023-08-23T22:00:00+00:00",
+                    "voting_start": "2023-08-31T11:00:00+00:00",
+                    "voting_end": "2023-09-14T11:00:00+00:00",
+                    "tallying_end": "2023-09-18T11:00:00+00:00",
+                    "goals": [],
+                    "groups": [],
                     "survey_url": "",
                     "results_url": "",
-                    "next": {
-                        "id": 5,
-                        "fund_name": "Test Fund 5",
-                        "insight_sharing_start":  "1970-01-01T00:00:00+00:00",
-                        "proposal_submission_start": "1970-01-01T00:00:00+00:00",
-                        "refine_proposals_start": "1970-01-01T00:00:00+00:00",
-                        "finalize_proposals_start": "1970-01-01T00:00:00+00:00",
-                        "proposal_assessment_start": "1970-01-01T00:00:00+00:00",
-                        "assessment_qa_start": "1970-01-01T00:00:00+00:00",
-                        "snapshot_start": "1970-01-01T00:00:00+00:00",
-                        "voting_start": "1970-01-01T00:00:00+00:00",
-                        "voting_end": "1970-01-01T00:00:00+00:00",
-                        "tallying_end": "1970-01-01T00:00:00+00:00",
-                    }
                 }
-            )
-        ));
+            ),
+        );
     }
 }

@@ -85,7 +85,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
@@ -116,8 +116,8 @@ mod tests {
                     "assessor": "assessor 3",
                     "ratings": []
                 }
-            ])
-        ));
+            ]),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -128,7 +128,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
@@ -155,8 +155,8 @@ mod tests {
                     "assessor": "assessor 2",
                     "ratings": []
                 },
-            ])
-        ));
+            ]),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -167,7 +167,7 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
@@ -178,8 +178,8 @@ mod tests {
                     "assessor": "assessor 3",
                     "ratings": []
                 }
-            ])
-        ));
+            ]),
+        );
 
         let request = Request::builder()
             .uri(format!(
@@ -190,14 +190,14 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
+        body_data_json_check(
             response.into_body().data().await.unwrap().unwrap().to_vec(),
             serde_json::json!([
                 {
                     "assessor": "assessor 2",
                     "ratings": []
                 },
-            ])
-        ));
+            ]),
+        );
     }
 }

@@ -473,6 +473,12 @@
 <a href="#473" id="473">473</a>
 <a href="#474" id="474">474</a>
 <a href="#475" id="475">475</a>
+<a href="#476" id="476">476</a>
+<a href="#477" id="477">477</a>
+<a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Threshold, VoteCount};
 <span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
@@ -625,6 +631,7 @@
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(<span class="number">1</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -657,6 +664,7 @@
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(<span class="number">1</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -680,6 +688,7 @@
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(<span class="number">1</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -782,7 +791,7 @@
                 voting_power: i.into(),
                 reward_address,
                 delegations,
-                voting_purpose: <span class="number">0</span>,
+                voting_purpose: <span class="prelude-val">Some</span>(<span class="number">0</span>),
                 nonce: <span class="number">0</span>,
             });
             total_stake += i;
@@ -793,6 +802,7 @@
             <span class="number">0</span>.into(),
             Fraction::from(<span class="number">1u64</span>),
             <span class="kw-2">&amp;</span>|_voting_key: <span class="kw-2">&amp;</span>Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -830,7 +840,7 @@
                 voting_power: i.into(),
                 reward_address,
                 delegations,
-                voting_purpose: <span class="number">0</span>,
+                voting_purpose: <span class="prelude-val">Some</span>(<span class="number">0</span>),
                 nonce: <span class="number">0</span>,
             });
         }
@@ -840,6 +850,7 @@
             <span class="number">0</span>.into(),
             Fraction::new(<span class="number">1u64</span>, <span class="number">9u64</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -865,6 +876,7 @@
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(<span class="number">1</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 

@@ -55,7 +55,7 @@ pub struct VotingRegistration {
     pub delegations: Delegations,
     /// 0 = Catalyst, assumed 0 for old legacy registrations
     #[serde(default)]
-    pub voting_purpose: u64,
+    pub voting_purpose: Option<u64>,
 
     #[serde(default)]
     pub nonce: u64,
@@ -341,7 +341,7 @@ mod tests {
                         voting_power,
                         reward_address,
                         delegations,
-                        voting_purpose: 0,
+                        voting_purpose: None,
                         nonce: 0,
                     }
                 })

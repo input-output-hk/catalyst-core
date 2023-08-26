@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["powers_z_encs","powers_z_encs_iter"],"opaque":[""],"struct":["ZPowExp","Zkp"]};

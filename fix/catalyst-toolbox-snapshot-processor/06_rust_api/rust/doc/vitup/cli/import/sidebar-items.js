@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ImportCommand","ImportError","ImportFromIdeascaleFormatCommand"],"mod":["ideascale"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["run_service"],"opaque":[""],"static":["CALLSITE","META"],"struct":["Api"]};
+window.SIDEBAR_ITEMS = {"fn":["init_prometheus","run_service"],"opaque":[""],"static":["CALLSITE","META"],"struct":["Api"]};

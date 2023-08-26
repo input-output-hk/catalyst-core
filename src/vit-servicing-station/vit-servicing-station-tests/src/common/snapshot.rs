@@ -100,11 +100,20 @@ impl SnapshotBuilder {
                         })
                         .take(self.contributions_count)
                         .collect(),
-                        hir: VoterHIR {
-                            voting_key: TestGen::identifier().into(),
-                            voting_group: self.groups[rng.gen_range(0, self.groups.len())]
-                                .to_string(),
-                            voting_power: rng.gen_range(1u64, 1_000u64).into(),
+                        hir: {
+                            let identifier = TestGen::identifier();
+
+                            VoterHIR {
+                                voting_key: identifier.clone().into(),
+                                voting_group: self.groups[rng.gen_range(0, self.groups.len())]
+                                    .to_string(),
+                                voting_power: rng.gen_range(1u64, 1_000u64).into(),
+                                address: chain_addr::Address(
+                                    chain_addr::Discrimination::Production,
+                                    chain_addr::Kind::Account(identifier.into()),
+                                )
+                                .into(),
+                            }
                         },
                     })
                 })

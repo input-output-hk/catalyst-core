@@ -130,7 +130,7 @@ impl OutputExtension for SnapshotEntry {
                     VotingDelegations::New(new)
                 }
             },
-            voting_purpose: *self.voting_purpose.unwrap_or(VotingPurpose::CATALYST),
+            voting_purpose: Some(*self.voting_purpose.unwrap_or(VotingPurpose::CATALYST)),
 
             nonce: self.nonce,
         })

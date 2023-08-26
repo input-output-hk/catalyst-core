@@ -4,7 +4,7 @@ version = "0.0.1"
 description = ""
 authors = ["Catalyst Core Developers <dev@iohk.io>"]
 license = "MIT or Apache License 2.0"
-readme = "development.md"
+readme = "README.md"
 packages = [{include = "voting_node"}]
 
 [build-system]
@@ -31,6 +31,7 @@ cryptography = "^40.0.1"
 loguru = "^0.6.0"
 ideascale-importer = {path = "../../utilities/ideascale-importer"}
 brotlipy = "^0.7.0"
+lxml = "^4.9.3"
 
 [tool.poetry.group.dev.dependencies]
 # formatting

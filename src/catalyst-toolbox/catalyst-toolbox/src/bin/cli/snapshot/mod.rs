@@ -1,3 +1,4 @@
+use chain_addr::Discrimination;
 use clap::Parser;
 use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
@@ -45,6 +46,10 @@ pub struct SnapshotCmd {
 
     #[clap(flatten)]
     output_format: OutputFormat,
+
+    /// Discrimination to use for initial addresses
+    #[clap(short, long, default_value = "production")]
+    discrimination: Discrimination,
 }
 
 impl SnapshotCmd {
@@ -67,6 +72,7 @@ impl SnapshotCmd {
             self.min_stake_threshold,
             self.voting_power_cap,
             &assigner,
+            self.discrimination,
         )?
         .to_full_snapshot_info();
         let mut out_writer = self.output.open()?;

@@ -1,5 +1,6 @@
 use std::convert::TryInto;
 
+use chain_addr::Discrimination;
 use chain_impl_mockchain::testing::TestGen;
 use jormungandr_lib::interfaces::Value;
 use rand::Rng;
@@ -60,6 +61,7 @@ impl RawSnapshotExtension for RawSnapshot {
             self.content.min_stake_threshold,
             self.content.voting_power_cap,
             assigner,
+            Discrimination::Production,
         )?
         .to_full_snapshot_info())
     }
@@ -200,7 +202,7 @@ impl RawSnapshotBuilder {
                             delegation_type_count += 1;
                             Delegations::Legacy(TestGen::identifier().into())
                         },
-                        voting_purpose: CATALYST_VOTING_PURPOSE_TAG,
+                        voting_purpose: Some(CATALYST_VOTING_PURPOSE_TAG),
                         nonce: 0,
                     })
                 })

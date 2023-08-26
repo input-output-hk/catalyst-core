@@ -1,6 +1,5 @@
 """Utilities to manage data."""
 from dataclasses import dataclass
-import inspect
 import json
 import csv
 from openpyxl import Workbook, load_workbook
@@ -16,21 +15,12 @@ T = TypeVar("T")
 DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
 
 
-def load_json_and_serialize(path: str, model: Type[T]) -> List[T]:
-    """Given a path of json and a model it returns a list of models."""
-    with open(path) as f:
-        data = json.load(f)
-        serialized = [model(**el) for el in data]
-        return serialized
-
-
-def load_csv_and_serialize(path: str, model: Type[T], extra: Dict = {}) -> List[T]:
+def load_csv_and_serialize(path: str, model: Type[T], extra: Dict) -> List[T]:
     """Given a path of csv and a model it returns a list of models, merging it with extra attributes."""
     with open(path) as f:
         data = csv.DictReader(f)
         serialized = [model(**el, **extra) for el in data]
         return serialized
-
 
 def deserialize_and_save_csv(path: str, elements: List[Any], include: dict, transform: Optional[str] = None):
     """Deserialize a list of models and save a csv."""
@@ -65,31 +55,41 @@ def deserialize_and_save_csv(path: str, elements: List[Any], include: dict, tran
                 **{f"review_{key}": val for key, val in res["review"].items()},
             }
             _res.pop("review")
+        elif transform == "ai":
+            _res = {
+                **res,
+                **{"review": res["review"]['id']},
+            }
+        elif transform == "similarity":
+            _res = {
+                **res,
+                **{
+                    "left": res["left"]['id'],
+                    "right": res["right"]['id']
+                }
+            }
         else:
             _res = res
 
         results.append(_res)
 
-    keys = results[0].keys()
+    save_csv(path, results)
+    
+
+def save_csv(path: str, elements: List[Any]):
+    keys = elements[0].keys()
     if path.endswith("csv"):
         with open(path, "w", newline="") as f:
             dict_writer = csv.DictWriter(f, keys)
             dict_writer.writeheader()
-            dict_writer.writerows(results)
+            dict_writer.writerows(elements)
     elif path.endswith("xlsx"):
         wb = Workbook()
         ws = wb.active
         ws.append(list(keys))
-        for el in results[0:]:
+        for el in elements[0:]:
             ws.append(list(el.values()))
         wb.save(path)
-
-
-def batch(iterable, n=1):
-    """Given an iterable get a list of chunks of length n."""
-    length = len(iterable)
-    for ndx in range(0, length, n):
-        yield iterable[ndx : min(ndx + n, length)]
 
 
 def snake_case_keys(x: DictOrList):

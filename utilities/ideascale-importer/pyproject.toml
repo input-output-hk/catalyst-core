@@ -38,7 +38,8 @@ typing-extensions = "~4.7.1"
 yarl = "1.8.2"
 loguru = "^0.6.0"
 brotlipy = "^0.7.0"
-lxml = "4.9.0"
+lxml = "4.9.3"
+rich = "^13.3.4"
 
 openpyxl = "^3.1.2"
 

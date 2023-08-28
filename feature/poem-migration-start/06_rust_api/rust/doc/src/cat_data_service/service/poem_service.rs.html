@@ -42,49 +42,55 @@
 <a href="#42" id="42">42</a>
 <a href="#43" id="43">43</a>
 <a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
+<a href="#47" id="47">47</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Poem Service for cat-data-service endpoints.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::service::docs::docs;
-<span class="kw">use </span><span class="kw">crate</span>::service::Error;
-
-<span class="kw">use </span><span class="kw">crate</span>::service::api::mk_api;
+</span><span class="kw">use </span><span class="kw">super</span>::api::api;
+<span class="kw">use </span><span class="kw">crate</span>::service::docs::docs;
 <span class="kw">use </span><span class="kw">crate</span>::service::utilities::metrics_tracing::{init_prometheus, log_requests};
-
+<span class="kw">use </span><span class="kw">crate</span>::service::Error;
 <span class="kw">use </span>poem::middleware::Cors;
-<span class="kw">use </span>poem::{
-    endpoint::PrometheusExporter, listener::TcpListener, middleware::OpenTelemetryMetrics,
-    EndpointExt, Route,
-};
+<span class="kw">use </span>poem::Endpoint;
+<span class="kw">use </span>poem::{endpoint::PrometheusExporter, listener::TcpListener, EndpointExt, Route};
 <span class="kw">use </span>std::net::SocketAddr;
 
-<span class="kw">pub async fn </span>run_service(
-    addr: <span class="kw-2">&amp;</span>SocketAddr,
-    metrics_addr: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-    <span class="macro">tracing::info!</span>(<span class="string">&quot;Starting Poem Service ...&quot;</span>);
-    <span class="macro">tracing::info!</span>(<span class="string">&quot;Listening on {addr}&quot;</span>);
-    <span class="macro">tracing::info!</span>(<span class="string">&quot;Metrics on {metrics_addr:?}&quot;</span>);
+<span class="kw">pub fn </span>cors_layer() -&gt; Cors {
+    Cors::new()
+}
 
-    <span class="kw">let </span>api = mk_api(<span class="kw-2">&amp;</span>addr);
-    <span class="kw">let </span>docs = docs();
+<span class="kw">pub fn </span>app(addr: <span class="kw-2">&amp;</span>SocketAddr) -&gt; <span class="kw">impl </span>EndpointExt {
+    <span class="kw">let </span>api = api(addr);
+    <span class="kw">let </span>docs = docs(<span class="kw-2">&amp;</span>api);
 
+    Route::new()
+        .nest(<span class="string">&quot;/api&quot;</span>, api)
+        .nest(<span class="string">&quot;/docs&quot;</span>, docs)
+        .around(|endp, req| <span class="kw">async move </span>{ <span class="prelude-val">Ok</span>(log_requests(endp, req).<span class="kw">await</span>) })
+}
+
+<span class="kw">pub fn </span>metrics_app() -&gt; <span class="kw">impl </span>Endpoint {
     <span class="kw">let </span>prometheus_controller = init_prometheus();
 
-    <span class="kw">let </span>app = Route::new()
-        .nest(<span class="string">&quot;/api&quot;</span>, api)
-        .nest(<span class="string">&quot;/docs/&quot;</span>, docs)
-        .nest(
-            <span class="string">&quot;/metrics&quot;</span>,
-            PrometheusExporter::with_controller(prometheus_controller),
-        )
-        .with(Cors::new())
-        .with(OpenTelemetryMetrics::new())
-        .around(|ep, req| <span class="kw">async move </span>{ <span class="prelude-val">Ok</span>(log_requests(ep, req).<span class="kw">await</span>) });
+    Route::new().nest(
+        <span class="string">&quot;/metrics&quot;</span>,
+        PrometheusExporter::with_controller(prometheus_controller),
+    )
+}
+
+<span class="kw">pub async fn </span>run_service&lt;E: Endpoint + <span class="lifetime">&#39;static</span>&gt;(
+    app: E,
+    addr: <span class="kw-2">&amp;</span>SocketAddr,
+    name: <span class="kw-2">&amp;</span>str,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    <span class="macro">tracing::info!</span>(<span class="string">&quot;Starting {name}...&quot;</span>);
+    <span class="macro">tracing::info!</span>(<span class="string">&quot;Listening on {addr}&quot;</span>);
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)
         .<span class="kw">await
-        </span>.map_err(Error::IoError)
+        </span>.map_err(Error::Io)
 }
 </code></pre></div>
 </section></main></body></html>

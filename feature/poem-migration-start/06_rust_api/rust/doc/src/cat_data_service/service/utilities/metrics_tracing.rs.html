@@ -33,12 +33,6 @@
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
 <a href="#35" id="35">35</a>
-<a href="#36" id="36">36</a>
-<a href="#37" id="37">37</a>
-<a href="#38" id="38">38</a>
-<a href="#39" id="39">39</a>
-<a href="#40" id="40">40</a>
-<a href="#41" id="41">41</a>
 </pre><pre class="rust"><code><span class="kw">use </span>opentelemetry::sdk::{
     export::metrics::aggregation,
     metrics::{
@@ -46,27 +40,21 @@
         processors, selectors,
     },
 };
-<span class="kw">use </span>poem::Route;
-<span class="kw">use </span>poem::{
-    middleware::{CorsEndpoint, OpenTelemetryMetricsEndpoint},
-    Endpoint, Request,
-};
+<span class="kw">use </span>poem::{Endpoint, Request, Response};
 <span class="kw">use </span>poem_openapi::OperationId;
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="doccomment">/// Log all requests, with important tracing data.
-</span><span class="kw">pub async fn </span>log_requests(
-    ep: Arc&lt;OpenTelemetryMetricsEndpoint&lt;CorsEndpoint&lt;Route&gt;&gt;&gt;,
-    req: Request,
-) {
+</span><span class="kw">pub async fn </span>log_requests&lt;E: Endpoint + <span class="lifetime">&#39;static</span>&gt;(ep: Arc&lt;E&gt;, req: Request) -&gt; Response {
     <span class="kw">let </span>uri = req.uri().clone();
     <span class="kw">let </span>resp = ep.get_response(req).<span class="kw">await</span>;
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(operation_id) = resp.data::&lt;OperationId&gt;() {
-        <span class="macro">println!</span>(<span class="string">&quot;[{}]{} {}&quot;</span>, operation_id, uri, resp.status());
+        <span class="macro">tracing::debug!</span>(<span class="string">&quot;[{}]{}, {}&quot;</span>, operation_id, uri, resp.status());
     } <span class="kw">else </span>{
-        <span class="macro">println!</span>(<span class="string">&quot;{} {}&quot;</span>, uri, resp.status());
+        <span class="macro">tracing::debug!</span>(<span class="string">&quot;{}, {}&quot;</span>, uri, resp.status());
     }
+    resp
 }
 
 <span class="doccomment">/// Initialize Prometheus metrics.

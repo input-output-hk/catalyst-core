@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["run_service"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"fn":["app","cors_layer","metrics_app","run_service"],"opaque":[""],"static":["CALLSITE","META"]};

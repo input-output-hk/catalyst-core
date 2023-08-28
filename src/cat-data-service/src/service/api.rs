@@ -2,13 +2,11 @@
 //!
 //! This defines all endpoints for the Catalyst Data Service API.
 //! It however does NOT contain any processing for them, that is defined elsewhere.
-use poem::{
-    Route,
-};
+use poem::Route;
 use poem_openapi::{param::Query, payload::PlainText, OpenApi, OpenApiService};
 use std::net::SocketAddr;
 
-pub(crate) struct Api;
+pub struct Api;
 
 #[OpenApi]
 impl Api {
@@ -23,7 +21,6 @@ impl Api {
         }
     }
 }
-
 
 pub(crate) fn mk_api(addr: &SocketAddr) -> OpenApiService<Api, ()> {
     // This should be the actual hostname of the service.  But in the absence of that, the IP address/port will do.

@@ -898,13 +898,12 @@ dependencies = [
  "jormungandr-lib",
  "metrics",
  "metrics-exporter-prometheus",
- "once_cell",
  "opentelemetry",
  "opentelemetry-prometheus 0.13.0",
  "poem",
  "poem-openapi",
- "quickcheck 1.0.3",
- "quickcheck_macros 1.0.0",
+ "quickcheck",
+ "quickcheck_macros",
  "rust_decimal",
  "serde",
  "serde_json",
@@ -1075,7 +1074,7 @@ dependencies = [
  "chain-crypto",
  "cryptoxide 0.4.4",
  "proptest",
- "quickcheck 0.9.2",
+ "quickcheck",
  "test-strategy",
 ]
 
@@ -1100,7 +1099,7 @@ dependencies = [
  "generic-array",
  "hex",
  "proptest",
- "quickcheck 0.9.2",
+ "quickcheck",
  "rand 0.8.5",
  "rand_core 0.6.4",
  "rayon",
@@ -1128,8 +1127,8 @@ dependencies = [
  "imhamt",
  "lazy_static",
  "proptest",
- "quickcheck 0.9.2",
- "quickcheck_macros 0.9.1",
+ "quickcheck",
+ "quickcheck_macros",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "rand_core 0.6.4",
@@ -1168,8 +1167,8 @@ name = "chain-path-derivation"
 version = "0.8.3"
 dependencies = [
  "paste",
- "quickcheck 0.9.2",
- "quickcheck_macros 0.9.1",
+ "quickcheck",
+ "quickcheck_macros",
  "thiserror",
 ]
 
@@ -1199,7 +1198,7 @@ dependencies = [
  "chain-core",
  "chain-ser",
  "proptest",
- "quickcheck 0.9.2",
+ "quickcheck",
  "test-strategy",
 ]
 
@@ -2324,16 +2323,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "env_logger"
-version = "0.8.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a19187fea3ac7e84da7dacf48de0c45d63c6a76f9490dae389aead16c243fce3"
-dependencies = [
- "log",
- "regex",
-]
-
-[[package]]
 name = "equivalent"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2954,8 +2943,8 @@ dependencies = [
  "cryptoxide 0.4.4",
  "ed25519-bip32 0.4.1",
  "hex",
- "quickcheck 0.9.2",
- "quickcheck_macros 0.9.1",
+ "quickcheck",
+ "quickcheck_macros",
  "thiserror",
  "zeroize",
 ]
@@ -3594,7 +3583,7 @@ dependencies = [
  "hex",
  "jormungandr-lib",
  "predicates 2.1.5",
- "quickcheck 0.9.2",
+ "quickcheck",
  "rand 0.7.3",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
@@ -3669,8 +3658,8 @@ dependencies = [
  "parity-multiaddr",
  "poldercast",
  "prometheus",
- "quickcheck 0.9.2",
- "quickcheck_macros 0.9.1",
+ "quickcheck",
+ "quickcheck_macros",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "reqwest",
@@ -3833,8 +3822,8 @@ dependencies = [
  "http",
  "humantime",
  "parity-multiaddr",
- "quickcheck 0.9.2",
- "quickcheck_macros 0.9.1",
+ "quickcheck",
+ "quickcheck_macros",
  "rand 0.7.3",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
@@ -5925,21 +5914,10 @@ version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a44883e74aa97ad63db83c4bf8ca490f02b2fc02f92575e720c8551e843c945f"
 dependencies = [
- "env_logger 0.7.1",
+ "env_logger",
  "log",
  "rand 0.7.3",
  "rand_core 0.5.1",
-]
-
-[[package]]
-name = "quickcheck"
-version = "1.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "588f6378e4dd99458b60ec275b4477add41ce4fa9f64dcba6f15adccb19b50d6"
-dependencies = [
- "env_logger 0.8.4",
- "log",
- "rand 0.8.5",
 ]
 
 [[package]]
@@ -5947,17 +5925,6 @@ name = "quickcheck_macros"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "608c156fd8e97febc07dc9c2e2c80bf74cfc6ef26893eae3daf8bc2bc94a4b7f"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
-name = "quickcheck_macros"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b22a693222d716a9587786f37ac3f6b4faedb5b80c23914e7303ff5a1d8016e9"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -8434,8 +8401,8 @@ dependencies = [
  "postgres",
  "predicates 2.1.5",
  "pretty_assertions 0.6.1",
- "quickcheck 0.9.2",
- "quickcheck_macros 0.9.1",
+ "quickcheck",
+ "quickcheck_macros",
  "rand 0.7.3",
  "rand_core 0.5.1",
  "refinery",
@@ -8492,8 +8459,8 @@ dependencies = [
  "path-slash",
  "poldercast",
  "proptest",
- "quickcheck 0.9.2",
- "quickcheck_macros 0.9.1",
+ "quickcheck",
+ "quickcheck_macros",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "rand_core 0.6.4",
@@ -8609,8 +8576,8 @@ dependencies = [
  "imhamt",
  "itertools 0.10.5",
  "jormungandr-lib",
- "quickcheck 0.9.2",
- "quickcheck_macros 0.9.1",
+ "quickcheck",
+ "quickcheck_macros",
  "serde",
  "serde_json",
  "serde_yaml 0.8.26",

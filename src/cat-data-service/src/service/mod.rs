@@ -10,26 +10,27 @@ use axum::{
     Json, Router,
 };
 use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
+use poem::{middleware::OpenTelemetryMetrics, EndpointExt, IntoEndpoint};
 use serde::Serialize;
 use std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
 use tower_http::cors::{Any, CorsLayer};
 
+mod api;
+mod docs;
 mod health;
 mod poem_service;
-mod docs;
+mod utilities;
 mod v0;
 mod v1;
-mod api;
-mod utilities;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("Cannot run service, error: {0}")]
     CannotRunService(String),
     #[error(transparent)]
-    EventDbError(#[from] event_db::error::Error),
+    EventDb(#[from] event_db::error::Error),
     #[error(transparent)]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 }
 
 #[derive(Serialize, Debug)]
@@ -121,7 +122,7 @@ pub async fn run(
 fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
     match res {
         Ok(res) => (StatusCode::OK, Json(res)).into_response(),
-        Err(Error::EventDbError(event_db::error::Error::NotFound(error))) => {
+        Err(Error::EventDb(event_db::error::Error::NotFound(error))) => {
             (StatusCode::NOT_FOUND, Json(ErrorMessage { error })).into_response()
         }
         Err(error) => (

@@ -102,6 +102,8 @@ pub async fn log_requests(
         content = resp.content_type().unwrap_or("Undefined"),
         // size = req.content_length(),  # Nice to know how big a response was.
     );
+
+    resp
 }
 
 /// Initialize Prometheus metrics.

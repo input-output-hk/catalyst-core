@@ -3,16 +3,13 @@
 //! This provides only the primary entrypoint to the service.
 
 use crate::service::docs::docs;
-use crate::service::{Error};
+use crate::service::Error;
 
 use crate::service::api::mk_api;
 use crate::service::utilities::metrics_tracing::{init_prometheus, log_requests};
 
-use poem::middleware::Cors;
-use poem::{
-    endpoint::PrometheusExporter, listener::TcpListener, middleware::OpenTelemetryMetrics,
-    EndpointExt, Route,
-};
+use poem::middleware::{Cors, OpenTelemetryMetrics};
+use poem::{endpoint::PrometheusExporter, listener::TcpListener, EndpointExt, Route};
 use std::net::SocketAddr;
 
 /// Run the Poem Service
@@ -20,9 +17,7 @@ use std::net::SocketAddr;
 /// This provides only the primary entrypoint to the service.
 /// addr: &SocketAddr - the address to listen on
 ///
-pub async fn run_service(
-    addr: &SocketAddr
-) -> Result<(), Error> {
+pub async fn run_service(addr: &SocketAddr) -> Result<(), Error> {
     tracing::info!("Starting Poem Service ...");
     tracing::info!("Listening on {addr}");
 
@@ -39,12 +34,11 @@ pub async fn run_service(
             PrometheusExporter::with_controller(prometheus_controller),
         )
         .with(Cors::new())
-        .with(OpenTelemetryMetrics::new())
-        ;
-        //.around(|ep, req| async move { Ok(log_requests(ep, req).await) });
+        .with(OpenTelemetryMetrics::new());
+    //.around(|ep, req| async move { Ok(log_requests(ep, req).await) });
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)
         .await
-        .map_err(Error::IoError)
+        .map_err(Error::Io)
 }

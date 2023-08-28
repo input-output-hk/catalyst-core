@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["EXPECT_FORMAT_MESSAGE"],"enum":["BlockDateParseError"],"mod":["tests"],"struct":["BlockDate"],"type":["Epoch","SlotId"]};

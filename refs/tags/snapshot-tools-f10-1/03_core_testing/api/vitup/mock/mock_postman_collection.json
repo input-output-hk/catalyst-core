@@ -1,0 +1,804 @@
+{
+	"info": {
+		"_postman_id": "5122d924-e028-46d9-a397-e87a4b6bd461",
+		"name": "Mock",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "11181958"
+	},
+	"item": [
+		{
+			"name": "command/available/true",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/available/true",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"available",
+						"true"
+					]
+				},
+				"description": "Controls backend availability. By default it is set to true, and anyone can connect to mock (unless mock is configured with access token and client does not have it). This endpoint can alter mock behaviour and make it unavailable for all the call returning always an error code (predefined in error-codes endpoint)"
+			},
+			"response": []
+		},
+		{
+			"name": "command/block-account/1",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/block-account/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"block-account",
+						"1"
+					]
+				},
+				"description": "Blocks account endpoint for X calls simulating lack of connectivity with blockchain part of catalyst. As a result client cannot learn about his voting power"
+			},
+			"response": []
+		},
+		{
+			"name": "command/error-codes/500",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/error-code/500",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"error-code",
+						"500"
+					]
+				},
+				"description": "Sets return error code when mock is configured as not available"
+			},
+			"response": []
+		},
+		{
+			"name": "command/fund/id/1",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fund/id/3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fund",
+						"id",
+						"3"
+					]
+				},
+				"description": "Updates current fund id. This method is useful to test client on any new fund appearance"
+			},
+			"response": []
+		},
+		{
+			"name": "command/fund/update",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "PUT",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"id\": 9,\r\n    \"fund_name\": \"Fund9\",\r\n    \"fund_goal\": \"How will we encourage developers and entrepreneurs to build Dapps and businesses on top of Cardano in the next 6 months?\",\r\n    \"voting_power_threshold\": 8000000000,\r\n    \"fund_start_time\": \"2023-01-02T20:00:54Z\",\r\n    \"fund_end_time\": \"2023-01-02T20:10:54Z\",\r\n    \"next_fund_start_time\": \"2023-02-01T19:50:54Z\",\r\n    \"registration_snapshot_time\": \"2023-01-02T16:50:54Z\",\r\n    \"next_registration_snapshot_time\": \"2023-01-22T19:50:54Z\",\r\n    \"chain_vote_plans\": [\r\n        {\r\n            \"id\": -769245555,\r\n            \"chain_voteplan_id\": \"225aa4b1d85faefe1b056ae413897a7e816b8413db1a84bf57526f2358e5b458\",\r\n            \"chain_vote_start_time\": \"2023-01-02T20:00:54Z\",\r\n            \"chain_vote_end_time\": \"2023-01-02T20:10:54Z\",\r\n            \"chain_committee_end_time\": \"2023-01-02T20:20:54Z\",\r\n            \"chain_voteplan_payload\": \"public\",\r\n            \"chain_vote_encryption_key\": \"\",\r\n            \"fund_id\": 9\r\n        }\r\n    ],\r\n    \"challenges\": [\r\n        {\r\n            \"internal_id\": 1,\r\n            \"id\": 1807880197,\r\n            \"challenge_type\": \"simple\",\r\n            \"title\": \"Seamless asynchronous initiative\",\r\n            \"description\": \"Devolved\",\r\n            \"rewards_total\": 1417,\r\n            \"proposers_rewards\": 3766,\r\n            \"fund_id\": 9,\r\n            \"challenge_url\": \"http://runolfsson-and-walsh-llc.io\",\r\n            \"highlights\": null\r\n        },\r\n        {\r\n            \"internal_id\": 2,\r\n            \"id\": 653731209,\r\n            \"challenge_type\": \"native\",\r\n            \"title\": \"Open-source intermediate paradigm\",\r\n            \"description\": \"User-centric\",\r\n            \"rewards_total\": 685,\r\n            \"proposers_rewards\": 6898,\r\n            \"fund_id\": 9,\r\n            \"challenge_url\": \"http://gislason-and-ritchie-group.net\",\r\n            \"highlights\": null\r\n        },\r\n        {\r\n            \"internal_id\": 3,\r\n            \"id\": 1505287677,\r\n            \"challenge_type\": \"simple\",\r\n            \"title\": \"Realigned leading edge Graphic Interface\",\r\n            \"description\": \"Persistent\",\r\n            \"rewards_total\": 8377,\r\n            \"proposers_rewards\": 7602,\r\n            \"fund_id\": 9,\r\n            \"challenge_url\": \"http://nienow-inc.info\",\r\n            \"highlights\": null\r\n        },\r\n        {\r\n            \"internal_id\": 4,\r\n            \"id\": 1101749926,\r\n            \"challenge_type\": \"simple\",\r\n            \"title\": \"Ergonomic full-range time-frame\",\r\n            \"description\": \"Re-engineered\",\r\n            \"rewards_total\": 6182,\r\n            \"proposers_rewards\": 6665,\r\n            \"fund_id\": 9,\r\n            \"challenge_url\": \"http://o'keefe-and-orn-and-sons.io\",\r\n            \"highlights\": null\r\n        },\r\n        {\r\n            \"internal_id\": 5,\r\n            \"id\": 1357451625,\r\n            \"challenge_type\": \"native\",\r\n            \"title\": \"Enhanced regional structure\",\r\n            \"description\": \"Enterprise-wide\",\r\n            \"rewards_total\": 2681,\r\n            \"proposers_rewards\": 2945,\r\n            \"fund_id\": 9,\r\n            \"challenge_url\": \"http://kozey-llc.net\",\r\n            \"highlights\": {\r\n                \"sponsor\": \"Rempel Group\"\r\n            }\r\n        },\r\n        {\r\n            \"internal_id\": 6,\r\n            \"id\": 622480193,\r\n            \"challenge_type\": \"community-choice\",\r\n            \"title\": \"Synergized bandwidth-monitored paradigm\",\r\n            \"description\": \"Virtual\",\r\n            \"rewards_total\": 4665,\r\n            \"proposers_rewards\": 4714,\r\n            \"fund_id\": 9,\r\n            \"challenge_url\": \"http://flatley-and-sons.name\",\r\n            \"highlights\": null\r\n        },\r\n        {\r\n            \"internal_id\": 7,\r\n            \"id\": 308170523,\r\n            \"challenge_type\": \"native\",\r\n            \"title\": \"Decentralized coherent hub\",\r\n            \"description\": \"Up-sized\",\r\n            \"rewards_total\": 3542,\r\n            \"proposers_rewards\": 1851,\r\n            \"fund_id\": 9,\r\n            \"challenge_url\": \"http://oberbrunner-and-tremblay-inc.co\",\r\n            \"highlights\": {\r\n                \"sponsor\": \"Bosco and Sons\"\r\n            }\r\n        },\r\n        {\r\n            \"internal_id\": 8,\r\n            \"id\": -114748809,\r\n            \"challenge_type\": \"simple\",\r\n            \"title\": \"Intuitive client-driven access\",\r\n            \"description\": \"Focused\",\r\n            \"rewards_total\": 4180,\r\n            \"proposers_rewards\": 7070,\r\n            \"fund_id\": 9,\r\n            \"challenge_url\": \"http://will-and-o'kon-group.info\",\r\n            \"highlights\": null\r\n        },\r\n        {\r\n            \"internal_id\": 9,\r\n            \"id\": 363010863,\r\n            \"challenge_type\": \"community-choice\",\r\n            \"title\": \"Front-line contextually-based approach\",\r\n            \"description\": \"Synchronised\",\r\n            \"rewards_total\": 5248,\r\n            \"proposers_rewards\": 2795,\r\n            \"fund_id\": 9,\r\n            \"challenge_url\": \"http://wilkinson-and-jones-llc.info\",\r\n            \"highlights\": {\r\n                \"sponsor\": \"Wolff and Sons\"\r\n            }\r\n        }\r\n    ],\r\n    \"insight_sharing_start\": \"2022-12-23T19:50:54Z\",\r\n    \"proposal_submission_start\": \"2022-12-24T19:50:54Z\",\r\n    \"refine_proposals_start\": \"2022-12-25T19:50:54Z\",\r\n    \"finalize_proposals_start\": \"2022-12-26T19:50:54Z\",\r\n    \"proposal_assessment_start\": \"2022-12-27T19:50:54Z\",\r\n    \"assessment_qa_start\": \"2022-12-28T19:50:54Z\",\r\n    \"snapshot_start\": \"2023-01-02T16:50:54Z\",\r\n    \"voting_start\": \"2023-01-02T20:00:54Z\",\r\n    \"voting_end\": \"2023-01-02T20:10:54Z\",\r\n    \"tallying_end\": \"2023-01-02T20:20:54Z\",\r\n    \"goals\": [\r\n        {\r\n            \"id\": 900,\r\n            \"goal_name\": \"first Goal\",\r\n            \"fund_id\": 9\r\n        },\r\n        {\r\n            \"id\": 901,\r\n            \"goal_name\": \"second Goal\",\r\n            \"fund_id\": 9\r\n        },\r\n        {\r\n            \"id\": 902,\r\n            \"goal_name\": \"third Goal\",\r\n            \"fund_id\": 9\r\n        }\r\n    ],\r\n    \"results_url\": \"https://catalyst.domain/survey\",\r\n    \"survey_url\": \"https://catalyst.domain/result\",\r\n    \"next\": {\r\n        \"id\": 1576382552,\r\n        \"fund_name\": \"Fund1576382552\",\r\n        \"insight_sharing_start\": \"2023-01-03T06:19:29Z\",\r\n        \"proposal_submission_start\": \"2023-01-03T16:11:32Z\",\r\n        \"refine_proposals_start\": \"2023-01-03T20:18:59Z\",\r\n        \"finalize_proposals_start\": \"2023-01-03T20:29:19Z\",\r\n        \"proposal_assessment_start\": \"2023-01-04T09:24:15Z\",\r\n        \"assessment_qa_start\": \"2023-01-04T09:52:50Z\",\r\n        \"snapshot_start\": \"2023-01-04T10:51:19Z\",\r\n        \"voting_start\": \"2023-01-04T11:17:51Z\",\r\n        \"voting_end\": \"2023-01-04T11:19:29Z\",\r\n        \"tallying_end\": \"2023-01-04T11:19:44Z\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fund/update",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fund",
+						"update"
+					]
+				},
+				"description": "Updates fund content with given data"
+			},
+			"response": []
+		},
+		{
+			"name": "command/reset",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n   \"initials\":{\r\n      \"snapshot\":{\r\n         \"tag\":\"daily\",\r\n         \"content\":[\r\n            {\r\n               \"count\":2,\r\n               \"level\":1234\r\n            },\r\n            {\r\n               \"name\":\"alice\"\r\n            },\r\n            {\r\n               \"name\":\"bob\",\r\n               \"funds\":10001\r\n            }\r\n         ]\r\n      },\r\n      \"block0\":[\r\n         {\r\n            \"above_threshold\":10,\r\n            \"pin\":\"1234\"\r\n         },\r\n         {\r\n            \"name\":\"alice\",\r\n            \"pin\":\"1234\",\r\n            \"funds\":10000\r\n         },\r\n         {\r\n            \"name\":\"bob\",\r\n            \"pin\":\"1234\",\r\n            \"funds\":10000\r\n         },\r\n         {\r\n            \"zero_funds\":10,\r\n            \"pin\":\"1234\"\r\n         }\r\n      ]\r\n   },\r\n   \"vote_plan\":{\r\n      \"vote_time\":{\r\n         \"vote_start\":0,\r\n         \"tally_start\":134,\r\n         \"tally_end\":234,\r\n         \"slots_per_epoch\":3600\r\n      },\r\n      \"private\":true\r\n   },\r\n   \"blockchain\":{\r\n      \"slot_duration\":4,\r\n      \"block_content_max_size\":20971520,\r\n      \"linear_fees\":{\r\n         \"constant\":0,\r\n         \"coefficient\":0,\r\n         \"certificate\":0\r\n      }\r\n   },\r\n   \"data\":{\r\n      \"current_fund\":{\r\n         \"options\":\"yes,no\",\r\n         \"proposals\":1134,\r\n         \"challenges\":23,\r\n         \"reviews\":7045,\r\n         \"voting_power\":450,\r\n         \"fund_name\":\"Fund9\",\r\n         \"fund_id\":9,\r\n         \"dates\":{\r\n            \"insight_sharing_start\":\"2022-05-01T12:00:00Z\",\r\n            \"proposal_submission_start\":\"2022-05-02T12:00:00Z\",\r\n            \"refine_proposals_start\":\"2022-05-03T12:00:00Z\",\r\n            \"finalize_proposals_start\":\"2022-05-04T12:00:00Z\",\r\n            \"proposal_assessment_start\":\"2022-05-04T12:00:00Z\",\r\n            \"assessment_qa_start\":\"2022-05-05T12:00:00Z\",\r\n            \"snapshot_time\":\"2022-05-07T12:00:00Z\",\r\n            \"next_snapshot_time\":\"2023-05-07T12:00:00Z\",\r\n            \"next_vote_start_time\":\"2022-07-14T12:00:00Z\"\r\n         }\r\n      },\r\n      \"next_funds\":[\r\n         {\r\n            \"fund_name\":\"Fund10\",\r\n            \"fund_id\":10,\r\n            \"dates\":{\r\n               \"insight_sharing_start\":\"2023-05-01T12:00:00Z\",\r\n               \"proposal_submission_start\":\"2023-05-02T12:00:00Z\",\r\n               \"refine_proposals_start\":\"2023-05-03T12:00:00Z\",\r\n               \"finalize_proposals_start\":\"2023-05-04T12:00:00Z\",\r\n               \"proposal_assessment_start\":\"2023-05-04T12:00:00Z\",\r\n               \"assessment_qa_start\":\"2023-05-05T12:00:00Z\",\r\n               \"snapshot_time\":\"2023-05-07T12:00:00Z\",\r\n               \"voting_start\":\"2023-07-14T12:00:00Z\",\r\n               \"voting_tally_end\":\"2023-07-14T12:00:00Z\",\r\n               \"voting_tally_start\":\"2023-07-14T12:00:00Z\",\r\n               \"next_snapshot_time\":\"2023-07-07T12:00:00Z\",\r\n               \"next_vote_start_time\":\"2023-07-14T12:00:00Z\"\r\n            }\r\n         }\r\n      ]\r\n   },\r\n   \"version\":\"3.8\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/reset",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"reset"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "health",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "files/list",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/control/files/list",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"files",
+						"list"
+					]
+				},
+				"description": "Lists all files in control of mock service"
+			},
+			"response": []
+		},
+		{
+			"name": "files/get",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/control/files/get/genesis.yaml",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"files",
+						"get",
+						"genesis.yaml"
+					]
+				},
+				"description": "get files content by relative to mock service root path"
+			},
+			"response": []
+		},
+		{
+			"name": "command/block-account/reset",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/block-account/reset",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"block-account",
+						"reset"
+					]
+				},
+				"description": "Reverts behavior modified block-account/{} endpoint. As a result client should be able to reach account endpoint"
+			},
+			"response": []
+		},
+		{
+			"name": "command/fragments/reject",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fragments/reject",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fragments",
+						"reject"
+					]
+				},
+				"description": "Alter behavior of mempool part of node. Rejects all incoming fragments. As a result all of them will have \\`rejected\\` status in mempool and won't be applied to blockchain history"
+			},
+			"response": []
+		},
+		{
+			"name": "command/fragments/accept",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fragments/accept",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fragments",
+						"accept"
+					]
+				},
+				"description": "Alter behavior of mempool part of node. Accept all incoming fragments. As a result all of them will have \\`in a block\\` status in mempool and will be applied to blockchain"
+			},
+			"response": []
+		},
+		{
+			"name": "command/fragments/pending",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fragments/pending",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fragments",
+						"pending"
+					]
+				},
+				"description": "Alter behavior of mempool part of node. Accept all incoming fragments. As a result all of them will have \\`pending\\` status in mempool"
+			},
+			"response": []
+		},
+		{
+			"name": "command/fragments/reset",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fragments/reset",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fragments",
+						"reset"
+					]
+				},
+				"description": "Resets behavior of mempool part of node. Reverts mechanism to default which means that every fragment will be verified against current tip and outcome of this verification will affect it status"
+			},
+			"response": []
+		},
+		{
+			"name": "command/fragments/forget",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fragments/forget",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fragments",
+						"forget"
+					]
+				},
+				"description": "Alters behavior of mempool part of node. Forgets every fragment that reaches mempool. As a result fragment will not appear in mempool"
+			},
+			"response": []
+		},
+		{
+			"name": "command/congestion/reset",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/congestion/reset",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"congestion",
+						"reset"
+					]
+				},
+				"description": "Alters congestion statistics available when querying node/stats endpoint. Reverts statistics to default mechanism. Congestion stats should now be based on actual data from mempool (mempool size/ last 3 block size etc.)"
+			},
+			"response": []
+		},
+		{
+			"name": "command/congestion/normal",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/congestion/normal",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"congestion",
+						"normal"
+					]
+				},
+				"description": "Alters congestion statistics available when querying node/stats endpoint. Sets system o parameters in a way client recognize them as normal congestion (mempool size/ last 3 block size etc.)"
+			},
+			"response": []
+		},
+		{
+			"name": "command/congestion/jammed",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/congestion/jammed",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"congestion",
+						"jammed"
+					]
+				},
+				"description": "Alters congestion statistics available when querying node/stats endpoint. Sets system o parameters in a way client recognize them as high congestion (mempool size/ last 3 block size etc.)"
+			},
+			"response": []
+		},
+		{
+			"name": "command/congestion/moderate",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/congestion/moderate",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"congestion",
+						"moderate"
+					]
+				},
+				"description": "Alters congestion statistics available when querying node/stats endpoint. Sets system o parameters in a way client recognize them as moderate congestion (mempool size/ last 3 block size etc.)"
+			},
+			"response": []
+		},
+		{
+			"name": "command/fragments/update/reject",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fragments/update/LAST/reject",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fragments",
+						"update",
+						"LAST",
+						"reject"
+					]
+				},
+				"description": "Alters status of existing fragment in mempool to \\`reject\\`. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id."
+			},
+			"response": []
+		},
+		{
+			"name": "command/fragments/update/forget",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fragments/update/LAST/forget",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fragments",
+						"update",
+						"LAST",
+						"forget"
+					]
+				},
+				"description": "Removes fragment from mempool, like it was never sent. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id."
+			},
+			"response": []
+		},
+		{
+			"name": "command/fragments/update/accept",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fragments/update/LAST/accept",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fragments",
+						"update",
+						"LAST",
+						"accept"
+					]
+				},
+				"description": "Alters status of existing fragment in mempool to \\`accept\\`, but it now modifies the ledger. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id."
+			},
+			"response": []
+		},
+		{
+			"name": "command/fragments/update/pending",
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "API-Token",
+						"value": "RBj0OfHw5jT87A",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/control/command/fragments/update/LAST/pending",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"control",
+						"command",
+						"fragments",
+						"update",
+						"LAST",
+						"pending"
+					]
+				},
+				"description": "Alters status of existing fragment in mempool to \\`pending\\`. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id."
+			},
+			"response": []
+		}
+	]
+}

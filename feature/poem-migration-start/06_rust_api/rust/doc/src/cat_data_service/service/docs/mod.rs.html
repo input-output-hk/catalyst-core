@@ -25,7 +25,7 @@
 <a href="#25" id="25">25</a>
 <a href="#26" id="26">26</a>
 </pre><pre class="rust"><code><span class="kw">mod </span>stoplight_elements;
-<span class="kw">use </span>poem::{Route, get};
+<span class="kw">use </span>poem::{get, Route};
 
 <span class="kw">use </span><span class="kw">crate</span>::service::api::api;
 
@@ -39,16 +39,16 @@
     <span class="kw">let </span>openapi_explorer = api_service.openapi_explorer();
     <span class="kw">let </span>stoplight_ui = stoplight_elements::create_endpoint(<span class="kw-2">&amp;</span>spec);
 
-    Route::new().at(<span class="string">&quot;/&quot;</span>, get(stoplight_ui))
-    .nest(<span class="string">&quot;/swagger_ui&quot;</span>, swagger_ui)
-    .nest(<span class="string">&quot;/redoc&quot;</span>, redoc_ui)
-    .nest(<span class="string">&quot;/rapidoc&quot;</span>, rapidoc_ui)
-    .nest(<span class="string">&quot;/openapi_explorer&quot;</span>, openapi_explorer)
-    .at(
-        <span class="string">&quot;/cat-data-service.json&quot;</span>,
-        poem::endpoint::make_sync(<span class="kw">move </span>|<span class="kw">_</span>| spec.clone()),
-    )
-
+    Route::new()
+        .at(<span class="string">&quot;/&quot;</span>, get(stoplight_ui))
+        .nest(<span class="string">&quot;/swagger_ui&quot;</span>, swagger_ui)
+        .nest(<span class="string">&quot;/redoc&quot;</span>, redoc_ui)
+        .nest(<span class="string">&quot;/rapidoc&quot;</span>, rapidoc_ui)
+        .nest(<span class="string">&quot;/openapi_explorer&quot;</span>, openapi_explorer)
+        .at(
+            <span class="string">&quot;/cat-data-service.json&quot;</span>,
+            poem::endpoint::make_sync(<span class="kw">move </span>|<span class="kw">_</span>| spec.clone()),
+        )
 }
 </code></pre></div>
 </section></main></body></html>

@@ -37,24 +37,28 @@
 <a href="#37" id="37">37</a>
 <a href="#38" id="38">38</a>
 <a href="#39" id="39">39</a>
-</pre><pre class="rust"><code>
-<span class="kw">use </span>opentelemetry::sdk::{
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+</pre><pre class="rust"><code><span class="kw">use </span>opentelemetry::sdk::{
     export::metrics::aggregation,
     metrics::{
         controllers::{<span class="self">self</span>, BasicController},
         processors, selectors,
     },
 };
-<span class="kw">use </span>poem::{middleware::{CorsEndpoint, OpenTelemetryMetricsEndpoint}, Endpoint, Request};
+<span class="kw">use </span>poem::Route;
 <span class="kw">use </span>poem::{
-
-    Route,
+    middleware::{CorsEndpoint, OpenTelemetryMetricsEndpoint},
+    Endpoint, Request,
 };
-<span class="kw">use </span>poem_openapi::{OperationId};
-<span class="kw">use </span>std::{sync::Arc};
+<span class="kw">use </span>poem_openapi::OperationId;
+<span class="kw">use </span>std::sync::Arc;
 
 <span class="doccomment">/// Log all requests, with important tracing data.
-</span><span class="kw">pub async fn </span>log_requests(ep: Arc&lt;OpenTelemetryMetricsEndpoint&lt;CorsEndpoint&lt;Route&gt;&gt;&gt;, req: Request) {
+</span><span class="kw">pub async fn </span>log_requests(
+    ep: Arc&lt;OpenTelemetryMetricsEndpoint&lt;CorsEndpoint&lt;Route&gt;&gt;&gt;,
+    req: Request,
+) {
     <span class="kw">let </span>uri = req.uri().clone();
     <span class="kw">let </span>resp = ep.get_response(req).<span class="kw">await</span>;
 

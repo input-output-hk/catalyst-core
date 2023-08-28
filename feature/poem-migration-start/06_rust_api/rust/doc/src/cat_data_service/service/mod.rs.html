@@ -182,13 +182,13 @@
 <span class="kw">use </span>std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
 <span class="kw">use </span>tower_http::cors::{Any, CorsLayer};
 
+<span class="kw">mod </span>api;
+<span class="kw">mod </span>docs;
 <span class="kw">mod </span>health;
 <span class="kw">mod </span>poem_service;
-<span class="kw">mod </span>docs;
+<span class="kw">mod </span>utilities;
 <span class="kw">mod </span>v0;
 <span class="kw">mod </span>v1;
-<span class="kw">mod </span>api;
-<span class="kw">mod </span>utilities;
 
 <span class="attr">#[derive(thiserror::Error, Debug)]
 </span><span class="kw">pub enum </span>Error {

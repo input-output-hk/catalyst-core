@@ -42,17 +42,13 @@
 <a href="#42" id="42">42</a>
 <a href="#43" id="43">43</a>
 <a href="#44" id="44">44</a>
-<a href="#45" id="45">45</a>
-<a href="#46" id="46">46</a>
-<a href="#47" id="47">47</a>
-<a href="#48" id="48">48</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Poem Service for cat-data-service endpoints.
 
 </span><span class="kw">use </span><span class="kw">crate</span>::service::docs::docs;
 <span class="kw">use </span><span class="kw">crate</span>::service::Error;
 
-<span class="kw">use </span><span class="kw">crate</span>::service::utilities::metrics_tracing::{init_prometheus, log_requests};
 <span class="kw">use </span><span class="kw">crate</span>::service::api::mk_api;
+<span class="kw">use </span><span class="kw">crate</span>::service::utilities::metrics_tracing::{init_prometheus, log_requests};
 
 <span class="kw">use </span>poem::middleware::Cors;
 <span class="kw">use </span>poem::{
@@ -60,7 +56,6 @@
     EndpointExt, Route,
 };
 <span class="kw">use </span>std::net::SocketAddr;
-
 
 <span class="kw">pub async fn </span>run_service(
     addr: <span class="kw-2">&amp;</span>SocketAddr,
@@ -77,22 +72,19 @@
 
     <span class="kw">let </span>app = Route::new()
         .nest(<span class="string">&quot;/api&quot;</span>, api)
-        .nest(<span class="string">&quot;/docs/&quot;</span>,docs)
+        .nest(<span class="string">&quot;/docs/&quot;</span>, docs)
         .nest(
             <span class="string">&quot;/metrics&quot;</span>,
             PrometheusExporter::with_controller(prometheus_controller),
         )
         .with(Cors::new())
         .with(OpenTelemetryMetrics::new())
-        .around(|ep, req| <span class="kw">async move </span>{
-            <span class="prelude-val">Ok</span>(log_requests(ep, req).<span class="kw">await</span>)
-        });
+        .around(|ep, req| <span class="kw">async move </span>{ <span class="prelude-val">Ok</span>(log_requests(ep, req).<span class="kw">await</span>) });
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)
         .<span class="kw">await
         </span>.map_err(Error::IoError)
 }
-
 </code></pre></div>
 </section></main></body></html>

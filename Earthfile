@@ -147,4 +147,4 @@ local:
     BUILD ./services/voting-node+docker
 
     RUN mkdir -p ./local
-    COPY ./containers/dev-local+build/docker-compose.yml ./local/
+    COPY --dir ./containers/dev-local+build/autogen ./local/

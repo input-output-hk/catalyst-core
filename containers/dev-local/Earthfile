@@ -2,5 +2,11 @@ VERSION 0.7
 
 build:
     FROM scratch
+    COPY Readme-autogen.md Readme.md
     COPY docker-compose.yml .
-    SAVE ARTIFACT docker-compose.yml
+    COPY .env .
+    COPY --dir config .
+    SAVE ARTIFACT config /autogen/config
+    SAVE ARTIFACT docker-compose.yml /autogen/
+    SAVE ARTIFACT .env /autogen/
+    SAVE ARTIFACT Readme.md /autogen/

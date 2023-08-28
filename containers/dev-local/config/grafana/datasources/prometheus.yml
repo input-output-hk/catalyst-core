@@ -1,0 +1,9 @@
+apiVersion: 1
+
+datasources:
+- name: Prometheus
+  type: prometheus
+  url: http://prometheus:3001
+  isDefault: true
+  access: proxy
+  editable: true

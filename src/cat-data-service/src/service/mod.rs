@@ -14,9 +14,11 @@ use tower_http::cors::{Any, CorsLayer};
 
 mod health;
 mod poem_service;
-mod ui;
+mod docs;
 mod v0;
 mod v1;
+mod api;
+mod utilities;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {

@@ -41,6 +41,8 @@ poem-openapi = { version = "3.0.3", features = ["openapi-explorer", "rapidoc", "
 opentelemetry-prometheus = { version = "0.13"}
 opentelemetry = {  version = "0.19", features = ["metrics"]}
 
+once_cell = { workspace = true }
+
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }
 

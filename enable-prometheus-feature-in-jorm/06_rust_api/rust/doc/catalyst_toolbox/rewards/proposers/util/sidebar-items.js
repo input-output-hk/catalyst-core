@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["build_path_for_challenge","sanitize_name"],"static":["REMOVE_REGEX","REPLACE_UNDERSCORE_REGEX"]};

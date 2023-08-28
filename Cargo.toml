@@ -117,3 +117,6 @@ reqwest = { version = "0.11", default-features = false, features = ["blocking", 
 warp-reverse-proxy = { version = "0.3", default-features = false, features = ["rustls-tls"] }
 
 once_cell = "1"
+
+# Use this for Blake2
+cryptoxide = "0.4.4"

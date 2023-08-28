@@ -1,3 +1,5 @@
+//! Main entrypoint to the service
+//!
 use crate::state::State;
 use axum::{
     extract::MatchedPath,
@@ -66,6 +68,22 @@ async fn run_service(app: Router, addr: &SocketAddr, name: &str) -> Result<(), E
     Ok(())
 }
 
+/// # Run all web services.
+///
+/// This will currently run both a Axum based Web API, and a Poem based API.
+/// This is only for migration until all endpoints are provided by the Poem service.
+///
+/// ## Arguments
+///
+/// `service_addr`: &`SocketAddr` - the address to listen on
+/// `metrics_addr`: &Option<SocketAddr> - the address to listen on for metrics
+/// `state`: Arc<State> - the state
+///
+/// ## Errors
+///
+/// `Error::CannotRunService` - cannot run the service
+/// `Error::EventDbError` - cannot connect to the event db
+/// `Error::IoError` - An IO error has occurred.
 pub async fn run(
     service_addr: &SocketAddr,
     metrics_addr: &Option<SocketAddr>,
@@ -74,9 +92,7 @@ pub async fn run(
     let cors = cors_layer();
 
     // Create service addresses to be used during poem migration.
-    // Metrics address does not change.
     // Service address is same as official address but +1 to the port.
-    let poem_metrics = metrics_addr.clone();
     let mut poem_service = service_addr.clone();
     poem_service.set_port(poem_service.port() + 1);
 
@@ -89,14 +105,14 @@ pub async fn run(
         tokio::try_join!(
             run_service(service_app, service_addr, "service"),
             run_service(metrics_app, metrics_addr, "metrics"),
-            poem_service::run_service(&poem_service, &poem_metrics),
+            poem_service::run_service(&poem_service),
         )?;
     } else {
         let service_app = app(state).layer(cors);
 
         tokio::try_join!(
             run_service(service_app, service_addr, "service"),
-            poem_service::run_service(&poem_service, &poem_metrics),
+            poem_service::run_service(&poem_service),
         )?;
     }
     Ok(())

@@ -1,4 +1,7 @@
-use once_cell::sync::OnceCell;
+//! Catalyst Data Service API Definition
+//!
+//! This defines all endpoints for the Catalyst Data Service API.
+//! It however does NOT contain any processing for them, that is defined elsewhere.
 use poem::{
     Route,
 };
@@ -21,14 +24,10 @@ impl Api {
     }
 }
 
-pub(crate) fn api() -> &'static OpenApiService<Api, ()> {
-    static INSTANCE: OnceCell<OpenApiService<Api, ()>> = OnceCell::new();
-    INSTANCE.get_or_init(|| OpenApiService::new(Api, "Hello World", "1.0"))
-}
 
-pub fn mk_api(addr: &SocketAddr) -> Route {
+pub(crate) fn mk_api(addr: &SocketAddr) -> OpenApiService<Api, ()> {
+    // This should be the actual hostname of the service.  But in the absence of that, the IP address/port will do.
     let server_host = format!("http://{}:{}/api", addr.ip(), addr.port());
-    let api_service = OpenApiService::new(Api, "Hello World", "1.0").server(server_host);
 
-    Route::new().at("/", api_service)
+    OpenApiService::new(Api, "Hello World 2", "1.0").server(server_host)
 }

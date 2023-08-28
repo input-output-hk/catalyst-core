@@ -1,10 +1,10 @@
 mod stoplight_elements;
 use poem::{get, Route};
+use poem_openapi::{OpenApi, OpenApiService, Webhook};
 
-use crate::service::api::api;
-
-pub fn docs() -> Route {
-    let api_service = api();
+pub fn docs<T: OpenApi + 'static, W: Webhook + 'static>(
+    api_service: &OpenApiService<T, W>,
+) -> Route {
     let spec = api_service.spec();
 
     let swagger_ui = api_service.swagger_ui();

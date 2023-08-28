@@ -1,44 +1,47 @@
 //! Poem Service for cat-data-service endpoints.
 
+use super::api::api;
 use crate::service::docs::docs;
-use crate::service::Error;
-
-use crate::service::api::mk_api;
 use crate::service::utilities::metrics_tracing::{init_prometheus, log_requests};
-
+use crate::service::Error;
 use poem::middleware::Cors;
-use poem::{
-    endpoint::PrometheusExporter, listener::TcpListener, middleware::OpenTelemetryMetrics,
-    EndpointExt, Route,
-};
+use poem::Endpoint;
+use poem::{endpoint::PrometheusExporter, listener::TcpListener, EndpointExt, Route};
 use std::net::SocketAddr;
 
-pub async fn run_service(
-    addr: &SocketAddr,
-    metrics_addr: &Option<SocketAddr>,
-) -> Result<(), Error> {
-    tracing::info!("Starting Poem Service ...");
-    tracing::info!("Listening on {addr}");
-    tracing::info!("Metrics on {metrics_addr:?}");
+pub fn cors_layer() -> Cors {
+    Cors::new()
+}
 
-    let api = mk_api(&addr);
-    let docs = docs();
+pub fn app(addr: &SocketAddr) -> impl EndpointExt {
+    let api = api(addr);
+    let docs = docs(&api);
 
+    Route::new()
+        .nest("/api", api)
+        .nest("/docs", docs)
+        .around(|endp, req| async move { Ok(log_requests(endp, req).await) })
+}
+
+pub fn metrics_app() -> impl Endpoint {
     let prometheus_controller = init_prometheus();
 
-    let app = Route::new()
-        .nest("/api", api)
-        .nest("/docs/", docs)
-        .nest(
-            "/metrics",
-            PrometheusExporter::with_controller(prometheus_controller),
-        )
-        .with(Cors::new())
-        .with(OpenTelemetryMetrics::new())
-        .around(|ep, req| async move { Ok(log_requests(ep, req).await) });
+    Route::new().nest(
+        "/metrics",
+        PrometheusExporter::with_controller(prometheus_controller),
+    )
+}
+
+pub async fn run_service<E: Endpoint + 'static>(
+    app: E,
+    addr: &SocketAddr,
+    name: &str,
+) -> Result<(), Error> {
+    tracing::info!("Starting {name}...");
+    tracing::info!("Listening on {addr}");
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)
         .await
-        .map_err(Error::IoError)
+        .map_err(Error::Io)
 }

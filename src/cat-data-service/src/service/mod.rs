@@ -8,6 +8,7 @@ use axum::{
     Json, Router,
 };
 use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
+use poem::{middleware::OpenTelemetryMetrics, EndpointExt, IntoEndpoint};
 use serde::Serialize;
 use std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
 use tower_http::cors::{Any, CorsLayer};
@@ -25,9 +26,9 @@ pub enum Error {
     #[error("Cannot run service, error: {0}")]
     CannotRunService(String),
     #[error(transparent)]
-    EventDbError(#[from] event_db::error::Error),
+    EventDb(#[from] event_db::error::Error),
     #[error(transparent)]
-    IoError(#[from] std::io::Error),
+    Io(#[from] std::io::Error),
 }
 
 #[derive(Serialize, Debug)]
@@ -74,11 +75,10 @@ pub async fn run(
     let cors = cors_layer();
 
     // Create service addresses to be used during poem migration.
-    // Metrics address does not change.
     // Service address is same as official address but +1 to the port.
-    let poem_metrics = metrics_addr.clone();
-    let mut poem_service = service_addr.clone();
-    poem_service.set_port(poem_service.port() + 1);
+    let mut poem_service_addr = *service_addr;
+    poem_service_addr.set_port(poem_service_addr.port() + 1);
+    let poem_app = poem_service::app(&poem_service_addr).with(poem_service::cors_layer());
 
     if let Some(metrics_addr) = metrics_addr {
         let service_app = app(state)
@@ -86,17 +86,33 @@ pub async fn run(
             .route_layer(middleware::from_fn(track_metrics));
         let metrics_app = metrics_app().layer(cors);
 
+        // Create metrics service addresses to be used during poem migration.
+        // Metrics service address is same as official metrics address but +1 to the port.
+        let mut poem_metrics_addr = *metrics_addr;
+        poem_metrics_addr.set_port(poem_metrics_addr.port() + 1);
+        let poem_metrics_app = poem_service::metrics_app().with(poem_service::cors_layer());
+        let peom_service_app = poem_app.with(OpenTelemetryMetrics::new());
+
         tokio::try_join!(
-            run_service(service_app, service_addr, "service"),
-            run_service(metrics_app, metrics_addr, "metrics"),
-            poem_service::run_service(&poem_service, &poem_metrics),
+            run_service(service_app, service_addr, "axum service"),
+            run_service(metrics_app, metrics_addr, "axum metrics"),
+            poem_service::run_service(
+                peom_service_app.into_endpoint(),
+                &poem_service_addr,
+                "poem service"
+            ),
+            poem_service::run_service(
+                poem_metrics_app.into_endpoint(),
+                &poem_metrics_addr,
+                "poem metrics"
+            ),
         )?;
     } else {
         let service_app = app(state).layer(cors);
 
         tokio::try_join!(
-            run_service(service_app, service_addr, "service"),
-            poem_service::run_service(&poem_service, &poem_metrics),
+            run_service(service_app, service_addr, "axum service"),
+            poem_service::run_service(poem_app.into_endpoint(), &poem_service_addr, "poem service"),
         )?;
     }
     Ok(())
@@ -105,7 +121,7 @@ pub async fn run(
 fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
     match res {
         Ok(res) => (StatusCode::OK, Json(res)).into_response(),
-        Err(Error::EventDbError(event_db::error::Error::NotFound(error))) => {
+        Err(Error::EventDb(event_db::error::Error::NotFound(error))) => {
             (StatusCode::NOT_FOUND, Json(ErrorMessage { error })).into_response()
         }
         Err(error) => (

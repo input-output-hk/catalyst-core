@@ -5,27 +5,21 @@ use opentelemetry::sdk::{
         processors, selectors,
     },
 };
-use poem::Route;
-use poem::{
-    middleware::{CorsEndpoint, OpenTelemetryMetricsEndpoint},
-    Endpoint, Request,
-};
+use poem::{Endpoint, Request, Response};
 use poem_openapi::OperationId;
 use std::sync::Arc;
 
 /// Log all requests, with important tracing data.
-pub async fn log_requests(
-    ep: Arc<OpenTelemetryMetricsEndpoint<CorsEndpoint<Route>>>,
-    req: Request,
-) {
+pub async fn log_requests<E: Endpoint + 'static>(ep: Arc<E>, req: Request) -> Response {
     let uri = req.uri().clone();
     let resp = ep.get_response(req).await;
 
     if let Some(operation_id) = resp.data::<OperationId>() {
-        println!("[{}]{} {}", operation_id, uri, resp.status());
+        tracing::debug!("[{}]{}, {}", operation_id, uri, resp.status());
     } else {
-        println!("{} {}", uri, resp.status());
+        tracing::debug!("{}, {}", uri, resp.status());
     }
+    resp
 }
 
 /// Initialize Prometheus metrics.

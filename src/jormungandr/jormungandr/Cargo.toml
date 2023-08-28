@@ -33,9 +33,9 @@ jormungandr-lib = { workspace = true }
 keynesis = "1.1"
 lazy_static = "1.4"
 linked-hash-map = "0.5"
-opentelemetry.workspace = true
-opentelemetry-otlp.workspace = true
-opentelemetry-semantic-conventions.workspace = true
+opentelemetry  = { workspace = true }
+opentelemetry-otlp  = { workspace = true }
+opentelemetry-semantic-conventions  = { workspace = true }
 poldercast = "1.2"
 multiaddr = { package = "parity-multiaddr", version = "0.11" }
 rand = "0.8"

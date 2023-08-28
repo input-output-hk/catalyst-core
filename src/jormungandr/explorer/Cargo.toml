@@ -42,11 +42,10 @@ tracing-futures.workspace = true
 tracing-subscriber = { workspace = true, features = ["fmt", "json"] }
 tracing-appender.workspace = true
 tracing-opentelemetry.workspace = true
-opentelemetry.workspace = true
-opentelemetry-otlp.workspace = true
-opentelemetry-semantic-conventions.workspace = true
 
-
+opentelemetry = { workspace = true }
+opentelemetry-otlp  = { workspace = true }
+opentelemetry-semantic-conventions  = { workspace = true }
 
 cardano-legacy-address = { path = "../../chain-libs/cardano-legacy-address" }
 chain-addr = { path = "../../chain-libs/chain-addr" }

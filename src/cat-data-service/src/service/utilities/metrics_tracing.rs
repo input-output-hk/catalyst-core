@@ -1,4 +1,3 @@
-
 use opentelemetry::sdk::{
     export::metrics::aggregation,
     metrics::{
@@ -6,16 +5,19 @@ use opentelemetry::sdk::{
         processors, selectors,
     },
 };
-use poem::{middleware::{CorsEndpoint, OpenTelemetryMetricsEndpoint}, Endpoint, Request};
+use poem::Route;
 use poem::{
-
-    Route,
+    middleware::{CorsEndpoint, OpenTelemetryMetricsEndpoint},
+    Endpoint, Request,
 };
-use poem_openapi::{OperationId};
-use std::{sync::Arc};
+use poem_openapi::OperationId;
+use std::sync::Arc;
 
 /// Log all requests, with important tracing data.
-pub async fn log_requests(ep: Arc<OpenTelemetryMetricsEndpoint<CorsEndpoint<Route>>>, req: Request) {
+pub async fn log_requests(
+    ep: Arc<OpenTelemetryMetricsEndpoint<CorsEndpoint<Route>>>,
+    req: Request,
+) {
     let uri = req.uri().clone();
     let resp = ep.get_response(req).await;
 

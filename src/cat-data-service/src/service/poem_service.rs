@@ -3,8 +3,8 @@
 use crate::service::docs::docs;
 use crate::service::Error;
 
-use crate::service::utilities::metrics_tracing::{init_prometheus, log_requests};
 use crate::service::api::mk_api;
+use crate::service::utilities::metrics_tracing::{init_prometheus, log_requests};
 
 use poem::middleware::Cors;
 use poem::{
@@ -12,7 +12,6 @@ use poem::{
     EndpointExt, Route,
 };
 use std::net::SocketAddr;
-
 
 pub async fn run_service(
     addr: &SocketAddr,
@@ -29,20 +28,17 @@ pub async fn run_service(
 
     let app = Route::new()
         .nest("/api", api)
-        .nest("/docs/",docs)
+        .nest("/docs/", docs)
         .nest(
             "/metrics",
             PrometheusExporter::with_controller(prometheus_controller),
         )
         .with(Cors::new())
         .with(OpenTelemetryMetrics::new())
-        .around(|ep, req| async move {
-            Ok(log_requests(ep, req).await)
-        });
+        .around(|ep, req| async move { Ok(log_requests(ep, req).await) });
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)
         .await
         .map_err(Error::IoError)
 }
-

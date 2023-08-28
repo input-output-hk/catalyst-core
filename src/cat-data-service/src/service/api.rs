@@ -1,7 +1,5 @@
 use once_cell::sync::OnceCell;
-use poem::{
-    Route,
-};
+use poem::Route;
 use poem_openapi::{param::Query, payload::PlainText, OpenApi, OpenApiService};
 use std::net::SocketAddr;
 

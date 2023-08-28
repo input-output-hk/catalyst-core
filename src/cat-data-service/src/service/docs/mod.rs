@@ -1,5 +1,5 @@
 mod stoplight_elements;
-use poem::{Route, get};
+use poem::{get, Route};
 
 use crate::service::api::api;
 
@@ -13,14 +13,14 @@ pub fn docs() -> Route {
     let openapi_explorer = api_service.openapi_explorer();
     let stoplight_ui = stoplight_elements::create_endpoint(&spec);
 
-    Route::new().at("/", get(stoplight_ui))
-    .nest("/swagger_ui", swagger_ui)
-    .nest("/redoc", redoc_ui)
-    .nest("/rapidoc", rapidoc_ui)
-    .nest("/openapi_explorer", openapi_explorer)
-    .at(
-        "/cat-data-service.json",
-        poem::endpoint::make_sync(move |_| spec.clone()),
-    )
-
+    Route::new()
+        .at("/", get(stoplight_ui))
+        .nest("/swagger_ui", swagger_ui)
+        .nest("/redoc", redoc_ui)
+        .nest("/rapidoc", rapidoc_ui)
+        .nest("/openapi_explorer", openapi_explorer)
+        .at(
+            "/cat-data-service.json",
+            poem::endpoint::make_sync(move |_| spec.clone()),
+        )
 }

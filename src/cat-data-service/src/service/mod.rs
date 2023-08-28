@@ -12,13 +12,13 @@ use serde::Serialize;
 use std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
 use tower_http::cors::{Any, CorsLayer};
 
+mod api;
+mod docs;
 mod health;
 mod poem_service;
-mod docs;
+mod utilities;
 mod v0;
 mod v1;
-mod api;
-mod utilities;
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {

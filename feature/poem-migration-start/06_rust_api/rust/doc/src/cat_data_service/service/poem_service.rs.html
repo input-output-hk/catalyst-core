@@ -46,90 +46,21 @@
 <a href="#46" id="46">46</a>
 <a href="#47" id="47">47</a>
 <a href="#48" id="48">48</a>
-<a href="#49" id="49">49</a>
-<a href="#50" id="50">50</a>
-<a href="#51" id="51">51</a>
-<a href="#52" id="52">52</a>
-<a href="#53" id="53">53</a>
-<a href="#54" id="54">54</a>
-<a href="#55" id="55">55</a>
-<a href="#56" id="56">56</a>
-<a href="#57" id="57">57</a>
-<a href="#58" id="58">58</a>
-<a href="#59" id="59">59</a>
-<a href="#60" id="60">60</a>
-<a href="#61" id="61">61</a>
-<a href="#62" id="62">62</a>
-<a href="#63" id="63">63</a>
-<a href="#64" id="64">64</a>
-<a href="#65" id="65">65</a>
-<a href="#66" id="66">66</a>
-<a href="#67" id="67">67</a>
-<a href="#68" id="68">68</a>
-<a href="#69" id="69">69</a>
-<a href="#70" id="70">70</a>
-<a href="#71" id="71">71</a>
-<a href="#72" id="72">72</a>
-<a href="#73" id="73">73</a>
-<a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
-<a href="#79" id="79">79</a>
-<a href="#80" id="80">80</a>
-<a href="#81" id="81">81</a>
-<a href="#82" id="82">82</a>
-<a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Poem Service for cat-data-service endpoints.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::service::ui::stoplight_elements;
+</span><span class="kw">use </span><span class="kw">crate</span>::service::docs::docs;
 <span class="kw">use </span><span class="kw">crate</span>::service::Error;
 
-<span class="kw">use </span>opentelemetry::sdk::{
-    export::metrics::aggregation,
-    metrics::{
-        controllers::{<span class="self">self</span>, BasicController},
-        processors, selectors,
-    },
-};
+<span class="kw">use </span><span class="kw">crate</span>::service::utilities::metrics_tracing::{init_prometheus, log_requests};
+<span class="kw">use </span><span class="kw">crate</span>::service::api::mk_api;
+
 <span class="kw">use </span>poem::middleware::Cors;
 <span class="kw">use </span>poem::{
     endpoint::PrometheusExporter, listener::TcpListener, middleware::OpenTelemetryMetrics,
     EndpointExt, Route,
 };
-<span class="kw">use </span>poem_openapi::{param::Query, payload::PlainText, OpenApi, OpenApiService};
 <span class="kw">use </span>std::net::SocketAddr;
 
-<span class="kw">struct </span>Api;
-
-<span class="attr">#[OpenApi]
-</span><span class="kw">impl </span>Api {
-    <span class="attr">#[oai(path = <span class="string">&quot;/hello&quot;</span>, method = <span class="string">&quot;get&quot;</span>)]
-    </span><span class="kw">async fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>, name: Query&lt;<span class="prelude-ty">Option</span>&lt;String&gt;&gt;) -&gt; PlainText&lt;String&gt; {
-        <span class="kw">match </span>name.<span class="number">0 </span>{
-            <span class="prelude-val">Some</span>(name) =&gt; PlainText(<span class="macro">format!</span>(<span class="string">&quot;hello, {}!&quot;</span>, name)),
-            <span class="prelude-val">None </span>=&gt; PlainText(<span class="string">&quot;hello!&quot;</span>.to_string()),
-        }
-    }
-}
-
-<span class="kw">fn </span>init_prometheus() -&gt; BasicController {
-    controllers::basic(processors::factory(
-        selectors::simple::histogram([
-            <span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">5.0</span>, <span class="number">10.0</span>, <span class="number">20.0</span>, <span class="number">50.0</span>, <span class="number">70.0</span>, <span class="number">100.0</span>, <span class="number">200.0</span>, <span class="number">300.0</span>, <span class="number">400.0</span>, <span class="number">500.0</span>, <span class="number">700.0</span>,
-            <span class="number">1000.0</span>, <span class="number">1500.0</span>, <span class="number">3000.0</span>,
-        ]),
-        aggregation::cumulative_temporality_selector(),
-    ))
-    .build()
-}
 
 <span class="kw">pub async fn </span>run_service(
     addr: <span class="kw-2">&amp;</span>SocketAddr,
@@ -139,42 +70,29 @@
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Listening on {addr}&quot;</span>);
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Metrics on {metrics_addr:?}&quot;</span>);
 
-    <span class="kw">let </span>server_host = <span class="macro">format!</span>(<span class="string">&quot;http://{}:{}/api&quot;</span>, addr.ip(), addr.port());
-
-    <span class="kw">let </span>api_service = OpenApiService::new(Api, <span class="string">&quot;Hello World&quot;</span>, <span class="string">&quot;1.0&quot;</span>).server(server_host);
-
-    <span class="kw">let </span>spec = api_service.spec();
-
-    <span class="kw">let </span>swagger_ui = api_service.swagger_ui();
-    <span class="kw">let </span>rapidoc_ui = api_service.rapidoc();
-    <span class="kw">let </span>redoc_ui = api_service.redoc();
-    <span class="kw">let </span>openapi_explorer = api_service.openapi_explorer();
-    <span class="kw">let </span>stoplight_ui = stoplight_elements::create_endpoint(<span class="kw-2">&amp;</span>spec);
+    <span class="kw">let </span>api = mk_api(<span class="kw-2">&amp;</span>addr);
+    <span class="kw">let </span>docs = docs();
 
     <span class="kw">let </span>prometheus_controller = init_prometheus();
 
     <span class="kw">let </span>app = Route::new()
-        .nest(<span class="string">&quot;/api&quot;</span>, api_service)
-        .nest(<span class="string">&quot;/docs/&quot;</span>, stoplight_ui)
-        .nest(<span class="string">&quot;/docs/swagger_ui&quot;</span>, swagger_ui)
-        .nest(<span class="string">&quot;/docs/redoc&quot;</span>, redoc_ui)
-        .nest(<span class="string">&quot;/docs/rapidoc&quot;</span>, rapidoc_ui)
-        .nest(<span class="string">&quot;/docs/openapi_explorer&quot;</span>, openapi_explorer)
-        .at(
-            <span class="string">&quot;/docs/cat-data-service.json&quot;</span>,
-            poem::endpoint::make_sync(<span class="kw">move </span>|<span class="kw">_</span>| spec.clone()),
-        )
+        .nest(<span class="string">&quot;/api&quot;</span>, api)
+        .nest(<span class="string">&quot;/docs/&quot;</span>,docs)
         .nest(
-            <span class="string">&quot;/prometheus_metrics&quot;</span>,
+            <span class="string">&quot;/metrics&quot;</span>,
             PrometheusExporter::with_controller(prometheus_controller),
         )
         .with(Cors::new())
-        .with(OpenTelemetryMetrics::new());
+        .with(OpenTelemetryMetrics::new())
+        .around(|ep, req| <span class="kw">async move </span>{
+            <span class="prelude-val">Ok</span>(log_requests(ep, req).<span class="kw">await</span>)
+        });
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)
         .<span class="kw">await
         </span>.map_err(Error::IoError)
 }
+
 </code></pre></div>
 </section></main></body></html>

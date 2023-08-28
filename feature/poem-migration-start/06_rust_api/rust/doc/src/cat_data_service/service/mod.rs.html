@@ -166,6 +166,8 @@
 <a href="#166" id="166">166</a>
 <a href="#167" id="167">167</a>
 <a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::{
     extract::MatchedPath,
@@ -182,9 +184,11 @@
 
 <span class="kw">mod </span>health;
 <span class="kw">mod </span>poem_service;
-<span class="kw">mod </span>ui;
+<span class="kw">mod </span>docs;
 <span class="kw">mod </span>v0;
 <span class="kw">mod </span>v1;
+<span class="kw">mod </span>api;
+<span class="kw">mod </span>utilities;
 
 <span class="attr">#[derive(thiserror::Error, Debug)]
 </span><span class="kw">pub enum </span>Error {

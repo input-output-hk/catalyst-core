@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["api","mk_api"],"opaque":[""],"static":["INSTANCE"],"struct":["Api"]};

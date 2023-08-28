@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["_DERIVE_core_fmt_Debug_FOR_AdversaryFragmentSenderError"],"enum":["AdversaryFragmentSenderError"],"opaque":[""],"struct":["AdversaryFragmentSender","AdversaryFragmentSenderSetup","FaultyTransactionBuilder"]};

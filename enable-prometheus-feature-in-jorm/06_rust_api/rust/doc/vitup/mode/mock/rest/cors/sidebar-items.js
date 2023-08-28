@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["cors_filter","default_headers"]};

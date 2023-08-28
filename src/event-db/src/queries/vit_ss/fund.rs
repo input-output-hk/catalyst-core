@@ -379,29 +379,29 @@ mod tests {
             fund,
             FundWithNext {
                 fund: Fund {
-                    id: 10,
-                    fund_name: "Fund 10".to_string(),
-                    fund_goal: "Catalyst Dev Environment - Fund 10".to_string(),
-                    voting_power_threshold: 450000000,
+                    id: 4,
+                    fund_name: "Test Fund 4".to_string(),
+                    fund_goal: "Test Fund 4 description".to_string(),
+                    voting_power_threshold: 1,
                     fund_start_time: DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2023, 6, 16).unwrap(),
-                            NaiveTime::from_hms_opt(19, 56, 0).unwrap()
+                            NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
                     ),
                     fund_end_time: DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2023, 9, 18).unwrap(),
-                            NaiveTime::from_hms_opt(0, 0, 0).unwrap()
+                            NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
                     ),
                     next_fund_start_time: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
                     registration_snapshot_time: DateTime::<Utc>::from_utc(
                         NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2023, 8, 18).unwrap(),
-                            NaiveTime::from_hms_opt(21, 0, 0).unwrap()
+                            NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                         ),
                         Utc
                     ),
@@ -409,86 +409,230 @@ mod tests {
                         NaiveDateTime::default(),
                         Utc
                     ),
-                    chain_vote_plans: vec![],
-                    challenges: vec![],
+                    chain_vote_plans: vec![
+                        Voteplan {
+                            id: 5,
+                            chain_voteplan_id: "1".to_string(),
+                            chain_vote_start_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_vote_end_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_committee_end_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2024, 7, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_voteplan_payload: "public".to_string(),
+                            chain_vote_encryption_key: "".to_string(),
+                            fund_id: 4,
+                            token_identifier: "voting token 3".to_string(),
+                        },
+                        Voteplan {
+                            id: 6,
+                            chain_voteplan_id: "2".to_string(),
+                            chain_vote_start_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_vote_end_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_committee_end_time: DateTime::<Utc>::from_utc(
+                                NaiveDateTime::new(
+                                    NaiveDate::from_ymd_opt(2024, 7, 1).unwrap(),
+                                    NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                                ),
+                                Utc
+                            ),
+                            chain_voteplan_payload: "public".to_string(),
+                            chain_vote_encryption_key: "".to_string(),
+                            fund_id: 4,
+                            token_identifier: "".to_string(),
+                        }
+                    ],
+                    challenges: vec![
+                        Challenge {
+                            internal_id: 3,
+                            id: 3,
+                            challenge_type: "catalyst-simple".to_string(),
+                            title: "title 3".to_string(),
+                            description: "description 3".to_string(),
+                            rewards_total: 100,
+                            proposers_rewards: 100,
+                            challenge_url: "objective 3 url".to_string(),
+                            fund_id: 4,
+                            highlights: Some(ChallengeHighlights {
+                                sponsor: "objective 3 sponsor".to_string()
+                            }),
+                        },
+                        Challenge {
+                            internal_id: 4,
+                            id: 4,
+                            challenge_type: "catalyst-native".to_string(),
+                            title: "title 4".to_string(),
+                            description: "description 4".to_string(),
+                            rewards_total: 0,
+                            proposers_rewards: 0,
+                            challenge_url: "".to_string(),
+                            fund_id: 4,
+                            highlights: None,
+                        }
+                    ],
                     stage_dates: FundStageDates {
                         insight_sharing_start: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 6, 22).unwrap(),
-                                NaiveTime::from_hms_opt(0, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                         proposal_submission_start: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 6, 22).unwrap(),
-                                NaiveTime::from_hms_opt(0, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                         refine_proposals_start: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 6, 22).unwrap(),
-                                NaiveTime::from_hms_opt(0, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                         finalize_proposals_start: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 7, 13).unwrap(),
-                                NaiveTime::from_hms_opt(0, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                         proposal_assessment_start: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 7, 20).unwrap(),
-                                NaiveTime::from_hms_opt(0, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                         assessment_qa_start: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 8, 10).unwrap(),
-                                NaiveTime::from_hms_opt(0, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2022, 3, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                         snapshot_start: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 8, 23).unwrap(),
-                                NaiveTime::from_hms_opt(22, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2022, 3, 31).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                         voting_start: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 8, 31).unwrap(),
-                                NaiveTime::from_hms_opt(11, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2022, 5, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                         voting_end: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 9, 14).unwrap(),
-                                NaiveTime::from_hms_opt(11, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2024, 6, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                         tallying_end: DateTime::<Utc>::from_utc(
                             NaiveDateTime::new(
-                                NaiveDate::from_ymd_opt(2023, 9, 18).unwrap(),
-                                NaiveTime::from_hms_opt(11, 0, 0).unwrap()
+                                NaiveDate::from_ymd_opt(2024, 7, 1).unwrap(),
+                                NaiveTime::from_hms_opt(12, 0, 0).unwrap()
                             ),
                             Utc
                         ),
                     },
-                    goals: vec![],
-                    groups: vec![],
+                    goals: vec![
+                        Goal {
+                            id: 13,
+                            goal_name: "goal 13".to_string(),
+                            fund_id: 4
+                        },
+                        Goal {
+                            id: 14,
+                            goal_name: "goal 14".to_string(),
+                            fund_id: 4
+                        },
+                        Goal {
+                            id: 15,
+                            goal_name: "goal 15".to_string(),
+                            fund_id: 4
+                        },
+                        Goal {
+                            id: 16,
+                            goal_name: "goal 16".to_string(),
+                            fund_id: 4
+                        }
+                    ],
+                    groups: vec![Group {
+                        group_id: "direct".to_string(),
+                        token_identifier: "voting token 3".to_string(),
+                        fund_id: 4,
+                    },],
                     survey_url: "".to_string(),
                     results_url: "".to_string(),
                 },
-                next: None,
+                next: Some(FundNextInfo {
+                    id: 5,
+                    fund_name: "Test Fund 5".to_string(),
+                    stage_dates: FundStageDates {
+                        insight_sharing_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        proposal_submission_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        refine_proposals_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        finalize_proposals_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        proposal_assessment_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        assessment_qa_start: DateTime::<Utc>::from_utc(
+                            NaiveDateTime::default(),
+                            Utc
+                        ),
+                        snapshot_start: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
+                        voting_start: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
+                        voting_end: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
+                        tallying_end: DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc),
+                    },
+                })
             }
         )
     }

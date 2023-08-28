@@ -100,11 +100,11 @@ mod tests {
                 "total": 6,
                 "results": [
                     {
-                        "id": 10,
-                        "name": "Fund 10",
-                        "starts": "2023-06-16T19:56:00+00:00",
-                        "ends": "2023-09-18T00:00:00+00:00",
-                        "final": false
+                        "id": 0,
+                        "name": "Test Fund",
+                        "starts": "1970-01-01T00:00:00+00:00",
+                        "ends": "1970-01-01T00:00:00+00:00",
+                        "final": true
                     },
                     {
                         "id": 1,
@@ -236,11 +236,11 @@ mod tests {
                         "final": true
                     },
                     {
-                        "id": 10,
-                        "name": "Fund 10",
-                        "starts": "2023-06-16T19:56:00+00:00",
-                        "ends": "2023-09-18T00:00:00+00:00",
-                        "final": false
+                        "id": 0,
+                        "name": "Test Fund",
+                        "starts": "1970-01-01T00:00:00+00:00",
+                        "ends": "1970-01-01T00:00:00+00:00",
+                        "final": true
                     }
                 ]
             }),
@@ -342,11 +342,11 @@ mod tests {
                             "final": true
                         },
                         {
-                            "id": 10,
-                            "name": "Fund 10",
-                            "starts": "2023-06-16T19:56:00+00:00",
-                            "ends": "2023-09-18T00:00:00+00:00",
-                            "final": false
+                            "id": 0,
+                            "name": "Test Fund",
+                            "starts": "1970-01-01T00:00:00+00:00",
+                            "ends": "1970-01-01T00:00:00+00:00",
+                            "final": true
                         },
                     ]
                 }

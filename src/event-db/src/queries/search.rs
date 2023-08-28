@@ -296,24 +296,12 @@ mod tests {
             query_result.results,
             Some(ValueResults::Events(vec![
                 EventSummary {
-                    id: EventId(10),
-                    name: "Fund 10".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2023, 6, 16).unwrap(),
-                            NaiveTime::from_hms_opt(19, 56, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    ends: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2023, 9, 18).unwrap(),
-                            NaiveTime::from_hms_opt(0, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
+                    id: EventId(0),
+                    name: "Test Fund".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
+                    ends: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
                     reg_checked: None,
-                    is_final: false,
+                    is_final: true,
                 },
                 EventSummary {
                     id: EventId(1),
@@ -557,24 +545,12 @@ mod tests {
                     is_final: true,
                 },
                 EventSummary {
-                    id: EventId(10),
-                    name: "Fund 10".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2023, 6, 16).unwrap(),
-                            NaiveTime::from_hms_opt(19, 56, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    ends: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2023, 9, 18).unwrap(),
-                            NaiveTime::from_hms_opt(0, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
+                    id: EventId(0),
+                    name: "Test Fund".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
+                    ends: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
                     reg_checked: None,
-                    is_final: false,
+                    is_final: true,
                 }
             ]))
         );
@@ -705,24 +681,12 @@ mod tests {
                     is_final: true,
                 },
                 EventSummary {
-                    id: EventId(10),
-                    name: "Fund 10".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2023, 6, 16).unwrap(),
-                            NaiveTime::from_hms_opt(19, 56, 0).unwrap()
-                        ),
-                        Utc
-                    )),
-                    ends: Some(DateTime::<Utc>::from_utc(
-                        NaiveDateTime::new(
-                            NaiveDate::from_ymd_opt(2023, 9, 18).unwrap(),
-                            NaiveTime::from_hms_opt(0, 0, 0).unwrap()
-                        ),
-                        Utc
-                    )),
+                    id: EventId(0),
+                    name: "Test Fund".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
+                    ends: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
                     reg_checked: None,
-                    is_final: false,
+                    is_final: true,
                 }
             ]))
         );

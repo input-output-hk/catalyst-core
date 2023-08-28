@@ -1,7 +1,7 @@
 -- Define F10 IdeaScale parameters.
 INSERT INTO config (id, id2, id3, value) VALUES (
     'ideascale',
-    '10',
+    '0',
     '',
     '{  
         "group_id": 31051,
@@ -54,6 +54,6 @@ INSERT INTO config (id, id2, id3, value) VALUES (
 INSERT INTO config (id, id2, id3, value) VALUES (
     'event',
     'ideascale_params',
-    '10',
-    '{"params_id": "F10"}'
+    '0',
+    '{"params_id": "TestFund"}'
 );

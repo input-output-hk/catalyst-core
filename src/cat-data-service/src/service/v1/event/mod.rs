@@ -181,6 +181,13 @@ mod tests {
             serde_json::json!(
                 [
                     {
+                        "id": 0,
+                        "name": "Test Fund",
+                        "starts": "1970-01-01T00:00:00+00:00",
+                        "ends": "1970-01-01T00:00:00+00:00",
+                        "final": true
+                    },
+                    {
                         "id": 1,
                         "name": "Test Fund 1",
                         "starts": "2020-05-01T12:00:00+00:00",
@@ -214,13 +221,6 @@ mod tests {
                     {
                         "id": 5,
                         "name": "Test Fund 5",
-                        "final": false
-                    },
-                    {
-                        "id": 10,
-                        "name": "Fund 10",
-                        "starts": "2023-06-16T19:56:00+00:00",
-                        "ends": "2023-09-18T00:00:00+00:00",
                         "final": false
                     }
                 ]
@@ -238,6 +238,14 @@ mod tests {
             serde_json::json!(
                 [
                     {
+                        "id": 1,
+                        "name": "Test Fund 1",
+                        "starts": "2020-05-01T12:00:00+00:00",
+                        "ends": "2020-06-01T12:00:00+00:00",
+                        "reg_checked": "2020-03-31T12:00:00+00:00",
+                        "final": true,
+                    },
+                    {
                         "id": 2,
                         "name": "Test Fund 2",
                         "starts": "2021-05-01T12:00:00+00:00",
@@ -264,13 +272,6 @@ mod tests {
                         "id": 5,
                         "name": "Test Fund 5",
                         "final": false
-                    },
-                    {
-                        "id": 10,
-                        "name": "Fund 10",
-                        "starts": "2023-06-16T19:56:00+00:00",
-                        "ends": "2023-09-18T00:00:00+00:00",
-                        "final": false
                     }
                 ]
             ),
@@ -287,13 +288,12 @@ mod tests {
             serde_json::json!(
                 [
                     {
-                        "id": 1,
-                        "name": "Test Fund 1",
-                        "starts": "2020-05-01T12:00:00+00:00",
-                        "ends": "2020-06-01T12:00:00+00:00",
-                        "reg_checked": "2020-03-31T12:00:00+00:00",
-                        "final": true,
-                    },
+                        "id": 0,
+                        "name": "Test Fund",
+                        "starts": "1970-01-01T00:00:00+00:00",
+                        "ends": "1970-01-01T00:00:00+00:00",
+                        "final": true
+                    }
                 ]
             ),
         );
@@ -309,13 +309,13 @@ mod tests {
             serde_json::json!(
                 [
                     {
-                        "id": 2,
-                        "name": "Test Fund 2",
-                        "starts": "2021-05-01T12:00:00+00:00",
-                        "ends": "2021-06-01T12:00:00+00:00",
-                        "reg_checked": "2021-03-31T12:00:00+00:00",
+                        "id": 1,
+                        "name": "Test Fund 1",
+                        "starts": "2020-05-01T12:00:00+00:00",
+                        "ends": "2020-06-01T12:00:00+00:00",
+                        "reg_checked": "2020-03-31T12:00:00+00:00",
                         "final": true,
-                    },
+                    }
                 ]
             ),
         );

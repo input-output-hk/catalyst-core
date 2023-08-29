@@ -303,6 +303,11 @@
 <a href="#303" id="303">303</a>
 <a href="#304" id="304">304</a>
 <a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::metrics::MetricsBackend;
 <span class="kw">use </span>arc_swap::ArcSwapOption;
 <span class="kw">use </span>chain_impl_mockchain::{
@@ -322,10 +327,14 @@
 <span class="kw">pub struct </span>Prometheus {
     registry: Registry,
 
-    tx_recv_cnt: IntCounter,
-    tx_rejected_cnt: IntCounter,
-    mempool_usage_ratio: Gauge,
-    mempool_tx_count: UIntGauge,
+    <span class="comment">// Total number of tx accepted for a given block
+    </span>tx_recv_cnt: IntCounter,
+    <span class="comment">// Total number of tx rejected for a given block
+    </span>tx_rejected_cnt: IntCounter,
+    <span class="comment">// Mempool usage ratio for a given block
+    </span>mempool_usage_ratio: Gauge,
+    <span class="comment">// Total number of tx in the mempool for a given block
+    </span>mempool_tx_count: UIntGauge,
     votes_casted_cnt: IntCounter,
     block_recv_cnt: IntCounter,
     peer_connected_cnt: UIntGauge,
@@ -333,7 +342,8 @@
     peer_available_cnt: UIntGauge,
     peer_total_cnt: UIntGauge,
     slot_start_time: UIntGauge,
-    block_tx_count: UIntGauge,
+    <span class="comment">// Total number of tx for a given block
+    </span>block_tx_count: IntCounter,
     block_input_sum: UIntGauge,
     block_fee_sum: UIntGauge,
     block_content_size: UIntGauge,
@@ -421,7 +431,7 @@
         registry
             .register(Box::new(slot_start_time.clone()))
             .unwrap();
-        <span class="kw">let </span>block_tx_count = UIntGauge::new(<span class="string">&quot;lastBlockTx&quot;</span>, <span class="string">&quot;lastBlockTx&quot;</span>).unwrap();
+        <span class="kw">let </span>block_tx_count = IntCounter::new(<span class="string">&quot;lastBlockTx&quot;</span>, <span class="string">&quot;lastBlockTx&quot;</span>).unwrap();
         registry.register(Box::new(block_tx_count.clone())).unwrap();
         <span class="kw">let </span>block_input_sum = UIntGauge::new(<span class="string">&quot;lastBlockInputTime&quot;</span>, <span class="string">&quot;lastBlockInputTime&quot;</span>).unwrap();
         registry
@@ -585,7 +595,7 @@
             .expect(<span class="string">&quot;should be good&quot;</span>);
 
         <span class="self">self</span>.votes_casted_cnt.inc_by(votes_casted);
-        <span class="self">self</span>.block_tx_count.set(block_tx_count);
+        <span class="self">self</span>.block_tx_count.inc_by(block_tx_count);
         <span class="self">self</span>.block_input_sum.set(block_input_sum.<span class="number">0</span>);
         <span class="self">self</span>.block_fee_sum.set(block_fee_sum.<span class="number">0</span>);
         <span class="self">self</span>.block_content_size

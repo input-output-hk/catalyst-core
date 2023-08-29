@@ -103,7 +103,6 @@ pub struct Snapshot {
 }
 
 impl Snapshot {
-
     #[allow(clippy::missing_errors_doc)]
     pub fn from_raw_snapshot(
         raw_snapshot: RawSnapshot,

@@ -170,10 +170,7 @@ def analyze_snapshot(args: argparse.Namespace):
 
         for rec in processed_snapshot.items():
             rec_vpower = 0
-            vkey = "0x" + rec[1]["hir"]["voting_key"]
             for contribution in rec[1]["contributions"]:
-                if vkey == "0x5400fa4805cf345e0a78ac91d032864d03bf36a018a5445072a4a5146bc51266":
-                    print(f"Contribution {snapshot_index[contribution['stake_public_key']]} {contribution}")
 
                 if contribution["stake_public_key"] in snapshot_index:
                     snap = snapshot_index[contribution["stake_public_key"]]
@@ -323,8 +320,6 @@ def analyze_snapshot(args: argparse.Namespace):
         this_power = 0
         for v in vkey_power[key]:
             this_power += v
-            if key == "0x5400fa4805cf345e0a78ac91d032864d03bf36a018a5445072a4a5146bc51266":
-                print(f"{v} {this_power}")
         if this_power >= 450000000:
             total_threshold_registrations += 1
             total_threshold_voting_power += this_power
@@ -348,7 +343,8 @@ def analyze_snapshot(args: argparse.Namespace):
 
     print("")
 
-    print(f"{total_processed_vpower}")
+    if total_processed_vpower is not None:
+        print(f"  Total Processed Registrations = Total Voting Power  : {len(processed_snapshot.keys()):>10}  = {total_processed_vpower/1000000:>25} ADA - Validates : {total_processed_vpower == total_threshold_voting_power}")
     print(f"  Total Threshold Registrations = Total Voting Power  : {total_threshold_registrations:>10}  = {total_threshold_voting_power/1000000:>25} ADA")
     print(f"  Total Registrations           = Total Voting Power  : {len(snapshot):>10}  = {total_registered_value/1000000:>25} ADA")
     print(f"  Total Unregistered            = Total Voting Power  : {total_unregistered:>10}  = {value_unregistered/1000000:>25} ADA")

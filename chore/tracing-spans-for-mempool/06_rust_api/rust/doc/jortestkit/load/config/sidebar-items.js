@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Monitor","Strategy"],"struct":["Configuration","ConfigurationBuilder"]};

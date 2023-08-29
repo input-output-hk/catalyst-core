@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["REG_BIN","REG_JSON","REG_SLOT_NO","REG_TX_ID","SIG_BIN","SIG_JSON"],"fn":["filter_registrations","is_valid_rewards_address","latest_registrations","prefix_hex","stake_key_hash","validate_reg_cddl","validate_sig_cddl"],"static":["CALLSITE","META"],"struct":["CddlConfig"],"type":["Invalids","StakeKeyHash","Unregistered","Valids"]};

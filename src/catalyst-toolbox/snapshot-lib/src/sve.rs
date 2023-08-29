@@ -16,10 +16,12 @@ pub struct Snapshot {
 }
 
 impl Snapshot {
+    #[must_use]
+    #[allow(clippy::missing_panics_doc)] // The one possible panic shouldn't happen in reality.
     pub fn new(raw_snapshot: RawSnapshot, min_stake_threshold: Value) -> (Self, usize) {
         let mut total_rejected_registrations: usize = 0;
 
-        let inner = raw_snapshot
+        let mut inner = raw_snapshot
             .0
             .into_iter()
             .filter(|r| {
@@ -37,7 +39,6 @@ impl Snapshot {
 
                 true
             })
-            .filter(|r| r.voting_power >= min_stake_threshold)
             .fold(HashMap::<Identifier, Vec<_>>::new(), |mut acc, r| {
                 let k = match &r.delegations {
                     Delegations::New(ds) => ds.first().unwrap().0.clone(),
@@ -48,9 +49,23 @@ impl Snapshot {
                 acc
             });
 
+        // Because of multiple registrations to the same voting key,  we can only
+        // filter once all registrations for the same key are known.
+        // `min_stake_threshold` is the minimum stake for all registrations COMBINED.
+        inner.retain(|_, regs| {
+            let value: Value = regs
+                .iter()
+                .map(|reg| u64::from(reg.voting_power))
+                .sum::<u64>()
+                .into();
+
+            value >= min_stake_threshold
+        });
+
         (Self { inner }, total_rejected_registrations)
     }
 
+    #[must_use]
     pub fn to_block0_initials(
         &self,
         discrimination: Discrimination,

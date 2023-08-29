@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["VOTE_PLAN_ID_LENGTH"],"enum":["PayloadTypeConfig"],"struct":["Proposal"]};

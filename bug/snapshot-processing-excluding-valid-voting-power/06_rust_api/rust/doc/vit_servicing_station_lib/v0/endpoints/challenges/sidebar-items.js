@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["filter"],"mod":["handlers","logic","routes","schemas"],"struct":["ChallengeWithProposals"]};

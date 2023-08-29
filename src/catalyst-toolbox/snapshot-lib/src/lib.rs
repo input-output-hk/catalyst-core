@@ -228,7 +228,6 @@ impl Snapshot {
         self.inner.values().cloned().collect()
     }
 
-    #[must_use]
     pub fn voting_keys(&self) -> impl Iterator<Item = &Identifier> {
         self.inner.keys()
     }

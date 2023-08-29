@@ -4,14 +4,14 @@ INSERT INTO config (id, id2, id3, value) VALUES (
     '0',
     '',
     '{  
-        "group_id": 31051,
+        "group_id": 37429,
         "review_stage_ids": [4686],
         "nr_allocations": [30, 80],
         "campaign_group_id": 88,
         "questions": {
-            "You are reviewing the positive IMPACT this project will have on the Cardano Ecosystem.\nHas this project clearly demonstrated in all aspects of the proposal that it will have a positive impact on the Cardano Ecosystem?": "Impact / Alignment",
-            "You are reviewing the FEASIBILITY of this project.\nIs this project feasible based on the proposal submitted? Does the plan and associated budget and milestones look achievable? Does the team have the skills, experience, capability and capacity to complete the project successfully?": "Feasibility",
-            "You are reviewing the VALUE FOR MONEY this represents for the Treasury and the Community\nIs the funding amount requested for this project reasonable and does it provide good Value for Money to the Treasury?": "Auditability"
+            "Question 1": "Impact / Alignment",
+            "Question 2": "Feasibility",
+            "Question 3": "Auditability"
         },
         "stage_ids": [],
         "proposals": {

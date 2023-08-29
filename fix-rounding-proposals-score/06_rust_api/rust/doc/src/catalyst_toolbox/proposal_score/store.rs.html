@@ -131,11 +131,11 @@
     <span class="kw">let </span>values = files_url_object.as_object_mut().ok_or_else(|| {
         Error::InvalidProposalData(<span class="string">&quot;data inside \&quot;files_url\&quot; not json encoded&quot;</span>.to_string())
     })<span class="question-mark">?</span>;
-    values.insert(<span class="string">&quot;alignment_score&quot;</span>.to_string(), ((alignment_score.<span class="number">0 </span>* <span class="number">100.0</span>).round() * <span class="number">0.01</span>).into());
-    values.insert(<span class="string">&quot;feasibility_score&quot;</span>.to_string(), ((feasibility_score.<span class="number">0 </span>* <span class="number">100.0</span>).round() * <span class="number">0.01</span>).into());
+    values.insert(<span class="string">&quot;alignment_score&quot;</span>.to_string(), ((alignment_score.<span class="number">0 </span>* <span class="number">100.0</span>).round() / <span class="number">100.0</span>).into());
+    values.insert(<span class="string">&quot;feasibility_score&quot;</span>.to_string(), ((feasibility_score.<span class="number">0 </span>* <span class="number">100.0</span>).round() / <span class="number">100.0</span>).into());
     values.insert(
         <span class="string">&quot;auditability_score&quot;</span>.to_string(),
-        ((auditability_score.<span class="number">0 </span>* <span class="number">100.0</span>).round() * <span class="number">0.01</span>).into(),
+        ((auditability_score.<span class="number">0 </span>* <span class="number">100.0</span>).round() / <span class="number">100.0</span>).into(),
     );
 
     <span class="kw-2">*</span>files_url_data = files_url_object.to_string().replace(<span class="string">&#39;&quot;&#39;</span>, <span class="string">&quot;&#39;&quot;</span>).into();

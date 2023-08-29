@@ -898,6 +898,7 @@ dependencies = [
  "jormungandr-lib",
  "metrics",
  "metrics-exporter-prometheus",
+ "once_cell",
  "opentelemetry",
  "opentelemetry-prometheus 0.13.0",
  "poem",

@@ -34,8 +34,8 @@ pub async fn run_service(addr: &SocketAddr) -> Result<(), Error> {
             PrometheusExporter::with_controller(prometheus_controller),
         )
         .with(Cors::new())
-        .with(OpenTelemetryMetrics::new());
-    //.around(|ep, req| async move { Ok(log_requests(ep, req).await) });
+        .with(OpenTelemetryMetrics::new())
+        .around(|ep, req| async move { Ok(log_requests(ep, req).await) });
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)

@@ -9,7 +9,7 @@ use opentelemetry::sdk::{
 use poem::Route;
 use poem::{
     middleware::{CorsEndpoint, OpenTelemetryMetricsEndpoint},
-    Endpoint, Request,
+    Endpoint, Request, Response,
 };
 use poem_openapi::OperationId;
 use std::time::Instant;
@@ -59,7 +59,7 @@ fn anonymous_client_id(req: &Request) -> String {
 pub async fn log_requests(
     ep: Arc<OpenTelemetryMetricsEndpoint<CorsEndpoint<Route>>>,
     req: Request,
-) {
+) -> Response {
     let uri = req.uri().clone();
 
     let client_id = anonymous_client_id(&req); // Get the clients anonymous unique id.

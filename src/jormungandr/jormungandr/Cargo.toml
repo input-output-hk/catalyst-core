@@ -94,7 +94,7 @@ libc = "0.2.124"
 nix = "0.25"
 
 [features]
-default = ["codegen-rustfmt"]
+default = ["codegen-rustfmt", "prometheus-metrics"]
 with-bench = []
 codegen-rustfmt = ["chain-network/codegen-rustfmt"]
 integration-test = []

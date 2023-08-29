@@ -87,8 +87,22 @@
 <a href="#87" id="87">87</a>
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
 </pre><pre class="rust"><code><span class="kw">use </span>::serde::{Deserialize, Serialize};
-<span class="kw">use </span>jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
+<span class="kw">use </span>jormungandr_lib::{crypto::account::Identifier, interfaces::Address, interfaces::Value};
 
 <span class="kw">pub type </span>VotingGroup = String;
 
@@ -106,6 +120,9 @@
     <span class="comment">// Keep hex encoding as in CIP-36
     </span><span class="attr">#[serde(with = <span class="string">&quot;serde&quot;</span>)]
     </span><span class="kw">pub </span>voting_key: Identifier,
+    <span class="comment">// Jormungandr chain address
+    </span><span class="kw">pub </span>address: Address,
+
     <span class="doccomment">/// Voting group this key belongs to.
     /// If this key belong to multiple voting groups, multiple records for the same
     /// key will be used.
@@ -148,7 +165,18 @@
         <span class="kw">fn </span>arbitrary_with(args: <span class="self">Self</span>::Parameters) -&gt; <span class="self">Self</span>::Strategy {
             (any::&lt;[u8; <span class="number">32</span>]&gt;(), args.<span class="number">1 </span>.<span class="number">0</span>)
                 .prop_map(<span class="kw">move </span>|(key, voting_power)| VoterHIR {
-                    voting_key: Identifier::from_hex(<span class="kw-2">&amp;</span>hex::encode(key)).unwrap(),
+                    <span class="comment">// Two representations of exactly the same key.
+                    </span>voting_key: Identifier::from_hex(<span class="kw-2">&amp;</span>hex::encode(key)).unwrap(),
+                    address: chain_addr::Address(
+                        chain_addr::Discrimination::Production,
+                        chain_addr::Kind::Account(
+                            Identifier::from_hex(<span class="kw-2">&amp;</span>hex::encode(key))
+                                .unwrap()
+                                .to_inner()
+                                .into(),
+                        ),
+                    )
+                    .into(),
                     voting_power: voting_power.into(),
                     voting_group: args.<span class="number">0</span>.clone(),
                 })

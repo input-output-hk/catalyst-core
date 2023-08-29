@@ -247,8 +247,11 @@
 <a href="#247" id="247">247</a>
 <a href="#248" id="248">248</a>
 <a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::convert::TryInto;
 
+<span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">use </span>chain_impl_mockchain::testing::TestGen;
 <span class="kw">use </span>jormungandr_lib::interfaces::Value;
 <span class="kw">use </span>rand::Rng;
@@ -309,6 +312,7 @@
             <span class="self">self</span>.content.min_stake_threshold,
             <span class="self">self</span>.content.voting_power_cap,
             assigner,
+            Discrimination::Production,
         )<span class="question-mark">?
         </span>.to_full_snapshot_info())
     }
@@ -449,7 +453,7 @@
                             delegation_type_count += <span class="number">1</span>;
                             Delegations::Legacy(TestGen::identifier().into())
                         },
-                        voting_purpose: CATALYST_VOTING_PURPOSE_TAG,
+                        voting_purpose: <span class="prelude-val">Some</span>(CATALYST_VOTING_PURPOSE_TAG),
                         nonce: <span class="number">0</span>,
                     })
                 })

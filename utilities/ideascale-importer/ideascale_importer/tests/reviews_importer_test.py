@@ -9,7 +9,7 @@ def reviews_importer_mock():
     database_url = "postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
     email = ""
     password = ""
-    event_id = 10
+    event_id = 0
     api_token = ""
     pa_path = "./pa.csv"
     output_path = tempfile.TemporaryDirectory()

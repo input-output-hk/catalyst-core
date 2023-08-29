@@ -34,7 +34,7 @@ pub fn store_score_into_proposal(
     let values = files_url_object.as_object_mut().ok_or_else(|| {
         Error::InvalidProposalData("data inside \"files_url\" not json encoded".to_string())
     })?;
-    values.insert("alignment_score".to_string(), alignment_score.0.into());
+    values.insert("aligment_score".to_string(), alignment_score.0.into());
     values.insert("feasibility_score".to_string(), feasibility_score.0.into());
     values.insert(
         "auditability_score".to_string(),

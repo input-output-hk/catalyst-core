@@ -1,0 +1,214 @@
+digraph erd {
+
+    
+    label = "Catalyst Event Database - Automation"
+    labelloc = t
+    fontsize = 30
+    fontcolor = blue
+    
+
+    graph [
+        rankdir = "LR"
+    ];
+
+    node [
+        fontsize = "16"
+        shape = "plaintext"
+    ];
+
+    edge [
+    ];
+
+    
+        
+
+    "tally_committee" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>tally_committee</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Unique ID for this committee member for<br align='left'/>this event.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="event"  align='text'><font>event</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="event_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The event this committee member is for.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="committee_pk"  align='text'><font>committee_pk</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="committee_pk_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Encrypted private key for the committee<br align='left'/>wallet. This key can be used to get the<br align='left'/>committee public address.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="committee_id"  align='text'><font>committee_id</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="committee_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The hex-encoded public key for the<br align='left'/>committee wallet.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="member_crs"  align='text'><font>member_crs</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="member_crs_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Encrypted Common Reference String<br align='left'/>shared in the creation of every set of<br align='left'/>committee member keys.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="election_key"  align='text'><font>election_key</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="election_key_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Public key generated with all<br align='left'/>committee member public keys, and is<br align='left'/>used to encrypt votes. NULL if the<br align='left'/>event.committee_size is 0.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>Table for storing data about the tally committee per voting event.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "voting_node" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>voting_node</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="hostname" bgcolor="seagreen1" align='text'><font>hostname</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>text</font></td>
+                <td port="hostname_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Unique hostname for the voting node.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="event" bgcolor="seagreen1" align='text'><font>event</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer</font></td>
+                <td port="event_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Unique event this node was configured<br align='left'/>for.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="pubkey"  align='text'><font>pubkey</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="pubkey_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Public key from Ed25519 pair for the<br align='left'/>node. Used as consensus_leader_id when<br align='left'/>the node is a leader.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="seckey"  align='text'><font>seckey</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="seckey_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Encrypted secret key from Ed25519 pair<br align='left'/>for the node. Used as the node secret.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="netkey"  align='text'><font>netkey</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="netkey_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Encrypted Ed25519 secret key for the<br align='left'/>node. Used as the node p2p topology key.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>This table holds information for all nodes in the event.<br align='left'/>It is used by nodes to self-bootstrap the blockchain.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+
+    
+
+    "event" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>event</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id"  align='text'><font>row_id</font><br align='left'/></td>
+            </tr>
+            
+
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>ABRIDGED</i><br align="left"/></font></td>
+            </tr>
+        </table>
+    >];
+
+    
+
+
+    "LEGEND" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='Pink' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>LEGEND</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Example</b></font></td>
+            </tr>
+
+            <tr>
+                <td align='text' bgcolor="seagreen1" ><font>Primary Key</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+
+
+            <tr>
+                <td align='text'><font>Standard Field</font><br align='left'/></td>
+                <td><font>bytea</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Nullable Field</font><br align='left'/></td>
+                <td><font><i>text</i></font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Sized Field</font><br align='left'/></td>
+                <td><font>varchar(32)</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Autoincrement Field</font><br align='left'/></td>
+                <td><font>integer+</font></td>
+            </tr>
+
+        </table>
+    >];
+
+    
+    "voting_node":"event_out" -> "event":"row_id"
+    
+    "tally_committee":"event_out" -> "event":"row_id"
+    
+
+
+}

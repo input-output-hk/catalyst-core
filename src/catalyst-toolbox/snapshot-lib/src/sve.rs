@@ -59,6 +59,11 @@ impl Snapshot {
                 .sum::<u64>()
                 .into();
 
+            // If the total stake across all registrations is < threshold, then they are all rejects.
+            if value < min_stake_threshold {
+                total_rejected_registrations += regs.len();
+            }
+
             value >= min_stake_threshold
         });
 

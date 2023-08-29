@@ -1,23 +1,30 @@
 #!/bin/bash
-echo "Starting to build Event DB diagrams."
+echo "Starting to build EventDB diagrams."
 # doc-event-db-setup
-echo "Initializing Event DB."
+echo "Initializing EventDB."
 pushd src/event-db
 # [tasks.doc-event-db-init]
-while ! psql -e -f setup/setup-db.sql \
+# retry up to six times every 5 seconds
+if ! (r=6; while ! psql -e -f setup/setup-db.sql \
     -v dbName=CatalystEventDocs \
-    -v dbDescription="Local Docs Catalayst Event DB" \
+    -v dbDescription="Local Docs Catalayst EventDB" \
     -v dbUser="catalyst-event-docs" \
-    -v dbUserPw="CHANGE_ME" ${@};
-do sleep 1;
-done;
+    -v dbUserPw="CHANGE_ME" ${@}; do
+    ((--r))||exit
+    echo "Failed to initialize EventDB. Retrying."
+    sleep 5; done;) ; then
+    echo "EventDB initialization failed."
+    exit 1;
+fi
+echo "Initialized EventDB"
+
 # [tasks.run-event-doc-db-migration]
 refinery migrate -e DATABASE_URL -c refinery.toml -p ./migrations
 
 
-## Build the Event DB Documentation (Images of Schema)
+## Build the EventDB Documentation (Images of Schema)
 popd
-echo "Building Event DB diagrams."
+echo "Building EventDB diagrams."
 # [tasks.build-db-docs-overview-diagram]
 dbviz -d CatalystEventDocs \
     -h postgres \
@@ -115,4 +122,4 @@ dbviz -d CatalystEventDocs \
         moderation \
         > /db-diagrams/event-db-moderation.dot
 
-echo "Finished building Event DB diagrams."
+echo "Finished building EventDB diagrams."

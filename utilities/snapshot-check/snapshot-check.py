@@ -337,7 +337,7 @@ def analyze_snapshot(args: argparse.Namespace):
         if len(vkey_power[key]) > 1:
             multi_reg_voting_keys += 1
             print(f"  {multi_reg_voting_keys:3} {key} = {this_power/1000000:>25.6f} ADA")
-            powers = ", ".join([f"{x/1000000:0.6g}" for x in sorted(vkey_power[key])])
+            powers = ", ".join([f"{x/1000000:0.6f}".rstrip("0").rstrip(".") for x in sorted(vkey_power[key])])
             print(f"      {len(vkey_power[key])} Stake Addresses : ADA = {powers} ")
 
 

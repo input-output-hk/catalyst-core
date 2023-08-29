@@ -31,6 +31,7 @@ cryptography = "^40.0.1"
 loguru = "^0.6.0"
 ideascale-importer = {path = "../../utilities/ideascale-importer"}
 brotlipy = "^0.7.0"
+lxml = "^4.9.3"
 
 [tool.poetry.group.dev.dependencies]
 # formatting

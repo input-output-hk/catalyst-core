@@ -1,3 +1,4 @@
+use chain_addr::Discrimination;
 pub use fraction::Fraction;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
 use registration::{
@@ -107,6 +108,7 @@ impl Snapshot {
         stake_threshold: Value,
         cap: Fraction,
         voting_group_assigner: &impl VotingGroupAssigner,
+        discrimination: Discrimination,
     ) -> Result<Self, Error> {
         let raw_contribs = raw_snapshot
             .0
@@ -116,7 +118,10 @@ impl Snapshot {
             .filter(|reg| reg.voting_power >= std::cmp::max(stake_threshold, 1.into()))
             // TODO: add capability to select voting purpose for a snapshot.
             // At the moment Catalyst is the only one in use
-            .filter(|reg| reg.voting_purpose == CATALYST_VOTING_PURPOSE_TAG)
+            .filter(|reg| {
+                reg.voting_purpose.unwrap_or(CATALYST_VOTING_PURPOSE_TAG)
+                    == CATALYST_VOTING_PURPOSE_TAG
+            })
             .fold(BTreeMap::new(), |mut acc: BTreeMap<_, Vec<_>>, reg| {
                 let VotingRegistration {
                     reward_address,
@@ -170,7 +175,12 @@ impl Snapshot {
             .map(|(k, contributions)| SnapshotInfo {
                 hir: VoterHIR {
                     voting_group: voting_group_assigner.assign(&k),
-                    voting_key: k,
+                    voting_key: k.clone(),
+                    address: chain_addr::Address(
+                        discrimination,
+                        chain_addr::Kind::Account(k.to_inner().into()),
+                    )
+                    .into(),
                     voting_power: contributions.iter().map(|c| c.value).sum::<u64>().into(),
                 },
                 contributions,
@@ -278,14 +288,16 @@ pub mod tests {
                 _raw,
                 _stake_threshold.into(),
                 Fraction::from(1u64),
-                &DummyAssigner
+                &DummyAssigner,
+                Discrimination::Production,
             )
             .unwrap()
                 == Snapshot::from_raw_snapshot(
                     add,
                     _stake_threshold.into(),
                     Fraction::from(1u64),
-                    &DummyAssigner
+                    &DummyAssigner,
+                    Discrimination::Production,
                 )
                 .unwrap(),
             _additional_reg.voting_power < _stake_threshold.into()
@@ -304,6 +316,7 @@ pub mod tests {
                         threshold.into(),
                         Fraction::from(1),
                         &|_vk: &Identifier| String::new(),
+                        Discrimination::Production,
                     )
                     .unwrap()
                 })
@@ -319,6 +332,7 @@ pub mod tests {
             0.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
         let total_stake = snapshot
@@ -331,20 +345,22 @@ pub mod tests {
 
     #[proptest]
     fn test_non_catalyst_regs_are_ignored(mut _reg: VotingRegistration) {
-        _reg.voting_purpose = 1;
+        _reg.voting_purpose = Some(1);
         assert_eq!(
             Snapshot::from_raw_snapshot(
                 vec![_reg].into(),
                 0.into(),
                 Fraction::from(1u64),
-                &DummyAssigner
+                &DummyAssigner,
+                Discrimination::Production,
             )
             .unwrap(),
             Snapshot::from_raw_snapshot(
                 vec![].into(),
                 0.into(),
                 Fraction::from(1u64),
-                &DummyAssigner
+                &DummyAssigner,
+                Discrimination::Production,
             )
             .unwrap(),
         )
@@ -367,7 +383,7 @@ pub mod tests {
                 voting_power: i.into(),
                 reward_address: RewardAddress(String::new()),
                 delegations,
-                voting_purpose: 0,
+                voting_purpose: Some(0),
                 nonce: 0,
             });
         }
@@ -377,6 +393,7 @@ pub mod tests {
             0.into(),
             Fraction::from(1u64),
             &DummyAssigner,
+            Discrimination::Production,
         )
         .unwrap();
         let vp_1: u64 = snapshot
@@ -408,9 +425,14 @@ pub mod tests {
             }
         ]"#,
         ).unwrap();
-        let snapshot =
-            Snapshot::from_raw_snapshot(raw, 0.into(), Fraction::from(1u64), &DummyAssigner)
-                .unwrap();
+        let snapshot = Snapshot::from_raw_snapshot(
+            raw,
+            0.into(),
+            Fraction::from(1u64),
+            &DummyAssigner,
+            Discrimination::Production,
+        )
+        .unwrap();
         assert_eq!(
             snapshot.contributions_for_voting_key(
                 Identifier::from_hex(

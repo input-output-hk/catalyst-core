@@ -150,6 +150,7 @@ mod tests {
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -182,6 +183,7 @@ mod tests {
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -205,6 +207,7 @@ mod tests {
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -307,7 +310,7 @@ mod tests {
                 voting_power: i.into(),
                 reward_address,
                 delegations,
-                voting_purpose: 0,
+                voting_purpose: Some(0),
                 nonce: 0,
             });
             total_stake += i;
@@ -318,6 +321,7 @@ mod tests {
             0.into(),
             Fraction::from(1u64),
             &|_voting_key: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -355,7 +359,7 @@ mod tests {
                 voting_power: i.into(),
                 reward_address,
                 delegations,
-                voting_purpose: 0,
+                voting_purpose: Some(0),
                 nonce: 0,
             });
         }
@@ -365,6 +369,7 @@ mod tests {
             0.into(),
             Fraction::new(1u64, 9u64),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -390,6 +395,7 @@ mod tests {
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 

@@ -50,7 +50,7 @@ check_env_vars() {
     # Iterate over the array and check if each variable is set
     for var in "${env_vars[@]}"; do
         echo "Checking $var"
-        if [ -z "${!var}" ]; then
+        if [ -z "${!var:-}" ]; then
             echo ">>> Error: $var is required and not set."
             exit 1
         fi

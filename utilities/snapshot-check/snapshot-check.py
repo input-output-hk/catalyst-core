@@ -250,21 +250,21 @@ def analyze_snapshot(args: argparse.Namespace):
                 missing_registrations.append(registration)
 
     print("Snapshot Analysis:")
-    print(f"  Total Registrations : {len(snapshot)}")
-    print(f"  Total CIP-15        : {len(cip_15_snapshot)}")
-    print(f"  Total CIP-36 Single : {len(cip_36_single)}")
-    print(f"  Total CIP-36 Multi  : {len(cip_36_multi)}")
-    print(f"  Total Rejects       : {total_rejects}")
+    print(f"  Total Registrations : {len(snapshot):10}")
+    print(f"  Total CIP-15        : {len(cip_15_snapshot):10}")
+    print(f"  Total CIP-36 Single : {len(cip_36_single):10}")
+    print(f"  Total CIP-36 Multi  : {len(cip_36_multi):10}")
+    print(f"  Total Rejects       : {total_rejects:10}")
 
     print()
     print("Reward Address Types:")
-    print(f"  Total Payable        : {rewards_payable}")
-    print(f"  Total Pointer        : {rewards_pointer}")
-    print(f"  Total Unpayable      : {rewards_unpayable}")
-    print(f"  Total Invalid        : {rewards_invalid}")
-    print(f"  Total Types          : {len(rewards_types)}")
+    print(f"  Total Payable        : {rewards_payable:10}")
+    print(f"  Total Pointer        : {rewards_pointer:10}")
+    print(f"  Total Unpayable      : {rewards_unpayable:10}")
+    print(f"  Total Invalid        : {rewards_invalid:10}")
+    print(f"  Total Types          : {len(rewards_types):10}")
     print(f"    Types = {','.join(rewards_types.keys())}")
-    print(f"  Total Unique Rewards : {len(unique_rewards)}")
+    print(f"  Total Unique Rewards : {len(unique_rewards):10}")
 
     #if len(registration_errors) > 0:
     #    print()
@@ -336,18 +336,18 @@ def analyze_snapshot(args: argparse.Namespace):
 
         if len(vkey_power[key]) > 1:
             multi_reg_voting_keys += 1
-            print(f"  {multi_reg_voting_keys:3} {key} = {this_power/1000000:>25} ADA")
-            powers = ",".join([f"{x/1000000}" for x in sorted(vkey_power[key])])
+            print(f"  {multi_reg_voting_keys:3} {key} = {this_power/1000000:>25.6f} ADA")
+            powers = ", ".join([f"{x/1000000:0.6g}" for x in sorted(vkey_power[key])])
             print(f"      {len(vkey_power[key])} Stake Addresses : ADA = {powers} ")
 
 
     print("")
 
     if total_processed_vpower is not None:
-        print(f"  Total Processed Registrations = Total Voting Power  : {len(processed_snapshot.keys()):>10}  = {total_processed_vpower/1000000:>25} ADA - Validates : {total_processed_vpower == total_threshold_voting_power}")
-    print(f"  Total Threshold Registrations = Total Voting Power  : {total_threshold_registrations:>10}  = {total_threshold_voting_power/1000000:>25} ADA")
-    print(f"  Total Registrations           = Total Voting Power  : {len(snapshot):>10}  = {total_registered_value/1000000:>25} ADA")
-    print(f"  Total Unregistered            = Total Voting Power  : {total_unregistered:>10}  = {value_unregistered/1000000:>25} ADA")
+        print(f"  Total Processed Registrations = Total Voting Power  : {len(processed_snapshot.keys()):>10}  = {total_processed_vpower/1000000:>25.6f} ADA - Validates : {total_processed_vpower == total_threshold_voting_power}")
+    print(f"  Total Threshold Registrations = Total Voting Power  : {total_threshold_registrations:>10}  = {total_threshold_voting_power/1000000:>25.6f} ADA")
+    print(f"  Total Registrations           = Total Voting Power  : {len(snapshot):>10}  = {total_registered_value/1000000:>25.6f} ADA")
+    print(f"  Total Unregistered            = Total Voting Power  : {total_unregistered:>10}  = {value_unregistered/1000000:>25.6f} ADA")
 
     staked_total = len(snapshot) + total_unregistered
     staked_total_value = total_registered_value + value_unregistered
@@ -355,12 +355,12 @@ def analyze_snapshot(args: argparse.Namespace):
     reg_pct = 100.0 / staked_total * len(snapshot)
     val_pct = 100.0 / staked_total_value * total_registered_value
 
-    print(f"  Registered%                   = VotingPower %       : {reg_pct:>10.04}% =   {val_pct:>23.04} %")
+    print(f"  Registered%                   = VotingPower %       : {reg_pct:>10.4f}% =   {val_pct:>23.4f} %")
 
     thresh_reg_pct = 100.0 / staked_total * total_threshold_registrations
     thresh_val_pct = 100.0 / staked_total_value * total_threshold_voting_power
 
-    print(f"  Threshold Registered% (450 A) = VotingPower %       : {thresh_reg_pct:>10.04}% =   {thresh_val_pct:>23.04} %")
+    print(f"  Threshold Registered% (450 A) = VotingPower %       : {thresh_reg_pct:>10.4f}% =   {thresh_val_pct:>23.4f} %")
 
 
 def main() -> int:

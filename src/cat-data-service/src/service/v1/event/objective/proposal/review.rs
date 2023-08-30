@@ -86,7 +86,13 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            response
+                .into_body()
+                .data()
+                .await
+                .expect("response should have body")
+                .expect("response should have data inside body")
+                .to_vec(),
             serde_json::json!([
                 {
                     "assessor": "assessor 1",
@@ -129,7 +135,13 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            response
+                .into_body()
+                .data()
+                .await
+                .expect("response should have body")
+                .expect("response should have data inside body")
+                .to_vec(),
             serde_json::json!([
                 {
                     "assessor": "assessor 1",
@@ -168,7 +180,13 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            response
+                .into_body()
+                .data()
+                .await
+                .expect("response should have body")
+                .expect("response should have data inside body")
+                .to_vec(),
             serde_json::json!([
                 {
                     "assessor": "assessor 2",
@@ -191,7 +209,13 @@ mod tests {
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
         body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+            response
+                .into_body()
+                .data()
+                .await
+                .expect("response should have body")
+                .expect("response should have data inside body")
+                .to_vec(),
             serde_json::json!([
                 {
                     "assessor": "assessor 2",

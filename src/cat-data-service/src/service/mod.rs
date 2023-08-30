@@ -147,7 +147,12 @@ pub mod tests {
 
     pub fn body_data_json_check(body_data: Vec<u8>, expected_json: serde_json::Value) {
         assert_eq!(
-            serde_json::Value::from_str(String::from_utf8(body_data).unwrap().as_str()).unwrap(),
+            serde_json::Value::from_str(
+                String::from_utf8(body_data)
+                    .expect("body_data should be String encoded")
+                    .as_str()
+            )
+            .expect("body_data should be json encoded"),
             expected_json
         );
     }

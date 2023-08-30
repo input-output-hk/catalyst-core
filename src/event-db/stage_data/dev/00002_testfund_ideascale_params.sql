@@ -6,7 +6,7 @@ INSERT INTO config (id, id2, id3, value) VALUES (
     '{  
         "group_id": 37429,
         "review_stage_ids": [171],
-        "nr_allocations": [30, 80],
+        "nr_allocations": [0, 0],
         "campaign_group_id": 88,
         "questions": {
             "Question 1": "Impact / Alignment",

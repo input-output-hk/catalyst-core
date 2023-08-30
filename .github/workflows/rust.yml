@@ -248,6 +248,8 @@ jobs:
             --exclude vit-servicing-station-server \
             --exclude vit-servicing-station-tests \
             --exclude vit-servicing-station-lib \
+            --exclude cat-data-service \
+            --exclude event-db \
             --archive-file nextest-archive.tar.zst
 
       - name: Run Catalyst Core tests

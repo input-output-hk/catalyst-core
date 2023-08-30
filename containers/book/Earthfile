@@ -4,6 +4,7 @@ FROM debian:stable-slim
 
 builder:
     FROM ghcr.io/input-output-hk/catalyst-gh-tools:v1.4.3
+    RUN rustup component add rustfmt
 
     COPY --dir ../..+rust-source/src .
     COPY --dir ../..+rust-source/tests .
@@ -20,6 +21,7 @@ rustdoc-test:
 rustdoc:
     FROM +builder
 
+    BUILD +rustdoc-test
     RUN rustup component add rustfmt --toolchain nightly-x86_64-unknown-linux-gnu
     ENV RUSTDOCFLAGS="$RUSTDOCFLAGS --enable-index-page -Zunstable-options"
     RUN cargo +nightly doc \
@@ -55,7 +57,7 @@ builder-chapter-8:
 
     RUN mkdir /db-diagrams
 
-    CMD ["./build-db-diagrams.sh"]
+    ENTRYPOINT ["./build-db-diagrams.sh"]
     
 # Need to be run with the -P flag
 build-chapter-8:
@@ -93,7 +95,9 @@ mdbook:
 
     # Add an empty '.git' folder, needed by mdbook-open-on-gh for relative path calculation
     RUN mkdir .git
-    CMD while ! mdbook build; do sleep 1; done;
+    COPY build-mdbook.sh .
+    RUN chmod ugo+x ./build-mdbook.sh
+    ENTRYPOINT ["./build-mdbook.sh"]
 
     #RUN mdbook build
     SAVE ARTIFACT book

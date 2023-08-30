@@ -894,14 +894,18 @@ dependencies = [
  "chrono",
  "clap 4.2.1",
  "cryptoxide 0.4.4",
+ "dotenvy",
  "event-db",
  "jormungandr-lib",
+ "lazy_static",
  "metrics",
  "metrics-exporter-prometheus",
  "once_cell",
  "opentelemetry",
  "opentelemetry-prometheus 0.13.0",
+ "panic-message",
  "poem",
+ "poem-extensions",
  "poem-openapi",
  "quickcheck",
  "quickcheck_macros",
@@ -915,6 +919,7 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+ "url",
  "uuid 1.3.1",
 ]
 
@@ -2519,9 +2524,9 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
 name = "form_urlencoded"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9c384f161156f5260c24a097c56119f9be8c798586aecc13afbcbe7b7e26bf8"
+checksum = "a62bc1cf6f830c2ec14a513a9fb124d0a213a629668a4186f329db21fe045652"
 dependencies = [
  "percent-encoding",
 ]
@@ -3302,9 +3307,9 @@ dependencies = [
 
 [[package]]
 name = "idna"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e14ddfc70884202db2244c223200c204c2bda1bc6e0998d11b5e024d657209e6"
+checksum = "7d20d6b07bfbc108882d88ed8e37d39636dcc260e15e30c45e6ba089610b917c"
 dependencies = [
  "unicode-bidi",
  "unicode-normalization",
@@ -5080,6 +5085,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c1b04fb49957986fdce4d6ee7a65027d55d4b6d2265e5848bbb507b58ccfdb6f"
 
 [[package]]
+name = "panic-message"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "384e52fd8fbd4cbe3c317e8216260c21a0f9134de108cea8a4dd4e7e152c472d"
+
+[[package]]
 name = "parity-multiaddr"
 version = "0.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5206,9 +5217,9 @@ dependencies = [
 
 [[package]]
 name = "percent-encoding"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "478c572c3d73181ff3c2539045f6eb99e5491218eae919370993b890cdbdd98e"
+checksum = "9b2a4787296e9989611394c33f193f676704af1686e70b8f8033ab5ba9a35a94"
 
 [[package]]
 name = "pest"
@@ -5418,6 +5429,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "poem-extensions"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97ba49b672c1b387c724a20fd6fd6d629a5423c17c5f1c381763b1c899fec35e"
+dependencies = [
+ "poem",
+ "poem-extensions-macro",
+ "poem-openapi",
+]
+
+[[package]]
+name = "poem-extensions-macro"
+version = "0.7.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f06eadfdec3a3a90626f990f2bf1668b857f0219b07eedabba3bf368620ce8e7"
+dependencies = [
+ "darling 0.20.3",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.16",
+ "thiserror",
+]
+
+[[package]]
 name = "poem-openapi"
 version = "3.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5439,6 +5474,8 @@ dependencies = [
  "serde_yaml 0.9.25",
  "thiserror",
  "tokio",
+ "url",
+ "uuid 1.3.1",
 ]
 
 [[package]]
@@ -8183,12 +8220,12 @@ dependencies = [
 
 [[package]]
 name = "url"
-version = "2.3.1"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0d68c799ae75762b8c3fe375feb6600ef5602c883c5d21eb51c09f22b83c4643"
+checksum = "143b538f18257fac9cad154828a57c6bf5157e1aa604d4816b5995bf6de87ae5"
 dependencies = [
  "form_urlencoded",
- "idna 0.3.0",
+ "idna 0.4.0",
  "percent-encoding",
  "serde",
 ]

@@ -10,13 +10,13 @@ use axum::{
     Json, Router,
 };
 use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
-use poem::{middleware::OpenTelemetryMetrics, EndpointExt, IntoEndpoint};
 use serde::Serialize;
 use std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
 use tower_http::cors::{Any, CorsLayer};
 
 mod api;
 mod docs;
+mod generic;
 mod health;
 mod poem_service;
 mod utilities;

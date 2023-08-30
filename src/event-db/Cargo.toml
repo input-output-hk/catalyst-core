@@ -10,7 +10,7 @@ thiserror = { version = "1.0" }
 
 serde_json = { version = "1.0" }
 
-dotenvy = "0.15"
+dotenvy = { workspace = true }
 
 bb8 = "0.8.0"            # Database Connection Pool Manager
 bb8-postgres = "0.8.1"   # BB8 Postgres Connection Support.

@@ -2,11 +2,15 @@
 //!
 //! This defines all endpoints for the Catalyst Data Service API.
 //! It however does NOT contain any processing for them, that is defined elsewhere.
-use poem::Route;
+use health::HealthApi;
 use poem_openapi::{param::Query, payload::PlainText, OpenApi, OpenApiService};
 use std::net::SocketAddr;
 
-pub struct Api;
+mod health;
+
+pub(crate) type OpenApiServiceT = OpenApiService<(Api, HealthApi), ()>;
+
+pub(crate) struct Api;
 
 #[OpenApi]
 impl Api {
@@ -22,9 +26,9 @@ impl Api {
     }
 }
 
-pub(crate) fn mk_api(addr: &SocketAddr) -> OpenApiService<Api, ()> {
+pub(crate) fn mk_api(addr: &SocketAddr) -> OpenApiServiceT {
     // This should be the actual hostname of the service.  But in the absence of that, the IP address/port will do.
     let server_host = format!("http://{}:{}/api", addr.ip(), addr.port());
 
-    OpenApiService::new(Api, "Hello World 2", "1.0").server(server_host)
+    OpenApiService::new((Api, HealthApi), "Catalyst Data Service", "1.2").server(server_host)
 }

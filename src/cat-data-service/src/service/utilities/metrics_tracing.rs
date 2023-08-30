@@ -6,18 +6,15 @@ use opentelemetry::sdk::{
         processors, selectors,
     },
 };
-use poem::Route;
-use poem::{
-    middleware::{CorsEndpoint, OpenTelemetryMetricsEndpoint},
-    Endpoint, Request, Response,
-};
+use poem::{Endpoint, Request, Response};
 use poem_openapi::OperationId;
 use std::time::Instant;
-use std::{env, sync::Arc};
 use tracing::{info, span};
 
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
+
+use crate::settings::CLIENT_ID_KEY;
 
 /// Get an anonymized client ID from the request.
 ///
@@ -27,16 +24,10 @@ use cryptoxide::digest::Digest;
 /// The Hash is unique per client IP, but not able to
 /// be reversed or analysed without both the client IP and the key.
 fn anonymous_client_id(req: &Request) -> String {
-    // Get the Anonymous Client ID Key.
-    // In production this is a secret key.
-    // In development this is the default value specified here.
-    let client_anonymous_key = env::var("CLIENT_ID_KEY")
-        .unwrap_or_else(|_| String::from("3db5301e-40f2-47ed-ab11-55b37674631a"));
-
     let mut b2b = Blake2b::new(16); // We are going to represent it as a UUID.
     let mut out = [0; 16];
 
-    b2b.input_str(&client_anonymous_key);
+    b2b.input_str(CLIENT_ID_KEY.as_str());
     b2b.input_str(&req.remote_addr().to_string());
     b2b.result(&mut out);
 
@@ -56,10 +47,7 @@ fn anonymous_client_id(req: &Request) -> String {
 /// * `ep` - Endpoint of the request being made.
 /// * `req` - Request being made
 ///
-pub async fn log_requests(
-    ep: Arc<OpenTelemetryMetricsEndpoint<CorsEndpoint<Route>>>,
-    req: Request,
-) -> Response {
+pub async fn log_requests<E: Endpoint>(ep: E, req: Request) -> Response {
     let uri = req.uri().clone();
 
     let client_id = anonymous_client_id(&req); // Get the clients anonymous unique id.

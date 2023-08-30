@@ -1,10 +1,9 @@
 mod stoplight_elements;
 use poem::{get, Route};
-use poem_openapi::OpenApiService;
 
-use super::api::Api;
+use super::api::OpenApiServiceT;
 
-pub(crate) fn docs(api_service: &OpenApiService<Api,()>) -> Route {
+pub(crate) fn docs(api_service: &OpenApiServiceT) -> Route {
     let spec = api_service.spec();
 
     let swagger_ui = api_service.swagger_ui();

@@ -20,16 +20,7 @@ impl State {
         };
 
         #[cfg(feature = "jorm-mock")]
-        let jorm = {
-            if let Ok(arg) = std::env::var("JORM_CLEANUP_TIMEOUT") {
-                let duration = arg.parse::<u64>().map_err(|e| {
-                    Error::Service(crate::service::Error::CannotRunService(e.to_string()))
-                })?;
-                jorm_mock::JormState::new(std::time::Duration::from_secs(duration * 60))
-            } else {
-                jorm_mock::JormState::new(jorm_mock::JormState::CLEANUP_TIMEOUT)
-            }
-        };
+        let jorm = jorm_mock::JormState::new(*crate::settings::JORM_CLEANUP_TIMEOUT);
 
         Ok(Self {
             event_db,

@@ -17,9 +17,13 @@ type UIntGauge = GenericGauge<AtomicU64>;
 pub struct Prometheus {
     registry: Registry,
 
+    // Total number of tx accepted for a given block
     tx_recv_cnt: IntCounter,
+    // Total number of tx rejected for a given block
     tx_rejected_cnt: IntCounter,
+    // Mempool usage ratio for a given block
     mempool_usage_ratio: Gauge,
+    // Total number of tx in the mempool for a given block
     mempool_tx_count: UIntGauge,
     votes_casted_cnt: IntCounter,
     block_recv_cnt: IntCounter,
@@ -28,7 +32,8 @@ pub struct Prometheus {
     peer_available_cnt: UIntGauge,
     peer_total_cnt: UIntGauge,
     slot_start_time: UIntGauge,
-    block_tx_count: UIntGauge,
+    // Total number of tx for a given block
+    block_tx_count: IntCounter,
     block_input_sum: UIntGauge,
     block_fee_sum: UIntGauge,
     block_content_size: UIntGauge,
@@ -116,7 +121,7 @@ impl Default for Prometheus {
         registry
             .register(Box::new(slot_start_time.clone()))
             .unwrap();
-        let block_tx_count = UIntGauge::new("lastBlockTx", "lastBlockTx").unwrap();
+        let block_tx_count = IntCounter::new("lastBlockTx", "lastBlockTx").unwrap();
         registry.register(Box::new(block_tx_count.clone())).unwrap();
         let block_input_sum = UIntGauge::new("lastBlockInputTime", "lastBlockInputTime").unwrap();
         registry
@@ -280,7 +285,7 @@ impl MetricsBackend for Prometheus {
             .expect("should be good");
 
         self.votes_casted_cnt.inc_by(votes_casted);
-        self.block_tx_count.set(block_tx_count);
+        self.block_tx_count.inc_by(block_tx_count);
         self.block_input_sum.set(block_input_sum.0);
         self.block_fee_sum.set(block_fee_sum.0);
         self.block_content_size

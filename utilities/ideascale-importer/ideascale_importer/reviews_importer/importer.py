@@ -1,7 +1,6 @@
 from lxml import html
 import time
 from loguru import logger
-from dataclasses import dataclass
 from typing import List, Dict
 import pydantic
 import tempfile
@@ -102,7 +101,7 @@ class Importer:
             })
         if len(res) == 0:
             raise Exception("Cannot find ideascale config in the event-db database")
-        self.config = Config.from_json(res[0].value)
+        self.config = Config(**res[0].value)
 
     async def connect(self):
         if self.frontend_client is None:
@@ -164,8 +163,7 @@ class Importer:
         self.allocations_dir.cleanup()
         await self.frontend_client.close()
 
-@dataclass
-class Config:
+class Config(pydantic.BaseModel):
     """Represents the available configuration fields."""
 
     group_id: int
@@ -174,9 +172,3 @@ class Config:
     stage_ids: List[int]
     nr_allocations: List[int]
     questions: Dict[str, str]
-    
-    @staticmethod
-    def from_json(val: dict):
-        """Load configuration from a JSON object."""
-        return pydantic.tools.parse_obj_as(Config, val)
-

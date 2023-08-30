@@ -5,7 +5,7 @@ INSERT INTO config (id, id2, id3, value) VALUES (
     '',
     '{  
         "group_id": 37429,
-        "review_stage_ids": [4686],
+        "review_stage_ids": [171],
         "nr_allocations": [30, 80],
         "campaign_group_id": 88,
         "questions": {
@@ -13,7 +13,7 @@ INSERT INTO config (id, id2, id3, value) VALUES (
             "Question 2": "Feasibility",
             "Question 3": "Auditability"
         },
-        "stage_ids": [],
+        "stage_ids": [4684, 4685, 4686],
         "proposals": {
             "field_mappings": {
                 "proposer_url": ["relevant_link_1", "website__github_repository__or_any_other_relevant_link__", "relevant_link_3"],

@@ -112,6 +112,12 @@
 <a href="#112" id="112">112</a>
 <a href="#113" id="113">113</a>
 <a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -193,7 +199,13 @@
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
         body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
+            response
+                .into_body()
+                .data()
+                .<span class="kw">await
+                </span>.expect(<span class="string">&quot;response should have body&quot;</span>)
+                .expect(<span class="string">&quot;response should have data inside body&quot;</span>)
+                .to_vec(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;choices&quot;</span>: [<span class="string">&quot;yes&quot;</span>, <span class="string">&quot;no&quot;</span>],

@@ -152,6 +152,11 @@
 <a href="#152" id="152">152</a>
 <a href="#153" id="153">153</a>
 <a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::{
     extract::MatchedPath,
@@ -301,7 +306,12 @@
 
     <span class="kw">pub fn </span>body_data_json_check(body_data: Vec&lt;u8&gt;, expected_json: serde_json::Value) {
         <span class="macro">assert_eq!</span>(
-            serde_json::Value::from_str(String::from_utf8(body_data).unwrap().as_str()).unwrap(),
+            serde_json::Value::from_str(
+                String::from_utf8(body_data)
+                    .expect(<span class="string">&quot;body_data should be String encoded&quot;</span>)
+                    .as_str()
+            )
+            .expect(<span class="string">&quot;body_data should be json encoded&quot;</span>),
             expected_json
         );
     }

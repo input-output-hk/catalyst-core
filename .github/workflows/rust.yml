@@ -124,7 +124,7 @@ jobs:
       - name: Install dependencies
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
-      
+
       # We are excluding cat-dat-service and event-db because we are already running it with Earthly
       - name: Build and archive tests
         run: | 
@@ -138,7 +138,7 @@ jobs:
             --exclude vit-servicing-station-server \
             --exclude vit-servicing-station-tests \
             --exclude vit-servicing-station-lib \
-            --exclude cat-data-service \ 
+            --exclude cat-data-service \
             --exclude event-db \
             --archive-file nextest-archive.tar.zst
 
@@ -252,7 +252,7 @@ jobs:
             --exclude vit-servicing-station-server \
             --exclude vit-servicing-station-tests \
             --exclude vit-servicing-station-lib \
-            --exclude cat-data-service \ 
+            --exclude cat-data-service \
             --exclude event-db \
             --archive-file nextest-archive.tar.zst
 

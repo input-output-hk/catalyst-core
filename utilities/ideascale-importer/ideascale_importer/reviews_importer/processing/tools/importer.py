@@ -136,7 +136,6 @@ class IdeascaleImporter:
                     d.done = True
         d = {}
         for stage_id in stage_ids: 
-            print(f"Starting {stage_id}")
             d = WorkerData(stage_id)
             worker_tasks = [asyncio.create_task(worker(d, stage_id)) for _ in range(self.N_WORKERS)]
             for task in worker_tasks:

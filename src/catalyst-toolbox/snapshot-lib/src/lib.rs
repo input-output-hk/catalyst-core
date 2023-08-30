@@ -103,6 +103,7 @@ pub struct Snapshot {
 }
 
 impl Snapshot {
+    #[allow(clippy::missing_errors_doc)]
     pub fn from_raw_snapshot(
         raw_snapshot: RawSnapshot,
         stake_threshold: Value,
@@ -114,8 +115,8 @@ impl Snapshot {
             .0
             .into_iter()
             // Discard registrations with 0 voting power since they don't influence
-            // snapshot anyway
-            .filter(|reg| reg.voting_power >= std::cmp::max(stake_threshold, 1.into()))
+            // snapshot anyway. But can not throw any others away, even if less than the stake threshold.
+            .filter(|reg| reg.voting_power >= 1.into())
             // TODO: add capability to select voting purpose for a snapshot.
             // At the moment Catalyst is the only one in use
             .filter(|reg| {
@@ -185,7 +186,12 @@ impl Snapshot {
                 },
                 contributions,
             })
+            // Because of multiple registrations to the same voting key,  we can only
+            // filter once all registrations for the same key are known.
+            // `stake_threshold` is the minimum stake for all registrations COMBINED.
+            .filter(|entry| entry.hir.voting_power >= stake_threshold)
             .collect();
+
         Ok(Self {
             inner: Self::apply_voting_power_cap(entries, cap)?
                 .into_iter()
@@ -204,10 +210,12 @@ impl Snapshot {
             .collect())
     }
 
+    #[must_use]
     pub fn stake_threshold(&self) -> Value {
         self.stake_threshold
     }
 
+    #[must_use]
     pub fn to_voter_hir(&self) -> Vec<VoterHIR> {
         self.inner
             .values()
@@ -215,6 +223,7 @@ impl Snapshot {
             .collect::<Vec<_>>()
     }
 
+    #[must_use]
     pub fn to_full_snapshot_info(&self) -> Vec<SnapshotInfo> {
         self.inner.values().cloned().collect()
     }
@@ -223,6 +232,7 @@ impl Snapshot {
         self.inner.keys()
     }
 
+    #[must_use]
     pub fn contributions_for_voting_key<I: Borrow<Identifier>>(
         &self,
         voting_public_key: I,
@@ -252,6 +262,7 @@ pub mod tests {
     }
 
     impl Snapshot {
+        #[must_use]
         pub fn to_block0_initials(&self, discrimination: Discrimination) -> Vec<InitialUTxO> {
             self.inner
                 .iter()

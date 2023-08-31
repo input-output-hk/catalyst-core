@@ -36,7 +36,8 @@ class FrontendClient:
             export_endpoint = "/a/admin/workflow/survey-tools/assessment/report/statistic/export/assessment-details/"
             file_name = f"{reviews_path}/{review_stage_id}.xlsx"
 
-            content = await self.inner.get(f"{export_endpoint}{review_stage_id}") 
+            content = await self.inner.get(f"{export_endpoint}{review_stage_id}")
+            print(content)
             tree = html.fromstring(content)
 
             # we are looking for '<div class="card panel export-result-progress" data-features="refresh-processing-item" data-processing-item-id="15622">'

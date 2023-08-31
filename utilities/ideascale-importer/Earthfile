@@ -83,7 +83,8 @@ test:
         --load migrations:latest=(../../containers/event-db-migrations+docker --data=test) \
         --service migrations \
         --allow-privileged
-        RUN --secret IDEASCALE_EMAIL \
+        RUN --no-cache \
+            --secret IDEASCALE_EMAIL \
             --secret IDEASCALE_PASSWORD \
             --secret IDEASCALE_API_TOKEN \
             EVENTDB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev" \

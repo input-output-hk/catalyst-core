@@ -26,25 +26,25 @@ INSERT INTO event (
     extra,
     cast_to
 ) VALUES (
-    10,
-    'Fund 10',
-    'Catalyst Dev Environment - Fund 10',
-    '2023-08-18 21:00:00',  -- Registration Snapshot Time
-    '2023-08-23 22:00:00',  -- Snapshot Start.
+    0,
+    'Test Fund',
+    'Catalyst Dev Environment - Test Fund',
+    '1970-01-01 00:00:00',  -- Registration Snapshot Time
+    '1970-01-01 00:00:00',  -- Snapshot Start.
     450000000,              -- Voting Power Threshold
     1,                      -- Max Voting Power PCT
     NULL,                   -- Review Rewards
-    '2023-06-16 19:56:00',  -- Start Time
-    '2023-09-18 00:00:00',  -- End Time
-    '2023-06-22 00:00:00',  -- Insight Sharing Start
-    '2023-06-22 00:00:00',  -- Proposal Submission Start
-    '2023-06-22 00:00:00',  -- Refine Proposals Start
-    '2023-07-13 00:00:00',  -- Finalize Proposals Start
-    '2023-07-20 00:00:00',  -- Proposal Assessment Start
-    '2023-08-10 00:00:00',  -- Assessment QA Start
-    '2023-08-31 11:00:00',  -- Voting Starts
-    '2023-09-14 11:00:00',  -- Voting Ends
-    '2023-09-18 11:00:00',  -- Tallying Ends
+    '1970-01-01 00:00:00',  -- Start Time
+    '1970-01-01 00:00:00',  -- End Time
+    '1970-01-01 00:00:00',  -- Insight Sharing Start
+    '1970-01-01 00:00:00',  -- Proposal Submission Start
+    '1970-01-01 00:00:00',  -- Refine Proposals Start
+    '1970-01-01 00:00:00',  -- Finalize Proposals Start
+    '1970-01-01 00:00:00',  -- Proposal Assessment Start
+    '1970-01-01 00:00:00',  -- Assessment QA Start
+    '1970-01-01 00:00:00',  -- Voting Starts
+    '1970-01-01 00:00:00',  -- Voting Ends
+    '1970-01-01 00:00:00',  -- Tallying Ends
     NULL,                   -- Block 0 Data
     NULL,                   -- Block 0 Hash
     1,                      -- Committee Size

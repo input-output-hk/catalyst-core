@@ -143,10 +143,23 @@ async fn track_metrics<T>(req: Request<T>, next: Next<T>) -> impl IntoResponse {
 
 #[cfg(test)]
 pub mod tests {
+    use axum::body::HttpBody;
     use std::str::FromStr;
 
-    pub fn body_data_json_check(body_data: Vec<u8>, expected_json: serde_json::Value) -> bool {
-        serde_json::Value::from_str(String::from_utf8(body_data).unwrap().as_str()).unwrap()
-            == expected_json
+    pub async fn response_body_to_json<
+        T: HttpBody<Data = impl Into<Vec<u8>>, Error = axum::Error> + Unpin,
+    >(
+        response: axum::response::Response<T>,
+    ) -> Result<serde_json::Value, String> {
+        let data: Vec<u8> = response
+            .into_body()
+            .data()
+            .await
+            .ok_or("response should have data in a body".to_string())?
+            .map_err(|e| e.to_string())?
+            .into();
+
+        serde_json::Value::from_str(String::from_utf8(data).map_err(|e| e.to_string())?.as_str())
+            .map_err(|e| e.to_string())
     }
 }

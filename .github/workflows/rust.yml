@@ -125,6 +125,7 @@ jobs:
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
+      # We are excluding cat-dat-service and event-db because we are already running it with Earthly
       - name: Build and archive tests
         run: | 
           cargo nextest archive \
@@ -137,6 +138,8 @@ jobs:
             --exclude vit-servicing-station-server \
             --exclude vit-servicing-station-tests \
             --exclude vit-servicing-station-lib \
+            --exclude cat-data-service \
+            --exclude event-db \
             --archive-file nextest-archive.tar.zst
 
       - name: Save test archive
@@ -235,6 +238,7 @@ jobs:
           PGPASSWORD: 123456
         run: cargo make local-event-db-test -h 127.0.0.1 -U postgres
 
+      # We are excluding cat-dat-service and event-db because we are already running it with Earthly
       - name: Build and archive tests
         if: steps.archive-cache.outputs.cache-hit != 'true'
         run: | 
@@ -248,6 +252,8 @@ jobs:
             --exclude vit-servicing-station-server \
             --exclude vit-servicing-station-tests \
             --exclude vit-servicing-station-lib \
+            --exclude cat-data-service \
+            --exclude event-db \
             --archive-file nextest-archive.tar.zst
 
       - name: Run Catalyst Core tests

@@ -23,17 +23,20 @@ def import_reviews(
     ),
     email: str = typer.Option(
         ...,
+        envvar="IDEASCALE_EMAIL",
         help="Ideascale user's email address (needs admin access)",
     ),
     password: str = typer.Option(
         ...,
+        envvar="IDEASCALE_PASSWORD",
         help="Ideascale user's password (needs admin access)",
     ),
     event_id: int = typer.Option(
         ...,
         help="Database row id of the event which data will be imported",
     ),
-    api_token: str = typer.Option(...,
+    api_token: str = typer.Option(
+        ...,
         envvar="IDEASCALE_API_TOKEN",
         help="IdeaScale API token"
     ),
@@ -51,7 +54,7 @@ def import_reviews(
         help="Log level",
     ),
     log_format: str = typer.Option(
-        "text",
+        "json",
         envvar="REVIEWS_LOG_FORMAT",
         help="Log format",
     )

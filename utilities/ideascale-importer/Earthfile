@@ -71,3 +71,8 @@ docker:
 
     # Build and tag the Docker image
     SAVE IMAGE --push ${registry}ideascale-importer:$tag
+
+# Run tests
+pytest:
+    FROM +build
+    RUN poetry run pytest -v --doctest-modules

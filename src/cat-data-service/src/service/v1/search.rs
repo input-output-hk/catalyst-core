@@ -62,9 +62,9 @@ async fn search_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::{app, tests::body_data_json_check};
+    use crate::service::{app, tests::response_body_to_json};
     use axum::{
-        body::{Body, HttpBody},
+        body::Body,
         http::{header, Method, Request, StatusCode},
     };
     use tower::ServiceExt;
@@ -94,11 +94,18 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!({
-                "total": 5,
+                "total": 6,
                 "results": [
+                    {
+                        "id": 0,
+                        "name": "Test Fund",
+                        "starts": "1970-01-01T00:00:00+00:00",
+                        "ends": "1970-01-01T00:00:00+00:00",
+                        "final": true
+                    },
                     {
                         "id": 1,
                         "name": "Test Fund 1",
@@ -136,8 +143,8 @@ mod tests {
                         "final": false
                     }
                 ]
-            })
-        ));
+            }),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -159,12 +166,12 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!({
-                "total": 5,
-            })
-        ));
+                "total": 6,
+            }),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -187,10 +194,10 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!({
-                "total": 5,
+                "total": 6,
                 "results": [
                     {
                         "id": 5,
@@ -227,10 +234,17 @@ mod tests {
                         "ends": "2020-06-01T12:00:00+00:00",
                         "reg_checked": "2020-03-31T12:00:00+00:00",
                         "final": true
+                    },
+                    {
+                        "id": 0,
+                        "name": "Test Fund",
+                        "starts": "1970-01-01T00:00:00+00:00",
+                        "ends": "1970-01-01T00:00:00+00:00",
+                        "final": true
                     }
                 ]
-            })
-        ));
+            }),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -253,8 +267,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 2,
@@ -274,7 +288,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -297,11 +311,11 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
-                    "total": 3,
+                    "total": 4,
                     "results": [
                         {
                             "id": 3,
@@ -326,11 +340,18 @@ mod tests {
                             "ends": "2020-06-01T12:00:00+00:00",
                             "reg_checked": "2020-03-31T12:00:00+00:00",
                             "final": true
-                        }
+                        },
+                        {
+                            "id": 0,
+                            "name": "Test Fund",
+                            "starts": "1970-01-01T00:00:00+00:00",
+                            "ends": "1970-01-01T00:00:00+00:00",
+                            "final": true
+                        },
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -353,8 +374,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 1,
@@ -368,8 +389,8 @@ mod tests {
                         },
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -415,8 +436,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 4,
@@ -464,7 +485,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -486,14 +507,14 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 4,
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -516,8 +537,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 4,
@@ -564,8 +585,8 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -588,8 +609,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 1,
@@ -607,8 +628,8 @@ mod tests {
                     ]
 
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -631,8 +652,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 3,
@@ -669,8 +690,8 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -716,8 +737,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 3,
@@ -743,7 +764,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -765,14 +786,14 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 3,
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -795,8 +816,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 3,
@@ -821,8 +842,8 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -845,8 +866,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 2,
@@ -866,7 +887,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -889,8 +910,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 2,
@@ -910,7 +931,7 @@ mod tests {
                     ]
                 }
             ),
-        ));
+        );
 
         let request = Request::builder()
             .method(Method::POST)
@@ -933,8 +954,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "total": 1,
@@ -947,8 +968,8 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .method(Method::POST)

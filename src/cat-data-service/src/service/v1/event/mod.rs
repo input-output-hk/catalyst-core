@@ -87,9 +87,9 @@ async fn events_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::{app, tests::body_data_json_check};
+    use crate::service::{app, tests::response_body_to_json};
     use axum::{
-        body::{Body, HttpBody},
+        body::Body,
         http::{Request, StatusCode},
     };
     use tower::ServiceExt;
@@ -105,8 +105,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "id": 1,
@@ -154,11 +154,11 @@ mod tests {
                         }
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
-            .uri(format!("/api/v1/event/{0}", 10))
+            .uri(format!("/api/v1/event/{0}", 100))
             .body(Body::empty())
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
@@ -176,10 +176,17 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 [
+                    {
+                        "id": 0,
+                        "name": "Test Fund",
+                        "starts": "1970-01-01T00:00:00+00:00",
+                        "ends": "1970-01-01T00:00:00+00:00",
+                        "final": true
+                    },
                     {
                         "id": 1,
                         "name": "Test Fund 1",
@@ -215,10 +222,10 @@ mod tests {
                         "id": 5,
                         "name": "Test Fund 5",
                         "final": false
-                    },
+                    }
                 ]
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?offset={0}", 1))
@@ -226,10 +233,18 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 [
+                    {
+                        "id": 1,
+                        "name": "Test Fund 1",
+                        "starts": "2020-05-01T12:00:00+00:00",
+                        "ends": "2020-06-01T12:00:00+00:00",
+                        "reg_checked": "2020-03-31T12:00:00+00:00",
+                        "final": true,
+                    },
                     {
                         "id": 2,
                         "name": "Test Fund 2",
@@ -257,10 +272,10 @@ mod tests {
                         "id": 5,
                         "name": "Test Fund 5",
                         "final": false
-                    },
+                    }
                 ]
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?limit={0}", 1))
@@ -268,8 +283,29 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
+            serde_json::json!(
+                [
+                    {
+                        "id": 0,
+                        "name": "Test Fund",
+                        "starts": "1970-01-01T00:00:00+00:00",
+                        "ends": "1970-01-01T00:00:00+00:00",
+                        "final": true
+                    }
+                ]
+            ),
+        );
+
+        let request = Request::builder()
+            .uri(format!("/api/v1/events?limit={0}&offset={1}", 1, 1))
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 [
                     {
@@ -279,32 +315,10 @@ mod tests {
                         "ends": "2020-06-01T12:00:00+00:00",
                         "reg_checked": "2020-03-31T12:00:00+00:00",
                         "final": true,
-                    },
+                    }
                 ]
-            )
-        ));
-
-        let request = Request::builder()
-            .uri(format!("/api/v1/events?limit={0}&offset={1}", 1, 1))
-            .body(Body::empty())
-            .unwrap();
-        let response = app.clone().oneshot(request).await.unwrap();
-        assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
-            serde_json::json!(
-                [
-                    {
-                        "id": 2,
-                        "name": "Test Fund 2",
-                        "starts": "2021-05-01T12:00:00+00:00",
-                        "ends": "2021-06-01T12:00:00+00:00",
-                        "reg_checked": "2021-03-31T12:00:00+00:00",
-                        "final": true,
-                    },
-                ]
-            )
-        ));
+            ),
+        );
 
         let request = Request::builder()
             .uri(format!("/api/v1/events?offset={0}", 10))
@@ -312,9 +326,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(
-            String::from_utf8(response.into_body().data().await.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(&Vec::<()>::new()).unwrap()
+            response_body_to_json(response).await.unwrap(),
+            serde_json::json!([])
         );
     }
 }

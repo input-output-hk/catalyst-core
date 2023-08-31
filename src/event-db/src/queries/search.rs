@@ -291,10 +291,18 @@ mod tests {
             .search(search_query.clone(), false, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 5);
+        assert_eq!(query_result.total, 6);
         assert_eq!(
             query_result.results,
             Some(ValueResults::Events(vec![
+                EventSummary {
+                    id: EventId(0),
+                    name: "Test Fund".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
+                    ends: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
+                    reg_checked: None,
+                    is_final: true,
+                },
                 EventSummary {
                     id: EventId(1),
                     name: "Test Fund 1".to_string(),
@@ -400,7 +408,7 @@ mod tests {
                     ends: None,
                     reg_checked: None,
                     is_final: false,
-                }
+                },
             ]))
         );
 
@@ -408,7 +416,7 @@ mod tests {
             .search(search_query, true, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 5);
+        assert_eq!(query_result.total, 6);
         assert_eq!(query_result.results, None);
 
         let search_query = SearchQuery {
@@ -426,7 +434,7 @@ mod tests {
             .search(search_query.clone(), false, None, None)
             .await
             .unwrap();
-        assert_eq!(query_result.total, 5);
+        assert_eq!(query_result.total, 6);
         assert_eq!(
             query_result.results,
             Some(ValueResults::Events(vec![
@@ -536,6 +544,14 @@ mod tests {
                     )),
                     is_final: true,
                 },
+                EventSummary {
+                    id: EventId(0),
+                    name: "Test Fund".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
+                    ends: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
+                    reg_checked: None,
+                    is_final: true,
+                }
             ]))
         );
 
@@ -582,7 +598,7 @@ mod tests {
             .search(search_query.clone(), false, None, Some(2))
             .await
             .unwrap();
-        assert_eq!(query_result.total, 3);
+        assert_eq!(query_result.total, 4);
         assert_eq!(
             query_result.results,
             Some(ValueResults::Events(vec![
@@ -664,6 +680,14 @@ mod tests {
                     )),
                     is_final: true,
                 },
+                EventSummary {
+                    id: EventId(0),
+                    name: "Test Fund".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
+                    ends: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
+                    reg_checked: None,
+                    is_final: true,
+                }
             ]))
         );
 

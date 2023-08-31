@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["STRUCT_NAME"],"fn":["Inner","ScalarWrapper"],"struct":["Block","BlockIds","Fragment","FragmentIds","Header","ScalarWrapper"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Proof"],"struct":["BftProof","Common","GenesisPraosProof"]};

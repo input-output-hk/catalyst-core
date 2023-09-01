@@ -17,6 +17,8 @@ import json
 from pathlib import Path
 from typing import Any, Iterable, List, Optional, Tuple, Union
 
+from hashlib import blake2b
+
 
 def is_dir(dirpath: str | Path):
     """Check if the directory is a directory."""
@@ -88,7 +90,6 @@ def analyze_snapshot(args: argparse.Namespace):
     rewards_invalid = 0
     rewards_types = {}
     unique_rewards = {}
-
 
     for registration in snapshot:
         # Index the registrations
@@ -192,6 +193,9 @@ def analyze_snapshot(args: argparse.Namespace):
     other_errors: dict[str, Any] = {}
 
     # Index the registration errors by their stake key.
+    latest_signature_errors: dict[str, Any] = {}
+
+    sig_error_title_printed = False
     for error in snapshot_errors:
         errors = error["errors"]
         if errors == ["ObsoleteRegistration"]:
@@ -207,8 +211,211 @@ def analyze_snapshot(args: argparse.Namespace):
                     other_errors[stake].append(error)
                 else:
                     other_errors[stake] = [error]
+
+                sigerror = False
+                for this_error in errors:
+                    if isinstance(this_error, dict) and "SignatureError" in this_error:
+                        sigerror = True
+                        break
+
+                if sigerror:
+                    if not sig_error_title_printed:
+                        # Note, we format this as CSV so we can import it into a spreadsheet.
+                        print("Signature Errors Detected:")
+                        print("Stake Pub Key, Stake Pub Key Hash, Voting Power, Wallet Type, Obsoleted, Reg Voting Key, Error Voting Key, Reg Reward Address, Error Reward Address, Reg TX ID, Error TX ID, reg_nonce, error_nonce, error_slot")
+                        sig_error_title_printed = True
+
+                    stake_pub_key = error["registration"]["61284"]["2"]
+                    try:
+                        b2b = blake2b(digest_size=28)
+                        b2b.update(bytes.fromhex(stake_pub_key[2:]))
+                        stake_pub_hash = "0xe1" + b2b.hexdigest()
+                    except Exception as ex:
+                        stake_pub_hash = f"Hash failed {ex}"
+
+                    delegations = error["registration"]["61284"]["1"]
+                    if isinstance(delegations, list):
+                        if len(delegations) == 1:
+                            error_voting_key = delegations[0][0]
+                        else:
+                            error_voting_key = "Multiple"
+                    else:
+                        error_voting_key = delegations
+
+                    error_reward_addr = error["registration"]["61284"]["3"]
+                    error_nonce = error["registration"]["61284"]["4"]
+                    error_txid = error["registration"]["tx_id"]
+                    error_slot = error["registration"]["slot"]
+
+                    wallet_type = "Unknown"
+                    obsoleted = "No"
+                    reg_voting_key = "Unknown"
+                    voting_power = "Unknown"
+                    reg_rewards_addr = "Unknown"
+                    reg_txid = "Unknown"
+                    reg_nonce = "Unknown"
+
+                    if stake_pub_key in snapshot_index:
+                        # Ok, so registered, extract details.
+
+                        # Get the registrations voting key
+                        reg = snapshot_index[stake_pub_key]
+                        delegations = reg["delegations"]
+                        if isinstance(delegations, list):
+                            if len(delegations) == 1:
+                                reg_voting_key = delegations[0][0]
+                            else:
+                                reg_voting_key = "Multiple"
+                        else:
+                            reg_voting_key = delegations
+
+                        voting_power = reg["voting_power"]
+                        reg_rewards_addr = reg["rewards_address"]
+
+                        reg_txid = reg["tx_id"]
+                        reg_nonce = reg["nonce"]
+                        reg_txid = reg["tx_id"]
+
+                        if reg_nonce > error_nonce:
+                            obsoleted = "Yes"
+
+                    elif stake_pub_hash in snapshot_unregistered:
+                        # Not registered, so see if the stake address is known to us.
+                        voting_power = snapshot_unregistered[stake_pub_hash]
+                        reg_voting_key = "Unregistered"
+                        reg_rewards_addr = "None"
+                        reg_txid = "None"
+                        reg_nonce = "None"
+
+                    # Check if we think the wallet is likely to be Yoroi
+                    if error_nonce > error_slot:
+                        wallet_type = "Possibly Yoroi"
+
+                    error_record = {
+                        "stake_pub_key": stake_pub_key,
+                        "stake_pub_hash": stake_pub_hash,
+                        "voting_power": voting_power,
+                        "wallet_type": wallet_type,
+                        "obsoleted": obsoleted,
+                        "reg_voting_key": reg_voting_key,
+                        "error_voting_key": error_voting_key,
+                        "reg_rewards_addr": reg_rewards_addr,
+                        "error_reward_addr": error_reward_addr,
+                        "reg_txid": reg_txid,
+                        "error_txid": error_txid,
+                        "reg_nonce": reg_nonce,
+                        "error_nonce": error_nonce,
+                        "error_slot": error_slot
+                    }
+
+                    # Store the latest error for each unique stake address.
+                    if stake_pub_key not in latest_signature_errors:
+                        latest_signature_errors[stake_pub_key] = error_record
+                    else:
+                        last_error_record = latest_signature_errors[stake_pub_key]
+                        if error_nonce > last_error_record["error_nonce"]:
+                            latest_signature_errors[stake_pub_key] = error_record
+
+                    print(f"{stake_pub_key}, {stake_pub_hash}, {voting_power}, {wallet_type}, {obsoleted}, {reg_voting_key}, {error_voting_key}, {reg_rewards_addr}, {error_reward_addr}, {reg_txid}, {error_txid}, {reg_nonce}, {error_nonce}, {error_slot}")
+
             except:
                 decode_errors.append(error)
+
+    if len(latest_signature_errors.keys()) > 0:
+        # Print the latest signature errors where there was never a valid registration
+        print()
+        print("Signature Errors Without Any Valid Registration:")
+        print("Stake Pub Key, Stake Pub Key Hash, Voting Power, Wallet Type, Obsoleted, Reg Voting Key, Error Voting Key, Reg Reward Address, Error Reward Address, Reg TX ID, Error TX ID, reg_nonce, error_nonce, error_slot")
+        for error in latest_signature_errors.values():
+            stake_pub_key = error["stake_pub_key"]
+            stake_pub_hash = error["stake_pub_hash"]
+            voting_power = error["voting_power"]
+            wallet_type = error["wallet_type"]
+            obsoleted = error["obsoleted"]
+            reg_voting_key = error["reg_voting_key"]
+            error_voting_key = error["error_voting_key"]
+            reg_rewards_addr = error["reg_rewards_addr"]
+            error_reward_addr = error["error_reward_addr"]
+            reg_txid = error["reg_txid"]
+            error_txid = error["error_txid"]
+            reg_nonce = error["reg_nonce"]
+            error_nonce = error["error_nonce"]
+            error_slot = error["error_slot"]
+
+            if reg_voting_key[0:2] != "0x":
+                print(f"{stake_pub_key}, {stake_pub_hash}, {voting_power}, {wallet_type}, {obsoleted}, {reg_voting_key}, {error_voting_key}, {reg_rewards_addr}, {error_reward_addr}, {reg_txid}, {error_txid}, {reg_nonce}, {error_nonce}, {error_slot}")
+
+        # Print the latest signature errors that occurred after a valid registration
+        print()
+        print("Signature Errors After a valid Registration:")
+        print("Stake Pub Key, Stake Pub Key Hash, Voting Power, Wallet Type, Obsoleted, Reg Voting Key, Error Voting Key, Reg Reward Address, Error Reward Address, Reg TX ID, Error TX ID, reg_nonce, error_nonce, error_slot")
+        for error in latest_signature_errors.values():
+            stake_pub_key = error["stake_pub_key"]
+            stake_pub_hash = error["stake_pub_hash"]
+            voting_power = error["voting_power"]
+            wallet_type = error["wallet_type"]
+            obsoleted = error["obsoleted"]
+            reg_voting_key = error["reg_voting_key"]
+            error_voting_key = error["error_voting_key"]
+            reg_rewards_addr = error["reg_rewards_addr"]
+            error_reward_addr = error["error_reward_addr"]
+            reg_txid = error["reg_txid"]
+            error_txid = error["error_txid"]
+            reg_nonce = error["reg_nonce"]
+            error_nonce = error["error_nonce"]
+            error_slot = error["error_slot"]
+
+            if obsoleted != "Yes" and reg_voting_key[0:2] == "0x":
+                print(f"{stake_pub_key}, {stake_pub_hash}, {voting_power}, {wallet_type}, {obsoleted}, {reg_voting_key}, {error_voting_key}, {reg_rewards_addr}, {error_reward_addr}, {reg_txid}, {error_txid}, {reg_nonce}, {error_nonce}, {error_slot}")
+
+        # Print the latest signature errors that were corrected by a later valid registration.
+        print()
+        print("Signature Errors That were Corrected:")
+        print("Stake Pub Key, Stake Pub Key Hash, Voting Power, Wallet Type, Obsoleted, Reg Voting Key, Error Voting Key, Reg Reward Address, Error Reward Address, Reg TX ID, Error TX ID, reg_nonce, error_nonce, error_slot")
+        for error in latest_signature_errors.values():
+            stake_pub_key = error["stake_pub_key"]
+            stake_pub_hash = error["stake_pub_hash"]
+            voting_power = error["voting_power"]
+            wallet_type = error["wallet_type"]
+            obsoleted = error["obsoleted"]
+            reg_voting_key = error["reg_voting_key"]
+            error_voting_key = error["error_voting_key"]
+            reg_rewards_addr = error["reg_rewards_addr"]
+            error_reward_addr = error["error_reward_addr"]
+            reg_txid = error["reg_txid"]
+            error_txid = error["error_txid"]
+            reg_nonce = error["reg_nonce"]
+            error_nonce = error["error_nonce"]
+            error_slot = error["error_slot"]
+
+            if obsoleted == "Yes":
+                print(f"{stake_pub_key}, {stake_pub_hash}, {voting_power}, {wallet_type}, {obsoleted}, {reg_voting_key}, {error_voting_key}, {reg_rewards_addr}, {error_reward_addr}, {reg_txid}, {error_txid}, {reg_nonce}, {error_nonce}, {error_slot}")
+
+        # Print the latest signature errors that occurred after a valid registration, but the voting key didn't change
+        print()
+        print("Signature Errors After a valid Registration - Voting Key still OK:")
+        print("Stake Pub Key, Stake Pub Key Hash, Voting Power, Wallet Type, Obsoleted, Reg Voting Key, Error Voting Key, Reg Reward Address, Error Reward Address, Reg TX ID, Error TX ID, reg_nonce, error_nonce, error_slot")
+        for error in latest_signature_errors.values():
+            stake_pub_key = error["stake_pub_key"]
+            stake_pub_hash = error["stake_pub_hash"]
+            voting_power = error["voting_power"]
+            wallet_type = error["wallet_type"]
+            obsoleted = error["obsoleted"]
+            reg_voting_key = error["reg_voting_key"]
+            error_voting_key = error["error_voting_key"]
+            reg_rewards_addr = error["reg_rewards_addr"]
+            error_reward_addr = error["error_reward_addr"]
+            reg_txid = error["reg_txid"]
+            error_txid = error["error_txid"]
+            reg_nonce = error["reg_nonce"]
+            error_nonce = error["error_nonce"]
+            error_slot = error["error_slot"]
+
+            if obsoleted != "Yes" and reg_voting_key[0:2] == "0x" and reg_voting_key == error_voting_key:
+                print(f"{stake_pub_key}, {stake_pub_hash}, {voting_power}, {wallet_type}, {obsoleted}, {reg_voting_key}, {error_voting_key}, {reg_rewards_addr}, {error_reward_addr}, {reg_txid}, {error_txid}, {reg_nonce}, {error_nonce}, {error_slot}")
+
+
+
 
     # Compare for differences
     compare: dict[str, Any] = {}

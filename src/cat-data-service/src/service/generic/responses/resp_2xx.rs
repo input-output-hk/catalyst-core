@@ -9,9 +9,9 @@ pub(crate) struct EmptyOK;
 
 #[derive(OneResponse)]
 #[oai(status = 204)]
-/// # NO CONTENT
+/// ## NO CONTENT
 ///
 /// The operation completed successfully, but there is no data to return.
 ///
-/// ## NO DATA BODY IS RETURNED FOR THIS RESPONSE
+/// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
 pub(crate) struct NoContent;

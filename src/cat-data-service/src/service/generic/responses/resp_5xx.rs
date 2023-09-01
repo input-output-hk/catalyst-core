@@ -43,7 +43,7 @@ impl Example for ServerErrorPayload {
 
 #[derive(OneResponse)]
 #[oai(status = 500)]
-/// # Internal Server Error
+/// ## Internal Server Error
 ///
 /// An internal server error occurred.
 ///
@@ -64,12 +64,12 @@ impl ServerError {
 
 #[derive(OneResponse)]
 #[oai(status = 503)]
-/// # Service Unavailable
+/// ## Service Unavailable
 ///
 /// The service is not available.
 ///
 /// *This is returned when the service either has not started,
 /// or has become unavailable.*
 ///
-/// ## NO DATA BODY IS RETURNED FOR THIS RESPONSE
+/// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
 pub(crate) struct ServiceUnavailable;

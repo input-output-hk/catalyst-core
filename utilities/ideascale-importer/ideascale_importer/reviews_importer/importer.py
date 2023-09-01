@@ -29,8 +29,7 @@ class FrontendClient:
             'rememberMe': 'true',
         }
 
-        res = await self.inner.post(f"{login}", data=data)
-        print(f"login: {res}")
+        await self.inner.post(f"{login}", data=data)
 
     async def download_reviews(self, reviews_path, review_stage_ids):
         async def download_file(self, review_stage_id):
@@ -38,7 +37,6 @@ class FrontendClient:
             file_name = f"{reviews_path}/{review_stage_id}.xlsx"
 
             content = await self.inner.get(f"{export_endpoint}{review_stage_id}")
-            print(content)
             tree = html.fromstring(content)
 
             # we are looking for '<div class="card panel export-result-progress" data-features="refresh-processing-item" data-processing-item-id="15622">'

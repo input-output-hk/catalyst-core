@@ -4,6 +4,7 @@ use crate::logger::{LogFormat, LogLevel, LOG_FORMAT_DEFAULT, LOG_LEVEL_DEFAULT};
 use clap::Args;
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
+use regex::Regex;
 use std::env;
 use std::net::SocketAddr;
 use tracing::log::error;
@@ -29,6 +30,12 @@ const GITHUB_ISSUE_TEMPLATE_DEFAULT: &str = "bug_report.md";
 
 /// Default CLIENT_ID_KEY used in development.
 const CLIENT_ID_KEY_DEFAULT: &str = "3db5301e-40f2-47ed-ab11-55b37674631a";
+
+/// Default API_HOSTNAME/S used in production.  This can be a single hostname, or a list of them.
+const API_HOSTNAMES_DEFAULT: &str = "https://api.prod.projectcatalyst.io";
+
+/// Default API_URL_PREFIX used in development.
+const API_URL_PREFIX_DEFAULT: &str = "/api";
 
 #[derive(Args, Clone)]
 pub struct Settings {
@@ -112,6 +119,31 @@ lazy_static! {
 
     /// The client id key used to anonymize client connections.
     pub(crate) static ref CLIENT_ID_KEY: StringEnvVar = StringEnvVar::new("CLIENT_ID_KEY", CLIENT_ID_KEY_DEFAULT);
+
+    /// A List of servers to provideThe client id key used to anonymize client connections.
+    pub(crate) static ref API_HOSTNAMES: StringEnvVar = StringEnvVar::new("API_HOSTNAMES", API_HOSTNAMES_DEFAULT);
+
+    /// The Basepath the API is served at.
+    pub(crate) static ref API_URL_PREFIX: StringEnvVar = StringEnvVar::new("API_URL_PREFIX", API_URL_PREFIX_DEFAULT);
+
+
+}
+
+fn is_valid_hostname(hostname: &str) -> bool {
+    // Define a regular expression for validating well-formed hostnames (with optional port)
+    let hostname_regex =
+        Regex::new(r"^(?:[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*\.)+[A-Za-z]{2,}(?::\d+)?$").unwrap();
+    hostname_regex.is_match(hostname) || hostname.parse::<std::net::SocketAddr>().is_ok()
+}
+
+/// Get a list of all hostnames to serve the API on.  Used by the OpenAPI Documentation to point to the correct backend.
+pub(crate) fn get_api_hostnames() -> Vec<String> {
+    API_HOSTNAMES
+        .as_str()
+        .split(",")
+        .map(|s| s.trim().to_string())
+        .filter(|s| is_valid_hostname(s.as_str()))
+        .collect()
 }
 
 // Jorm cleanup timeout is only used if feature is enabled.

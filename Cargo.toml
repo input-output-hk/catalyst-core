@@ -126,3 +126,5 @@ lazy_static = "1.4"
 url = "2.4.1"
 
 dotenvy = "0.15"
+
+regex = "1.9"

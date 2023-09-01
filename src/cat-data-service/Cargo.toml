@@ -60,6 +60,8 @@ dotenvy = { workspace = true }
 
 panic-message = "0.3"
 
+regex = { workspace = true }
+
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }
 quickcheck = { version = "0.9" }

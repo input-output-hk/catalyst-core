@@ -29,7 +29,8 @@ class FrontendClient:
             'rememberMe': 'true',
         }
 
-        await self.inner.post(f"{login}", data=data)
+        res = await self.inner.post(f"{login}", data=data)
+        print(res)
 
     async def download_reviews(self, reviews_path, review_stage_ids):
         async def download_file(self, review_stage_id):

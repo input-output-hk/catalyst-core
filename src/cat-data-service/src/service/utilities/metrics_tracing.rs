@@ -9,7 +9,7 @@ use opentelemetry::sdk::{
 use poem::{Endpoint, Request, Response};
 use poem_openapi::OperationId;
 use std::time::Instant;
-use tracing::{info, span};
+use tracing::{info, info_span, Instrument};
 
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
@@ -41,22 +41,11 @@ fn anonymous_client_id(req: &Request) -> String {
         .to_string()
 }
 
-/// Log all requests, with important tracing data.
-///
-/// ## Arguments
-/// * `ep` - Endpoint of the request being made.
-/// * `req` - Request being made
-///
-pub async fn log_requests<E: Endpoint>(ep: E, req: Request) -> Response {
+/// This is where the request actually gets processed and logs.
+/// We do this because spans do not play nicely with async code.
+/// This allows us to properly instrument the span to the request.
+async fn process_requests<E: Endpoint>(ep: E, req: Request) -> Response {
     let uri = req.uri().clone();
-
-    let client_id = anonymous_client_id(&req); // Get the clients anonymous unique id.
-    let conn_id = uuid::Uuid::new_v4().to_string(); // Make a random V4 UUID to track the connection.
-
-    let _span = span!(tracing::Level::INFO, "request", conn_id, client_id);
-
-    // TODO use tokio metrics to get better async stats.  Discuss with team first.
-    let start = Instant::now();
 
     info!(
         phase = "request",
@@ -68,12 +57,15 @@ pub async fn log_requests<E: Endpoint>(ep: E, req: Request) -> Response {
         // size = req.content_length(),  # Nice to know how big a request was.
     );
 
+    // Get absolute start of processing the request.
+    let start = Instant::now();
+
     let resp = ep.get_response(req).await;
 
     // Wall Time taken to execute function, as ms to 3 decimal places.
     // We are OK with the change in precision for this.
     #[allow(clippy::cast_precision_loss)]
-    let elapsed_ms = start.elapsed().as_nanos() as f64 / 1_000.0;
+    let elapsed_ms = start.elapsed().as_micros() as f64 / 1_000.0;
 
     // The OpenAPI Operation ID of this request.
     let oid = match resp.data::<OperationId>() {
@@ -92,6 +84,23 @@ pub async fn log_requests<E: Endpoint>(ep: E, req: Request) -> Response {
     );
 
     resp
+}
+
+/// Log all requests, with important tracing data.
+///
+/// ## Arguments
+/// * `ep` - Endpoint of the request being made.
+/// * `req` - Request being made
+///
+pub async fn log_requests<E: Endpoint>(ep: E, req: Request) -> Response {
+    let client_id = anonymous_client_id(&req); // Get the clients anonymous unique id.
+    let conn_id = uuid::Uuid::new_v4().to_string(); // Make a random V4 UUID to track the connection.
+
+    process_requests(ep, req)
+        .instrument(
+            info_span!(target: "api_request", "request", conn_id = %conn_id, client_id = %client_id),
+        )
+        .await
 }
 
 /// Initialize Prometheus metrics.

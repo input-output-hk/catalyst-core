@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["init_prometheus","log_requests"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"fn":["anonymous_client_id","init_prometheus","log_requests","process_requests"],"opaque":[""],"static":["CALLSITE","META"]};

@@ -669,12 +669,12 @@
         id: FragmentId,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), FragmentRejectionReason&gt; {
         <span class="kw">if </span><span class="self">self</span>.logs.exists(id) {
-            <span class="macro">tracing::debug!</span>(<span class="string">&quot;fragment is already logged&quot;</span>);
+            <span class="macro">tracing::debug!</span>(<span class="string">&quot;fragment is already logged, excluding from the pool&quot;</span>);
             <span class="kw">return </span><span class="prelude-val">Err</span>(FragmentRejectionReason::FragmentAlreadyInLog);
         }
 
         <span class="kw">if </span>!is_fragment_valid(fragment) {
-            <span class="macro">tracing::debug!</span>(<span class="string">&quot;fragment is invalid, not including to the pool&quot;</span>);
+            <span class="macro">tracing::debug!</span>(<span class="string">&quot;fragment is invalid, excluding from the pool&quot;</span>);
             <span class="kw">return </span><span class="prelude-val">Err</span>(FragmentRejectionReason::FragmentInvalid);
         }
 
@@ -695,7 +695,7 @@
             }
         }
 
-        <span class="macro">tracing::debug!</span>(<span class="string">&quot;including fragment to the pool&quot;</span>);
+        <span class="macro">tracing::debug!</span>(<span class="string">&quot;fragment is valid for pool entry&quot;</span>);
         <span class="prelude-val">Ok</span>(())
     }
 

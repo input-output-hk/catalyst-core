@@ -184,7 +184,23 @@
 <a href="#184" id="184">184</a>
 <a href="#185" id="185">185</a>
 <a href="#186" id="186">186</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::state::State;
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Main entrypoint to the service
+//!
+</span><span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::{
     extract::MatchedPath,
     http::{Method, Request, StatusCode},
@@ -194,13 +210,13 @@
     Json, Router,
 };
 <span class="kw">use </span>metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
-<span class="kw">use </span>poem::{middleware::OpenTelemetryMetrics, EndpointExt, IntoEndpoint};
 <span class="kw">use </span>serde::Serialize;
 <span class="kw">use </span>std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
 <span class="kw">use </span>tower_http::cors::{Any, CorsLayer};
 
 <span class="kw">mod </span>api;
 <span class="kw">mod </span>docs;
+<span class="kw">mod </span>generic;
 <span class="kw">mod </span>health;
 <span class="kw">mod </span>poem_service;
 <span class="kw">mod </span>utilities;
@@ -253,7 +269,23 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">pub async fn </span>run(
+<span class="doccomment">/// # Run all web services.
+///
+/// This will currently run both a Axum based Web API, and a Poem based API.
+/// This is only for migration until all endpoints are provided by the Poem service.
+///
+/// ## Arguments
+///
+/// `service_addr`: &amp;`SocketAddr` - the address to listen on
+/// `metrics_addr`: &amp;`Option&lt;SocketAddr&gt;` - the address to listen on for metrics
+/// `state`: `Arc&lt;State&gt;` - the state
+///
+/// ## Errors
+///
+/// `Error::CannotRunService` - cannot run the service
+/// `Error::EventDbError` - cannot connect to the event db
+/// `Error::IoError` - An IO error has occurred.
+</span><span class="kw">pub async fn </span>run(
     service_addr: <span class="kw-2">&amp;</span>SocketAddr,
     metrics_addr: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;SocketAddr&gt;,
     state: Arc&lt;State&gt;,
@@ -262,9 +294,8 @@
 
     <span class="comment">// Create service addresses to be used during poem migration.
     // Service address is same as official address but +1 to the port.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>poem_service_addr = <span class="kw-2">*</span>service_addr;
-    poem_service_addr.set_port(poem_service_addr.port() + <span class="number">1</span>);
-    <span class="kw">let </span>poem_app = poem_service::app(<span class="kw-2">&amp;</span>poem_service_addr).with(poem_service::cors_layer());
+    </span><span class="kw">let </span><span class="kw-2">mut </span>poem_service = <span class="kw-2">*</span>service_addr;
+    poem_service.set_port(poem_service.port() + <span class="number">1</span>);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(metrics_addr) = metrics_addr {
         <span class="kw">let </span>service_app = app(state)
@@ -272,33 +303,17 @@
             .route_layer(middleware::from_fn(track_metrics));
         <span class="kw">let </span>metrics_app = metrics_app().layer(cors);
 
-        <span class="comment">// Create metrics service addresses to be used during poem migration.
-        // Metrics service address is same as official metrics address but +1 to the port.
-        </span><span class="kw">let </span><span class="kw-2">mut </span>poem_metrics_addr = <span class="kw-2">*</span>metrics_addr;
-        poem_metrics_addr.set_port(poem_metrics_addr.port() + <span class="number">1</span>);
-        <span class="kw">let </span>poem_metrics_app = poem_service::metrics_app().with(poem_service::cors_layer());
-        <span class="kw">let </span>peom_service_app = poem_app.with(OpenTelemetryMetrics::new());
-
         <span class="macro">tokio::try_join!</span>(
-            run_service(service_app, service_addr, <span class="string">&quot;axum service&quot;</span>),
-            run_service(metrics_app, metrics_addr, <span class="string">&quot;axum metrics&quot;</span>),
-            poem_service::run_service(
-                peom_service_app.into_endpoint(),
-                <span class="kw-2">&amp;</span>poem_service_addr,
-                <span class="string">&quot;poem service&quot;
-            </span>),
-            poem_service::run_service(
-                poem_metrics_app.into_endpoint(),
-                <span class="kw-2">&amp;</span>poem_metrics_addr,
-                <span class="string">&quot;poem metrics&quot;
-            </span>),
+            run_service(service_app, service_addr, <span class="string">&quot;service&quot;</span>),
+            run_service(metrics_app, metrics_addr, <span class="string">&quot;metrics&quot;</span>),
+            poem_service::run_service(<span class="kw-2">&amp;</span>poem_service),
         )<span class="question-mark">?</span>;
     } <span class="kw">else </span>{
         <span class="kw">let </span>service_app = app(state).layer(cors);
 
         <span class="macro">tokio::try_join!</span>(
-            run_service(service_app, service_addr, <span class="string">&quot;axum service&quot;</span>),
-            poem_service::run_service(poem_app.into_endpoint(), <span class="kw-2">&amp;</span>poem_service_addr, <span class="string">&quot;poem service&quot;</span>),
+            run_service(service_app, service_addr, <span class="string">&quot;service&quot;</span>),
+            poem_service::run_service(<span class="kw-2">&amp;</span>poem_service),
         )<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
@@ -363,11 +378,24 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">pub mod </span>tests {
+    <span class="kw">use </span>axum::body::HttpBody;
     <span class="kw">use </span>std::str::FromStr;
 
-    <span class="kw">pub fn </span>body_data_json_check(body_data: Vec&lt;u8&gt;, expected_json: serde_json::Value) -&gt; bool {
-        serde_json::Value::from_str(String::from_utf8(body_data).unwrap().as_str()).unwrap()
-            == expected_json
+    <span class="kw">pub async fn </span>response_body_to_json&lt;
+        T: HttpBody&lt;Data = <span class="kw">impl </span>Into&lt;Vec&lt;u8&gt;&gt;, Error = axum::Error&gt; + Unpin,
+    &gt;(
+        response: axum::response::Response&lt;T&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;serde_json::Value, String&gt; {
+        <span class="kw">let </span>data: Vec&lt;u8&gt; = response
+            .into_body()
+            .data()
+            .<span class="kw">await
+            </span>.ok_or(<span class="string">&quot;response should have data in a body&quot;</span>.to_string())<span class="question-mark">?
+            </span>.map_err(|e| e.to_string())<span class="question-mark">?
+            </span>.into();
+
+        serde_json::Value::from_str(String::from_utf8(data).map_err(|e| e.to_string())<span class="question-mark">?</span>.as_str())
+            .map_err(|e| e.to_string())
     }
 }
 </code></pre></div>

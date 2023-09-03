@@ -476,6 +476,17 @@
 <a href="#476" id="476">476</a>
 <a href="#477" id="477">477</a>
 <a href="#478" id="478">478</a>
+<a href="#479" id="479">479</a>
+<a href="#480" id="480">480</a>
+<a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
+<a href="#483" id="483">483</a>
+<a href="#484" id="484">484</a>
+<a href="#485" id="485">485</a>
+<a href="#486" id="486">486</a>
+<a href="#487" id="487">487</a>
+<a href="#488" id="488">488</a>
+<a href="#489" id="489">489</a>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">pub use </span>fraction::Fraction;
 <span class="kw">use </span>jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
@@ -581,7 +592,8 @@
 }
 
 <span class="kw">impl </span>Snapshot {
-    <span class="kw">pub fn </span>from_raw_snapshot(
+    <span class="attr">#[allow(clippy::missing_errors_doc)]
+    </span><span class="kw">pub fn </span>from_raw_snapshot(
         raw_snapshot: RawSnapshot,
         stake_threshold: Value,
         cap: Fraction,
@@ -592,8 +604,8 @@
             .<span class="number">0
             </span>.into_iter()
             <span class="comment">// Discard registrations with 0 voting power since they don&#39;t influence
-            // snapshot anyway
-            </span>.filter(|reg| reg.voting_power &gt;= std::cmp::max(stake_threshold, <span class="number">1</span>.into()))
+            // snapshot anyway. But can not throw any others away, even if less than the stake threshold.
+            </span>.filter(|reg| reg.voting_power &gt;= <span class="number">1</span>.into())
             <span class="comment">// TODO: add capability to select voting purpose for a snapshot.
             // At the moment Catalyst is the only one in use
             </span>.filter(|reg| {
@@ -663,7 +675,12 @@
                 },
                 contributions,
             })
+            <span class="comment">// Because of multiple registrations to the same voting key,  we can only
+            // filter once all registrations for the same key are known.
+            // `stake_threshold` is the minimum stake for all registrations COMBINED.
+            </span>.filter(|entry| entry.hir.voting_power &gt;= stake_threshold)
             .collect();
+
         <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
             inner: <span class="self">Self</span>::apply_voting_power_cap(entries, cap)<span class="question-mark">?
                 </span>.into_iter()
@@ -682,18 +699,21 @@
             .collect())
     }
 
-    <span class="kw">pub fn </span>stake_threshold(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Value {
+    <span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>stake_threshold(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Value {
         <span class="self">self</span>.stake_threshold
     }
 
-    <span class="kw">pub fn </span>to_voter_hir(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;VoterHIR&gt; {
+    <span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>to_voter_hir(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;VoterHIR&gt; {
         <span class="self">self</span>.inner
             .values()
             .map(|entry| entry.hir.clone())
             .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
     }
 
-    <span class="kw">pub fn </span>to_full_snapshot_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;SnapshotInfo&gt; {
+    <span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>to_full_snapshot_info(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;SnapshotInfo&gt; {
         <span class="self">self</span>.inner.values().cloned().collect()
     }
 
@@ -701,7 +721,8 @@
         <span class="self">self</span>.inner.keys()
     }
 
-    <span class="kw">pub fn </span>contributions_for_voting_key&lt;I: Borrow&lt;Identifier&gt;&gt;(
+    <span class="attr">#[must_use]
+    </span><span class="kw">pub fn </span>contributions_for_voting_key&lt;I: Borrow&lt;Identifier&gt;&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         voting_public_key: I,
     ) -&gt; Vec&lt;KeyContribution&gt; {
@@ -730,7 +751,8 @@
     }
 
     <span class="kw">impl </span>Snapshot {
-        <span class="kw">pub fn </span>to_block0_initials(<span class="kw-2">&amp;</span><span class="self">self</span>, discrimination: Discrimination) -&gt; Vec&lt;InitialUTxO&gt; {
+        <span class="attr">#[must_use]
+        </span><span class="kw">pub fn </span>to_block0_initials(<span class="kw-2">&amp;</span><span class="self">self</span>, discrimination: Discrimination) -&gt; Vec&lt;InitialUTxO&gt; {
             <span class="self">self</span>.inner
                 .iter()
                 .map(|(vk, entry)| {

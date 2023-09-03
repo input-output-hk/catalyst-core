@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"cat_data_service":[["impl Example for <a class=\"struct\" href=\"cat_data_service/service/generic/responses/resp_5xx/struct.ServerErrorPayload.html\" title=\"struct cat_data_service::service::generic::responses::resp_5xx::ServerErrorPayload\">ServerErrorPayload</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

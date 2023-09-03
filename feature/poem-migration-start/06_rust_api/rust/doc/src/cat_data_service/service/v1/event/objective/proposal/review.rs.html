@@ -267,9 +267,9 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::service::{app, tests::body_data_json_check};
+    <span class="kw">use </span><span class="kw">crate</span>::service::{app, tests::response_body_to_json};
     <span class="kw">use </span>axum::{
-        body::{Body, HttpBody},
+        body::Body,
         http::{Request, StatusCode},
     };
     <span class="kw">use </span>tower::ServiceExt;
@@ -288,8 +288,8 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
+        <span class="macro">assert_eq!</span>(
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
             <span class="macro">serde_json::json!</span>([
                 {
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 1&quot;</span>,
@@ -319,8 +319,8 @@
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 3&quot;</span>,
                     <span class="string">&quot;ratings&quot;</span>: []
                 }
-            ])
-        ));
+            ]),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -331,8 +331,8 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
+        <span class="macro">assert_eq!</span>(
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
             <span class="macro">serde_json::json!</span>([
                 {
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 1&quot;</span>,
@@ -358,8 +358,8 @@
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 2&quot;</span>,
                     <span class="string">&quot;ratings&quot;</span>: []
                 },
-            ])
-        ));
+            ]),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -370,8 +370,8 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
+        <span class="macro">assert_eq!</span>(
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
             <span class="macro">serde_json::json!</span>([
                 {
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 2&quot;</span>,
@@ -381,8 +381,8 @@
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 3&quot;</span>,
                     <span class="string">&quot;ratings&quot;</span>: []
                 }
-            ])
-        ));
+            ]),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(
@@ -393,15 +393,15 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
+        <span class="macro">assert_eq!</span>(
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
             <span class="macro">serde_json::json!</span>([
                 {
                     <span class="string">&quot;assessor&quot;</span>: <span class="string">&quot;assessor 2&quot;</span>,
                     <span class="string">&quot;ratings&quot;</span>: []
                 },
-            ])
-        ));
+            ]),
+        );
     }
 }
 </code></pre></div>

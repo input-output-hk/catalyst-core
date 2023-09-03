@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["BadRequest","Forbidden","MethodNotAllowed","NotAcceptable","NotFound","Unauthorized","ValidationError"]};

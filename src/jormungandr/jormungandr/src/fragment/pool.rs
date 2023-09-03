@@ -96,12 +96,12 @@ impl Pool {
         id: FragmentId,
     ) -> Result<(), FragmentRejectionReason> {
         if self.logs.exists(id) {
-            tracing::debug!("fragment is already logged");
+            tracing::debug!("fragment is already logged, excluding from the pool");
             return Err(FragmentRejectionReason::FragmentAlreadyInLog);
         }
 
         if !is_fragment_valid(fragment) {
-            tracing::debug!("fragment is invalid, not including to the pool");
+            tracing::debug!("fragment is invalid, excluding from the pool");
             return Err(FragmentRejectionReason::FragmentInvalid);
         }
 
@@ -122,7 +122,7 @@ impl Pool {
             }
         }
 
-        tracing::debug!("including fragment to the pool");
+        tracing::debug!("fragment is valid for pool entry");
         Ok(())
     }
 

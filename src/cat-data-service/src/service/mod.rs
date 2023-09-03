@@ -77,8 +77,8 @@ async fn run_service(app: Router, addr: &SocketAddr, name: &str) -> Result<(), E
 /// ## Arguments
 ///
 /// `service_addr`: &`SocketAddr` - the address to listen on
-/// `metrics_addr`: &Option<SocketAddr> - the address to listen on for metrics
-/// `state`: Arc<State> - the state
+/// `metrics_addr`: &`Option<SocketAddr>` - the address to listen on for metrics
+/// `state`: `Arc<State>` - the state
 ///
 /// ## Errors
 ///

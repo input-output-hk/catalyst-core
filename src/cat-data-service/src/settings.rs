@@ -138,7 +138,7 @@ fn string_to_api_hostnames(addr: &SocketAddr, hosts: &str) -> Vec<String> {
     }
 
     let configured_hosts: Vec<String> = hosts
-        .split(",")
+        .split(',')
         .map(|s| {
             let url = Url::parse(s.trim());
             match url {
@@ -201,7 +201,7 @@ fn string_to_api_hostnames(addr: &SocketAddr, hosts: &str) -> Vec<String> {
 /// Hostnames are taken from the `API_HOSTNAMES` environment variable.
 /// If that is not set, `addr` is used.
 pub(crate) fn get_api_hostnames(addr: &SocketAddr) -> Vec<String> {
-    string_to_api_hostnames(addr, &*API_HOSTNAMES.as_str())
+    string_to_api_hostnames(addr, API_HOSTNAMES.as_str())
 }
 
 // Jorm cleanup timeout is only used if feature is enabled.

@@ -94,7 +94,7 @@ pub async fn run(
 
     // Create service addresses to be used during poem migration.
     // Service address is same as official address but +1 to the port.
-    let mut poem_service = service_addr.clone();
+    let mut poem_service = *service_addr;
     poem_service.set_port(poem_service.port() + 1);
 
     if let Some(metrics_addr) = metrics_addr {

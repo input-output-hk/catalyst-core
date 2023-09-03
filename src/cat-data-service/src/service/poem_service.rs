@@ -66,7 +66,7 @@ pub async fn run_service(addr: &SocketAddr) -> Result<(), Error> {
     // help find them in the logs if they happen in production.
     set_panic_hook();
 
-    let hosts = get_api_hostnames(&addr);
+    let hosts = get_api_hostnames(addr);
 
     let app = mk_app(hosts, None);
 

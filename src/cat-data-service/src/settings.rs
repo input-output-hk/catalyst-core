@@ -4,9 +4,8 @@ use crate::logger::{LogFormat, LogLevel, LOG_FORMAT_DEFAULT, LOG_LEVEL_DEFAULT};
 use clap::Args;
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
-use regex::Regex;
 use std::env;
-use std::net::SocketAddr;
+use std::net::{IpAddr, SocketAddr};
 use tracing::log::error;
 use url::Url;
 
@@ -129,21 +128,80 @@ lazy_static! {
 
 }
 
-fn is_valid_hostname(hostname: &str) -> bool {
-    // Define a regular expression for validating well-formed hostnames (with optional port)
-    let hostname_regex =
-        Regex::new(r"^(?:[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*\.)+[A-Za-z]{2,}(?::\d+)?$").unwrap();
-    hostname_regex.is_match(hostname) || hostname.parse::<std::net::SocketAddr>().is_ok()
+/// Transform a string list of hostnames into a vec of hostnames.
+/// Default to the service address if none specified.
+///
+fn string_to_api_hostnames(addr: &SocketAddr, hosts: &str) -> Vec<String> {
+    fn invalid_hostname(hostname: &str) -> String {
+        error!("Invalid hostname for API: {}", hostname);
+        String::new()
+    }
+
+    let configured_hosts: Vec<String> = hosts
+        .split(",")
+        .map(|s| {
+            let url = Url::parse(s.trim());
+            match url {
+                Ok(url) => {
+                    // Get the scheme, and if its empty, use http
+                    let scheme = url.scheme();
+
+                    let port = url.port();
+
+                    // Rebuild the scheme + hostname
+                    match url.host() {
+                        Some(host) => {
+                            let host = host.to_string();
+                            if host.is_empty() {
+                                invalid_hostname(s)
+                            } else {
+                                match port {
+                                    Some(port) => {
+                                        format! {"{scheme}://{host}:{port}"}
+                                        //scheme.to_owned() + "://" + &host + ":" + &port.to_string()
+                                    }
+                                    None => {
+                                        format! {"{scheme}://{host}"}
+                                    }
+                                }
+                            }
+                        }
+                        None => invalid_hostname(s),
+                    }
+                }
+                Err(_) => invalid_hostname(s),
+            }
+        })
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    // If there are no hostnames, just use the address of the service.
+    if configured_hosts.is_empty() {
+        // If the Socket Address is the "catchall" address, then use localhost.
+        if match addr.ip() {
+            IpAddr::V4(ipv4) => ipv4.is_unspecified(),
+            IpAddr::V6(ipv6) => ipv6.is_unspecified(),
+        } {
+            let port = addr.port();
+            vec![format! {"http://localhost:{port}"}]
+        } else {
+            vec![format! {"http://{addr}"}]
+        }
+    } else {
+        configured_hosts
+    }
 }
 
-/// Get a list of all hostnames to serve the API on.  Used by the OpenAPI Documentation to point to the correct backend.
-pub(crate) fn get_api_hostnames() -> Vec<String> {
-    API_HOSTNAMES
-        .as_str()
-        .split(",")
-        .map(|s| s.trim().to_string())
-        .filter(|s| is_valid_hostname(s.as_str()))
-        .collect()
+/// Get a list of all hostnames to serve the API on.
+///
+/// Used by the `OpenAPI` Documentation to point to the correct backend.
+/// Take a list of [scheme://] + hostnames from the env var and turns it into
+/// a lits of strings.
+///
+/// Hostnames are taken from the `API_HOSTNAMES` environment variable.
+/// If that is not set, `addr` is used.
+pub(crate) fn get_api_hostnames(addr: &SocketAddr) -> Vec<String> {
+    string_to_api_hostnames(addr, &*API_HOSTNAMES.as_str())
 }
 
 // Jorm cleanup timeout is only used if feature is enabled.
@@ -215,7 +273,6 @@ pub(crate) fn generate_github_issue_url(title: &str) -> Option<Url> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::Duration;
 
     #[test]
     fn github_repo_name_default() {
@@ -233,7 +290,56 @@ mod tests {
         let title = "Hello, World! How are you?";
         assert_eq!(
             super::generate_github_issue_url(title).unwrap().as_str(),
-            "https://github.com/input-output-hk/catalyst-core/issues/new?template=bug_report.md&title=Hello%2C%20World%21%20How%20are%20you%3F"
+            "https://github.com/input-output-hk/catalyst-core/issues/new?template=bug_report.md&title=Hello%2C+World%21+How+are+you%3F"
         );
+    }
+
+    #[test]
+    fn configured_hosts_default() {
+        let configured_hosts = get_api_hostnames(&SocketAddr::from(([127, 0, 0, 1], 8080)));
+        assert_eq!(
+            configured_hosts,
+            vec!["https://api.prod.projectcatalyst.io"]
+        );
+    }
+
+    #[test]
+    fn configured_hosts_set_multiple() {
+        let configured_hosts = string_to_api_hostnames(
+            &SocketAddr::from(([127, 0, 0, 1], 8080)),
+            "http://api.prod.projectcatalyst.io , https://api.dev.projectcatalyst.io:1234",
+        );
+        assert_eq!(
+            configured_hosts,
+            vec![
+                "http://api.prod.projectcatalyst.io",
+                "https://api.dev.projectcatalyst.io:1234"
+            ]
+        );
+    }
+
+    #[test]
+    fn configured_hosts_set_multiple_one_invalid() {
+        let configured_hosts = string_to_api_hostnames(
+            &SocketAddr::from(([127, 0, 0, 1], 8080)),
+            "not a hostname , https://api.dev.projectcatalyst.io:1234",
+        );
+        assert_eq!(
+            configured_hosts,
+            vec!["https://api.dev.projectcatalyst.io:1234"]
+        );
+    }
+
+    #[test]
+    fn configured_hosts_set_empty() {
+        let configured_hosts =
+            string_to_api_hostnames(&SocketAddr::from(([127, 0, 0, 1], 8080)), "");
+        assert_eq!(configured_hosts, vec!["http://127.0.0.1:8080"]);
+    }
+
+    #[test]
+    fn configured_hosts_set_empty_undefined_address() {
+        let configured_hosts = string_to_api_hostnames(&SocketAddr::from(([0, 0, 0, 0], 7654)), "");
+        assert_eq!(configured_hosts, vec!["http://localhost:7654"]);
     }
 }

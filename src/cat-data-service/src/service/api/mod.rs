@@ -7,9 +7,8 @@ use poem_openapi::{
     param::Query, payload::PlainText, ContactObject, LicenseObject, OpenApi, OpenApiService,
     ServerObject,
 };
-use std::net::SocketAddr;
 
-use crate::settings::{get_api_hostnames, API_URL_PREFIX};
+use crate::settings::API_URL_PREFIX;
 
 mod health;
 mod test_endpoints;
@@ -77,7 +76,7 @@ impl Api {
     }
 }
 
-pub(crate) fn mk_api(addr: &SocketAddr) -> OpenApiServiceT {
+pub(crate) fn mk_api(hosts: Vec<String>) -> OpenApiServiceT {
     let mut service = OpenApiService::new((Api, HealthApi), API_TITLE, API_VERSION)
         .contact(get_api_contact())
         .description(API_DESCRIPTION)
@@ -86,18 +85,9 @@ pub(crate) fn mk_api(addr: &SocketAddr) -> OpenApiServiceT {
         .terms_of_service(TERMS_OF_SERVICE)
         .url_prefix(API_URL_PREFIX.as_str());
 
-    // Add the Servers to the service.
-    // There can be multiple.
-    let server_hosts = get_api_hostnames();
-    if server_hosts.len() == 0 {
-        // This should be the actual hostname of the service.  But in the absence of that, the IP address/port will do.
-        let server_host = format!("http://{}:{}", addr.ip(), addr.port());
-
-        service = service.server(ServerObject::new(server_host));
-    } else {
-        for host in server_hosts {
-            service = service.server(ServerObject::new(host));
-        }
+    // Add all the hosts where this API should be reachable.
+    for host in hosts {
+        service = service.server(ServerObject::new(host));
     }
 
     service

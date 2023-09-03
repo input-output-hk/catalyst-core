@@ -2,20 +2,45 @@
 //!
 //! This provides only the primary entrypoint to the service.
 
-
 use crate::service::docs::docs;
 use crate::service::Error;
 
 use crate::service::api::mk_api;
+use crate::service::utilities::catch_panic::{set_panic_hook, ServicePanicHandler};
 use crate::service::utilities::metrics_tracing::{init_prometheus, log_requests};
-use crate::service::utilities::catch_panic::{ServicePanicHandler, set_panic_hook};
-use crate::settings::API_URL_PREFIX;
+use crate::settings::{get_api_hostnames, API_URL_PREFIX};
 
 use poem::endpoint::PrometheusExporter;
 use poem::listener::TcpListener;
 use poem::middleware::{CatchPanic, Cors, OpenTelemetryMetrics};
-use poem::{EndpointExt, Route};
+use poem::{EndpointExt, IntoEndpoint, Route};
 use std::net::SocketAddr;
+
+/// This exists to allow us to add extra routes to the service for testing purposes.
+pub(crate) fn mk_app(hosts: Vec<String>, base_route: Option<Route>) -> impl IntoEndpoint {
+    // Get the base route if defined, or a new route if not.
+    let base_route = match base_route {
+        Some(route) => route,
+        None => Route::new(),
+    };
+
+    let api_service = mk_api(hosts);
+    let docs = docs(&api_service);
+
+    let prometheus_controller = init_prometheus();
+
+    base_route
+        .nest(API_URL_PREFIX.as_str(), api_service)
+        .nest("/docs", docs)
+        .nest(
+            "/metrics",
+            PrometheusExporter::with_controller(prometheus_controller),
+        )
+        .with(Cors::new())
+        .with(OpenTelemetryMetrics::new())
+        .with(CatchPanic::new().with_handler(ServicePanicHandler))
+        .around(|ep, req| async move { Ok(log_requests(ep, req).await) })
+}
 
 /// Run the Poem Service
 ///
@@ -41,22 +66,9 @@ pub async fn run_service(addr: &SocketAddr) -> Result<(), Error> {
     // help find them in the logs if they happen in production.
     set_panic_hook();
 
-    let api_service = mk_api(addr);
-    let docs = docs(&api_service);
+    let hosts = get_api_hostnames(&addr);
 
-    let prometheus_controller = init_prometheus();
-
-    let app = Route::new()
-        .nest(API_URL_PREFIX.as_str(), api_service)
-        .nest("/docs", docs)
-        .nest(
-            "/metrics",
-            PrometheusExporter::with_controller(prometheus_controller),
-        )
-        .with(Cors::new())
-        .with(OpenTelemetryMetrics::new())
-        .with(CatchPanic::new().with_handler(ServicePanicHandler))
-        .around(|ep, req| async move { Ok(log_requests(ep, req).await) });
+    let app = mk_app(hosts, None);
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)

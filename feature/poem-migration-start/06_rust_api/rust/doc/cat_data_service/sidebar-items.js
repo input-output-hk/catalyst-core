@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["main"],"mod":["cli","logger","service","settings","state","types"]};
+window.SIDEBAR_ITEMS = {"fn":["main"],"mod":["axum_service","cli","logger","service","settings","state","types"]};

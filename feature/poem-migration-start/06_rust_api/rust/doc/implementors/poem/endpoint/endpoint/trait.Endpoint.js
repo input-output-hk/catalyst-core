@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"cat_data_service":[["impl&lt;E&gt; Endpoint for <a class=\"struct\" href=\"cat_data_service/service/utilities/middleware/chain_axum/struct.ChainAxumEndpoint.html\" title=\"struct cat_data_service::service::utilities::middleware::chain_axum::ChainAxumEndpoint\">ChainAxumEndpoint</a>&lt;E&gt;<span class=\"where fmt-newline\">where\n    E: Endpoint,</span>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

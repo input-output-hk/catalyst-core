@@ -75,6 +75,16 @@
 <a href="#75" id="75">75</a>
 <a href="#76" id="76">76</a>
 <a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Poem Service for cat-data-service endpoints.
 //!
 //! This provides only the primary entrypoint to the service.
@@ -85,16 +95,24 @@
 <span class="kw">use </span><span class="kw">crate</span>::service::api::mk_api;
 <span class="kw">use </span><span class="kw">crate</span>::service::utilities::catch_panic::{set_panic_hook, ServicePanicHandler};
 <span class="kw">use </span><span class="kw">crate</span>::service::utilities::metrics_tracing::{init_prometheus, log_requests};
+<span class="kw">use </span><span class="kw">crate</span>::service::utilities::middleware::chain_axum::ChainAxum;
+
 <span class="kw">use </span><span class="kw">crate</span>::settings::{get_api_hostnames, API_URL_PREFIX};
+<span class="kw">use </span><span class="kw">crate</span>::state::State;
 
 <span class="kw">use </span>poem::endpoint::PrometheusExporter;
 <span class="kw">use </span>poem::listener::TcpListener;
 <span class="kw">use </span>poem::middleware::{CatchPanic, Cors, OpenTelemetryMetrics};
 <span class="kw">use </span>poem::{EndpointExt, IntoEndpoint, Route};
 <span class="kw">use </span>std::net::SocketAddr;
+<span class="kw">use </span>std::sync::Arc;
 
 <span class="doccomment">/// This exists to allow us to add extra routes to the service for testing purposes.
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>mk_app(hosts: Vec&lt;String&gt;, base_route: <span class="prelude-ty">Option</span>&lt;Route&gt;) -&gt; <span class="kw">impl </span>IntoEndpoint {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>mk_app(
+    hosts: Vec&lt;String&gt;,
+    base_route: <span class="prelude-ty">Option</span>&lt;Route&gt;,
+    state: Arc&lt;State&gt;,
+) -&gt; <span class="kw">impl </span>IntoEndpoint {
     <span class="comment">// Get the base route if defined, or a new route if not.
     </span><span class="kw">let </span>base_route = <span class="kw">match </span>base_route {
         <span class="prelude-val">Some</span>(route) =&gt; route,
@@ -115,7 +133,9 @@
         )
         .with(Cors::new())
         .with(OpenTelemetryMetrics::new())
-        .with(CatchPanic::new().with_handler(ServicePanicHandler))
+        .with(ChainAxum::new()) <span class="comment">// TODO: Remove this once all endpoints are ported.
+        </span>.with(CatchPanic::new().with_handler(ServicePanicHandler))
+        .data(state)
         .around(|ep, req| <span class="kw">async move </span>{ <span class="prelude-val">Ok</span>(log_requests(ep, req).<span class="kw">await</span>) })
 }
 
@@ -133,7 +153,7 @@
 /// * `Error::EventDbError` - cannot connect to the event db
 /// * `Error::IoError` - An IO error has occurred.
 ///
-</span><span class="kw">pub async fn </span>run_service(addr: <span class="kw-2">&amp;</span>SocketAddr) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+</span><span class="kw">pub async fn </span>run(addr: <span class="kw-2">&amp;</span>SocketAddr, state: Arc&lt;State&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Starting Poem Service ...&quot;</span>);
     <span class="macro">tracing::info!</span>(<span class="string">&quot;Listening on {addr}&quot;</span>);
 
@@ -145,7 +165,7 @@
 
     <span class="kw">let </span>hosts = get_api_hostnames(addr);
 
-    <span class="kw">let </span>app = mk_app(hosts, <span class="prelude-val">None</span>);
+    <span class="kw">let </span>app = mk_app(hosts, <span class="prelude-val">None</span>, state);
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)

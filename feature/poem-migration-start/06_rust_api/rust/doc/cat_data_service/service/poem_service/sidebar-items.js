@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["mk_app","run_service"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"fn":["mk_app","run"],"opaque":[""],"static":["CALLSITE","META"]};

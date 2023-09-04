@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["WitnessType"],"fn":["write_witness_key"],"struct":["Witness","WitnessData"]};

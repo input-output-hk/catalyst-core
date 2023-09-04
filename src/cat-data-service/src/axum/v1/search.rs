@@ -1,8 +1,4 @@
-use crate::{
-    service::{handle_result, Error},
-    state::State,
-    types::SerdeType,
-};
+use crate::{axum::handle_result, service::Error, state::State, types::SerdeType};
 use axum::{extract::Query, routing::post, Json, Router};
 use event_db::types::search::{SearchQuery, SearchResult};
 use serde::Deserialize;

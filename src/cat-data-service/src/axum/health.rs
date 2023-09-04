@@ -44,7 +44,7 @@ async fn live_exec() -> Result<bool, Error> {
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use crate::{service::app, state::State};
+    use crate::{axum::app, state::State};
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},

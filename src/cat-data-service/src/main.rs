@@ -1,5 +1,6 @@
 use clap::Parser;
 
+mod axum;
 mod cli;
 mod logger;
 mod service;

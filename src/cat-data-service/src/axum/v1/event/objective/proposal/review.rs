@@ -1,5 +1,6 @@
 use crate::{
-    service::{handle_result, v1::LimitOffset, Error},
+    axum::{handle_result, v1::LimitOffset},
+    service::Error,
     state::State,
     types::SerdeType,
 };

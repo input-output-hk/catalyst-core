@@ -31,8 +31,8 @@ chrono = { workspace = true }
 jormungandr-lib = { workspace = true, optional = true }
 chain-impl-mockchain = { workspace = true, optional = true }
 
-poem = { version = "1.3.57", features = ["opentelemetry", "prometheus"] }
-poem-openapi = { version = "3.0.3", features = [
+poem = { version = "1.3.58", features = ["opentelemetry", "prometheus"] }
+poem-openapi = { version = "3.0.4", features = [
     "openapi-explorer",
     "rapidoc",
     "redoc",
@@ -45,6 +45,7 @@ poem-extensions = { version = "0.7.2" }
 # Metrics - Poem
 opentelemetry-prometheus = { version = "0.13" }
 opentelemetry = { workspace = true }
+prometheus = { version = "0.13.0" }
 cryptoxide = { workspace = true }
 uuid = { workspace = true }
 lazy_static = { workspace = true }

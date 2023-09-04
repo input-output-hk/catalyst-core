@@ -40,9 +40,9 @@ def import_reviews(
         envvar="IDEASCALE_API_TOKEN",
         help="IdeaScale API token"
     ),
-    pa_path: str = typer.Option(
+    allocations_path: str = typer.Option(
         ..., 
-        help="PAs file"
+        help="allocations file"
     ),
     output_path: str = typer.Option(
         ...,
@@ -70,7 +70,7 @@ def import_reviews(
             password=password,
             api_token=api_token,
             event_id=event_id,
-            pa_path=pa_path,
+            allocations_path=allocations_path,
             output_path=output_path
         )
 

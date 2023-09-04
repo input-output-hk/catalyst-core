@@ -52,9 +52,11 @@ url = { workspace = true }
 dotenvy = { workspace = true }
 panic-message = "0.3"
 regex = { workspace = true }
+tower = { version = "0.4", features = ["util"] }
+hyper = "0.14"
+bytes = "1.4"
 
 [dev-dependencies]
-tower = { version = "0.4", features = ["util"] }
 quickcheck = { version = "0.9" }
 quickcheck_macros = { version = "0.9" }
 

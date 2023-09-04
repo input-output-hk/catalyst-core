@@ -1,4 +1,4 @@
-use crate::{axum::handle_result, service::Error, state::State, types::SerdeType};
+use crate::{axum_service::handle_result, service::Error, state::State, types::SerdeType};
 use axum::{routing::get, Router};
 use event_db::types::vit_ss::fund::FundWithNext;
 use std::sync::Arc;
@@ -35,7 +35,7 @@ async fn fund_exec(state: Arc<State>) -> Result<SerdeType<FundWithNext>, Error> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::{app, tests::response_body_to_json};
+    use crate::axum_service::{app, tests::response_body_to_json};
     use axum::{
         body::Body,
         http::{Request, StatusCode},

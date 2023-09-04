@@ -1,4 +1,4 @@
-use crate::{axum::handle_result, service::Error, state::State, types::SerdeType};
+use crate::{axum_service::handle_result, service::Error, state::State, types::SerdeType};
 use axum::{extract::Query, routing::post, Json, Router};
 use event_db::types::search::{SearchQuery, SearchResult};
 use serde::Deserialize;
@@ -58,7 +58,7 @@ async fn search_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::{app, tests::response_body_to_json};
+    use crate::axum_service::{app, tests::response_body_to_json};
     use axum::{
         body::Body,
         http::{header, Method, Request, StatusCode},

@@ -11,15 +11,21 @@ use crate::service::utilities::metrics_tracing::{init_prometheus, log_requests};
 use crate::service::utilities::middleware::chain_axum::ChainAxum;
 
 use crate::settings::{get_api_hostnames, API_URL_PREFIX};
+use crate::state::State;
 
 use poem::endpoint::PrometheusExporter;
 use poem::listener::TcpListener;
 use poem::middleware::{CatchPanic, Cors, OpenTelemetryMetrics};
 use poem::{EndpointExt, IntoEndpoint, Route};
 use std::net::SocketAddr;
+use std::sync::Arc;
 
 /// This exists to allow us to add extra routes to the service for testing purposes.
-pub(crate) fn mk_app(hosts: Vec<String>, base_route: Option<Route>) -> impl IntoEndpoint {
+pub(crate) fn mk_app(
+    hosts: Vec<String>,
+    base_route: Option<Route>,
+    state: Arc<State>,
+) -> impl IntoEndpoint {
     // Get the base route if defined, or a new route if not.
     let base_route = match base_route {
         Some(route) => route,
@@ -42,6 +48,7 @@ pub(crate) fn mk_app(hosts: Vec<String>, base_route: Option<Route>) -> impl Into
         .with(OpenTelemetryMetrics::new())
         .with(ChainAxum::new()) // TODO: Remove this once all endpoints are ported.
         .with(CatchPanic::new().with_handler(ServicePanicHandler))
+        .data(state)
         .around(|ep, req| async move { Ok(log_requests(ep, req).await) })
 }
 
@@ -59,7 +66,7 @@ pub(crate) fn mk_app(hosts: Vec<String>, base_route: Option<Route>) -> impl Into
 /// * `Error::EventDbError` - cannot connect to the event db
 /// * `Error::IoError` - An IO error has occurred.
 ///
-pub async fn run(addr: &SocketAddr) -> Result<(), Error> {
+pub async fn run(addr: &SocketAddr, state: Arc<State>) -> Result<(), Error> {
     tracing::info!("Starting Poem Service ...");
     tracing::info!("Listening on {addr}");
 
@@ -71,7 +78,7 @@ pub async fn run(addr: &SocketAddr) -> Result<(), Error> {
 
     let hosts = get_api_hostnames(addr);
 
-    let app = mk_app(hosts, None);
+    let app = mk_app(hosts, None, state);
 
     poem::Server::new(TcpListener::bind(addr))
         .run(app)

@@ -1,4 +1,4 @@
-use crate::{axum::handle_result, service::Error, state::State, types::SerdeType};
+use crate::{axum_service::handle_result, service::Error, state::State, types::SerdeType};
 use axum::{extract::Path, routing::get, Router};
 use event_db::types::{
     ballot::Ballot, event::EventId, objective::ObjectiveId, proposal::ProposalId,
@@ -53,7 +53,7 @@ async fn ballot_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::{app, tests::response_body_to_json};
+    use crate::axum_service::{app, tests::response_body_to_json};
     use axum::{
         body::Body,
         http::{Request, StatusCode},

@@ -1,6 +1,6 @@
 //! Main entrypoint to the service
 //!
-use crate::axum;
+use crate::axum_service;
 use crate::state::State;
 
 use serde::Serialize;
@@ -14,7 +14,7 @@ mod docs;
 
 // These modules are utility or generic types/functions
 mod generic;
-mod service;
+mod poem_service;
 mod utilities;
 
 #[derive(thiserror::Error, Debug)]
@@ -64,9 +64,10 @@ pub async fn run(
     let mut axum_service = *service_addr;
     axum_service.set_port(axum_service.port() + 1);
 
+    // This can be simplified to an .await when axum is finally removed.
     try_join!(
-        axum::run(&axum_service, metrics_addr, state),
-        service::run(service_addr),
+        axum_service::run(&axum_service, metrics_addr, state.clone()),
+        poem_service::run(service_addr, state),
     )?;
 
     Ok(())

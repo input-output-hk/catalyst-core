@@ -4,7 +4,7 @@ import traceback
 from typing import List
 from loguru import logger
 
-from ideascale_importer.reviews_importer.importer import Importer
+from ideascale_importer.reviews_manager.manager import ReviewsManger
 from ideascale_importer.utils import configure_logger
 
 app = typer.Typer(add_completion=False)
@@ -63,20 +63,21 @@ def import_reviews(
     configure_logger(log_level, log_format)
 
     async def inner():
-        importer = Importer(
+        importer = ReviewsManger(
             ideascale_url=ideascale_url,
             database_url=database_url,
             email=email,
             password=password,
             api_token=api_token,
             event_id=event_id,
-            allocations_path=allocations_path,
-            output_path=output_path
         )
 
         try:
             await importer.connect()
-            await importer.run()
+            await importer.import_reviews_run(
+                allocations_path=allocations_path,
+                output_path=output_path
+                )
             await importer.close()
         except Exception as e:
             traceback.print_exc()

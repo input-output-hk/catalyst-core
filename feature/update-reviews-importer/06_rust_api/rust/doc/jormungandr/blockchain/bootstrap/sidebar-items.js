@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["bootstrap_from_stream","print_sz","report"],"opaque":[""],"static":["CALLSITE","META"]};

@@ -41,7 +41,6 @@ class Exporter:
         # Find and print new fragments
         for fragment in fragments:
             if self.index.exists(fragment["fragment_id"]):
-                # TODO: Possibly break here if we know that the fragments are ordered
                 continue
 
             print(json.dumps(fragment))

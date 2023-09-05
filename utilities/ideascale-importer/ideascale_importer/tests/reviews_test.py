@@ -37,3 +37,15 @@ async def test_reviews_importer(reviews_manager_mock, tmpdir_factory):
             output_path=output_path
         )
     await reviews_manager_mock.close()
+
+@pytest.mark.asyncio
+async def test_allocations_generator(reviews_manager_mock, tmpdir_factory):
+    pas_path = "./ideascale_importer/tests/test_data/pas.csv"
+    output_path = tmpdir_factory.mktemp("output")
+
+    await reviews_manager_mock.connect()
+    await reviews_manager_mock.generate_allocations_run(
+            pas_path=pas_path,
+            output_path=output_path
+        )
+    await reviews_manager_mock.close()

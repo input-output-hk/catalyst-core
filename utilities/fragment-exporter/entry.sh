@@ -50,6 +50,9 @@ export FRAGMENT_EXPORTER_URL="http://${LEADER_IP_PREFIX}.${HOSTNAME##*-}:${LEADE
 echo ">>> Using FRAGMENT_EXPORTER_URL: ${FRAGMENT_EXPORTER_URL}"
 echo ">>> Using FRAGMENT_EXPORTER_INDEX_PATH: ${FRAGMENT_EXPORTER_INDEX_PATH}"
 
+# Sleep if DEBUG_SLEEP is set
+debug_sleep
+
 # Define the command to be executed
 CMD_TO_RUN="fragment_exporter"
 

@@ -1,10 +1,11 @@
+#![allow(dead_code)]
+
 use sqlx::{migrate::Migrator, Connection, Executor, PgConnection, PgPool};
 ///Generic mock database struct
 use std::path::Path;
 use std::thread;
 use tokio::runtime::Runtime;
 use uuid::Uuid;
-
 //ToDO fix comments add logs, add errors
 
 #[derive(serde::Deserialize, Debug, Clone)]

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::common::db_mock::DatabaseSettings;
 use crate::common::db_mock::DbMock;
 use sqlx::PgPool;
@@ -112,9 +113,10 @@ impl EventDbMock {
     }
 }
 
+#[allow(dropping_references)]
 impl Drop for EventDbMock {
     fn drop(&mut self) {
-        drop(&mut self.mock_db_instance);
+         drop(&mut self.mock_db_instance);
     }
 }
 

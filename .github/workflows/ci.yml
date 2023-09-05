@@ -105,7 +105,7 @@ jobs:
         with:
           deployment_repo: input-output-hk/catalyst-world
           # NOTE: For new services being deployed, this list must be updated
-          images: cat-data-service migrations voting-node
+          images: cat-data-service fragment-exporter migrations voting-node
           environment: dev
           tag: ${{ env.TAG }}
           token: ${{ steps.setup.outputs.token }}

@@ -2,7 +2,7 @@
 name = "fragment-exporter"
 version = "0.1.0"
 description = "Exports node fragment logs to stdout"
-authors = ["Your Name <you@example.com>"]
+authors = ["Catalyst Core Developers <dev@iohk.io>]
 readme = "README.md"
 packages = [{include = "fragment_exporter"}]
 

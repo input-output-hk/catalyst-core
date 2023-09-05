@@ -4,7 +4,7 @@ import traceback
 from typing import List
 from loguru import logger
 
-from ideascale_importer.reviews_manager.manager import ReviewsManger
+from ideascale_importer.reviews_manager.manager import ReviewsManager
 from ideascale_importer.utils import configure_logger
 
 app = typer.Typer(add_completion=False)
@@ -63,7 +63,7 @@ def import_reviews(
     configure_logger(log_level, log_format)
 
     async def inner():
-        importer = ReviewsManger(
+        importer = ReviewsManager(
             ideascale_url=ideascale_url,
             database_url=database_url,
             email=email,
@@ -139,7 +139,7 @@ def prepare_allocations(
     configure_logger(log_level, log_format)
 
     async def inner():
-        importer = ReviewsManger(
+        importer = ReviewsManager(
             ideascale_url=ideascale_url,
             database_url=database_url,
             email=email,

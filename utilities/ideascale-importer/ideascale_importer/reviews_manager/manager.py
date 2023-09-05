@@ -61,7 +61,7 @@ class FrontendClient:
             files.append(await download_file(self, review_stage_id))
         return files
 
-class ReviewsManger:
+class ReviewsManager:
     def __init__(
         self,
         ideascale_url,

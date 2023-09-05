@@ -1,7 +1,7 @@
 import pytest
 import os
 
-from ideascale_importer.reviews_manager.manager import ReviewsManger
+from ideascale_importer.reviews_manager.manager import ReviewsManager
 
 def get_env_var(env_var):
     if os.environ.get(env_var):
@@ -17,7 +17,7 @@ def reviews_manager_mock():
     password = get_env_var("IDEASCALE_PASSWORD")
     event_id = 0
     api_token = get_env_var("IDEASCALE_API_TOKEN")
-    return ReviewsManger(
+    return ReviewsManager(
             ideascale_url=ideascale_url,
             database_url=database_url,
             email=email,

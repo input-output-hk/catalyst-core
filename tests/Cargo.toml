@@ -5,6 +5,13 @@ edition = "2021"
 publish = false
 
 [dev-dependencies]
+sqlx = { version = "0.6", features = [ "runtime-actix-rustls","macros","postgres", "time", "bigdecimal", "json" ] }
+config = "0.13"
+serde = { version = "1", features = ["derive"]}
+tokio = { version = "1", features = ["full"] }
+refinery = { version = "0.8", features = ["postgres"]}
+uuid = { version = "1.4.0", features = ["v4"]}
+dotenvy = { version = "0.15"}
 
 [[test]]
 name = "component"

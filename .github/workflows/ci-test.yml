@@ -31,5 +31,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Run tests
+        env:
+          EARTHLY_SECRETS: "IDEASCALE_EMAIL=${{ secrets.IDEASCALE_EMAIL }}, IDEASCALE_PASSWORD=${{ secrets.IDEASCALE_PASSWORD }}, IDEASCALE_API_TOKEN=${{ secrets.IDEASCALE_API_TOKEN }}"
         run: |
           earthly -P --remote-cache=ghcr.io/${{ github.repository }}:cache +test

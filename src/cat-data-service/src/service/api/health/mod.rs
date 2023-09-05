@@ -31,13 +31,7 @@ impl HealthApi {
     /// *This endpoint is for internal use of the service deployment infrastructure.
     /// It may not be exposed publicly.*
     ///
-    async fn started_get(
-        &self,
-    ) -> response! {
-           204: NoContent,
-           500: ServerError,
-           503: ServiceUnavailable,
-       } {
+    async fn started_get(&self) -> started_get::AllResponses {
         started_get::endpoint().await
     }
 
@@ -50,7 +44,7 @@ impl HealthApi {
     ///
     /// * 204 No Content - Service is Ready and can serve requests.
     /// * 500 Server Error - If anything within this function fails unexpectedly.
-    /// * 503 Service Unavailable - Service has not ready, requests to other
+    /// * 503 Service Unavailable - Service is not ready, requests to other
     /// endpoints should not be sent until the service becomes ready.
     ///
     /// ## Note
@@ -58,13 +52,7 @@ impl HealthApi {
     /// *This endpoint is for internal use of the service deployment infrastructure.
     /// It may not be exposed publicly.*
     ///
-    async fn ready_get(
-        &self,
-    ) -> response! {
-           204: NoContent,
-           500: ServerError,
-           503: ServiceUnavailable,
-       } {
+    async fn ready_get(&self) -> ready_get::AllResponses {
         ready_get::endpoint().await
     }
 
@@ -77,20 +65,14 @@ impl HealthApi {
     ///
     /// * 204 No Content - Service is Live and can serve requests.
     /// * 500 Server Error - If anything within this function fails unexpectedly.
-    /// * 503 Service Unavailable - Service is not Live.
+    /// * 503 Service Unavailable - Service is not Live.  It may need to be restarted.
     ///
     /// ## Note
     ///
     /// *This endpoint is for internal use of the service deployment infrastructure.
     /// It may not be exposed publicly. Refer to []*
     ///
-    async fn live_get(
-        &self,
-    ) -> response! {
-           204: NoContent,
-           500: ServerError,
-           503: ServiceUnavailable,
-       } {
+    async fn live_get(&self) -> live_get::AllResponses {
         live_get::endpoint().await
     }
 }

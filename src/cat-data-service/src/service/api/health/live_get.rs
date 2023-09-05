@@ -6,6 +6,12 @@ use crate::service::generic::responses::resp_5xx::{ServerError, ServiceUnavailab
 use poem_extensions::response;
 use poem_extensions::UniResponse::T204;
 
+pub(crate) type AllResponses = response! {
+    204: NoContent,
+    500: ServerError,
+    503: ServiceUnavailable,
+};
+
 /// # GET /health/live
 ///
 /// Liveness endpoint.
@@ -22,11 +28,7 @@ use poem_extensions::UniResponse::T204;
 /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
 /// * 503 Service Unavailable - Service is possibly not running reliably.
 #[allow(clippy::unused_async)]
-pub(crate) async fn endpoint() -> response! {
-       204: NoContent,
-       500: ServerError,
-       503: ServiceUnavailable,
-   } {
+pub(crate) async fn endpoint() -> AllResponses {
     // TODO: Detect if too many panics have occurred in a defined window.
     // If so, return a 503
     // T503(ServiceUnavailable)

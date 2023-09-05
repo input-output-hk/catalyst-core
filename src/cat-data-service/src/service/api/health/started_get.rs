@@ -6,6 +6,12 @@ use crate::service::generic::responses::resp_5xx::{ServerError, ServiceUnavailab
 use poem_extensions::response;
 use poem_extensions::UniResponse::T204;
 
+pub(crate) type AllResponses = response! {
+    204: NoContent,
+    500: ServerError,
+    503: ServiceUnavailable,
+};
+
 /// # GET /health/started
 ///
 /// Service Started endpoint.
@@ -30,11 +36,7 @@ use poem_extensions::UniResponse::T204;
 /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
 /// * 503 Service Unavailable - Service has not started, do not send other requests.
 #[allow(clippy::unused_async)]
-pub(crate) async fn endpoint() -> response! {
-       204: NoContent,
-       500: ServerError,
-       503: ServiceUnavailable,
-   } {
+pub(crate) async fn endpoint() -> AllResponses {
     // otherwise everything seems to be A-OK
     T204(NoContent)
 }

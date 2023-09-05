@@ -1,17 +1,15 @@
 """Utility functions and classes."""
 
-from dataclasses import dataclass
 from datetime import datetime
 import sys
 import aiohttp
 import asyncio
 import json
-import csv
 from loguru import logger
 import re
 from typing import Any, Dict, Iterable, List, TypeVar, TYPE_CHECKING
+from pydantic import BaseModel
 
-from .db.models import Model
 
 DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
 
@@ -76,8 +74,7 @@ async def run_cmd(name: str, cmd: str):
             logger.info("Successfully ran command")
 
 
-@dataclass
-class RequestProgressInfo:
+class RequestProgressInfo(BaseModel):
     """Information about a request's progress."""
 
     method: str

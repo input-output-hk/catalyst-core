@@ -1,7 +1,7 @@
 import json
 from io import BytesIO
 import tempfile
-from fragment_exporter.exporter import Exporter
+from fragment_exporter.exporter import hash, Exporter
 from fragment_exporter.index import Index
 from fragment_exporter.node import Node
 import pytest
@@ -45,7 +45,7 @@ def test_exporter_run_indexes_fragments(mocker, index, mock_node):
     exporter.run()
 
     for fragment in mock_data:
-        assert index.exists(fragment["fragment_id"])
+        assert index.exists(hash(fragment))
 
 
 def test_exporter_run_prints_only_new_fragments(mocker, index, mock_node):
@@ -61,7 +61,7 @@ def test_exporter_run_prints_only_new_fragments(mocker, index, mock_node):
     mock_node.get_last_block_height.return_value = 1234
 
     # insert existing fragment to the index
-    index.insert(existing_fragment["fragment_id"])
+    index.insert(hash(existing_fragment))
 
     print_mock = mocker.patch("builtins.print")
     exporter = Exporter(mock_url, index, mock_node)
@@ -99,5 +99,5 @@ def test_exporter_purges_correctly(
         mock_purge.assert_called_once()
     else:
         mock_purge.assert_not_called()
-        assert index.exists("dummy1")
-        assert index.exists("dummy2")
+        assert index.exists(hash(mock_data[0]))
+        assert index.exists(hash(mock_data[1]))

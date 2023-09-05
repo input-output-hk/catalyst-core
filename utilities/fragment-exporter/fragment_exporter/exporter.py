@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 import requests
 import ijson
 import json
+import hashlib
 from .index import Index
 from .node import Node
 
@@ -40,8 +41,20 @@ class Exporter:
 
         # Find and print new fragments
         for fragment in fragments:
-            if self.index.exists(fragment["fragment_id"]):
+            if self.index.exists(hash(fragment)):
                 continue
 
             print(json.dumps(fragment))
-            self.index.insert(fragment["fragment_id"])
+            self.index.insert(hash(fragment))
+
+
+def hash(fragment):
+    """Returns the hash of a fragment.
+
+    Args:
+        fragment: The fragment to hash
+
+    Returns:
+        The hash of the fragment
+    """
+    return hashlib.sha256(json.dumps(fragment).encode("utf-8")).hexdigest()

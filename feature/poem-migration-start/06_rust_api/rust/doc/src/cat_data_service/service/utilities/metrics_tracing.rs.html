@@ -106,29 +106,10 @@
 <a href="#106" id="106">106</a>
 <a href="#107" id="107">107</a>
 <a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
-<a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
-<a href="#115" id="115">115</a>
-<a href="#116" id="116">116</a>
-<a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
-<a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Metrics and Tracing functionality for the API
-</span><span class="kw">use </span>opentelemetry::sdk::{
-    export::metrics::aggregation,
-    metrics::{
-        controllers::{<span class="self">self</span>, BasicController},
-        processors, selectors,
-    },
-};
-<span class="kw">use </span>poem::{Endpoint, Request, Response};
+</span><span class="kw">use </span>poem::{Endpoint, Request, Response};
 <span class="kw">use </span>poem_openapi::OperationId;
+<span class="kw">use </span>prometheus::Registry;
 <span class="kw">use </span>std::time::Instant;
 <span class="kw">use </span>tracing::{info, info_span, Instrument};
 
@@ -230,15 +211,8 @@
 ///
 /// Returns a prometheus controller configured to collect metrics for the service.
 </span><span class="attr">#[must_use]
-</span><span class="kw">pub fn </span>init_prometheus() -&gt; BasicController {
-    controllers::basic(processors::factory(
-        selectors::simple::histogram([
-            <span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">5.0</span>, <span class="number">10.0</span>, <span class="number">20.0</span>, <span class="number">50.0</span>, <span class="number">70.0</span>, <span class="number">100.0</span>, <span class="number">200.0</span>, <span class="number">300.0</span>, <span class="number">400.0</span>, <span class="number">500.0</span>, <span class="number">700.0</span>,
-            <span class="number">1000.0</span>, <span class="number">1500.0</span>, <span class="number">3000.0</span>,
-        ]),
-        aggregation::cumulative_temporality_selector(),
-    ))
-    .build()
+</span><span class="kw">pub fn </span>init_prometheus() -&gt; Registry {
+    Registry::default()
 }
 </code></pre></div>
 </section></main></body></html>

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["chain_axum"]};
+window.SIDEBAR_ITEMS = {"mod":["chain_axum","tracing_mw"]};

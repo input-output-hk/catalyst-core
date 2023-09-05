@@ -34,6 +34,8 @@
 <a href="#34" id="34">34</a>
 <a href="#35" id="35">35</a>
 <a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Implementation of the GET /health/live endpoint
 
 </span><span class="kw">use </span><span class="kw">crate</span>::service::generic::responses::resp_2xx::NoContent;
@@ -41,6 +43,12 @@
 
 <span class="kw">use </span>poem_extensions::response;
 <span class="kw">use </span>poem_extensions::UniResponse::T204;
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type </span>AllResponses = <span class="macro">response! </span>{
+    <span class="number">204</span>: NoContent,
+    <span class="number">500</span>: ServerError,
+    <span class="number">503</span>: ServiceUnavailable,
+};
 
 <span class="doccomment">/// # GET /health/live
 ///
@@ -58,11 +66,7 @@
 /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
 /// * 503 Service Unavailable - Service is possibly not running reliably.
 </span><span class="attr">#[allow(clippy::unused_async)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">async fn </span>endpoint() -&gt; <span class="macro">response! </span>{
-       <span class="number">204</span>: NoContent,
-       <span class="number">500</span>: ServerError,
-       <span class="number">503</span>: ServiceUnavailable,
-   } {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">async fn </span>endpoint() -&gt; AllResponses {
     <span class="comment">// TODO: Detect if too many panics have occurred in a defined window.
     // If so, return a 503
     // T503(ServiceUnavailable)

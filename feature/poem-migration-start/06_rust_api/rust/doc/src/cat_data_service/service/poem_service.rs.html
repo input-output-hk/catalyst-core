@@ -83,8 +83,6 @@
 <a href="#83" id="83">83</a>
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Poem Service for cat-data-service endpoints.
 //!
 //! This provides only the primary entrypoint to the service.
@@ -95,7 +93,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::service::api::mk_api;
 <span class="kw">use </span><span class="kw">crate</span>::service::utilities::catch_panic::{set_panic_hook, ServicePanicHandler};
 <span class="kw">use </span><span class="kw">crate</span>::service::utilities::metrics_tracing::{init_prometheus, log_requests};
-<span class="kw">use </span><span class="kw">crate</span>::service::utilities::middleware::chain_axum::ChainAxum;
+<span class="kw">use </span><span class="kw">crate</span>::service::utilities::middleware::{chain_axum::ChainAxum, tracing_mw::Tracing};
 
 <span class="kw">use </span><span class="kw">crate</span>::settings::{get_api_hostnames, API_URL_PREFIX};
 <span class="kw">use </span><span class="kw">crate</span>::state::State;
@@ -122,22 +120,20 @@
     <span class="kw">let </span>api_service = mk_api(hosts);
     <span class="kw">let </span>docs = docs(<span class="kw-2">&amp;</span>api_service);
 
-    <span class="kw">let </span>prometheus_controller = init_prometheus();
+    <span class="kw">let </span>prometheus_registry = init_prometheus();
 
     base_route
         .nest(API_URL_PREFIX.as_str(), api_service)
         .nest(<span class="string">&quot;/docs&quot;</span>, docs)
-        .nest(
-            <span class="string">&quot;/metrics&quot;</span>,
-            PrometheusExporter::with_controller(prometheus_controller),
-        )
+        .nest(<span class="string">&quot;/metrics&quot;</span>, PrometheusExporter::new(prometheus_registry))
         .with(Cors::new())
         .with(OpenTelemetryMetrics::new())
         .with(ChainAxum::new()) <span class="comment">// TODO: Remove this once all endpoints are ported.
         </span>.with(CatchPanic::new().with_handler(ServicePanicHandler))
         .data(state)
-        .around(|ep, req| <span class="kw">async move </span>{ <span class="prelude-val">Ok</span>(log_requests(ep, req).<span class="kw">await</span>) })
-}
+        .with(Tracing)
+        <span class="comment">//.around(|ep, req| async move { Ok(log_requests(ep, req).await) })
+</span>}
 
 <span class="doccomment">/// Run the Poem Service
 ///

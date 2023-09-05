@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["endpoint"],"opaque":[""]};
+window.SIDEBAR_ITEMS = {"fn":["endpoint"],"opaque":[""],"type":["AllResponses"]};

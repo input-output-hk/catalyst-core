@@ -93,7 +93,7 @@ class RequestProgressObserver:
     def request_start(self, req_id: int, method: str, url: str):
         """Register the start of a request."""
         logger.info("Request started", req_id=req_id, method=method, url=url)
-        self.inflight_requests[req_id] = RequestProgressInfo(method, url, 0, datetime.now())
+        self.inflight_requests[req_id] = RequestProgressInfo(method=method, url=url, bytes_received=0, last_update=datetime.now())
 
     def request_progress(self, req_id: int, bytes_received: int):
         """Register the progress of a request."""

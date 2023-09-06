@@ -3,11 +3,9 @@
 import re
 import asyncpg
 import csv
-from dataclasses import dataclass
-import json
 from loguru import logger
 from markdownify import markdownify
-import pydantic
+from pydantic import BaseModel
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from .client import Campaign, CampaignGroup, Client, Idea
@@ -17,8 +15,7 @@ import ideascale_importer.db
 FieldMapping = Union[str, List[str]]
 
 
-@dataclass
-class ProposalsFieldsMappingConfig:
+class ProposalsFieldsMappingConfig(BaseModel):
     """Represents the available configuration fields used in proposal fields mapping."""
 
     proposer_url: FieldMapping
@@ -27,35 +24,32 @@ class ProposalsFieldsMappingConfig:
     public_key: FieldMapping
 
 
-@dataclass
-class ProposalsConfig:
+class ProposalsConfig(BaseModel):
     """Represents the available configuration fields used in proposal processing."""
 
     field_mappings: ProposalsFieldsMappingConfig
     extra_field_mappings: Mapping[str, FieldMapping]  # noqa: F821
 
 
-@dataclass
-class ProposalsScoresCsvConfig:
+class ProposalsScoresCsvConfig(BaseModel):
     """Represents the available configuration fields for proposal scores from the CSV file."""
 
     id_field: str
     score_field: str
 
 
-@dataclass
-class Config:
+class Config(BaseModel):
     """Represents the available configuration fields."""
 
     campaign_group_id: int
     stage_ids: List[int]
     proposals: ProposalsConfig
     proposals_scores_csv: ProposalsScoresCsvConfig
-    
+
     @staticmethod
     def from_json(val: dict):
         """Load configuration from a JSON object."""
-        return pydantic.tools.parse_obj_as(Config, val)
+        return Config.model_validate(val)
 
 class ReadProposalsScoresCsv(Exception):
     """Raised when the proposals impact scores csv cannot be read."""
@@ -165,8 +159,7 @@ def html_to_md(s: str) -> str:
     return markdownify(s, strip=tags_to_strip).strip()
 
 
-@dataclass
-class Reward:
+class Reward(BaseModel):
     """Represents a reward."""
 
     amount: int
@@ -257,7 +250,7 @@ class Importer:
         if len(res) == 0:
             raise Exception("Cannot find ideascale config in the event-db database")
         self.config = Config.from_json(res[0].value)
-        
+
     async def connect(self, *args, **kwargs):
         """Connect to the database."""
         if self.conn is None:
@@ -310,7 +303,7 @@ class Importer:
         proposal_count = 0
 
         async with self.conn.transaction():
-            inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id", "event"], pre_update_cols={"deleted": True}, pre_update_cond={"event": f"= {self.event_id}"})            
+            inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id", "event"], pre_update_cols={"deleted": True}, pre_update_cond={"event": f"= {self.event_id}"})
             inserted_objectives_ix = {o.id: o for o in inserted_objectives}
 
             proposals_with_campaign_id = [(a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)) for a in ideas]

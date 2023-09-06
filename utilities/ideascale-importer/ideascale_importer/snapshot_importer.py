@@ -2,15 +2,14 @@
 
 import asyncio
 import brotli
-import dataclasses
-from dataclasses import dataclass
 from datetime import datetime
 import json
 import os
 import re
 from typing import Dict, List, Tuple, Optional
 from loguru import logger
-import pydantic.tools
+import pydantic
+from pydantic import BaseModel
 
 from ideascale_importer.gvc import Client as GvcClient
 import ideascale_importer.db
@@ -18,52 +17,7 @@ from ideascale_importer.db import models
 from ideascale_importer.utils import run_cmd
 
 
-@dataclass
-class DbSyncDatabaseConfig:
-    """Configuration for the database containing data from dbsync."""
-
-    db_url: str
-
-
-@dataclass
-class SnapshotToolConfig:
-    """Configuration for snapshot_tool."""
-
-    path: str
-
-
-@dataclass
-class CatalystToolboxConfig:
-    """Configuration for catalyst-toolbox."""
-
-    path: str
-
-
-@dataclass
-class GvcConfig:
-    """Configuration for GVC API."""
-
-    api_url: str
-
-
-@dataclass
-class Config:
-    """Configuration for the snapshot importer."""
-
-    dbsync_database: DbSyncDatabaseConfig
-    snapshot_tool: SnapshotToolConfig
-    catalyst_toolbox: CatalystToolboxConfig
-    gvc: GvcConfig
-
-    @staticmethod
-    def from_json_file(path: str) -> "Config":
-        """Load configuration from a JSON file."""
-        with open(path) as f:
-            return pydantic.tools.parse_obj_as(Config, json.load(f))
-
-
-@dataclass
-class Contribution:
+class Contribution(BaseModel):
     """Represents a voting power contribution."""
 
     reward_address: str
@@ -71,8 +25,7 @@ class Contribution:
     value: int
 
 
-@dataclass
-class HIR:
+class HIR(BaseModel):
     """Represents a HIR."""
 
     voting_group: str
@@ -80,16 +33,14 @@ class HIR:
     voting_power: int
 
 
-@dataclass
-class SnapshotProcessedEntry:
+class SnapshotProcessedEntry(BaseModel):
     """Represents a processed entry from snapshot_tool."""
 
     contributions: List[Contribution]
     hir: HIR
 
 
-@dataclass
-class Registration:
+class Registration(BaseModel):
     """Represents a voter registration."""
 
     delegations: List[Tuple[str, int]] | str
@@ -99,8 +50,7 @@ class Registration:
     voting_purpose: Optional[int]
 
 
-@dataclass
-class CatalystToolboxDreps:
+class CatalystToolboxDreps(BaseModel):
     """Represents the input format of the dreps file of catalyst-toolbox."""
 
     reps: List[str]
@@ -160,8 +110,7 @@ class MissingNetworkSnapshotData(Exception):
     ...
 
 
-@dataclass
-class NetworkParams:
+class NetworkParams(BaseModel):
     lastest_block_time: Optional[datetime]
     latest_block_slot_no: Optional[int]
     registration_snapshot_slot: Optional[int]
@@ -177,8 +126,7 @@ network_id_priority: Dict[str, int] = {
 }
 
 
-@dataclass
-class SSHConfig:
+class SSHConfig(BaseModel):
     """Required SSH configuration values."""
 
     keyfile_path: str
@@ -369,11 +317,11 @@ class Importer:
             logger.error("Failed to get dreps, using drep cache", error=str(e))
         await gvc_client.close()
 
-        self.dreps_json = json.dumps([dataclasses.asdict(d) for d in dreps])
+        self.dreps_json = json.dumps([d.model_dump() for d in dreps])
 
         dreps_data = CatalystToolboxDreps(reps=[d.attributes.voting_key for d in dreps])
         with open(self.dreps_out_file, "w") as f:
-            json.dump(dataclasses.asdict(dreps_data), f)
+            json.dump(dreps_data.model_dump(), f)
 
     def _split_raw_snapshot_file(self, raw_snapshot_file: str):
         logger.info("Splitting raw snapshot file for processing")
@@ -507,13 +455,22 @@ class Importer:
         with open(self.merged_catalyst_toolbox_out_file) as f:
             catalyst_toolbox_data_raw_json = f.read()
 
-        catalyst_toolbox_data: Dict[str, List[SnapshotProcessedEntry]] = pydantic.tools.parse_raw_as(
-            Dict[str, List[SnapshotProcessedEntry]], catalyst_toolbox_data_raw_json
-        )
+        catalyst_toolbox_data_dict = json.loads(catalyst_toolbox_data_raw_json)
+        catalyst_toolbox_data: Dict[str, List[SnapshotProcessedEntry]] = {}
+        for k, entries in catalyst_toolbox_data_dict.items():
+            try:
+                catalyst_toolbox_data[k] = [SnapshotProcessedEntry.model_validate(e) for e in entries]
+            except Exception as e:
+                logger.error(f"ERROR: {repr(e)}")
 
-        snapshot_tool_data: Dict[str, List[Registration]] = pydantic.tools.parse_raw_as(
-            Dict[str, List[Registration]], snapshot_tool_data_raw_json
-        )
+        snapshot_tool_data_dict = json.loads(snapshot_tool_data_raw_json)
+        snapshot_tool_data: Dict[str, List[Registration]] = {}
+        for k, entries in snapshot_tool_data_dict.items():
+            try:
+                snapshot_tool_data[k] = [Registration.model_validate(e) for e in entries]
+            except Exception as e:
+                logger.error(f"ERROR: {repr(e)}")
+
 
         total_registered_voting_power = {}
         registration_delegation_data = {}

@@ -74,7 +74,7 @@ def deserialize_and_save_csv(path: str, elements: List[Any], include: dict, tran
         results.append(_res)
 
     save_csv(path, results)
-
+    
 
 def save_csv(path: str, elements: List[Any]):
     keys = elements[0].keys()
@@ -171,7 +171,7 @@ class RequestProgressObserver:
     def request_start(self, req_id: int, method: str, url: str):
         """Register the start of a request."""
         logger.info("Request started", req_id=req_id, method=method, url=url)
-        self.inflight_requests[req_id] = RequestProgressInfo(method=method, url=url, bytes_received=0, last_update=datetime.now())
+        self.inflight_requests[req_id] = RequestProgressInfo(method, url, 0, datetime.now())
 
     def request_progress(self, req_id: int, bytes_received: int):
         """Register the progress of a request."""

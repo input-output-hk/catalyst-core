@@ -41,6 +41,7 @@
 
       # Misc tools
       jq
+      poetry
       python310Packages.pylddwrap
     ];
   };

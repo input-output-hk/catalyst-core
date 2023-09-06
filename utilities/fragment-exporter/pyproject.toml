@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "fragment-exporter"
+version = "0.1.0"
+description = "Exports node fragment logs to stdout"
+authors = ["Catalyst Core Developers <dev@iohk.io>]
+readme = "README.md"
+packages = [{include = "fragment_exporter"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "^2.31.0"
+ijson = "^3.2.3"
+loguru = "^0.7.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+pytest = "^7.4.0"
+pytest-mock = "^3.11.1"
+ruff = "^0.0.287"
+
+[tool.poetry.scripts]
+fragment_exporter = "fragment_exporter.main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["delegations_exec","registration","voter_exec"],"opaque":[""],"static":["CALLSITE","META"],"struct":["DelegationsQuery","VotersQuery","__FieldVisitor","__Visitor"]};

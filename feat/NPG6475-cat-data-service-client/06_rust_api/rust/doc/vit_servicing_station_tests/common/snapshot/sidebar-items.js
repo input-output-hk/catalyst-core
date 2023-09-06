@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["Snapshot","SnapshotBuilder","SnapshotUpdater","VoterInfo","VotingPower","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"]};

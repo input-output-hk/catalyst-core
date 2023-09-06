@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FROM_CLAUSE"],"macro":["__static_cond"],"struct":["address","address_has_script","address_raw","data_hash","id","index","inline_datum_id","payment_cred","reference_script_id","stake_address_id","star","tx_id","value"]};

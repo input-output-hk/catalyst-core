@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"mod":["serde","tests"],"struct":["VoterHIR","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"],"type":["VotingGroup"]};

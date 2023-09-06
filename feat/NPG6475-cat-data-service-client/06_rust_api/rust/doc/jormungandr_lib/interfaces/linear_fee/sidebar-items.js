@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["per_certificate_fee_is_zero","per_vote_certificate_fee_is_zero"],"struct":["LinearFeeDef","PerCertificateFeeDef","PerVoteCertificateFeeDef","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["WalletTemplate","__Field"],"fn":["default_discrimination","default_wallet_type"],"mod":["builder"],"struct":["__DeserializeWith","__FieldVisitor","__Visitor"]};

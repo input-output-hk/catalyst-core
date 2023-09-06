@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["VoteOptions","__Visitor"],"type":["VoteOptionsMap"]};

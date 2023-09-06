@@ -1,0 +1,726 @@
+digraph erd {
+
+    
+    label = "Catalyst Event Database - Objectives & Proposals"
+    labelloc = t
+    fontsize = 30
+    fontcolor = blue
+    
+
+    graph [
+        rankdir = "LR"
+    ];
+
+    node [
+        fontsize = "16"
+        shape = "plaintext"
+    ];
+
+    edge [
+    ];
+
+    
+        
+
+    "currency" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>currency</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="name" bgcolor="seagreen1" align='text'><font>name</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>text</font></td>
+                <td port="name_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The name of this currency type.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="description"  align='text'><font>description</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="description_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A Description of this kind of currency<br align='left'/>type.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>Defines all known and valid currencies.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "objective" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>objective</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Synthetic Unique Key</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="id"  align='text'><font>id</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Event specific objective ID.<br align='left'/>Can be non-unique between events (Eg,<br align='left'/>Ideascale ID for objective).</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="event"  align='text'><font>event</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="event_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The specific Event ID this objective is<br align='left'/>part of.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="category"  align='text'><font>category</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="category_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>What category of objective is this.<br align='left'/>See the objective_category table for<br align='left'/>allowed values.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="title"  align='text'><font>title</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="title_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The  title of the objective.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="description"  align='text'><font>description</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="description_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Long form description of the objective.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="rewards_currency"  align='text'><font>rewards_currency</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="rewards_currency_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The currency rewards values are<br align='left'/>represented as.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="rewards_total"  align='text'><font>rewards_total</font><br align='left'/></td>
+                <td   ><font><i>bigint</i></font></td>
+                <td port="rewards_total_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The total reward pool to pay on this<br align='left'/>objective to winning proposals. In the<br align='left'/>Objective Currency.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="rewards_total_lovelace"  align='text'><font>rewards_total_lovelace</font><br align='left'/></td>
+                <td   ><font><i>bigint</i></font></td>
+                <td port="rewards_total_lovelace_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The total reward pool to pay on this<br align='left'/>objective to winning proposals. In<br align='left'/>Lovelace.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="proposers_rewards"  align='text'><font>proposers_rewards</font><br align='left'/></td>
+                <td   ><font><i>bigint</i></font></td>
+                <td port="proposers_rewards_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Not sure how this is different from<br align='left'/>rewards_total???</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="vote_options"  align='text'><font>vote_options</font><br align='left'/></td>
+                <td   ><font><i>integer</i></font></td>
+                <td port="vote_options_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The Vote Options applicable to all<br align='left'/>proposals in this objective.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="extra"  align='text'><font>extra</font><br align='left'/></td>
+                <td   ><font><i>jsonb</i></font></td>
+                <td port="extra_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Extra Data  for this objective<br align='left'/>represented as JSON.<br align='left'/>&quot;url&quot;.&quot;objective&quot; is a URL for more info<br align='left'/>about the objective.<br align='left'/>&quot;highlights&quot; is ???</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>All objectives for all events.<br align='left'/>A objective is a group category for selection in an event.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "objective_category" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>objective_category</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="name" bgcolor="seagreen1" align='text'><font>name</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>text</font></td>
+                <td port="name_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The name of this objective category.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="description"  align='text'><font>description</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="description_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A Description of this kind of objective<br align='left'/>category.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>Defines all known and valid objective categories.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "objective_review_metric" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>objective_review_metric</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="objective"  align='text'><font>objective</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="objective_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The objective that can use this review<br align='left'/>metric.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="metric"  align='text'><font>metric</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="metric_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The review metric that the objective<br align='left'/>can use.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="note"  align='text'><font>note</font><br align='left'/></td>
+                <td   ><font><i>boolean</i></font></td>
+                <td port="note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Does the metric require a Note?<br align='left'/>NULL = Optional.<br align='left'/>True = MUST include Note.<br align='left'/>False = MUST NOT include Note.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="review_group"  align='text'><font>review_group</font><br align='left'/></td>
+                <td   ><font><i>varchar</i></font></td>
+                <td port="review_group_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The review group that can give this<br align='left'/>metric. Details TBD.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>All valid metrics for reviews on an objective.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "proposal" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>proposal</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Synthetic Unique Key</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="id"  align='text'><font>id</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Actual Proposal Unique ID</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="objective"  align='text'><font>objective</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="objective_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The Objective this proposal falls under.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="title"  align='text'><font>title</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="title_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Brief title of the proposal.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="summary"  align='text'><font>summary</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="summary_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A Summary of the proposal to be<br align='left'/>implemented.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="category"  align='text'><font>category</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="category_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Objective Category Repeated. DEPRECATED:<br align='left'/>Only used for Vit-SS compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="public_key"  align='text'><font>public_key</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="public_key_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Proposals Reward Address (CIP-19 Payment<br align='left'/>Key)</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="funds"  align='text'><font>funds</font><br align='left'/></td>
+                <td   ><font>bigint</font></td>
+                <td port="funds_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>How much funds (in the currency of the<br align='left'/>fund)</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="url"  align='text'><font>url</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="url_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A URL with supporting information for<br align='left'/>the proposal.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="files_url"  align='text'><font>files_url</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="files_url_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A URL link to relevant files supporting<br align='left'/>the proposal.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="impact_score"  align='text'><font>impact_score</font><br align='left'/></td>
+                <td   ><font>bigint</font></td>
+                <td port="impact_score_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The Impact score assigned to this<br align='left'/>proposal by the Assessors.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="extra"  align='text'><font>extra</font><br align='left'/></td>
+                <td   ><font><i>jsonb</i></font></td>
+                <td port="extra_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Extra data about the proposal.<br align='left'/> The types of extra data are defined by<br align='left'/>the proposal type and are not enforced.<br align='left'/> Extra Fields for `native` challenges:<br align='left'/>    NONE.<br align='left'/><br align='left'/> Extra Fields for `simple` challenges:<br align='left'/>    &quot;problem&quot;  : &lt;text&gt; - Statement<br align='left'/>of the problem the proposal tries to<br align='left'/>address.<br align='left'/>    &quot;solution&quot; : &lt;text&gt; - The Solution<br align='left'/>to the challenge.<br align='left'/><br align='left'/> Extra Fields for `community choice`<br align='left'/>challenge:<br align='left'/>    &quot;brief&quot;      : &lt;text&gt; - Brief<br align='left'/>explanation of a proposal.<br align='left'/>    &quot;importance&quot; : &lt;text&gt; - The<br align='left'/>importance of the proposal.<br align='left'/>    &quot;goal&quot;       : &lt;text&gt; - The goal of<br align='left'/>the proposal is addressed to meet.<br align='left'/>    &quot;metrics&quot;    : &lt;text&gt; - The metrics<br align='left'/>of the proposal or how success will be<br align='left'/>determined.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="proposer_name"  align='text'><font>proposer_name</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="proposer_name_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The proposers name.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="proposer_contact"  align='text'><font>proposer_contact</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="proposer_contact_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Contact details for the proposer.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="proposer_url"  align='text'><font>proposer_url</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="proposer_url_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A URL with details of the proposer.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="proposer_relevant_experience"  align='text'><font>proposer_relevant_experience</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="proposer_relevant_experience_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A freeform  string describing the<br align='left'/>proposers experience relating to their<br align='left'/>capability to implement the proposal.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="bb_proposal_id"  align='text'><font>bb_proposal_id</font><br align='left'/></td>
+                <td   ><font><i>bytea</i></font></td>
+                <td port="bb_proposal_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The ID used by the voting ledger<br align='left'/>(bulletin board) to refer to this<br align='left'/>proposal.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="bb_vote_options"  align='text'><font>bb_vote_options</font><br align='left'/></td>
+                <td   ><font><i>ARRAY</i></font></td>
+                <td port="bb_vote_options_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The selectable options by the voter.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>All Proposals for the current fund.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "proposal_review" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>proposal_review</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Synthetic Unique Key.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="proposal_id"  align='text'><font>proposal_id</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="proposal_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The Proposal this review is for.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="assessor"  align='text'><font>assessor</font><br align='left'/></td>
+                <td   ><font>varchar</font></td>
+                <td port="assessor_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Assessors Anonymized ID</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="impact_alignment_rating_given"  align='text'><font>impact_alignment_rating_given</font><br align='left'/></td>
+                <td   ><font><i>integer</i></font></td>
+                <td port="impact_alignment_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The  numeric rating assigned to the<br align='left'/>proposal by the assessor.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="impact_alignment_note"  align='text'><font>impact_alignment_note</font><br align='left'/></td>
+                <td   ><font><i>varchar</i></font></td>
+                <td port="impact_alignment_note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A note about why the impact rating was<br align='left'/>given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="feasibility_rating_given"  align='text'><font>feasibility_rating_given</font><br align='left'/></td>
+                <td   ><font><i>integer</i></font></td>
+                <td port="feasibility_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The numeric feasibility rating given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="feasibility_note"  align='text'><font>feasibility_note</font><br align='left'/></td>
+                <td   ><font><i>varchar</i></font></td>
+                <td port="feasibility_note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A note about why the feasibility rating<br align='left'/>was given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="auditability_rating_given"  align='text'><font>auditability_rating_given</font><br align='left'/></td>
+                <td   ><font><i>integer</i></font></td>
+                <td port="auditability_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The numeric auditability rating given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="auditability_note"  align='text'><font>auditability_note</font><br align='left'/></td>
+                <td   ><font><i>varchar</i></font></td>
+                <td port="auditability_note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A note about the auditability rating<br align='left'/>given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="ranking"  align='text'><font>ranking</font><br align='left'/></td>
+                <td   ><font><i>integer</i></font></td>
+                <td port="ranking_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Numeric  Measure of quality of this<br align='left'/>review according to veteran community<br align='left'/>advisors.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>All Reviews.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "review_metric" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>review_metric</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The synthetic ID of this metric.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="name"  align='text'><font>name</font><br align='left'/></td>
+                <td   ><font>varchar</font></td>
+                <td port="name_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The short name for this review metric.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="description"  align='text'><font>description</font><br align='left'/></td>
+                <td   ><font><i>varchar</i></font></td>
+                <td port="description_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Long form description of what the review<br align='left'/>metric means.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="min"  align='text'><font>min</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="min_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The minimum value of the metric<br align='left'/>(inclusive).</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="max"  align='text'><font>max</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="max_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The maximum value of the metric<br align='left'/>(inclusive).</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="map"  align='text'><font>map</font><br align='left'/></td>
+                <td   ><font><i>ARRAY</i></font></td>
+                <td port="map_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>OPTIONAL: JSON Array which defines extra<br align='left'/>details for each metric score.<br align='left'/>There MUST be one entry per possible<br align='left'/>score in the range.<br align='left'/>Entries are IN ORDER, from the lowest<br align='left'/>numeric score to the highest.<br align='left'/>Each entry =<br align='left'/>```jsonc<br align='left'/>{<br align='left'/>   &quot;name&quot; : &quot;&lt;name&gt;&quot;, &#x2f;&#x2f; Symbolic Name<br align='left'/>for the metric score.<br align='left'/>   &quot;description&quot; : &quot;&lt;desc&gt;&quot;, &#x2f;&#x2f;<br align='left'/>Description of what the named metric<br align='left'/>score means.<br align='left'/>}<br align='left'/>```</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>Definition of all possible review metrics.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "review_rating" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>review_rating</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Synthetic ID of this individual rating.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="review_id"  align='text'><font>review_id</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="review_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The review the metric is being given<br align='left'/>for.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="metric"  align='text'><font>metric</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="metric_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Metric the rating is being given for.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="rating"  align='text'><font>rating</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="rating_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The rating being given to the metric.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="note"  align='text'><font>note</font><br align='left'/></td>
+                <td   ><font><i>varchar</i></font></td>
+                <td port="note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>OPTIONAL: Note about the rating given.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>An Individual rating for a metric given on a review.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "vote_options" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>vote_options</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="id" bgcolor="seagreen1" align='text'><font>id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Unique ID for each possible option set.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="idea_scale"  align='text'><font>idea_scale</font><br align='left'/></td>
+                <td   ><font><i>ARRAY</i></font></td>
+                <td port="idea_scale_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>How this vote option is represented in<br align='left'/>idea scale.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="objective"  align='text'><font>objective</font><br align='left'/></td>
+                <td   ><font><i>ARRAY</i></font></td>
+                <td port="objective_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>How the vote options is represented in<br align='left'/>the objective.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>Defines all known vote plan option types.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+
+    
+
+    "event" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>event</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id"  align='text'><font>row_id</font><br align='left'/></td>
+            </tr>
+            
+
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>ABRIDGED</i><br align="left"/></font></td>
+            </tr>
+        </table>
+    >];
+
+    
+
+
+    "LEGEND" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='Pink' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>LEGEND</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Example</b></font></td>
+            </tr>
+
+            <tr>
+                <td align='text' bgcolor="seagreen1" ><font>Primary Key</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+
+
+            <tr>
+                <td align='text'><font>Standard Field</font><br align='left'/></td>
+                <td><font>bytea</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Nullable Field</font><br align='left'/></td>
+                <td><font><i>text</i></font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Sized Field</font><br align='left'/></td>
+                <td><font>varchar(32)</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Autoincrement Field</font><br align='left'/></td>
+                <td><font>integer+</font></td>
+            </tr>
+
+        </table>
+    >];
+
+    
+    "objective":"event_out" -> "event":"row_id"
+    
+    "objective":"category_out" -> "objective_category":"name"
+    
+    "objective":"rewards_currency_out" -> "currency":"name"
+    
+    "objective":"vote_options_out" -> "vote_options":"id"
+    
+    "proposal":"objective_out" -> "objective":"row_id"
+    
+    "proposal":"bb_vote_options_out" -> "vote_options":"objective"
+    
+    "proposal_review":"proposal_id_out" -> "proposal":"row_id"
+    
+    "objective_review_metric":"objective_out" -> "objective":"row_id"
+    
+    "objective_review_metric":"metric_out" -> "review_metric":"row_id"
+    
+    "review_rating":"review_id_out" -> "proposal_review":"row_id"
+    
+    "review_rating":"metric_out" -> "review_metric":"row_id"
+    
+
+
+}

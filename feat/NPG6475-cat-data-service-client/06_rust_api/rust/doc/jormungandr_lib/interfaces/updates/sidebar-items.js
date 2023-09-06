@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"struct":["UpdateProposalDef","UpdateProposalStateDef","__FieldVisitor","__Visitor"]};

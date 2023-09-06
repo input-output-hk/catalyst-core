@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["Error","Format","ImportFromIdeascaleFormatCommand","__Field"],"struct":["ImportChallenges","ImportProposals","ImportReviews","ImportScores","InputScores","__FieldVisitor","__Visitor"]};

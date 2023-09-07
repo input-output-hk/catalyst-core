@@ -97,16 +97,6 @@ def prepare_allocations(
         envvar="EVENTDB_URL",
         help="Postgres database URL"
     ),
-    email: str = typer.Option(
-        ...,
-        envvar="IDEASCALE_EMAIL",
-        help="Ideascale user's email address (needs admin access)",
-    ),
-    password: str = typer.Option(
-        ...,
-        envvar="IDEASCALE_PASSWORD",
-        help="Ideascale user's password (needs admin access)",
-    ),
     event_id: int = typer.Option(
         ...,
         help="Database row id of the event which data will be imported",
@@ -142,8 +132,6 @@ def prepare_allocations(
         importer = ReviewsManager(
             ideascale_url=ideascale_url,
             database_url=database_url,
-            email=email,
-            password=password,
             api_token=api_token,
             event_id=event_id,
         )

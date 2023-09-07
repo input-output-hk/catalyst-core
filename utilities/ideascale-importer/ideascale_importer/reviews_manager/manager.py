@@ -66,10 +66,10 @@ class ReviewsManager:
         self,
         ideascale_url,
         database_url,
-        email,
-        password,
         event_id,
         api_token,
+        email = None,
+        password = None,
     ):
         self.ideascale_url = ideascale_url
         self.database_url = database_url
@@ -82,7 +82,7 @@ class ReviewsManager:
         self.db = None
 
     async def connect(self):
-        if self.frontend_client is None:
+        if self.frontend_client is None and (self.email and self.password):
             logger.info("Connecting to the Ideascale frontend")
             self.frontend_client = FrontendClient(self.ideascale_url)
             await self.frontend_client.login(self.email, self.password)
@@ -113,7 +113,7 @@ class ReviewsManager:
     async def __prepare_allocations(self, pas_path: str, output_path: str):
         logger.info("Prepare allocations for proposal's reviews...")
 
-        self.allocations = await allocate(
+        await allocate(
             nr_allocations=self.config.nr_allocations,
             pas_path=pas_path,
             ideascale_api_key=self.api_token,
@@ -121,6 +121,7 @@ class ReviewsManager:
             stage_ids=self.config.stage_ids,
             challenges_group_id=self.config.campaign_group_id,
             group_id=self.config.group_id,
+            anonymize_start_id=self.config.anonymize_start_id,
             output_path=output_path,
         )
     
@@ -159,7 +160,8 @@ class ReviewsManager:
         reviews_dir.cleanup()
 
     async def close(self):
-        await self.frontend_client.close()
+        if self.frontend_client:
+            await self.frontend_client.close()
 
 class Config(pydantic.BaseModel):
     """Represents the available configuration fields."""
@@ -170,3 +172,4 @@ class Config(pydantic.BaseModel):
     stage_ids: List[int]
     nr_allocations: List[int]
     questions: Dict[str, str]
+    anonymize_start_id: int

@@ -83,7 +83,7 @@
 <a href="#83" id="83">83</a>
 <a href="#84" id="84">84</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Handle catching panics created by endpoints, logging them and properly responding.
-</span><span class="kw">use </span><span class="kw">crate</span>::service::generic::responses::resp_5xx::ServerError;
+</span><span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_5xx::ServerError;
 
 <span class="kw">use </span>panic_message::panic_message;
 <span class="kw">use </span>poem::middleware::PanicHandler;

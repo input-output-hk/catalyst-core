@@ -74,7 +74,7 @@
 <a href="#74" id="74">74</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Main entrypoint to the service
 //!
-</span><span class="kw">use </span><span class="kw">crate</span>::axum_service;
+</span><span class="kw">use </span><span class="kw">crate</span>::legacy_service;
 <span class="kw">use </span><span class="kw">crate</span>::state::State;
 
 <span class="kw">use </span>serde::Serialize;
@@ -86,8 +86,8 @@
 </span><span class="kw">mod </span>api;
 <span class="kw">mod </span>docs;
 
-<span class="comment">// These modules are utility or generic types/functions
-</span><span class="kw">mod </span>generic;
+<span class="comment">// These modules are utility or common types/functions
+</span><span class="kw">mod </span>common;
 <span class="kw">mod </span>poem_service;
 <span class="kw">mod </span>utilities;
 
@@ -135,12 +135,12 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
     <span class="comment">// Create service addresses to be used during poem migration.
     // Service address is same as official address but +1 to the port.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>axum_service = <span class="kw-2">*</span>service_addr;
-    axum_service.set_port(axum_service.port() + <span class="number">1</span>);
+    </span><span class="kw">let </span><span class="kw-2">mut </span>legacy_service = <span class="kw-2">*</span>service_addr;
+    legacy_service.set_port(legacy_service.port() + <span class="number">1</span>);
 
     <span class="comment">// This can be simplified to an .await when axum is finally removed.
     </span><span class="macro">try_join!</span>(
-        axum_service::run(<span class="kw-2">&amp;</span>axum_service, metrics_addr, state.clone()),
+        legacy_service::run(<span class="kw-2">&amp;</span>legacy_service, metrics_addr, state.clone()),
         poem_service::run(service_addr, state),
     )<span class="question-mark">?</span>;
 

@@ -29,36 +29,94 @@
 <a href="#29" id="29">29</a>
 <a href="#30" id="30">30</a>
 <a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+<a href="#42" id="42">42</a>
+<a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
+<a href="#47" id="47">47</a>
+<a href="#48" id="48">48</a>
+<a href="#49" id="49">49</a>
+<a href="#50" id="50">50</a>
+<a href="#51" id="51">51</a>
+<a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cli::Error;
-<span class="kw">use </span>event_db::queries::EventDbQueries;
+<span class="comment">//use arc_swap::ArcSwap;
+</span><span class="kw">use </span>event_db::queries::EventDbQueries;
 <span class="kw">use </span>std::sync::Arc;
+<span class="comment">//use tracing::warn;
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
 </span><span class="kw">pub mod </span>jorm_mock;
 
 <span class="kw">pub struct </span>State {
-    <span class="kw">pub </span>event_db: Arc&lt;<span class="kw">dyn </span>EventDbQueries&gt;,
-    <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
+    <span class="comment">//db_url: Option&lt;String&gt;,
+    </span><span class="doccomment">/// This can be None, or a handle to the DB.
+    /// If the DB fails, it can be set to None.
+    /// If its None, an attempt to get it will try and connect to the DB.
+    /// This is Private, it needs to be accessed with a function.
+    </span><span class="comment">//event_db_handle: Arc&lt;ArcSwap&lt;Option&lt;dyn EventDbQueries&gt;&gt;&gt;, // Private need to get it with a function.
+    </span><span class="kw">pub </span>event_db: Arc&lt;<span class="kw">dyn </span>EventDbQueries&gt;, <span class="comment">// This needs to be obsoleted, we want the DB to be able to be down.
+    </span><span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
     </span><span class="kw">pub </span>jorm: std::sync::Mutex&lt;jorm_mock::JormState&gt;,
 }
 
 <span class="kw">impl </span>State {
     <span class="kw">pub async fn </span>new(database_url: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
-        <span class="kw">let </span>event_db = <span class="kw">if let </span><span class="prelude-val">Some</span>(url) = database_url {
-            Arc::new(event_db::establish_connection(<span class="prelude-val">Some</span>(url.as_str())).<span class="kw">await</span><span class="question-mark">?</span>)
-        } <span class="kw">else </span>{
-            Arc::new(event_db::establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>)
+        <span class="comment">// Get a connection to the Database.
+        </span><span class="kw">let </span>event_db = <span class="kw">match </span>database_url.clone() {
+            <span class="prelude-val">Some</span>(url) =&gt; Arc::new(event_db::establish_connection(<span class="prelude-val">Some</span>(url.as_str())).<span class="kw">await</span><span class="question-mark">?</span>),
+            <span class="prelude-val">None </span>=&gt; Arc::new(event_db::establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>),
         };
 
-        <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
+        <span class="comment">//let event_db = if let Some(url) = database_url {
+        //    Arc::new(event_db::establish_connection(Some(url.as_str())).await?)
+        //} else {
+        //    Arc::new(event_db::establish_connection(None).await?)
+        //};
+
+        </span><span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
         </span><span class="kw">let </span>jorm = jorm_mock::JormState::new(<span class="kw-2">*</span><span class="kw">crate</span>::settings::JORM_CLEANUP_TIMEOUT);
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
-            event_db,
+        <span class="kw">let </span>state = <span class="self">Self </span>{
+            <span class="comment">//db_url: database_url,
+            //event_db_handle: Arc::new(RwLock::new(None)),
+            </span>event_db,
             <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
             </span>jorm: std::sync::Mutex::new(jorm),
-        })
+        };
+
+        <span class="comment">// We don&#39;t care if this succeeds or not.
+        // We just try our best to connect to the event DB.
+        //let _ = state.event_db().await;
+
+        </span><span class="prelude-val">Ok</span>(state)
     }
-}
+
+    <span class="comment">/*
+    pub async fn event_db(&amp;self) -&gt; Option&lt;Arc&lt;dyn EventDbQueries&gt;&gt; {
+
+
+    }
+    */
+</span>}
 </code></pre></div>
 </section></main></body></html>

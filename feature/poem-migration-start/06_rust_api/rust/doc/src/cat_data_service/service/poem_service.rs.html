@@ -83,24 +83,30 @@
 <a href="#83" id="83">83</a>
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Poem Service for cat-data-service endpoints.
 //!
 //! This provides only the primary entrypoint to the service.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::service::docs::docs;
+</span><span class="kw">use </span><span class="kw">crate</span>::service::docs::{docs, favicon};
 <span class="kw">use </span><span class="kw">crate</span>::service::Error;
 
 <span class="kw">use </span><span class="kw">crate</span>::service::api::mk_api;
 <span class="kw">use </span><span class="kw">crate</span>::service::utilities::catch_panic::{set_panic_hook, ServicePanicHandler};
-<span class="kw">use </span><span class="kw">crate</span>::service::utilities::metrics_tracing::{init_prometheus, log_requests};
-<span class="kw">use </span><span class="kw">crate</span>::service::utilities::middleware::{chain_axum::ChainAxum, tracing_mw::Tracing};
+<span class="kw">use </span><span class="kw">crate</span>::service::utilities::middleware::{
+    chain_axum::ChainAxum,
+    tracing_mw::{init_prometheus, Tracing},
+};
 
 <span class="kw">use </span><span class="kw">crate</span>::settings::{get_api_hostnames, API_URL_PREFIX};
 <span class="kw">use </span><span class="kw">crate</span>::state::State;
 
 <span class="kw">use </span>poem::endpoint::PrometheusExporter;
 <span class="kw">use </span>poem::listener::TcpListener;
-<span class="kw">use </span>poem::middleware::{CatchPanic, Cors, OpenTelemetryMetrics};
+<span class="kw">use </span>poem::middleware::{CatchPanic, Compression, Cors};
+<span class="kw">use </span>poem::web::CompressionLevel;
 <span class="kw">use </span>poem::{EndpointExt, IntoEndpoint, Route};
 <span class="kw">use </span>std::net::SocketAddr;
 <span class="kw">use </span>std::sync::Arc;
@@ -126,14 +132,14 @@
         .nest(API_URL_PREFIX.as_str(), api_service)
         .nest(<span class="string">&quot;/docs&quot;</span>, docs)
         .nest(<span class="string">&quot;/metrics&quot;</span>, PrometheusExporter::new(prometheus_registry))
+        .nest(<span class="string">&quot;/favicon.ico&quot;</span>, favicon())
         .with(Cors::new())
-        .with(OpenTelemetryMetrics::new())
         .with(ChainAxum::new()) <span class="comment">// TODO: Remove this once all endpoints are ported.
-        </span>.with(CatchPanic::new().with_handler(ServicePanicHandler))
-        .data(state)
+        </span>.with(Compression::new().with_quality(CompressionLevel::Fastest))
+        .with(CatchPanic::new().with_handler(ServicePanicHandler))
         .with(Tracing)
-        <span class="comment">//.around(|ep, req| async move { Ok(log_requests(ep, req).await) })
-</span>}
+        .data(state)
+}
 
 <span class="doccomment">/// Run the Poem Service
 ///

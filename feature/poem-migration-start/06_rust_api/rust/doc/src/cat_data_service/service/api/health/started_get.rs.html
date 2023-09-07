@@ -42,8 +42,8 @@
 <a href="#42" id="42">42</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Implementation of the GET /health/started endpoint
 
-</span><span class="kw">use </span><span class="kw">crate</span>::service::generic::responses::resp_2xx::NoContent;
-<span class="kw">use </span><span class="kw">crate</span>::service::generic::responses::resp_5xx::{ServerError, ServiceUnavailable};
+</span><span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_2xx::NoContent;
+<span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_5xx::{ServerError, ServiceUnavailable};
 
 <span class="kw">use </span>poem_extensions::response;
 <span class="kw">use </span>poem_extensions::UniResponse::T204;

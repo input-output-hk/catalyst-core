@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["docs"],"mod":["stoplight_elements"]};
+window.SIDEBAR_ITEMS = {"constant":["EXCLUDES","INCLUDES"],"fn":["docs","favicon"],"mod":["stoplight_elements"],"opaque":[""],"struct":["Files"]};

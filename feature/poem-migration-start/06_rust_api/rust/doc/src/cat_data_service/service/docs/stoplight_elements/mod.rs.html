@@ -42,6 +42,8 @@
 <a href="#42" id="42">42</a>
 <a href="#43" id="43">43</a>
 <a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
 </pre><pre class="rust"><code><span class="kw">use </span>poem::{endpoint::make_sync, web::Html, Endpoint};
 
 <span class="kw">const </span>STOPLIGHT_UI_JS: <span class="kw-2">&amp;</span>str = <span class="macro">include_str!</span>(<span class="string">&quot;web-components.min.js&quot;</span>);
@@ -75,14 +77,16 @@
 &lt;/html&gt;
 &quot;#</span>;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>create_html(document: <span class="kw-2">&amp;</span>str) -&gt; String {
+<span class="doccomment">/// Create the HTML from the Stoplight template above and our included CSS and .JS file.
+</span><span class="kw">fn </span>create_html(document: <span class="kw-2">&amp;</span>str) -&gt; String {
     STOPLIGHT_UI_TEMPLATE
         .replace(<span class="string">&quot;{:style}&quot;</span>, STOPLIGHT_UI_CSS)
         .replace(<span class="string">&quot;{:script}&quot;</span>, STOPLIGHT_UI_JS)
         .replace(<span class="string">&quot;{:spec}&quot;</span>, document)
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>create_endpoint(document: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw">impl </span>Endpoint {
+<span class="doccomment">/// Create an endpoint to return teh Stoplight documentation for our API.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>create_endpoint(document: <span class="kw-2">&amp;</span>str) -&gt; <span class="kw">impl </span>Endpoint {
     <span class="kw">let </span>ui_html = create_html(document);
     poem::Route::new().at(<span class="string">&quot;/&quot;</span>, make_sync(<span class="kw">move </span>|<span class="kw">_</span>| Html(ui_html.clone())))
 }

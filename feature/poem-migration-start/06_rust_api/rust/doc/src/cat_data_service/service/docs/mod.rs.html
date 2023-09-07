@@ -23,10 +23,21 @@
 <a href="#23" id="23">23</a>
 <a href="#24" id="24">24</a>
 <a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
 </pre><pre class="rust"><code><span class="kw">mod </span>stoplight_elements;
-<span class="kw">use </span>poem::{get, Route};
+<span class="kw">use </span>poem::{endpoint::EmbeddedFileEndpoint, get, Route};
 
 <span class="kw">use </span><span class="kw">super</span>::api::OpenApiServiceT;
+<span class="kw">use </span>rust_embed::RustEmbed;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>docs(api_service: <span class="kw-2">&amp;</span>OpenApiServiceT) -&gt; Route {
     <span class="kw">let </span>spec = api_service.spec();
@@ -47,6 +58,15 @@
             <span class="string">&quot;/cat-data-service.json&quot;</span>,
             poem::endpoint::make_sync(<span class="kw">move </span>|<span class="kw">_</span>| spec.clone()),
         )
+}
+
+<span class="attr">#[derive(RustEmbed)]
+#[folder = <span class="string">&quot;src/service/docs/files&quot;</span>]
+</span><span class="kw">pub struct </span>Files;
+
+<span class="doccomment">/// Get an endpoint for favicon.ico
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>favicon() -&gt; Route {
+    Route::new().at(<span class="string">&quot;/&quot;</span>, EmbeddedFileEndpoint::&lt;Files&gt;::new(<span class="string">&quot;favicon.ico&quot;</span>))
 }
 </code></pre></div>
 </section></main></body></html>

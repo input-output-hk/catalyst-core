@@ -339,13 +339,9 @@
 <a href="#339" id="339">339</a>
 <a href="#340" id="340">340</a>
 <a href="#341" id="341">341</a>
-<a href="#342" id="342">342</a>
-<a href="#343" id="343">343</a>
-<a href="#344" id="344">344</a>
-<a href="#345" id="345">345</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Command line and environment variable settings for the service
 //!
-</span><span class="kw">use </span><span class="kw">crate</span>::logger::{LogFormat, LogLevel, LOG_FORMAT_DEFAULT, LOG_LEVEL_DEFAULT};
+</span><span class="kw">use </span><span class="kw">crate</span>::logger::{LogLevel, LOG_LEVEL_DEFAULT};
 <span class="kw">use </span>clap::Args;
 <span class="kw">use </span>dotenvy::dotenv;
 <span class="kw">use </span>lazy_static::lazy_static;
@@ -394,10 +390,6 @@
     <span class="doccomment">/// Url to the postgres event db
     </span><span class="attr">#[clap(long, env)]
     </span><span class="kw">pub </span>database_url: String,
-
-    <span class="doccomment">/// Logging format
-    </span><span class="attr">#[clap(long, default_value = LOG_FORMAT_DEFAULT)]
-    </span><span class="kw">pub </span>log_format: LogFormat,
 
     <span class="doccomment">/// Logging level
     </span><span class="attr">#[clap(long, default_value = LOG_LEVEL_DEFAULT)]

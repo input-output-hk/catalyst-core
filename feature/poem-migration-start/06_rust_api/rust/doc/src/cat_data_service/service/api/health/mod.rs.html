@@ -72,27 +72,19 @@
 <a href="#72" id="72">72</a>
 <a href="#73" id="73">73</a>
 <a href="#74" id="74">74</a>
-<a href="#75" id="75">75</a>
-<a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
 </pre><pre class="rust"><code><span class="kw">mod </span>live_get;
 <span class="kw">mod </span>ready_get;
 <span class="kw">mod </span>started_get;
 
-<span class="kw">use </span><span class="kw">crate</span>::service::generic::responses::resp_5xx::ServiceUnavailable;
-<span class="kw">use </span><span class="kw">crate</span>::service::generic::responses::{resp_2xx::NoContent, resp_5xx::ServerError};
-<span class="kw">use </span><span class="kw">crate</span>::service::generic::tags::ApiTags;
+<span class="kw">use </span><span class="kw">crate</span>::service::common::tags::ApiTags;
 
 <span class="kw">use </span>poem_openapi::OpenApi;
-
-<span class="kw">use </span>poem_extensions::response;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>HealthApi;
 
 <span class="attr">#[OpenApi(prefix_path = <span class="string">&quot;/health&quot;</span>, tag = <span class="string">&quot;ApiTags::Health&quot;</span>)]
 </span><span class="kw">impl </span>HealthApi {
-    <span class="attr">#[oai(path = <span class="string">&quot;/started&quot;</span>, method = <span class="string">&quot;get&quot;</span>)]
+    <span class="attr">#[oai(path = <span class="string">&quot;/started&quot;</span>, method = <span class="string">&quot;get&quot;</span>, operation_id = <span class="string">&quot;healthStarted&quot;</span>)]
     </span><span class="doccomment">/// Service Started
     ///
     /// This endpoint is used to determine if the service has started properly
@@ -113,7 +105,7 @@
         started_get::endpoint().<span class="kw">await
     </span>}
 
-    <span class="attr">#[oai(path = <span class="string">&quot;/ready&quot;</span>, method = <span class="string">&quot;get&quot;</span>)]
+    <span class="attr">#[oai(path = <span class="string">&quot;/ready&quot;</span>, method = <span class="string">&quot;get&quot;</span>, operation_id = <span class="string">&quot;healthReady&quot;</span>)]
     </span><span class="doccomment">/// Service Ready
     ///
     /// This endpoint is used to determine if the service is ready and able to serve requests.
@@ -134,7 +126,7 @@
         ready_get::endpoint().<span class="kw">await
     </span>}
 
-    <span class="attr">#[oai(path = <span class="string">&quot;/live&quot;</span>, method = <span class="string">&quot;get&quot;</span>)]
+    <span class="attr">#[oai(path = <span class="string">&quot;/live&quot;</span>, method = <span class="string">&quot;get&quot;</span>, operation_id = <span class="string">&quot;healthLive&quot;</span>)]
     </span><span class="doccomment">/// Service Live
     ///
     /// This endpoint is used to determine if the service is live.

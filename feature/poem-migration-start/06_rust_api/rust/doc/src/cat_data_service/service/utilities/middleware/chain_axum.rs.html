@@ -155,7 +155,7 @@
 //! legacy axum implementation.
 //!
 //! Allows us to have 1 API and seamlessly migrate unconverted requests.
-</span><span class="kw">use </span><span class="kw">crate</span>::axum_service;
+</span><span class="kw">use </span><span class="kw">crate</span>::legacy_service;
 <span class="kw">use </span><span class="kw">crate</span>::state::State;
 
 <span class="kw">use </span>bytes::Bytes;
@@ -252,7 +252,7 @@
                 <span class="comment">// Only if the error is a 404 (Not found) then try and chain to axum, handler.
                 </span><span class="kw">if </span>err.is::&lt;NotFoundError&gt;() {
                     <span class="comment">// Build an app instance to run the endpoint.
-                    </span><span class="kw">let </span>app = axum_service::app(state);
+                    </span><span class="kw">let </span>app = legacy_service::app(state);
 
                     <span class="kw">let </span><span class="kw-2">mut </span>request = axum::http::Request::builder()
                         .method(method)

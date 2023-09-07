@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["catch_panic","metrics_tracing","middleware"]};
+window.SIDEBAR_ITEMS = {"mod":["catch_panic","middleware"]};

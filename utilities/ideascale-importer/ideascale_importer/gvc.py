@@ -1,21 +1,17 @@
 """GVC API module."""
-
-from pydantic.dataclasses import dataclass
-import pydantic.tools
+from pydantic import BaseModel
 from typing import List
 
 from ideascale_importer import utils
 
 
-@dataclass
-class DrepAttributes:
+class DrepAttributes(BaseModel):
     """Represents DREP attributes from the GVC API."""
 
     voting_key: str
 
 
-@dataclass
-class Drep:
+class Drep(BaseModel):
     """Represents a DREP from the GVC API."""
 
     id: int
@@ -38,4 +34,4 @@ class Client:
         if not isinstance(res, dict):
             raise utils.BadResponse()
 
-        return [pydantic.tools.parse_obj_as(Drep, e) for e in res["data"]]
+        return [Drep.model_validate(e) for e in res["data"]]

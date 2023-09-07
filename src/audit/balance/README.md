@@ -15,7 +15,7 @@ MOUNT_PATH=/tmp/fund9-leader-1:/leader1stuff
 HISTORICAL_STATE=/leader1stuff/persist/leader-1
 BLOCK_0=/leader1stuff/artifacts/block0.bin
 
-earthly +build && earthly +docker
+earthly +build && earthly +docker-local
 docker run  --net=host -v $MOUNT_PATH --env STORAGE_PATH=$HISTORICAL_STATE --env GENESIS_PATH=$BLOCK_0 jormungandr
 ```
 

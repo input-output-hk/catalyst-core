@@ -12,18 +12,16 @@ def get_env_var(env_var):
 @pytest.fixture()
 def reviews_manager_mock():
     ideascale_url = get_env_var("IDEASCALE_API_URL")
-    database_url = get_env_var("EVENTDB_URL")
     email = get_env_var("IDEASCALE_EMAIL")
     password = get_env_var("IDEASCALE_PASSWORD")
-    event_id = 0
     api_token = get_env_var("IDEASCALE_API_TOKEN")
+    config_path = "./ideascale_importer/tests/test_data/config.json"
     return ReviewsManager(
             ideascale_url=ideascale_url,
-            database_url=database_url,
             email=email,
             password=password,
             api_token=api_token,
-            event_id=event_id,
+            config_path=config_path
         )
 
 @pytest.mark.asyncio

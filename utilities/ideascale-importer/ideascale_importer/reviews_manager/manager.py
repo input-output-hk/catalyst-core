@@ -4,6 +4,7 @@ from loguru import logger
 from typing import List, Dict
 import pydantic
 import tempfile
+import json
 
 from ideascale_importer import utils
 import ideascale_importer.db
@@ -65,18 +66,16 @@ class ReviewsManager:
     def __init__(
         self,
         ideascale_url,
-        database_url,
-        event_id,
         api_token,
+        config_path = None,
         email = None,
         password = None,
     ):
         self.ideascale_url = ideascale_url
-        self.database_url = database_url
         self.email = email
         self.password = password
-        self.event_id = event_id
         self.api_token = api_token
+        self.config_path = config_path
 
         self.frontend_client = None
         self.db = None
@@ -86,23 +85,13 @@ class ReviewsManager:
             logger.info("Connecting to the Ideascale frontend")
             self.frontend_client = FrontendClient(self.ideascale_url)
             await self.frontend_client.login(self.email, self.password)
-        if self.db is None:
-            logger.info("Connecting to the database")
-            self.db = await ideascale_importer.db.connect(self.database_url)
 
     async def __load_config(self):
         """Load the configuration setting from the event db."""
 
-        logger.info("Loading ideascale config from the event-db")
-
-        config = ideascale_importer.db.models.Config(row_id=0, id="ideascale", id2=f"{self.event_id}", id3="", value=None)
-        res = await ideascale_importer.db.select(self.db, config,  cond={
-            "id": f"= '{config.id}'",
-            "AND id2": f"= '{config.id2}'"
-            })
-        if len(res) == 0:
-            raise Exception("Cannot find ideascale config in the event-db database")
-        self.config = Config(**res[0].value)
+        logger.info(f"Loading ideascale config from {self.config_path}")
+        config_data = json.load(open(self.config_path))
+        self.config = Config(**config_data)
 
     async def __download_reviews(self, reviews_output_path: str):
         logger.info("Download reviews from Ideascale...")
@@ -134,7 +123,7 @@ class ReviewsManager:
             allocation_path=allocations_path,
             challenges_group_id=self.config.campaign_group_id,
             questions=self.config.questions,
-            fund=self.event_id,
+            fund=self.config.event_id,
             output_path=output_path
         )
 
@@ -166,6 +155,7 @@ class ReviewsManager:
 class Config(pydantic.BaseModel):
     """Represents the available configuration fields."""
 
+    event_id: int
     group_id: int
     campaign_group_id: int
     review_stage_ids: List[int]

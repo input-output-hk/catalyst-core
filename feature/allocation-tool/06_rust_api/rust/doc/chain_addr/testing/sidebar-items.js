@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["ARBITRARY_PREFIX"],"fn":["arbitrary_32bytes","arbitrary_public_key"]};

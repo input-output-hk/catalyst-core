@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["totals"],"struct":["Prometheus"],"type":["UIntGauge"]};

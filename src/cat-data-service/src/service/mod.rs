@@ -1,6 +1,6 @@
 //! Main entrypoint to the service
 //!
-use crate::axum_service;
+use crate::legacy_service;
 use crate::state::State;
 
 use serde::Serialize;
@@ -12,8 +12,8 @@ use tokio::try_join;
 mod api;
 mod docs;
 
-// These modules are utility or generic types/functions
-mod generic;
+// These modules are utility or common types/functions
+mod common;
 mod poem_service;
 mod utilities;
 
@@ -61,12 +61,12 @@ pub async fn run(
 ) -> Result<(), Error> {
     // Create service addresses to be used during poem migration.
     // Service address is same as official address but +1 to the port.
-    let mut axum_service = *service_addr;
-    axum_service.set_port(axum_service.port() + 1);
+    let mut legacy_service = *service_addr;
+    legacy_service.set_port(legacy_service.port() + 1);
 
     // This can be simplified to an .await when axum is finally removed.
     try_join!(
-        axum_service::run(&axum_service, metrics_addr, state.clone()),
+        legacy_service::run(&legacy_service, metrics_addr, state.clone()),
         poem_service::run(service_addr, state),
     )?;
 

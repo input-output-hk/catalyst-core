@@ -1,5 +1,5 @@
 use crate::{
-    axum_service::{handle_result, v1::LimitOffset},
+    legacy_service::{handle_result, v1::LimitOffset},
     service::Error,
     state::State,
     types::SerdeType,
@@ -144,7 +144,7 @@ async fn objectives_voting_statuses_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::axum_service::{app, tests::response_body_to_json};
+    use crate::legacy_service::{app, tests::response_body_to_json};
     use axum::{
         body::Body,
         http::{Request, StatusCode},

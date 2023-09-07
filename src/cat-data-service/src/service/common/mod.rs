@@ -1,4 +1,4 @@
-//! Define generic reusable api components here.
+//! Define common and reusable api components here.
 //! these components should be structured into their own sub modules.
 //!
 pub(crate) mod responses;

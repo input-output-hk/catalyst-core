@@ -2,19 +2,15 @@ mod live_get;
 mod ready_get;
 mod started_get;
 
-use crate::service::generic::responses::resp_5xx::ServiceUnavailable;
-use crate::service::generic::responses::{resp_2xx::NoContent, resp_5xx::ServerError};
-use crate::service::generic::tags::ApiTags;
+use crate::service::common::tags::ApiTags;
 
 use poem_openapi::OpenApi;
-
-use poem_extensions::response;
 
 pub(crate) struct HealthApi;
 
 #[OpenApi(prefix_path = "/health", tag = "ApiTags::Health")]
 impl HealthApi {
-    #[oai(path = "/started", method = "get")]
+    #[oai(path = "/started", method = "get", operation_id = "healthStarted")]
     /// Service Started
     ///
     /// This endpoint is used to determine if the service has started properly
@@ -35,7 +31,7 @@ impl HealthApi {
         started_get::endpoint().await
     }
 
-    #[oai(path = "/ready", method = "get")]
+    #[oai(path = "/ready", method = "get", operation_id = "healthReady")]
     /// Service Ready
     ///
     /// This endpoint is used to determine if the service is ready and able to serve requests.
@@ -56,7 +52,7 @@ impl HealthApi {
         ready_get::endpoint().await
     }
 
-    #[oai(path = "/live", method = "get")]
+    #[oai(path = "/live", method = "get", operation_id = "healthLive")]
     /// Service Live
     ///
     /// This endpoint is used to determine if the service is live.

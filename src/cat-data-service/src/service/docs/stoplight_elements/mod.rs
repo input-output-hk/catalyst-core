@@ -31,13 +31,15 @@ const STOPLIGHT_UI_TEMPLATE: &str = r#"
 </html>
 "#;
 
-pub(crate) fn create_html(document: &str) -> String {
+/// Create the HTML from the Stoplight template above and our included CSS and .JS file.
+fn create_html(document: &str) -> String {
     STOPLIGHT_UI_TEMPLATE
         .replace("{:style}", STOPLIGHT_UI_CSS)
         .replace("{:script}", STOPLIGHT_UI_JS)
         .replace("{:spec}", document)
 }
 
+/// Create an endpoint to return teh Stoplight documentation for our API.
 pub(crate) fn create_endpoint(document: &str) -> impl Endpoint {
     let ui_html = create_html(document);
     poem::Route::new().at("/", make_sync(move |_| Html(ui_html.clone())))

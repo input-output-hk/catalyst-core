@@ -1,7 +1,7 @@
 //! Implementation of the GET /health/started endpoint
 
-use crate::service::generic::responses::resp_2xx::NoContent;
-use crate::service::generic::responses::resp_5xx::{ServerError, ServiceUnavailable};
+use crate::service::common::responses::resp_2xx::NoContent;
+use crate::service::common::responses::resp_5xx::{ServerError, ServiceUnavailable};
 
 use poem_extensions::response;
 use poem_extensions::UniResponse::T204;

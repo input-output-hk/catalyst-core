@@ -2,7 +2,7 @@
 //! legacy axum implementation.
 //!
 //! Allows us to have 1 API and seamlessly migrate unconverted requests.
-use crate::axum_service;
+use crate::legacy_service;
 use crate::state::State;
 
 use bytes::Bytes;
@@ -99,7 +99,7 @@ where
                 // Only if the error is a 404 (Not found) then try and chain to axum, handler.
                 if err.is::<NotFoundError>() {
                     // Build an app instance to run the endpoint.
-                    let app = axum_service::app(state);
+                    let app = legacy_service::app(state);
 
                     let mut request = axum::http::Request::builder()
                         .method(method)

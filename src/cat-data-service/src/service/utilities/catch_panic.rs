@@ -1,5 +1,5 @@
 //! Handle catching panics created by endpoints, logging them and properly responding.
-use crate::service::generic::responses::resp_5xx::ServerError;
+use crate::service::common::responses::resp_5xx::ServerError;
 
 use panic_message::panic_message;
 use poem::middleware::PanicHandler;

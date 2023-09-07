@@ -1,5 +1,5 @@
 use crate::{
-    axum_service::handle_result,
+    legacy_service::handle_result,
     service::Error,
     state::State,
     types::jorm_mock::{AccountId, AccountVote, Fragments, FragmentsProcessingSummary},
@@ -62,7 +62,7 @@ async fn account_votes_exec(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::axum_service::{app, tests::response_body_to_json};
+    use crate::legacy_service::{app, tests::response_body_to_json};
     use axum::{
         body::Body,
         http::{header, Method, Request, StatusCode},

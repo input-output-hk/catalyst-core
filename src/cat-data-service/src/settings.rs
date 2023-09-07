@@ -1,6 +1,6 @@
 //! Command line and environment variable settings for the service
 //!
-use crate::logger::{LogFormat, LogLevel, LOG_FORMAT_DEFAULT, LOG_LEVEL_DEFAULT};
+use crate::logger::{LogLevel, LOG_LEVEL_DEFAULT};
 use clap::Args;
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
@@ -49,10 +49,6 @@ pub struct Settings {
     /// Url to the postgres event db
     #[clap(long, env)]
     pub database_url: String,
-
-    /// Logging format
-    #[clap(long, default_value = LOG_FORMAT_DEFAULT)]
-    pub log_format: LogFormat,
 
     /// Logging level
     #[clap(long, default_value = LOG_LEVEL_DEFAULT)]

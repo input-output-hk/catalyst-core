@@ -1,4 +1,4 @@
-//! This module contains generic re-usable responses with a 4xx response code.
+//! This module contains common and re-usable responses with a 4xx response code.
 //!
 
 use poem::IntoResponse;

@@ -1,4 +1,4 @@
-//! This module contains generic re-usable responses with a 4xx response code.
+//! This module contains common and re-usable responses with a 4xx response code.
 //!
 
 use poem_extensions::OneResponse;
@@ -13,9 +13,10 @@ use crate::settings::generate_github_issue_url;
 #[derive(Debug, Object)]
 #[oai(example, skip_serializing_if_is_none)]
 /// Response payload to a Bad request.
-pub(crate) struct ServerErrorPayload {
+/*pub(crate)*/
+struct ServerErrorPayload {
     /// Unique ID of this Server Error so that it can be located easily for debugging.
-    pub id: Uuid,
+    id: Uuid,
     /// *Optional* SHORT Error message.
     /// Will not contain sensitive information, internal details or backtraces.
     msg: Option<String>,

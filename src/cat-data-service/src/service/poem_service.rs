@@ -2,20 +2,23 @@
 //!
 //! This provides only the primary entrypoint to the service.
 
-use crate::service::docs::docs;
+use crate::service::docs::{docs, favicon};
 use crate::service::Error;
 
 use crate::service::api::mk_api;
 use crate::service::utilities::catch_panic::{set_panic_hook, ServicePanicHandler};
-use crate::service::utilities::metrics_tracing::{init_prometheus, log_requests};
-use crate::service::utilities::middleware::{chain_axum::ChainAxum, tracing_mw::Tracing};
+use crate::service::utilities::middleware::{
+    chain_axum::ChainAxum,
+    tracing_mw::{init_prometheus, Tracing},
+};
 
 use crate::settings::{get_api_hostnames, API_URL_PREFIX};
 use crate::state::State;
 
 use poem::endpoint::PrometheusExporter;
 use poem::listener::TcpListener;
-use poem::middleware::{CatchPanic, Cors, OpenTelemetryMetrics};
+use poem::middleware::{CatchPanic, Compression, Cors};
+use poem::web::CompressionLevel;
 use poem::{EndpointExt, IntoEndpoint, Route};
 use std::net::SocketAddr;
 use std::sync::Arc;
@@ -41,13 +44,13 @@ pub(crate) fn mk_app(
         .nest(API_URL_PREFIX.as_str(), api_service)
         .nest("/docs", docs)
         .nest("/metrics", PrometheusExporter::new(prometheus_registry))
+        .nest("/favicon.ico", favicon())
         .with(Cors::new())
-        .with(OpenTelemetryMetrics::new())
         .with(ChainAxum::new()) // TODO: Remove this once all endpoints are ported.
+        .with(Compression::new().with_quality(CompressionLevel::Fastest))
         .with(CatchPanic::new().with_handler(ServicePanicHandler))
-        .data(state)
         .with(Tracing)
-        //.around(|ep, req| async move { Ok(log_requests(ep, req).await) })
+        .data(state)
 }
 
 /// Run the Poem Service

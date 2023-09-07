@@ -1,4 +1,4 @@
-//! Main entrypoint to the AXUM version of the service
+//! Main entrypoint to the Legacy AXUM version of the service
 //!
 use crate::service::{Error, ErrorMessage};
 use crate::state::State;

@@ -3,6 +3,7 @@
 use std::sync::Arc;
 
 use crate::service::common::responses::resp_2xx::NoContent;
+use crate::service::common::responses::resp_4xx::ApiValidationError;
 use crate::service::common::responses::resp_5xx::{ServerError, ServiceUnavailable};
 use crate::state::State;
 
@@ -12,16 +13,20 @@ use tracing::{error, info, warn};
 
 pub(crate) type AllResponses = response! {
     204: NoContent,
+    400: ApiValidationError,
     500: ServerError,
     503: ServiceUnavailable,
 };
 
-#[derive(::poem_openapi::Enum, Debug, Eq, PartialEq)]
+#[derive(::poem_openapi::Enum, Debug, Eq, PartialEq, Hash, Clone)]
 /// A query parameter that is one of these animals.
-enum Animals {
+pub(crate) enum Animals {
+    /// Preferred pet is dogs
     Dogs,
+    /// Preferred pet is cats
     Cats,
-    Horses,
+    /// Preferred pet is rabbits
+    Rabbits,
 }
 
 /// # GET /test/test
@@ -39,8 +44,13 @@ enum Animals {
 /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
 /// * 503 Service Unavailable - Service is possibly not running reliably.
 #[allow(clippy::unused_async)]
-pub(crate) async fn endpoint(_state: Arc<State>, id: i32, action: &Option<String>) -> AllResponses {
-    info!("id: {id:?}, action: {action:?}");
+pub(crate) async fn endpoint(
+    _state: Arc<State>,
+    id: i32,
+    action: &Option<String>,
+    pet: &Option<Vec<Animals>>,
+) -> AllResponses {
+    info!("id: {id:?}, action: {action:?} pet: {pet:?}");
     let response: AllResponses = match id {
         10 => {
             warn!("id: {id:?}, action: {action:?}");

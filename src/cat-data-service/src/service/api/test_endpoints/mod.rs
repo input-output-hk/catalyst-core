@@ -9,7 +9,10 @@ use std::sync::Arc;
 use crate::{service::common::tags::ApiTags, state::State};
 
 use poem::web::Data;
-use poem_openapi::{param::Path, OpenApi};
+use poem_openapi::{
+    param::{Path, Query},
+    OpenApi,
+};
 
 pub(crate) struct TestApi;
 
@@ -24,12 +27,6 @@ impl TestApi {
     /// Test Get API
     ///
     /// An Endpoint to test validation of get endpoints.
-    ///
-    /// ## Responses
-    ///
-    /// * 204 No Content - Service is Started and can serve requests.
-    /// * 500 Server Error - If anything within this function fails unexpectedly.
-    /// * 503 Service Unavailable - Service has not started, do not send other requests yet.
     ///
     /// ## Note
     ///
@@ -57,15 +54,17 @@ impl TestApi {
 
         #[oai(validator(
             pattern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-            max_length = "36",
-            min_length = "36"
+            max_length = "36"
         ))]
         /// The action just needs to be any valid UUID.
         ///
         /// # Make sure its a UUID
         action: Path<Option<String>>,
+        #[oai(validator(min_items = 0, max_items = 3, unique_items))]
+        /// List your favorite pets, in order of preference
+        pet: Query<Option<Vec<test_get::Animals>>>,
     ) -> test_get::AllResponses {
-        test_get::endpoint(data.clone(), *id, &action).await
+        test_get::endpoint(data.clone(), *id, &action, &pet).await
     }
 
     #[oai(

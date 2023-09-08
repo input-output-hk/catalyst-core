@@ -2,9 +2,9 @@
 name = "fragment-exporter"
 version = "0.1.0"
 description = "Exports node fragment logs to stdout"
-authors = ["Catalyst Core Developers <dev@iohk.io>]
+authors = ["Catalyst Core Developers <dev@iohk.io>"]
 readme = "README.md"
-packages = [{include = "fragment_exporter"}]
+packages = [{ include = "fragment_exporter" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"

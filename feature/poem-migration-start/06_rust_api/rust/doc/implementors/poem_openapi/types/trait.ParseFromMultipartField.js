@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"cat_data_service":[["impl ParseFromMultipartField for <a class=\"enum\" href=\"cat_data_service/service/api/test_endpoints/test_get/enum.Animals.html\" title=\"enum cat_data_service::service::api::test_endpoints::test_get::Animals\">Animals</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

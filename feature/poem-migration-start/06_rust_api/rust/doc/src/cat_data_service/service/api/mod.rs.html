@@ -74,33 +74,13 @@
 <a href="#74" id="74">74</a>
 <a href="#75" id="75">75</a>
 <a href="#76" id="76">76</a>
-<a href="#77" id="77">77</a>
-<a href="#78" id="78">78</a>
-<a href="#79" id="79">79</a>
-<a href="#80" id="80">80</a>
-<a href="#81" id="81">81</a>
-<a href="#82" id="82">82</a>
-<a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
-<a href="#85" id="85">85</a>
-<a href="#86" id="86">86</a>
-<a href="#87" id="87">87</a>
-<a href="#88" id="88">88</a>
-<a href="#89" id="89">89</a>
-<a href="#90" id="90">90</a>
-<a href="#91" id="91">91</a>
-<a href="#92" id="92">92</a>
-<a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Catalyst Data Service API Definition
 //!
 //! This defines all endpoints for the Catalyst Data Service API.
 //! It however does NOT contain any processing for them, that is defined elsewhere.
 </span><span class="kw">use </span>health::HealthApi;
-<span class="kw">use </span>poem_openapi::{
-    param::Query, payload::PlainText, ContactObject, LicenseObject, OpenApi, OpenApiService,
-    ServerObject,
-};
+<span class="kw">use </span>poem_openapi::{ContactObject, LicenseObject, OpenApiService, ServerObject};
+<span class="kw">use </span>test_endpoints::TestApi;
 
 <span class="kw">use </span><span class="kw">crate</span>::settings::API_URL_PREFIX;
 
@@ -151,27 +131,11 @@ TODO:
     <span class="string">&quot;https://github.com/input-output-hk/catalyst-core/blob/main/book/src/98_CODE_OF_CONDUCT.md&quot;</span>;
 
 <span class="doccomment">/// Combine all the API&#39;s into one
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type </span>OpenApiServiceT = OpenApiService&lt;(Api, HealthApi), ()&gt;;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type </span>OpenApiServiceT = OpenApiService&lt;(TestApi, HealthApi), ()&gt;;
 
-<span class="doccomment">/// The API
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Api;
-
-<span class="attr">#[OpenApi]
-</span><span class="kw">impl </span>Api {
-    <span class="attr">#[oai(path = <span class="string">&quot;/hello&quot;</span>, method = <span class="string">&quot;get&quot;</span>)]
-    </span><span class="kw">async fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>, name: Query&lt;<span class="prelude-ty">Option</span>&lt;String&gt;&gt;) -&gt; PlainText&lt;String&gt; {
-        <span class="comment">// API&#39;s, parameters and response types should NOT be defined in this file.
-        // This should simply call the implementation.
-        // No parameter or other processing should be done here.
-        </span><span class="kw">match </span>name.<span class="number">0 </span>{
-            <span class="prelude-val">Some</span>(name) =&gt; PlainText(<span class="macro">format!</span>(<span class="string">&quot;hello, {}!&quot;</span>, name)),
-            <span class="prelude-val">None </span>=&gt; PlainText(<span class="string">&quot;hello!&quot;</span>.to_string()),
-        }
-    }
-}
-
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>mk_api(hosts: Vec&lt;String&gt;) -&gt; OpenApiServiceT {
-    <span class="kw">let </span><span class="kw-2">mut </span>service = OpenApiService::new((Api, HealthApi), API_TITLE, API_VERSION)
+<span class="doccomment">/// Create the OpenAPI definition
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>mk_api(hosts: Vec&lt;String&gt;) -&gt; OpenApiServiceT {
+    <span class="kw">let </span><span class="kw-2">mut </span>service = OpenApiService::new((TestApi, HealthApi), API_TITLE, API_VERSION)
         .contact(get_api_contact())
         .description(API_DESCRIPTION)
         .license(get_api_license())

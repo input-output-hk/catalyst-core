@@ -7,6 +7,9 @@
 <a href="#7" id="7">7</a>
 <a href="#8" id="8">8</a>
 <a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
 </pre><pre class="rust"><code><span class="doccomment">//! OpenAPI Tags we need to classify the endpoints.
 //!
 </span><span class="kw">use </span>poem_openapi::Tags;
@@ -15,6 +18,9 @@
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>ApiTags {
     <span class="comment">// Health Endpoints
     </span>Health,
+    <span class="comment">// Test Endpoints (Not part of the API)
+    </span>Test,
+    TestTag2,
 }
 </code></pre></div>
 </section></main></body></html>

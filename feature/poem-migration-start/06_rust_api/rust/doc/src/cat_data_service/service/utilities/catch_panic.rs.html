@@ -82,16 +82,28 @@
 <a href="#82" id="82">82</a>
 <a href="#83" id="83">83</a>
 <a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Handle catching panics created by endpoints, logging them and properly responding.
 </span><span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_5xx::ServerError;
 
 <span class="kw">use </span>panic_message::panic_message;
 <span class="kw">use </span>poem::middleware::PanicHandler;
+<span class="comment">//use tracing::Level;
+</span><span class="kw">use </span>chrono::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span>std::any::Any;
-<span class="kw">use </span>std::cell::RefCell;
-<span class="kw">use </span>tracing::log::error;
-
 <span class="kw">use </span>std::backtrace::Backtrace;
+<span class="kw">use </span>std::cell::RefCell;
+
+<span class="kw">use </span>serde_json::json;
 
 <span class="doccomment">/// Customized Panic handler.
 /// Catches all panics, and turns them into 500.
@@ -155,13 +167,21 @@
             <span class="prelude-val">None </span>=&gt; <span class="string">&quot;Unknown&quot;</span>.to_string(),
         };
 
-        <span class="macro">error!</span>(
-            panic = panic_identifier,
-            error = err_msg,
-            loc = location,
-            bt = backtrace;
-            <span class="string">&quot;PANIC&quot;
-        </span>);
+        <span class="comment">// For some reason logging doesn&#39;t work here.
+        // So manually form a log message and send to stdout.
+        </span><span class="kw">let </span>time = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Nanos, <span class="bool-val">true</span>);
+
+        <span class="kw">let </span>json_log = <span class="macro">json!</span>({
+            <span class="string">&quot;backtrace&quot;</span>: backtrace,
+            <span class="string">&quot;location&quot;</span>: location,
+            <span class="string">&quot;message&quot;</span>: err_msg,
+            <span class="string">&quot;id&quot;</span>: panic_identifier,
+            <span class="string">&quot;level&quot;</span>: <span class="string">&quot;PANIC&quot;</span>,
+            <span class="string">&quot;timestamp&quot;</span>: time
+        })
+        .to_string();
+
+        <span class="macro">println!</span>(<span class="string">&quot;{json_log}&quot;</span>);
 
         response
     }

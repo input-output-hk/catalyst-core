@@ -138,7 +138,7 @@
         </span>.with(Compression::new().with_quality(CompressionLevel::Fastest))
         .with(CatchPanic::new().with_handler(ServicePanicHandler))
         .with(Tracing)
-        .data(state)
+        .data(state.clone())
 }
 
 <span class="doccomment">/// Run the Poem Service

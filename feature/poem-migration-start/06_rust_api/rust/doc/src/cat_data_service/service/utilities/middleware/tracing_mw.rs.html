@@ -353,6 +353,43 @@
 <a href="#353" id="353">353</a>
 <a href="#354" id="354">354</a>
 <a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
 </pre><pre class="rust"><code><span class="kw">use </span>std::time::Instant;
 
 <span class="kw">use </span>cryptoxide::{blake2b::Blake2b, digest::Digest};
@@ -372,6 +409,7 @@
 
 <span class="kw">use </span>cpu_time::ProcessTime; <span class="comment">// ThreadTime doesn&#39;t work.
 </span><span class="kw">use </span>ulid::Ulid;
+<span class="kw">use </span>uuid::Uuid;
 
 <span class="kw">use </span><span class="kw">crate</span>::settings::CLIENT_ID_KEY;
 
@@ -413,6 +451,13 @@
         <span class="string">&quot;client_request_count&quot;</span>,
         <span class="string">&quot;Number of HTTP requests per client&quot;</span>,
         <span class="kw-2">&amp;</span>CLIENT_METRIC_LABELS
+    )
+    .unwrap();
+
+    <span class="kw">static </span><span class="kw-2">ref </span>PANIC_REQUEST_COUNT: IntCounterVec = <span class="macro">register_int_counter_vec!</span>(
+        <span class="string">&quot;panic_request_count&quot;</span>,
+        <span class="string">&quot;Number of HTTP requests that panicked&quot;</span>,
+        <span class="kw-2">&amp;</span>METRIC_LABELS
     )
     .unwrap();
 
@@ -489,12 +534,19 @@
     cpu_time: f64,
     status_code: u16,
     endpoint: String,
-}
+    <span class="comment">//panic: bool,
+</span>}
 
 <span class="kw">impl </span>ResponseData {
     <span class="doccomment">/// Create a new `ResponseData` set from the response.
     /// In the process add relevant data to the span from the response.
-    </span><span class="kw">fn </span>new(duration: f64, cpu_time: f64, resp: <span class="kw-2">&amp;</span>Response, span: <span class="kw-2">&amp;</span>Span) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">fn </span>new(
+        duration: f64,
+        cpu_time: f64,
+        resp: <span class="kw-2">&amp;</span>Response,
+        panic: <span class="prelude-ty">Option</span>&lt;Uuid&gt;,
+        span: <span class="kw-2">&amp;</span>Span,
+    ) -&gt; <span class="self">Self </span>{
         <span class="comment">// The OpenAPI Operation ID of this request.
         </span><span class="kw">let </span>oid = resp
             .data::&lt;OperationId&gt;()
@@ -517,6 +569,11 @@
         span.record(<span class="string">&quot;status&quot;</span>, status);
         span.record(<span class="string">&quot;endpoint&quot;</span>, <span class="kw-2">&amp;</span>endpoint);
 
+        <span class="comment">// Record the panic field in the span if it was set.
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(panic) = panic {
+            span.record(<span class="string">&quot;panic&quot;</span>, panic.to_string());
+        }
+
         add_interesting_headers_to_span(span, <span class="string">&quot;resp&quot;</span>, resp.headers());
 
         <span class="self">Self </span>{
@@ -524,7 +581,8 @@
             cpu_time,
             status_code: status,
             endpoint,
-        }
+            <span class="comment">//panic: panic.is_some(),
+        </span>}
     }
 }
 
@@ -588,6 +646,7 @@
         cpu_time_ms = field::Empty,
         oid = field::Empty,
         status = field::Empty,
+        panic = field::Empty,
     );
 
     <span class="comment">// Record query size (To see if we are sent enormous queries).
@@ -635,14 +694,29 @@
 
             <span class="kw">match </span>resp {
                 <span class="prelude-val">Ok</span>(resp) =&gt; {
-                    <span class="kw">let </span>resp = resp.into_response();
+                    <span class="comment">//let panic = if let Some(panic) = resp.downcast_ref::&lt;ServerError&gt;() {
+                    // Add panic ID to the span.
+                    //    Some(panic.id());
+                    //} else {
+                    //    None
+                    //};
+
+                    </span><span class="kw">let </span>resp = resp.into_response();
 
                     <span class="kw">let </span>response_data =
-                        ResponseData::new(duration, duration_proc, <span class="kw-2">&amp;</span>resp, <span class="kw-2">&amp;</span>inner_span);
+                        ResponseData::new(duration, duration_proc, <span class="kw-2">&amp;</span>resp, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>inner_span);
 
                     (<span class="prelude-val">Ok</span>(resp), response_data)
                 }
                 <span class="prelude-val">Err</span>(err) =&gt; {
+                    <span class="comment">//let panic = if let Some(panic) = err.downcast_ref::&lt;ServerError&gt;() {
+                    // Add panic ID to the span.
+                    //    Some(panic.id());
+                    //} else {
+                    //    None
+                    //};
+                    </span><span class="kw">let </span>panic: <span class="prelude-ty">Option</span>&lt;Uuid&gt; = <span class="prelude-val">None</span>;
+
                     <span class="comment">// Get the error message, and also for now, log the error to ensure we are preserving all data.
                     </span><span class="macro">error!</span>(err = <span class="question-mark">?</span>err, <span class="string">&quot;HTTP Response Error:&quot;</span>);
                     <span class="comment">// Only way I can see to get the message, may not be perfect.
@@ -652,7 +726,7 @@
                     </span><span class="kw">let </span>resp = err.into_response();
 
                     <span class="kw">let </span>response_data =
-                        ResponseData::new(duration, duration_proc, <span class="kw-2">&amp;</span>resp, <span class="kw-2">&amp;</span>inner_span);
+                        ResponseData::new(duration, duration_proc, <span class="kw-2">&amp;</span>resp, panic, <span class="kw-2">&amp;</span>inner_span);
 
                     <span class="comment">// Convert the response back to an error, and try and recover the message.
                     </span><span class="kw">let </span><span class="kw-2">mut </span>error = Error::from_response(resp);

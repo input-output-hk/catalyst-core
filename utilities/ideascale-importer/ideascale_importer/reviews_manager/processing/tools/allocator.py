@@ -29,14 +29,14 @@ class Allocator:
     def __get_relevant_proposals(
         self, challenge_ids: List[int], source: List[models.Proposal], level: int, times_check: bool = True
     ) -> List[models.Proposal]:
+        if not challenge_ids:
+            return []
+
         times_picked = [len(p.allocations) for p in source]
         min_times_picked = min(times_picked)
         max_times_picked = max(times_picked)
         for x in range(min_times_picked, max_times_picked + 1):
-            if len(challenge_ids) > 0:
-                proposals = [p for p in source if (p.challenge_id in challenge_ids and (len(p.allocations) <= x and times_check))]
-            else:
-                proposals = [p for p in source if (len(p.allocations) <= x and times_check)]
+            proposals = [p for p in source if (p.challenge_id in challenge_ids and (len(p.allocations) <= x and times_check))]
             if len(proposals) >= self.nr_allocations[level]:
                 return proposals
         return proposals
@@ -48,17 +48,28 @@ class Allocator:
         If level 1, use preferences as base challenges.
         If level 0, use all challenges as base challenges.
         Filter out challenges as author.
-        If no challenges remain and pa is author in some challenge, use all challenges as base and filter the one as author.
+        If no challenges remain, use all challenges as base and filter the one as author.
         """
         if pa.id in authors.keys():
             challenges_as_author = authors[pa.id]
         else:
             challenges_as_author = []
-        base_challenges = pa.challenge_ids if pa.level == 1 else []
-        challenges_ids = list(filter(lambda c: c not in challenges_as_author, base_challenges))
-        if len(challenges_ids) == 0 and len(challenges_as_author) > 0:
-            challenges_ids = list(filter(lambda c: c not in challenges_as_author, [c.id for c in self.source.challenges]))
-        return challenges_ids
+        
+        base_challenges_ids = [c.id for c in self.source.challenges]
+        # If level 0, use all challenges as base challenges.
+        if pa.level == 0:
+            # Filter out challenges as author.
+            return list(filter(lambda c: c not in challenges_as_author, base_challenges_ids))
+        #  If level 1, use preferences as base challenges.
+        if pa.level == 1:
+            # Filter out challenges as author.
+            challenges_ids = list(filter(lambda c: c not in challenges_as_author, pa.challenge_ids))
+            # If no challenges remain, use all challenges as base and filter the one as author.
+            if len(challenges_ids) == 0:
+                return list(filter(lambda c: c not in challenges_as_author, base_challenges_ids))
+            return challenges_ids
+
+        raise Exception(f"Invalid pa level: {pa.level}")
 
     def __generate_authors_map(self):
         logger.info("Generating authors map...")

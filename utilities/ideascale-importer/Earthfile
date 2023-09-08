@@ -73,6 +73,21 @@ docker:
     SAVE IMAGE --push ${registry}ideascale-importer:$tag
 
 # Run tests
-pytest:
+test:
     FROM +build
-    RUN poetry run pytest -v --doctest-modules
+
+    COPY ../../src/event-db+docker-compose/docker-compose.yml docker-compose.yml
+    WITH DOCKER \
+        --compose docker-compose.yml \
+        --pull postgres:14 \
+        --load migrations:latest=(../../containers/event-db-migrations+docker --data=test) \
+        --service migrations \
+        --allow-privileged
+        RUN --no-cache \
+            --secret IDEASCALE_EMAIL \
+            --secret IDEASCALE_PASSWORD \
+            --secret IDEASCALE_API_TOKEN \
+            EVENTDB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev" \
+            IDEASCALE_API_URL="https://temp-cardano-sandbox.ideascale.com" \
+            poetry run pytest
+    END

@@ -1,0 +1,63 @@
+# Set the Earthly version to 0.7
+VERSION 0.7
+
+# Use current debian stable with python
+FROM python:3.11-slim-bookworm
+
+poetry:
+    WORKDIR /work
+
+    ENV POETRY_HOME=/tmp/poetry
+    ENV PATH=$POETRY_HOME/bin:$PATH
+
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends curl
+
+    RUN curl -sSL https://install.python-poetry.org | python3 -
+
+    COPY pyproject.toml .
+    COPY poetry.lock .
+
+    RUN poetry install --only main --no-root
+
+src:
+    FROM +poetry
+
+    COPY --dir fragment_exporter README.md .
+
+check:
+    FROM +src
+
+    COPY --dir tests tests
+
+    RUN poetry install --only dev
+    RUN poetry run black --check .
+    RUN poetry run ruff check .
+    RUN poetry run pytest -v
+
+build:
+    FROM +check
+
+    RUN poetry export --without-hashes -f requirements.txt --output requirements.txt
+    RUN poetry build --no-cache -f wheel
+
+    SAVE ARTIFACT dist
+    SAVE ARTIFACT requirements.txt
+
+docker:
+    ARG tag="latest"
+    ARG registry
+
+    WORKDIR /app
+
+    COPY +build/dist .
+    COPY +build/requirements.txt .
+    COPY entry.sh /app
+
+    RUN chmod +x entry.sh
+    RUN pip3 install --no-cache -r requirements.txt
+    RUN pip3 install --no-cache *.whl
+
+    ENTRYPOINT ["/app/entry.sh"]
+
+    SAVE IMAGE --push ${registry}fragment-exporter:$tag

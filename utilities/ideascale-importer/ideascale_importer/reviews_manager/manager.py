@@ -36,7 +36,7 @@ class FrontendClient:
             export_endpoint = "/a/admin/workflow/survey-tools/assessment/report/statistic/export/assessment-details/"
             file_name = f"{reviews_path}/{review_stage_id}.xlsx"
 
-            content = await self.inner.get(f"{export_endpoint}{review_stage_id}") 
+            content = await self.inner.get(f"{export_endpoint}{review_stage_id}")
             tree = html.fromstring(content)
 
             # we are looking for '<div class="card panel export-result-progress" data-features="refresh-processing-item" data-processing-item-id="15622">'
@@ -61,7 +61,7 @@ class FrontendClient:
             files.append(await download_file(self, review_stage_id))
         return files
 
-class Importer:
+class ReviewsManager:
     def __init__(
         self,
         ideascale_url,
@@ -70,8 +70,6 @@ class Importer:
         password,
         event_id,
         api_token,
-        pa_path,
-        output_path,
     ):
         self.ideascale_url = ideascale_url
         self.database_url = database_url
@@ -80,16 +78,19 @@ class Importer:
         self.event_id = event_id
         self.api_token = api_token
 
-        self.pa_path = pa_path
-        self.output_path = output_path
-
-        self.reviews_dir = tempfile.TemporaryDirectory()
-        self.allocations_dir = tempfile.TemporaryDirectory()
-
         self.frontend_client = None
         self.db = None
 
-    async def load_config(self):
+    async def connect(self):
+        if self.frontend_client is None:
+            logger.info("Connecting to the Ideascale frontend")
+            self.frontend_client = FrontendClient(self.ideascale_url)
+            await self.frontend_client.login(self.email, self.password)
+        if self.db is None:
+            logger.info("Connecting to the database")
+            self.db = await ideascale_importer.db.connect(self.database_url)
+
+    async def __load_config(self):
         """Load the configuration setting from the event db."""
 
         logger.info("Loading ideascale config from the event-db")
@@ -103,64 +104,61 @@ class Importer:
             raise Exception("Cannot find ideascale config in the event-db database")
         self.config = Config(**res[0].value)
 
-    async def connect(self):
-        if self.frontend_client is None:
-            logger.info("Connecting to the Ideascale frontend")
-            self.frontend_client = FrontendClient(self.ideascale_url)
-            await self.frontend_client.login(self.email, self.password)
-        if self.db is None:
-            logger.info("Connecting to the database")
-            self.db = await ideascale_importer.db.connect(self.database_url)
+    async def __download_reviews(self, reviews_output_path: str):
+        logger.info("Download reviews from Ideascale...")
 
-    async def download_reviews(self):
-        logger.info("Dowload reviews from Ideascale...")
+        self.reviews = await self.frontend_client.download_reviews(reviews_output_path, self.config.review_stage_ids)
 
-        self.reviews = await self.frontend_client.download_reviews(self.reviews_dir.name, self.config.review_stage_ids)
-
-    async def prepare_allocations(self):
+    # This code will be moved as a separate cli command
+    async def __prepare_allocations(self, pas_path: str, output_path: str):
         logger.info("Prepare allocations for proposal's reviews...")
 
-        self.allocations_path = await allocate(
+        self.allocations = await allocate(
             nr_allocations=self.config.nr_allocations,
-            pas_path=self.pa_path,
+            pas_path=pas_path,
             ideascale_api_key=self.api_token,
             ideascale_api_url=self.ideascale_url,
             stage_ids=self.config.stage_ids,
             challenges_group_id=self.config.campaign_group_id,
             group_id=self.config.group_id,
-            output_path=self.allocations_dir.name,
+            output_path=output_path,
         )
     
-    async def prepare_reviews(self):
+    async def __prepare_reviews(self, allocations_path: str, output_path: str):
         logger.info("Prepare proposal's reviews...")
         await process_ideascale_reviews(
             ideascale_xlsx_path=self.reviews,
             ideascale_api_url=self.ideascale_url,
             ideascale_api_key=self.api_token,
-            allocation_path=self.allocations_path,
+            allocation_path=allocations_path,
             challenges_group_id=self.config.campaign_group_id,
             questions=self.config.questions,
             fund=self.event_id,
-            output_path=self.output_path
+            output_path=output_path
         )
 
-    async def import_reviews(self):
-        logger.info("Import reviews into Event db")
+    async def __import_reviews_to_service(self):
+        logger.info("Import reviews into cat data service")
 
-    async def run(self):
-        """Run the importer."""
+    async def generate_allocations_run(self, pas_path: str, output_path: str):
+        """Run the Allocations generation."""
+
+        await self.__load_config()
+        await self.__prepare_allocations(pas_path=pas_path, output_path=output_path)
+
+    async def import_reviews_run(self, allocations_path: str, output_path: str):
+        """Run the reviews importer."""
         if self.frontend_client is None:
             raise Exception("Not connected to the ideascale")
 
-        await self.load_config()
+        await self.__load_config()
+        reviews_dir = tempfile.TemporaryDirectory()
+        await self.__download_reviews(reviews_output_path=reviews_dir.name)
+        await self.__prepare_reviews(allocations_path=allocations_path, output_path=output_path)
 
-        await self.download_reviews()
-        await self.prepare_allocations()
-        await self.prepare_reviews()
+        reviews_dir.cleanup()
 
     async def close(self):
-        self.reviews_dir.cleanup()
-        self.allocations_dir.cleanup()
         await self.frontend_client.close()
 
 class Config(pydantic.BaseModel):

@@ -1,6 +1,8 @@
 //! This module contains common and re-usable responses with a 4xx response code.
 //!
 
+use poem::error::ResponseError;
+use poem::http::StatusCode;
 use poem_extensions::OneResponse;
 use poem_openapi::payload::Json;
 use poem_openapi::types::Example;
@@ -63,7 +65,13 @@ impl ServerError {
     }
 }
 
-#[derive(OneResponse)]
+impl ResponseError for ServerError {
+    fn status(&self) -> StatusCode {
+        StatusCode::INTERNAL_SERVER_ERROR
+    }
+}
+
+#[derive(OneResponse, Debug)]
 #[oai(status = 503)]
 /// ## Service Unavailable
 ///

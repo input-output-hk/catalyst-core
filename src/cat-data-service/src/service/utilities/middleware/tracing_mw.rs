@@ -17,6 +17,7 @@ use poem::{
 
 use cpu_time::ProcessTime; // ThreadTime doesn't work.
 use ulid::Ulid;
+use uuid::Uuid;
 
 use crate::settings::CLIENT_ID_KEY;
 
@@ -58,6 +59,13 @@ lazy_static! {
         "client_request_count",
         "Number of HTTP requests per client",
         &CLIENT_METRIC_LABELS
+    )
+    .unwrap();
+
+    static ref PANIC_REQUEST_COUNT: IntCounterVec = register_int_counter_vec!(
+        "panic_request_count",
+        "Number of HTTP requests that panicked",
+        &METRIC_LABELS
     )
     .unwrap();
 
@@ -134,12 +142,19 @@ struct ResponseData {
     cpu_time: f64,
     status_code: u16,
     endpoint: String,
+    //panic: bool,
 }
 
 impl ResponseData {
     /// Create a new `ResponseData` set from the response.
     /// In the process add relevant data to the span from the response.
-    fn new(duration: f64, cpu_time: f64, resp: &Response, span: &Span) -> Self {
+    fn new(
+        duration: f64,
+        cpu_time: f64,
+        resp: &Response,
+        panic: Option<Uuid>,
+        span: &Span,
+    ) -> Self {
         // The OpenAPI Operation ID of this request.
         let oid = resp
             .data::<OperationId>()
@@ -162,6 +177,11 @@ impl ResponseData {
         span.record("status", status);
         span.record("endpoint", &endpoint);
 
+        // Record the panic field in the span if it was set.
+        if let Some(panic) = panic {
+            span.record("panic", panic.to_string());
+        }
+
         add_interesting_headers_to_span(span, "resp", resp.headers());
 
         Self {
@@ -169,6 +189,7 @@ impl ResponseData {
             cpu_time,
             status_code: status,
             endpoint,
+            //panic: panic.is_some(),
         }
     }
 }
@@ -233,6 +254,7 @@ async fn mk_request_span(req: &Request) -> (Span, String, String, String) {
         cpu_time_ms = field::Empty,
         oid = field::Empty,
         status = field::Empty,
+        panic = field::Empty,
     );
 
     // Record query size (To see if we are sent enormous queries).
@@ -280,14 +302,29 @@ impl<E: Endpoint> Endpoint for TracingEndpoint<E> {
 
             match resp {
                 Ok(resp) => {
+                    //let panic = if let Some(panic) = resp.downcast_ref::<ServerError>() {
+                    // Add panic ID to the span.
+                    //    Some(panic.id());
+                    //} else {
+                    //    None
+                    //};
+
                     let resp = resp.into_response();
 
                     let response_data =
-                        ResponseData::new(duration, duration_proc, &resp, &inner_span);
+                        ResponseData::new(duration, duration_proc, &resp, None, &inner_span);
 
                     (Ok(resp), response_data)
                 }
                 Err(err) => {
+                    //let panic = if let Some(panic) = err.downcast_ref::<ServerError>() {
+                    // Add panic ID to the span.
+                    //    Some(panic.id());
+                    //} else {
+                    //    None
+                    //};
+                    let panic: Option<Uuid> = None;
+
                     // Get the error message, and also for now, log the error to ensure we are preserving all data.
                     error!(err = ?err, "HTTP Response Error:");
                     // Only way I can see to get the message, may not be perfect.
@@ -297,7 +334,7 @@ impl<E: Endpoint> Endpoint for TracingEndpoint<E> {
                     let resp = err.into_response();
 
                     let response_data =
-                        ResponseData::new(duration, duration_proc, &resp, &inner_span);
+                        ResponseData::new(duration, duration_proc, &resp, panic, &inner_span);
 
                     // Convert the response back to an error, and try and recover the message.
                     let mut error = Error::from_response(resp);

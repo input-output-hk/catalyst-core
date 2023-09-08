@@ -6,4 +6,7 @@ use poem_openapi::Tags;
 pub(crate) enum ApiTags {
     // Health Endpoints
     Health,
+    // Test Endpoints (Not part of the API)
+    Test,
+    TestTag2,
 }

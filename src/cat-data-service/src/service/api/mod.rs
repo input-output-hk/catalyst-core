@@ -3,10 +3,8 @@
 //! This defines all endpoints for the Catalyst Data Service API.
 //! It however does NOT contain any processing for them, that is defined elsewhere.
 use health::HealthApi;
-use poem_openapi::{
-    param::Query, payload::PlainText, ContactObject, LicenseObject, OpenApi, OpenApiService,
-    ServerObject,
-};
+use poem_openapi::{ContactObject, LicenseObject, OpenApiService, ServerObject};
+use test_endpoints::TestApi;
 
 use crate::settings::API_URL_PREFIX;
 
@@ -57,27 +55,11 @@ const TERMS_OF_SERVICE: &str =
     "https://github.com/input-output-hk/catalyst-core/blob/main/book/src/98_CODE_OF_CONDUCT.md";
 
 /// Combine all the API's into one
-pub(crate) type OpenApiServiceT = OpenApiService<(Api, HealthApi), ()>;
+pub(crate) type OpenApiServiceT = OpenApiService<(TestApi, HealthApi), ()>;
 
-/// The API
-pub(crate) struct Api;
-
-#[OpenApi]
-impl Api {
-    #[oai(path = "/hello", method = "get")]
-    async fn index(&self, name: Query<Option<String>>) -> PlainText<String> {
-        // API's, parameters and response types should NOT be defined in this file.
-        // This should simply call the implementation.
-        // No parameter or other processing should be done here.
-        match name.0 {
-            Some(name) => PlainText(format!("hello, {}!", name)),
-            None => PlainText("hello!".to_string()),
-        }
-    }
-}
-
+/// Create the OpenAPI definition
 pub(crate) fn mk_api(hosts: Vec<String>) -> OpenApiServiceT {
-    let mut service = OpenApiService::new((Api, HealthApi), API_TITLE, API_VERSION)
+    let mut service = OpenApiService::new((TestApi, HealthApi), API_TITLE, API_VERSION)
         .contact(get_api_contact())
         .description(API_DESCRIPTION)
         .license(get_api_license())

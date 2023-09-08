@@ -50,7 +50,7 @@ pub(crate) fn mk_app(
         .with(Compression::new().with_quality(CompressionLevel::Fastest))
         .with(CatchPanic::new().with_handler(ServicePanicHandler))
         .with(Tracing)
-        .data(state)
+        .data(state.clone())
 }
 
 /// Run the Poem Service

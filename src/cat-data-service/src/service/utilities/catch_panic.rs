@@ -3,11 +3,13 @@ use crate::service::common::responses::resp_5xx::ServerError;
 
 use panic_message::panic_message;
 use poem::middleware::PanicHandler;
+//use tracing::Level;
+use chrono::prelude::*;
 use std::any::Any;
-use std::cell::RefCell;
-use tracing::log::error;
-
 use std::backtrace::Backtrace;
+use std::cell::RefCell;
+
+use serde_json::json;
 
 /// Customized Panic handler.
 /// Catches all panics, and turns them into 500.
@@ -71,13 +73,21 @@ impl PanicHandler for ServicePanicHandler {
             None => "Unknown".to_string(),
         };
 
-        error!(
-            panic = panic_identifier,
-            error = err_msg,
-            loc = location,
-            bt = backtrace;
-            "PANIC"
-        );
+        // For some reason logging doesn't work here.
+        // So manually form a log message and send to stdout.
+        let time = chrono::Utc::now().to_rfc3339_opts(SecondsFormat::Nanos, true);
+
+        let json_log = json!({
+            "backtrace": backtrace,
+            "location": location,
+            "message": err_msg,
+            "id": panic_identifier,
+            "level": "PANIC",
+            "timestamp": time
+        })
+        .to_string();
+
+        println!("{json_log}");
 
         response
     }

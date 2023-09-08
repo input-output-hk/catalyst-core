@@ -26,11 +26,22 @@ impl From<LogLevel> for tracing::Level {
     }
 }
 
+impl LogLevel {
+    pub fn as_log_level(&self) -> tracing::log::LevelFilter {
+        match self {
+            LogLevel::Info => tracing::log::LevelFilter::Info,
+            LogLevel::Debug => tracing::log::LevelFilter::Debug,
+            LogLevel::Warn => tracing::log::LevelFilter::Warn,
+            LogLevel::Error => tracing::log::LevelFilter::Error,
+        }
+    }
+}
+
 /// Initialize the tracing subscriber
 pub(crate) fn init(log_level: LogLevel) -> Result<(), SetGlobalDefaultError> {
     let subscriber = FmtSubscriber::builder()
         .json()
-        .with_max_level(LevelFilter::from_level(log_level.into()))
+        .with_max_level(LevelFilter::from_level(log_level.clone().into()))
         .with_timer(time::UtcTime::rfc_3339())
         .with_span_events(FmtSpan::CLOSE)
         .with_target(true)
@@ -42,6 +53,9 @@ pub(crate) fn init(log_level: LogLevel) -> Result<(), SetGlobalDefaultError> {
         .with_current_span(true)
         .with_span_list(true)
         .finish();
+
+    // Logging is globally disabled by default, so globally enable it to the required level.
+    tracing::log::set_max_level(log_level.as_log_level());
 
     tracing::subscriber::set_global_default(subscriber)
 }

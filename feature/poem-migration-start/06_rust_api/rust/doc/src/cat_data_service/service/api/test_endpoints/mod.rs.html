@@ -115,7 +115,6 @@
 <a href="#115" id="115">115</a>
 <a href="#116" id="116">116</a>
 <a href="#117" id="117">117</a>
-<a href="#118" id="118">118</a>
 </pre><pre class="rust"><code><span class="doccomment">//! These endpoints are not part of the API, and are for testing features of
 //! Poem before integration with the real API endpoints.
 
@@ -127,7 +126,10 @@
 <span class="kw">use crate</span>::{service::common::tags::ApiTags, state::State};
 
 <span class="kw">use </span>poem::web::Data;
-<span class="kw">use </span>poem_openapi::{param::Path, OpenApi};
+<span class="kw">use </span>poem_openapi::{
+    param::{Path, Query},
+    OpenApi,
+};
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>TestApi;
 
@@ -142,12 +144,6 @@
     </span><span class="doccomment">/// Test Get API
     ///
     /// An Endpoint to test validation of get endpoints.
-    ///
-    /// ## Responses
-    ///
-    /// * 204 No Content - Service is Started and can serve requests.
-    /// * 500 Server Error - If anything within this function fails unexpectedly.
-    /// * 503 Service Unavailable - Service has not started, do not send other requests yet.
     ///
     /// ## Note
     ///
@@ -175,15 +171,17 @@
 
         <span class="attr">#[oai(validator(
             pattern = <span class="string">&quot;[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}&quot;</span>,
-            max_length = <span class="string">&quot;36&quot;</span>,
-            min_length = <span class="string">&quot;36&quot;
+            max_length = <span class="string">&quot;36&quot;
         </span>))]
         </span><span class="doccomment">/// The action just needs to be any valid UUID.
         ///
         /// # Make sure its a UUID
         </span>action: Path&lt;<span class="prelude-ty">Option</span>&lt;String&gt;&gt;,
+        <span class="attr">#[oai(validator(min_items = <span class="number">0</span>, max_items = <span class="number">3</span>, unique_items))]
+        </span><span class="doccomment">/// List your favorite pets, in order of preference
+        </span>pet: Query&lt;<span class="prelude-ty">Option</span>&lt;Vec&lt;test_get::Animals&gt;&gt;&gt;,
     ) -&gt; test_get::AllResponses {
-        test_get::endpoint(data.clone(), <span class="kw-2">*</span>id, <span class="kw-2">&amp;</span>action).<span class="kw">await
+        test_get::endpoint(data.clone(), <span class="kw-2">*</span>id, <span class="kw-2">&amp;</span>action, <span class="kw-2">&amp;</span>pet).<span class="kw">await
     </span>}
 
     <span class="attr">#[oai(

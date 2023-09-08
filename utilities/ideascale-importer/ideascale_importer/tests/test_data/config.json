@@ -2,7 +2,7 @@
     "event_id": 0,
     "group_id": 37429,
     "review_stage_ids": [171],
-    "nr_allocations": [1, 1],
+    "allocations_number": [1, 1],
     "campaign_group_id": 88,
     "questions": {
         "Question 1": "Impact / Alignment",

@@ -103,7 +103,7 @@ class ReviewsManager:
         logger.info("Prepare allocations for proposal's reviews...")
 
         await allocate(
-            nr_allocations=self.config.nr_allocations,
+            nr_allocations=self.config.allocations_number,
             pas_path=pas_path,
             ideascale_api_key=self.api_token,
             ideascale_api_url=self.ideascale_url,
@@ -160,6 +160,6 @@ class Config(pydantic.BaseModel):
     campaign_group_id: int
     review_stage_ids: List[int]
     stage_ids: List[int]
-    nr_allocations: List[int]
+    allocations_number: List[int]
     questions: Dict[str, str]
     anonymize_start_id: int

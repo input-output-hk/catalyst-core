@@ -16,11 +16,6 @@ def import_reviews(
         envvar="IDEASCALE_API_URL",
         help="IdeaScale API URL",
     ),
-    database_url: str = typer.Option(
-        ...,
-        envvar="EVENTDB_URL",
-        help="Postgres database URL"
-    ),
     email: str = typer.Option(
         ...,
         envvar="IDEASCALE_EMAIL",
@@ -31,14 +26,14 @@ def import_reviews(
         envvar="IDEASCALE_PASSWORD",
         help="Ideascale user's password (needs admin access)",
     ),
-    event_id: int = typer.Option(
-        ...,
-        help="Database row id of the event which data will be imported",
-    ),
     api_token: str = typer.Option(
         ...,
         envvar="IDEASCALE_API_TOKEN",
         help="IdeaScale API token"
+    ),
+    config_path: str = typer.Option(
+        ..., 
+        help="config file"
     ),
     allocations_path: str = typer.Option(
         ..., 
@@ -65,11 +60,10 @@ def import_reviews(
     async def inner():
         importer = ReviewsManager(
             ideascale_url=ideascale_url,
-            database_url=database_url,
             email=email,
             password=password,
             api_token=api_token,
-            event_id=event_id,
+            config_path=config_path
         )
 
         try:
@@ -92,29 +86,14 @@ def prepare_allocations(
         envvar="IDEASCALE_API_URL",
         help="IdeaScale API URL",
     ),
-    database_url: str = typer.Option(
-        ...,
-        envvar="EVENTDB_URL",
-        help="Postgres database URL"
-    ),
-    email: str = typer.Option(
-        ...,
-        envvar="IDEASCALE_EMAIL",
-        help="Ideascale user's email address (needs admin access)",
-    ),
-    password: str = typer.Option(
-        ...,
-        envvar="IDEASCALE_PASSWORD",
-        help="Ideascale user's password (needs admin access)",
-    ),
-    event_id: int = typer.Option(
-        ...,
-        help="Database row id of the event which data will be imported",
-    ),
     api_token: str = typer.Option(
         ...,
         envvar="IDEASCALE_API_TOKEN",
         help="IdeaScale API token"
+    ),
+    config_path: str = typer.Option(
+        ..., 
+        help="config file"
     ),
     pas_path: str = typer.Option(
         ..., 
@@ -141,11 +120,8 @@ def prepare_allocations(
     async def inner():
         importer = ReviewsManager(
             ideascale_url=ideascale_url,
-            database_url=database_url,
-            email=email,
-            password=password,
             api_token=api_token,
-            event_id=event_id,
+            config_path=config_path
         )
 
         try:

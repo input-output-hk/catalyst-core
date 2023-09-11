@@ -1,0 +1,14 @@
+{  
+    "event_id": 0,
+    "group_id": 37429,
+    "review_stage_ids": [171],
+    "allocations_number": [1, 1],
+    "campaign_group_id": 88,
+    "questions": {
+        "Question 1": "Impact / Alignment",
+        "Question 2": "Feasibility",
+        "Question 3": "Auditability"
+    },
+    "stage_ids": [4684, 4685, 4686],
+    "anonymize_start_id": 5000
+}

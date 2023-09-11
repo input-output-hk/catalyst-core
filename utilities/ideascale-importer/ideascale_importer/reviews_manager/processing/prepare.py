@@ -19,7 +19,7 @@ async def allocate(
     stage_ids: List[int],
     nr_allocations: List[int],
     output_path: str,
-    anonymize_start_id: int = 5000,
+    anonymize_start_id: int,
     seed: int = 7,
 ):
     """Run the allocator check."""
@@ -34,17 +34,13 @@ async def allocate(
         await ideascale.import_com_revs(group_id=group_id, start_id=anonymize_start_id, historic_pas=importer.pas)
         allocator.allocate()
 
-        # This data is not used by our core system, it is only consumed by Ideascale
+        allocator.export_allocations(allocator.source.pas, f"{output_path}/allocations-by-pa.xlsx")
+        groups = allocator.generate_challenges_groups()
+        for group in groups:
+            allocator.export_allocations(group["pas"], f"{output_path}/{group['challenge']}.xlsx")
 
-        # allocator.export_allocations(allocator.source.pas, f"{output_path}/allocations-by-pa.xlsx")
-        # groups = allocator.generate_challenges_groups()
-        # for group in groups:
-        #     allocator.export_allocations(group["pas"], f"{output_path}/{group['challenge']}.xlsx")
-
-        file_name = f"{output_path}/allocations.csv"
-        allocator.export_single_allocations(allocator.allocations, file_name)
+        allocator.export_single_allocations(allocator.allocations, f"{output_path}/allocations.csv")
         allocator.allocation_stats()
-        return file_name
 
     def nr_allocations_map():
         res = {}

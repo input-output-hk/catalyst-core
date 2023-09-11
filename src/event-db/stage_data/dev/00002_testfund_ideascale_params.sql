@@ -14,6 +14,7 @@ INSERT INTO config (id, id2, id3, value) VALUES (
             "Question 3": "Auditability"
         },
         "stage_ids": [4684, 4685, 4686],
+        "anonymize_start_id": 5000,
         "proposals": {
             "field_mappings": {
                 "proposer_url": ["relevant_link_1", "website__github_repository__or_any_other_relevant_link__", "relevant_link_3"],

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["debug_message","get_account","get_account_votes","get_account_votes_with_plan","get_active_vote_plans","get_fragment_logs","get_fragment_statuses","get_node_stats","get_settings","into_identifier","parse_account_id","post_fragments","post_message"],"opaque":[""],"static":["CALLSITE","META"],"struct":["GetMessageStatusesQuery"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_vote_by_caster_and_voteplan_id"],"opaque":[""]};

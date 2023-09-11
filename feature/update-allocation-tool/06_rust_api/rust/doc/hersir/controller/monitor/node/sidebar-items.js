@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["_DERIVE_core_fmt_Debug_FOR_Error"],"enum":["Error","FragmentNodeError","MockClientError","RestError"],"fn":["uri_from_socket_addr"],"mod":["legacy"],"opaque":[""],"struct":["JormungandrClient","JormungandrLogger","JormungandrRest","MemPoolCheck","Node","ProgressBarController"],"trait":["FragmentNode"]};

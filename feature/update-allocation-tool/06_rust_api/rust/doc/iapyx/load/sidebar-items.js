@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["config","multi_controller","request_generators","scenario","status_provider"]};

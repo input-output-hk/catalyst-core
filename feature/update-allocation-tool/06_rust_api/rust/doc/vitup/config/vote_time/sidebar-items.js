@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FORMAT"],"enum":["VoteTime"],"struct":["VoteBlockchainTime"]};

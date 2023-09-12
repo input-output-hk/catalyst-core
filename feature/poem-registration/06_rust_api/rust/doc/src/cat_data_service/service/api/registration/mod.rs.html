@@ -78,7 +78,124 @@
 <a href="#78" id="78">78</a>
 <a href="#79" id="79">79</a>
 <a href="#80" id="80">80</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::poem_types::registration::{Voter, VotingKey};
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+<a href="#158" id="158">158</a>
+<a href="#159" id="159">159</a>
+<a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::poem_types::event::EventId;
+<span class="kw">use </span><span class="kw">crate</span>::poem_types::registration::{Voter, VotingKey};
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_2xx::OK;
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_4xx::NotFound;
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_5xx::ServerError;
@@ -86,7 +203,11 @@
 <span class="kw">use </span>poem::web::Data;
 <span class="kw">use </span>poem_extensions::response;
 <span class="kw">use </span>poem_extensions::UniResponse::{T200, T404, T500};
-<span class="kw">use </span>poem_openapi::{param::Path, payload::Json, OpenApi};
+<span class="kw">use </span>poem_openapi::{
+    param::{Path, Query},
+    payload::Json,
+    OpenApi,
+};
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">pub struct </span>RegistrationApi;
@@ -107,13 +228,26 @@
     </span><span class="kw">async fn </span>get_voter_info(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         pool: Data&lt;<span class="kw-2">&amp;</span>Arc&lt;State&gt;&gt;,
-        voting_key: Path&lt;VotingKey&gt;,
+        <span class="doccomment">///  A Voting Key.
+        </span>voting_key: Path&lt;VotingKey&gt;,
+        <span class="doccomment">/// The Event ID to return results for.
+        </span>event_id: Query&lt;<span class="prelude-ty">Option</span>&lt;EventId&gt;&gt;,
+        <span class="doccomment">/// Flag to include delegators list in the response.
+        </span><span class="attr">#[oai(default)]
+        </span>with_delegators: Query&lt;bool&gt;,
     ) -&gt; <span class="macro">response! </span>{
            <span class="number">200</span>: OK&lt;Json&lt;Voter&gt;&gt;,
            <span class="number">404</span>: NotFound,
            <span class="number">500</span>: ServerError,
        } {
-        <span class="kw">let </span>voter = pool.event_db.get_voter(<span class="kw-2">&amp;</span><span class="prelude-val">None</span>, voting_key.<span class="number">0 </span>.<span class="number">0</span>, <span class="bool-val">false</span>).<span class="kw">await</span>;
+        <span class="kw">let </span>voter = pool
+            .event_db
+            .get_voter(
+                <span class="kw-2">&amp;</span>event_id.<span class="number">0</span>.map(Into::into),
+                voting_key.<span class="number">0 </span>.<span class="number">0</span>,
+                <span class="kw-2">*</span>with_delegators,
+            )
+            .<span class="kw">await</span>;
         <span class="kw">match </span>voter {
             <span class="prelude-val">Ok</span>(voter) =&gt; T200(OK(Json(voter.into()))),
             <span class="prelude-val">Err</span>(event_db::error::Error::NotFound(<span class="kw">_</span>)) =&gt; T404(NotFound),
@@ -148,14 +282,112 @@
         <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = mk_test_app(state);
 
-        <span class="kw">let </span>resp = app.get(<span class="string">&quot;/api/health/started&quot;</span>).send().<span class="kw">await</span>;
-        resp.assert_status(StatusCode::NO_CONTENT);
+        <span class="kw">let </span>resp = app
+            .get(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/registration/voter/{0}&quot;</span>, <span class="string">&quot;voting_key_1&quot;</span>))
+            .send()
+            .<span class="kw">await</span>;
+        resp.assert_status(StatusCode::OK);
+        resp.assert_json(<span class="macro">serde_json::json!</span>(
+            {
+                <span class="string">&quot;voter_info&quot;</span>: {
+                    <span class="string">&quot;voting_power&quot;</span>: <span class="number">250</span>,
+                    <span class="string">&quot;voting_group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                    <span class="string">&quot;delegations_power&quot;</span>: <span class="number">250</span>,
+                    <span class="string">&quot;delegations_count&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.625</span>,
+                },
+                <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+            </span>}
+        ))
+        .<span class="kw">await</span>;
 
-        <span class="kw">let </span>resp = app.get(<span class="string">&quot;/api/health/ready&quot;</span>).send().<span class="kw">await</span>;
-        resp.assert_status(StatusCode::NO_CONTENT);
+        <span class="kw">let </span>resp = app
+            .get(<span class="macro">format!</span>(
+                <span class="string">&quot;/api/v1/registration/voter/{0}?with_delegators=true&quot;</span>,
+                <span class="string">&quot;voting_key_1&quot;
+            </span>))
+            .send()
+            .<span class="kw">await</span>;
+        resp.assert_status(StatusCode::OK);
+        resp.assert_json(<span class="macro">serde_json::json!</span>(
+            {
+                <span class="string">&quot;voter_info&quot;</span>: {
+                    <span class="string">&quot;voting_power&quot;</span>: <span class="number">250</span>,
+                    <span class="string">&quot;voting_group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                    <span class="string">&quot;delegations_power&quot;</span>: <span class="number">250</span>,
+                    <span class="string">&quot;delegations_count&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.625</span>,
+                    <span class="string">&quot;delegator_addresses&quot;</span>: [<span class="string">&quot;stake_public_key_1&quot;</span>, <span class="string">&quot;stake_public_key_2&quot;</span>]
+                },
+                <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2022-03-31T12:00:00+00:00&quot;</span>,
+                <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+            </span>}
+        ))
+        .<span class="kw">await</span>;
 
-        <span class="kw">let </span>resp = app.get(<span class="string">&quot;/api/health/live&quot;</span>).send().<span class="kw">await</span>;
-        resp.assert_status(StatusCode::NO_CONTENT);
+        <span class="kw">let </span>resp = app
+            .get(<span class="macro">format!</span>(
+                <span class="string">&quot;/api/v1/registration/voter/{0}?event_id={1}&quot;</span>,
+                <span class="string">&quot;voting_key_1&quot;</span>, <span class="number">1
+            </span>))
+            .send()
+            .<span class="kw">await</span>;
+        resp.assert_status(StatusCode::OK);
+        resp.assert_json(<span class="macro">serde_json::json!</span>(
+            {
+                <span class="string">&quot;voter_info&quot;</span>: {
+                    <span class="string">&quot;voting_power&quot;</span>: <span class="number">250</span>,
+                    <span class="string">&quot;voting_group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                    <span class="string">&quot;delegations_power&quot;</span>: <span class="number">250</span>,
+                    <span class="string">&quot;delegations_count&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.625</span>,
+                },
+                <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
+                <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
+                <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+            </span>}
+        ))
+        .<span class="kw">await</span>;
+
+        <span class="kw">let </span>resp = app
+            .get(<span class="macro">format!</span>(
+                <span class="string">&quot;/api/v1/registration/voter/{0}?event_id={1}&amp;with_delegators=true&quot;</span>,
+                <span class="string">&quot;voting_key_1&quot;</span>, <span class="number">1
+            </span>))
+            .send()
+            .<span class="kw">await</span>;
+        resp.assert_status(StatusCode::OK);
+        resp.assert_json(<span class="macro">serde_json::json!</span>(
+            {
+                <span class="string">&quot;voter_info&quot;</span>: {
+                    <span class="string">&quot;voting_power&quot;</span>: <span class="number">250</span>,
+                    <span class="string">&quot;voting_group&quot;</span>: <span class="string">&quot;rep&quot;</span>,
+                    <span class="string">&quot;delegations_power&quot;</span>: <span class="number">250</span>,
+                    <span class="string">&quot;delegations_count&quot;</span>: <span class="number">2</span>,
+                    <span class="string">&quot;voting_power_saturation&quot;</span>: <span class="number">0.625</span>,
+                    <span class="string">&quot;delegator_addresses&quot;</span>: [<span class="string">&quot;stake_public_key_1&quot;</span>, <span class="string">&quot;stake_public_key_2&quot;</span>]
+                },
+                <span class="string">&quot;as_at&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
+                <span class="string">&quot;last_updated&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
+                <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+            </span>}
+        ))
+        .<span class="kw">await</span>;
+
+        <span class="kw">let </span>resp = app
+            .get(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/registration/voter/{0}&quot;</span>, <span class="string">&quot;voting_key&quot;</span>))
+            .send()
+            .<span class="kw">await</span>;
+        resp.assert_status(StatusCode::NOT_FOUND);
+
+        <span class="kw">let </span>resp = app
+            .get(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/registration/voter/{0}&quot;</span>, <span class="string">&quot;voting_key&quot;</span>))
+            .send()
+            .<span class="kw">await</span>;
+        resp.assert_status(StatusCode::NOT_FOUND);
     }
 }
 </code></pre></div>

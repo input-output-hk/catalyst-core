@@ -71,17 +71,21 @@
 <a href="#71" id="71">71</a>
 <a href="#72" id="72">72</a>
 <a href="#73" id="73">73</a>
-</pre><pre class="rust"><code><span class="kw">use </span>poem_openapi::{NewType, Object};
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+</pre><pre class="rust"><code><span class="kw">use </span>chrono::{DateTime, Utc};
+<span class="kw">use </span>poem_openapi::{NewType, Object};
 <span class="kw">use </span>serde::Deserialize;
 
-<span class="doccomment">/// A Voting Key.
-</span><span class="attr">#[derive(NewType, Deserialize)]
+<span class="attr">#[derive(NewType, Deserialize)]
 </span><span class="kw">pub struct </span>VotingKey(<span class="kw">pub </span>String);
 
-<span class="doccomment">/// Voter Group ID.
+<span class="attr">#[derive(NewType)]
+</span><span class="doccomment">/// Voter Group ID.
 /// `direct` = Direct voter.
 /// `rep` = Delegated Representative.
-</span><span class="attr">#[derive(NewType)]
+</span><span class="attr">#[oai(external_docs = <span class="string">&quot;Voter Group ID.&quot;</span>)]
 </span><span class="kw">pub struct </span>VoterGroupId(<span class="kw">pub </span>String);
 
 <span class="kw">impl </span>From&lt;event_db::types::registration::VoterGroupId&gt; <span class="kw">for </span>VoterGroupId {
@@ -90,8 +94,8 @@
     }
 }
 
-<span class="doccomment">/// Voter Info
-</span><span class="attr">#[derive(Object)]
+<span class="attr">#[derive(Object)]
+</span><span class="comment">// Voter Info
 </span><span class="kw">pub struct </span>VoterInfo {
     <span class="doccomment">/// Voter&#39;s voting power.
     /// This is the true voting power, subject to minimum voting power and max cap.
@@ -124,15 +128,15 @@
     }
 }
 
-<span class="doccomment">/// Voter
-</span><span class="attr">#[derive(Object)]
+<span class="attr">#[derive(Object)]
+</span><span class="doccomment">/// Voter
 </span><span class="kw">pub struct </span>Voter {
     voter_info: VoterInfo,
-    <span class="comment">// #[oai(serialize_with = &quot;serialize_datetime_as_rfc3339&quot;)]
-    // as_at: DateTime&lt;Utc&gt;,
-    // #[oai(serialize_with = &quot;serialize_datetime_as_rfc3339&quot;)]
-    // last_updated: DateTime&lt;Utc&gt;,
-    </span><span class="attr">#[oai(rename = <span class="string">&quot;final&quot;</span>)]
+    <span class="doccomment">/// Date and time the latest snapshot represents.
+    </span>as_at: DateTime&lt;Utc&gt;,
+    <span class="doccomment">/// Date and time for the latest update to this snapshot information.
+    </span>last_updated: DateTime&lt;Utc&gt;,
+    <span class="attr">#[oai(rename = <span class="string">&quot;final&quot;</span>)]
     </span>is_final: bool,
 }
 
@@ -140,6 +144,8 @@
     <span class="kw">fn </span>from(value: event_db::types::registration::Voter) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             voter_info: value.voter_info.into(),
+            as_at: value.as_at,
+            last_updated: value.last_updated,
             is_final: value.is_final,
         }
     }

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["serialize_datetime_as_rfc3339"],"mod":["registration"]};
+window.SIDEBAR_ITEMS = {"mod":["registration"]};

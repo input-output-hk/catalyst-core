@@ -4,8 +4,8 @@ use serde::Deserialize;
 #[derive(NewType, Deserialize)]
 pub struct EventId(pub i32);
 
-impl Into<event_db::types::event::EventId> for EventId {
-    fn into(self) -> event_db::types::event::EventId {
-        event_db::types::event::EventId(self.0)
+impl From<EventId> for event_db::types::event::EventId {
+    fn from(event_id: EventId) -> Self {
+        event_db::types::event::EventId(event_id.0)
     }
 }

@@ -5561,6 +5561,7 @@ checksum = "ebc9663e1e8909b1dbd47bc99314f0b876c26f9194543e58cdfbdc942d821ed3"
 dependencies = [
  "base64 0.21.0",
  "bytes 1.4.0",
+ "chrono",
  "derive_more",
  "futures-util",
  "indexmap 2.0.0",

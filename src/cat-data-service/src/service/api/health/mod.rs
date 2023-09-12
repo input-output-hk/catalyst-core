@@ -53,23 +53,39 @@ impl HealthApi {
     }
 }
 
+/// Need to setup and run a test event db instance
+/// To do it you can use the following commands:
+/// Prepare docker images
+/// ```
+/// earthly ./containers/event-db-migrations+docker --data=test
+/// ```
+/// Run event-db container
+/// ```
+/// docker-compose -f src/event-db/docker-compose.yml up migrations
+/// ```
+/// Also need establish `EVENT_DB_URL` env variable with the following value
+/// ```
+/// EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev"
+/// ```
+/// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::service::api::tests::mk_test_app;
+    use crate::{service::poem_service::tests::mk_test_app, state::State};
     use poem::http::StatusCode;
+    use std::sync::Arc;
 
     #[tokio::test]
     async fn health_test() {
-        let app = mk_test_app(HealthApi);
+        let state = Arc::new(State::new(None).await.unwrap());
+        let app = mk_test_app(state);
 
-        let resp = app.get("/health/started").send().await;
+        let resp = app.get("/api/health/started").send().await;
         resp.assert_status(StatusCode::NO_CONTENT);
 
-        let resp = app.get("/health/ready").send().await;
+        let resp = app.get("/api/health/ready").send().await;
         resp.assert_status(StatusCode::NO_CONTENT);
 
-        let resp = app.get("/health/live").send().await;
+        let resp = app.get("/api/health/live").send().await;
         resp.assert_status(StatusCode::NO_CONTENT);
     }
 }

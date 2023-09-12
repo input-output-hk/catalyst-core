@@ -38,7 +38,8 @@ poem-openapi = { version = "3.0.4", features = [
     "redoc",
     "swagger-ui",
     "uuid",
-    "url"
+    "url",
+    "chrono",
 ] }
 poem-extensions = { version = "0.7.2" }
 

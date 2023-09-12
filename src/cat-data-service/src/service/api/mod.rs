@@ -78,15 +78,3 @@ pub(crate) fn mk_api(
 
     service
 }
-
-#[cfg(test)]
-mod tests {
-    use poem::{test::TestClient, Route};
-    use poem_openapi::{OpenApi, OpenApiService};
-
-    pub fn mk_test_app<Api: OpenApi>(api: Api) -> TestClient<Route> {
-        let service = OpenApiService::new(api, "Test API", "0.1.0");
-        let app = Route::new().nest("/", service);
-        TestClient::new(app)
-    }
-}

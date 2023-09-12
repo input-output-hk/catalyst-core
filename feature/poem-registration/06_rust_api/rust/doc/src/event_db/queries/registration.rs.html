@@ -536,13 +536,13 @@
 </span><span class="kw">pub trait </span>RegistrationQueries: Sync + Send + <span class="lifetime">&#39;static </span>{
     <span class="kw">async fn </span>get_voter(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        version: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;EventId&gt;,
+        event: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;EventId&gt;,
         voting_key: String,
         with_delegations: bool,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Voter, Error&gt;;
     <span class="kw">async fn </span>get_delegator(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        version: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;EventId&gt;,
+        event: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;EventId&gt;,
         stake_public_key: String,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Delegator, Error&gt;;
 }

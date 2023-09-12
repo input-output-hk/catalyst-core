@@ -81,11 +81,11 @@
 <a href="#81" id="81">81</a>
 <a href="#82" id="82">82</a>
 <a href="#83" id="83">83</a>
-<a href="#84" id="84">84</a>
 </pre><pre class="rust"><code><span class="doccomment">//! This module contains common and re-usable responses with a 4xx response code.
 //!
 
-</span><span class="kw">use </span>poem::error::ResponseError;
+</span><span class="kw">use </span><span class="kw">crate</span>::settings::generate_github_issue_url;
+<span class="kw">use </span>poem::error::ResponseError;
 <span class="kw">use </span>poem::http::StatusCode;
 <span class="kw">use </span>poem_extensions::OneResponse;
 <span class="kw">use </span>poem_openapi::payload::Json;
@@ -93,8 +93,6 @@
 <span class="kw">use </span>poem_openapi::Object;
 <span class="kw">use </span>url::Url;
 <span class="kw">use </span>uuid::Uuid;
-
-<span class="kw">use </span><span class="kw">crate</span>::settings::generate_github_issue_url;
 
 <span class="attr">#[derive(Debug, Object)]
 #[oai(example, skip_serializing_if_is_none)]
@@ -135,16 +133,16 @@
 /// An internal server error occurred.
 ///
 /// *The contents of this response should be reported to the projects issue tracker.*
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ServerError(Json&lt;ServerErrorPayload&gt;);
+</span><span class="kw">pub struct </span>ServerError(Json&lt;ServerErrorPayload&gt;);
 
 <span class="kw">impl </span>ServerError {
     <span class="doccomment">/// Create a new Server Error Response.
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(msg: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub fn </span>new(msg: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>(Json(ServerErrorPayload::new(msg)))
     }
 
     <span class="doccomment">/// Get the id of this Server Error.
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Uuid {
+    </span><span class="kw">pub fn </span>id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Uuid {
         <span class="self">self</span>.<span class="number">0</span>.id
     }
 }
@@ -165,6 +163,6 @@
 /// or has become unavailable.*
 ///
 /// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ServiceUnavailable;
+</span><span class="kw">pub struct </span>ServiceUnavailable;
 </code></pre></div>
 </section></main></body></html>

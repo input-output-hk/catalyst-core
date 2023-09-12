@@ -15,14 +15,18 @@
 <a href="#15" id="15">15</a>
 <a href="#16" id="16">16</a>
 <a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
 </pre><pre class="rust"><code><span class="doccomment">//! This module contains common and re-usable responses with a 2xx response code.
 //!
 
-</span><span class="kw">use </span>poem_extensions::OneResponse;
+</span><span class="kw">use </span>poem::IntoResponse;
+<span class="kw">use </span>poem_extensions::OneResponse;
+<span class="kw">use </span>poem_openapi::payload::Payload;
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">200</span>)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>EmptyOK;
+</span><span class="kw">pub struct </span>OK&lt;T: IntoResponse + Payload&gt;(T);
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">204</span>)]
@@ -31,6 +35,6 @@
 /// The operation completed successfully, but there is no data to return.
 ///
 /// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>NoContent;
+</span><span class="kw">pub struct </span>NoContent;
 </code></pre></div>
 </section></main></body></html>

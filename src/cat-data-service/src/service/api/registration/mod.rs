@@ -1,3 +1,4 @@
+use crate::poem_types::event::EventId;
 use crate::poem_types::registration::{Voter, VotingKey};
 use crate::service::common::responses::resp_2xx::OK;
 use crate::service::common::responses::resp_4xx::NotFound;
@@ -6,7 +7,11 @@ use crate::{service::common::tags::ApiTags, state::State};
 use poem::web::Data;
 use poem_extensions::response;
 use poem_extensions::UniResponse::{T200, T404, T500};
-use poem_openapi::{param::Path, payload::Json, OpenApi};
+use poem_openapi::{
+    param::{Path, Query},
+    payload::Json,
+    OpenApi,
+};
 use std::sync::Arc;
 
 pub struct RegistrationApi;
@@ -27,13 +32,26 @@ impl RegistrationApi {
     async fn get_voter_info(
         &self,
         pool: Data<&Arc<State>>,
+        ///  A Voting Key.
         voting_key: Path<VotingKey>,
+        /// The Event ID to return results for.
+        event_id: Query<Option<EventId>>,
+        /// Flag to include delegators list in the response.
+        #[oai(default)]
+        with_delegators: Query<bool>,
     ) -> response! {
            200: OK<Json<Voter>>,
            404: NotFound,
            500: ServerError,
        } {
-        let voter = pool.event_db.get_voter(&None, voting_key.0 .0, false).await;
+        let voter = pool
+            .event_db
+            .get_voter(
+                &event_id.0.map(Into::into),
+                voting_key.0 .0,
+                *with_delegators,
+            )
+            .await;
         match voter {
             Ok(voter) => T200(OK(Json(voter.into()))),
             Err(event_db::error::Error::NotFound(_)) => T404(NotFound),
@@ -68,13 +86,111 @@ mod tests {
         let state = Arc::new(State::new(None).await.unwrap());
         let app = mk_test_app(state);
 
-        let resp = app.get("/api/health/started").send().await;
-        resp.assert_status(StatusCode::NO_CONTENT);
+        let resp = app
+            .get(format!("/api/v1/registration/voter/{0}", "voting_key_1"))
+            .send()
+            .await;
+        resp.assert_status(StatusCode::OK);
+        resp.assert_json(serde_json::json!(
+            {
+                "voter_info": {
+                    "voting_power": 250,
+                    "voting_group": "rep",
+                    "delegations_power": 250,
+                    "delegations_count": 2,
+                    "voting_power_saturation": 0.625,
+                },
+                "as_at": "2022-03-31T12:00:00+00:00",
+                "last_updated": "2022-03-31T12:00:00+00:00",
+                "final": true
+            }
+        ))
+        .await;
 
-        let resp = app.get("/api/health/ready").send().await;
-        resp.assert_status(StatusCode::NO_CONTENT);
+        let resp = app
+            .get(format!(
+                "/api/v1/registration/voter/{0}?with_delegators=true",
+                "voting_key_1"
+            ))
+            .send()
+            .await;
+        resp.assert_status(StatusCode::OK);
+        resp.assert_json(serde_json::json!(
+            {
+                "voter_info": {
+                    "voting_power": 250,
+                    "voting_group": "rep",
+                    "delegations_power": 250,
+                    "delegations_count": 2,
+                    "voting_power_saturation": 0.625,
+                    "delegator_addresses": ["stake_public_key_1", "stake_public_key_2"]
+                },
+                "as_at": "2022-03-31T12:00:00+00:00",
+                "last_updated": "2022-03-31T12:00:00+00:00",
+                "final": true
+            }
+        ))
+        .await;
 
-        let resp = app.get("/api/health/live").send().await;
-        resp.assert_status(StatusCode::NO_CONTENT);
+        let resp = app
+            .get(format!(
+                "/api/v1/registration/voter/{0}?event_id={1}",
+                "voting_key_1", 1
+            ))
+            .send()
+            .await;
+        resp.assert_status(StatusCode::OK);
+        resp.assert_json(serde_json::json!(
+            {
+                "voter_info": {
+                    "voting_power": 250,
+                    "voting_group": "rep",
+                    "delegations_power": 250,
+                    "delegations_count": 2,
+                    "voting_power_saturation": 0.625,
+                },
+                "as_at": "2020-03-31T12:00:00+00:00",
+                "last_updated": "2020-03-31T12:00:00+00:00",
+                "final": true
+            }
+        ))
+        .await;
+
+        let resp = app
+            .get(format!(
+                "/api/v1/registration/voter/{0}?event_id={1}&with_delegators=true",
+                "voting_key_1", 1
+            ))
+            .send()
+            .await;
+        resp.assert_status(StatusCode::OK);
+        resp.assert_json(serde_json::json!(
+            {
+                "voter_info": {
+                    "voting_power": 250,
+                    "voting_group": "rep",
+                    "delegations_power": 250,
+                    "delegations_count": 2,
+                    "voting_power_saturation": 0.625,
+                    "delegator_addresses": ["stake_public_key_1", "stake_public_key_2"]
+                },
+                "as_at": "2020-03-31T12:00:00+00:00",
+                "last_updated": "2020-03-31T12:00:00+00:00",
+                "final": true
+            }
+        ))
+        .await;
+
+        let resp = app
+            .get(format!("/api/v1/registration/voter/{0}", "voting_key"))
+            .send()
+            .await;
+        resp.assert_status(StatusCode::NOT_FOUND);
+
+        let resp = app
+            .get(format!("/api/v1/registration/voter/{0}", "voting_key"))
+            .send()
+            .await;
+        resp.assert_status(StatusCode::NOT_FOUND);
     }
 }

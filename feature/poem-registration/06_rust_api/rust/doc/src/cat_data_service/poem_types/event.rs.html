@@ -15,9 +15,9 @@
 <span class="attr">#[derive(NewType, Deserialize)]
 </span><span class="kw">pub struct </span>EventId(<span class="kw">pub </span>i32);
 
-<span class="kw">impl </span>Into&lt;event_db::types::event::EventId&gt; <span class="kw">for </span>EventId {
-    <span class="kw">fn </span>into(<span class="self">self</span>) -&gt; event_db::types::event::EventId {
-        event_db::types::event::EventId(<span class="self">self</span>.<span class="number">0</span>)
+<span class="kw">impl </span>From&lt;EventId&gt; <span class="kw">for </span>event_db::types::event::EventId {
+    <span class="kw">fn </span>from(event_id: EventId) -&gt; <span class="self">Self </span>{
+        event_db::types::event::EventId(event_id.<span class="number">0</span>)
     }
 }
 </code></pre></div>

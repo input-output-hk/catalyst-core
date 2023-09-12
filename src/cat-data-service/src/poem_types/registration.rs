@@ -5,11 +5,10 @@ use serde::Deserialize;
 #[derive(NewType, Deserialize)]
 pub struct VotingKey(pub String);
 
-#[derive(NewType)]
 /// Voter Group ID.
 /// `direct` = Direct voter.
 /// `rep` = Delegated Representative.
-#[oai(external_docs = "Voter Group ID.")]
+#[derive(NewType)]
 pub struct VoterGroupId(pub String);
 
 impl From<event_db::types::registration::VoterGroupId> for VoterGroupId {
@@ -18,8 +17,8 @@ impl From<event_db::types::registration::VoterGroupId> for VoterGroupId {
     }
 }
 
+/// Voter Info
 #[derive(Object)]
-// Voter Info
 pub struct VoterInfo {
     /// Voter's voting power.
     /// This is the true voting power, subject to minimum voting power and max cap.
@@ -34,7 +33,7 @@ pub struct VoterInfo {
     /// Can be used to gauge potential voting power saturation.
     /// This value is NOT saturated however, and gives the raw share of total registered voting power.
     voting_power_saturation: f64,
-    #[oai(skip_serializing_if = "Option::is_none")]
+    #[oai(skip_serializing_if_is_none = true)]
     /// List of stake public key addresses which delegated to this voting key.
     delegator_addresses: Option<Vec<String>>,
 }
@@ -52,8 +51,8 @@ impl From<event_db::types::registration::VoterInfo> for VoterInfo {
     }
 }
 
-#[derive(Object)]
 /// Voter
+#[derive(Object)]
 pub struct Voter {
     voter_info: VoterInfo,
     /// Date and time the latest snapshot represents.

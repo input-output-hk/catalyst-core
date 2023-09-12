@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"cat_data_service":[["impl&lt;E: Endpoint&gt; Middleware&lt;E&gt; for <a class=\"struct\" href=\"cat_data_service/service/utilities/middleware/tracing_mw/struct.Tracing.html\" title=\"struct cat_data_service::service::utilities::middleware::tracing_mw::Tracing\">Tracing</a>"],["impl&lt;E&gt; Middleware&lt;E&gt; for <a class=\"struct\" href=\"cat_data_service/service/utilities/middleware/chain_axum/struct.ChainAxum.html\" title=\"struct cat_data_service::service::utilities::middleware::chain_axum::ChainAxum\">ChainAxum</a><span class=\"where fmt-newline\">where\n    E: Endpoint,</span>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

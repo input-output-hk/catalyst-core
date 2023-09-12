@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"cat_data_service":[["impl OpenApi for <a class=\"struct\" href=\"cat_data_service/service/api/health/struct.HealthApi.html\" title=\"struct cat_data_service::service::api::health::HealthApi\">HealthApi</a>"],["impl OpenApi for <a class=\"struct\" href=\"cat_data_service/service/api/test_endpoints/struct.TestApi.html\" title=\"struct cat_data_service::service::api::test_endpoints::TestApi\">TestApi</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

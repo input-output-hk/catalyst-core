@@ -2,19 +2,16 @@
 //!
 //! This provides only the primary entrypoint to the service.
 
-use crate::service::docs::{docs, favicon};
-use crate::service::Error;
-
 use crate::service::api::mk_api;
+use crate::service::docs::{docs, favicon};
 use crate::service::utilities::catch_panic::{set_panic_hook, ServicePanicHandler};
 use crate::service::utilities::middleware::{
     chain_axum::ChainAxum,
     tracing_mw::{init_prometheus, Tracing},
 };
-
+use crate::service::Error;
 use crate::settings::{get_api_hostnames, API_URL_PREFIX};
 use crate::state::State;
-
 use poem::endpoint::PrometheusExporter;
 use poem::listener::TcpListener;
 use poem::middleware::{CatchPanic, Compression, Cors};

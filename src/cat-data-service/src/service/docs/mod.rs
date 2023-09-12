@@ -1,10 +1,11 @@
 mod stoplight_elements;
 use poem::{endpoint::EmbeddedFileEndpoint, get, Route};
-
-use super::api::OpenApiServiceT;
+use poem_openapi::{OpenApi, OpenApiService, Webhook};
 use rust_embed::RustEmbed;
 
-pub(crate) fn docs(api_service: &OpenApiServiceT) -> Route {
+pub(crate) fn docs<T: OpenApi + 'static, W: Webhook + 'static>(
+    api_service: &OpenApiService<T, W>,
+) -> Route {
     let spec = api_service.spec();
 
     let swagger_ui = api_service.swagger_ui();

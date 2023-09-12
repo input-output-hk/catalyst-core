@@ -1,12 +1,11 @@
+use crate::service::common::tags::ApiTags;
+use poem_openapi::OpenApi;
+
 mod live_get;
 mod ready_get;
 mod started_get;
 
-use crate::service::common::tags::ApiTags;
-
-use poem_openapi::OpenApi;
-
-pub(crate) struct HealthApi;
+pub struct HealthApi;
 
 #[OpenApi(prefix_path = "/health", tag = "ApiTags::Health")]
 impl HealthApi {
@@ -70,5 +69,26 @@ impl HealthApi {
     ///
     async fn live_get(&self) -> live_get::AllResponses {
         live_get::endpoint().await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::service::api::tests::mk_test_app;
+    use poem::http::StatusCode;
+
+    #[tokio::test]
+    async fn health_test() {
+        let app = mk_test_app(HealthApi);
+
+        let resp = app.get("/health/started").send().await;
+        resp.assert_status(StatusCode::NO_CONTENT);
+
+        let resp = app.get("/health/ready").send().await;
+        resp.assert_status(StatusCode::NO_CONTENT);
+
+        let resp = app.get("/health/live").send().await;
+        resp.assert_status(StatusCode::NO_CONTENT);
     }
 }

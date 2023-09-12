@@ -7,7 +7,7 @@ use poem_openapi::payload::Payload;
 
 #[derive(OneResponse)]
 #[oai(status = 200)]
-pub struct OK<T: IntoResponse + Payload>(T);
+pub struct OK<T: IntoResponse + Payload>(pub T);
 
 #[derive(OneResponse)]
 #[oai(status = 204)]

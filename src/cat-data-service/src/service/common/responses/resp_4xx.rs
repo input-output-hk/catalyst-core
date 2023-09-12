@@ -25,6 +25,7 @@ pub struct Forbidden;
 
 #[derive(OneResponse)]
 #[oai(status = 404)]
+/// ## Content not found
 pub struct NotFound;
 
 #[derive(OneResponse)]

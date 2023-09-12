@@ -14,7 +14,6 @@ use uuid::Uuid;
 #[derive(Debug, Object)]
 #[oai(example, skip_serializing_if_is_none)]
 /// Response payload to a Bad request.
-/*pub(crate)*/
 struct ServerErrorPayload {
     /// Unique ID of this Server Error so that it can be located easily for debugging.
     id: Uuid,

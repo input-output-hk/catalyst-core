@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["voter_info_get"],"opaque":[""],"struct":["RegistrationApi"]};

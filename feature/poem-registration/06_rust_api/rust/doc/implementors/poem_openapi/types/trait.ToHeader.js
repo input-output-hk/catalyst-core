@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"cat_data_service":[["impl ToHeader for <a class=\"struct\" href=\"cat_data_service/poem_types/registration/struct.VotingKey.html\" title=\"struct cat_data_service::poem_types::registration::VotingKey\">VotingKey</a>"],["impl ToHeader for <a class=\"struct\" href=\"cat_data_service/poem_types/registration/struct.VoterGroupId.html\" title=\"struct cat_data_service::poem_types::registration::VoterGroupId\">VoterGroupId</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -10,14 +10,18 @@
 <a href="#10" id="10">10</a>
 <a href="#11" id="11">11</a>
 <a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
 </pre><pre class="rust"><code><span class="doccomment">//! OpenAPI Tags we need to classify the endpoints.
 //!
 </span><span class="kw">use </span>poem_openapi::Tags;
 
 <span class="attr">#[derive(Tags)]
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>ApiTags {
+</span><span class="kw">pub enum </span>ApiTags {
     <span class="comment">// Health Endpoints
     </span>Health,
+    <span class="comment">// Information relating to Voter Registration, Delegations and Calculated Voting Power.
+    </span>Registration,
     <span class="comment">// Test Endpoints (Not part of the API)
     </span>Test,
     TestTag2,

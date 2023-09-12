@@ -1,6 +1,7 @@
 //! This module contains common and re-usable responses with a 4xx response code.
 //!
 
+use crate::settings::generate_github_issue_url;
 use poem::error::ResponseError;
 use poem::http::StatusCode;
 use poem_extensions::OneResponse;
@@ -9,8 +10,6 @@ use poem_openapi::types::Example;
 use poem_openapi::Object;
 use url::Url;
 use uuid::Uuid;
-
-use crate::settings::generate_github_issue_url;
 
 #[derive(Debug, Object)]
 #[oai(example, skip_serializing_if_is_none)]
@@ -51,16 +50,16 @@ impl Example for ServerErrorPayload {
 /// An internal server error occurred.
 ///
 /// *The contents of this response should be reported to the projects issue tracker.*
-pub(crate) struct ServerError(Json<ServerErrorPayload>);
+pub struct ServerError(Json<ServerErrorPayload>);
 
 impl ServerError {
     /// Create a new Server Error Response.
-    pub(crate) fn new(msg: Option<String>) -> Self {
+    pub fn new(msg: Option<String>) -> Self {
         Self(Json(ServerErrorPayload::new(msg)))
     }
 
     /// Get the id of this Server Error.
-    pub(crate) fn id(&self) -> Uuid {
+    pub fn id(&self) -> Uuid {
         self.0.id
     }
 }
@@ -81,4 +80,4 @@ impl ResponseError for ServerError {
 /// or has become unavailable.*
 ///
 /// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
-pub(crate) struct ServiceUnavailable;
+pub struct ServiceUnavailable;

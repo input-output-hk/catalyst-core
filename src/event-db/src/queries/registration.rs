@@ -12,13 +12,13 @@ use chrono::{NaiveDateTime, Utc};
 pub trait RegistrationQueries: Sync + Send + 'static {
     async fn get_voter(
         &self,
-        version: &Option<EventId>,
+        event: &Option<EventId>,
         voting_key: String,
         with_delegations: bool,
     ) -> Result<Voter, Error>;
     async fn get_delegator(
         &self,
-        version: &Option<EventId>,
+        event: &Option<EventId>,
         stake_public_key: String,
     ) -> Result<Delegator, Error>;
 }

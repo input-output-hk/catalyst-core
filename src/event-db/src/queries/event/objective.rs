@@ -6,7 +6,7 @@ use crate::{
             event::EventId,
             objective::{
                 Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType,
-                RewardDefintion, VoterGroup,
+                RewardDefinition, VoterGroup,
             },
         },
     },
@@ -72,7 +72,7 @@ impl ObjectiveQueries for EventDB {
             let currency: Option<_> = row.try_get("rewards_currency")?;
             let value: Option<_> = row.try_get("rewards_total")?;
             let reward = match (currency, value) {
-                (Some(currency), Some(value)) => Some(RewardDefintion { currency, value }),
+                (Some(currency), Some(value)) => Some(RewardDefinition { currency, value }),
                 _ => None,
             };
 
@@ -157,7 +157,7 @@ mod tests {
                                 voting_token: Some("voting token 2".to_string()),
                             }
                         ],
-                        reward: Some(RewardDefintion {
+                        reward: Some(RewardDefinition {
                             currency: "ADA".to_string(),
                             value: 100
                         }),
@@ -218,7 +218,7 @@ mod tests {
                             voting_token: Some("voting token 2".to_string()),
                         }
                     ],
-                    reward: Some(RewardDefintion {
+                    reward: Some(RewardDefinition {
                         currency: "ADA".to_string(),
                         value: 100
                     }),

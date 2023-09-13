@@ -5,7 +5,7 @@ use serde::Deserialize;
 
 /// The Numeric ID of a Voting Event.
 #[derive(NewType, Deserialize)]
-pub struct EventId(pub i32);
+pub struct EventId(i32);
 
 impl From<EventId> for event_db::types::event::EventId {
     fn from(event_id: EventId) -> Self {
@@ -21,7 +21,7 @@ impl From<event_db::types::event::EventId> for EventId {
 
 /// The Name of a Voting Event.
 #[derive(NewType)]
-pub struct EventName(pub String);
+pub struct EventName(String);
 
 /// A Summary of an individual Voting Event.
 #[derive(Object)]
@@ -81,7 +81,7 @@ impl From<event_db::types::event::VotingPowerAlgorithm> for VotingPowerAlgorithm
 
 /// The Settings Used to configure the voting power calculation.
 #[derive(Object)]
-struct VotingPowerSettings {
+pub struct VotingPowerSettings {
     alg: VotingPowerAlgorithm,
 
     /// Minimum staked funds required for a valid voter registration.
@@ -123,7 +123,7 @@ impl TryFrom<event_db::types::event::VotingPowerSettings> for VotingPowerSetting
 
 /// Details about Voting Event Registration.
 #[derive(Object)]
-struct EventRegistration {
+pub struct EventRegistration {
     /// The Registration Purpose.
     #[oai(skip_serializing_if_is_none = true)]
     purpose: Option<i64>,
@@ -151,7 +151,7 @@ impl From<event_db::types::event::EventRegistration> for EventRegistration {
 
 /// An Individual Event Goal.
 #[derive(Object)]
-struct EventGoal {
+pub struct EventGoal {
     /// The Relative order of this Goal. 0 being highest.
     idx: i32,
 
@@ -173,7 +173,7 @@ impl From<event_db::types::event::EventGoal> for EventGoal {
 /// Each new stage terminates the previous stage.
 /// Any omitted entries are assumed to not exist as a stage in this event.
 #[derive(Object)]
-struct EventSchedule {
+pub struct EventSchedule {
     /// Date-Time when Insight Sharing Starts.
     #[oai(skip_serializing_if_is_none = true)]
     insight_sharing: Option<DateTime<Utc>>,
@@ -229,7 +229,7 @@ impl From<event_db::types::event::EventSchedule> for EventSchedule {
 
 /// Detailed information for an individual voting event.
 #[derive(Object)]
-struct EventDetails {
+pub struct EventDetails {
     /// How Voting Power is Calculated and its parameters.
     voting_power_settings: VotingPowerSettings,
 

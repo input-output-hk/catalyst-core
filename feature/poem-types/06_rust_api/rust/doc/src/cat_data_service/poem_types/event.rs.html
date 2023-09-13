@@ -281,7 +281,7 @@
 
 <span class="doccomment">/// The Numeric ID of a Voting Event.
 </span><span class="attr">#[derive(NewType, Deserialize)]
-</span><span class="kw">pub struct </span>EventId(<span class="kw">pub </span>i32);
+</span><span class="kw">pub struct </span>EventId(i32);
 
 <span class="kw">impl </span>From&lt;EventId&gt; <span class="kw">for </span>event_db::types::event::EventId {
     <span class="kw">fn </span>from(event_id: EventId) -&gt; <span class="self">Self </span>{
@@ -297,7 +297,7 @@
 
 <span class="doccomment">/// The Name of a Voting Event.
 </span><span class="attr">#[derive(NewType)]
-</span><span class="kw">pub struct </span>EventName(<span class="kw">pub </span>String);
+</span><span class="kw">pub struct </span>EventName(String);
 
 <span class="doccomment">/// A Summary of an individual Voting Event.
 </span><span class="attr">#[derive(Object)]
@@ -357,7 +357,7 @@
 
 <span class="doccomment">/// The Settings Used to configure the voting power calculation.
 </span><span class="attr">#[derive(Object)]
-</span><span class="kw">struct </span>VotingPowerSettings {
+</span><span class="kw">pub struct </span>VotingPowerSettings {
     alg: VotingPowerAlgorithm,
 
     <span class="doccomment">/// Minimum staked funds required for a valid voter registration.
@@ -399,7 +399,7 @@
 
 <span class="doccomment">/// Details about Voting Event Registration.
 </span><span class="attr">#[derive(Object)]
-</span><span class="kw">struct </span>EventRegistration {
+</span><span class="kw">pub struct </span>EventRegistration {
     <span class="doccomment">/// The Registration Purpose.
     </span><span class="attr">#[oai(skip_serializing_if_is_none = <span class="bool-val">true</span>)]
     </span>purpose: <span class="prelude-ty">Option</span>&lt;i64&gt;,
@@ -427,7 +427,7 @@
 
 <span class="doccomment">/// An Individual Event Goal.
 </span><span class="attr">#[derive(Object)]
-</span><span class="kw">struct </span>EventGoal {
+</span><span class="kw">pub struct </span>EventGoal {
     <span class="doccomment">/// The Relative order of this Goal. 0 being highest.
     </span>idx: i32,
 
@@ -449,7 +449,7 @@
 /// Each new stage terminates the previous stage.
 /// Any omitted entries are assumed to not exist as a stage in this event.
 </span><span class="attr">#[derive(Object)]
-</span><span class="kw">struct </span>EventSchedule {
+</span><span class="kw">pub struct </span>EventSchedule {
     <span class="doccomment">/// Date-Time when Insight Sharing Starts.
     </span><span class="attr">#[oai(skip_serializing_if_is_none = <span class="bool-val">true</span>)]
     </span>insight_sharing: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
@@ -505,7 +505,7 @@
 
 <span class="doccomment">/// Detailed information for an individual voting event.
 </span><span class="attr">#[derive(Object)]
-</span><span class="kw">struct </span>EventDetails {
+</span><span class="kw">pub struct </span>EventDetails {
     <span class="doccomment">/// How Voting Power is Calculated and its parameters.
     </span>voting_power_settings: VotingPowerSettings,
 

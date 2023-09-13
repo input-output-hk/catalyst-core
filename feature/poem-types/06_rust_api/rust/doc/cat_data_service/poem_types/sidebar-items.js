@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["event","registration"]};
+window.SIDEBAR_ITEMS = {"mod":["ballot","event","objective","registration"]};

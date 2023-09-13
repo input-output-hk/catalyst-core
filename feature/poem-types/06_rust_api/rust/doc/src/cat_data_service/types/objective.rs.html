@@ -412,8 +412,8 @@
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::SerdeType;
 <span class="kw">use </span>event_db::types::{
     objective::{
-        Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType, RewardDefintion,
-        VoterGroup,
+        Objective, ObjectiveDetails, ObjectiveId, ObjectiveSummary, ObjectiveType,
+        RewardDefinition, VoterGroup,
     },
     registration::VoterGroupId,
 };
@@ -508,7 +508,7 @@
     }
 }
 
-<span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;<span class="kw-2">&amp;</span>RewardDefintion&gt; {
+<span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;<span class="kw-2">&amp;</span>RewardDefinition&gt; {
     <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
         </span>S: Serializer,
@@ -526,7 +526,7 @@
     }
 }
 
-<span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;RewardDefintion&gt; {
+<span class="kw">impl </span>Serialize <span class="kw">for </span>SerdeType&lt;RewardDefinition&gt; {
     <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
         </span>S: Serializer,
@@ -573,7 +573,7 @@
         </span><span class="kw">struct </span>ObjectiveDetailsSerde&lt;<span class="lifetime">&#39;a</span>&gt; {
             groups: Vec&lt;SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>VoterGroup&gt;&gt;,
             <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
-            </span>reward: <span class="prelude-ty">Option</span>&lt;SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>RewardDefintion&gt;&gt;,
+            </span>reward: <span class="prelude-ty">Option</span>&lt;SerdeType&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>RewardDefinition&gt;&gt;,
             <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
             </span>supplemental: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="prelude-ty">Option</span>&lt;Value&gt;,
         }
@@ -695,7 +695,7 @@
 
     <span class="attr">#[test]
     </span><span class="kw">fn </span>reward_definition_json_test() {
-        <span class="kw">let </span>reward_definition = SerdeType(RewardDefintion {
+        <span class="kw">let </span>reward_definition = SerdeType(RewardDefinition {
             currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
             value: <span class="number">100</span>,
         });
@@ -738,7 +738,7 @@
                 group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;group&quot;</span>.to_string())),
                 voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;token&quot;</span>.to_string()),
             }],
-            reward: <span class="prelude-val">Some</span>(RewardDefintion {
+            reward: <span class="prelude-val">Some</span>(RewardDefinition {
                 currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
                 value: <span class="number">100</span>,
             }),
@@ -784,7 +784,7 @@
                     group: <span class="prelude-val">Some</span>(VoterGroupId(<span class="string">&quot;group&quot;</span>.to_string())),
                     voting_token: <span class="prelude-val">Some</span>(<span class="string">&quot;token&quot;</span>.to_string()),
                 }],
-                reward: <span class="prelude-val">Some</span>(RewardDefintion {
+                reward: <span class="prelude-val">Some</span>(RewardDefinition {
                     currency: <span class="string">&quot;ADA&quot;</span>.to_string(),
                     value: <span class="number">100</span>,
                 }),

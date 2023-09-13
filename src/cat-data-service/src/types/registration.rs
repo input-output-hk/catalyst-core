@@ -144,7 +144,7 @@ impl Serialize for SerdeType<&RewardAddress> {
             reward_payable: bool,
         }
         RewardAddressSerde {
-            reward_address: self.reward_address(),
+            reward_address: &self.reward_address(),
             reward_payable: self.reward_payable(),
         }
         .serialize(serializer)

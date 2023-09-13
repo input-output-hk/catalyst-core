@@ -59,6 +59,8 @@ pub struct Voter {
     as_at: DateTime<Utc>,
     /// Date and time for the latest update to this snapshot information.
     last_updated: DateTime<Utc>,
+    /// `True` - this is the final snapshot which will be used for voting power in the event.
+    /// `False` - this is an interim snapshot, subject to change.
     #[oai(rename = "final")]
     is_final: bool,
 }
@@ -67,6 +69,81 @@ impl From<event_db::types::registration::Voter> for Voter {
     fn from(value: event_db::types::registration::Voter) -> Self {
         Self {
             voter_info: value.voter_info.into(),
+            as_at: value.as_at,
+            last_updated: value.last_updated,
+            is_final: value.is_final,
+        }
+    }
+}
+
+/// Voter's delegation info
+#[derive(Object)]
+pub struct Delegation {
+    /// Hex encoded voting key for this delegation.
+    voting_key: String,
+    group: VoterGroupId,
+    /// Relative weight assigned to this voting key.
+    weight: i32,
+    /// Raw voting power distributed to this voting key.
+    value: i64,
+}
+
+impl From<event_db::types::registration::Delegation> for Delegation {
+    fn from(value: event_db::types::registration::Delegation) -> Self {
+        Self {
+            voting_key: value.voting_key,
+            group: value.group.into(),
+            weight: value.weight,
+            value: value.value,
+        }
+    }
+}
+
+#[derive(Object)]
+pub struct RewardAddress {
+    /// Reward address for this delegation.
+    reward_address: String,
+    /// Flag which reflects does the `reward_address` valid or not, contains it "addr" or "addr_test" prefix or not.
+    reward_payable: bool,
+}
+
+impl From<event_db::types::registration::RewardAddress> for RewardAddress {
+    fn from(value: event_db::types::registration::RewardAddress) -> Self {
+        Self {
+            reward_address: value.reward_address(),
+            reward_payable: value.reward_payable(),
+        }
+    }
+}
+
+#[derive(Object)]
+pub struct Delegator {
+    /// List off delegations made by this stake address.
+    /// In the order as presented in the voters registration.
+    delegations: Vec<Delegation>,
+    #[oai(flatten)]
+    reward_address: RewardAddress,
+    /// Raw total voting power from stake address.
+    raw_power: i64,
+    /// Total voting power, across all registered voters.
+    total_power: i64,
+    /// Date and time for the latest update to this snapshot information.
+    as_at: DateTime<Utc>,
+    /// Date and time the latest snapshot represents.
+    last_updated: DateTime<Utc>,
+    /// `True` - this is the final snapshot which will be used for voting power in the event.
+    /// `False`- this is an interim snapshot, subject to change.
+    #[oai(rename = "final")]
+    is_final: bool,
+}
+
+impl From<event_db::types::registration::Delegator> for Delegator {
+    fn from(value: event_db::types::registration::Delegator) -> Self {
+        Self {
+            delegations: value.delegations.into_iter().map(Into::into).collect(),
+            reward_address: value.reward_address.into(),
+            raw_power: value.raw_power,
+            total_power: value.total_power,
             as_at: value.as_at,
             last_updated: value.last_updated,
             is_final: value.is_final,

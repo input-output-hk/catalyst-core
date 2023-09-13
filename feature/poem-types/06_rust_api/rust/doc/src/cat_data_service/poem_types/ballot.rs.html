@@ -64,19 +64,9 @@
 <a href="#64" id="64">64</a>
 <a href="#65" id="65">65</a>
 <a href="#66" id="66">66</a>
-<a href="#67" id="67">67</a>
-<a href="#68" id="68">68</a>
-<a href="#69" id="69">69</a>
-<a href="#70" id="70">70</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::registration::VoterGroupId;
 <span class="kw">use </span>poem_openapi::{NewType, Object};
-<span class="kw">use </span>serde::{Deserialize, Serialize};
-
-<span class="doccomment">/// Ordered list of choices available for all proposals in this Objective.
-/// The offset into the array is the index of the choice.
-/// For example, the first element is Choice 0, second is Choice 1 and so on.
-</span><span class="attr">#[derive(Deserialize, Serialize)]
-</span><span class="kw">pub struct </span>ObjectiveChoices(Vec&lt;String&gt;);
+<span class="kw">use </span>serde::Deserialize;
 
 <span class="doccomment">/// The kind of ballot to be cast on this Objective.
 /// * `public` - All Ballots are public when cast.
@@ -124,19 +114,21 @@
     }
 }
 
-<span class="doccomment">/// List of groups and the voteplans they use when voting on this proposal.
-/// Each valid group for this Objective:
-/// * Must be listed.
-/// * Must not be repeated.
-</span><span class="comment">// #[derive(Deserialize)]
-</span><span class="kw">pub struct </span>GroupVotePlans(Vec&lt;VotePlan&gt;);
-
 <span class="doccomment">/// Details necessary to complete a ballot for the specific proposal and objective.
-</span><span class="comment">// #[derive(Object)]
+</span><span class="attr">#[derive(Object)]
 </span><span class="kw">pub struct </span>Ballot {
     <span class="doccomment">/// Ballot Choices present for all proposals in this Objective.
-    </span>choices: ObjectiveChoices,
-    voteplans: GroupVotePlans,
+    ///
+    /// Ordered list of choices available for all proposals in this Objective.
+    /// The offset into the array is the index of the choice.
+    /// For example, the first element is Choice 0, second is Choice 1 and so on.
+    </span>choices: Vec&lt;String&gt;,
+
+    <span class="doccomment">/// List of groups and the voteplans they use when voting on this proposal.
+    /// Each valid group for this Objective:
+    /// * Must be listed.
+    /// * Must not be repeated.
+    </span>voteplans: Vec&lt;VotePlan&gt;,
 }
 </code></pre></div>
 </section></main></body></html>

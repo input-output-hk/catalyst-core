@@ -61,7 +61,7 @@ impl From<event_db::types::reviews::ReviewType> for ReviewType {
 
 /// Individual Rating.
 #[derive(Object)]
-struct Rating {
+pub struct Rating {
     /// The review type being rated. Maps to the ReviewType id.
     review_type: i32,
 
@@ -87,7 +87,7 @@ impl From<event_db::types::reviews::Rating> for Rating {
 
 /// Review of a Proposal by a Community Advisor.
 #[derive(Object)]
-struct AdvisorReview {
+pub struct AdvisorReview {
     /// Anonymized Assessor identity.
     /// All reviews by the same Assessor will have the same identity string.
     assessor: String,
@@ -104,5 +104,3 @@ impl From<event_db::types::reviews::AdvisorReview> for AdvisorReview {
         }
     }
 }
-
-

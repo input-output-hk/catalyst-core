@@ -51,8 +51,8 @@ impl RewardAddress {
         }
     }
 
-    pub fn reward_address(&self) -> &str {
-        &self.reward_address
+    pub fn reward_address(&self) -> String {
+        self.reward_address.clone()
     }
 
     pub fn reward_payable(&self) -> bool {

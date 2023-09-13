@@ -17,17 +17,17 @@ pub(crate) struct RegistrationApi;
 
 #[OpenApi(prefix_path = "/registration", tag = "ApiTags::Registration")]
 impl RegistrationApi {
+    /// Voter's info
+    ///
+    /// Get voter's registration and voting power by their voting key.
+    /// If the `event_id` query parameter is missing, then the "Latest" registration is returned.
+    /// If the `with_delegators` query parameter is ommitted, then `delegator_addresses` field of `VoterInfo` type does not provided.
+    ///
     #[oai(
         path = "/voter/:voting_key",
         method = "get",
         operation_id = "getVoterInfo"
     )]
-    /// Voter's info
-    ///
-    /// Get voter's registration and voting power by their voting key.
-    /// If the `event_id` query parameter is omitted, then the latest voting power is retrieved.
-    /// If the `with_delegators` query parameter is ommitted, then `delegator_addresses` field of `VoterInfo` type does not provided.
-    ///
     async fn get_voter_info(
         &self,
         pool: Data<&Arc<State>>,

@@ -1,12 +1,6 @@
 use super::registration::VoterGroupId;
 use poem_openapi::{NewType, Object};
-use serde::{Deserialize, Serialize};
-
-/// Ordered list of choices available for all proposals in this Objective.
-/// The offset into the array is the index of the choice.
-/// For example, the first element is Choice 0, second is Choice 1 and so on.
-#[derive(Deserialize, Serialize)]
-pub struct ObjectiveChoices(Vec<String>);
+use serde::Deserialize;
 
 /// The kind of ballot to be cast on this Objective.
 /// * `public` - All Ballots are public when cast.
@@ -54,17 +48,19 @@ impl From<event_db::types::ballot::VotePlan> for VotePlan {
     }
 }
 
-/// List of groups and the voteplans they use when voting on this proposal.
-/// Each valid group for this Objective:
-/// * Must be listed.
-/// * Must not be repeated.
-// #[derive(Deserialize)]
-pub struct GroupVotePlans(Vec<VotePlan>);
-
 /// Details necessary to complete a ballot for the specific proposal and objective.
-// #[derive(Object)]
+#[derive(Object)]
 pub struct Ballot {
     /// Ballot Choices present for all proposals in this Objective.
-    choices: ObjectiveChoices,
-    voteplans: GroupVotePlans,
+    ///
+    /// Ordered list of choices available for all proposals in this Objective.
+    /// The offset into the array is the index of the choice.
+    /// For example, the first element is Choice 0, second is Choice 1 and so on.
+    choices: Vec<String>,
+
+    /// List of groups and the voteplans they use when voting on this proposal.
+    /// Each valid group for this Objective:
+    /// * Must be listed.
+    /// * Must not be repeated.
+    voteplans: Vec<VotePlan>,
 }

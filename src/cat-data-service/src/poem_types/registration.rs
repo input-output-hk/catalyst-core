@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use poem_openapi::{NewType, Object};
 use serde::Deserialize;
 
+/// Voting Key.
 #[derive(NewType, Deserialize)]
 pub struct VotingKey(pub String);
 

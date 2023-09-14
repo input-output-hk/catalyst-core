@@ -201,7 +201,6 @@
 <a href="#201" id="201">201</a>
 <a href="#202" id="202">202</a>
 <a href="#203" id="203">203</a>
-<a href="#204" id="204">204</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::service::common::objects::{event_id::EventId, voter::Voter, voting_key::VotingKey};
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_2xx::OK;
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_4xx::NotFound;
@@ -260,14 +259,13 @@
                 <span class="kw-2">*</span>with_delegators,
             )
             .<span class="kw">await</span>;
-        <span class="macro">server_error!</span>(<span class="string">&quot;&quot;</span>);
         <span class="kw">match </span>voter {
             <span class="prelude-val">Ok</span>(voter) =&gt; <span class="kw">match </span>voter.try_into() {
                 <span class="prelude-val">Ok</span>(voter) =&gt; T200(OK(Json(voter))),
-                <span class="prelude-val">Err</span>(err) =&gt; T500(ServerError::new(<span class="prelude-val">Some</span>(err.to_string()))),
+                <span class="prelude-val">Err</span>(err) =&gt; T500(<span class="macro">server_error!</span>(<span class="string">&quot;{}&quot;</span>, err.to_string())),
             },
             <span class="prelude-val">Err</span>(event_db::error::Error::NotFound(<span class="kw">_</span>)) =&gt; T404(NotFound),
-            <span class="prelude-val">Err</span>(err) =&gt; T500(ServerError::new(<span class="prelude-val">Some</span>(err.to_string()))),
+            <span class="prelude-val">Err</span>(err) =&gt; T500(<span class="macro">server_error!</span>(<span class="string">&quot;{}&quot;</span>, err.to_string())),
         }
     }
 }

@@ -110,9 +110,9 @@
 /// Logging error message.
 </span><span class="macro">macro_rules! </span>server_error {
     ($(<span class="macro-nonterminal">$t</span>:tt)<span class="kw-2">*</span>) =&gt; {{
-        <span class="kw">let </span>error = ServerError::new(<span class="prelude-val">None</span>);
+        <span class="kw">let </span>error = <span class="kw">crate</span>::service::common::responses::resp_5xx::ServerError::new(<span class="prelude-val">None</span>);
         <span class="kw">let </span>id = error.id();
-        <span class="macro">tracing::error!</span>(id = <span class="macro">format!</span>(<span class="string">&quot;{id}&quot;</span>), $(<span class="macro-nonterminal">$t</span>)<span class="kw-2">*</span>);
+        <span class="macro">tracing::error!</span>(id = <span class="macro">format!</span>(<span class="string">&quot;{id}&quot;</span>) ,$(<span class="macro-nonterminal">$t</span>)<span class="kw-2">*</span>);
         error
     }};
 }

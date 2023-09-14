@@ -20,6 +20,11 @@ impl HealthApi {
     /// *This endpoint is for internal use of the service deployment infrastructure.
     /// It may not be exposed publicly.*
     ///
+    /// ## Responses
+    ///
+    /// * 204 No Content - Service is OK and can keep running.
+    /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
+    /// * 503 Service Unavailable - Service is possibly not running reliably.
     async fn started_get(&self) -> started_get::AllResponses {
         started_get::endpoint().await
     }
@@ -34,6 +39,11 @@ impl HealthApi {
     /// *This endpoint is for internal use of the service deployment infrastructure.
     /// It may not be exposed publicly.*
     ///
+    /// ## Responses
+    ///
+    /// * 204 No Content - Service is Ready to serve requests.
+    /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
+    /// * 503 Service Unavailable - Service is not ready, do not send other requests.
     async fn ready_get(&self) -> ready_get::AllResponses {
         ready_get::endpoint().await
     }
@@ -48,6 +58,11 @@ impl HealthApi {
     /// *This endpoint is for internal use of the service deployment infrastructure.
     /// It may not be exposed publicly. Refer to []*
     ///
+    /// ## Responses
+    ///
+    /// * 204 No Content - Service is OK and can keep running.
+    /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
+    /// * 503 Service Unavailable - Service is possibly not running reliably.
     async fn live_get(&self) -> live_get::AllResponses {
         live_get::endpoint().await
     }

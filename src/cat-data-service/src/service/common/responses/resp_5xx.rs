@@ -14,9 +14,9 @@ use uuid::Uuid;
 /// Logging error message.
 macro_rules! server_error {
     ($($t:tt)*) => {{
-        let error = ServerError::new(None);
+        let error = crate::service::common::responses::resp_5xx::ServerError::new(None);
         let id = error.id();
-        tracing::error!(id = format!("{id}"), $($t)*);
+        tracing::error!(id = format!("{id}") ,$($t)*);
         error
     }};
 }

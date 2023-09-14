@@ -56,14 +56,13 @@ impl RegistrationApi {
                 *with_delegators,
             )
             .await;
-        server_error!("");
         match voter {
             Ok(voter) => match voter.try_into() {
                 Ok(voter) => T200(OK(Json(voter))),
-                Err(err) => T500(ServerError::new(Some(err.to_string()))),
+                Err(err) => T500(server_error!("{}", err.to_string())),
             },
             Err(event_db::error::Error::NotFound(_)) => T404(NotFound),
-            Err(err) => T500(ServerError::new(Some(err.to_string()))),
+            Err(err) => T500(server_error!("{}", err.to_string())),
         }
     }
 }

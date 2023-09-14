@@ -3,7 +3,6 @@ use clap::Parser;
 mod cli;
 mod legacy_service;
 mod logger;
-mod poem_types;
 mod service;
 mod settings;
 mod state;

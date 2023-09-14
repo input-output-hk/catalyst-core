@@ -1,8 +1,7 @@
-use crate::poem_types::event::EventId;
-use crate::poem_types::registration::{Voter, VotingKey};
+use crate::service::common::objects::{event_id::EventId, voter::Voter, voting_key::VotingKey};
 use crate::service::common::responses::resp_2xx::OK;
 use crate::service::common::responses::resp_4xx::NotFound;
-use crate::service::common::responses::resp_5xx::ServerError;
+use crate::service::common::responses::resp_5xx::{server_error, ServerError};
 use crate::{service::common::tags::ApiTags, state::State};
 use poem::web::Data;
 use poem_extensions::response;
@@ -32,10 +31,15 @@ impl RegistrationApi {
     async fn get_voter_info(
         &self,
         pool: Data<&Arc<State>>,
-        ///  A Voting Key.
+
+        /// A Voting Key.
+        #[oai(validator(max_length = 64, min_length = 64, pattern = "[0-9a-f]{64}"))]
         voting_key: Path<VotingKey>,
+
         /// The Event ID to return results for.
+        #[oai(validator(minimum(value = "0")))]
         event_id: Query<Option<EventId>>,
+
         /// Flag to include delegators list in the response.
         #[oai(default)]
         with_delegators: Query<bool>,
@@ -52,8 +56,12 @@ impl RegistrationApi {
                 *with_delegators,
             )
             .await;
+        server_error!("");
         match voter {
-            Ok(voter) => T200(OK(Json(voter.into()))),
+            Ok(voter) => match voter.try_into() {
+                Ok(voter) => T200(OK(Json(voter))),
+                Err(err) => T500(ServerError::new(Some(err.to_string()))),
+            },
             Err(event_db::error::Error::NotFound(_)) => T404(NotFound),
             Err(err) => T500(ServerError::new(Some(err.to_string()))),
         }

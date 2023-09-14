@@ -194,11 +194,18 @@
 <a href="#194" id="194">194</a>
 <a href="#195" id="195">195</a>
 <a href="#196" id="196">196</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::poem_types::event::EventId;
-<span class="kw">use </span><span class="kw">crate</span>::poem_types::registration::{Voter, VotingKey};
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::service::common::objects::{event_id::EventId, voter::Voter, voting_key::VotingKey};
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_2xx::OK;
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_4xx::NotFound;
-<span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_5xx::ServerError;
+<span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_5xx::{server_error, ServerError};
 <span class="kw">use crate</span>::{service::common::tags::ApiTags, state::State};
 <span class="kw">use </span>poem::web::Data;
 <span class="kw">use </span>poem_extensions::response;
@@ -228,10 +235,15 @@
     </span><span class="kw">async fn </span>get_voter_info(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         pool: Data&lt;<span class="kw-2">&amp;</span>Arc&lt;State&gt;&gt;,
-        <span class="doccomment">///  A Voting Key.
+
+        <span class="doccomment">/// A Voting Key.
+        </span><span class="attr">#[oai(validator(max_length = <span class="number">64</span>, min_length = <span class="number">64</span>, pattern = <span class="string">&quot;[0-9a-f]{64}&quot;</span>))]
         </span>voting_key: Path&lt;VotingKey&gt;,
+
         <span class="doccomment">/// The Event ID to return results for.
+        </span><span class="attr">#[oai(validator(minimum(value = <span class="string">&quot;0&quot;</span>)))]
         </span>event_id: Query&lt;<span class="prelude-ty">Option</span>&lt;EventId&gt;&gt;,
+
         <span class="doccomment">/// Flag to include delegators list in the response.
         </span><span class="attr">#[oai(default)]
         </span>with_delegators: Query&lt;bool&gt;,
@@ -248,8 +260,12 @@
                 <span class="kw-2">*</span>with_delegators,
             )
             .<span class="kw">await</span>;
+        <span class="macro">server_error!</span>(<span class="string">&quot;&quot;</span>);
         <span class="kw">match </span>voter {
-            <span class="prelude-val">Ok</span>(voter) =&gt; T200(OK(Json(voter.into()))),
+            <span class="prelude-val">Ok</span>(voter) =&gt; <span class="kw">match </span>voter.try_into() {
+                <span class="prelude-val">Ok</span>(voter) =&gt; T200(OK(Json(voter))),
+                <span class="prelude-val">Err</span>(err) =&gt; T500(ServerError::new(<span class="prelude-val">Some</span>(err.to_string()))),
+            },
             <span class="prelude-val">Err</span>(event_db::error::Error::NotFound(<span class="kw">_</span>)) =&gt; T404(NotFound),
             <span class="prelude-val">Err</span>(err) =&gt; T500(ServerError::new(<span class="prelude-val">Some</span>(err.to_string()))),
         }

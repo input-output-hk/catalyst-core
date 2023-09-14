@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["responses","tags"]};
+window.SIDEBAR_ITEMS = {"mod":["objects","responses","tags"]};

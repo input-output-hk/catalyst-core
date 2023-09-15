@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["DryRunCommand"],"fn":["error_log_file","show_error_warning"],"static":["CALLSITE","META"],"struct":["Args"]};

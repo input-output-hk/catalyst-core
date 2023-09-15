@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_DIRECT_VOTER_GROUP","DEFAULT_REPRESENTATIVE_GROUP"],"struct":["RepsVotersAssigner"],"trait":["VotingGroupAssigner"]};

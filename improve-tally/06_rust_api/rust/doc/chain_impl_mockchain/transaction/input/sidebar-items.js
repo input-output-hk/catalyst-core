@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["INPUT_PTR_SIZE","INPUT_SIZE"],"enum":["AccountIdentifier","InputEnum","InputType"],"fn":["_strategy_of_0","_to_fn_ptr","_to_weight"],"opaque":[""],"struct":["Input","UnspecifiedAccountIdentifier"]};

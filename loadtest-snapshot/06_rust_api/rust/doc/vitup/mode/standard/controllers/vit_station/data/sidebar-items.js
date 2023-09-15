@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["generate_database","generate_random_database"],"struct":["DbGenerator"]};

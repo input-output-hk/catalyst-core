@@ -5,6 +5,7 @@ use registration::{
     serde_impl::IdentifierDef, Delegations, RewardAddress, StakeAddress, VotingRegistration,
 };
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::cmp;
 use std::{
     borrow::Borrow,
     collections::{BTreeMap, HashSet},
@@ -16,7 +17,8 @@ pub use voter_hir::VoterHIR;
 pub use voter_hir::VotingGroup;
 use voting_group::VotingGroupAssigner;
 
-mod influence_cap;
+// Wow, this is crazy complex for what it needs to do.
+// mod influence_cap;
 pub mod registration;
 pub mod sve;
 mod voter_hir;
@@ -84,7 +86,17 @@ pub struct KeyContribution {
     pub value: u64,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+impl KeyContribution {
+    pub fn to_loadtest_snapshot(&self) -> Self {
+        Self {
+            stake_public_key: self.stake_public_key.to_loadtest_snapshot(),
+            reward_address: self.reward_address.to_loadtest_snapshot(),
+            value: self.value,
+        }
+    }
+}
+
+#[derive(Clone, Debug, /*PartialEq, Eq,*/ Serialize, Deserialize)]
 pub struct SnapshotInfo {
     /// The values in the contributions are the original values in the registration transactions and
     /// thus retain the original proportions.
@@ -94,12 +106,131 @@ pub struct SnapshotInfo {
     pub hir: VoterHIR,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+impl SnapshotInfo {
+    pub fn as_loadtest_snapshot(&self) -> Self {
+        let contributions = self
+            .contributions
+            .iter()
+            .map(|c| c.to_loadtest_snapshot())
+            .collect();
+        let hir = self.hir.to_loadtest_snapshot();
+        Self { contributions, hir }
+    }
+
+    pub fn cap_voting_power(&self, cap: u64) -> Self {
+        Self {
+            contributions: self.contributions.clone(),
+            hir: self.hir.cap_voting_power(cap),
+        }
+    }
+}
+
+#[derive(Clone, Debug /*PartialEq, Eq*/)]
 pub struct Snapshot {
     // a raw public key is preferred so that we don't have to worry about discrimination when deserializing from
     // a CIP-36 compatible encoding
     inner: BTreeMap<Identifier, SnapshotInfo>,
-    stake_threshold: Value,
+    pub stake_threshold: Value,
+    pub voting_power_cap: u64,
+
+    pub total_registered_voters: u64,
+    pub total_registered_voting_power: u128,
+    pub total_eligible_voters: u64,
+    pub total_eligible_voting_power: u128,
+}
+
+fn calculate_voting_power_cap(cap: Fraction, total_eligible_voting_power: u128) -> u64 {
+    let numerator = *cap.numer().expect("Numerator must be set.") as u128;
+    let denominator = *cap.denom().expect("Denominator must be set.") as u128;
+
+    cmp::min(
+        total_eligible_voting_power
+            .saturating_mul(numerator)
+            .saturating_div(denominator),
+        u64::MAX as u128,
+    ) as u64
+}
+
+fn cap_voting_power(
+    cap: Fraction,
+    total_eligible_voting_power: u128,
+    entries: Vec<SnapshotInfo>,
+) -> (BTreeMap<Identifier, SnapshotInfo>, u64) {
+    let voting_cap = calculate_voting_power_cap(cap, total_eligible_voting_power);
+
+    // Cap all voting power.
+    (
+        entries
+            .iter()
+            .map(|entry| {
+                let capped_entry = entry.cap_voting_power(voting_cap);
+                (capped_entry.hir.voting_key.clone(), capped_entry)
+            })
+            .collect(),
+        voting_cap,
+    )
+}
+
+fn collect_raw_contributions(
+    raw_snapshot: RawSnapshot,
+) -> BTreeMap<Identifier, Vec<KeyContribution>> {
+    raw_snapshot
+        .0
+        .into_iter()
+        // Only accept Catalyst Voting Purpose.
+        .filter(|reg| {
+            reg.voting_purpose.unwrap_or(CATALYST_VOTING_PURPOSE_TAG) == CATALYST_VOTING_PURPOSE_TAG
+        })
+        .fold(BTreeMap::new(), |mut acc: BTreeMap<_, Vec<_>>, reg| {
+            let VotingRegistration {
+                reward_address,
+                delegations,
+                voting_power,
+                stake_public_key,
+                ..
+            } = reg;
+
+            match delegations {
+                Delegations::Legacy(vk) => {
+                    acc.entry(vk).or_default().push(KeyContribution {
+                        stake_public_key,
+                        reward_address,
+                        value: voting_power.into(),
+                    });
+                }
+                Delegations::New(mut vks) => {
+                    let voting_power = u64::from(voting_power);
+                    let total_weights =
+                        NonZeroU64::new(vks.iter().map(|(_, weight)| *weight as u64).sum());
+
+                    let last = vks.pop().expect("CIP36 requires at least 1 delegation");
+                    let others_total_vp = total_weights.map_or(0, |non_zero_total| {
+                        vks.into_iter()
+                            .filter_map(|(vk, weight)| {
+                                Some((
+                                    vk,
+                                    (voting_power * weight as u64) / u64::from(non_zero_total),
+                                ))
+                            })
+                            .map(|(vk, value)| {
+                                acc.entry(vk).or_default().push(KeyContribution {
+                                    stake_public_key: stake_public_key.clone(),
+                                    reward_address: reward_address.clone(),
+                                    value,
+                                });
+                                value
+                            })
+                            .sum::<u64>()
+                    });
+                    acc.entry(last.0).or_default().push(KeyContribution {
+                        stake_public_key,
+                        reward_address,
+                        value: voting_power - others_total_vp,
+                    });
+                }
+            };
+            acc
+        })
 }
 
 impl Snapshot {
@@ -110,104 +241,84 @@ impl Snapshot {
         cap: Fraction,
         voting_group_assigner: &impl VotingGroupAssigner,
         discrimination: Discrimination,
+        loadtest: bool,
     ) -> Result<Self, Error> {
-        let raw_contribs = raw_snapshot
-            .0
+        let mut total_registered_voters: u64 = 0;
+        let mut total_registered_voting_power: u128 = 0;
+        let mut total_eligible_voters: u64 = 0;
+        let mut total_eligible_voting_power: u128 = 0;
+
+        let raw_contribs = collect_raw_contributions(raw_snapshot);
+
+        let entries: Vec<SnapshotInfo> = raw_contribs
             .into_iter()
-            // Discard registrations with 0 voting power since they don't influence
-            // snapshot anyway. But can not throw any others away, even if less than the stake threshold.
-            .filter(|reg| reg.voting_power >= 1.into())
-            // TODO: add capability to select voting purpose for a snapshot.
-            // At the moment Catalyst is the only one in use
-            .filter(|reg| {
-                reg.voting_purpose.unwrap_or(CATALYST_VOTING_PURPOSE_TAG)
-                    == CATALYST_VOTING_PURPOSE_TAG
-            })
-            .fold(BTreeMap::new(), |mut acc: BTreeMap<_, Vec<_>>, reg| {
-                let VotingRegistration {
-                    reward_address,
-                    delegations,
-                    voting_power,
-                    stake_public_key,
-                    ..
-                } = reg;
+            .flat_map(|(k, contributions)| {
+                let voting_power: Value = contributions.iter().map(|c| c.value).sum::<u64>().into();
+                let underthreshold = voting_power < stake_threshold;
 
-                match delegations {
-                    Delegations::Legacy(vk) => {
-                        acc.entry(vk).or_default().push(KeyContribution {
-                            stake_public_key,
-                            reward_address,
-                            value: voting_power.into(),
-                        });
-                    }
-                    Delegations::New(mut vks) => {
-                        let voting_power = u64::from(voting_power);
-                        let total_weights =
-                            NonZeroU64::new(vks.iter().map(|(_, weight)| *weight as u64).sum());
+                total_registered_voters += 1;
+                total_registered_voting_power += voting_power.as_u64() as u128;
 
-                        let last = vks.pop().expect("CIP36 requires at least 1 delegation");
-                        let others_total_vp = total_weights.map_or(0, |non_zero_total| {
-                            vks.into_iter()
-                                .filter_map(|(vk, weight)| {
-                                    NonZeroU64::new((voting_power * weight as u64) / non_zero_total)
-                                        .map(|value| (vk, value))
-                                })
-                                .map(|(vk, value)| {
-                                    acc.entry(vk).or_default().push(KeyContribution {
-                                        stake_public_key: stake_public_key.clone(),
-                                        reward_address: reward_address.clone(),
-                                        value: value.get(),
-                                    });
-                                    value.get()
-                                })
-                                .sum::<u64>()
-                        });
-                        acc.entry(last.0).or_default().push(KeyContribution {
-                            stake_public_key,
-                            reward_address,
-                            value: voting_power - others_total_vp,
-                        });
+                // Loadtest snapshot exactly doubles the number of voters, so correct the total voting power.
+                if loadtest {
+                    total_registered_voters += 1;
+                    total_registered_voting_power += voting_power.as_u64() as u128;
+                }
+
+                // Count total voting power as we accumulate it.
+                if !underthreshold {
+                    total_eligible_voters += 1;
+                    total_eligible_voting_power += voting_power.as_u64() as u128;
+
+                    // Loadtest snapshot exactly doubles the number of voters, so corect the total voting power.
+                    if loadtest {
+                        total_eligible_voters += 1;
+                        total_eligible_voting_power += voting_power.as_u64() as u128;
                     }
+                }
+
+                let snapshot_info = SnapshotInfo {
+                    hir: VoterHIR {
+                        voting_group: voting_group_assigner.assign(&k),
+                        voting_key: k.clone(),
+                        address: chain_addr::Address(
+                            discrimination,
+                            chain_addr::Kind::Account(k.to_inner().into()),
+                        )
+                        .into(),
+                        voting_power,
+                        underthreshold,
+                        overlimit: false,  // Don't know yet, so assume not.
+                        private_key: None, // Normal snapshot info can't have a private key.
+                    },
+                    contributions,
                 };
-                acc
-            });
-        let entries = raw_contribs
-            .into_iter()
-            .map(|(k, contributions)| SnapshotInfo {
-                hir: VoterHIR {
-                    voting_group: voting_group_assigner.assign(&k),
-                    voting_key: k.clone(),
-                    address: chain_addr::Address(
-                        discrimination,
-                        chain_addr::Kind::Account(k.to_inner().into()),
-                    )
-                    .into(),
-                    voting_power: contributions.iter().map(|c| c.value).sum::<u64>().into(),
-                },
-                contributions,
+
+                if loadtest {
+                    let loadtest_snapshot_info = snapshot_info.as_loadtest_snapshot();
+
+                    // Loadtest has the original snapshot and a loadtest converted snapshot.
+                    vec![snapshot_info, loadtest_snapshot_info]
+                } else {
+                    // Not a loadtest, so only has the original snapshot record.
+                    vec![snapshot_info]
+                }
             })
-            // Because of multiple registrations to the same voting key,  we can only
-            // filter once all registrations for the same key are known.
-            // `stake_threshold` is the minimum stake for all registrations COMBINED.
-            .filter(|entry| entry.hir.voting_power >= stake_threshold)
             .collect();
 
-        Ok(Self {
-            inner: Self::apply_voting_power_cap(entries, cap)?
-                .into_iter()
-                .map(|entry| (entry.hir.voting_key.clone(), entry))
-                .collect(),
-            stake_threshold,
-        })
-    }
+        // Cap the voting power of all entries.
+        let (capped_entries, voting_power_cap) =
+            cap_voting_power(cap, total_eligible_voting_power, entries);
 
-    fn apply_voting_power_cap(
-        voters: Vec<SnapshotInfo>,
-        cap: Fraction,
-    ) -> Result<Vec<SnapshotInfo>, Error> {
-        Ok(influence_cap::cap_voting_influence(voters, cap)?
-            .into_iter()
-            .collect())
+        Ok(Self {
+            inner: capped_entries,
+            stake_threshold,
+            voting_power_cap,
+            total_registered_voters,
+            total_registered_voting_power,
+            total_eligible_voters,
+            total_eligible_voting_power,
+        })
     }
 
     #[must_use]
@@ -301,6 +412,7 @@ pub mod tests {
                 Fraction::from(1u64),
                 &DummyAssigner,
                 Discrimination::Production,
+                false
             )
             .unwrap()
                 == Snapshot::from_raw_snapshot(
@@ -309,6 +421,7 @@ pub mod tests {
                     Fraction::from(1u64),
                     &DummyAssigner,
                     Discrimination::Production,
+                    false
                 )
                 .unwrap(),
             _additional_reg.voting_power < _stake_threshold.into()
@@ -328,6 +441,7 @@ pub mod tests {
                         Fraction::from(1),
                         &|_vk: &Identifier| String::new(),
                         Discrimination::Production,
+                        false,
                     )
                     .unwrap()
                 })

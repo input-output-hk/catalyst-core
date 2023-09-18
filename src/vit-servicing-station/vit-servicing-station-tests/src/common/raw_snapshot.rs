@@ -62,6 +62,7 @@ impl RawSnapshotExtension for RawSnapshot {
             self.content.voting_power_cap,
             assigner,
             Discrimination::Production,
+            false,
         )?
         .to_full_snapshot_info())
     }

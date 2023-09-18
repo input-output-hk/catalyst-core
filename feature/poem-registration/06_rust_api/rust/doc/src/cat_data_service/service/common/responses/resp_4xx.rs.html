@@ -51,40 +51,40 @@
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">400</span>)]
-</span><span class="kw">pub struct </span>BadRequest&lt;T: IntoResponse + Payload&gt;(T);
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>BadRequest&lt;T: IntoResponse + Payload&gt;(T);
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">400</span>)]
 </span><span class="doccomment">/// This error means that the request was malformed.
 /// It has failed to pass validation, as specified by the OpenAPI schema.
-</span><span class="kw">pub struct </span>ApiValidationError(PlainText&lt;String&gt;);
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ApiValidationError(PlainText&lt;String&gt;);
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">401</span>)]
-</span><span class="kw">pub struct </span>Unauthorized;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Unauthorized;
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">403</span>)]
-</span><span class="kw">pub struct </span>Forbidden;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Forbidden;
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">404</span>)]
 </span><span class="doccomment">/// ## Content not found
-</span><span class="kw">pub struct </span>NotFound;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>NotFound;
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">405</span>)]
-</span><span class="kw">pub struct </span>MethodNotAllowed;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>MethodNotAllowed;
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">406</span>)]
-</span><span class="kw">pub struct </span>NotAcceptable;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>NotAcceptable;
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">422</span>)]
 </span><span class="doccomment">/// Common automatically produced validation error for every endpoint.
 /// Is generated automatically when any of the OpenAPI validation rules fail.
 /// Can also be generated manually.
-</span><span class="kw">pub struct </span>ValidationError;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ValidationError;
 </code></pre></div>
 </section></main></body></html>

@@ -15,7 +15,7 @@
 
 <span class="attr">#[derive(NewType, Deserialize)]
 #[oai(example = <span class="bool-val">true</span>)]
-</span><span class="kw">pub struct </span>StakePublicKey(<span class="kw">pub </span>String);
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>StakePublicKey(<span class="kw">pub </span>String);
 
 <span class="kw">impl </span>Example <span class="kw">for </span>StakePublicKey {
     <span class="kw">fn </span>example() -&gt; <span class="self">Self </span>{

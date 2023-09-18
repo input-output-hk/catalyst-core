@@ -80,7 +80,7 @@
 <span class="doccomment">/// Voter Info
 </span><span class="attr">#[derive(Object)]
 #[oai(example = <span class="bool-val">true</span>)]
-</span><span class="kw">pub struct </span>VoterInfo {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>VoterInfo {
     <span class="doccomment">/// Voter&#39;s voting power.
     /// This is the true voting power, subject to minimum voting power and max cap.
     </span><span class="attr">#[oai(validator(minimum(value = <span class="string">&quot;0&quot;</span>)))]

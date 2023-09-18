@@ -156,7 +156,7 @@
 /// An internal server error occurred.
 ///
 /// *The contents of this response should be reported to the projects issue tracker.*
-</span><span class="kw">pub struct </span>ServerError(Json&lt;ServerErrorPayload&gt;);
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ServerError(Json&lt;ServerErrorPayload&gt;);
 
 <span class="kw">impl </span>ServerError {
     <span class="doccomment">/// Create a new Server Error Response.
@@ -189,6 +189,6 @@
 /// or has become unavailable.*
 ///
 /// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
-</span><span class="kw">pub struct </span>ServiceUnavailable;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ServiceUnavailable;
 </code></pre></div>
 </section></main></body></html>

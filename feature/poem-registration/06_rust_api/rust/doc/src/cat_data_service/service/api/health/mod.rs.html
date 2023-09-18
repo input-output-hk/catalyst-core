@@ -111,7 +111,7 @@
 <span class="kw">mod </span>ready_get;
 <span class="kw">mod </span>started_get;
 
-<span class="kw">pub struct </span>HealthApi;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>HealthApi;
 
 <span class="attr">#[OpenApi(prefix_path = <span class="string">&quot;/health&quot;</span>, tag = <span class="string">&quot;ApiTags::Health&quot;</span>)]
 </span><span class="kw">impl </span>HealthApi {

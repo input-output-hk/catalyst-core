@@ -1,5 +1,5 @@
 use super::{objective_id::ObjectiveId, objective_type::ObjectiveType};
-use poem_openapi::Object;
+use poem_openapi::{types::Example, Object};
 
 /// Summary off an Individual Objective.
 #[derive(Object)]
@@ -22,6 +22,18 @@ pub(crate) struct ObjectiveSummary {
 
     /// Whether this Objective has been deleted or not.
     deleted: bool,
+}
+
+impl Example for ObjectiveSummary {
+    fn example() -> Self {
+        Self {
+            id: ObjectiveId::example(),
+            objective_type: ObjectiveType::example(),
+            title: "Objective Title".to_string(),
+            description: "Objective Description".to_string(),
+            deleted: false,
+        }
+    }
 }
 
 impl TryFrom<event_db::types::objective::ObjectiveSummary> for ObjectiveSummary {

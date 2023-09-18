@@ -1,6 +1,7 @@
 use super::objective_types::ObjectiveTypes;
 use poem_openapi::{types::Example, Object};
 
+/// Objective type definition.
 #[derive(Object)]
 pub(crate) struct ObjectiveType {
     id: ObjectiveTypes,

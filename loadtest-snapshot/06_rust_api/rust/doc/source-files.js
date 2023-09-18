@@ -44,7 +44,7 @@ var sourcesIndex = JSON.parse('{\
 "settings":["",[],["lib.rs"]],\
 "signals_handler":["",[],["lib.rs"]],\
 "snapshot_cli":["",[],["snapshot-cli.rs"]],\
-"snapshot_lib":["",[],["influence_cap.rs","lib.rs","registration.rs","sve.rs","voter_hir.rs","voting_group.rs"]],\
+"snapshot_lib":["",[],["lib.rs","registration.rs","sve.rs","voter_hir.rs","voting_group.rs"]],\
 "snapshot_tool":["",[],["snapshot_tool.rs"]],\
 "snapshot_trigger_service":["",[["args",[],["mod.rs"]],["client",[],["args.rs","mod.rs","rest.rs"]],["config",[],["job.rs","mod.rs"]]],["context.rs","job.rs","lib.rs","rest.rs"]],\
 "snapshot_wormhole":["",[],["snapshot-wormhole.rs"]],\

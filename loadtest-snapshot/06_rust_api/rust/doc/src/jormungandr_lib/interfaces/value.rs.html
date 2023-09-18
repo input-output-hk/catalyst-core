@@ -162,6 +162,12 @@
 <a href="#162" id="162">162</a>
 <a href="#163" id="163">163</a>
 <a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_impl_mockchain::value;
 <span class="kw">use </span>serde::{Deserialize, Deserializer, Serialize, Serializer};
 <span class="kw">use </span>std::{fmt, str::FromStr};
@@ -186,6 +192,12 @@
 </span><span class="kw">pub struct </span>Value(value::Value);
 
 <span class="kw">impl </span>Value {
+    <span class="attr">#[inline]
+    #[must_use]
+    </span><span class="kw">pub fn </span>as_u64(<span class="self">self</span>) -&gt; u64 {
+        <span class="self">self</span>.<span class="number">0 </span>.<span class="number">0
+    </span>}
+
     <span class="attr">#[inline]
     </span><span class="kw">pub fn </span>saturating_add(<span class="self">self</span>, other: <span class="self">Self</span>) -&gt; <span class="self">Self </span>{
         Value(<span class="self">self</span>.<span class="number">0</span>.saturating_add(other.<span class="number">0</span>))

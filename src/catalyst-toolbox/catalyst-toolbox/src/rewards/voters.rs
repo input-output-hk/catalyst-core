@@ -151,6 +151,7 @@ mod tests {
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
             Discrimination::Production,
+            false
         )
         .unwrap();
 
@@ -184,6 +185,7 @@ mod tests {
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
             Discrimination::Production,
+            false
         )
         .unwrap();
 
@@ -208,6 +210,7 @@ mod tests {
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
             Discrimination::Production,
+            false
         )
         .unwrap();
 
@@ -322,6 +325,7 @@ mod tests {
             Fraction::from(1u64),
             &|_voting_key: &Identifier| String::new(),
             Discrimination::Production,
+            false
         )
         .unwrap();
 
@@ -370,6 +374,7 @@ mod tests {
             Fraction::new(1u64, 9u64),
             &|_vk: &Identifier| String::new(),
             Discrimination::Production,
+            false
         )
         .unwrap();
 
@@ -396,6 +401,7 @@ mod tests {
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
             Discrimination::Production,
+            false
         )
         .unwrap();
 

@@ -426,7 +426,6 @@ pub mod tests {
     }
     */
 
-
     impl Arbitrary for Snapshot {
         type Parameters = ();
         type Strategy = BoxedStrategy<Snapshot>;

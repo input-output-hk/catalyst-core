@@ -1,11 +1,5 @@
-use super::voter_group_id::VoterGroupId;
+use super::{delegator_address::DelegatorAddress, voter_group_id::VoterGroupId};
 use poem_openapi::{types::Example, Object};
-
-#[derive(Object)]
-struct DelegatorAddress {
-    #[oai(validator(pattern = "[0-9a-f]{64}"))]
-    address: String,
-}
 
 /// Voter Info
 #[derive(Object)]
@@ -46,7 +40,7 @@ impl Example for VoterInfo {
             delegations_power: 0,
             delegations_count: 0,
             voting_power_saturation: 0.0,
-            delegator_addresses: Some(vec![]),
+            delegator_addresses: Some(vec![DelegatorAddress::example()]),
         }
     }
 }
@@ -60,11 +54,9 @@ impl TryFrom<event_db::types::registration::VoterInfo> for VoterInfo {
             delegations_power: value.delegations_power,
             delegations_count: value.delegations_count,
             voting_power_saturation: value.voting_power_saturation,
-            delegator_addresses: value.delegator_addresses.map(|val| {
-                val.into_iter()
-                    .map(|address| DelegatorAddress { address })
-                    .collect()
-            }),
+            delegator_addresses: value
+                .delegator_addresses
+                .map(|val| val.into_iter().map(Into::into).collect()),
         })
     }
 }

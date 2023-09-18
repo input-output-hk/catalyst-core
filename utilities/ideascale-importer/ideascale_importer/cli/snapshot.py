@@ -46,7 +46,7 @@ def import_snapshot(
         help="Log level",
     ),
     log_format: str = typer.Option(
-        "text",
+        "json",
         envvar="SNAPSHOT_LOG_FORMAT",
         help="Log format",
     ),

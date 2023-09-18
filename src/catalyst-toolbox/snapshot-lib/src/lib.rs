@@ -201,18 +201,14 @@ fn collect_raw_contributions(
                 Delegations::New(mut vks) => {
                     let voting_power = u64::from(voting_power);
                     let total_weights =
-                        NonZeroU64::new(vks.iter().map(|(_, weight)| *weight as u64).sum());
+                        NonZeroU64::new(vks.iter().map(|(_, weight)| u64::from(*weight)).sum());
 
                     let last = vks.pop().expect("CIP36 requires at least 1 delegation");
                     let others_total_vp = total_weights.map_or(0, |non_zero_total| {
                         vks.into_iter()
-                            .filter_map(|(vk, weight)| {
-                                Some((
-                                    vk,
-                                    (voting_power * weight as u64) / u64::from(non_zero_total),
-                                ))
-                            })
-                            .map(|(vk, value)| {
+                            .map(|(vk, weight)| {
+                                let value =
+                                    (voting_power * u64::from(weight)) / u64::from(non_zero_total);
                                 acc.entry(vk).or_default().push(KeyContribution {
                                     stake_public_key: stake_public_key.clone(),
                                     reward_address: reward_address.clone(),

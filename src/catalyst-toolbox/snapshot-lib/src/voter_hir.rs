@@ -8,7 +8,7 @@ use jormungandr_lib::{
 pub type VotingGroup = String;
 
 fn is_false(b: &bool) -> bool {
-    *b == false
+    !(*b)
 }
 
 /// Define High Level Intermediate Representation (HIR) for voting
@@ -68,7 +68,7 @@ impl VoterHIR {
             voting_key: loadtest_voting_key,
             address: loadtest_address.into(),
             voting_group: self.voting_group.clone(),
-            voting_power: self.voting_power.into(),
+            voting_power: self.voting_power,
             underthreshold: self.underthreshold,
             overlimit: self.overlimit,
             private_key: Some(private_key),

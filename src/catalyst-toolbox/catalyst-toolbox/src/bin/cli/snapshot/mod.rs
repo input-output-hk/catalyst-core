@@ -96,7 +96,7 @@ pub struct SnapshotCmd {
 }
 
 fn is_false(b: &bool) -> bool {
-    *b == false
+    !(*b)
 }
 
 #[derive(Serialize)]

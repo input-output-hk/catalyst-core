@@ -201,12 +201,10 @@
 <a href="#201" id="201">201</a>
 <a href="#202" id="202">202</a>
 <a href="#203" id="203">203</a>
-<a href="#204" id="204">204</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    legacy_service::{handle_result, v1::LimitOffset},
+    legacy_service::{handle_result, types::SerdeType, v1::LimitOffset},
     service::Error,
     state::State,
-    types::SerdeType,
 };
 <span class="kw">use </span>axum::{
     extract::{Path, Query},

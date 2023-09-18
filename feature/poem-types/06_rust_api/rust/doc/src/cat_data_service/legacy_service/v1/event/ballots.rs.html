@@ -121,7 +121,15 @@
 <a href="#121" id="121">121</a>
 <a href="#122" id="122">122</a>
 <a href="#123" id="123">123</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{legacy_service::handle_result, service::Error, state::State, types::SerdeType};
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+    legacy_service::{handle_result, types::SerdeType},
+    service::Error,
+    state::State,
+};
 <span class="kw">use </span>axum::{extract::Path, routing::get, Router};
 <span class="kw">use </span>event_db::types::{ballot::ObjectiveBallots, event::EventId};
 <span class="kw">use </span>std::sync::Arc;

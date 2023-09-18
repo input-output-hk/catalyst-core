@@ -343,7 +343,15 @@
 <a href="#343" id="343">343</a>
 <a href="#344" id="344">344</a>
 <a href="#345" id="345">345</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{legacy_service::handle_result, service::Error, state::State, types::SerdeType};
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+    legacy_service::{handle_result, types::SerdeType},
+    service::Error,
+    state::State,
+};
 <span class="kw">use </span>axum::{
     extract::{Path, Query},
     routing::get,

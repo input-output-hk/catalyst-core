@@ -26,7 +26,7 @@
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">200</span>)]
-</span><span class="kw">pub struct </span>OK&lt;T: IntoResponse + Payload&gt;(<span class="kw">pub </span>T);
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>OK&lt;T: IntoResponse + Payload&gt;(<span class="kw">pub </span>T);
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">204</span>)]
@@ -35,6 +35,6 @@
 /// The operation completed successfully, but there is no data to return.
 ///
 /// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
-</span><span class="kw">pub struct </span>NoContent;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>NoContent;
 </code></pre></div>
 </section></main></body></html>

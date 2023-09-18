@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["ServerError","ServerErrorPayload","ServiceUnavailable"]};
+window.SIDEBAR_ITEMS = {"macro":["server_error"],"struct":["ServerError","ServerErrorPayload","ServiceUnavailable"]};

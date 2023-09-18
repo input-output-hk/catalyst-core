@@ -50,21 +50,11 @@
 <a href="#50" id="50">50</a>
 <a href="#51" id="51">51</a>
 <a href="#52" id="52">52</a>
-<a href="#53" id="53">53</a>
-<a href="#54" id="54">54</a>
-<a href="#55" id="55">55</a>
-<a href="#56" id="56">56</a>
-<a href="#57" id="57">57</a>
-<a href="#58" id="58">58</a>
-<a href="#59" id="59">59</a>
-<a href="#60" id="60">60</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cli::Error;
-<span class="comment">//use arc_swap::ArcSwap;
-</span><span class="kw">use </span>event_db::queries::EventDbQueries;
+<span class="kw">use </span>event_db::queries::EventDbQueries;
 <span class="kw">use </span>std::sync::Arc;
-<span class="comment">//use tracing::warn;
 
-</span><span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
 </span><span class="kw">pub mod </span>jorm_mock;
 
 <span class="kw">pub struct </span>State {
@@ -87,13 +77,7 @@
             <span class="prelude-val">None </span>=&gt; Arc::new(event_db::establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>),
         };
 
-        <span class="comment">//let event_db = if let Some(url) = database_url {
-        //    Arc::new(event_db::establish_connection(Some(url.as_str())).await?)
-        //} else {
-        //    Arc::new(event_db::establish_connection(None).await?)
-        //};
-
-        </span><span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
+        <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
         </span><span class="kw">let </span>jorm = jorm_mock::JormState::new(<span class="kw-2">*</span><span class="kw">crate</span>::settings::JORM_CLEANUP_TIMEOUT);
 
         <span class="kw">let </span>state = <span class="self">Self </span>{

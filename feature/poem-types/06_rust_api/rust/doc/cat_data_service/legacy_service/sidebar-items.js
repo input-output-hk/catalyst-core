@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["COUNT","EXPONENTIAL_SECONDS"],"fn":["app","cors_layer","handle_result","metrics_app","run","run_service","setup_metrics_recorder","track_metrics"],"mod":["health","v0","v1"],"opaque":[""],"static":["CALLSITE","META","METRIC_NAME"]};
+window.SIDEBAR_ITEMS = {"constant":["COUNT","EXPONENTIAL_SECONDS"],"fn":["app","cors_layer","handle_result","metrics_app","run","run_service","setup_metrics_recorder","track_metrics"],"mod":["health","types","v0","v1"],"opaque":[""],"static":["CALLSITE","META","METRIC_NAME"]};

@@ -17,7 +17,7 @@
 </span><span class="kw">use </span>poem_openapi::Tags;
 
 <span class="attr">#[derive(Tags)]
-</span><span class="kw">pub enum </span>ApiTags {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>ApiTags {
     <span class="comment">// Health Endpoints
     </span>Health,
     <span class="comment">// Information relating to Voter Registration, Delegations and Calculated Voting Power.

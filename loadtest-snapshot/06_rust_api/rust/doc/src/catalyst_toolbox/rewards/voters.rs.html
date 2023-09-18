@@ -479,6 +479,12 @@
 <a href="#479" id="479">479</a>
 <a href="#480" id="480">480</a>
 <a href="#481" id="481">481</a>
+<a href="#482" id="482">482</a>
+<a href="#483" id="483">483</a>
+<a href="#484" id="484">484</a>
+<a href="#485" id="485">485</a>
+<a href="#486" id="486">486</a>
+<a href="#487" id="487">487</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{Threshold, VoteCount};
 <span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
@@ -632,7 +638,8 @@
             Fraction::from(<span class="number">1</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
             Discrimination::Production,
-        )
+            <span class="bool-val">false
+        </span>)
         .unwrap();
 
         <span class="kw">let </span>votes_count = snapshot
@@ -665,7 +672,8 @@
             Fraction::from(<span class="number">1</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
             Discrimination::Production,
-        )
+            <span class="bool-val">false
+        </span>)
         .unwrap();
 
         <span class="kw">let </span>votes_count = VoteCount::new();
@@ -689,7 +697,8 @@
             Fraction::from(<span class="number">1</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
             Discrimination::Production,
-        )
+            <span class="bool-val">false
+        </span>)
         .unwrap();
 
         <span class="kw">let </span>voting_keys = snapshot.voting_keys().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
@@ -803,7 +812,8 @@
             Fraction::from(<span class="number">1u64</span>),
             <span class="kw-2">&amp;</span>|_voting_key: <span class="kw-2">&amp;</span>Identifier| String::new(),
             Discrimination::Production,
-        )
+            <span class="bool-val">false
+        </span>)
         .unwrap();
 
         <span class="kw">let </span>voters = snapshot.to_full_snapshot_info();
@@ -851,7 +861,8 @@
             Fraction::new(<span class="number">1u64</span>, <span class="number">9u64</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
             Discrimination::Production,
-        )
+            <span class="bool-val">false
+        </span>)
         .unwrap();
 
         <span class="kw">let </span>voters = snapshot.to_full_snapshot_info();
@@ -877,7 +888,8 @@
             Fraction::from(<span class="number">1</span>),
             <span class="kw-2">&amp;</span>|_vk: <span class="kw-2">&amp;</span>Identifier| String::new(),
             Discrimination::Production,
-        )
+            <span class="bool-val">false
+        </span>)
         .unwrap();
 
         <span class="kw">use </span>vit_servicing_station_tests::common::data::ArbitrarySnapshotGenerator;

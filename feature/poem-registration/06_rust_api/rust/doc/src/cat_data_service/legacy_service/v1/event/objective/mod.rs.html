@@ -416,12 +416,10 @@
 <a href="#416" id="416">416</a>
 <a href="#417" id="417">417</a>
 <a href="#418" id="418">418</a>
-<a href="#419" id="419">419</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    legacy_service::{handle_result, v1::LimitOffset},
+    legacy_service::{handle_result, types::SerdeType, v1::LimitOffset},
     service::Error,
     state::State,
-    types::SerdeType,
 };
 <span class="kw">use </span>axum::{
     extract::{Path, Query},

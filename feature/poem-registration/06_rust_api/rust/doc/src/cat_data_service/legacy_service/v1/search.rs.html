@@ -986,7 +986,15 @@
 <a href="#986" id="986">986</a>
 <a href="#987" id="987">987</a>
 <a href="#988" id="988">988</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{legacy_service::handle_result, service::Error, state::State, types::SerdeType};
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+    legacy_service::{handle_result, types::SerdeType},
+    service::Error,
+    state::State,
+};
 <span class="kw">use </span>axum::{extract::Query, routing::post, Json, Router};
 <span class="kw">use </span>event_db::types::search::{SearchQuery, SearchResult};
 <span class="kw">use </span>serde::Deserialize;

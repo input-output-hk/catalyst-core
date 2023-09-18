@@ -280,12 +280,10 @@
 <a href="#280" id="280">280</a>
 <a href="#281" id="281">281</a>
 <a href="#282" id="282">282</a>
-<a href="#283" id="283">283</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
-    legacy_service::{handle_result, v1::LimitOffset},
+    legacy_service::{handle_result, types::SerdeType, v1::LimitOffset},
     service::Error,
     state::State,
-    types::SerdeType,
 };
 <span class="kw">use </span>axum::{
     extract::{Path, Query},

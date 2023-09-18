@@ -166,6 +166,7 @@
 <a href="#166" id="166">166</a>
 <a href="#167" id="167">167</a>
 <a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Main entrypoint to the Legacy AXUM version of the service
 //!
 </span><span class="kw">use </span><span class="kw">crate</span>::service::{Error, ErrorMessage};
@@ -185,6 +186,7 @@
 <span class="kw">use </span>tower_http::cors::{Any, CorsLayer};
 
 <span class="kw">mod </span>health;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>types;
 <span class="kw">mod </span>v0;
 <span class="kw">mod </span>v1;
 

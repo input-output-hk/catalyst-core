@@ -13,7 +13,7 @@ use poem_openapi::{
 };
 use std::sync::Arc;
 
-pub struct RegistrationApi;
+pub(crate) struct RegistrationApi;
 
 #[OpenApi(prefix_path = "/registration", tag = "ApiTags::Registration")]
 impl RegistrationApi {

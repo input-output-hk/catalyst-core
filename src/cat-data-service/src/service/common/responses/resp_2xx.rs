@@ -7,7 +7,7 @@ use poem_openapi::payload::Payload;
 
 #[derive(OneResponse)]
 #[oai(status = 200)]
-pub struct OK<T: IntoResponse + Payload>(pub T);
+pub(crate) struct OK<T: IntoResponse + Payload>(pub T);
 
 #[derive(OneResponse)]
 #[oai(status = 204)]
@@ -16,4 +16,4 @@ pub struct OK<T: IntoResponse + Payload>(pub T);
 /// The operation completed successfully, but there is no data to return.
 ///
 /// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
-pub struct NoContent;
+pub(crate) struct NoContent;

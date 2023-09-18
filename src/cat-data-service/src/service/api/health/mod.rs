@@ -5,7 +5,7 @@ mod live_get;
 mod ready_get;
 mod started_get;
 
-pub struct HealthApi;
+pub(crate) struct HealthApi;
 
 #[OpenApi(prefix_path = "/health", tag = "ApiTags::Health")]
 impl HealthApi {

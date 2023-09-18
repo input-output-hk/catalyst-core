@@ -10,7 +10,7 @@ struct DelegatorAddress {
 /// Voter Info
 #[derive(Object)]
 #[oai(example = true)]
-pub struct VoterInfo {
+pub(crate) struct VoterInfo {
     /// Voter's voting power.
     /// This is the true voting power, subject to minimum voting power and max cap.
     #[oai(validator(minimum(value = "0")))]

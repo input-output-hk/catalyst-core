@@ -60,7 +60,7 @@ impl Example for ServerErrorPayload {
 /// An internal server error occurred.
 ///
 /// *The contents of this response should be reported to the projects issue tracker.*
-pub struct ServerError(Json<ServerErrorPayload>);
+pub(crate) struct ServerError(Json<ServerErrorPayload>);
 
 impl ServerError {
     /// Create a new Server Error Response.
@@ -93,4 +93,4 @@ impl ResponseError for ServerError {
 /// or has become unavailable.*
 ///
 /// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
-pub struct ServiceUnavailable;
+pub(crate) struct ServiceUnavailable;

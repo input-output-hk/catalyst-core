@@ -3,7 +3,7 @@
 use poem_openapi::Tags;
 
 #[derive(Tags)]
-pub enum ApiTags {
+pub(crate) enum ApiTags {
     // Health Endpoints
     Health,
     // Information relating to Voter Registration, Delegations and Calculated Voting Power.

@@ -5,7 +5,7 @@ use poem_openapi::{types::Example, Object};
 /// Voter
 #[derive(Object)]
 #[oai(example = true)]
-pub struct Voter {
+pub(crate) struct Voter {
     voter_info: VoterInfo,
 
     /// Date and time the latest snapshot represents.

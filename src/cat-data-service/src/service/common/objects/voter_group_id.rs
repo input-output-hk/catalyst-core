@@ -2,7 +2,7 @@ use poem_openapi::{types::Example, Enum};
 
 /// Voter Group ID.
 #[derive(Enum)]
-pub enum VoterGroupId {
+pub(crate) enum VoterGroupId {
     /// Delegated Representative.
     #[oai(rename = "rep")]
     Rep,

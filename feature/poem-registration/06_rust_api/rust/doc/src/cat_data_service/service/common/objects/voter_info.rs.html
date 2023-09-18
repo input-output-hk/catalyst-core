@@ -60,22 +60,8 @@
 <a href="#60" id="60">60</a>
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
-<a href="#63" id="63">63</a>
-<a href="#64" id="64">64</a>
-<a href="#65" id="65">65</a>
-<a href="#66" id="66">66</a>
-<a href="#67" id="67">67</a>
-<a href="#68" id="68">68</a>
-<a href="#69" id="69">69</a>
-<a href="#70" id="70">70</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::voter_group_id::VoterGroupId;
+</pre><pre class="rust"><code><span class="kw">use super</span>::{delegator_address::DelegatorAddress, voter_group_id::VoterGroupId};
 <span class="kw">use </span>poem_openapi::{types::Example, Object};
-
-<span class="attr">#[derive(Object)]
-</span><span class="kw">struct </span>DelegatorAddress {
-    <span class="attr">#[oai(validator(pattern = <span class="string">&quot;[0-9a-f]{64}&quot;</span>))]
-    </span>address: String,
-}
 
 <span class="doccomment">/// Voter Info
 </span><span class="attr">#[derive(Object)]
@@ -116,7 +102,7 @@
             delegations_power: <span class="number">0</span>,
             delegations_count: <span class="number">0</span>,
             voting_power_saturation: <span class="number">0.0</span>,
-            delegator_addresses: <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[]),
+            delegator_addresses: <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[DelegatorAddress::example()]),
         }
     }
 }
@@ -130,11 +116,9 @@
             delegations_power: value.delegations_power,
             delegations_count: value.delegations_count,
             voting_power_saturation: value.voting_power_saturation,
-            delegator_addresses: value.delegator_addresses.map(|val| {
-                val.into_iter()
-                    .map(|address| DelegatorAddress { address })
-                    .collect()
-            }),
+            delegator_addresses: value
+                .delegator_addresses
+                .map(|val| val.into_iter().map(Into::into).collect()),
         })
     }
 }

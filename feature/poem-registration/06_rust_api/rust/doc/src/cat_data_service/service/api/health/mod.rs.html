@@ -104,6 +104,7 @@
 <a href="#104" id="104">104</a>
 <a href="#105" id="105">105</a>
 <a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::service::common::tags::ApiTags;
 <span class="kw">use </span>poem_openapi::OpenApi;
 
@@ -128,9 +129,9 @@
     ///
     /// ## Responses
     ///
-    /// * 204 No Content - Service is OK and can keep running.
-    /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
-    /// * 503 Service Unavailable - Service is possibly not running reliably.
+    /// * 204 No Content - Service is Started and can serve requests.
+    /// * 500 Server Error - If anything within this function fails unexpectedly.
+    /// * 503 Service Unavailable - Service has not started, do not send other requests yet.
     </span><span class="kw">async fn </span>started_get(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; started_get::AllResponses {
         started_get::endpoint().<span class="kw">await
     </span>}
@@ -147,9 +148,10 @@
     ///
     /// ## Responses
     ///
-    /// * 204 No Content - Service is Ready to serve requests.
-    /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
-    /// * 503 Service Unavailable - Service is not ready, do not send other requests.
+    /// * 204 No Content - Service is Ready and can serve requests.
+    /// * 500 Server Error - If anything within this function fails unexpectedly.
+    /// * 503 Service Unavailable - Service is not ready, requests to other
+    /// endpoints should not be sent until the service becomes ready.
     </span><span class="kw">async fn </span>ready_get(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ready_get::AllResponses {
         ready_get::endpoint().<span class="kw">await
     </span>}

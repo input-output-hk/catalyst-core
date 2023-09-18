@@ -160,7 +160,7 @@
 
 <span class="kw">impl </span>ServerError {
     <span class="doccomment">/// Create a new Server Error Response.
-    </span><span class="kw">pub fn </span>new(msg: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; <span class="self">Self </span>{
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(msg: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>msg = msg.unwrap_or(
             <span class="string">&quot;Internal Server Error.  Please report the issue to the service owner.&quot;</span>.to_string(),
         );
@@ -168,7 +168,7 @@
     }
 
     <span class="doccomment">/// Get the id of this Server Error.
-    </span><span class="kw">pub fn </span>id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Uuid {
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>id(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Uuid {
         <span class="self">self</span>.<span class="number">0</span>.id
     }
 }

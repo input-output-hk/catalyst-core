@@ -597,10 +597,6 @@
 <a href="#597" id="597">597</a>
 <a href="#598" id="598">598</a>
 <a href="#599" id="599">599</a>
-<a href="#600" id="600">600</a>
-<a href="#601" id="601">601</a>
-<a href="#602" id="602">602</a>
-<a href="#603" id="603">603</a>
 </pre><pre class="rust"><code><span class="kw">use </span>chain_addr::Discrimination;
 <span class="kw">pub use </span>fraction::Fraction;
 <span class="kw">use </span>jormungandr_lib::{crypto::account::Identifier, interfaces::Value};
@@ -804,18 +800,14 @@
                 Delegations::New(<span class="kw-2">mut </span>vks) =&gt; {
                     <span class="kw">let </span>voting_power = u64::from(voting_power);
                     <span class="kw">let </span>total_weights =
-                        NonZeroU64::new(vks.iter().map(|(<span class="kw">_</span>, weight)| <span class="kw-2">*</span>weight <span class="kw">as </span>u64).sum());
+                        NonZeroU64::new(vks.iter().map(|(<span class="kw">_</span>, weight)| u64::from(<span class="kw-2">*</span>weight)).sum());
 
                     <span class="kw">let </span>last = vks.pop().expect(<span class="string">&quot;CIP36 requires at least 1 delegation&quot;</span>);
                     <span class="kw">let </span>others_total_vp = total_weights.map_or(<span class="number">0</span>, |non_zero_total| {
                         vks.into_iter()
-                            .filter_map(|(vk, weight)| {
-                                <span class="prelude-val">Some</span>((
-                                    vk,
-                                    (voting_power * weight <span class="kw">as </span>u64) / u64::from(non_zero_total),
-                                ))
-                            })
-                            .map(|(vk, value)| {
+                            .map(|(vk, weight)| {
+                                <span class="kw">let </span>value =
+                                    (voting_power * u64::from(weight)) / u64::from(non_zero_total);
                                 acc.entry(vk).or_default().push(KeyContribution {
                                     stake_public_key: stake_public_key.clone(),
                                     reward_address: reward_address.clone(),

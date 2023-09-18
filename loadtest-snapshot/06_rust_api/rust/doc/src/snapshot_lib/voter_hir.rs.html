@@ -182,8 +182,8 @@
 <span class="kw">pub type </span>VotingGroup = String;
 
 <span class="kw">fn </span>is_false(b: <span class="kw-2">&amp;</span>bool) -&gt; bool {
-    <span class="kw-2">*</span>b == <span class="bool-val">false
-</span>}
+    !(<span class="kw-2">*</span>b)
+}
 
 <span class="doccomment">/// Define High Level Intermediate Representation (HIR) for voting
 /// entities in the Catalyst ecosystem.
@@ -242,7 +242,7 @@
             voting_key: loadtest_voting_key,
             address: loadtest_address.into(),
             voting_group: <span class="self">self</span>.voting_group.clone(),
-            voting_power: <span class="self">self</span>.voting_power.into(),
+            voting_power: <span class="self">self</span>.voting_power,
             underthreshold: <span class="self">self</span>.underthreshold,
             overlimit: <span class="self">self</span>.overlimit,
             private_key: <span class="prelude-val">Some</span>(private_key),

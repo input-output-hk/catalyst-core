@@ -2,6 +2,6 @@
 //!
 #[macro_use]
 
-pub mod resp_2xx;
-pub mod resp_4xx;
-pub mod resp_5xx;
+pub(crate) mod resp_2xx;
+pub(crate) mod resp_4xx;
+pub(crate) mod resp_5xx;

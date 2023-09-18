@@ -22,9 +22,9 @@ impl HealthApi {
     ///
     /// ## Responses
     ///
-    /// * 204 No Content - Service is OK and can keep running.
-    /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
-    /// * 503 Service Unavailable - Service is possibly not running reliably.
+    /// * 204 No Content - Service is Started and can serve requests.
+    /// * 500 Server Error - If anything within this function fails unexpectedly.
+    /// * 503 Service Unavailable - Service has not started, do not send other requests yet.
     async fn started_get(&self) -> started_get::AllResponses {
         started_get::endpoint().await
     }
@@ -41,9 +41,10 @@ impl HealthApi {
     ///
     /// ## Responses
     ///
-    /// * 204 No Content - Service is Ready to serve requests.
-    /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
-    /// * 503 Service Unavailable - Service is not ready, do not send other requests.
+    /// * 204 No Content - Service is Ready and can serve requests.
+    /// * 500 Server Error - If anything within this function fails unexpectedly.
+    /// * 503 Service Unavailable - Service is not ready, requests to other
+    /// endpoints should not be sent until the service becomes ready.
     async fn ready_get(&self) -> ready_get::AllResponses {
         ready_get::endpoint().await
     }

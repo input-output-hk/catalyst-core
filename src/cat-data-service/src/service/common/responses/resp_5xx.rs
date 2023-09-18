@@ -64,7 +64,7 @@ pub(crate) struct ServerError(Json<ServerErrorPayload>);
 
 impl ServerError {
     /// Create a new Server Error Response.
-    pub fn new(msg: Option<String>) -> Self {
+    pub(crate) fn new(msg: Option<String>) -> Self {
         let msg = msg.unwrap_or(
             "Internal Server Error.  Please report the issue to the service owner.".to_string(),
         );
@@ -72,7 +72,7 @@ impl ServerError {
     }
 
     /// Get the id of this Server Error.
-    pub fn id(&self) -> Uuid {
+    pub(crate) fn id(&self) -> Uuid {
         self.0.id
     }
 }

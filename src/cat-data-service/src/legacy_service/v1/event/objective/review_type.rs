@@ -1,8 +1,7 @@
 use crate::{
-    legacy_service::{handle_result, v1::LimitOffset},
+    legacy_service::{handle_result, types::SerdeType, v1::LimitOffset},
     service::Error,
     state::State,
-    types::SerdeType,
 };
 use axum::{
     extract::{Path, Query},

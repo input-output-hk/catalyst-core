@@ -1,4 +1,8 @@
-use crate::{legacy_service::handle_result, service::Error, state::State, types::SerdeType};
+use crate::{
+    legacy_service::{handle_result, types::SerdeType},
+    service::Error,
+    state::State,
+};
 use axum::{routing::get, Router};
 use event_db::types::vit_ss::fund::FundWithNext;
 use std::sync::Arc;

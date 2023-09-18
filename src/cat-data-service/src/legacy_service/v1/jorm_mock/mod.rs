@@ -1,8 +1,10 @@
 use crate::{
-    legacy_service::handle_result,
+    legacy_service::{
+        handle_result,
+        types::jorm_mock::{AccountId, AccountVote, Fragments, FragmentsProcessingSummary},
+    },
     service::Error,
     state::State,
-    types::jorm_mock::{AccountId, AccountVote, Fragments, FragmentsProcessingSummary},
 };
 use axum::{
     extract::Path,

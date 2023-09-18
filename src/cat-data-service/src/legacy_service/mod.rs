@@ -17,6 +17,7 @@ use tokio::try_join;
 use tower_http::cors::{Any, CorsLayer};
 
 mod health;
+pub(crate) mod types;
 mod v0;
 mod v1;
 

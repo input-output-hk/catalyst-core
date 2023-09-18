@@ -1,4 +1,8 @@
-use crate::{legacy_service::handle_result, service::Error, state::State, types::SerdeType};
+use crate::{
+    legacy_service::{handle_result, types::SerdeType},
+    service::Error,
+    state::State,
+};
 use axum::{extract::Path, routing::get, Router};
 use event_db::types::{
     ballot::Ballot, event::EventId, objective::ObjectiveId, proposal::ProposalId,

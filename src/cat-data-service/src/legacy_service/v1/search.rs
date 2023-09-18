@@ -1,4 +1,8 @@
-use crate::{legacy_service::handle_result, service::Error, state::State, types::SerdeType};
+use crate::{
+    legacy_service::{handle_result, types::SerdeType},
+    service::Error,
+    state::State,
+};
 use axum::{extract::Query, routing::post, Json, Router};
 use event_db::types::search::{SearchQuery, SearchResult};
 use serde::Deserialize;

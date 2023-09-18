@@ -1,5 +1,9 @@
 use super::LimitOffset;
-use crate::{legacy_service::handle_result, service::Error, state::State, types::SerdeType};
+use crate::{
+    legacy_service::{handle_result, types::SerdeType},
+    service::Error,
+    state::State,
+};
 use axum::{
     extract::{Path, Query},
     routing::get,

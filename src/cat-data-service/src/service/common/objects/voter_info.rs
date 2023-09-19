@@ -1,3 +1,5 @@
+//! Define individual Voter Information
+//!
 use super::{delegator_address::DelegatorAddress, voter_group_id::VoterGroupId};
 use poem_openapi::{types::Example, Object};
 

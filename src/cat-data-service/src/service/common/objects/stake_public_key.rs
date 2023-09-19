@@ -7,6 +7,6 @@ pub(crate) struct StakePublicKey(pub String);
 
 impl Example for StakePublicKey {
     fn example() -> Self {
-        Self("ad4b948699193634a39dd56f779a2951a24779ad52aa7916f6912b8ec4702cee".into())
+        Self("0xad4b948699193634a39dd56f779a2951a24779ad52aa7916f6912b8ec4702cee".into())
     }
 }

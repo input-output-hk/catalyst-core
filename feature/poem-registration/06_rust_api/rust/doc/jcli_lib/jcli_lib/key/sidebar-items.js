@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","GenPrivKeyType","Key"],"fn":["bytes_to_priv_key","bytes_to_pub_key","gen_priv_key","gen_pub_key","read_bech32","read_hex"],"struct":["Derive","FromBytes","Generate","Seed","Sign","ToBytes","ToPublic","Verify"]};

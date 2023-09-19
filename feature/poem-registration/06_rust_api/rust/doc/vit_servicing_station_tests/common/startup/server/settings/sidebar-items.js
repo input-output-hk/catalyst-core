@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["dump_settings","load_settings"],"struct":["ServerSettingsBuilder"]};

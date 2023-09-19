@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CsvDataCmd","Error"],"struct":["ImportSettings","LoadCmd"]};

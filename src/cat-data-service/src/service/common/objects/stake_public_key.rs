@@ -1,3 +1,5 @@
+//! Define the Stake Public Key type
+//!
 use poem_openapi::{types::Example, NewType};
 use serde::Deserialize;
 

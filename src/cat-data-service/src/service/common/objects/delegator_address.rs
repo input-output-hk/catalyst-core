@@ -4,7 +4,7 @@ use poem_openapi::{types::Example, Object};
 
 #[derive(Object)]
 pub(crate) struct DelegatorAddress {
-    #[oai(validator(pattern = "[0-9a-f]{64}"))]
+    #[oai(validator(pattern = "0x[0-9a-f]{64}"))]
     address: String,
 }
 

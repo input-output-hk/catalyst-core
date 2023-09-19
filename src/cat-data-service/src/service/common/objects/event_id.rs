@@ -1,3 +1,5 @@
+//! Define the ID of an Event
+//!
 use poem_openapi::{types::Example, NewType};
 use serde::Deserialize;
 

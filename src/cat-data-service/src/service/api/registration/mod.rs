@@ -1,4 +1,6 @@
-use crate::service::common::objects::{event_id::EventId, voter::Voter, voting_key::VotingKey};
+use crate::service::common::objects::{
+    event_id::EventId, voter_registration::VoterRegistration, voting_public_key::VotingPublicKey,
+};
 use crate::service::common::responses::resp_2xx::OK;
 use crate::service::common::responses::resp_4xx::NotFound;
 use crate::service::common::responses::resp_5xx::{server_error, ServerError};
@@ -19,8 +21,10 @@ pub(crate) struct RegistrationApi;
 impl RegistrationApi {
     /// Voter's info
     ///
-    /// Get voter's registration and voting power by their voting key.
-    /// If the `event_id` query parameter is missing, then the "Latest" registration is returned.
+    /// Get the voter's registration and voting power by their Public Voting Key.
+    /// The Public Voting Key must match the voter's most recent valid
+    /// [CIP-15](https://cips.cardano.org/cips/cip15) or [CIP-36](https://cips.cardano.org/cips/cip36) registration on-chain.
+    /// If the `event_id` query parameter is omitted, then the latest voting power is retrieved.
     /// If the `with_delegators` query parameter is ommitted, then `delegator_addresses` field of `VoterInfo` type does not provided.
     ///
     #[oai(
@@ -32,19 +36,22 @@ impl RegistrationApi {
         &self,
         pool: Data<&Arc<State>>,
 
-        /// A Voting Key.
-        #[oai(validator(max_length = 64, min_length = 64, pattern = "[0-9a-f]{64}"))]
-        voting_key: Path<VotingKey>,
+        /// A Voters Public ED25519 Key (as registered in their most recent valid
+        /// [CIP-15](https://cips.cardano.org/cips/cip15) or [CIP-36](https://cips.cardano.org/cips/cip36) registration).
+        #[oai(validator(max_length = 66, min_length = 66, pattern = "0x[0-9a-f]{64}"))]
+        voting_key: Path<VotingPublicKey>,
 
         /// The Event ID to return results for.
+        /// See [GET Events](Link to events endpoint) for details on retrieving all valid event IDs.
         #[oai(validator(minimum(value = "0")))]
         event_id: Query<Option<EventId>>,
 
-        /// Flag to include delegators list in the response.
+        /// If this optional flag is set, the response will include the delegator's list in the response.
+        /// Otherwise, it will be omitted.
         #[oai(default)]
         with_delegators: Query<bool>,
     ) -> response! {
-           200: OK<Json<Voter>>,
+           200: OK<Json<VoterRegistration>>,
            404: NotFound,
            500: ServerError,
        } {

@@ -1,3 +1,4 @@
+//! Mocking the Jormungandr Node for the Webbased Voting App Testing.
 use crate::legacy_service::types::jorm_mock::{
     AccountId, AccountVote, Fragment, FragmentId, FragmentsProcessingSummary, ProposalIndex,
     Reason, RejectedInfo, VotePlanId, DEFAULT_POOL_NUMBER,

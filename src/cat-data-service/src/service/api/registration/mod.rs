@@ -32,7 +32,8 @@ impl RegistrationApi {
         &self,
         pool: Data<&Arc<State>>,
 
-        /// A Voting Key.
+        /// A Voters Public ED25519 Key (as registered in their most recent valid 
+        /// [CIP-15](https://cips.cardano.org/cips/cip15) or [CIP-36](https://cips.cardano.org/cips/cip36) registration).
         #[oai(validator(max_length = 64, min_length = 64, pattern = "[0-9a-f]{64}"))]
         voting_key: Path<VotingKey>,
 

@@ -43,7 +43,8 @@ impl RegistrationApi {
         #[oai(validator(minimum(value = "0")))]
         event_id: Query<Option<EventId>>,
 
-        /// Flag to include delegators list in the response.
+        /// If this optional flag is set, the response will include the delegator's list in the response.
+        /// Otherwise, it will be omitted.
         #[oai(default)]
         with_delegators: Query<bool>,
     ) -> response! {

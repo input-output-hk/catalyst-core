@@ -6,7 +6,6 @@ mod logger;
 mod service;
 mod settings;
 mod state;
-mod types;
 
 #[tokio::main]
 async fn main() -> Result<(), cli::Error> {

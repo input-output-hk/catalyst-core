@@ -2,7 +2,6 @@
 
 use crate::service::common::responses::resp_2xx::NoContent;
 use crate::service::common::responses::resp_5xx::{ServerError, ServiceUnavailable};
-
 use poem_extensions::response;
 use poem_extensions::UniResponse::T204;
 use tracing::{error, info, warn};

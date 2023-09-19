@@ -51,9 +51,7 @@ impl PanicHandler for ServicePanicHandler {
     /// Handle a panic.
     /// Log the panic and respond with a 500 with appropriate data.
     fn get_response(&self, err: Box<dyn Any + Send + 'static>) -> ServerError {
-        let response = ServerError::new(Some(
-            "Internal Server Error.  Please report the issue to the service owner.".to_string(),
-        ));
+        let response = ServerError::new(None);
 
         // Get the unique identifier for this panic, so we can find it in the logs.
         let panic_identifier = response.id().to_string();

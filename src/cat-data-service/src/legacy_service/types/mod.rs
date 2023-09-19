@@ -38,7 +38,6 @@ pub fn serialize_datetime_as_rfc3339<S: Serializer>(
     serializer.serialize_str(&time.to_rfc3339())
 }
 
-#[allow(dead_code)]
 pub fn serialize_option_datetime_as_rfc3339<S: Serializer>(
     time: &Option<DateTime<Utc>>,
     serializer: S,

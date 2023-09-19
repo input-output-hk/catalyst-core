@@ -31,14 +31,15 @@ chrono = { workspace = true }
 jormungandr-lib = { workspace = true, optional = true }
 chain-impl-mockchain = { workspace = true, optional = true }
 
-poem = { version = "1.3.58", features = ["embed", "prometheus", "compression"] }
+poem = { version = "1.3.58", features = ["embed", "prometheus", "compression", "test"] }
 poem-openapi = { version = "3.0.4", features = [
     "openapi-explorer",
     "rapidoc",
     "redoc",
     "swagger-ui",
     "uuid",
-    "url"
+    "url",
+    "chrono",
 ] }
 poem-extensions = { version = "0.7.2" }
 

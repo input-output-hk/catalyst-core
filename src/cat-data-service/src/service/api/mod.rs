@@ -2,13 +2,14 @@
 //!
 //! This defines all endpoints for the Catalyst Data Service API.
 //! It however does NOT contain any processing for them, that is defined elsewhere.
+use crate::settings::API_URL_PREFIX;
 use health::HealthApi;
 use poem_openapi::{ContactObject, LicenseObject, OpenApiService, ServerObject};
+use registration::RegistrationApi;
 use test_endpoints::TestApi;
 
-use crate::settings::API_URL_PREFIX;
-
 mod health;
+mod registration;
 mod test_endpoints;
 
 /// The name of the API
@@ -54,18 +55,21 @@ fn get_api_license() -> LicenseObject {
 const TERMS_OF_SERVICE: &str =
     "https://github.com/input-output-hk/catalyst-core/blob/main/book/src/98_CODE_OF_CONDUCT.md";
 
-/// Combine all the API's into one
-pub(crate) type OpenApiServiceT = OpenApiService<(TestApi, HealthApi), ()>;
-
 /// Create the OpenAPI definition
-pub(crate) fn mk_api(hosts: Vec<String>) -> OpenApiServiceT {
-    let mut service = OpenApiService::new((TestApi, HealthApi), API_TITLE, API_VERSION)
-        .contact(get_api_contact())
-        .description(API_DESCRIPTION)
-        .license(get_api_license())
-        .summary(API_SUMMARY)
-        .terms_of_service(TERMS_OF_SERVICE)
-        .url_prefix(API_URL_PREFIX.as_str());
+pub(crate) fn mk_api(
+    hosts: Vec<String>,
+) -> OpenApiService<(TestApi, HealthApi, RegistrationApi), ()> {
+    let mut service = OpenApiService::new(
+        (TestApi, HealthApi, RegistrationApi),
+        API_TITLE,
+        API_VERSION,
+    )
+    .contact(get_api_contact())
+    .description(API_DESCRIPTION)
+    .license(get_api_license())
+    .summary(API_SUMMARY)
+    .terms_of_service(TERMS_OF_SERVICE)
+    .url_prefix(API_URL_PREFIX.as_str());
 
     // Add all the hosts where this API should be reachable.
     for host in hosts {

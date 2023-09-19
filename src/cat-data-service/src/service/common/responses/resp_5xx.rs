@@ -1,6 +1,6 @@
 //! This module contains common and re-usable responses with a 4xx response code.
-//!
-
+/// While using macro-vis lib, you will get the uncommon_codepoints warning, so you will probably want to place this in your crate root
+use crate::settings::generate_github_issue_url;
 use poem::error::ResponseError;
 use poem::http::StatusCode;
 use poem_extensions::OneResponse;
@@ -10,12 +10,21 @@ use poem_openapi::Object;
 use url::Url;
 use uuid::Uuid;
 
-use crate::settings::generate_github_issue_url;
+/// Create a new Server Error Response.
+/// Logging error message.
+macro_rules! server_error {
+    ($($t:tt)*) => {{
+        let error = crate::service::common::responses::resp_5xx::ServerError::new(None);
+        let id = error.id();
+        tracing::error!(id = format!("{id}") ,$($t)*);
+        error
+    }};
+}
+pub(crate) use server_error;
 
 #[derive(Debug, Object)]
 #[oai(example, skip_serializing_if_is_none)]
 /// Response payload to a Bad request.
-/*pub(crate)*/
 struct ServerErrorPayload {
     /// Unique ID of this Server Error so that it can be located easily for debugging.
     id: Uuid,
@@ -56,7 +65,10 @@ pub(crate) struct ServerError(Json<ServerErrorPayload>);
 impl ServerError {
     /// Create a new Server Error Response.
     pub(crate) fn new(msg: Option<String>) -> Self {
-        Self(Json(ServerErrorPayload::new(msg)))
+        let msg = msg.unwrap_or(
+            "Internal Server Error.  Please report the issue to the service owner.".to_string(),
+        );
+        Self(Json(ServerErrorPayload::new(Some(msg))))
     }
 
     /// Get the id of this Server Error.

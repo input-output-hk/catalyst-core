@@ -2,24 +2,21 @@
 //!
 //! This provides only the primary entrypoint to the service.
 
-use crate::service::docs::{docs, favicon};
-use crate::service::Error;
-
 use crate::service::api::mk_api;
+use crate::service::docs::{docs, favicon};
 use crate::service::utilities::catch_panic::{set_panic_hook, ServicePanicHandler};
 use crate::service::utilities::middleware::{
     chain_axum::ChainAxum,
     tracing_mw::{init_prometheus, Tracing},
 };
-
+use crate::service::Error;
 use crate::settings::{get_api_hostnames, API_URL_PREFIX};
 use crate::state::State;
-
 use poem::endpoint::PrometheusExporter;
 use poem::listener::TcpListener;
 use poem::middleware::{CatchPanic, Compression, Cors};
 use poem::web::CompressionLevel;
-use poem::{EndpointExt, IntoEndpoint, Route};
+use poem::{Endpoint, EndpointExt, Route};
 use std::net::SocketAddr;
 use std::sync::Arc;
 
@@ -28,7 +25,7 @@ pub(crate) fn mk_app(
     hosts: Vec<String>,
     base_route: Option<Route>,
     state: Arc<State>,
-) -> impl IntoEndpoint {
+) -> impl Endpoint {
     // Get the base route if defined, or a new route if not.
     let base_route = match base_route {
         Some(route) => route,
@@ -85,4 +82,15 @@ pub async fn run(addr: &SocketAddr, state: Arc<State>) -> Result<(), Error> {
         .run(app)
         .await
         .map_err(Error::Io)
+}
+
+#[cfg(test)]
+pub mod tests {
+    use super::*;
+    use poem::test::TestClient;
+
+    pub fn mk_test_app(state: Arc<State>) -> TestClient<impl Endpoint> {
+        let app = mk_app(vec![], None, state);
+        TestClient::new(app)
+    }
 }

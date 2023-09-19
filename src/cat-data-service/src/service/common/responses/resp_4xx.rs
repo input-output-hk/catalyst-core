@@ -25,6 +25,7 @@ pub(crate) struct Forbidden;
 
 #[derive(OneResponse)]
 #[oai(status = 404)]
+/// ## Content not found
 pub(crate) struct NotFound;
 
 #[derive(OneResponse)]

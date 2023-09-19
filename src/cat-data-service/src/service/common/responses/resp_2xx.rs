@@ -1,11 +1,13 @@
 //! This module contains common and re-usable responses with a 2xx response code.
 //!
 
+use poem::IntoResponse;
 use poem_extensions::OneResponse;
+use poem_openapi::payload::Payload;
 
 #[derive(OneResponse)]
 #[oai(status = 200)]
-pub(crate) struct EmptyOK;
+pub(crate) struct OK<T: IntoResponse + Payload>(pub T);
 
 #[derive(OneResponse)]
 #[oai(status = 204)]

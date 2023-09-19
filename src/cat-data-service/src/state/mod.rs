@@ -1,8 +1,8 @@
+//! Shared state used by all endpoints.
+//!
 use crate::cli::Error;
-//use arc_swap::ArcSwap;
 use event_db::queries::EventDbQueries;
 use std::sync::Arc;
-//use tracing::warn;
 
 #[cfg(feature = "jorm-mock")]
 pub mod jorm_mock;
@@ -26,12 +26,6 @@ impl State {
             Some(url) => Arc::new(event_db::establish_connection(Some(url.as_str())).await?),
             None => Arc::new(event_db::establish_connection(None).await?),
         };
-
-        //let event_db = if let Some(url) = database_url {
-        //    Arc::new(event_db::establish_connection(Some(url.as_str())).await?)
-        //} else {
-        //    Arc::new(event_db::establish_connection(None).await?)
-        //};
 
         #[cfg(feature = "jorm-mock")]
         let jorm = jorm_mock::JormState::new(*crate::settings::JORM_CLEANUP_TIMEOUT);

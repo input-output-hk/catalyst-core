@@ -2,6 +2,8 @@
 //!
 use poem_openapi::{types::Example, Object};
 
+/// A Delegate Public ED25519 Key (as registered in their most recent valid
+/// [CIP-36](https://cips.cardano.org/cips/cip36) registration).
 #[derive(Object)]
 #[oai(example = true)]
 pub(crate) struct DelegatePublicKey {

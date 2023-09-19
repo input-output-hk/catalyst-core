@@ -1,3 +1,5 @@
+//! Shared state used by all endpoints.
+//!
 use crate::cli::Error;
 use event_db::queries::EventDbQueries;
 use std::sync::Arc;

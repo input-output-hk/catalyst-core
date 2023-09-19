@@ -40,6 +40,7 @@ impl RegistrationApi {
         voting_key: Path<VotingKey>,
 
         /// The Event ID to return results for.
+        /// See [GET Events](Link to events endpoint) for details on retrieving all valid event IDs.
         #[oai(validator(minimum(value = "0")))]
         event_id: Query<Option<EventId>>,
 

@@ -1,12 +1,13 @@
 """Snapshot importer."""
 
 import asyncio
+import asyncpg
 import brotli
 from datetime import datetime
 import json
 import os
 import re
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Self, Tuple, Optional
 from loguru import logger
 import pydantic
 from pydantic import BaseModel
@@ -74,6 +75,10 @@ class FetchParametersFailed(Exception):
     ...
 
 
+class EventParametersMissing(Exception):
+    ...
+
+
 class RunCatalystToolboxSnapshotFailed(Exception):
     """Raised when running catalyst-toolbox snapshot fails."""
 
@@ -104,6 +109,62 @@ class InvalidDatabaseUrl(Exception):
         return "Invalid database URL"
 
 
+class EventParameters(BaseModel):
+    voting_power_cap: float
+    min_stake_threshold: int
+    snapshot_start_time: datetime
+    registration_snapshot_time: datetime
+
+    @staticmethod
+    async def fetch_from_eventdb(conn: asyncpg.Connection, event_id: int) -> "EventParameters":
+        row = await conn.fetchrow(
+            "SELECT "
+            "registration_snapshot_time, snapshot_start, voting_power_threshold, max_voting_power_pct "
+            "FROM event WHERE row_id = $1",
+            event_id,
+        )
+        if row is None:
+            raise FetchParametersFailed("Failed to get event parameters from the database: " f"event_id={event_id} not found")
+
+        voting_power_cap = row["max_voting_power_pct"]
+        if voting_power_cap is not None:
+            voting_power_cap = float(voting_power_cap)
+
+        min_stake_threshold = row["voting_power_threshold"]
+        snapshot_start_time = row["snapshot_start"]
+        registration_snapshot_time = row["registration_snapshot_time"]
+
+        if snapshot_start_time is None or registration_snapshot_time is None:
+            snapshot_start_time = None
+            if snapshot_start_time is not None:
+                snapshot_start_time = snapshot_start_time.isoformat()
+
+            registration_snapshot_time = None
+            if registration_snapshot_time is not None:
+                registration_snapshot_time = registration_snapshot_time.isoformat()
+
+            raise FetchParametersFailed(
+                "Missing snapshot timestamps for event in the database:"
+                f" snapshot_start={snapshot_start_time}"
+                f" registration_snapshot_time={registration_snapshot_time}"
+            )
+
+        logger.info(
+            "Got event parameters",
+            min_stake_threshold=min_stake_threshold,
+            voting_power_cap=voting_power_cap,
+            snapshot_start=None if snapshot_start_time is None else snapshot_start_time.isoformat(),
+            registration_snapshot_time=None if registration_snapshot_time is None else registration_snapshot_time.isoformat(),
+        )
+
+        return EventParameters(
+            voting_power_cap=voting_power_cap,
+            min_stake_threshold=min_stake_threshold,
+            snapshot_start_time=snapshot_start_time,
+            registration_snapshot_time=registration_snapshot_time,
+        )
+
+
 class MissingNetworkSnapshotData(Exception):
     """Raised when the custom raw snapshot file does not contain snapshot data for a network"""
 
@@ -117,6 +178,55 @@ class NetworkParams(BaseModel):
     registration_snapshot_block_time: Optional[datetime]
     snapshot_tool_out_file: str
     catalyst_toolbox_out_file: str
+
+    @staticmethod
+    async def fetch_from_dbsync(
+        conn: asyncpg.Connection, event_parameters: EventParameters, network_id: str, output_dir: str
+    ) -> "NetworkParams":
+        # Fetch slot number and time from the block right before or equal the registration snapshot time
+        row = await conn.fetchrow(
+            "SELECT slot_no, time FROM block WHERE time <= $1 AND slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
+            event_parameters.registration_snapshot_time,
+        )
+        if row is None:
+            raise FetchParametersFailed(
+                "Failed to get registration snapshot block data from db_sync database: no data returned by the query"
+            )
+
+        registration_snapshot_slot = row["slot_no"]
+        registration_snapshot_block_time = row["time"]
+        logger.info(
+            "Got registration snapshot block data",
+            slot_no=registration_snapshot_slot,
+            block_time=None if registration_snapshot_block_time is None else registration_snapshot_block_time.isoformat(),
+            network_id=network_id,
+        )
+
+        row = await conn.fetchrow(
+            "SELECT slot_no, time FROM block WHERE slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
+        )
+        if row is None:
+            raise FetchParametersFailed(
+                "Failed to get latest block time and slot number from db_sync database: no data returned by the query"
+            )
+
+        latest_block_slot_no = row["slot_no"]
+        lastest_block_time = row["time"]
+        logger.info(
+            "Got latest block data",
+            time=None if lastest_block_time is None else lastest_block_time.isoformat(),
+            slot_no=latest_block_slot_no,
+            network_id=network_id,
+        )
+
+        return NetworkParams(
+            lastest_block_time=lastest_block_time,
+            latest_block_slot_no=latest_block_slot_no,
+            registration_snapshot_slot=registration_snapshot_slot,
+            registration_snapshot_block_time=registration_snapshot_block_time,
+            snapshot_tool_out_file=os.path.join(output_dir, f"{network_id}_snapshot_tool_out.json"),
+            catalyst_toolbox_out_file=os.path.join(output_dir, f"{network_id}_catalyst_toolbox_out.json"),
+        )
 
 
 network_id_priority: Dict[str, int] = {
@@ -159,10 +269,7 @@ class Importer:
         self.eventdb_url = eventdb_url
         self.event_id = event_id
 
-        self.registration_snapshot_time: Optional[datetime] = None
-        self.snapshot_start_time: Optional[datetime] = None
-        self.min_stake_threshold: Optional[int] = None
-        self.voting_power_cap: Optional[float] = None
+        self.event_parameters: Optional[EventParameters] = None
         self.merged_catalyst_toolbox_out_file = os.path.join(output_dir, "merged_catalyst_toolbox_out.json")
 
         self.merged_snapshot_tool_out_file = os.path.join(output_dir, "merged_snapshot_tool_out.json")
@@ -197,113 +304,33 @@ class Importer:
         await conn.close()
 
     async def _fetch_eventdb_parameters(self):
-        # Fetch event parameters
+        conn = None
         try:
             conn = await ideascale_importer.db.connect(self.eventdb_url)
-
-            row = await conn.fetchrow(
-                "SELECT "
-                "registration_snapshot_time, snapshot_start, voting_power_threshold, max_voting_power_pct "
-                "FROM event WHERE row_id = $1",
-                self.event_id,
-            )
-            if row is None:
-                raise FetchParametersFailed(
-                    "Failed to get event parameters from the database: " f"event_id={self.event_id} not found"
-                )
-
-            self.voting_power_cap = row["max_voting_power_pct"]
-            if self.voting_power_cap is not None:
-                self.voting_power_cap = float(self.voting_power_cap)
-
-            self.min_stake_threshold = row["voting_power_threshold"]
-            self.snapshot_start_time = row["snapshot_start"]
-            self.registration_snapshot_time = row["registration_snapshot_time"]
-
-            if self.snapshot_start_time is None or self.registration_snapshot_time is None:
-                snapshot_start_time = None
-                if self.snapshot_start_time is not None:
-                    snapshot_start_time = self.snapshot_start_time.isoformat()
-
-                registration_snapshot_time = None
-                if self.registration_snapshot_time is not None:
-                    registration_snapshot_time = self.registration_snapshot_time.isoformat()
-
-                raise FetchParametersFailed(
-                    "Missing snapshot timestamps for event in the database:"
-                    f" snapshot_start={snapshot_start_time}"
-                    f" registration_snapshot_time={registration_snapshot_time}"
-                )
-
-            logger.info(
-                "Got event parameters",
-                min_stake_threshold=self.min_stake_threshold,
-                voting_power_cap=self.voting_power_cap,
-                snapshot_start=None if self.snapshot_start_time is None else self.snapshot_start_time.isoformat(),
-                registration_snapshot_time=None
-                if self.registration_snapshot_time is None
-                else self.registration_snapshot_time.isoformat(),
-            )
-
-            await conn.close()
-        except Exception as e:
-            logger.error("Failed to fetch event parameters", exc_info=e)
-            raise FetchParametersFailed(str(e))
-
-    async def _fetch_network_parameters(self):
-        for network_id, dbsync_url in self.network_dbsync_url.items():
-            try:
-                # Fetch max slot
-                conn = await ideascale_importer.db.connect(dbsync_url)
-
-                # Fetch slot number and time from the block right before or equal the registration snapshot time
-                row = await conn.fetchrow(
-                    "SELECT slot_no, time FROM block WHERE time <= $1 AND slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
-                    self.registration_snapshot_time,
-                )
-                if row is None:
-                    raise FetchParametersFailed(
-                        "Failed to get registration snapshot block data from db_sync database: no data returned by the query"
-                    )
-
-                registration_snapshot_slot = row["slot_no"]
-                registration_snapshot_block_time = row["time"]
-                logger.info(
-                    "Got registration snapshot block data",
-                    slot_no=registration_snapshot_slot,
-                    block_time=None if registration_snapshot_block_time is None else registration_snapshot_block_time.isoformat(),
-                    network_id=network_id,
-                )
-
-                row = await conn.fetchrow(
-                    "SELECT slot_no, time FROM block WHERE slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
-                )
-                if row is None:
-                    raise FetchParametersFailed(
-                        "Failed to get latest block time and slot number from db_sync database: no data returned by the query"
-                    )
-
-                latest_block_slot_no = row["slot_no"]
-                lastest_block_time = row["time"]
-                logger.info(
-                    "Got latest block data",
-                    time=None if lastest_block_time is None else lastest_block_time.isoformat(),
-                    slot_no=latest_block_slot_no,
-                    network_id=network_id,
-                )
-
+            self.event_parameters = await EventParameters.fetch_from_eventdb(conn, self.event_id)
+        except:
+            raise
+        finally:
+            if conn is not None:
                 await conn.close()
 
-                self.network_params[network_id] = NetworkParams(
-                    lastest_block_time=lastest_block_time,
-                    latest_block_slot_no=latest_block_slot_no,
-                    registration_snapshot_slot=registration_snapshot_slot,
-                    registration_snapshot_block_time=registration_snapshot_block_time,
-                    snapshot_tool_out_file=os.path.join(self.output_dir, f"{network_id}_snapshot_tool_out.json"),
-                    catalyst_toolbox_out_file=os.path.join(self.output_dir, f"{network_id}_catalyst_toolbox_out.json"),
+    async def _fetch_network_parameters(self):
+        if self.event_parameters is None:
+            raise EventParametersMissing()
+
+        for network_id, dbsync_url in self.network_dbsync_url.items():
+            conn = None
+
+            try:
+                conn = await ideascale_importer.db.connect(dbsync_url)
+                self.network_params[network_id] = await NetworkParams.fetch_from_dbsync(
+                    conn, self.event_parameters, network_id, self.output_dir
                 )
-            except Exception as e:
-                raise FetchParametersFailed(f"Failed to get latest block data ({network_id}): {e}")
+            except:
+                raise
+            finally:
+                if conn is not None:
+                    await conn.close()
 
     async def _fetch_gvc_dreps_list(self):
         logger.info("Fetching drep list from GVC")
@@ -369,7 +396,9 @@ class Importer:
 
                 await run_cmd("snapshot_tool", snapshot_tool_cmd)
             else:
-                snapshot_tool_out_file = os.path.join(self.ssh_config.snapshot_tool_output_dir, f"{network_id}_snapshot_tool_out.json")
+                snapshot_tool_out_file = os.path.join(
+                    self.ssh_config.snapshot_tool_output_dir, f"{network_id}_snapshot_tool_out.json"
+                )
 
                 snapshot_tool_cmd = (
                     "ssh"
@@ -408,8 +437,11 @@ class Importer:
                 json.dump(snapshot_tool_out, f)
 
     async def _run_catalyst_toolbox_snapshot(self):
+        if self.event_parameters is None:
+            raise EventParametersMissing()
+
         # Could happen when the event in the database does not have these set
-        if self.min_stake_threshold is None or self.voting_power_cap is None:
+        if self.event_parameters.min_stake_threshold is None or self.event_parameters.voting_power_cap is None:
             raise RunCatalystToolboxSnapshotFailed(
                 "min_stake_threshold and voting_power_cap must be set either as CLI arguments or in the database"
             )
@@ -418,8 +450,8 @@ class Importer:
             catalyst_toolbox_cmd = (
                 f"{self.catalyst_toolbox_path} snapshot"
                 f" -s {params.snapshot_tool_out_file}"
-                f" -m {self.min_stake_threshold}"
-                f" -v {self.voting_power_cap}"
+                f" -m {self.event_parameters.min_stake_threshold}"
+                f" -v {self.event_parameters.voting_power_cap}"
                 f" --dreps {self.dreps_out_file}"
                 f" --output-format json {params.catalyst_toolbox_out_file}"
             )
@@ -450,6 +482,9 @@ class Importer:
             json.dump(merged_files, f)
 
     async def _write_db_data(self):
+        if self.event_parameters is None:
+            raise EventParametersMissing()
+
         with open(self.merged_snapshot_tool_out_file) as f:
             snapshot_tool_data_raw_json = f.read()
         with open(self.merged_catalyst_toolbox_out_file) as f:
@@ -470,7 +505,6 @@ class Importer:
                 snapshot_tool_data[k] = [Registration.model_validate(e) for e in entries]
             except Exception as e:
                 logger.error(f"ERROR: {repr(e)}")
-
 
         total_registered_voting_power = {}
         registration_delegation_data = {}
@@ -510,8 +544,8 @@ class Importer:
 
         networks_is_snapshot_final = []
         for params in self.network_params.values():
-            if params.lastest_block_time is not None and self.snapshot_start_time is not None:
-                networks_is_snapshot_final.append(params.lastest_block_time >= self.snapshot_start_time)
+            if params.lastest_block_time is not None and self.event_parameters.snapshot_start_time is not None:
+                networks_is_snapshot_final.append(params.lastest_block_time >= self.event_parameters.snapshot_start_time)
 
         should_update_final = len(networks_is_snapshot_final) == len(self.network_dbsync_url)
         is_snapshot_final = all(networks_is_snapshot_final)
@@ -542,8 +576,6 @@ class Importer:
             raise WriteDbDataFailed("Empty network parameters")
         if highest_priority_network_params.lastest_block_time is None:
             raise WriteDbDataFailed("lastest_block_time not set")
-        if self.registration_snapshot_time is None:
-            raise WriteDbDataFailed("registration_snapshot_time not set")
         if highest_priority_network_params.registration_snapshot_slot is None:
             raise WriteDbDataFailed("registration_snapshot_slot not set")
         if highest_priority_network_params.latest_block_slot_no is None:
@@ -552,7 +584,7 @@ class Importer:
         snapshot = models.Snapshot(
             row_id=0,
             event=self.event_id,
-            as_at=self.registration_snapshot_time,
+            as_at=self.event_parameters.registration_snapshot_time,
             as_at_slotno=highest_priority_network_params.registration_snapshot_slot,
             last_updated=highest_priority_network_params.lastest_block_time,
             last_updated_slotno=highest_priority_network_params.latest_block_slot_no,

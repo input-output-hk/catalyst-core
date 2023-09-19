@@ -74,17 +74,22 @@
 <a href="#74" id="74">74</a>
 <a href="#75" id="75">75</a>
 <a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Catalyst Data Service API Definition
 //!
 //! This defines all endpoints for the Catalyst Data Service API.
 //! It however does NOT contain any processing for them, that is defined elsewhere.
-</span><span class="kw">use </span>health::HealthApi;
+</span><span class="kw">use </span><span class="kw">crate</span>::settings::API_URL_PREFIX;
+<span class="kw">use </span>health::HealthApi;
 <span class="kw">use </span>poem_openapi::{ContactObject, LicenseObject, OpenApiService, ServerObject};
+<span class="kw">use </span>registration::RegistrationApi;
 <span class="kw">use </span>test_endpoints::TestApi;
 
-<span class="kw">use </span><span class="kw">crate</span>::settings::API_URL_PREFIX;
-
 <span class="kw">mod </span>health;
+<span class="kw">mod </span>registration;
 <span class="kw">mod </span>test_endpoints;
 
 <span class="doccomment">/// The name of the API
@@ -130,18 +135,21 @@ TODO:
 </span><span class="kw">const </span>TERMS_OF_SERVICE: <span class="kw-2">&amp;</span>str =
     <span class="string">&quot;https://github.com/input-output-hk/catalyst-core/blob/main/book/src/98_CODE_OF_CONDUCT.md&quot;</span>;
 
-<span class="doccomment">/// Combine all the API&#39;s into one
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type </span>OpenApiServiceT = OpenApiService&lt;(TestApi, HealthApi), ()&gt;;
-
 <span class="doccomment">/// Create the OpenAPI definition
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>mk_api(hosts: Vec&lt;String&gt;) -&gt; OpenApiServiceT {
-    <span class="kw">let </span><span class="kw-2">mut </span>service = OpenApiService::new((TestApi, HealthApi), API_TITLE, API_VERSION)
-        .contact(get_api_contact())
-        .description(API_DESCRIPTION)
-        .license(get_api_license())
-        .summary(API_SUMMARY)
-        .terms_of_service(TERMS_OF_SERVICE)
-        .url_prefix(API_URL_PREFIX.as_str());
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>mk_api(
+    hosts: Vec&lt;String&gt;,
+) -&gt; OpenApiService&lt;(TestApi, HealthApi, RegistrationApi), ()&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>service = OpenApiService::new(
+        (TestApi, HealthApi, RegistrationApi),
+        API_TITLE,
+        API_VERSION,
+    )
+    .contact(get_api_contact())
+    .description(API_DESCRIPTION)
+    .license(get_api_license())
+    .summary(API_SUMMARY)
+    .terms_of_service(TERMS_OF_SERVICE)
+    .url_prefix(API_URL_PREFIX.as_str());
 
     <span class="comment">// Add all the hosts where this API should be reachable.
     </span><span class="kw">for </span>host <span class="kw">in </span>hosts {

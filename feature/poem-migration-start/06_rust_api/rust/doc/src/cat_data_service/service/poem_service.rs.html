@@ -86,28 +86,33 @@
 <a href="#86" id="86">86</a>
 <a href="#87" id="87">87</a>
 <a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Poem Service for cat-data-service endpoints.
 //!
 //! This provides only the primary entrypoint to the service.
 
-</span><span class="kw">use </span><span class="kw">crate</span>::service::docs::{docs, favicon};
-<span class="kw">use </span><span class="kw">crate</span>::service::Error;
-
-<span class="kw">use </span><span class="kw">crate</span>::service::api::mk_api;
+</span><span class="kw">use </span><span class="kw">crate</span>::service::api::mk_api;
+<span class="kw">use </span><span class="kw">crate</span>::service::docs::{docs, favicon};
 <span class="kw">use </span><span class="kw">crate</span>::service::utilities::catch_panic::{set_panic_hook, ServicePanicHandler};
 <span class="kw">use </span><span class="kw">crate</span>::service::utilities::middleware::{
     chain_axum::ChainAxum,
     tracing_mw::{init_prometheus, Tracing},
 };
-
+<span class="kw">use </span><span class="kw">crate</span>::service::Error;
 <span class="kw">use </span><span class="kw">crate</span>::settings::{get_api_hostnames, API_URL_PREFIX};
 <span class="kw">use </span><span class="kw">crate</span>::state::State;
-
 <span class="kw">use </span>poem::endpoint::PrometheusExporter;
 <span class="kw">use </span>poem::listener::TcpListener;
 <span class="kw">use </span>poem::middleware::{CatchPanic, Compression, Cors};
 <span class="kw">use </span>poem::web::CompressionLevel;
-<span class="kw">use </span>poem::{EndpointExt, IntoEndpoint, Route};
+<span class="kw">use </span>poem::{Endpoint, EndpointExt, Route};
 <span class="kw">use </span>std::net::SocketAddr;
 <span class="kw">use </span>std::sync::Arc;
 
@@ -116,7 +121,7 @@
     hosts: Vec&lt;String&gt;,
     base_route: <span class="prelude-ty">Option</span>&lt;Route&gt;,
     state: Arc&lt;State&gt;,
-) -&gt; <span class="kw">impl </span>IntoEndpoint {
+) -&gt; <span class="kw">impl </span>Endpoint {
     <span class="comment">// Get the base route if defined, or a new route if not.
     </span><span class="kw">let </span>base_route = <span class="kw">match </span>base_route {
         <span class="prelude-val">Some</span>(route) =&gt; route,
@@ -173,6 +178,17 @@
         .run(app)
         .<span class="kw">await
         </span>.map_err(Error::Io)
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">pub mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>poem::test::TestClient;
+
+    <span class="kw">pub fn </span>mk_test_app(state: Arc&lt;State&gt;) -&gt; TestClient&lt;<span class="kw">impl </span>Endpoint&gt; {
+        <span class="kw">let </span>app = mk_app(<span class="macro">vec!</span>[], <span class="prelude-val">None</span>, state);
+        TestClient::new(app)
+    }
 }
 </code></pre></div>
 </section></main></body></html>

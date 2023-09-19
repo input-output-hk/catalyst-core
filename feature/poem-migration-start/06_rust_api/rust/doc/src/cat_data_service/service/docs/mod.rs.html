@@ -33,13 +33,19 @@
 <a href="#33" id="33">33</a>
 <a href="#34" id="34">34</a>
 <a href="#35" id="35">35</a>
-</pre><pre class="rust"><code><span class="kw">mod </span>stoplight_elements;
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Stoplight Elements OpenAPI UI
+//!
+</span><span class="kw">mod </span>stoplight_elements;
 <span class="kw">use </span>poem::{endpoint::EmbeddedFileEndpoint, get, Route};
-
-<span class="kw">use </span><span class="kw">super</span>::api::OpenApiServiceT;
+<span class="kw">use </span>poem_openapi::{OpenApi, OpenApiService, Webhook};
 <span class="kw">use </span>rust_embed::RustEmbed;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>docs(api_service: <span class="kw-2">&amp;</span>OpenApiServiceT) -&gt; Route {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>docs&lt;T: OpenApi + <span class="lifetime">&#39;static</span>, W: Webhook + <span class="lifetime">&#39;static</span>&gt;(
+    api_service: <span class="kw-2">&amp;</span>OpenApiService&lt;T, W&gt;,
+) -&gt; Route {
     <span class="kw">let </span>spec = api_service.spec();
 
     <span class="kw">let </span>swagger_ui = api_service.swagger_ui();

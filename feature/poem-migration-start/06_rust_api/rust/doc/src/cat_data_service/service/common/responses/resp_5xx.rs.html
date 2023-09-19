@@ -82,10 +82,22 @@
 <a href="#82" id="82">82</a>
 <a href="#83" id="83">83</a>
 <a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
 </pre><pre class="rust"><code><span class="doccomment">//! This module contains common and re-usable responses with a 4xx response code.
-//!
-
-</span><span class="kw">use </span>poem::error::ResponseError;
+/// While using macro-vis lib, you will get the uncommon_codepoints warning, so you will probably want to place this in your crate root
+</span><span class="kw">use </span><span class="kw">crate</span>::settings::generate_github_issue_url;
+<span class="kw">use </span>poem::error::ResponseError;
 <span class="kw">use </span>poem::http::StatusCode;
 <span class="kw">use </span>poem_extensions::OneResponse;
 <span class="kw">use </span>poem_openapi::payload::Json;
@@ -94,12 +106,21 @@
 <span class="kw">use </span>url::Url;
 <span class="kw">use </span>uuid::Uuid;
 
-<span class="kw">use </span><span class="kw">crate</span>::settings::generate_github_issue_url;
+<span class="doccomment">/// Create a new Server Error Response.
+/// Logging error message.
+</span><span class="macro">macro_rules! </span>server_error {
+    ($(<span class="macro-nonterminal">$t</span>:tt)<span class="kw-2">*</span>) =&gt; {{
+        <span class="kw">let </span>error = <span class="kw">crate</span>::service::common::responses::resp_5xx::ServerError::new(<span class="prelude-val">None</span>);
+        <span class="kw">let </span>id = error.id();
+        <span class="macro">tracing::error!</span>(id = <span class="macro">format!</span>(<span class="string">&quot;{id}&quot;</span>) ,$(<span class="macro-nonterminal">$t</span>)<span class="kw-2">*</span>);
+        error
+    }};
+}
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span>server_error;
 
 <span class="attr">#[derive(Debug, Object)]
 #[oai(example, skip_serializing_if_is_none)]
 </span><span class="doccomment">/// Response payload to a Bad request.
-</span><span class="comment">/*pub(crate)*/
 </span><span class="kw">struct </span>ServerErrorPayload {
     <span class="doccomment">/// Unique ID of this Server Error so that it can be located easily for debugging.
     </span>id: Uuid,
@@ -140,7 +161,10 @@
 <span class="kw">impl </span>ServerError {
     <span class="doccomment">/// Create a new Server Error Response.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(msg: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>(Json(ServerErrorPayload::new(msg)))
+        <span class="kw">let </span>msg = msg.unwrap_or(
+            <span class="string">&quot;Internal Server Error.  Please report the issue to the service owner.&quot;</span>.to_string(),
+        );
+        <span class="self">Self</span>(Json(ServerErrorPayload::new(<span class="prelude-val">Some</span>(msg))))
     }
 
     <span class="doccomment">/// Get the id of this Server Error.

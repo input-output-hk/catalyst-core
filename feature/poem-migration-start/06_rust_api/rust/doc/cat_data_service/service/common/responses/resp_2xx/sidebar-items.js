@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["EmptyOK","NoContent"]};
+window.SIDEBAR_ITEMS = {"struct":["NoContent","OK"]};

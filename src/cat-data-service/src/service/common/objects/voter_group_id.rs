@@ -1,3 +1,5 @@
+//! Defines the allowable groups for a Voter
+//!
 use poem_openapi::{types::Example, Enum};
 
 /// Voter Group ID.

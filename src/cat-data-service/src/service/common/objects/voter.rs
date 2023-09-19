@@ -1,3 +1,4 @@
+//! Define information about the Voters Registration.
 use super::voter_info::VoterInfo;
 use chrono::{DateTime, Utc};
 use poem_openapi::{types::Example, Object};

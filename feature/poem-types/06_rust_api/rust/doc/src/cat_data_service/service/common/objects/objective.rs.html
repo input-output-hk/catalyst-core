@@ -28,11 +28,17 @@
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
 <a href="#30" id="30">30</a>
-</pre><pre class="rust"><code><span class="kw">use super</span>::{objective_details::ObjectiveDetails, objective_summary::ObjectiveSummary};
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Defines the full objective information.
+//!
+</span><span class="kw">use super</span>::{objective_details::ObjectiveDetails, objective_summary::ObjectiveSummary};
 <span class="kw">use </span>poem_openapi::{types::Example, Object};
 
 <span class="doccomment">/// Full Objective info.
 </span><span class="attr">#[derive(Object)]
+#[oai(example = <span class="bool-val">true</span>)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Objective {
     <span class="attr">#[oai(flatten)]
     </span>summary: ObjectiveSummary,

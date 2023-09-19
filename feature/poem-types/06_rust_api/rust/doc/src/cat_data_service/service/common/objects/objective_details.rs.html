@@ -51,11 +51,17 @@
 <a href="#51" id="51">51</a>
 <a href="#52" id="52">52</a>
 <a href="#53" id="53">53</a>
-</pre><pre class="rust"><code><span class="kw">use super</span>::{reward_definition::RewardDefiniton, voter_group::VoterGroup};
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Defines the objective details.
+//!
+</span><span class="kw">use super</span>::{reward_definition::RewardDefiniton, voter_group::VoterGroup};
 <span class="kw">use </span>poem_openapi::{types::Example, Object};
 <span class="kw">use </span>serde_json::Value;
 
 <span class="attr">#[derive(Object)]
+#[oai(example = <span class="bool-val">true</span>)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ObjectiveDetails {
     <span class="doccomment">/// The valid voter groups for this voting event.
     </span>groups: Vec&lt;VoterGroup&gt;,

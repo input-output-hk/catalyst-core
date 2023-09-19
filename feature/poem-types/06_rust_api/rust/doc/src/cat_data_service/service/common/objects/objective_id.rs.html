@@ -16,11 +16,17 @@
 <a href="#16" id="16">16</a>
 <a href="#17" id="17">17</a>
 <a href="#18" id="18">18</a>
-</pre><pre class="rust"><code><span class="kw">use </span>poem_openapi::{types::Example, NewType};
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Defines the ID of an objective.
+//!
+</span><span class="kw">use </span>poem_openapi::{types::Example, NewType};
 <span class="kw">use </span>serde::Deserialize;
 
 <span class="doccomment">/// The Numeric ID of an Objective to be decided in a Voting Event.
 </span><span class="attr">#[derive(NewType, Deserialize)]
+#[oai(example = <span class="bool-val">true</span>)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ObjectiveId(i32);
 
 <span class="kw">impl </span>Example <span class="kw">for </span>ObjectiveId {

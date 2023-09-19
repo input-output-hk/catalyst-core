@@ -30,11 +30,17 @@
 <a href="#30" id="30">30</a>
 <a href="#31" id="31">31</a>
 <a href="#32" id="32">32</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::reward_currency::RewardCurrency;
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Defines the reward definition.
+//!
+</span><span class="kw">use </span><span class="kw">super</span>::reward_currency::RewardCurrency;
 <span class="kw">use </span>poem_openapi::{types::Example, Object};
 
 <span class="doccomment">/// Represents a reward definition.
 </span><span class="attr">#[derive(Object)]
+#[oai(example = <span class="bool-val">true</span>)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>RewardDefiniton {
     <span class="doccomment">/// Currency of the Reward.
     </span>currency: RewardCurrency,

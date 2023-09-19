@@ -1,3 +1,5 @@
+//! Registration endpoints, which return relevant voter's registration information.
+//! 
 use crate::service::common::objects::{
     event_id::EventId, voter_registration::VoterRegistration, voting_public_key::VotingPublicKey,
 };

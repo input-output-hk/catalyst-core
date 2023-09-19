@@ -1,3 +1,6 @@
+//! Health endpoints, which return the status of the service.
+//! Mostly used by Grafana.
+//! 
 use crate::service::common::tags::ApiTags;
 use poem_openapi::OpenApi;
 

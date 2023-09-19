@@ -90,6 +90,10 @@
 <a href="#90" id="90">90</a>
 <a href="#91" id="91">91</a>
 <a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Poem Service for cat-data-service endpoints.
 //!
 //! This provides only the primary entrypoint to the service.
@@ -113,7 +117,11 @@
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="doccomment">/// This exists to allow us to add extra routes to the service for testing purposes.
-</span><span class="kw">pub fn </span>mk_app(hosts: Vec&lt;String&gt;, base_route: <span class="prelude-ty">Option</span>&lt;Route&gt;, state: Arc&lt;State&gt;) -&gt; <span class="kw">impl </span>Endpoint {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>mk_app(
+    hosts: Vec&lt;String&gt;,
+    base_route: <span class="prelude-ty">Option</span>&lt;Route&gt;,
+    state: Arc&lt;State&gt;,
+) -&gt; <span class="kw">impl </span>Endpoint {
     <span class="comment">// Get the base route if defined, or a new route if not.
     </span><span class="kw">let </span>base_route = <span class="kw">match </span>base_route {
         <span class="prelude-val">Some</span>(route) =&gt; route,

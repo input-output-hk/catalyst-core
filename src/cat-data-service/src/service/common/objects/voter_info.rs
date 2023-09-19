@@ -1,4 +1,4 @@
-//! Define individual Voter Information
+//! Defines individual Voter Information
 //!
 use super::{delegate_public_key::DelegatePublicKey, voter_group_id::VoterGroupId};
 use poem_openapi::{types::Example, Object};

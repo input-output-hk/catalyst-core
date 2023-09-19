@@ -1,8 +1,11 @@
+//! Defines the full objective information.
+//!
 use super::{objective_details::ObjectiveDetails, objective_summary::ObjectiveSummary};
 use poem_openapi::{types::Example, Object};
 
 /// Full Objective info.
 #[derive(Object)]
+#[oai(example = true)]
 pub(crate) struct Objective {
     #[oai(flatten)]
     summary: ObjectiveSummary,

@@ -1,8 +1,11 @@
+//! Defines the objective type definition.
+//!
 use super::objective_types::ObjectiveTypes;
 use poem_openapi::{types::Example, Object};
 
 /// Objective type definition.
 #[derive(Object)]
+#[oai(example = true)]
 pub(crate) struct ObjectiveType {
     id: ObjectiveTypes,
 

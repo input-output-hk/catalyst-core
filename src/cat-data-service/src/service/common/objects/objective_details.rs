@@ -1,8 +1,11 @@
+//! Defines the objective details.
+//!
 use super::{reward_definition::RewardDefiniton, voter_group::VoterGroup};
 use poem_openapi::{types::Example, Object};
 use serde_json::Value;
 
 #[derive(Object)]
+#[oai(example = true)]
 pub(crate) struct ObjectiveDetails {
     /// The valid voter groups for this voting event.
     groups: Vec<VoterGroup>,

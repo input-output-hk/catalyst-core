@@ -1,3 +1,5 @@
+//! Defines the objective types.
+//!
 use poem_openapi::{types::Example, Enum};
 
 /// Objective Type defines the rules of the objective.

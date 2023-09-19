@@ -1,8 +1,11 @@
+//! Defines the objective summary.
+//!
 use super::{objective_id::ObjectiveId, objective_type::ObjectiveType};
 use poem_openapi::{types::Example, Object};
 
 /// Summary off an Individual Objective.
 #[derive(Object)]
+#[oai(example = true)]
 pub(crate) struct ObjectiveSummary {
     /// The ID of this objective for the Voting Event.
     #[oai(validator(minimum(value = "0")))]

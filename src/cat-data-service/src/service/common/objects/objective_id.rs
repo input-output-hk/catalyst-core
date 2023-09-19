@@ -1,8 +1,11 @@
+//! Defines the ID of an objective.
+//!
 use poem_openapi::{types::Example, NewType};
 use serde::Deserialize;
 
 /// The Numeric ID of an Objective to be decided in a Voting Event.
 #[derive(NewType, Deserialize)]
+#[oai(example = true)]
 pub(crate) struct ObjectiveId(i32);
 
 impl Example for ObjectiveId {

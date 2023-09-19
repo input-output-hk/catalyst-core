@@ -1,7 +1,11 @@
+//! Defines the voter group details.
+//!
 use super::voter_group_id::VoterGroupId;
 use poem_openapi::{types::Example, Object};
 
+/// Voter group details.
 #[derive(Object)]
+#[oai(example = true)]
 pub(crate) struct VoterGroup {
     #[oai(skip_serializing_if_is_none = true)]
     group: Option<VoterGroupId>,

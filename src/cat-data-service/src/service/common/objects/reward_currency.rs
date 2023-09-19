@@ -1,3 +1,5 @@
+//! Defines the currency of a reward.
+//!
 use poem_openapi::{types::Example, Enum};
 
 /// Currency of the Reward.

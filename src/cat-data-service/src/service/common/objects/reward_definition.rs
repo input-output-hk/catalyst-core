@@ -1,8 +1,11 @@
+//! Defines the reward definition.
+//!
 use super::reward_currency::RewardCurrency;
 use poem_openapi::{types::Example, Object};
 
 /// Represents a reward definition.
 #[derive(Object)]
+#[oai(example = true)]
 pub(crate) struct RewardDefiniton {
     /// Currency of the Reward.
     currency: RewardCurrency,

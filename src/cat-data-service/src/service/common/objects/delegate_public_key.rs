@@ -1,4 +1,4 @@
-//! Define the Public Key used by a Delegate.
+//! Defines the Public Key used by a Delegate.
 //!
 use poem_openapi::{types::Example, Object};
 

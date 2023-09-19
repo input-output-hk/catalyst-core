@@ -1,4 +1,6 @@
-use crate::service::common::objects::{event_id::EventId, voter::Voter, voting_key::VotingKey};
+use crate::service::common::objects::{
+    event_id::EventId, voter_registration::VoterRegistration, voting_key::VotingKey,
+};
 use crate::service::common::responses::resp_2xx::OK;
 use crate::service::common::responses::resp_4xx::NotFound;
 use crate::service::common::responses::resp_5xx::{server_error, ServerError};
@@ -25,7 +27,7 @@ impl RegistrationApi {
     /// Voter's info
     ///
     /// Get the voter's registration and voting power by their Public Voting Key.
-    /// The Public Voting Key must match the voter's most recent valid 
+    /// The Public Voting Key must match the voter's most recent valid
     /// [CIP-15](https://cips.cardano.org/cips/cip15) or [CIP-36](https://cips.cardano.org/cips/cip36) registration on-chain.
     /// If the `event_id` query parameter is omitted, then the latest voting power is retrieved.
     /// If the `with_delegators` query parameter is ommitted, then `delegator_addresses` field of `VoterInfo` type does not provided.
@@ -34,7 +36,7 @@ impl RegistrationApi {
         &self,
         pool: Data<&Arc<State>>,
 
-        /// A Voters Public ED25519 Key (as registered in their most recent valid 
+        /// A Voters Public ED25519 Key (as registered in their most recent valid
         /// [CIP-15](https://cips.cardano.org/cips/cip15) or [CIP-36](https://cips.cardano.org/cips/cip36) registration).
         #[oai(validator(max_length = 66, min_length = 66, pattern = "0x[0-9a-f]{64}"))]
         voting_key: Path<VotingKey>,
@@ -49,7 +51,7 @@ impl RegistrationApi {
         #[oai(default)]
         with_delegators: Query<bool>,
     ) -> response! {
-           200: OK<Json<Voter>>,
+           200: OK<Json<VoterRegistration>>,
            404: NotFound,
            500: ServerError,
        } {

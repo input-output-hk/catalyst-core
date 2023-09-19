@@ -21,7 +21,11 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 /// This exists to allow us to add extra routes to the service for testing purposes.
-pub(crate) fn mk_app(hosts: Vec<String>, base_route: Option<Route>, state: Arc<State>) -> impl Endpoint {
+pub(crate) fn mk_app(
+    hosts: Vec<String>,
+    base_route: Option<Route>,
+    state: Arc<State>,
+) -> impl Endpoint {
     // Get the base route if defined, or a new route if not.
     let base_route = match base_route {
         Some(route) => route,

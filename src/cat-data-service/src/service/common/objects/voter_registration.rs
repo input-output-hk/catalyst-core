@@ -3,10 +3,10 @@ use super::voter_info::VoterInfo;
 use chrono::{DateTime, Utc};
 use poem_openapi::{types::Example, Object};
 
-/// Voter
+/// Voter's registration info.
 #[derive(Object)]
 #[oai(example = true)]
-pub(crate) struct Voter {
+pub(crate) struct VoterRegistration {
     voter_info: VoterInfo,
 
     /// Date and time the latest snapshot represents.
@@ -21,7 +21,7 @@ pub(crate) struct Voter {
     is_final: bool,
 }
 
-impl Example for Voter {
+impl Example for VoterRegistration {
     fn example() -> Self {
         Self {
             voter_info: VoterInfo::example(),
@@ -32,7 +32,7 @@ impl Example for Voter {
     }
 }
 
-impl TryFrom<event_db::types::registration::Voter> for Voter {
+impl TryFrom<event_db::types::registration::Voter> for VoterRegistration {
     type Error = String;
     fn try_from(value: event_db::types::registration::Voter) -> Result<Self, Self::Error> {
         Ok(Self {

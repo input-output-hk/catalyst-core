@@ -1,5 +1,5 @@
 use crate::service::common::objects::{
-    event_id::EventId, voter_registration::VoterRegistration, voting_key::VotingKey,
+    event_id::EventId, voter_registration::VoterRegistration, voting_public_key::VotingPublicKey,
 };
 use crate::service::common::responses::resp_2xx::OK;
 use crate::service::common::responses::resp_4xx::NotFound;
@@ -39,7 +39,7 @@ impl RegistrationApi {
         /// A Voters Public ED25519 Key (as registered in their most recent valid
         /// [CIP-15](https://cips.cardano.org/cips/cip15) or [CIP-36](https://cips.cardano.org/cips/cip36) registration).
         #[oai(validator(max_length = 66, min_length = 66, pattern = "0x[0-9a-f]{64}"))]
-        voting_key: Path<VotingKey>,
+        voting_key: Path<VotingPublicKey>,
 
         /// The Event ID to return results for.
         /// See [GET Events](Link to events endpoint) for details on retrieving all valid event IDs.

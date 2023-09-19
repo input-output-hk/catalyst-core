@@ -1,6 +1,6 @@
 //! Define individual Voter Information
 //!
-use super::{delegator_address::DelegatorAddress, voter_group_id::VoterGroupId};
+use super::{delege_public_key::DelegePublicKey, voter_group_id::VoterGroupId};
 use poem_openapi::{types::Example, Object};
 
 /// Voter Info
@@ -31,7 +31,7 @@ pub(crate) struct VoterInfo {
 
     /// List of stake public key addresses which delegated to this voting key.
     #[oai(skip_serializing_if_is_none = true)]
-    delegator_addresses: Option<Vec<DelegatorAddress>>,
+    delegator_addresses: Option<Vec<DelegePublicKey>>,
 }
 
 impl Example for VoterInfo {
@@ -42,7 +42,7 @@ impl Example for VoterInfo {
             delegations_power: 0,
             delegations_count: 0,
             voting_power_saturation: 0.0,
-            delegator_addresses: Some(vec![DelegatorAddress::example()]),
+            delegator_addresses: Some(vec![DelegePublicKey::example()]),
         }
     }
 }

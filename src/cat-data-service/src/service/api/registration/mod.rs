@@ -24,7 +24,9 @@ impl RegistrationApi {
     )]
     /// Voter's info
     ///
-    /// Get voter's registration and voting power by their voting key.
+    /// Get the voter's registration and voting power by their Public Voting Key.
+    /// The Public Voting Key must match the voter's most recent valid 
+    /// [CIP-15](https://cips.cardano.org/cips/cip15) or [CIP-36](https://cips.cardano.org/cips/cip36) registration on-chain.
     /// If the `event_id` query parameter is omitted, then the latest voting power is retrieved.
     /// If the `with_delegators` query parameter is ommitted, then `delegator_addresses` field of `VoterInfo` type does not provided.
     ///

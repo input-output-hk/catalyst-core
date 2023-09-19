@@ -60,7 +60,11 @@
 <a href="#60" id="60">60</a>
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
-</pre><pre class="rust"><code><span class="kw">use super</span>::{delegator_address::DelegatorAddress, voter_group_id::VoterGroupId};
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Define individual Voter Information
+//!
+</span><span class="kw">use super</span>::{delegate_public_key::DelegatePublicKey, voter_group_id::VoterGroupId};
 <span class="kw">use </span>poem_openapi::{types::Example, Object};
 
 <span class="doccomment">/// Voter Info
@@ -91,7 +95,7 @@
 
     <span class="doccomment">/// List of stake public key addresses which delegated to this voting key.
     </span><span class="attr">#[oai(skip_serializing_if_is_none = <span class="bool-val">true</span>)]
-    </span>delegator_addresses: <span class="prelude-ty">Option</span>&lt;Vec&lt;DelegatorAddress&gt;&gt;,
+    </span>delegator_addresses: <span class="prelude-ty">Option</span>&lt;Vec&lt;DelegatePublicKey&gt;&gt;,
 }
 
 <span class="kw">impl </span>Example <span class="kw">for </span>VoterInfo {
@@ -102,7 +106,7 @@
             delegations_power: <span class="number">0</span>,
             delegations_count: <span class="number">0</span>,
             voting_power_saturation: <span class="number">0.0</span>,
-            delegator_addresses: <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[DelegatorAddress::example()]),
+            delegator_addresses: <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[DelegatePublicKey::example()]),
         }
     }
 }

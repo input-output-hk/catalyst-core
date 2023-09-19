@@ -201,7 +201,20 @@
 <a href="#201" id="201">201</a>
 <a href="#202" id="202">202</a>
 <a href="#203" id="203">203</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::service::common::objects::{event_id::EventId, voter::Voter, voting_key::VotingKey};
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+</pre><pre class="rust"><code><span class="doccomment">//! Registration endpoints, which return relevant voter&#39;s registration information.
+//! 
+</span><span class="kw">use </span><span class="kw">crate</span>::service::common::objects::{
+    event_id::EventId, voter_registration::VoterRegistration, voting_public_key::VotingPublicKey,
+};
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_2xx::OK;
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_4xx::NotFound;
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_5xx::{server_error, ServerError};
@@ -222,8 +235,10 @@
 </span><span class="kw">impl </span>RegistrationApi {
     <span class="doccomment">/// Voter&#39;s info
     ///
-    /// Get voter&#39;s registration and voting power by their voting key.
-    /// If the `event_id` query parameter is missing, then the &quot;Latest&quot; registration is returned.
+    /// Get the voter&#39;s registration and voting power by their Public Voting Key.
+    /// The Public Voting Key must match the voter&#39;s most recent valid
+    /// [CIP-15](https://cips.cardano.org/cips/cip15) or [CIP-36](https://cips.cardano.org/cips/cip36) registration on-chain.
+    /// If the `event_id` query parameter is omitted, then the latest voting power is retrieved.
     /// If the `with_delegators` query parameter is ommitted, then `delegator_addresses` field of `VoterInfo` type does not provided.
     ///
     </span><span class="attr">#[oai(
@@ -235,19 +250,22 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         pool: Data&lt;<span class="kw-2">&amp;</span>Arc&lt;State&gt;&gt;,
 
-        <span class="doccomment">/// A Voting Key.
-        </span><span class="attr">#[oai(validator(max_length = <span class="number">64</span>, min_length = <span class="number">64</span>, pattern = <span class="string">&quot;[0-9a-f]{64}&quot;</span>))]
-        </span>voting_key: Path&lt;VotingKey&gt;,
+        <span class="doccomment">/// A Voters Public ED25519 Key (as registered in their most recent valid
+        /// [CIP-15](https://cips.cardano.org/cips/cip15) or [CIP-36](https://cips.cardano.org/cips/cip36) registration).
+        </span><span class="attr">#[oai(validator(max_length = <span class="number">66</span>, min_length = <span class="number">66</span>, pattern = <span class="string">&quot;0x[0-9a-f]{64}&quot;</span>))]
+        </span>voting_key: Path&lt;VotingPublicKey&gt;,
 
         <span class="doccomment">/// The Event ID to return results for.
+        /// See [GET Events](Link to events endpoint) for details on retrieving all valid event IDs.
         </span><span class="attr">#[oai(validator(minimum(value = <span class="string">&quot;0&quot;</span>)))]
         </span>event_id: Query&lt;<span class="prelude-ty">Option</span>&lt;EventId&gt;&gt;,
 
-        <span class="doccomment">/// Flag to include delegators list in the response.
+        <span class="doccomment">/// If this optional flag is set, the response will include the delegator&#39;s list in the response.
+        /// Otherwise, it will be omitted.
         </span><span class="attr">#[oai(default)]
         </span>with_delegators: Query&lt;bool&gt;,
     ) -&gt; <span class="macro">response! </span>{
-           <span class="number">200</span>: OK&lt;Json&lt;Voter&gt;&gt;,
+           <span class="number">200</span>: OK&lt;Json&lt;VoterRegistration&gt;&gt;,
            <span class="number">404</span>: NotFound,
            <span class="number">500</span>: ServerError,
        } {

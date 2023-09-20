@@ -1,0 +1,31 @@
+VERSION 0.7
+
+cordova-build:
+    # It is needed to use an older version of rustc
+    FROM rust:1.67.0-slim-bullseye
+
+    # Install deps
+    RUN rustup component add rustfmt
+    # Install python
+    RUN apt update
+    RUN apt -y install python3
+    RUN python3 --version
+    # Install uniffi_bindgen
+    RUN cargo install --version 0.21.1 uniffi_bindgen
+    RUN uniffi-bindgen --version
+    # Install cross
+    RUN cargo install --version 0.2.5 cross
+    RUN cross --version
+    # Install podman needed for cross
+    RUN apt-get -y install podman
+
+
+    COPY --dir ../../+rust-source/src \
+        ../../+rust-source/tests \
+        ../../+rust-source/Cargo.toml \
+        ../../+rust-source/Cargo.lock \
+        ./catalyst-core
+    RUN ls ./catalyst-core/src/chain-wallet-libs/bindings/wallet-cordova/src/android
+    RUN cd ./catalyst-core && cargo b -p wallet-uniffi --release
+    RUN cd ./catalyst-core/src/chain-wallet-libs/bindings/wallet-cordova/scripts && RUSTFLAGS="-C embed-bitcode" python3 build_jni.py
+    RUN ls ./catalyst-core/src/chain-wallet-libs/bindings/wallet-cordova/src/android

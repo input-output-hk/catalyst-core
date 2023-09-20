@@ -366,62 +366,63 @@ class Importer:
 
     async def _run_snapshot_tool(self):
         for network_id, dbsync_url in self.network_dbsync_url.items():
-            # Extract the db_user, db_pass, db_host, and db_name from the address using a regular expression
-            match = re.match(
-                r"^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+):?([0-9]*)\/(?P<db_name>[^?]+)?",
-                dbsync_url,
-            )
-
-            if match is None:
-                raise InvalidDatabaseUrl(db_url=dbsync_url)
-
-            db_user = match.group("db_user")
-            db_pass = match.group("db_pass")
-            db_host = match.group("db_host")
-            db_name = match.group("db_name")
-
-            params = self.network_params[network_id]
-
-            if self.ssh_config is None:
-                snapshot_tool_cmd = (
-                    f"{self.snapshot_tool_path}"
-                    f" --db-user {db_user}"
-                    f" --db-pass {db_pass}"
-                    f" --db-host {db_host}"
-                    f" --db {db_name}"
-                    f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
-                    f" --network-id {network_id}"
-                    f" --out-file {params.snapshot_tool_out_file}"
+            with logger.contextualize(network_id=network_id):
+                # Extract the db_user, db_pass, db_host, and db_name from the address using a regular expression
+                match = re.match(
+                    r"^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+):?([0-9]*)\/(?P<db_name>[^?]+)?",
+                    dbsync_url,
                 )
 
-                await run_cmd("snapshot_tool", snapshot_tool_cmd)
-            else:
-                snapshot_tool_out_file = os.path.join(
-                    self.ssh_config.snapshot_tool_output_dir, f"{network_id}_snapshot_tool_out.json"
-                )
+                if match is None:
+                    raise InvalidDatabaseUrl(db_url=dbsync_url)
 
-                snapshot_tool_cmd = (
-                    "ssh"
-                    f" -i {self.ssh_config.keyfile_path}"
-                    f" {self.ssh_config.destination}"
-                    f" {self.ssh_config.snapshot_tool_path}"
-                    f" --db-user {db_user}"
-                    f" --db-pass {db_pass}"
-                    f" --db-host {db_host}"
-                    f" --db {db_name}"
-                    f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
-                    f" --network-id {network_id}"
-                    f" --out-file {snapshot_tool_out_file}"
-                )
-                scp_cmd = (
-                    "scp"
-                    f" -i {self.ssh_config.keyfile_path}"
-                    f" {self.ssh_config.destination}:{snapshot_tool_out_file}"
-                    f" {params.snapshot_tool_out_file}"
-                )
+                db_user = match.group("db_user")
+                db_pass = match.group("db_pass")
+                db_host = match.group("db_host")
+                db_name = match.group("db_name")
 
-                await run_cmd("SSH snapshot_tool", snapshot_tool_cmd)
-                await run_cmd("SSH snapshot artifacts copy", scp_cmd)
+                params = self.network_params[network_id]
+
+                if self.ssh_config is None:
+                    snapshot_tool_cmd = (
+                        f"{self.snapshot_tool_path}"
+                        f" --db-user {db_user}"
+                        f" --db-pass {db_pass}"
+                        f" --db-host {db_host}"
+                        f" --db {db_name}"
+                        f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
+                        f" --network-id {network_id}"
+                        f" --out-file {params.snapshot_tool_out_file}"
+                    )
+
+                    await run_cmd("snapshot_tool", snapshot_tool_cmd)
+                else:
+                    snapshot_tool_out_file = os.path.join(
+                        self.ssh_config.snapshot_tool_output_dir, f"{network_id}_snapshot_tool_out.json"
+                    )
+
+                    snapshot_tool_cmd = (
+                        "ssh"
+                        f" -i {self.ssh_config.keyfile_path}"
+                        f" {self.ssh_config.destination}"
+                        f" {self.ssh_config.snapshot_tool_path}"
+                        f" --db-user {db_user}"
+                        f" --db-pass {db_pass}"
+                        f" --db-host {db_host}"
+                        f" --db {db_name}"
+                        f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
+                        f" --network-id {network_id}"
+                        f" --out-file {snapshot_tool_out_file}"
+                    )
+                    scp_cmd = (
+                        "scp"
+                        f" -i {self.ssh_config.keyfile_path}"
+                        f" {self.ssh_config.destination}:{snapshot_tool_out_file}"
+                        f" {params.snapshot_tool_out_file}"
+                    )
+
+                    await run_cmd("SSH snapshot_tool", snapshot_tool_cmd)
+                    await run_cmd("SSH snapshot artifacts copy", scp_cmd)
 
     def _process_snapshot_output(self):
         for params in self.network_params.values():
@@ -446,17 +447,18 @@ class Importer:
                 "min_stake_threshold and voting_power_cap must be set either as CLI arguments or in the database"
             )
 
-        for params in self.network_params.values():
-            catalyst_toolbox_cmd = (
-                f"{self.catalyst_toolbox_path} snapshot"
-                f" -s {params.snapshot_tool_out_file}"
-                f" -m {self.event_parameters.min_stake_threshold}"
-                f" -v {self.event_parameters.voting_power_cap}"
-                f" --dreps {self.dreps_out_file}"
-                f" --output-format json {params.catalyst_toolbox_out_file}"
-            )
+        for network_id, params in self.network_params.items():
+            with logger.contextualize(network_id=network_id):
+                catalyst_toolbox_cmd = (
+                    f"{self.catalyst_toolbox_path} snapshot"
+                    f" -s {params.snapshot_tool_out_file}"
+                    f" -m {self.event_parameters.min_stake_threshold}"
+                    f" -v {self.event_parameters.voting_power_cap}"
+                    f" --dreps {self.dreps_out_file}"
+                    f" --output-format json {params.catalyst_toolbox_out_file}"
+                )
 
-            await run_cmd("catalyst-toolbox", catalyst_toolbox_cmd)
+                await run_cmd("catalyst-toolbox", catalyst_toolbox_cmd)
 
     def _merge_output_files(self):
         logger.info("Merging snapshot output files", network_ids=",".join(self.network_params.keys()))

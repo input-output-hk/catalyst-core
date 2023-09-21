@@ -45,7 +45,7 @@ jobs:
         config:
           - { target: aarch64-linux-android }
           - { target: armv7-linux-androideabi }
-          - { target: i686-linux-android }
+          # - { target: i686-linux-android }
           - { target: x86_64-linux-android }
 
     steps:
@@ -141,9 +141,9 @@ jobs:
         working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
         run: mv armv7-linux-androideabi armeabi-v7a
 
-      - name: rename i686-linux-android
-        working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
-        run: mv i686-linux-android x86
+      # - name: rename i686-linux-android
+      #   working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
+      #   run: mv i686-linux-android x86
 
       - name: rename x86_64
         working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs

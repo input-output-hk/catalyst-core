@@ -56,6 +56,7 @@ jobs:
         env:
           RUSTFLAGS: "-C embed-bitcode"
         with:
+          toolchain: 1.67
           use-cross: true
           command: rustc
           args: --release --target ${{ matrix.config.target }} -p wallet-uniffi --features builtin-bindgen -- -C link-args=-ldl

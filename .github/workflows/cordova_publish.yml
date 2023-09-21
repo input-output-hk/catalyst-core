@@ -53,6 +53,8 @@ jobs:
 
       - name: Build library (release)
         uses: actions-rs/cargo@v1
+        env:
+          RUSTFLAGS: "-C embed-bitcode"
         with:
           use-cross: true
           command: rustc

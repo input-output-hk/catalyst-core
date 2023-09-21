@@ -63,10 +63,10 @@ jobs:
         run: cargo install cross
 
       - name: Build library (release)
-        # env:
-        #   RUSTFLAGS: "-C embed-bitcode"
+        env:
+          RUSTFLAGS: "-C embed-bitcode"
         run: |
-          cross rustc --release --target ${{ matrix.config.target }} -p wallet-uniffi --features builtin-bindgen -- -C lto embed-bitcode
+          cross rustc --release --target ${{ matrix.config.target }} -p wallet-uniffi --features builtin-bindgen -- -C lto
 
       - name: Prepare package
         run: mkdir -p jniLibs/${{ matrix.config.target }}

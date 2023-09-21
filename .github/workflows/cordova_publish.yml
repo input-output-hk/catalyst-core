@@ -58,6 +58,8 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
+          override: true
+          default: true
         
       - name: Install cross
         run: cargo install cross

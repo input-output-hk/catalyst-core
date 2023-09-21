@@ -1,23 +1,23 @@
 name: Rust CI
 
-on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '**.md'
-      - 'src/**/**.md'
-      - 'Makefiles/**'
-      - 'nix/**'
-      - 'book/**'
-  pull_request:
-    paths-ignore:
-       - '**.md'
-       - 'book/**'
-       - 'src/**/**.md'
-       - 'Makefiles/**'
-       - 'nix/**'
-       - 'book/**'
+on: {}
+  # push:
+  #   branches:
+  #     - main
+  #   paths-ignore:
+  #     - '**.md'
+  #     - 'src/**/**.md'
+  #     - 'Makefiles/**'
+  #     - 'nix/**'
+  #     - 'book/**'
+  # pull_request:
+  #   paths-ignore:
+  #      - '**.md'
+  #      - 'book/**'
+  #      - 'src/**/**.md'
+  #      - 'Makefiles/**'
+  #      - 'nix/**'
+  #      - 'book/**'
 
 env:
   RUST_LATEST_STABLE_VERSION: 1.71

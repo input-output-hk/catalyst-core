@@ -34,6 +34,42 @@ jobs:
         id: get_version
         run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
 
+  build_uniffi:
+    name: Build uniffi jni shared libs for android with cross
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - { target: aarch64-linux-android }
+          - { target: armv7-linux-androideabi }
+          - { target: i686-linux-android }
+          - { target: x86_64-linux-android }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Build library (release)
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: rustc
+          args: --release --target ${{ matrix.config.target }} -p wallet-uniffi --features builtin-bindgen -- -C link-args=-ldl
+
+      - name: Prepare package
+        run: mkdir -p jniLibs/${{ matrix.config.target }}
+
+      - name: copy binary
+        run: cp ./target/${{ matrix.config.target }}/release/libuniffi_jormungandr_wallet.so ./jniLibs/${{ matrix.config.target }}/;
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: jniLibs
+          path: ./jniLibs
+          retention-days: 1
+
   build_lipo_asset:
     name: Build universal lib for cordova plugin
     runs-on: macos-latest

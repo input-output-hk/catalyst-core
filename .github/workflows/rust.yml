@@ -374,6 +374,13 @@ jobs:
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
+      - name: Install uniffi
+        uses: actions-rs/install@v0.1
+        with:
+          crate: uniffi_bindgen
+          version: 0.21.1
+          use-tool-cache: true
+
       - name: Clippy and fmt
         uses: actions-rs/toolchain@v1
         with:

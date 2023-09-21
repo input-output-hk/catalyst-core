@@ -5,9 +5,15 @@ cordova-build:
     FROM rust:1.67.0-slim-bullseye
 
     # Install deps
+    RUN apt -y update
+    RUN apt -y install curl gpg wget
+
     RUN rustup component add rustfmt
+    RUN rustup target add aarch64-linux-android
+    RUN rustup target add armv7-linux-androideabi
+    RUN rustup target add i686-linux-android
+    RUN rustup target add x86_64-linux-android
     # Install python
-    RUN apt update
     RUN apt -y install python3
     RUN python3 --version
     # Install uniffi_bindgen
@@ -16,9 +22,14 @@ cordova-build:
     # Install cross
     RUN cargo install --version 0.2.5 cross
     RUN cross --version
-    # Install podman needed for cross
-    RUN apt-get -y install podman
 
+    # Install podman needed for cross
+    RUN wget https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/Release.key
+    RUN cat Release.key | gpg --dearmor | tee /etc/apt/trusted.gpg.d/libcontainers.gpg  >/dev/null
+    RUN echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_11/ /" | tee /etc/apt/sources.list.d/libcontainers.list
+    RUN apt update
+    RUN apt -y install podman
+    RUN podman --version
 
     COPY --dir ../../+rust-source/src \
         ../../+rust-source/tests \

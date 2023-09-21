@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  RUST_LATEST_STABLE_VERSION: 1.67
+
 jobs:
   initial_release:
     name: Publish cordova extension package
@@ -54,16 +57,16 @@ jobs:
       - name: Install rust toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: 1.67
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
+        
+      - name: Install cross
+        run: cargo install cross
 
       - name: Build library (release)
-        uses: actions-rs/cargo@v1
         env:
           RUSTFLAGS: "-C embed-bitcode"
-        with:
-          use-cross: true
-          command: rustc
-          args: --release --target ${{ matrix.config.target }} -p wallet-uniffi --features builtin-bindgen -- -C link-args=-ldl
+        run: |
+          cross rustc --release --target ${{ matrix.config.target }} -p wallet-uniffi --features builtin-bindgen -- -C link-args=-ldl
 
       - name: Prepare package
         run: mkdir -p jniLibs/${{ matrix.config.target }}
@@ -86,7 +89,7 @@ jobs:
     steps:
       - uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
           override: true
           default: true
 
@@ -99,6 +102,8 @@ jobs:
           submodules: true
 
       - name: build universal lib
+        env:
+          RUSTFLAGS: "-C embed-bitcode"
         working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/scripts
         run: python3 ./build_ios.py
 

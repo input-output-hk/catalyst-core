@@ -4,9 +4,6 @@ on:
   push:
     tags:
       - cordova-*
-  pull_request:
-    branches:
-      - main
 
 env:
   RUST_LATEST_STABLE_VERSION: 1.67
@@ -183,12 +180,12 @@ jobs:
             -name wallet-cordova-plugin*.tgz \
             -exec mv {} chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz \;
 
-      # - name: Upload binaries to release
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ needs.initial_release.outputs.upload_url }}
-      #     asset_path: ./chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz
-      #     asset_name: chain-wallet-libs-cordova-${{ needs.initial_release.outputs.version }}
-      #     asset_content_type: application/gzip
+      - name: Upload binaries to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: ./chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz
+          asset_name: chain-wallet-libs-cordova-${{ needs.initial_release.outputs.version }}
+          asset_content_type: application/gzip

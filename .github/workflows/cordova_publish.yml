@@ -43,7 +43,7 @@ jobs:
     strategy:
       matrix:
         config:
-          - { target: aarch64-linux-android }
+          # - { target: aarch64-linux-android }
           - { target: armv7-linux-androideabi }
           # - { target: i686-linux-android }
           - { target: x86_64-linux-android }
@@ -133,9 +133,9 @@ jobs:
       - name: Copy libs
         run: cp -r jniLibs/* src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
 
-      - name: rename arm64-v8a
-        working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
-        run: mv aarch64-linux-android arm64-v8a
+      # - name: rename arm64-v8a
+      #   working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
+      #   run: mv aarch64-linux-android arm64-v8a
 
       - name: rename armv7-linux-androideabi
         working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs

@@ -80,12 +80,24 @@ wrappers over **wallet-core**.
 
 ## Build
 
+build uniffi bindings, inside `catalyst-core/src/chain-wallet-libs/bindings/wallet-uniffi`
+```
+cargo b --release
+./gen_bindings.sh
+```
+
 [build_jni.py](scripts/build_jni.py) in the `scripts` directory will compile the
 Android native libraries, generate the Kotlin bindings, and copy those to this
 package in the `src/android` directory.
+```
+RUSTFLAGS="-C embed-bitcode" python3 build_jni.py
+```
 
 [build_ios.py](scripts/build_ios.py) in the `scripts` directory will compile the
-iOS native libraries, and copy those along the C header to this package.  
+iOS native libraries, and copy those along the C header to this package.
+```
+RUSTFLAGS="-C embed-bitcode" python3 build_ios.py
+```
 
 `npm pack` can be used to make a distributable version of the plugin as an npm
 package.

@@ -175,7 +175,6 @@ jobs:
       - name: rename-tarball
         run: |
           find ./src/chain-wallet-libs -name wallet-cordova-plugin*.tgz -exec mv {} wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz \;
-          mv wallet-cordova-plugin*.tgz wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz
           ls
 
       - name: Upload binaries to release

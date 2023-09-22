@@ -176,7 +176,8 @@ jobs:
         run: |
           find ./src/chain-wallet-libs \
             -name wallet-cordova-plugin*.tgz \
-            -exec mv {} wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz \;
+            -exec mv {} {}.tgz \;
+          mv wallet-cordova-plugin*.tgz wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}
           ls
 
       - name: Upload binaries to release

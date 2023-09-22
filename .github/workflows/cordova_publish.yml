@@ -179,7 +179,7 @@ jobs:
 
       - name: rename-tarball
         run: |
-          find . \
+          find ./src/chain-wallet-libs \
             -name wallet-cordova-plugin*.tgz \
             -exec mv {} chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz \;
           ls

@@ -285,7 +285,7 @@
                     VotingDelegations::New(new)
                 }
             },
-            voting_purpose: <span class="kw-2">*</span><span class="self">self</span>.voting_purpose.unwrap_or(VotingPurpose::CATALYST),
+            voting_purpose: <span class="prelude-val">Some</span>(<span class="kw-2">*</span><span class="self">self</span>.voting_purpose.unwrap_or(VotingPurpose::CATALYST)),
 
             nonce: <span class="self">self</span>.nonce,
         })

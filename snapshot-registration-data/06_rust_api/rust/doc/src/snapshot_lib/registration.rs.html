@@ -524,7 +524,7 @@
     <span class="kw">pub </span>delegations: Delegations,
     <span class="doccomment">/// 0 = Catalyst, assumed 0 for old legacy registrations
     </span><span class="attr">#[serde(default)]
-    </span><span class="kw">pub </span>voting_purpose: u64,
+    </span><span class="kw">pub </span>voting_purpose: <span class="prelude-ty">Option</span>&lt;u64&gt;,
 
     <span class="attr">#[serde(default)]
     </span><span class="kw">pub </span>nonce: u64,
@@ -810,7 +810,7 @@
                         voting_power,
                         reward_address,
                         delegations,
-                        voting_purpose: <span class="number">0</span>,
+                        voting_purpose: <span class="prelude-val">None</span>,
                         nonce: <span class="number">0</span>,
                     }
                 })

@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
-      version: ${{ steps.get_version.outputs.version }}
+      version: ${{ steps.create_release.outputs.id }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -33,10 +33,6 @@ jobs:
           draft: true
           prerelease: false
 
-      - name: Set version output
-        id: get_version
-        run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
-
   build_uniffi:
     name: Build uniffi jni shared libs for android with cross
     runs-on: ubuntu-latest
@@ -47,7 +43,6 @@ jobs:
           - { target: armv7-linux-androideabi }
           - { target: i686-linux-android }
           - { target: x86_64-linux-android }
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v1

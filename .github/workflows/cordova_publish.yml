@@ -174,10 +174,8 @@ jobs:
 
       - name: rename-tarball
         run: |
-          find ./src/chain-wallet-libs \
-            -name wallet-cordova-plugin*.tgz \
-            -exec mv {} {}.tgz \;
-          mv wallet-cordova-plugin*.tgz wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}
+          find ./src/chain-wallet-libs -name wallet-cordova-plugin*.tgz -exec mv {} wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz \;
+          mv wallet-cordova-plugin*.tgz wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz
           ls
 
       - name: Upload binaries to release
@@ -186,6 +184,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: ./chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz
+          asset_path: ./wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz
           asset_name: chain-wallet-libs-cordova-${{ needs.initial_release.outputs.version }}
           asset_content_type: application/gzip

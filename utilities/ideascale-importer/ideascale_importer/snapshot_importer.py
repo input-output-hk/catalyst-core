@@ -177,6 +177,7 @@ class NetworkParams(BaseModel):
     registration_snapshot_slot: Optional[int]
     registration_snapshot_block_time: Optional[datetime]
     snapshot_tool_out_file: str
+    snapshot_tool_unregistered_out_file: str
     catalyst_toolbox_out_file: str
 
     @staticmethod
@@ -225,6 +226,7 @@ class NetworkParams(BaseModel):
             registration_snapshot_slot=registration_snapshot_slot,
             registration_snapshot_block_time=registration_snapshot_block_time,
             snapshot_tool_out_file=os.path.join(output_dir, f"{network_id}_snapshot_tool_out.json"),
+            snapshot_tool_unregistered_out_file=os.path.join(output_dir, f"{network_id}_snapshot_tool_out.unregistered.json"),
             catalyst_toolbox_out_file=os.path.join(output_dir, f"{network_id}_catalyst_toolbox_out.json"),
         )
 
@@ -243,6 +245,23 @@ class SSHConfig(BaseModel):
     destination: str
     snapshot_tool_path: str
     snapshot_tool_output_dir: str
+
+
+class SnapshotReport(BaseModel):
+    rewards_payable: int = 0
+    rewards_unpayable: int = 0
+    rewards_pointer: int = 0
+    rewards_invalid: int = 0
+    rewards_types: Dict[str, int] = {}
+    unique_rewards: Dict[str, int] = {}
+    registrations_count: int = 0
+    registered_voting_power: int = 0
+    unregistered_voting_power: int = 0
+    processed_voting_power: int = 0
+    cip_15_registration_count: int = 0
+    cip_36_single_registration_count: int = 0
+    cip_36_multi_registration_count: int = 0
+    rejects: int = 0
 
 
 class Importer:
@@ -400,6 +419,9 @@ class Importer:
                     snapshot_tool_out_file = os.path.join(
                         self.ssh_config.snapshot_tool_output_dir, f"{network_id}_snapshot_tool_out.json"
                     )
+                    snapshot_tool_unregistered_out_file = os.path.join(
+                        self.ssh_config.snapshot_tool_output_dir, f"{network_id}_snapshot_tool_out.unregistered.json"
+                    )
 
                     snapshot_tool_cmd = (
                         "ssh"
@@ -414,15 +436,22 @@ class Importer:
                         f" --network-id {network_id}"
                         f" --out-file {snapshot_tool_out_file}"
                     )
-                    scp_cmd = (
+                    scp_snapshot_out_cmd = (
                         "scp"
                         f" -i {self.ssh_config.keyfile_path}"
                         f" {self.ssh_config.destination}:{snapshot_tool_out_file}"
                         f" {params.snapshot_tool_out_file}"
                     )
+                    scp_snapshot_unregistered_out_cmd = (
+                        "scp"
+                        f" -i {self.ssh_config.keyfile_path}"
+                        f" {self.ssh_config.destination}:{snapshot_tool_unregistered_out_file}"
+                        f" {params.snapshot_tool_unregistered_out_file}"
+                    )
 
                     await run_cmd("SSH snapshot_tool", snapshot_tool_cmd)
-                    await run_cmd("SSH snapshot artifacts copy", scp_cmd)
+                    await run_cmd("SSH snapshot_tool output copy", scp_snapshot_out_cmd)
+                    await run_cmd("SSH snapshot_tool .unregistered output copy", scp_snapshot_unregistered_out_cmd)
 
     def _process_snapshot_output(self):
         for params in self.network_params.values():
@@ -508,13 +537,65 @@ class Importer:
             except Exception as e:
                 logger.error(f"ERROR: {repr(e)}")
 
-        total_registered_voting_power = {}
+        network_snapshot_reports: Dict[str, SnapshotReport] = {}
         registration_delegation_data = {}
         for network_id, network_snapshot in snapshot_tool_data.items():
+            network_snapshot_reports[network_id] = SnapshotReport()
+            network_report = network_snapshot_reports[network_id]
+
+            with open(self.network_params[network_id].snapshot_tool_unregistered_out_file) as f:
+                snapshot_unregistered_data: Dict[str, int] = json.load(f)
+
+            for v in snapshot_unregistered_data.values():
+                network_report.unregistered_voting_power += v
+
             for r in network_snapshot:
-                total_registered_voting_power[network_id] = total_registered_voting_power.get(network_id, 0) + r.voting_power
+                network_report.registered_voting_power += r.voting_power
+                network_report.registrations_count += 1
+
+                rewards_addr = r.rewards_address
+                long_addr_length = 116
+                short_addr_length = 60
+
+                if (
+                    len(rewards_addr) > 4
+                    and rewards_addr[0:2] == "0x"
+                    and rewards_addr[2] in "01234567ef"
+                    and rewards_addr[3] == "1"
+                ):
+                    rewards_type = rewards_addr[2]
+
+                    if rewards_type in "0123":
+                        if len(rewards_addr) == long_addr_length:
+                            network_report.rewards_payable += 1
+                            network_report.unique_rewards[rewards_addr] = network_report.unique_rewards.get(rewards_addr, 0) + 1
+                        else:
+                            network_report.rewards_invalid += 1
+                    elif rewards_type in "45":
+                        if len(rewards_addr) == long_addr_length:
+                            network_report.rewards_pointer += 1
+                            network_report.unique_rewards[rewards_addr] = network_report.unique_rewards.get(rewards_addr, 0) + 1
+                        else:
+                            network_report.rewards_invalid += 1
+                    elif rewards_type in "67":
+                        if len(rewards_addr) == short_addr_length:
+                            network_report.rewards_payable += 1
+                            network_report.unique_rewards[rewards_addr] = network_report.unique_rewards.get(rewards_addr, 0) + 1
+                        else:
+                            network_report.rewards_invalid += 1
+                    elif rewards_type in "ef":
+                        if len(rewards_addr) == short_addr_length:
+                            network_report.rewards_unpayable += 1
+                        else:
+                            network_report.rewards_invalid += 1
+
+                    network_report.rewards_types[rewards_type] = network_report.rewards_types.get(rewards_type, 0) + 1
+                else:
+                    network_report.rewards_invalid += 1
 
                 if isinstance(r.delegations, str):  # CIP15 registration
+                    network_report.cip_15_registration_count += 1
+
                     voting_key = pad_voting_key(r.delegations)
                     voting_key_idx = 0
                     voting_weight = 1
@@ -527,6 +608,11 @@ class Importer:
                     }
                     registration_delegation_data[network_id] = delegation_data
                 elif isinstance(r.delegations, list):  # CIP36 registration
+                    if len(r.delegations) == 1:
+                        network_report.cip_36_single_registration_count += 1
+                    else:
+                        network_report.cip_36_multi_registration_count += 1
+
                     for idx, d in enumerate(r.delegations):
                         voting_key = pad_voting_key(d[0])
                         voting_key_idx = idx
@@ -540,7 +626,7 @@ class Importer:
                         }
                         registration_delegation_data[network_id] = delegation_data
                 else:
-                    raise Exception("Invalid delegations format in registrations")
+                    network_report.rejects += 1
 
                 await asyncio.sleep(0)
 
@@ -602,14 +688,11 @@ class Importer:
         contributions: List[models.Contribution] = []
 
         for network_id, network_processed_snapshot in catalyst_toolbox_data.items():
-            total_contributed_voting_power = 0
-            total_hir_voting_power = 0
+            network_report = network_snapshot_reports[network_id]
 
             for ctd in network_processed_snapshot:
-                total_hir_voting_power += ctd.hir.voting_power
-
                 for snapshot_contribution in ctd.contributions:
-                    total_contributed_voting_power += snapshot_contribution.value
+                    network_report.processed_voting_power += snapshot_contribution.value
 
                     voting_key = ctd.hir.voting_key
                     # This can be removed once it's fixed in catalyst-toolbox
@@ -643,12 +726,24 @@ class Importer:
 
                     await asyncio.sleep(0)
 
+            network_report = network_snapshot_reports[network_id]
+            logger.info("Done processing contributions and voters", network_id=network_id)
             logger.info(
-                "Done processing contributions and voters",
-                total_registered_voting_power=total_registered_voting_power.get(network_id, 0),
-                total_contributed_voting_power=total_contributed_voting_power,
-                total_hir_voting_power=total_hir_voting_power,
+                "Snapshot metrics",
                 network_id=network_id,
+                total_registrations=network_report.registrations_count,
+                total_cip_15_registrations=network_report.cip_15_registration_count,
+                total_cip_36_single_registrations=network_report.cip_36_single_registration_count,
+                total_cip_36_multi_registrations=network_report.cip_36_multi_registration_count,
+                total_registered_voting_power=network_report.registered_voting_power,
+                total_unregistered_voting_power=network_report.unregistered_voting_power,
+                total_processed_voting_power=network_report.processed_voting_power,
+                total_rewards_payable=network_report.rewards_payable,
+                total_rewards_unpayable=network_report.rewards_unpayable,
+                total_rewards_pointer=network_report.rewards_pointer,
+                total_rewards_invalid=network_report.rewards_invalid,
+                total_rewards_types=len(network_report.rewards_types),
+                total_unique_rewards=len(network_report.unique_rewards),
             )
 
         conn = await ideascale_importer.db.connect(self.eventdb_url)

@@ -4,9 +4,6 @@ on:
   push:
     tags:
       - cordova-*
-  pull_request:
-    branches:
-      - main
 
 env:
   RUST_LATEST_STABLE_VERSION: 1.67

@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
-      version: ${{ steps.get_version.outputs.version }}
+      version: ${{ steps.create_release.outputs.id }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -30,10 +30,6 @@ jobs:
           draft: true
           prerelease: false
 
-      - name: Set version output
-        id: get_version
-        run: echo ::set-output name=version::``${GITHUB_REF#refs/tags/}``
-
   build_uniffi:
     name: Build uniffi jni shared libs for android with cross
     runs-on: ubuntu-latest
@@ -44,7 +40,6 @@ jobs:
           - { target: armv7-linux-androideabi }
           - { target: i686-linux-android }
           - { target: x86_64-linux-android }
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v1
@@ -113,7 +108,7 @@ jobs:
 
   package_cordova_plugin:
     runs-on: ubuntu-latest
-    needs: [build_uniffi, build_lipo_asset]
+    needs: [initial_release, build_uniffi, build_lipo_asset]
 
     steps:
       - name: Checkout code
@@ -176,9 +171,9 @@ jobs:
 
       - name: rename-tarball
         run: |
-          find . \
-            -name wallet-cordova-plugin*.tgz \
-            -exec mv {} chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz \;
+          find ./src/chain-wallet-libs -name wallet-cordova-plugin*.tgz -exec mv {} {} \;
+          mv wallet-cordova-plugin*.tgz wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz
+          ls
 
       - name: Upload binaries to release
         uses: actions/upload-release-asset@v1
@@ -186,6 +181,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.initial_release.outputs.upload_url }}
-          asset_path: ./chain-wallet-libs-${{ needs.initial_release.outputs.version }}-cordova.tgz
-          asset_name: chain-wallet-libs-cordova-${{ needs.initial_release.outputs.version }}
+          asset_path: ./wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz
+          asset_name: wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz
           asset_content_type: application/gzip

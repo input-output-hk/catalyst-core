@@ -23,6 +23,7 @@
 <a href="#23" id="23">23</a>
 <a href="#24" id="24">24</a>
 <a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Defines the currency of a reward.
 //!
 </span><span class="kw">use </span>poem_openapi::{types::Example, Enum};
@@ -30,12 +31,13 @@
 <span class="doccomment">/// Currency of the Reward.
 </span><span class="attr">#[derive(Enum)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>RewardCurrency {
-    ADA,
+    <span class="attr">#[oai(rename = <span class="string">&quot;ADA&quot;</span>)]
+    </span>Ada,
 }
 
 <span class="kw">impl </span>Example <span class="kw">for </span>RewardCurrency {
     <span class="kw">fn </span>example() -&gt; <span class="self">Self </span>{
-        <span class="self">Self</span>::ADA
+        <span class="self">Self</span>::Ada
     }
 }
 
@@ -43,7 +45,7 @@
     <span class="kw">type </span>Error = String;
     <span class="kw">fn </span>try_from(value: String) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
         <span class="kw">match </span>value.as_str() {
-            <span class="string">&quot;ADA&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::ADA),
+            <span class="string">&quot;ADA&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Ada),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unknown Reward Currency: {}&quot;</span>, value)),
         }
     }

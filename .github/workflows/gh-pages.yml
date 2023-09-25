@@ -73,16 +73,9 @@ jobs:
           echo "PGPASSWORD=postgres" >> $GITHUB_ENV
           # Try and free space for the runner
           rm -rf /opt/hostedtoolcache
-  
-      - name: Install uniffi
-        uses: actions-rs/install@v0.1
-        with:
-          crate: uniffi_bindgen
-          version: 0.21.1
-          use-tool-cache: true
 
       - name: Build Docs
-        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.4.3
+        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.4.4
         with:
           driver-opts: network=host
           entrypoint: cargo

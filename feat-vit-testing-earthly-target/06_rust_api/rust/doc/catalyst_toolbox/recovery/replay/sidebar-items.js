@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","OutputFileError","OutputFormatError"],"static":["CALLSITE","META"],"struct":["OutputFile","OutputFormat","Replay"]};
+window.SIDEBAR_ITEMS = {"enum":["Error","OutputFileError","OutputFormatError"],"struct":["OutputFile","OutputFormat","Replay"]};

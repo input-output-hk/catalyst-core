@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["AddrType","NetType"],"struct":["DelegationsVisitor","IdentifierDef","VotingKeyVisitor"]};
+window.SIDEBAR_ITEMS = {"struct":["IdentifierDef","VotingKeyVisitor"]};

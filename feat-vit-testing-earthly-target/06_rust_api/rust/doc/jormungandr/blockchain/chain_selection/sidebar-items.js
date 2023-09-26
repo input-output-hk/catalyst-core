@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["ALLOWED_TIME_DISCREPANCY"],"enum":["ComparisonResult"],"fn":["check_rollback_up_to","compare_against"],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"constant":["ALLOWED_TIME_DISCREPANCY"],"enum":["ComparisonResult"],"fn":["check_rollback_up_to","compare_against"]};

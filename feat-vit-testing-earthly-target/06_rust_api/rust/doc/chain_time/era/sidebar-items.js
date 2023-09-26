@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["_strategy_of_0","_strategy_of_epoch","_strategy_of_epoch_start","_strategy_of_slot","_strategy_of_slot_start","_strategy_of_slots_per_epoch","_to_fn_ptr","pack_time_era","unpack_time_era"],"opaque":[""],"struct":["Epoch","EpochPosition","EpochSlotOffset","TimeEra"]};
+window.SIDEBAR_ITEMS = {"fn":["pack_time_era","unpack_time_era"],"struct":["Epoch","EpochPosition","EpochSlotOffset","TimeEra"]};

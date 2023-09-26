@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["_DERIVE_core_fmt_Debug_FOR_FragmentSenderError"],"enum":["BlockDateGenerator","FragmentSenderError"],"opaque":[""],"struct":["FragmentSender"]};
+window.SIDEBAR_ITEMS = {"constant":["_DERIVE_core_fmt_Debug_FOR_FragmentSenderError"],"enum":["BlockDateGenerator","FragmentSenderError"],"struct":["FragmentSender"]};

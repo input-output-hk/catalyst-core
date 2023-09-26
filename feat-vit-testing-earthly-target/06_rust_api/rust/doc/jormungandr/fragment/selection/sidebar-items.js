@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ApplyFragmentError","FragmentSelectionAlgorithmParams","SelectionOutput"],"fn":["try_apply_fragment"],"opaque":[""],"static":["CALLSITE","META"],"struct":["FragmentSelectionResult","NewLedgerState","OldestFirst"],"trait":["FragmentSelectionAlgorithm"]};
+window.SIDEBAR_ITEMS = {"enum":["ApplyFragmentError","FragmentSelectionAlgorithmParams","SelectionOutput"],"fn":["try_apply_fragment"],"struct":["FragmentSelectionResult","NewLedgerState","OldestFirst"],"trait":["FragmentSelectionAlgorithm"]};

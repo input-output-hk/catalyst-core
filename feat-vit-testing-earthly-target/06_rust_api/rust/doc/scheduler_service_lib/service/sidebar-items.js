@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["WrappedPoisonError","__PrivResult"],"fn":["check_if_started","spawn_scheduler"],"opaque":[""],"struct":["ManagerService"]};
+window.SIDEBAR_ITEMS = {"enum":["WrappedPoisonError"],"fn":["check_if_started","spawn_scheduler"],"struct":["ManagerService"]};

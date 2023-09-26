@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["service_version"],"opaque":[""]};
+window.SIDEBAR_ITEMS = {"fn":["service_version"]};

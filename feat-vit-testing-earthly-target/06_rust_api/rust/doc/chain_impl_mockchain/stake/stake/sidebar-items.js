@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["SCALE"],"struct":["PercentStake","SplitValueIn","Stake","StakeUnit"]};
+window.SIDEBAR_ITEMS = {"struct":["PercentStake","SplitValueIn","Stake","StakeUnit"]};

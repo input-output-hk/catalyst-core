@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["ObjectiveDetailsSerde","ObjectiveSerde","ObjectiveSummarySerde","ObjectiveTypeSerde","RewardDefintionSerde","VoterGroupSerde"]};
+window.SIDEBAR_ITEMS = {};

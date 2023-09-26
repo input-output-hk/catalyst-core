@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["_strategy_of_epoch","_strategy_of_reward","_to_fn_ptr"],"opaque":[""],"struct":["LastRewards"]};
+window.SIDEBAR_ITEMS = {"struct":["LastRewards"]};

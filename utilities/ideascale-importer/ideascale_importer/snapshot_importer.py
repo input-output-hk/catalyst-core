@@ -7,9 +7,8 @@ from datetime import datetime
 import json
 import os
 import re
-from typing import Dict, List, Self, Tuple, Optional
+from typing import Dict, List, Tuple, Optional
 from loguru import logger
-import pydantic
 from pydantic import BaseModel
 
 from ideascale_importer.gvc import Client as GvcClient
@@ -76,6 +75,8 @@ class FetchParametersFailed(Exception):
 
 
 class EventParametersMissing(Exception):
+    """Raised when required event parameters are missing."""
+
     ...
 
 
@@ -110,6 +111,8 @@ class InvalidDatabaseUrl(Exception):
 
 
 class EventParameters(BaseModel):
+    """Required event parameters for the snapshot importer."""
+
     voting_power_cap: float
     min_stake_threshold: int
     snapshot_start_time: datetime
@@ -117,6 +120,7 @@ class EventParameters(BaseModel):
 
     @staticmethod
     async def fetch_from_eventdb(conn: asyncpg.Connection, event_id: int) -> "EventParameters":
+        """Fetch all required parameters from event-db."""
         row = await conn.fetchrow(
             "SELECT "
             "registration_snapshot_time, snapshot_start, voting_power_threshold, max_voting_power_pct "
@@ -166,12 +170,14 @@ class EventParameters(BaseModel):
 
 
 class MissingNetworkSnapshotData(Exception):
-    """Raised when the custom raw snapshot file does not contain snapshot data for a network"""
+    """Raised when the custom raw snapshot file does not contain snapshot data for a network."""
 
     ...
 
 
 class NetworkParams(BaseModel):
+    """Snapshot importer params for a network."""
+
     lastest_block_time: Optional[datetime]
     latest_block_slot_no: Optional[int]
     registration_snapshot_slot: Optional[int]
@@ -184,6 +190,7 @@ class NetworkParams(BaseModel):
     async def fetch_from_dbsync(
         conn: asyncpg.Connection, event_parameters: EventParameters, network_id: str, output_dir: str
     ) -> "NetworkParams":
+        """Fetch network params from the given dbsync instance."""
         # Fetch slot number and time from the block right before or equal the registration snapshot time
         row = await conn.fetchrow(
             "SELECT slot_no, time FROM block WHERE time <= $1 AND slot_no IS NOT NULL ORDER BY slot_no DESC LIMIT 1",
@@ -248,6 +255,8 @@ class SSHConfig(BaseModel):
 
 
 class SnapshotReport(BaseModel):
+    """Snapshot report metrics."""
+
     rewards_payable: int = 0
     rewards_unpayable: int = 0
     rewards_pointer: int = 0

@@ -30,7 +30,7 @@ def import_all(
         help="Log level",
     ),
     log_format: str = typer.Option(
-        "text",
+        "json",
         envvar="IDEASCALE_LOG_FORMAT",
         help="Log format",
     ),

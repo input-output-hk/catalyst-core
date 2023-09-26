@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["bitmap","fast","sparse_array"],"struct":["FastSparseArray","FastSparseArrayBuilder","FastSparseArrayIter","SparseArray","SparseArrayBuilder","SparseArrayIter"]};

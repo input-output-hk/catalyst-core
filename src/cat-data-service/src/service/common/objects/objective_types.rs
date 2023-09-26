@@ -26,7 +26,7 @@ impl TryFrom<String> for ObjectiveTypes {
             "catalyst-simple" => Ok(Self::Simple),
             "catalyst-native" => Ok(Self::Native),
             "catalyst-community-choice" => Ok(Self::CommunityChoice),
-            _ => Err(format!("Unknown Objective Type: {}", value)),
+            _ => Err(format!("Unknown objective type: {}", value)),
         }
     }
 }

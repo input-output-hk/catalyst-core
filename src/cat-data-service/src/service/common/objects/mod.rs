@@ -1,4 +1,5 @@
 //! This module contains common and re-usable objects.
+pub(crate) mod ballot_type;
 pub(crate) mod delegate_public_key;
 pub(crate) mod event_id;
 pub(crate) mod objective;
@@ -15,6 +16,7 @@ pub(crate) mod proposer_details;
 pub(crate) mod reward_currency;
 pub(crate) mod reward_definition;
 pub(crate) mod stake_public_key;
+pub(crate) mod vote_plan;
 pub(crate) mod voter_group;
 pub(crate) mod voter_group_id;
 pub(crate) mod voter_info;

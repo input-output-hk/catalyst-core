@@ -26,7 +26,7 @@ impl TryFrom<event_db::types::registration::VoterGroupId> for VoterGroupId {
         match value.0.as_str() {
             "rep" => Ok(Self::Rep),
             "direct" => Ok(Self::Direct),
-            value => Err(format!("Unknown VoterGroupId: {}", value)),
+            value => Err(format!("Unknown voter group id: {}", value)),
         }
     }
 }

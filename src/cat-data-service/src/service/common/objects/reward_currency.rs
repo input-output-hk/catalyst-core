@@ -20,7 +20,7 @@ impl TryFrom<String> for RewardCurrency {
     fn try_from(value: String) -> Result<Self, Self::Error> {
         match value.as_str() {
             "ADA" => Ok(Self::Ada),
-            _ => Err(format!("Unknown Reward Currency: {}", value)),
+            _ => Err(format!("Unknown reward currency: {}", value)),
         }
     }
 }

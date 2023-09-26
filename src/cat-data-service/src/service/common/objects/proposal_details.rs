@@ -10,6 +10,7 @@ pub(crate) struct ProposalDetails {
     /// The amount of funds requested by this proposal.
     /// In the denomination of the Objectives Reward.
     /// If not present, then this proposal is not requesting any funds.
+    #[oai(validator(minimum(value = "0")))]
     funds: i64,
 
     /// URL to a web page with details on this proposal.

@@ -8,6 +8,7 @@ use poem_openapi::{types::Example, Object};
 #[oai(example = true)]
 pub(crate) struct ProposalSummary {
     /// The ID of this proposal.
+    #[oai(validator(minimum(value = "0")))]
     id: ProposalId,
 
     /// Short title of the proposal.

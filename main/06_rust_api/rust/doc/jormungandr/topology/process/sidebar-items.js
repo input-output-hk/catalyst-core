@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["BRANCHES","DEFAULT_NETWORK_STUCK_INTERVAL","MAX_GOSSIP_SIZE","QUARANTINE_CHECK"],"fn":["start"],"opaque":[""],"static":["CALLSITE","META"],"struct":["Process","TaskData"]};
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_NETWORK_STUCK_INTERVAL","MAX_GOSSIP_SIZE","QUARANTINE_CHECK"],"fn":["start"],"struct":["Process","TaskData"]};

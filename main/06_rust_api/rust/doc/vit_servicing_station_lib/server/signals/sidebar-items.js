@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["watch_signal_for_shutdown"],"opaque":[""]};
+window.SIDEBAR_ITEMS = {"fn":["watch_signal_for_shutdown"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["get_reviews_with_proposal_id"],"opaque":[""]};
+window.SIDEBAR_ITEMS = {"fn":["get_reviews_with_proposal_id"]};

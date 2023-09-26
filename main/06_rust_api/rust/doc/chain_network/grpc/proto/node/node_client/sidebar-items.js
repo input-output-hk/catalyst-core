@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"opaque":[""],"struct":["NodeClient"]};
+window.SIDEBAR_ITEMS = {"struct":["NodeClient"]};

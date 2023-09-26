@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["event","event_exec","events_exec"],"mod":["ballots","objective"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"fn":["event","event_exec","events_exec"],"mod":["ballots","objective"]};

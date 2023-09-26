@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["BlockDate","BlockDateStructural","StringOrStruct"]};
+window.SIDEBAR_ITEMS = {"struct":["BlockDate","BlockDateStructural"]};

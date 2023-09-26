@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["node"],"opaque":[""],"struct":["MonitorController","MonitorControllerBuilder","NetworkBuilderObserver"]};
+window.SIDEBAR_ITEMS = {"mod":["node"],"struct":["MonitorController","MonitorControllerBuilder","NetworkBuilderObserver"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["HRP"],"enum":["TransactionWitnessFromStrError"],"struct":["TransactionWitness","TransactionWitnessVisitor"]};
+window.SIDEBAR_ITEMS = {"constant":["HRP"],"enum":["TransactionWitnessFromStrError"],"struct":["TransactionWitness"]};

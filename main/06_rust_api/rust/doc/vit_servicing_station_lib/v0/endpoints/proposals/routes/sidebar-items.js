@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["proposal_filter","proposals_filter"],"opaque":[""]};
+window.SIDEBAR_ITEMS = {"fn":["proposal_filter","proposals_filter"]};

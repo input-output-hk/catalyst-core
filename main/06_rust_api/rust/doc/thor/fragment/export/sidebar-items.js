@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["DESCRIPTION"],"enum":["FragmentExporterError"],"struct":["FragmentExporter"]};
+window.SIDEBAR_ITEMS = {"enum":["FragmentExporterError"],"struct":["FragmentExporter"]};

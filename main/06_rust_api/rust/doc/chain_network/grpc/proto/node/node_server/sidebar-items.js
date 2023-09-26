@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["BlockSubscriptionSvc","ClientAuthSvc","FragmentSubscriptionSvc","GetBlocksSvc","GetFragmentsSvc","GetHeadersSvc","GossipSubscriptionSvc","HandshakeSvc","NodeServer","PeersSvc","PullBlocksSvc","PullBlocksToTipSvc","PullHeadersSvc","PushHeadersSvc","TipSvc","UploadBlocksSvc","_Inner"],"trait":["Node"]};
+window.SIDEBAR_ITEMS = {"struct":["NodeServer","_Inner"],"trait":["Node"]};

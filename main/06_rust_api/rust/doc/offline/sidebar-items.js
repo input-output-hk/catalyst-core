@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["main","read_block0"],"static":["CALLSITE","META"],"struct":["Args"]};
+window.SIDEBAR_ITEMS = {"fn":["main","read_block0"],"struct":["Args"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"opaque":[""],"struct":["Checkpoints"]};
+window.SIDEBAR_ITEMS = {"struct":["Checkpoints"]};

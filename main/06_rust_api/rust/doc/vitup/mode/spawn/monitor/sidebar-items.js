@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["spawn_network"],"static":["POOLS"]};
+window.SIDEBAR_ITEMS = {"fn":["spawn_network"]};

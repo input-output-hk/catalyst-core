@@ -1,0 +1,10 @@
+VERSION 0.7
+
+build:
+    FROM ../../+builder
+    RUN cargo build --locked --release -p vit-servicing-station-cli -p vit-servicing-station-server
+
+    # Store the artifacts
+    SAVE ARTIFACT /src/target/release/vit-servicing-station-cli vit-servicing-station-cli
+    SAVE ARTIFACT /src/target/release/vit-servicing-station-server vit-servicing-station-server
+    SAVE IMAGE --cache-hint

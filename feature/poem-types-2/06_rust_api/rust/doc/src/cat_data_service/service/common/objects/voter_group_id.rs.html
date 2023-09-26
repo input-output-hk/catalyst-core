@@ -58,7 +58,7 @@
         <span class="kw">match </span>value.<span class="number">0</span>.as_str() {
             <span class="string">&quot;rep&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Rep),
             <span class="string">&quot;direct&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Direct),
-            value =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unknown VoterGroupId: {}&quot;</span>, value)),
+            value =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unknown voter group id: {}&quot;</span>, value)),
         }
     }
 }

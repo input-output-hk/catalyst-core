@@ -54,6 +54,7 @@
 <a href="#54" id="54">54</a>
 <a href="#55" id="55">55</a>
 <a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Defines the proposal details.
 //!
 </span><span class="kw">use </span><span class="kw">super</span>::proposer_details::ProposerDetails;
@@ -66,6 +67,7 @@
     <span class="doccomment">/// The amount of funds requested by this proposal.
     /// In the denomination of the Objectives Reward.
     /// If not present, then this proposal is not requesting any funds.
+    </span><span class="attr">#[oai(validator(minimum(value = <span class="string">&quot;0&quot;</span>)))]
     </span>funds: i64,
 
     <span class="doccomment">/// URL to a web page with details on this proposal.

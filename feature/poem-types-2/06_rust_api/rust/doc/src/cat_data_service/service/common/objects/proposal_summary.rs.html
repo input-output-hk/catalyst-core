@@ -41,6 +41,7 @@
 <a href="#41" id="41">41</a>
 <a href="#42" id="42">42</a>
 <a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Defines the proposal summary.
 //!
 </span><span class="kw">use </span><span class="kw">super</span>::proposal_id::ProposalId;
@@ -51,6 +52,7 @@
 #[oai(example = <span class="bool-val">true</span>)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ProposalSummary {
     <span class="doccomment">/// The ID of this proposal.
+    </span><span class="attr">#[oai(validator(minimum(value = <span class="string">&quot;0&quot;</span>)))]
     </span>id: ProposalId,
 
     <span class="doccomment">/// Short title of the proposal.

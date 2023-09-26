@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["__wbg_generated_const_FragmentIds"],"struct":["Fragment","FragmentId","FragmentIds"]};

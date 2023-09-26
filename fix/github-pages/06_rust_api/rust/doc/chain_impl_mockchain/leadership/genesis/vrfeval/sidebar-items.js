@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DOMAIN_NONCE","DOMAIN_THRESHOLD"],"enum":["VrfEvalFailure"],"fn":["above_stake_threshold","get_nonce","get_threshold","phi","witness_to_nonce"],"struct":["Input","Threshold","VrfEvaluator"],"type":["Witness","WitnessOutput"]};

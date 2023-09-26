@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["InsertError","RemoveError","ReplaceError","UpdateError"],"mod":["bitmap","hamt","hash","helper","node","operation","sharedref"],"struct":["Hamt","HamtIter"]};

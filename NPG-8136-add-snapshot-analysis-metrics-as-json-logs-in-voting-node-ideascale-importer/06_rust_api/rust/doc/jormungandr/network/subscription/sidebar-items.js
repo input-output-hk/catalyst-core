@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Direction","FragmentProcessorSendFragmentsState"],"fn":["filter_gossip_node","handle_mbox_error","process_block_announcements","process_fragments","process_gossip"],"struct":["BlockAnnouncementProcessor","FragmentProcessor","GossipProcessor","PendingProcessing"],"type":["ReverseDnsLookupFuture"]};

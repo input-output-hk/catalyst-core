@@ -1,4 +1,5 @@
 //! This module contains common and re-usable objects.
+pub(crate) mod ballot;
 pub(crate) mod ballot_type;
 pub(crate) mod delegate_public_key;
 pub(crate) mod event_id;

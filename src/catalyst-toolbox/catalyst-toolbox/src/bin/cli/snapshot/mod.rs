@@ -1,10 +1,11 @@
+use chain_addr::Discrimination;
 use clap::Parser;
 use color_eyre::Report;
 use jcli_lib::utils::{output_file::OutputFile, output_format::OutputFormat};
 use jormungandr_lib::interfaces::Value;
 use snapshot_lib::{
     voting_group::{RepsVotersAssigner, DEFAULT_DIRECT_VOTER_GROUP, DEFAULT_REPRESENTATIVE_GROUP},
-    RawSnapshot, Snapshot,
+    Snapshot,
 };
 use snapshot_lib::{Dreps, Fraction};
 use std::fs::File;
@@ -45,11 +46,15 @@ pub struct SnapshotCmd {
 
     #[clap(flatten)]
     output_format: OutputFormat,
+
+    /// Discrimination to use for initial addresses
+    #[clap(short, long, default_value = "production")]
+    discrimination: Discrimination,
 }
 
 impl SnapshotCmd {
     pub fn exec(self) -> Result<(), Report> {
-        let raw_snapshot: RawSnapshot = serde_json::from_reader(File::open(&self.snapshot)?)?;
+        let raw_snapshot = serde_json::from_reader(File::open(&self.snapshot)?)?;
         let dreps = if let Some(dreps) = &self.dreps {
             serde_json::from_reader(File::open(dreps)?)?
         } else {
@@ -67,6 +72,7 @@ impl SnapshotCmd {
             self.min_stake_threshold,
             self.voting_power_cap,
             &assigner,
+            self.discrimination,
         )?
         .to_full_snapshot_info();
         let mut out_writer = self.output.open()?;

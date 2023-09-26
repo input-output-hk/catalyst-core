@@ -283,6 +283,6 @@ fn display_message(common: common::CommonTransaction) -> Result<(), Error> {
     let bytes: Vec<u8> = message
         .serialize_as_vec()
         .map_err(Error::MessageSerializationFailed)?;
-    println!("{}", hex::encode(&bytes));
+    println!("{}", hex::encode(bytes));
     Ok(())
 }

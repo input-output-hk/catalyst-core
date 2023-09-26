@@ -1,10 +1,7 @@
-import unittest
-
 from ideascale_importer import utils
 
 
-class TestUtils(unittest.TestCase):
-    def test_snake_case_keys_on_dicts(self):
+def test_snake_case_keys_on_dicts():
         d = {
             "A": 1,
             "SnakeCase": {
@@ -25,8 +22,4 @@ class TestUtils(unittest.TestCase):
 
         utils.snake_case_keys(d)
 
-        self.assertEqual(d, expected_d)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert d == expected_d

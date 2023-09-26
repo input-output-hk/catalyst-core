@@ -47,6 +47,7 @@ property-test-api = [
         "rand_chacha",
         "ed25519-bip32"]
 with-bench = ["criterion","property-test-api"]
+audit=[] # audit fragments have no concept of time.
 
 [dev-dependencies]
 quickcheck = "0.9"

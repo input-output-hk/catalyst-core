@@ -27,10 +27,7 @@
 #
 # ### IDEASCALE DATA IMPORTER
 # IDEASCALE_API_TOKEN - API token for IDEASCALE
-# IDEASCALE_CAMPAIGN_GROUP - Campaign group for IDEASCALE
-# IDEASCALE_STAGE_ID - Stage ID for IDEASCALE
 # IDEASCALE_API_URL - URL for IdeaScale. Example: https://cardano.ideascale.com
-# IDEASCALE_CONFIG_PATH - Path to JSON config file for IdeaScale importer
 #
 # ### DBSYNC SNAPSHOT DATA IMPORTER
 # SNAPSHOT_TOOL_PATH - Path to snapshot tool executable (optional). Defaults to 'snapshot_tool'
@@ -109,10 +106,7 @@ if [ "$HOSTNAME" = "leader0" ]; then
         "COMMITTEE_CRS"
         "SECRET_SECRET"
         "IDEASCALE_API_TOKEN"
-        "IDEASCALE_CAMPAIGN_GROUP"
-        "IDEASCALE_STAGE_ID"
         "IDEASCALE_API_URL"
-        "IDEASCALE_CONFIG_PATH"
         #"TESTNET_DBSYNC_URL"
         #"MAINNET_DBSYNC_URL"
         "GVC_API_URL"

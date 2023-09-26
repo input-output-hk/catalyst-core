@@ -72,7 +72,7 @@ impl ArtificialUserRequestGen {
                 .as_mut()
                 .unwrap()
                 .random_votes()
-                .map_err(|e| RequestFailure::General(format!("{:?}", e))),
+                .map_err(|e| RequestFailure::General(format!("{e:?}"))),
             RequestType::Account => self
                 .account_gen
                 .as_mut()
@@ -98,7 +98,7 @@ impl RequestGenerator for ArtificialUserRequestGen {
                 ids: v,
                 duration: start.elapsed(),
             }),
-            Err(e) => Err(RequestFailure::General(format!("{:?}", e))),
+            Err(e) => Err(RequestFailure::General(format!("{e:?}"))),
         }
     }
 

@@ -12,15 +12,11 @@ use tracing::level_filters::LevelFilter;
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 /// Format of the logger.
+#[derive(Default)]
 pub enum LogFormat {
+    #[default]
     Plain,
     Json,
-}
-
-impl Default for LogFormat {
-    fn default() -> Self {
-        LogFormat::Plain
-    }
 }
 
 impl Display for LogFormat {

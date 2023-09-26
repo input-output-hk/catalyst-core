@@ -24,21 +24,18 @@
     clippy::useless_conversion,
     clippy::wildcard_imports
 )]
-#![cfg_attr(test, allow(clippy::let_underscore_drop))] // useful in tests, often a bug otherwise
+#![cfg_attr(test, allow(let_underscore_drop))] // useful in tests, often a bug otherwise
 
 #[macro_use]
 extern crate tracing;
-#[macro_use]
-extern crate diesel;
 
 mod cli;
 mod data;
-mod data_provider;
+// mod data_provider;
 mod db;
 mod error;
 mod logic;
 mod testing;
-mod validation;
 pub mod verification;
 
 // this export style forces us to be explicit about what is in the public API
@@ -46,8 +43,7 @@ pub use exports::*;
 mod exports {
     pub use crate::cli::{show_error_warning, Args, DryRunCommand};
     pub use crate::data::{Sig, Signature, SlotNo, SnapshotEntry, VotingKey, VotingPurpose};
-    pub use crate::data_provider::DataProvider;
-    pub use crate::db::{Conn, Db, DbConfig};
+    pub use crate::db::DbConfig;
     pub use crate::error::*;
     pub use crate::logic::{voting_power, VotingPowerArgs};
     pub use crate::testing::*;

@@ -1,4 +1,4 @@
-///! Implementation of a sparse array storing maximum of 256 elements
+//! Implementation of a sparse array storing maximum of 256 elements
 mod bitmap;
 mod fast;
 mod sparse_array;

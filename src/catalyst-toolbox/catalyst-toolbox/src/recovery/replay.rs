@@ -53,7 +53,7 @@ impl Replay {
         let mut out_writer = self.output.open()?;
         let content = self
             .output_format
-            .format_json(serde_json::to_value(&voteplan_status)?)?;
+            .format_json(serde_json::to_value(voteplan_status)?)?;
         out_writer.write_all(content.as_bytes())?;
         Ok(())
     }

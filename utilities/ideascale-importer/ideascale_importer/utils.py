@@ -1,6 +1,5 @@
 """Utility functions and classes."""
 
-from dataclasses import dataclass
 from datetime import datetime
 import sys
 import aiohttp
@@ -9,6 +8,7 @@ import json
 from loguru import logger
 import re
 from typing import Any, Dict, Iterable, List, TypeVar, TYPE_CHECKING
+from pydantic import BaseModel
 
 
 DictOrList = TypeVar("DictOrList", Dict[str, Any], List[Any])
@@ -74,8 +74,7 @@ async def run_cmd(name: str, cmd: str):
             logger.info("Successfully ran command")
 
 
-@dataclass
-class RequestProgressInfo:
+class RequestProgressInfo(BaseModel):
     """Information about a request's progress."""
 
     method: str
@@ -94,7 +93,7 @@ class RequestProgressObserver:
     def request_start(self, req_id: int, method: str, url: str):
         """Register the start of a request."""
         logger.info("Request started", req_id=req_id, method=method, url=url)
-        self.inflight_requests[req_id] = RequestProgressInfo(method, url, 0, datetime.now())
+        self.inflight_requests[req_id] = RequestProgressInfo(method=method, url=url, bytes_received=0, last_update=datetime.now())
 
     def request_progress(self, req_id: int, bytes_received: int):
         """Register the progress of a request."""
@@ -136,22 +135,37 @@ class BadResponse(Exception):
 class GetFailed(Exception):
     """Raised when a GET request fails."""
 
-    def __init__(self, status, reason, content):
+    def __init__(self, status: int, content: str):
         """Initialize a new instance of GetFailed."""
-        super().__init__(f"{status} {reason}\n{content})")
+        super().__init__(f"Get request failed status={status} content={content}")
+        self.status = status
+        self.content = content
 
 
-class JsonHttpClient:
-    """HTTP Client for JSON APIs."""
+class HttpClient:
+    """HTTP Client for APIs."""
 
     def __init__(self, api_url: str):
-        """Initialize a new instance of JsonHttpClient."""
+        """Initialize a new instance of HttpClient."""
         self.api_url = api_url
         self.request_progress_observer = RequestProgressObserver()
         self.request_counter = 0
+        self.session = aiohttp.ClientSession()
+
+    async def close(self):
+        await self.session.close()
+
+    async def json_get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
+        """Execute a GET request and returns a JSON result."""
+        content = await self.get(path, headers)
+        # Doing this so we can describe schemas with types and
+        # not worry about field names not being in snake case format.
+        parsed_json = json.loads(content)
+        snake_case_keys(parsed_json)
+        return parsed_json
 
     async def get(self, path: str, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
-        """Execute a GET request on IdeaScale API."""
+        """Execute a GET request"""
         api_url = self.api_url
         if api_url.endswith("/"):
             api_url = api_url[:-1]
@@ -165,25 +179,50 @@ class JsonHttpClient:
         self.request_counter += 1
         req_id = self.request_counter
 
-        async with aiohttp.ClientSession() as session:
-            self.request_progress_observer.request_start(req_id, "GET", url)
-            async with session.get(url, headers=headers) as r:
-                content = b""
+        self.request_progress_observer.request_start(req_id, "GET", url)
+        async with self.session.get(url, headers=headers) as r:
+            content = b""
 
-                async for c, _ in r.content.iter_chunks():
-                    content += c
-                    self.request_progress_observer.request_progress(req_id, len(c))
+            async for c, _ in r.content.iter_chunks():
+                content += c
+                self.request_progress_observer.request_progress(req_id, len(c))
 
-                self.request_progress_observer.request_end(req_id)
+            self.request_progress_observer.request_end(req_id)
 
-                if r.status == 200:
-                    # Doing this so we can describe schemas with types and
-                    # not worry about field names not being in snake case format.
-                    parsed_json = json.loads(content)
-                    snake_case_keys(parsed_json)
-                    return parsed_json
-                else:
-                    raise GetFailed(r.status, r.reason, content)
+            if r.status == 200:
+                return content
+            else:
+                raise GetFailed(r.status, content.decode())
+
+    async def post(self, path: str, data: Dict[str, str] = {}, headers: Dict[str, str] = {}) -> Dict[str, Any] | Iterable[Dict[str, Any]]:
+        """Execute a POST request."""
+        api_url = self.api_url
+        if api_url.endswith("/"):
+            api_url = api_url[:-1]
+
+        if not path.startswith("/"):
+            path = "/" + path
+
+        url = f"{api_url}{path}"
+
+        # Store request id
+        self.request_counter += 1
+        req_id = self.request_counter
+
+        self.request_progress_observer.request_start(req_id, "GET", url)
+        async with self.session.post(url, data = data, headers=headers) as r:
+            content = b""
+
+            async for c, _ in r.content.iter_chunks():
+                content += c
+                self.request_progress_observer.request_progress(req_id, len(c))
+
+            self.request_progress_observer.request_end(req_id)
+
+            if r.status == 200:
+                return content
+            else:
+                raise GetFailed(r.status, content.decode())
 
 
 log_level_colors = {

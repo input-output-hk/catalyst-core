@@ -144,9 +144,9 @@ impl InputOutputBuilder {
     }
 
     /// Calculate the fees on a given fee algorithm for the current transaction
-    pub fn estimate_fee<'a, P: Payload, F: FeeAlgorithm>(
+    pub fn estimate_fee<P: Payload, F: FeeAlgorithm>(
         &self,
-        payload: PayloadSlice<'a, P>,
+        payload: PayloadSlice<'_, P>,
         fee_algorithm: &F,
     ) -> Value {
         fee_algorithm.calculate(
@@ -157,9 +157,9 @@ impl InputOutputBuilder {
     }
 
     /// Get balance including current fee.
-    pub fn get_balance<'a, P: Payload, F: FeeAlgorithm>(
+    pub fn get_balance<P: Payload, F: FeeAlgorithm>(
         &self,
-        payload: PayloadSlice<'a, P>,
+        payload: PayloadSlice<'_, P>,
         fee_algorithm: &F,
     ) -> Result<Balance, ValueError> {
         let fee = self.estimate_fee(payload, fee_algorithm);
@@ -167,9 +167,9 @@ impl InputOutputBuilder {
     }
 
     /// Get balance including current fee.
-    pub fn get_balance_with_placeholders<'a, P: Payload, F: FeeAlgorithm>(
+    pub fn get_balance_with_placeholders<P: Payload, F: FeeAlgorithm>(
         &self,
-        payload: PayloadSlice<'a, P>,
+        payload: PayloadSlice<'_, P>,
         fee_algorithm: &F,
         inputs_placeholders: u8,
         outputs_placeholders: u8,

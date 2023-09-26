@@ -325,8 +325,8 @@ mod test {
             .take(4)
             .collect::<Vec<_>>();
         assert_eq!(
-            serde_json::to_value(&expected_challenges).unwrap(),
-            serde_json::to_value(&challenges).unwrap()
+            serde_json::to_value(expected_challenges).unwrap(),
+            serde_json::to_value(challenges).unwrap()
         );
     }
 }

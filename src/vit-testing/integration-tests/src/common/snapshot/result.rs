@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-
+#![allow(clippy::all)]
 use jormungandr_lib::crypto::account::Identifier;
 use jortestkit::prelude::WaitBuilder;
 use mainnet_tools::snapshot::OutputExtension;

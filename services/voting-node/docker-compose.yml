@@ -39,18 +39,6 @@ services:
       postgres:
         condition: service_healthy
 
-  graphql:
-    image: event-db-graphql:latest
-    environment:
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
-      - JWT_SECRET=CHANGE_ME
-      - GRAPHQL_PORT=5000
-    ports:
-      - 5000:5000
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
-
   cat-data-service:
     image: cat-data-service:latest
     environment:
@@ -62,7 +50,7 @@ services:
       - 3030:3030
 
   leader0:
-    image: voting-node:latest
+    image: voting-node:dev-latest
     hostname: leader0
     depends_on:
       migrations:
@@ -72,8 +60,8 @@ services:
       - IS_NODE_RELOADABLE=True
       - VOTING_HOST=0.0.0.0
       - VOTING_PORT=8000
-      - VOTING_LOG_LEVEL=info
-      - VOTING_LOG_FORMAT=text
+      - VOTING_LOG_LEVEL=debug
+      - VOTING_LOG_FORMAT=json
       - VOTING_NODE_STORAGE=node_storage
       - EVENTDB_URL=postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev
       - JORM_PATH=jormungandr
@@ -84,9 +72,6 @@ services:
       - SECRET_SECRET=SUPER_SECRET_SECRET_THAT_MUST_BE_CHANGED
       ### EXTERNAL DATA IMPORTER
       - IDEASCALE_API_TOKEN=USE-A-VALID-API-TOKEN-FROM-IDEASCALE
-      - IDEASCALE_CAMPAIGN_GROUP=66
-      - IDEASCALE_STAGE_ID=4385
-      - IDEASCALE_CONFIG_PATH=/app/ideascale-importer-config.json
       - IDEASCALE_API_URL=https://cardano.ideascale.com
       ### SNAPSHOT TOOL DATA IMPORTER
       - SNAPSHOT_INTERVAL_SECONDS=1800
@@ -95,6 +80,9 @@ services:
       - TESTNET_DBSYNC_URL=postgres://CHANGE_ME
       - GVC_API_URL=https://CHANGE_ME
       # Remove comments and edit to run snapshot_tool via SSH
+      - DBSYNC_SSH_HOST_KEY=MQo=
+      - DBSYNC_SSH_PRIVKEY=MQo=
+      - DBSYNC_SSH_PUBKEY=MQo=
       # - SNAPSHOT_TOOL_SSH=1
       # - SSH_SNAPSHOT_TOOL_PATH=CHANGE_ME
       # - SSH_SNAPSHOT_TOOL_OUTPUT_DIR=CHANGE_ME
@@ -103,10 +91,9 @@ services:
     volumes:
       - leader0_store:/node_storage
       - leader0_store:/tmp/snapshot-output
-      - ./ideascale-importer-config.json:/app/ideascale-importer-config.json
 
   leader1:
-    image: voting-node:latest
+    image: voting-node:dev-latest
     hostname: leader1
     depends_on:
       postgres:
@@ -119,7 +106,7 @@ services:
       - "donotstart"
 
   leader2:
-    image: voting-node:latest
+    image: voting-node:dev-latest
     hostname: leader2
     depends_on:
       postgres:
@@ -132,7 +119,7 @@ services:
       - "donotstart"
 
   follower3:
-    image: voting-node:latest
+    image: voting-node:dev-latest
     hostname: follower3
     ports:
       - 5057:5057
@@ -148,7 +135,7 @@ services:
 
   otel-collector:
     image: otel/opentelemetry-collector:latest
-    command: [ "--config=/etc/otel-collector.yaml" ]
+    command: ["--config=/etc/otel-collector.yaml"]
     volumes:
       - ./extras/otel-collector.yaml:/etc/otel-collector.yaml
     ports:
@@ -171,13 +158,13 @@ services:
 
   tempo:
     image: grafana/tempo:latest
-    command: [ "-config.file=/etc/tempo.yaml" ]
+    command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./extras/tempo-local.yaml:/etc/tempo.yaml
       - ./extras/tempo-data:/tmp/tempo
     ports:
-      - "3200:3200"  # tempo
-      - "4317"  # otlp grpc
+      - "3200:3200" # tempo
+      - "4317" # otlp grpc
     profiles:
       - "donotstart"
 

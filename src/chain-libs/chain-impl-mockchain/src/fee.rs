@@ -60,7 +60,7 @@ impl PerCertificateFee {
         }
     }
 
-    fn fees_for_certificate<'a>(&self, cert: &CertificateSlice<'a>) -> Option<Value> {
+    fn fees_for_certificate(&self, cert: &CertificateSlice<'_>) -> Option<Value> {
         match cert {
             CertificateSlice::PoolRegistration(_) => {
                 self.certificate_pool_registration.map(|v| Value(v.get()))
@@ -87,7 +87,7 @@ impl PerVoteCertificateFee {
         }
     }
 
-    fn fees_for_certificate<'a>(&self, cert: &CertificateSlice<'a>) -> Option<Value> {
+    fn fees_for_certificate(&self, cert: &CertificateSlice<'_>) -> Option<Value> {
         match cert {
             CertificateSlice::VotePlan(_) => self.certificate_vote_plan.map(|v| Value(v.get())),
             CertificateSlice::VoteCast(_) => self.certificate_vote_cast.map(|v| Value(v.get())),

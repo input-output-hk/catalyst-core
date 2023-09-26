@@ -208,7 +208,7 @@ mod tests {
             encryption_key: Some("encryption_key 1".to_string()),
         });
 
-        let json = serde_json::to_value(&vote_plan).unwrap();
+        let json = serde_json::to_value(vote_plan).unwrap();
         assert_eq!(
             json,
             json!(
@@ -230,7 +230,7 @@ mod tests {
             encryption_key: None,
         });
 
-        let json = serde_json::to_value(&vote_plan).unwrap();
+        let json = serde_json::to_value(vote_plan).unwrap();
         assert_eq!(
             json,
             json!(
@@ -250,7 +250,7 @@ mod tests {
             voteplans: GroupVotePlans(vec![]),
         });
 
-        let json = serde_json::to_value(&ballot).unwrap();
+        let json = serde_json::to_value(ballot).unwrap();
         assert_eq!(
             json,
             json!(
@@ -272,7 +272,7 @@ mod tests {
             },
         });
 
-        let json = serde_json::to_value(&ballot).unwrap();
+        let json = serde_json::to_value(ballot).unwrap();
         assert_eq!(
             json,
             json!(
@@ -294,7 +294,7 @@ mod tests {
             ballots: vec![],
         });
 
-        let json = serde_json::to_value(&ballot).unwrap();
+        let json = serde_json::to_value(ballot).unwrap();
         assert_eq!(
             json,
             json!(

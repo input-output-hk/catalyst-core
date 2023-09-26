@@ -67,7 +67,7 @@ mod tests {
             token_identifier: "token_identifier 1".to_string(),
         });
 
-        let json = serde_json::to_value(&voteplan).unwrap();
+        let json = serde_json::to_value(voteplan).unwrap();
         assert_eq!(
             json,
             json!(

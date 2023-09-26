@@ -262,11 +262,7 @@ mod tests {
             .unwrap(),
         );
         let proposal_index = ProposalIndex(1);
-        assert!(state.add_account_vote(
-            account_id.clone(),
-            vote_plan_id.clone(),
-            proposal_index.clone()
-        ));
+        assert!(state.add_account_vote(account_id.clone(), vote_plan_id, proposal_index));
 
         assert!(!state.get_account_votes(&account_id).is_empty());
 

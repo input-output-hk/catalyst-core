@@ -36,11 +36,12 @@
       rustToolchain
       # rustNightly
       protobuf
-      uniffi-bindgen
+      #uniffi-bindgen
       postgresql
 
       # Misc tools
       jq
+      poetry
       python310Packages.pylddwrap
     ];
   };

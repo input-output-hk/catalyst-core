@@ -41,7 +41,7 @@ pub fn private_vote_multiple_vote_plans() {
         .fund_id(expected_fund.id)
         .slot_duration_in_seconds(2)
         .proposals_count(template_generator.proposals_count() as u32)
-        .challenges_count(template_generator.challenges_count() as usize)
+        .challenges_count(template_generator.challenges_count())
         //TODO: implement review_count in template_generator struct
         .reviews_count(3)
         .voting_power(expected_fund.threshold.unwrap() as u64)

@@ -117,4 +117,4 @@ lefthook.yml
 treefmt.toml
 
 # local earthly Environments
-local/
+local/*

@@ -12,7 +12,7 @@ build:
 
     # Install system dependencies
     RUN apt-get update && \
-        apt-get install -y --no-install-recommends curl
+        apt-get install -y --no-install-recommends curl build-essential libxml2-dev libxslt-dev zlib1g-dev python3-lxml
 
     # Install Poetry
     RUN curl -sSL https://install.python-poetry.org | python3 -
@@ -24,7 +24,6 @@ build:
     COPY pyproject.toml .
     COPY poetry.lock .
     COPY --dir ideascale_importer README.md ./
-    COPY ideascale-importer-config.json ./
 
     # Install package dependencies
     RUN poetry env use python
@@ -34,7 +33,7 @@ build:
     # Build the distribution wheels and save them as artifacts
     RUN poetry export --without-hashes -f requirements.txt --output requirements.txt
     RUN poetry build --no-cache -f wheel
-    RUN mkdir -p /wheels && mv dist/*.whl /wheels && rm -rf dist
+    RUN mkdir -p /wheels && cp dist/*.whl /wheels && rm -rf dist
     SAVE ARTIFACT /src/utilities/ideascale-importer src
     SAVE ARTIFACT /wheels wheels
     SAVE ARTIFACT requirements.txt
@@ -45,7 +44,7 @@ docker:
 
     # Install system dependencies
     RUN apt-get update && \
-        apt-get install -y --no-install-recommends libpq5
+        apt-get install -y --no-install-recommends libpq5 build-essential libxml2-dev libxslt-dev zlib1g-dev python3-lxml
 
     ## apt cleanup
     RUN apt-get clean && \
@@ -72,3 +71,14 @@ docker:
 
     # Build and tag the Docker image
     SAVE IMAGE --push ${registry}ideascale-importer:$tag
+
+# Run tests
+test:
+    FROM +build
+
+    RUN --no-cache \
+        --secret IDEASCALE_EMAIL \
+        --secret IDEASCALE_PASSWORD \
+        --secret IDEASCALE_API_TOKEN \
+        IDEASCALE_API_URL="https://temp-cardano-sandbox.ideascale.com" \
+        poetry run pytest

@@ -21,7 +21,7 @@ use jormungandr_lib::{
     },
     time::SecondsSinceUnixEpoch,
 };
-use std::mem;
+
 use thiserror::Error;
 use tokio::{
     fs::File,
@@ -80,7 +80,7 @@ impl Pool {
     /// Synchronizes the persistent log file contents and metadata
     /// to the file system and closes the file.
     pub async fn close_persistent_log(&mut self) {
-        if let Some(mut persistent_log) = mem::replace(&mut self.persistent_log, None) {
+        if let Some(mut persistent_log) = self.persistent_log.take() {
             if let Err(error) = persistent_log.flush().await {
                 tracing::error!(%error, "failed to flush persistent log");
             }
@@ -96,12 +96,12 @@ impl Pool {
         id: FragmentId,
     ) -> Result<(), FragmentRejectionReason> {
         if self.logs.exists(id) {
-            tracing::debug!("fragment is already logged");
+            tracing::debug!("fragment is already logged, excluding from the pool");
             return Err(FragmentRejectionReason::FragmentAlreadyInLog);
         }
 
         if !is_fragment_valid(fragment) {
-            tracing::debug!("fragment is invalid, not including to the pool");
+            tracing::debug!("fragment is invalid, excluding from the pool");
             return Err(FragmentRejectionReason::FragmentInvalid);
         }
 
@@ -122,7 +122,7 @@ impl Pool {
             }
         }
 
-        tracing::debug!("including fragment to the pool");
+        tracing::debug!("fragment is valid for pool entry");
         Ok(())
     }
 

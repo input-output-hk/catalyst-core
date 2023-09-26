@@ -47,7 +47,7 @@ impl Harvester {
             .build()?;
 
         let res = client
-            .get(&format!("{}/v0/fragment/logs", self.endpoint))
+            .get(format!("{}/v0/fragment/logs", self.endpoint))
             .send()?;
         serde_json::from_str(&res.text()?).map_err(Into::into)
     }

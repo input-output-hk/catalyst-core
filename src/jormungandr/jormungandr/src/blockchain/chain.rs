@@ -49,6 +49,7 @@ See Internal documentation for more details: doc/internal_design.md
 [`Branch`]: ./struct.Branch.html
 */
 #![allow(clippy::large_enum_variant)]
+#![allow(clippy::result_large_err)]
 use super::reference_cache::RefCache;
 use crate::{
     blockcfg::{

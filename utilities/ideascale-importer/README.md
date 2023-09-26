@@ -32,7 +32,7 @@ poetry install
 To see the available commands:
 
 ```sh
-poetry run python -m ideascale_importer --help
+poetry run python -m ideascale_importer.app --help
 ```
 
 or

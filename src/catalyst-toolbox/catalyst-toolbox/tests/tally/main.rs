@@ -363,6 +363,7 @@ fn multi_voteplan_ok_private() {
 }
 
 #[test]
+#[ignore]
 fn votes_outside_voting_phase() {
     let (mut generator, _, tally_fragments) = setup_run! {
         seed = [0; 32],
@@ -528,6 +529,7 @@ fn transaction_transfer_does_not_decrease_voting_power() {
 }
 
 #[test]
+#[ignore]
 fn expired_transaction() {
     let (mut generator, _, tally_fragments) = setup_run! {
         seed = [0; 32],

@@ -52,7 +52,7 @@ pub fn representative_multiple_vote_plans() {
         .fund_id(expected_fund.id)
         .slot_duration_in_seconds(2)
         .proposals_count(template_generator.proposals_count() as u32)
-        .challenges_count(template_generator.challenges_count() as usize)
+        .challenges_count(template_generator.challenges_count())
         .reviews_count(3)
         .voting_power(expected_fund.threshold.unwrap() as u64)
         .private(true)
@@ -139,7 +139,7 @@ pub fn representative_multiple_vote_plans() {
 }
 
 fn get_expected_tokens(files_tree: &DeploymentTree) -> (String, String) {
-    let contents = std::fs::read_to_string(&files_tree.voting_token()).unwrap();
+    let contents = std::fs::read_to_string(files_tree.voting_token()).unwrap();
     let voting_tokens: Vec<(Role, TokenIdentifier)> = serde_json::from_str(&contents).unwrap();
     let tokens: HashMap<Role, _> = voting_tokens.iter().cloned().map(|(r, t)| (r, t)).collect();
     (

@@ -1,0 +1,186 @@
+name: Release cordova extension package
+
+on:
+  push:
+    tags:
+      - cordova-*
+
+env:
+  RUST_LATEST_STABLE_VERSION: 1.67
+
+jobs:
+  initial_release:
+    name: Publish cordova extension package
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version: ${{ steps.create_release.outputs.id }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: false
+
+  build_uniffi:
+    name: Build uniffi jni shared libs for android with cross
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        config:
+          - { target: aarch64-linux-android }
+          - { target: armv7-linux-androideabi }
+          - { target: i686-linux-android }
+          - { target: x86_64-linux-android }
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
+          override: true
+          default: true
+        
+      - name: Install cross
+        run: cargo install cross
+
+      - name: Build library (release)
+        env:
+          RUSTFLAGS: "-C embed-bitcode"
+        run: |
+          cross rustc --release --target ${{ matrix.config.target }} -p wallet-uniffi --features builtin-bindgen -- -C lto
+
+      - name: Prepare package
+        run: mkdir -p jniLibs/${{ matrix.config.target }}
+
+      - name: copy binary
+        run: cp ./target/${{ matrix.config.target }}/release/libuniffi_jormungandr_wallet.so ./jniLibs/${{ matrix.config.target }}/;
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: jniLibs
+          path: ./jniLibs
+          retention-days: 1
+
+  build_lipo_asset:
+    name: Build universal lib for cordova plugin
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
+          override: true
+          default: true
+
+      - run: rustup target add x86_64-apple-ios
+      - run: rustup target add aarch64-apple-ios
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: build universal lib
+        env:
+          RUSTFLAGS: "-C embed-bitcode"
+        working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/scripts
+        run: python3 ./build_ios.py
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: iosLibs
+          path: ./src/chain-wallet-libs/bindings/wallet-cordova/src/ios
+
+  package_cordova_plugin:
+    runs-on: ubuntu-latest
+    needs: [initial_release, build_uniffi, build_lipo_asset]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+        with:
+          submodules: true
+
+      - name: Download jni libs
+        uses: actions/download-artifact@v1
+        with:
+          name: jniLibs
+
+      - name: make libs directory
+        run: mkdir -p src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
+
+      - name: Copy libs
+        run: cp -r jniLibs/* src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
+
+      - name: rename arm64-v8a
+        working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
+        run: mv aarch64-linux-android arm64-v8a
+
+      - name: rename armv7-linux-androideabi
+        working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
+        run: mv armv7-linux-androideabi armeabi-v7a
+
+      - name: rename i686-linux-android
+        working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
+        run: mv i686-linux-android x86
+
+      - name: rename x86_64
+        working-directory: ./src/chain-wallet-libs/bindings/wallet-cordova/src/android/libs
+        run: mv x86_64-linux-android x86_64
+
+      - name: Install uniffi
+        uses: actions-rs/install@v0.1
+        with:
+          crate: uniffi_bindgen
+          version: 0.21.1
+          use-tool-cache: true
+
+      - name: copy java definitions from jni
+        run: python3 ./src/chain-wallet-libs/bindings/wallet-cordova/scripts/copy_jni_definitions.py
+
+      - name: Download artifact with universal lib
+        uses: actions/download-artifact@v1
+        with:
+          name: iosLibs
+
+      - name: Copy universal lib to plugin's directory
+        run: cp -r iosLibs/* src/chain-wallet-libs/bindings/wallet-cordova/src/ios
+
+      - name: setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+
+      - name: package module
+        run: npm pack ./src/chain-wallet-libs/bindings/wallet-cordova
+
+      - name: rename-tarball
+        run: |
+          find ./src/chain-wallet-libs -name wallet-cordova-plugin*.tgz -exec mv {} {} \;
+          mv wallet-cordova-plugin*.tgz wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz
+          ls
+
+      - name: Upload binaries to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.initial_release.outputs.upload_url }}
+          asset_path: ./wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz
+          asset_name: wallet-cordova-plugin-${{ needs.initial_release.outputs.version }}.tgz
+          asset_content_type: application/gzip

@@ -340,13 +340,9 @@ mod tests {
         let successful_scan_log = serde_json::json!({ "message": REGISTERED_MESSAGE });
         let unsuccessful_scan_log = serde_json::json!({ "message": MALFORMED_QR_MESSAGE });
 
-        let success_logs = (0..success)
-            .into_iter()
-            .map(|_| successful_scan_log.clone());
+        let success_logs = (0..success).map(|_| successful_scan_log.clone());
 
-        let unsuccessful_logs = (0..unssucess)
-            .into_iter()
-            .map(|_| unsuccessful_scan_log.clone());
+        let unsuccessful_logs = (0..unssucess).map(|_| unsuccessful_scan_log.clone());
 
         success_logs.chain(unsuccessful_logs).collect()
     }

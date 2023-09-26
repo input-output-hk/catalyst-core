@@ -129,7 +129,6 @@ impl PerfDataCommandArgs {
     fn split_secrets(&self, tree: &DeploymentTree) -> Result<()> {
         let pattern = tree.wallet_search_pattern();
         let secrets: Vec<PathBuf> = (0..self.parts)
-            .into_iter()
             .map(|id| {
                 let folder = tree
                     .root_path()

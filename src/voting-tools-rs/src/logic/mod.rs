@@ -21,23 +21,6 @@ pub use args::VotingPowerArgs;
 
 /// Calculate voting power info by querying a db-sync instance
 ///
-/// ```no_run
-/// # use voting_tools_rs::{Db, VotingPowerArgs};
-/// # fn connect() -> Db { unimplemented!() }
-/// let db: Db = connect();  // get a database connection
-/// let args = VotingPowerArgs::default();
-/// let (valids, invalids) = voting_power(db, args);
-///
-/// // `valids` contains all successful registrations
-/// // `invalids` contains failed registrations, with a reason:
-/// for invalid in invalids {
-///     println!("failed registration - reasons: ")
-///     for error in invalid.error {
-///         // ...
-///     }
-/// }
-/// ```
-///
 /// Returns a tuple containing the successful snapshot entries, as well as any registrations which
 /// failed verification in some way (along with some reason why they failed).
 ///
@@ -59,6 +42,7 @@ pub fn voting_power(
         max_slot,
         network_id,
         expected_voting_purpose: _,
+        cip_36_multidelegations,
     }: VotingPowerArgs,
 ) -> Result<(Vec<SnapshotEntry>, Vec<InvalidRegistration>, Unregistered)> {
     const ABS_MIN_SLOT: SlotNo = SlotNo(0);
@@ -74,7 +58,14 @@ pub fn voting_power(
 
     info!("starting registrations job");
     let registrations = thread::spawn(move || {
-        filter_registrations(min_slot, max_slot, db_client_registrations, network_id).unwrap()
+        filter_registrations(
+            min_slot,
+            max_slot,
+            db_client_registrations,
+            network_id,
+            cip_36_multidelegations,
+        )
+        .unwrap()
     });
 
     let (valids, invalids) = registrations.join().unwrap();

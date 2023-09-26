@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 use super::spending::{SpendingCounter, SpendingCounterIncreasing};
 use super::{LastRewards, LedgerError};
 use crate::date::Epoch;

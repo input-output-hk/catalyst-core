@@ -338,7 +338,7 @@ impl VotePlanProof {
         bb.bytes(self.id.as_ref()).bytes(self.signature.as_ref())
     }
 
-    pub fn verify<'a>(&self, verify_data: &TransactionBindingAuthData<'a>) -> Verification {
+    pub fn verify(&self, verify_data: &TransactionBindingAuthData<'_>) -> Verification {
         let pk = self.id.public_key();
         self.signature.verify_slice(&pk, verify_data)
     }

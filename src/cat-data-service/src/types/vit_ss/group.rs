@@ -44,7 +44,7 @@ mod tests {
             group_id: "group_id 1".to_string(),
         });
 
-        let json = serde_json::to_value(&group).unwrap();
+        let json = serde_json::to_value(group).unwrap();
         assert_eq!(
             json,
             json!(

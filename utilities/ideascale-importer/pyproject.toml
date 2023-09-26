@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ideascale-importer"
-version = "0.3.1"
+version = "0.4.1"
 description = ""
 authors = []
 readme = "README.md"
@@ -25,7 +25,7 @@ mccabe = "0.7.0"
 multidict = "6.0.3"
 packaging = "22.0"
 pycodestyle = "2.10.0"
-pydantic = "~1.10.7"
+pydantic = "~2.1"
 pyflakes = "3.0.1"
 pygments = "2.13.0"
 six = "1.16.0"
@@ -34,16 +34,22 @@ tomli = "2.0.1"
 typeguard = "2.13.3"
 typer = "0.7.0"
 typing-inspect = "0.8.0"
-typing-extensions = "4.4.0"
+typing-extensions = "~4.7.1"
 yarl = "1.8.2"
 loguru = "^0.6.0"
 brotlipy = "^0.7.0"
+lxml = "4.9.3"
+rich = "^13.3.4"
+
+openpyxl = "^3.1.2"
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1"
 mypy-extensions = ">=1"
 ruff = "^0.0.261"
 black = "^23.3.0"
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.1"
 
 [tool.poetry.scripts]
 ideascale-importer = "ideascale_importer.app:app"

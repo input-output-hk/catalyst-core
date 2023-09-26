@@ -18,6 +18,6 @@ To run with the specific jorm mock state cleanup timeout you can specify `JORM_C
 
 Run
 ```
-cat-data-service run --address "127.0.0.1:3030" --database-url=postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev --log-level=debug --metrics-address "127.0.0.1:3031"
+cat-data-service run --address "127.0.0.1:3030" --database-url=postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev --log-level=debug --log-format=compact --metrics-address "127.0.0.1:3031"
 ```
 

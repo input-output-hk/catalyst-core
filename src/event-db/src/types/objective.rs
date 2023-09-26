@@ -16,6 +16,7 @@ pub struct ObjectiveSummary {
     pub objective_type: ObjectiveType,
     pub title: String,
     pub description: String,
+    pub deleted: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

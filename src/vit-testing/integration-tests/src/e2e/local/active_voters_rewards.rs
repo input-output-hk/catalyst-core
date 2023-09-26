@@ -13,6 +13,7 @@ use chain_impl_mockchain::block::BlockDate;
 use jormungandr_automation::testing::time;
 use jormungandr_lib::crypto::account::Identifier;
 use mainnet_lib::{wallet_state::MainnetWalletStateBuilder, MainnetNetworkBuilder};
+use snapshot_lib::registration::RewardAddress;
 use snapshot_trigger_service::config::JobParameters;
 use vit_servicing_station_tests::common::data::ArbitraryValidVotingTemplateGenerator;
 use vitup::config::VoteBlockchainTime;
@@ -157,7 +158,9 @@ pub fn voters_with_at_least_one_vote() {
     assert_eq!(
         records
             .iter()
-            .find(|(x, _y)| **x == alice_wallet.reward_address().to_address().to_hex())
+            .find(
+                |(x, _y)| **x == RewardAddress(alice_wallet.reward_address().to_address().to_hex())
+            )
             .unwrap()
             .1,
         &50u32.into()
@@ -166,7 +169,7 @@ pub fn voters_with_at_least_one_vote() {
     assert_eq!(
         records
             .iter()
-            .find(|(x, _y)| **x == bob_wallet.reward_address().to_address().to_hex())
+            .find(|(x, _y)| **x == RewardAddress(bob_wallet.reward_address().to_address().to_hex()))
             .unwrap()
             .1,
         &50u32.into()

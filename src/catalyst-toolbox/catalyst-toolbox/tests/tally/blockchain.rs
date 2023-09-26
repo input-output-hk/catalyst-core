@@ -103,7 +103,6 @@ impl TestBlockchainBuilder {
 
         let mut initial = Vec::with_capacity(self.n_wallets as usize + self.n_committees as usize);
         let mut wallets = (0..self.n_wallets + self.n_committees as u32)
-            .into_iter()
             .map(|_| {
                 let funds = rng.gen_range(MIN_FUNDS..MAX_FUNDS);
                 let wallet =

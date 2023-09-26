@@ -1,11 +1,11 @@
 """Database models for the vit-servicing-station database."""
 
-import dataclasses
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, ClassVar, List, Mapping, Optional, Set
 
 
-@dataclasses.dataclass
+@dataclass
 class Model:
     """Base class for all models."""
 
@@ -17,7 +17,7 @@ class Model:
         raise NotImplementedError()
 
 
-@dataclasses.dataclass
+@dataclass
 class Event(Model):
     """Represents a database objective."""
 
@@ -46,8 +46,8 @@ class Event(Model):
         return "event"
 
 
-@dataclasses.dataclass
-class Challenge(Model):
+@dataclass
+class Objective(Model):
     """Represents a database objective."""
 
     exclude_from_insert: ClassVar[Set[str]] = {"row_id"}
@@ -58,6 +58,7 @@ class Challenge(Model):
     category: str
     title: str
     description: str
+    deleted: bool
     rewards_currency: Optional[str]
     rewards_total: Optional[int]
     proposers_rewards: Optional[int]
@@ -70,7 +71,7 @@ class Challenge(Model):
         return "objective"
 
 
-@dataclasses.dataclass
+@dataclass
 class Proposal(Model):
     """Represents a database proposal."""
 
@@ -78,6 +79,7 @@ class Proposal(Model):
     objective: int
     title: str
     summary: str
+    deleted: bool
     category: str
     public_key: str
     funds: int
@@ -101,7 +103,7 @@ class Proposal(Model):
         return "proposal"
 
 
-@dataclasses.dataclass
+@dataclass
 class Goal(Model):
     """Represents a database goal."""
 
@@ -115,7 +117,7 @@ class Goal(Model):
         return "goal"
 
 
-@dataclasses.dataclass
+@dataclass
 class VotingGroup(Model):
     """Represents a database voting_group."""
 
@@ -129,7 +131,7 @@ class VotingGroup(Model):
         return "voting_group"
 
 
-@dataclasses.dataclass
+@dataclass
 class Voteplan(Model):
     """Represents a database voteplan."""
 
@@ -145,7 +147,7 @@ class Voteplan(Model):
         return "voteplan"
 
 
-@dataclasses.dataclass
+@dataclass
 class ProposalVoteplan(Model):
     """Represents a database proposal_voteplan."""
 
@@ -159,7 +161,7 @@ class ProposalVoteplan(Model):
         return "proposal_voteplan"
 
 
-@dataclasses.dataclass
+@dataclass
 class Voter(Model):
     """Represents a database voter."""
 
@@ -174,7 +176,7 @@ class Voter(Model):
         return "voter"
 
 
-@dataclasses.dataclass
+@dataclass
 class Contribution(Model):
     """Represents a database contribution."""
 
@@ -193,7 +195,7 @@ class Contribution(Model):
         return "contribution"
 
 
-@dataclasses.dataclass
+@dataclass
 class Snapshot(Model):
     """Represents a database snapshot."""
 
@@ -216,3 +218,18 @@ class Snapshot(Model):
     def table() -> str:
         """Return the name of the table that this model is stored in."""
         return "snapshot"
+
+@dataclass
+class Config(Model):
+    """Represents a database config."""
+
+    row_id: int
+    id: str
+    id2: str
+    id3: str
+    value: Optional[Mapping[str, Any]]
+
+    @staticmethod
+    def table() -> str:
+        """Return the name of the table that this model is stored in."""
+        return "config"

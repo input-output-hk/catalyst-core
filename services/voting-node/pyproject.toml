@@ -4,7 +4,7 @@ version = "0.0.1"
 description = ""
 authors = ["Catalyst Core Developers <dev@iohk.io>"]
 license = "MIT or Apache License 2.0"
-readme = "development.md"
+readme = "README.md"
 packages = [{include = "voting_node"}]
 
 [build-system]
@@ -17,20 +17,21 @@ python = "^3.11"
 click = "^8.1.3"
 asyncio = "^3.4.3"
 asyncpg = "^0.27.0"
-fastapi = "^0.93.0"
+fastapi = "^0.101.0"
 opentelemetry-distro = {extras = ["otlp"], version = "^0.37b0"}
 opentelemetry-instrumentation = "^0.37b0"
 opentelemetry-instrumentation-fastapi = "^0.37b0"
 opentelemetry-instrumentation-asyncpg = "^0.37b0"
 prometheus-fastapi-instrumentator = "^5.10.0"
 PyYAML = "^6.0"
-uvicorn = {extras = ["standard"], version = "^0.20.0"}
+uvicorn = {extras = ["standard"], version = "~0.23.2"}
 aiofile = "^3.8.5"
-pydantic = "~1.10.7"
+pydantic = "~2.1"
 cryptography = "^40.0.1"
 loguru = "^0.6.0"
 ideascale-importer = {path = "../../utilities/ideascale-importer"}
 brotlipy = "^0.7.0"
+lxml = "^4.9.3"
 
 [tool.poetry.group.dev.dependencies]
 # formatting
@@ -38,6 +39,8 @@ black = "^23.1.0"
 # linting
 ruff = "^0.0.254"
 pdoc = "^13.1.0"
+pytest = "^7.4.0"
+pytest-asyncio = "^0.21.1"
 
 [tool.poetry.scripts]
 voting-node = "voting_node.main:voting_node_cli"

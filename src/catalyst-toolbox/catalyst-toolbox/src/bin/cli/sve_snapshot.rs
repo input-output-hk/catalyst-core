@@ -24,7 +24,7 @@ pub struct SveSnapshotCmd {
     #[clap(short, long)]
     file: PathBuf,
 
-    /// Registrations voting power threshold for eligibility
+    /// Registrations voting power threshold for eligibility expressed in lovelace
     #[clap(short, long)]
     min_stake_threshold: Value,
 
@@ -32,7 +32,7 @@ pub struct SveSnapshotCmd {
     #[clap(short, long)]
     discrimination: Discrimination,
 
-    /// Whether voting power is expressed in lovelace or ada
+    /// Whether voting power in the outputfile is expressed in lovelace or ada
     #[clap(short, long)]
     lovelace: bool,
 
@@ -64,7 +64,8 @@ impl SveSnapshotCmd {
         }
 
         // Filter CIP-36 registrations with more than 1 delegation.
-        let registrations: Vec<VotingRegistration> = serde_json::from_value(registratons)?;
+        let registrations = serde_json::from_value::<Vec<VotingRegistration>>(registratons)?;
+
         let raw_snapshot = RawSnapshot::from(registrations);
         let (snapshot, total_registrations_rejected) =
             snapshot_lib::sve::Snapshot::new(raw_snapshot, self.min_stake_threshold);

@@ -167,7 +167,7 @@ impl RequestGenerator for WalletRequestGen {
                 ids: vec![Some(v.to_string())],
                 duration: start.elapsed(),
             }),
-            Err(e) => Err(RequestFailure::General(format!("{:?}", e))),
+            Err(e) => Err(RequestFailure::General(format!("{e:?}"))),
         }
     }
 }

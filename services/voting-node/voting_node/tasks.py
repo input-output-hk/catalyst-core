@@ -3,12 +3,10 @@
 Scheduled tasks are defined for Leader and Follower Nodes, with Leader0 being a special case,
 as it is the only one responsible for initializing block0 for a voting event.
 """
-import json
 import os
 import secrets
-from typing import Final, NoReturn
+from typing import Final, Mapping, NoReturn
 
-import brotli
 from loguru import logger
 
 from . import utils
@@ -25,7 +23,11 @@ from .models import (
     NodeConfigYaml,
     NodeSecretYaml,
     NodeTopologyKey,
+    Objective,
+    Proposal,
     ServiceSettings,
+    Voter,
+    VotingGroup,
     YamlType,
 )
 from .node import (
@@ -41,53 +43,55 @@ KEEP_DATA = False
 SCHEDULE_RESET_MSG = "schedule was reset"
 
 LEADER_NODE_SCHEDULE: Final = [
-    "connect_db",
-    "fetch_upcoming_event",
-    "wait_for_start_time",
-    "fetch_host_keys",
-    "fetch_leaders",
-    "set_node_secret",
-    "set_node_topology_key",
-    "set_node_config",
-    "get_block0",
-    "wait_for_voting",
-    "voting",
-    "wait_for_tally",
-    "tally",
-    "cleanup",
+    "node_fetch_event",
+    "node_wait_for_start_time",
+    "node_fetch_host_keys",
+    "node_fetch_leaders",
+    "node_set_secret",
+    "node_set_topology_key",
+    "node_set_config",
+    "block0_fetch",
+    "node_wait_for_voting",
+    "event_voting_period",
+    "node_wait_for_tally",
+    "event_tally_period",
+    "node_cleanup",
 ]
+"""List of scheduled tasks for peer leader nodes."""
 LEADER0_NODE_SCHEDULE: Final = [
-    "connect_db",
-    "fetch_upcoming_event",
-    "wait_for_start_time",
-    "fetch_host_keys",
-    "fetch_leaders",
-    "set_node_secret",
-    "set_node_topology_key",
-    "set_node_config",
-    "wait_for_registration_snapshot_time",
-    "import_snapshot_data",
-    "collect_snapshot_data",
-    "setup_tally_committee",
-    "setup_block0",
-    "publish_block0",
-    "wait_for_voting",
-    "voting",
-    "wait_for_tally",
-    "tally",
-    "cleanup",
+    "node_fetch_event",
+    "node_wait_for_start_time",
+    "node_fetch_host_keys",
+    "node_fetch_leaders",
+    "node_set_secret",
+    "node_set_topology_key",
+    "node_set_config",
+    "event_snapshot_period",
+    "node_snapshot_data",
+    "block0_tally_committee",
+    "block0_voting_tokens",
+    "block0_wallet_registrations",
+    "block0_token_distributions",
+    "block0_genesis_build",
+    "block0_publish",
+    "node_wait_for_voting",
+    "event_voting_period",
+    "node_wait_for_tally",
+    "event_tally_period",
+    "node_cleanup",
 ]
+"""List of scheduled tasks for leader0 nodes."""
 FOLLOWER_NODE_SCHEDULE: Final = [
-    "connect_db",
-    "fetch_upcoming_event",
-    "wait_for_start_time",
-    "fetch_host_keys",
-    "fetch_leaders",
-    "set_node_secret",
-    "set_node_topology_key",
-    "set_node_config",
-    "cleanup",
+    "node_fetch_event",
+    "node_wait_for_start_time",
+    "node_fetch_host_keys",
+    "node_fetch_leaders",
+    "node_set_secret",
+    "node_set_topology_key",
+    "node_set_config",
+    "node_cleanup",
 ]
+"""List of scheduled tasks for follower nodes."""
 
 
 class ScheduleRunner:
@@ -156,19 +160,19 @@ class NodeTaskSchedule(ScheduleRunner):
     """
 
     # runtime settings for the service
-    settings: ServiceSettings
+    settings: ServiceSettings = ServiceSettings()
     # connection to DB
-    db: EventDb
+    db: EventDb = EventDb()
     # Voting Node data
     node: BaseNode = BaseNode()
     # List of tasks that the schedule should run. The name of each task must
     # match the name of method to execute.
     tasks: list[str] = []
 
-    def __init__(self, settings: ServiceSettings) -> None:
+    def __init__(self, settings: ServiceSettings = ServiceSettings()) -> None:
         """Set the schedule settings, bootstraps node storage, and initializes the node."""
         self.settings = settings
-        self.db = EventDb(db_url=settings.db_url)
+        self.db.db_url = settings.db_url
         self.node.set_file_storage(settings.storage)
 
     def reset_data(self) -> None:
@@ -184,14 +188,14 @@ class NodeTaskSchedule(ScheduleRunner):
         """Return the wrapper to the 'jormungandr' shell command."""
         return Jormungandr(self.settings.jorm_path_str)
 
-    async def connect_db(self):
-        """Async connection to the DB."""
-        await self.db.connect()
+    async def node_fetch_event(self):
+        """Fetch the event from the DB.
 
-    async def fetch_upcoming_event(self):
-        """Fetch the upcoming event from the DB."""
-        # This all starts by getting the event row that has the nearest
-        # `voting_start`. We query the DB to get the row, and store it.
+        This all starts by getting the event row that has the nearest
+        `voting_start`, or an event that has stared and not ended.
+
+        We query the DB to get the row, and store it in the node.
+        """
         try:
             event = await self.db.fetch_upcoming_event()
             logger.debug("upcoming event retrieved from DB")
@@ -199,7 +203,7 @@ class NodeTaskSchedule(ScheduleRunner):
         except Exception as e:
             self.reset_schedule(f"{e}")
 
-    async def wait_for_start_time(self):
+    async def node_wait_for_start_time(self):
         """Wait for the event start time."""
         # check if the event has started, otherwise, resets the schedule
         # raises exception if the event has no start time defined
@@ -209,7 +213,7 @@ class NodeTaskSchedule(ScheduleRunner):
             logger.debug("event has not started")
             self.reset_schedule(f"event will start on {self.node.get_start_time()}")
 
-    async def fetch_host_keys(self):
+    async def node_fetch_host_keys(self):
         """Fetch or create voting node secret key information, by hostname, for the current event.
 
         Reset the schedule if no current event is defined.
@@ -260,7 +264,7 @@ class NodeTaskSchedule(ScheduleRunner):
             except Exception as e:
                 self.reset_schedule(f"{e}")
 
-    async def fetch_leaders(self):
+    async def node_fetch_leaders(self):
         """Fetch from the DB host info for other leaders."""
         # gets the event, raises exception if none is found.
         event = self.node.get_event()
@@ -272,7 +276,7 @@ class NodeTaskSchedule(ScheduleRunner):
         except Exception as e:
             self.reset_schedule(f"{e}")
 
-    async def set_node_secret(self):
+    async def node_set_secret(self):
         """Set the seckey from the host info and saves it to the node storage node_secret.yaml."""
         # get the node secret from HostInfo, if it's not found, reset
         match self.node.host_info:
@@ -297,7 +301,7 @@ class NodeTaskSchedule(ScheduleRunner):
             case _:
                 self.reset_schedule("no node host info was found")
 
-    async def set_node_topology_key(self):
+    async def node_set_topology_key(self):
         """Set the node network topology key."""
         match self.node.host_info:
             case HostInfo(netkey=netkey):
@@ -310,7 +314,7 @@ class NodeTaskSchedule(ScheduleRunner):
             case _:
                 self.reset_schedule("host info was not found for this node")
 
-    async def set_node_config(self):
+    async def node_set_config(self):
         """Set the node configuration."""
         # check that we have the info we need, otherwise, we reset
         if self.node.topology_key is None:
@@ -320,8 +324,13 @@ class NodeTaskSchedule(ScheduleRunner):
 
         #  modify node config for all nodes
         host_name = utils.get_hostname()
+
+        role_str = self.settings.role
+        if role_str is None:
+            role_str = host_name
+
         host_ip = utils.get_hostname_addr()
-        role_n_digits = utils.get_hostname_role_n_digits(host_name)
+        role: utils.NodeRole = utils.parse_node_role(role_str)
         p2p_port = self.settings.p2p_port
 
         listen_rest = f"{host_ip}:{self.settings.rest_port}"
@@ -330,28 +339,29 @@ class NodeTaskSchedule(ScheduleRunner):
         trusted_peers = []
 
         for peer in self.node.leaders:
-            match role_n_digits:
-                case ("leader", "0"):
-                    # this node does not trust peers
-                    pass
-                case ("leader", host_digits):
-                    match utils.get_hostname_role_n_digits(peer.hostname):
-                        # only append if peer digits are smaller than host digits
-                        # This is to say that a example node "leader000" will
-                        # append "leader00", but not "leader0000".
-                        case ("leader", peer_digits) if peer_digits < host_digits:
-                            peer_addr = f"/dns4/{peer.hostname}/tcp/{p2p_port}"
-                            trusted_peers.append({"address": peer_addr})
-                        case _:
-                            pass
-                case ("follower", _):
-                    # append all leaders
+            if role.name == "leader" and role.n == 0:
+                # this node does not trust peers
+                pass
+            elif role.name == "leader":
+                peer_role_str = peer.role
+                if peer_role_str is None:
+                    peer_role_str = peer.hostname
+
+                peer_role = utils.parse_node_role(peer_role_str)
+                # only append if peer digits are smaller than host digits
+                # This is to say that a example node "leader000" will
+                # append "leader00", but not "leader0000".
+                if peer_role == "leader" and peer_role.n < role.n:
                     peer_addr = f"/dns4/{peer.hostname}/tcp/{p2p_port}"
                     trusted_peers.append({"address": peer_addr})
+            elif role.name == "follower":
+                # append all leaders
+                peer_addr = f"/dns4/{peer.hostname}/tcp/{p2p_port}"
+                trusted_peers.append({"address": peer_addr})
 
         # node config from default template
         config = utils.make_node_config(
-            role_n_digits,
+            role,
             listen_rest,
             listen_jrpc,
             listen_p2p,
@@ -366,14 +376,11 @@ class NodeTaskSchedule(ScheduleRunner):
         logger.debug("node config saved")
         self.node.config = node_config_yaml
 
-    async def cleanup(self):
+    async def node_cleanup(self):
         """Execute cleanup chores to stop the voting node service.
 
-        * Close the DB connection.
         * ...
         """
-        # close the DB connection
-        await self.db.close()
 
 
 class LeaderSchedule(NodeTaskSchedule):
@@ -384,7 +391,7 @@ class LeaderSchedule(NodeTaskSchedule):
     # Leader Node tasks
     tasks: list[str] = LEADER_NODE_SCHEDULE
 
-    async def get_block0(self):
+    async def block0_fetch(self):
         """Get block0 information from the node event.
 
         Raises exception if the node has no leaders, or no event, or no event start time defined.
@@ -408,7 +415,7 @@ class LeaderSchedule(NodeTaskSchedule):
         self.node.block0_path = block0_path
         logger.debug(f"block0 found in voting event: {self.node.block0}")
 
-    async def wait_for_voting(self):
+    async def node_wait_for_voting(self):
         """Wait for the event voting time."""
         # get the voting start timestamp
         # raises an exception otherwise
@@ -419,7 +426,7 @@ class LeaderSchedule(NodeTaskSchedule):
 
         logger.debug("voting has started")
 
-    async def voting(self):
+    async def event_voting_period(self):
         """Execute jormungandr node for voting."""
         logger.debug(f"NODE: {self.node.secret}")
         if self.node.secret is None:
@@ -430,7 +437,7 @@ class LeaderSchedule(NodeTaskSchedule):
             self.reset_schedule("event has no block0.bin")
         await self.jorm().start_leader(self.node.secret.path, self.node.config.path, self.node.block0_path)
 
-    async def wait_for_tally(self):
+    async def node_wait_for_tally(self):
         """Wait for vote tally to begin."""
         # get the voting end timestamp
         # raises an exception otherwise
@@ -441,7 +448,7 @@ class LeaderSchedule(NodeTaskSchedule):
 
         logger.debug("voting has ended, tallying has begun")
 
-    async def tally(self):
+    async def event_tally_period(self):
         """Execute the vote tally."""
 
 
@@ -453,53 +460,24 @@ class Leader0Schedule(LeaderSchedule):
     # Leader0 Node tasks
     tasks: list[str] = LEADER0_NODE_SCHEDULE
 
-    async def fetch_upcoming_event(self):
-        """Override common method to fetch the upcoming event from the DB.
+    async def event_snapshot_period(self):
+        """Timespan for continuous snapshot import from DBSync and IdeaScale.
 
-        'leader0' nodes that don't find an upcoming event, create one with
-        default values.
+        A snapshot is taken at intervals of `SNAPSHOT_INTERVAL_SECONDS` (default 1800 seconds).
         """
-        try:
-            event = await self.db.fetch_upcoming_event()
-            logger.debug("current event retrieved from DB")
-            self.node.event = event
-        except Exception:
-            # run helper to add a default event to the DB
-            from .helpers import add_default_event
-
-            logger.debug("event not found from DB, attempting to create")
-            await add_default_event(db_url=self.settings.db_url)
-            logger.info("event added to DB")
-            event = await self.db.fetch_upcoming_event()
-            logger.debug("current event retrieved from DB")
-            self.node.event = event
-
-    async def wait_for_registration_snapshot_time(self):
-        """Wait for the event registration_snapshot_time."""
-        # get the snapshot start timestamp
-        # raises an exception otherwise
-        snapshot_time = self.node.get_registration_snapshot_time()
-        # check if now is after the snapshot start time
-        if not self.node.has_registration_ended():
-            raise Exception(f"registration snapshot time will be stable on {snapshot_time} UTC")
-
-        logger.debug("registration snapshot time reached.")
-
-    async def import_snapshot_data(self):
-        """Collect the snapshot data from EventDB."""
         event = self.node.get_event()
         registration_time = event.get_registration_snapshot_time()
         snapshot_start = event.get_snapshot_start()
         runner = SnapshotRunner(registration_snapshot_time=registration_time, snapshot_start=snapshot_start)
-        logger.info(f"Execute snapshot runner for event in row {event.row_id}.")
+        logger.info("Execute snapshot runner for event in row {event_id}.", event_id=event.row_id)
         await runner.take_snapshots(event.row_id)
 
-    async def collect_snapshot_data(self):
+    async def node_snapshot_data(self):
         """Collect the snapshot data from EventDB."""
         # gets the event, raises exception if none is found.
         event = self.node.get_event()
-        snapshot_start = self.node.get_snapshot_start()
-        if not self.node.has_snapshot_started():
+        snapshot_start = event.get_snapshot_start()
+        if not event.has_snapshot_started():
             raise Exception(f"snapshot will be stable on {snapshot_start} UTC")
 
         # check for this field before getting the data
@@ -507,35 +485,64 @@ class Leader0Schedule(LeaderSchedule):
         if not is_final:
             logger.warning("snapshot is not final")
 
-        try:
-            # fetch the stable snapshot data
-            snapshot = await self.db.fetch_snapshot(event.row_id)
-            compressed_data: bytes | None = snapshot.dbsync_snapshot_data
-            if compressed_data is None:
-                raise Exception("dbsync snapsthot data is missing")
-            data = brotli.decompress(compressed_data)
-            json.loads(data)
-            logger.debug("dbsync snapshot data retrieved")
-        except Exception as e:
-            logger.error(f"expected snapshot:\n{e}")
+        async def collect_voting_groups() -> list[VotingGroup]:
+            groups = []
+            try:
+                groups = await self.db.fetch_voting_groups()
+            except Exception:
+                logger.exception("failed to collect voting groups")
+            finally:
+                return groups
 
-            # gets event vote plans, raises exception if none is found.
-        try:
-            await self.db.fetch_voteplans(event.row_id)
-            # logger.debug(f"voteplans:\n{voteplans}")
-        except Exception as e:
-            logger.error(f"expected voteplans:\n{e}")
+        async def collect_voter_registrations() -> list[Voter]:
+            """Collect voter registration information."""
+            voters = []
+            try:
+                voters = await self.db.fetch_voters(event.row_id)
+            except Exception:
+                logger.exception("failed to collect voter registration")
+            finally:
+                return voters
 
-        try:
-            # gets event proposals, raises exception if none is found.
-            proposals = await self.db.fetch_proposals()
-            # logger.debug(f"proposals:\n{proposals}")
-            self.proposals = proposals
-        except Exception:
-            logger.warning("no proposals were found")
-            # raise Exception(f"failed to fetch proposals from DB: {e}") from e
+        async def collect_contributions():
+            contributions = []
+            try:
+                contributions = await self.db.fetch_contributions(event.row_id)
+            except Exception:
+                logger.exception("failed to collect voter contributions")
+            finally:
+                return contributions
 
-    async def setup_tally_committee(self):
+        async def collect_objectives():
+            objectives = []
+            try:
+                objectives = await self.db.fetch_objectives(event.row_id)
+            except Exception:
+                logger.exception("failed to collect objectives")
+            finally:
+                return objectives
+
+        async def collect_proposals(objectives: list[Objective]) -> Mapping[int, list[Proposal]]:
+            objective_proposals: Mapping[int, list[Proposal]] = {}
+            for objective in objectives:
+                objective_id = objective.row_id
+                try:
+                    proposals = await self.db.fetch_proposals(objective_id)
+                    objective_proposals[objective_id] = proposals
+                except Exception:
+                    logger.exception("failed to collect proposals for objective {objective_row}", objective_row=objective_id)
+            return objective_proposals
+
+        # Collect registration information needed for block0
+        await collect_voting_groups()
+        await collect_voter_registrations()
+        await collect_contributions()
+
+        # Collect voteplan information needed for block0
+        objectives = await collect_objectives()
+        objective_proposals = await collect_proposals(objectives)
+
+    async def block0_tally_committee(self):
         """Fetch or create tally committee data.
 
         1. Fetch the committee from the node secret storage
@@ -545,9 +552,11 @@ class Leader0Schedule(LeaderSchedule):
             then a random 32-byte hex token is generated and used.
         """
         event = self.node.get_event()
+        conn = await self.db.connect()
+        secret_store = SecretDBStorage(conn=conn)
         # TODO: fetch tally committee data from secret storage
         try:
-            committee = await SecretDBStorage(conn=self.db.conn()).get_committee(event.row_id)
+            committee = await secret_store.get_committee(event.row_id)
             logger.debug("fetched committee from storage")
             self.node.committee = committee
         except Exception as e:
@@ -562,7 +571,6 @@ class Leader0Schedule(LeaderSchedule):
                 crs = secrets.token_hex(32)
             committee = await utils.create_committee(
                 self.jcli(),
-                committee_wallet.hex_encoded,
                 event.row_id,
                 event.committee_size,
                 event.committee_threshold,
@@ -570,11 +578,25 @@ class Leader0Schedule(LeaderSchedule):
             )
             logger.debug(f"created committee: {committee.as_yaml()}")
             self.node.committee = committee
-            await SecretDBStorage(conn=self.db.conn()).save_committee(event_id=event.row_id, committee=committee)
+            await secret_store.save_committee(event_id=event.row_id, committee=committee)
             logger.debug("saved committee to storage")
+        finally:
+            await conn.close()
 
-    async def setup_block0(self):
-        """Check DB event for block0 information.
+    async def block0_voting_tokens(self):
+        """Build voting tokens for each voting group in the current event."""
+        logger.error("block0_voting_tokens is not implemented!")
+
+    async def block0_wallet_registrations(self):
+        """Build initial fund fragments for registered wallets."""
+        logger.error("block0_wallet_registrations is not implemented!")
+
+    async def block0_token_distributions(self):
+        """Build initial token distribution fragments for registered contributions."""
+        logger.error("block0_token_distributions is not implemented!")
+
+    async def block0_genesis_build(self):
+        """Build genesis block.
 
         Create and add it to the DB when the needed information is found.
         Reset the schedule otherwise.
@@ -638,7 +660,7 @@ class Leader0Schedule(LeaderSchedule):
             self.node.block0_path = block0_path
             logger.debug(f"block0 created and saved: {self.node.block0.hash}")
 
-    async def publish_block0(self):
+    async def block0_publish(self):
         """Publish block0 to the current event in EventDB."""
         event = self.node.get_event()
         match self.node.block0:

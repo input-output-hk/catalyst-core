@@ -553,9 +553,7 @@ impl FragmentReplayer {
             self.non_voting_wallets
                 .entry(address.clone())
                 .or_insert_with(|| {
-                    Wallet::new_from_key(<SecretKey<Ed25519Extended>>::generate(
-                        &mut rand::thread_rng(),
-                    ))
+                    Wallet::new_from_key(<SecretKey<Ed25519Extended>>::generate(rand::thread_rng()))
                 })
                 .account_id()
         }

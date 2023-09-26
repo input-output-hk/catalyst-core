@@ -4,7 +4,7 @@ use chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Address;
 use rust_decimal::Decimal;
-use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
+use snapshot_lib::{registration::RewardAddress, SnapshotInfo};
 use std::collections::{BTreeMap, HashMap, HashSet};
 use thiserror::Error;
 
@@ -77,7 +77,7 @@ pub fn account_hex_to_address(
 fn rewards_to_mainnet_addresses(
     rewards: HashMap<Identifier, Rewards>,
     voters: Vec<SnapshotInfo>,
-) -> BTreeMap<MainnetRewardAddress, Rewards> {
+) -> BTreeMap<RewardAddress, Rewards> {
     let mut res = BTreeMap::new();
     let snapshot_info_by_key = voters
         .into_iter()
@@ -107,7 +107,7 @@ pub fn calc_voter_rewards(
     voters: Vec<SnapshotInfo>,
     vote_threshold: Threshold,
     total_rewards: Rewards,
-) -> Result<BTreeMap<MainnetRewardAddress, Rewards>, Error> {
+) -> Result<BTreeMap<RewardAddress, Rewards>, Error> {
     let unique_voters = voters
         .iter()
         .map(|s| s.hir.voting_key.clone())
@@ -135,7 +135,7 @@ mod tests {
     use super::*;
     use crate::utils::assert_are_close;
     use jormungandr_lib::crypto::{account::Identifier, hash::Hash};
-    use snapshot_lib::registration::{Delegations, VotingRegistration};
+    use snapshot_lib::registration::{Delegations, StakeAddress, VotingRegistration};
     use snapshot_lib::Snapshot;
     use snapshot_lib::{Fraction, RawSnapshot};
     use test_strategy::proptest;
@@ -150,12 +150,12 @@ mod tests {
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
         let votes_count = snapshot
             .voting_keys()
-            .into_iter()
             .map(|key| (key.clone(), HashSet::from([Hash::from([0u8; 32])])))
             .collect::<VoteCount>();
 
@@ -183,6 +183,7 @@ mod tests {
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -206,6 +207,7 @@ mod tests {
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -299,8 +301,8 @@ mod tests {
         let mut total_stake = 0u64;
 
         for i in 1..10u64 {
-            let stake_public_key = i.to_string();
-            let reward_address = i.to_string();
+            let stake_public_key = StakeAddress(i.to_string());
+            let reward_address = RewardAddress(i.to_string());
 
             let delegations = Delegations::New(vec![(voting_public_key.clone(), 1)]);
             raw_snapshot.push(VotingRegistration {
@@ -308,7 +310,7 @@ mod tests {
                 voting_power: i.into(),
                 reward_address,
                 delegations,
-                voting_purpose: 0,
+                voting_purpose: Some(0),
                 nonce: 0,
             });
             total_stake += i;
@@ -319,6 +321,7 @@ mod tests {
             0.into(),
             Fraction::from(1u64),
             &|_voting_key: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -348,15 +351,15 @@ mod tests {
 
         for i in 1..10u64 {
             let voting_public_key = Identifier::from_hex(&hex::encode([i as u8; 32])).unwrap();
-            let stake_public_key = i.to_string();
-            let reward_address = i.to_string();
+            let stake_public_key = StakeAddress(i.to_string());
+            let reward_address = RewardAddress(i.to_string());
             let delegations = Delegations::New(vec![(voting_public_key.clone(), 1)]);
             raw_snapshot.push(VotingRegistration {
                 stake_public_key,
                 voting_power: i.into(),
                 reward_address,
                 delegations,
-                voting_purpose: 0,
+                voting_purpose: Some(0),
                 nonce: 0,
             });
         }
@@ -366,6 +369,7 @@ mod tests {
             0.into(),
             Fraction::new(1u64, 9u64),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 
@@ -391,6 +395,7 @@ mod tests {
             DEFAULT_SNAPSHOT_THRESHOLD.into(),
             Fraction::from(1),
             &|_vk: &Identifier| String::new(),
+            Discrimination::Production,
         )
         .unwrap();
 

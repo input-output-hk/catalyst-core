@@ -12,6 +12,7 @@ build:
     COPY --dir migrations . # Copy the migrations directory to the working directory
     COPY --dir historic_data . # Copy the historic_data directory to the working directory
     COPY --dir test_data . # Copy the test_data directory to the working directory
+    COPY --dir stage_data . # Copy Stage specific data into the working directory.
 
     RUN python3 historic_data/fund_2/mk_fund2_sql.py historic_data/fund_2/fund2_database_encrypted.sqlite3 >> historic_data/fund_2.sql
     RUN python3 historic_data/fund_3/mk_fund3_sql.py historic_data/fund_3/fund3_database_encrypted.sqlite3 >> historic_data/fund_3.sql
@@ -28,9 +29,10 @@ build:
     SAVE ARTIFACT migrations # Save the migrations directory as an artifact
     SAVE ARTIFACT historic_data # Save the historic_data directory as an artifact
     SAVE ARTIFACT test_data # Save the test_data directory as an artifact
+    SAVE ARTIFACT stage_data # Save the stage_data directory as an artifact
 
 docker-compose:
-    FROM scratch 
+    FROM scratch
     COPY docker-compose.yml .
     SAVE ARTIFACT docker-compose.yml
 

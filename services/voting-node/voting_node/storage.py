@@ -5,9 +5,8 @@ from asyncpg import Connection, Record
 from loguru import logger
 from pydantic import BaseModel
 
-from .committee import ElectionKey
 from .envvar import SECRET_SECRET
-from .models import Committee
+from .models.committee import Committee, ElectionKey
 from .utils import decrypt_secret, encrypt_secret
 
 
@@ -37,6 +36,7 @@ class SecretDBStorage(BaseModel):
             tc.event as event_id,
             ev.committee_size as size,
             ev.committee_threshold as threshold,
+            tc.committee_pk as committee_pk,
             tc.committee_id as committee_id,
             member_crs as crs,
             tc.election_key as election_key
@@ -66,6 +66,7 @@ class SecretDBStorage(BaseModel):
             threshold=record["threshold"],
             crs=crs,
             committee_id=record["committee_id"],
+            committee_pk=record["committee_pk"],
             election_key=ElectionKey(pubkey=record["election_key"]),
         )
         # fetch committee members
@@ -99,17 +100,20 @@ class SecretDBStorage(BaseModel):
 
         Raise exception if the tally committee already exists. There can only be one tally per event.
         """
-        fields = "event, committee_id, member_crs, election_key"
-        values = "$1, $2, $3, $4"
+        fields = "event, committee_pk, committee_id, member_crs, election_key"
+        values = "$1, $2, $3, $4, $5"
         query = f"INSERT INTO tally_committee({fields}) VALUES({values}) RETURNING row_id"
         # fetch secret from envvar, fail if not present
         encrypt_pass = os.environ[SECRET_SECRET]
+        # encrypt the Committee private key before adding to DB
+        enc_pk = encrypt_secret(committee.committee_pk, encrypt_pass)
         # encrypt the CRS before adding to DB
         enc_crs = encrypt_secret(committee.crs, encrypt_pass)
         result = await self.conn.execute(
             query,
             event_id,
             committee.committee_id,
+            enc_pk,
             enc_crs,
             committee.election_key.pubkey,
         )

@@ -993,10 +993,10 @@ impl Ledger {
     }
 
     // Runs transaction validations, spends the tx fee, updates and returns the account ledger.
-    fn execute_apply_transaction<'a, Extra>(
+    fn execute_apply_transaction<Extra>(
         mut self,
         fragment_id: &FragmentId,
-        tx: &TransactionSlice<'a, Extra>,
+        tx: &TransactionSlice<'_, Extra>,
         fee_deduction: FeeDeductionMode,
     ) -> Result<(Self, Value), Error>
     where
@@ -1016,10 +1016,10 @@ impl Ledger {
     /// inputs and outputs, as well as spending the fee value from the related
     /// account id. Returns an Error if the account cannot afford the fee or
     /// if the spending counter doesn't match.
-    pub fn apply_transaction<'a, Extra>(
+    pub fn apply_transaction<Extra>(
         self,
         fragment_id: &FragmentId,
-        tx: &TransactionSlice<'a, Extra>,
+        tx: &TransactionSlice<'_, Extra>,
     ) -> Result<(Self, Value), Error>
     where
         Extra: Payload,
@@ -1031,10 +1031,10 @@ impl Ledger {
 
     // Applies vote cast transaction to the account ledger by validating and verifying
     // inputs and outputs, deducing the fee, but ignoring the spending counter checks.
-    fn apply_transaction_for_vote_cast<'a, Extra>(
+    fn apply_transaction_for_vote_cast<Extra>(
         self,
         fragment_id: &FragmentId,
-        tx: &TransactionSlice<'a, Extra>,
+        tx: &TransactionSlice<'_, Extra>,
     ) -> Result<(Self, Value), Error>
     where
         Extra: Payload,
@@ -1073,10 +1073,10 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_update_vote<'a>(
+    pub fn apply_update_vote(
         mut self,
         vote: &UpdateVote,
-        auth_data: &TransactionBindingAuthData<'a>,
+        auth_data: &TransactionBindingAuthData<'_>,
         sig: BftLeaderBindingSignature,
     ) -> Result<Self, Error> {
         if sig.verify_slice(vote.voter_id().as_public_key(), auth_data) != Verification::Success {
@@ -1143,10 +1143,10 @@ impl Ledger {
             .collect()
     }
 
-    pub fn apply_vote_tally<'a>(
+    pub fn apply_vote_tally(
         mut self,
         tally: &certificate::VoteTally,
-        bad: &TransactionBindingAuthData<'a>,
+        bad: &TransactionBindingAuthData<'_>,
         sig: certificate::TallyProof,
     ) -> Result<Self, Error> {
         if sig.verify(tally.tally_type(), bad) == Verification::Failed {
@@ -1185,10 +1185,10 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_pool_registration_signcheck<'a>(
+    pub fn apply_pool_registration_signcheck(
         self,
         cert: &certificate::PoolRegistration,
-        bad: &TransactionBindingAuthData<'a>,
+        bad: &TransactionBindingAuthData<'_>,
         sig: certificate::PoolSignature,
     ) -> Result<Self, Error> {
         check::valid_pool_registration_certificate(cert)?;
@@ -1211,10 +1211,10 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_pool_retirement<'a>(
+    pub fn apply_pool_retirement(
         mut self,
         auth_cert: &certificate::PoolRetirement,
-        bad: &TransactionBindingAuthData<'a>,
+        bad: &TransactionBindingAuthData<'_>,
         sig: certificate::PoolSignature,
     ) -> Result<Self, Error> {
         check::valid_pool_signature(&sig)?;
@@ -1228,10 +1228,10 @@ impl Ledger {
         Ok(self)
     }
 
-    pub fn apply_pool_update<'a>(
+    pub fn apply_pool_update(
         mut self,
         auth_cert: &certificate::PoolUpdate,
-        bad: &TransactionBindingAuthData<'a>,
+        bad: &TransactionBindingAuthData<'_>,
         sig: certificate::PoolSignature,
     ) -> Result<Self, Error> {
         check::valid_pool_update_certificate(auth_cert)?;
@@ -1688,7 +1688,7 @@ fn apply_old_declaration(
     Ok(utxos)
 }
 
-fn calculate_fee<'a, Extra: Payload>(tx: &TransactionSlice<'a, Extra>, fees: &LinearFee) -> Value {
+fn calculate_fee<Extra: Payload>(tx: &TransactionSlice<'_, Extra>, fees: &LinearFee) -> Value {
     fees.calculate_tx(tx)
 }
 
@@ -1729,12 +1729,12 @@ fn match_identifier_witness<'a>(
     }
 }
 
-fn single_account_witness_verify<'a>(
+fn single_account_witness_verify(
     ledger: account::Ledger,
     block0_hash: &HeaderId,
     sign_data_hash: &TransactionSignDataHash,
     account_id: &account::Identifier,
-    witness: &'a account::Witness,
+    witness: &account::Witness,
     spending_counter: account::SpendingCounter,
 ) -> Result<account::Ledger, Error> {
     let tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
@@ -1748,12 +1748,12 @@ fn single_account_witness_verify<'a>(
     Ok(ledger)
 }
 
-fn input_single_account_verify<'a>(
+fn input_single_account_verify(
     ledger: account::Ledger,
     block0_hash: &HeaderId,
     sign_data_hash: &TransactionSignDataHash,
     account_id: &account::Identifier,
-    witness: &'a account::Witness,
+    witness: &account::Witness,
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -> Result<account::Ledger, Error> {
@@ -1770,12 +1770,12 @@ fn input_single_account_verify<'a>(
     Ok(ledger)
 }
 
-fn input_single_account_witness_verify_with_no_spending_counter_check<'a>(
+fn input_single_account_witness_verify_with_no_spending_counter_check(
     ledger: account::Ledger,
     block0_hash: &HeaderId,
     sign_data_hash: &TransactionSignDataHash,
     account_id: &account::Identifier,
-    witness: &'a account::Witness,
+    witness: &account::Witness,
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -> Result<account::Ledger, Error> {
@@ -1791,12 +1791,12 @@ fn input_single_account_witness_verify_with_no_spending_counter_check<'a>(
     Ok(ledger)
 }
 
-fn multi_account_witness_verify<'a>(
+fn multi_account_witness_verify(
     ledger: multisig::Ledger,
     block0_hash: &HeaderId,
     sign_data_hash: &TransactionSignDataHash,
     account_id: &multisig::Identifier,
-    witness: &'a multisig::Witness,
+    witness: &multisig::Witness,
     spending_counter: account::SpendingCounter,
 ) -> Result<multisig::Ledger, Error> {
     let declaration = ledger.get_declaration_by_id(account_id)?;
@@ -1810,12 +1810,12 @@ fn multi_account_witness_verify<'a>(
     Ok(ledger)
 }
 
-fn input_multi_account_verify<'a>(
+fn input_multi_account_verify(
     ledger: multisig::Ledger,
     block0_hash: &HeaderId,
     sign_data_hash: &TransactionSignDataHash,
     account_id: &multisig::Identifier,
-    witness: &'a multisig::Witness,
+    witness: &multisig::Witness,
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -> Result<multisig::Ledger, Error> {
@@ -1831,12 +1831,12 @@ fn input_multi_account_verify<'a>(
     Ok(ledger)
 }
 
-fn input_multi_account_witness_verify_with_no_spending_counter_check<'a>(
+fn input_multi_account_witness_verify_with_no_spending_counter_check(
     ledger: multisig::Ledger,
     block0_hash: &HeaderId,
     sign_data_hash: &TransactionSignDataHash,
     account_id: &multisig::Identifier,
-    witness: &'a multisig::Witness,
+    witness: &multisig::Witness,
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -> Result<multisig::Ledger, Error> {

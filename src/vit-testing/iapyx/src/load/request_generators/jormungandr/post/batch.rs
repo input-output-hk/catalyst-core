@@ -41,7 +41,7 @@ impl BatchWalletRequestGen {
             .map(|p| p.voteplan.chain_voteplan_id.to_string())
             .collect();
 
-        println!("direct vote plans: {:?}", voting_groups_vote_plans_ids);
+        println!("direct vote plans: {voting_groups_vote_plans_ids:?}");
 
         let vote_plans = multi_controller.backend().vote_plan_statuses()?;
         let settings = multi_controller.backend().settings()?;
@@ -192,7 +192,7 @@ impl RequestGenerator for BatchWalletRequestGen {
                 ids,
                 duration: start.elapsed(),
             }),
-            Err(e) => Err(RequestFailure::General(format!("{:?}", e))),
+            Err(e) => Err(RequestFailure::General(format!("{e:?}"))),
         }
     }
 }

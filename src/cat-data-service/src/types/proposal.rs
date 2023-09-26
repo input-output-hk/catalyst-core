@@ -42,11 +42,13 @@ impl Serialize for SerdeType<&ProposalSummary> {
             id: SerdeType<&'a ProposalId>,
             title: &'a String,
             summary: &'a String,
+            deleted: bool,
         }
         ProposalSummarySerde {
             id: SerdeType(&self.id),
             title: &self.title,
             summary: &self.summary,
+            deleted: self.deleted,
         }
         .serialize(serializer)
     }
@@ -178,9 +180,10 @@ mod tests {
             id: ProposalId(1),
             title: "title".to_string(),
             summary: "summary".to_string(),
+            deleted: false,
         });
 
-        let json = serde_json::to_value(&proposal_summary).unwrap();
+        let json = serde_json::to_value(proposal_summary).unwrap();
         assert_eq!(
             json,
             json!(
@@ -188,6 +191,7 @@ mod tests {
                     "id": 1,
                     "title": "title",
                     "summary": "summary",
+                    "deleted": false,
                 }
             )
         )
@@ -202,7 +206,7 @@ mod tests {
             payment_key: "proposer payment key".to_string(),
         });
 
-        let json = serde_json::to_value(&proposer_details).unwrap();
+        let json = serde_json::to_value(proposer_details).unwrap();
         assert_eq!(
             json,
             json!(
@@ -226,7 +230,7 @@ mod tests {
             supplemental: Some(json!({})),
         });
 
-        let json = serde_json::to_value(&proposal_details).unwrap();
+        let json = serde_json::to_value(proposal_details).unwrap();
         assert_eq!(
             json,
             json!(
@@ -248,7 +252,7 @@ mod tests {
             supplemental: None,
         });
 
-        let json = serde_json::to_value(&proposal_details).unwrap();
+        let json = serde_json::to_value(proposal_details).unwrap();
         assert_eq!(
             json,
             json!(
@@ -269,6 +273,7 @@ mod tests {
                 id: ProposalId(1),
                 title: "title".to_string(),
                 summary: "summary".to_string(),
+                deleted: false,
             },
             details: ProposalDetails {
                 funds: 1,
@@ -279,7 +284,7 @@ mod tests {
             },
         });
 
-        let json = serde_json::to_value(&proposal).unwrap();
+        let json = serde_json::to_value(proposal).unwrap();
         assert_eq!(
             json,
             json!(
@@ -287,6 +292,7 @@ mod tests {
                     "id": 1,
                     "title": "title",
                     "summary": "summary",
+                    "deleted": false,
                     "funds": 1,
                     "url": "url",
                     "files": "files",

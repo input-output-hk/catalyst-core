@@ -3,7 +3,10 @@ use itertools::Itertools;
 use jormungandr_lib::crypto::account::Identifier;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
-use snapshot_lib::{KeyContribution, SnapshotInfo, VoterHIR};
+use snapshot_lib::{
+    registration::{RewardAddress, StakeAddress},
+    KeyContribution, SnapshotInfo, VoterHIR,
+};
 use time::OffsetDateTime;
 use vit_servicing_station_lib::v0::endpoints::snapshot::SnapshotInfoInput;
 
@@ -84,24 +87,33 @@ impl SnapshotBuilder {
                     Some(SnapshotInfo {
                         contributions: std::iter::from_fn(|| {
                             Some(KeyContribution {
-                                reward_address: format!(
+                                reward_address: RewardAddress(format!(
                                     "address_{:?}",
                                     rng.gen_range(1u64, 1_000u64)
-                                ),
-                                stake_public_key: format!(
+                                )),
+                                stake_public_key: StakeAddress(format!(
                                     "address_{:?}",
                                     rng.gen_range(1u64, 1_000u64)
-                                ),
+                                )),
                                 value: rng.gen_range(1u64, 1_000u64),
                             })
                         })
                         .take(self.contributions_count)
                         .collect(),
-                        hir: VoterHIR {
-                            voting_key: TestGen::identifier().into(),
-                            voting_group: self.groups[rng.gen_range(0, self.groups.len())]
-                                .to_string(),
-                            voting_power: rng.gen_range(1u64, 1_000u64).into(),
+                        hir: {
+                            let identifier = TestGen::identifier();
+
+                            VoterHIR {
+                                voting_key: identifier.clone().into(),
+                                voting_group: self.groups[rng.gen_range(0, self.groups.len())]
+                                    .to_string(),
+                                voting_power: rng.gen_range(1u64, 1_000u64).into(),
+                                address: chain_addr::Address(
+                                    chain_addr::Discrimination::Production,
+                                    chain_addr::Kind::Account(identifier.into()),
+                                )
+                                .into(),
+                            }
                         },
                     })
                 })

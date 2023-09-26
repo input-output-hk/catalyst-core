@@ -43,6 +43,7 @@ pub fn filter_registrations(
     max_slot: SlotNo,
     mut client: Client,
     network_id: NetworkId,
+    cip_36_multidelegations: bool,
 ) -> Result<(Valids, Invalids), Box<dyn std::error::Error>> {
     let mut valids: Valids = vec![];
     let mut invalids: Invalids = vec![];
@@ -106,7 +107,7 @@ pub fn filter_registrations(
                     spec_61285: Some(prefix_hex(&rawreg.bin_sig)),
                     registration: None,
                     errors: nonempty![RegistrationError::CborDeserializationFailed {
-                        err: format!("Failed to deserialize Registration CBOR: {}", err),
+                        err: format!("Failed to deserialize Registration CBOR: {err}"),
                     }],
                     registration_bad_bin: Some(RegistrationCorruptedBin {
                         tx_id: TxId(tx_id as u64),
@@ -119,20 +120,36 @@ pub fn filter_registrations(
         };
 
         match reg.validate_signature_bin(rawreg.bin_reg.clone()) {
-            Ok(_) => valids.push(reg),
+            Ok(_) => (),
             Err(err) => {
                 invalids.push(InvalidRegistration {
                     spec_61284: Some(prefix_hex(&rawreg.bin_reg)),
                     spec_61285: Some(prefix_hex(&rawreg.bin_sig)),
                     registration: Some(reg),
                     errors: nonempty![RegistrationError::SignatureError {
-                        err: format!("Signature validation failure: {}", err),
+                        err: format!("Signature validation failure: {err}"),
                     }],
                     registration_bad_bin: None,
                 });
                 continue;
             }
         }
+
+        match reg.validate_multi_delegation(cip_36_multidelegations) {
+            Ok(_) => (),
+            Err(err) => {
+                invalids.push(InvalidRegistration {
+                    spec_61284: Some(prefix_hex(&rawreg.bin_reg)),
+                    spec_61285: Some(prefix_hex(&rawreg.bin_sig)),
+                    registration: Some(reg),
+                    errors: nonempty![err],
+                    registration_bad_bin: None,
+                });
+                continue;
+            }
+        }
+
+        valids.push(reg);
     }
 
     Ok((latest_registrations(&valids, &mut invalids), invalids))
@@ -205,8 +222,8 @@ pub fn is_valid_rewards_address(rewards_address_prefix: &u8, network: NetworkId)
     let addr_net = rewards_address_prefix & 0xf;
 
     // 0 or 1 are valid addrs in the following cases:
-    // type = 0x0 -  network = 0
-    // type = 0x0 -  network = 1
+    // type = 0x0 -  Testnet network
+    // type = 0x1 -  Mainnet network
     match network {
         NetworkId::Mainnet => {
             if addr_net != 1 {
@@ -236,7 +253,7 @@ pub fn validate_reg_cddl(
 ) -> Result<(), RegistrationError> {
     cddl::validate_cbor_from_slice(&cddl_config.spec_61284, bin_reg, None).map_err(|err| {
         RegistrationError::CddlParsingFailed {
-            err: format!("reg bytes does not match 61284 spec: {}", err),
+            err: format!("reg bytes does not match 61284 spec: {err}"),
         }
     })?;
 
@@ -254,7 +271,7 @@ pub fn validate_sig_cddl(
 ) -> Result<(), RegistrationError> {
     cddl::validate_cbor_from_slice(&cddl_config.spec_61285, bin_sig, None).map_err(|err| {
         RegistrationError::CddlParsingFailed {
-            err: format!("sig bytes does not match 61285 spec: {}", err),
+            err: format!("sig bytes does not match 61285 spec: {err}"),
         }
     })?;
 

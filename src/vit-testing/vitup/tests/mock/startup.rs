@@ -36,7 +36,7 @@ pub fn start_mock() {
     std::thread::sleep(std::time::Duration::from_secs(10));
 
     let request = reqwest::blocking::Client::new()
-        .get(&format!(
+        .get(format!(
             "http://127.0.0.1:{}/api/health",
             configuration.port
         ))

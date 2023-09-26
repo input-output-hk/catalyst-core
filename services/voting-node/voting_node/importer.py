@@ -13,10 +13,7 @@ Common to IdeaScale and DBSync snapshots:
 ## Specific to Ideascale snapshot
 
 * `IDEASCALE_API_TOKEN` - API token from ideascale.com.
-* `IDEASCALE_CAMPAIGN_GROUP` - Group ID for the IdeaScale campaign.
-* `IDEASCALE_STAGE_ID` - Stage ID for IdeaScale.
 * `IDEASCALE_API_URL` - URL for IdeaScale API.
-* `IDEASCALE_CONFIG_PATH` - Path to the ideascale command configuration file.
 
 ## Specific to DBSync Snapshot
 
@@ -47,19 +44,13 @@ class ExternalDataImporter:
 
         * `EVENTDB_URL` sets `--database-url`.
         * `IDEASCALE_API_TOKEN` sets `--api-token`.
-        * `IDEASCALE_CAMPAIGN_GROUP` sets `--campaing-group-id`.
-        * `IDEASCALE_STAGE_ID` sets `--stage-id`.
         * `IDEASCALE_API_URL` sets `--ideascale-api-url`.
-        * `IDEASCALE_CONFIG_PATH` sets `--config-path`.
         """
         logger.info(f"Running ideascale for event {event_id}")
         importer = IdeascaleImporter(
             api_token=os.environ["IDEASCALE_API_TOKEN"],
             database_url=os.environ["EVENTDB_URL"],
-            config_path=os.environ["IDEASCALE_CONFIG_PATH"],
             event_id=event_id,
-            campaign_group_id=int(os.environ["IDEASCALE_CAMPAIGN_GROUP"]),
-            stage_id=int(os.environ["IDEASCALE_STAGE_ID"]),
             proposals_scores_csv_path=None,
             ideascale_api_url=os.environ["IDEASCALE_API_URL"],
         )
@@ -111,9 +102,11 @@ class ExternalDataImporter:
                     snapshot_tool_output_dir=snapshot_tool_out_dir,
                 )
             else:
-                raise Exception("SSH_SNAPSHOT_TOOL_PATH, SSH_SNAPSHOT_TOOL_OUTPUT_DIR, "
-                                "SSH_SNAPSHOT_TOOL_OUTPUT_DIR and SSH_SNAPSHOT_TOOL_DESTINATION "
-                                "are all required when SNAPSHOT_TOOL_SSH is set")
+                raise Exception(
+                    "SSH_SNAPSHOT_TOOL_PATH, SSH_SNAPSHOT_TOOL_OUTPUT_DIR, "
+                    "SSH_SNAPSHOT_TOOL_OUTPUT_DIR and SSH_SNAPSHOT_TOOL_DESTINATION "
+                    "are all required when SNAPSHOT_TOOL_SSH is set"
+                )
         else:
             ssh_config = None
 
@@ -149,7 +142,7 @@ class SnapshotRunner(BaseModel):
         now = datetime.utcnow()
         return now > self.snapshot_start
 
-    def _reimaining_intervals_n_seconds_to_next_snapshot(self, current_time: datetime, interval: int) -> tuple[int, int]:
+    def _remaining_intervals_n_seconds_to_next_snapshot(self, current_time: datetime, interval: int) -> tuple[int, int]:
         """Calculates the remaining number of intervals and seconds until the next snapshot.
 
         :param current_time: The current datetime.
@@ -159,7 +152,7 @@ class SnapshotRunner(BaseModel):
         :return: A tuple containing the number of intervals until the next snapshot start and the number of seconds until the next interval.
         :rtype: Tuple[int, int]
         """
-        delta = self.snapshot_start - current_time
+        delta = self.snapshot_start - min(current_time, self.snapshot_start)
         delta_seconds = int(abs(delta.total_seconds()))
         # calculate the number of intervals until the snapshot start time
         num_intervals = int(delta_seconds / interval)
@@ -206,7 +199,7 @@ class SnapshotRunner(BaseModel):
         while True:
             interval = int(os.getenv("SNAPSHOT_INTERVAL_SECONDS", 1800))
             current_time = datetime.utcnow()
-            num_intervals, secs_to_sleep = self._reimaining_intervals_n_seconds_to_next_snapshot(current_time, interval)
+            num_intervals, secs_to_sleep = self._remaining_intervals_n_seconds_to_next_snapshot(current_time, interval)
 
             logger.info(f"{num_intervals + 1} snapshots remaining. Next snapshot is in {secs_to_sleep} seconds...")
             # Wait for the next snapshot interval

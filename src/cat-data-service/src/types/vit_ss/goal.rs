@@ -44,7 +44,7 @@ mod tests {
             fund_id: 1,
         });
 
-        let json = serde_json::to_value(&goal).unwrap();
+        let json = serde_json::to_value(goal).unwrap();
         assert_eq!(
             json,
             json!(

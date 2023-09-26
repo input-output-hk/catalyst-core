@@ -39,18 +39,6 @@ services:
       db:
         condition: service_healthy
 
-  graphql:
-    image: event-db-graphql:latest
-    environment:
-      - DATABASE_URL=postgres://catalyst-event-dev:CHANGE_ME@db/CatalystEventDev
-      - JWT_SECRET=CHANGE_ME
-      - GRAPHQL_PORT=5000
-    ports:
-      - 5000:5000
-    depends_on:
-      migrations:
-        condition: service_completed_successfully
-
   cat-data-service:
     image: cat-data-service:latest
     environment:
@@ -83,9 +71,6 @@ services:
       - SECRET_SECRET=SUPER_SECRET_SECRET_THAT_MUST_BE_CHANGED
       ### EXTERNAL DATA IMPORTER
       - IDEASCALE_API_TOKEN=USE-A-VALID-API-TOKEN-FROM-IDEASCALE
-      - IDEASCALE_CAMPAIGN_GROUP=66
-      - IDEASCALE_STAGE_ID=4385
-      - IDEASCALE_CONFIG_PATH=/app/ideascale-importer-config.json
       - IDEASCALE_API_URL=https://cardano.ideascale.com
       ### SNAPSHOT TOOL DATA IMPORTER
       - SNAPSHOT_INTERVAL_SECONDS=1800
@@ -96,7 +81,6 @@ services:
     volumes:
       - leader0_store:/node_storage
       - leader0_store:/tmp/snapshot-output
-      - ./ideascale-importer-config.json:/app/ideascale-importer-config.json
 
 volumes:
   eventdb:

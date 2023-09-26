@@ -103,10 +103,12 @@ pub struct Cors {
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum LogLevel {
     Disabled,
     Error,
     Warn,
+    #[default]
     Info,
     Debug,
     Trace,
@@ -333,12 +335,6 @@ impl fmt::Display for LogLevel {
             Self::Debug => write!(f, "debug"),
             Self::Trace => write!(f, "trace"),
         }
-    }
-}
-
-impl Default for LogLevel {
-    fn default() -> Self {
-        LogLevel::Info
     }
 }
 

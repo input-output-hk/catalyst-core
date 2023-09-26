@@ -143,10 +143,10 @@ impl TallyProof {
         }
     }
 
-    pub fn verify<'a>(
+    pub fn verify(
         &self,
         tally_type: PayloadType,
-        verify_data: &TransactionBindingAuthData<'a>,
+        verify_data: &TransactionBindingAuthData<'_>,
     ) -> Verification {
         match self {
             Self::Public { id, signature } => {

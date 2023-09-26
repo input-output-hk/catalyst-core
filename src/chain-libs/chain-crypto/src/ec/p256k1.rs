@@ -18,14 +18,14 @@ pub struct Coordinate(FieldElement);
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Sign(ISign);
 
-#[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::derived_hash_with_manual_eq)]
 impl Hash for GroupElement {
     fn hash<H: Hasher>(&self, state: &mut H) {
         state.write(&self.to_bytes())
     }
 }
 
-#[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::derived_hash_with_manual_eq)]
 impl Hash for Scalar {
     fn hash<H: Hasher>(&self, state: &mut H) {
         state.write(&self.to_bytes())

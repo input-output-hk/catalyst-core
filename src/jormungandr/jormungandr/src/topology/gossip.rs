@@ -156,11 +156,11 @@ impl property::Deserialize for Gossip {
         let bytes_size = codec.get_be_u16()? as usize;
         if bytes_size > limits::MAX_GOSSIP_SIZE {
             return Err(property::ReadError::SizeTooBig(
-                limits::MAX_GOSSIP_SIZE as usize,
+                limits::MAX_GOSSIP_SIZE,
                 bytes_size,
             ));
         }
-        let bytes = codec.get_bytes(bytes_size as usize)?;
+        let bytes = codec.get_bytes(bytes_size)?;
         Ok(Gossip(
             poldercast::GossipSlice::try_from_slice(bytes.as_slice())
                 .map_err(|e| property::ReadError::InvalidData(e.to_string()))?

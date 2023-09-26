@@ -31,6 +31,7 @@ CREATE TABLE tally_committee (
 
     event INTEGER NOT NULL UNIQUE,
 
+    committee_pk TEXT NOT NULL,
     committee_id TEXT NOT NULL,
     member_crs TEXT,
     election_key TEXT,
@@ -41,6 +42,7 @@ CREATE TABLE tally_committee (
 COMMENT ON TABLE tally_committee IS 'Table for storing data about the tally committee per voting event.';
 COMMENT ON COLUMN tally_committee.row_id IS 'Unique ID for this committee member for this event.';
 COMMENT ON COLUMN tally_committee.event  IS 'The event this committee member is for.';
+COMMENT ON COLUMN tally_committee.committee_pk  IS 'Encrypted private key for the committee wallet. This key can be used to get the committee public address.';
 COMMENT ON COLUMN tally_committee.committee_id  IS 'The hex-encoded public key for the committee wallet.';
 COMMENT ON COLUMN tally_committee.member_crs  IS 'Encrypted Common Reference String shared in the creation of every set of committee member keys.';
 COMMENT ON COLUMN tally_committee.election_key  IS 'Public key generated with all committee member public keys, and is used to encrypt votes. NULL if the event.committee_size is 0.';

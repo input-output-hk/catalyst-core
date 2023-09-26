@@ -1,15 +1,15 @@
 """IdeaScale API client."""
 
 import asyncio
-from pydantic.dataclasses import dataclass
-import pydantic.tools
+import json
+from pydantic import BaseModel, Field
 from typing import Any, Iterable, List, Mapping
 
 from ideascale_importer import utils
+from ideascale_importer.utils import GetFailed
 
 
-@dataclass
-class Campaign:
+class Campaign(BaseModel):
     """Represents a campaign from IdeaScale.
 
     (Contains only the fields that are used by the importer).
@@ -23,8 +23,7 @@ class Campaign:
     campaign_url: str
 
 
-@dataclass
-class CampaignGroup:
+class CampaignGroup(BaseModel):
     """Represents a campaign group from IdeaScale.
 
     (Contains only the fields that are used by the importer).
@@ -35,8 +34,7 @@ class CampaignGroup:
     campaigns: List[Campaign]
 
 
-@dataclass
-class IdeaAuthorInfo:
+class IdeaAuthorInfo(BaseModel):
     """Represents an author info from IdeaScale.
 
     (Contains only the fields that are used by the importer).
@@ -45,8 +43,7 @@ class IdeaAuthorInfo:
     name: str
 
 
-@dataclass
-class Idea:
+class Idea(BaseModel):
     """Represents an idea from IdeaScale.
 
     (Contains only the fields that are used by the importer).
@@ -58,16 +55,15 @@ class Idea:
     text: str
     author_info: IdeaAuthorInfo
     contributors: List[IdeaAuthorInfo]
-    custom_fields_by_key: Mapping[str, str]
     url: str
+    custom_fields_by_key: Mapping[str, str] = Field(default={})
 
     def contributors_name(self) -> List[str]:
         """Get the names of all contributors."""
         return list(map(lambda c: c.name, self.contributors))
 
 
-@dataclass
-class Stage:
+class Stage(BaseModel):
     """Represents a stage from IdeaScale.
 
     (Contains only the fields that are used by the importer).
@@ -79,8 +75,7 @@ class Stage:
     funnel_name: str
 
 
-@dataclass
-class Funnel:
+class Funnel(BaseModel):
     """Represents a funnel from IdeaScale.
 
     (Contains only the fields that are used by the importer).
@@ -91,6 +86,14 @@ class Funnel:
     stages: List[Stage]
 
 
+class StageNotFoundError(Exception):
+    def __init__(self, stage_id: int):
+        self.stage_id = stage_id
+
+    def __str__(self) -> str:
+        return f"No stage found with id {self.stage_id}"
+
+
 class Client:
     """IdeaScale API client."""
 
@@ -99,7 +102,10 @@ class Client:
     def __init__(self, api_token: str, api_url: str = DEFAULT_API_URL):
         """Create an IdeaScale API client which connects to the given API URL."""
         self.api_token = api_token
-        self.inner = utils.JsonHttpClient(api_url)
+        self.inner = utils.HttpClient(api_url)
+
+    async def close(self):
+        await self.inner.close()
 
     async def campaigns(self, group_id: int) -> List[Campaign]:
         """Get all campaigns from the campaign group with the given id."""
@@ -112,7 +118,7 @@ class Client:
             if "campaigns" in group:
                 group_campaigns = []
                 for c in group["campaigns"]:
-                    group_campaigns.append(pydantic.tools.parse_obj_as(Campaign, c))
+                    group_campaigns.append(Campaign.model_validate(c))
                     await asyncio.sleep(0)
 
                 campaigns.extend(group_campaigns)
@@ -125,7 +131,7 @@ class Client:
 
         campaign_groups: List[CampaignGroup] = []
         for cg in res:
-            campaign_groups.append(pydantic.tools.parse_obj_as(CampaignGroup, cg))
+            campaign_groups.append(CampaignGroup.model_validate(cg))
             await asyncio.sleep(0)
 
         return campaign_groups
@@ -136,7 +142,7 @@ class Client:
 
         ideas = []
         for i in res:
-            ideas.append(pydantic.tools.parse_obj_as(Idea, i))
+            ideas.append(Idea.model_validate(i))
             await asyncio.sleep(0)
 
         return ideas
@@ -165,7 +171,7 @@ class Client:
 
                 res_ideas: List[Idea] = []
                 for i in res:
-                    res_ideas.append(pydantic.tools.parse_obj_as(Idea, i))
+                    res_ideas.append(Idea.model_validate(i))
 
                 d.ideas.extend(res_ideas)
 
@@ -173,6 +179,19 @@ class Client:
                     d.done = True
 
         d = WorkerData()
+
+        try:
+            await asyncio.create_task(worker(d))
+        except GetFailed as e:
+            if e.status == 404:
+                content = json.loads(e.content)
+                if content["key"] == "STAGE_NOT_FOUND":
+                    raise StageNotFoundError(stage_id)
+                else:
+                    raise e
+            else:
+                raise e
+
         worker_tasks = [asyncio.create_task(worker(d)) for _ in range(request_workers_count)]
         for task in worker_tasks:
             await task
@@ -187,10 +206,10 @@ class Client:
 
     async def funnel(self, funnel_id: int) -> Funnel:
         """Get the funnel with the given id."""
-        res = await self._get(f"/v1/funnels/{funnel_id}")
-        return pydantic.tools.parse_obj_as(Funnel, res)
+        res = await self._get(f"/a/rest/v1/funnels/{funnel_id}")
+        return Funnel.model_validate(res)
 
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
         """Execute a GET request on IdeaScale API."""
         headers = {"api_token": self.api_token}
-        return await self.inner.get(path, headers)
+        return await self.inner.json_get(path, headers)

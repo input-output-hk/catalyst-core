@@ -1,10 +1,15 @@
 extern crate core;
 cfg_if::cfg_if! {
     if #[cfg(test)] {
+        #[allow(clippy::all)]
         pub mod common;
+        #[allow(clippy::all)]
         pub mod component;
+        #[allow(clippy::all)]
         pub mod non_functional;
+        #[allow(clippy::all)]
         pub mod integration;
+        #[allow(clippy::all)]
         pub mod e2e;
     }
 }

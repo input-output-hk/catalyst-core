@@ -5,7 +5,7 @@ use catalyst_toolbox::utils::{assert_are_close, json_from_file};
 use clap::Parser;
 use color_eyre::{Report, Result};
 use serde::Serialize;
-use snapshot_lib::registration::MainnetRewardAddress;
+use snapshot_lib::registration::RewardAddress;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
@@ -39,12 +39,12 @@ pub struct VotersRewards {
 
 fn write_rewards_results(
     output: &Option<PathBuf>,
-    rewards: BTreeMap<MainnetRewardAddress, Rewards>,
+    rewards: BTreeMap<RewardAddress, Rewards>,
 ) -> Result<(), Report> {
     #[derive(Serialize, Debug)]
     struct Entry {
         #[serde(rename = "Address")]
-        address: MainnetRewardAddress,
+        address: RewardAddress,
         #[serde(rename = "Reward for the voter (lovelace)")]
         reward: Rewards,
     }

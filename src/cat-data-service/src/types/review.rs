@@ -120,7 +120,7 @@ mod tests {
             group: Some("group".to_string()),
         });
 
-        let json = serde_json::to_value(&review_type).unwrap();
+        let json = serde_json::to_value(review_type).unwrap();
         assert_eq!(
             json,
             json!(
@@ -148,7 +148,7 @@ mod tests {
             group: None,
         });
 
-        let json = serde_json::to_value(&review_type).unwrap();
+        let json = serde_json::to_value(review_type).unwrap();
         assert_eq!(
             json,
             json!(
@@ -171,7 +171,7 @@ mod tests {
             note: Some("note".to_string()),
         });
 
-        let json = serde_json::to_value(&rating).unwrap();
+        let json = serde_json::to_value(rating).unwrap();
         assert_eq!(
             json,
             json!(
@@ -189,7 +189,7 @@ mod tests {
             note: None,
         });
 
-        let json = serde_json::to_value(&rating).unwrap();
+        let json = serde_json::to_value(rating).unwrap();
         assert_eq!(
             json,
             json!(
@@ -208,7 +208,7 @@ mod tests {
             ratings: vec![],
         });
 
-        let json = serde_json::to_value(&advisor_review).unwrap();
+        let json = serde_json::to_value(advisor_review).unwrap();
         assert_eq!(
             json,
             json!(

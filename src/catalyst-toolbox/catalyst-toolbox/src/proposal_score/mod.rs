@@ -5,8 +5,8 @@ pub mod store;
 pub struct ProposalId(pub i32);
 
 #[derive(Debug)]
-pub struct AligmentReviews(pub Vec<Review>);
-pub struct AligmentScore(f64);
+pub struct AlignmentReviews(pub Vec<Review>);
+pub struct AlignmentScore(f64);
 #[derive(Debug)]
 pub struct FeasibilityReviews(pub Vec<Review>);
 pub struct FeasibilityScore(f64);
@@ -17,14 +17,14 @@ pub struct AuditabilityScore(f64);
 pub fn calc_score(
     allocated_weight: f64,
     not_allocated_weight: f64,
-    aligment_reviews: &AligmentReviews,
+    alignment_reviews: &AlignmentReviews,
     feasibility_reviews: &FeasibilityReviews,
     auditability_review: &AuditabilityReviews,
-) -> Result<(AligmentScore, FeasibilityScore, AuditabilityScore), Error> {
-    let aligment_score = AligmentScore(weighted_avarage_score(
+) -> Result<(AlignmentScore, FeasibilityScore, AuditabilityScore), Error> {
+    let alignment_score = AlignmentScore(weighted_avarage_score(
         allocated_weight,
         not_allocated_weight,
-        &aligment_reviews.0,
+        &alignment_reviews.0,
     )?);
     let feasibility_score = FeasibilityScore(weighted_avarage_score(
         allocated_weight,
@@ -37,7 +37,7 @@ pub fn calc_score(
         &auditability_review.0,
     )?);
 
-    Ok((aligment_score, feasibility_score, auditability_score))
+    Ok((alignment_score, feasibility_score, auditability_score))
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -53,7 +53,11 @@ pub struct Review {
 }
 
 fn review_weight(weight: f64, reviews_amount: usize) -> f64 {
-    weight / reviews_amount as f64
+    if reviews_amount != 0 {
+        weight / reviews_amount as f64
+    } else {
+        0.0
+    }
 }
 
 /// weighted average score calculation
@@ -162,30 +166,37 @@ mod tests {
         let allocated_weight = 0.8;
         let not_allocated_weight = 0.2;
 
-        let db = std::path::PathBuf::from("src/proposal_score/test_data/fund9.sqlite3");
-        let reviews = std::path::PathBuf::from("src/proposal_score/test_data/reviews-example.csv");
+        let proposals_file =
+            std::path::PathBuf::from("src/proposal_score/test_data/proposals.json");
+        let reviews_file =
+            std::path::PathBuf::from("src/proposal_score/test_data/reviews-example.csv");
 
-        let reviews = load::load_reviews_from_csv(&reviews).unwrap();
+        let reviews = load::load_reviews_from_csv(&reviews_file).unwrap();
+        let mut proposals = load::load_proposals_from_json(&proposals_file).unwrap();
 
-        for (proposal_id, (aligment_reviews, feasibility_reviews, auditability_reviews)) in reviews
+        for (proposal_id, (alignment_reviews, feasibility_reviews, auditability_reviews)) in reviews
         {
-            let (aligment_score, feasibility_score, auditability_score) = calc_score(
+            let (alignment_score, feasibility_score, auditability_score) = calc_score(
                 allocated_weight,
                 not_allocated_weight,
-                &aligment_reviews,
+                &alignment_reviews,
                 &feasibility_reviews,
                 &auditability_reviews,
             )
             .unwrap();
 
-            store::store_scores_in_sqllite_db(
-                &db,
-                proposal_id,
-                aligment_score,
-                feasibility_score,
-                auditability_score,
-            )
-            .unwrap();
+            if let Some(proposal) = proposals.get_mut(&proposal_id) {
+                store::store_score_into_proposal(
+                    proposal,
+                    alignment_score,
+                    feasibility_score,
+                    auditability_score,
+                )
+                .unwrap();
+            }
         }
+
+        store::store_proposals_into_file(&proposals_file, proposals.into_values().collect())
+            .unwrap();
     }
 }

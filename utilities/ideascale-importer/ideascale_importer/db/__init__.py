@@ -6,7 +6,7 @@ This module contains functions for interacting with the database.
 import json
 import asyncpg
 import dataclasses
-from typing import Any, List, TypeVar
+from typing import Any, List, Dict, TypeVar
 
 from .models import Model, Contribution, Voter
 
@@ -64,12 +64,33 @@ async def insert(conn: asyncpg.Connection, model: Model) -> Any:
         return ret[0]
     return None
 
+async def select(conn: asyncpg.Connection, model: Model, cond: Dict[str, str] = {}) -> List[Any]:
+    """Select a single model."""
+
+    # Extract field names and values for each field in each model
+    cols = [field.name for field in dataclasses.fields(model)]
+
+    cols_str = ",".join(cols)
+    cond_str = " ".join([f"{col} {cond}" for col, cond in cond.items()])
+
+    stmt_template = f"""
+        SELECT {cols_str}
+        FROM {model.table()}
+        {f' WHERE {cond_str}' if cond_str else ' '}
+    """.strip()  
+
+    result = await conn.fetch(stmt_template)
+
+    return [model.__class__(**record) for record in result]
+
 
 async def upsert_many(
     conn: asyncpg.Connection,
     models: List[M],
     conflict_cols: List[str],
     exclude_update_cols: List[str] = [],
+    pre_update_cols: Dict[str, str] = {},
+    pre_update_cond: Dict[str, str] = {},
 ) -> List[Any]:
     """Batch upserts models of the same type.
 
@@ -99,8 +120,16 @@ async def upsert_many(
 
     conflict_cols_str = ",".join(conflict_cols)
     do_update_set_str = ",".join([f"{col} = EXCLUDED.{col}" for col in insert_cols if col not in exclude_update_cols])
+    pre_update_set_str = ",".join([f"{col} = {val}" for col, val in pre_update_cols.items()])
+    pre_update_cond_str = " ".join([f"{col} {cond}" for col, cond in pre_update_cond.items()])
+
+    pre_update_template = f"""
+        WITH updated AS ({ f"UPDATE {models[0].table()} SET {pre_update_set_str} {f' WHERE {pre_update_cond_str}' if pre_update_cond_str else ' '}" })
+        """.strip() if pre_update_set_str else " "     
 
     stmt_template = f"""
+        {pre_update_template}
+
         INSERT INTO {models[0].table()} ({insert_cols_str}) VALUES {val_nums_str}
         ON CONFLICT ({conflict_cols_str})
         DO UPDATE
@@ -118,13 +147,14 @@ async def upsert(
     model: Model,
     conflict_cols: List[str],
     exclude_update_cols: List[str] = [],
+    pre_update_cols: Dict[str, str] = {},
 ):
     """Upsert a single model.
 
     conflict_cols is a list of columns that are used to determine whether a row should be updated or inserted.
     If returning is not None, returns the value of that column.
     """
-    ret = await upsert_many(conn, [model], conflict_cols, exclude_update_cols)
+    ret = await upsert_many(conn, [model], conflict_cols, exclude_update_cols, pre_update_cols)
     if len(ret) > 0:
         return ret[0]
     return None

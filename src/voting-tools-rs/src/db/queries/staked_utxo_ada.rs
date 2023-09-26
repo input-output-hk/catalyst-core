@@ -27,8 +27,7 @@ pub fn staked_utxo_ada(
         INNER JOIN tx ON tx_out.tx_id = tx.id
         INNER JOIN block ON tx.block_id = block.id
         INNER JOIN stake_address ON stake_address.id = tx_out.stake_address_id
-    WHERE block.slot_no <= {} );",
-        max_slot
+    WHERE block.slot_no <= {max_slot} );"
     );
 
     client.execute(&tx_out, &[])?;
@@ -40,8 +39,7 @@ pub fn staked_utxo_ada(
             SELECT tx_in.* FROM tx_in
                   INNER JOIN tx ON tx_in.tx_in_id = tx.id
                   INNER JOIN block ON tx.block_id = block.id
-            WHERE block.slot_no <= {});",
-        max_slot
+            WHERE block.slot_no <= {max_slot});"
     );
 
     client.execute(&tx_in, &[])?;

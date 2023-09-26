@@ -6,7 +6,8 @@ use clap::Parser;
 use color_eyre::Report;
 use jormungandr_lib::{crypto::account::Identifier, interfaces::AccountVotes};
 use serde::Serialize;
-use snapshot_lib::{registration::MainnetRewardAddress, SnapshotInfo};
+use snapshot_lib::registration::RewardAddress;
+use snapshot_lib::SnapshotInfo;
 use std::collections::{BTreeMap, HashMap};
 use std::path::PathBuf;
 
@@ -50,12 +51,12 @@ pub struct DrepsRewards {
 
 fn write_rewards_results(
     output: &Option<PathBuf>,
-    rewards: BTreeMap<MainnetRewardAddress, Rewards>,
+    rewards: BTreeMap<RewardAddress, Rewards>,
 ) -> Result<(), Report> {
     #[derive(Serialize, Debug)]
     struct Entry {
         #[serde(rename = "Address")]
-        address: MainnetRewardAddress,
+        address: RewardAddress,
         #[serde(rename = "Reward for the voter (lovelace)")]
         reward: Rewards,
     }
@@ -80,6 +81,7 @@ impl DrepsRewards {
             vote_threshold,
             per_challenge_threshold,
             proposals,
+            ..
         } = self;
 
         let proposals = serde_json::from_reader::<_, Vec<FullProposalInfo>>(

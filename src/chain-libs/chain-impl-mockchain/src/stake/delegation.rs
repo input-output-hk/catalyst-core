@@ -18,21 +18,11 @@ pub enum PoolError {
     NotFound(PoolId),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct PoolLastRewards {
     pub epoch: Epoch,
     pub value_taxed: Value,
     pub value_for_stakers: Value,
-}
-
-impl PoolLastRewards {
-    pub fn default() -> Self {
-        PoolLastRewards {
-            epoch: 0,
-            value_taxed: Value::zero(),
-            value_for_stakers: Value::zero(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

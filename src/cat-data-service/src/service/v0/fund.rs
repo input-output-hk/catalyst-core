@@ -39,9 +39,9 @@ async fn fund_exec(state: Arc<State>) -> Result<SerdeType<FundWithNext>, Error> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::service::{app, tests::body_data_json_check};
+    use crate::service::{app, tests::response_body_to_json};
     use axum::{
-        body::{Body, HttpBody},
+        body::Body,
         http::{Request, StatusCode},
     };
     use tower::ServiceExt;
@@ -57,8 +57,8 @@ mod tests {
             .unwrap();
         let response = app.clone().oneshot(request).await.unwrap();
         assert_eq!(response.status(), StatusCode::OK);
-        assert!(body_data_json_check(
-            response.into_body().data().await.unwrap().unwrap().to_vec(),
+        assert_eq!(
+            response_body_to_json(response).await.unwrap(),
             serde_json::json!(
                 {
                     "id": 4,
@@ -178,7 +178,7 @@ mod tests {
                         "tallying_end": "1970-01-01T00:00:00+00:00",
                     }
                 }
-            )
-        ));
+            ),
+        );
     }
 }

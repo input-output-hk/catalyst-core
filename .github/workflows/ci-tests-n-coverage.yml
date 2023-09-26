@@ -6,7 +6,7 @@ on:
     - cron: '5 0 * * *'
 
 env:
-  RUST_LATEST_STABLE_VERSION: 1.65
+  RUST_LATEST_STABLE_VERSION: 1.71
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
   RUST_BACKTRACE: 1
@@ -71,10 +71,6 @@ jobs:
         run: |
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/catalyst-toolbox/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/catalyst-toolbox/snapshot-lib/Cargo.toml --profile ci
-
-          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-cli/Cargo.toml --profile ci
-          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-lib/Cargo.toml --profile ci
-          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-server/Cargo.toml --profile ci
 
           cargo llvm-cov nextest --no-report --manifest-path ./src/voting-tools-rs/Cargo.toml --profile ci
 
@@ -158,5 +154,4 @@ jobs:
         run: |
           source <(cargo llvm-cov show-env --export-prefix)
           cargo build -p jcli -p jormungandr -p explorer -p vit-servicing-station-cli -p vit-servicing-station-server
-          cargo llvm-cov nextest --no-report --manifest-path ./src/vit-servicing-station/vit-servicing-station-tests/Cargo.toml --profile ci
           cargo llvm-cov nextest --no-report --manifest-path ./src/jormungandr/testing/jormungandr-integration-tests/Cargo.toml --profile ci

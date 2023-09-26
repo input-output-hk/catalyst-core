@@ -1,0 +1,26 @@
+VERSION 0.7
+build:
+    FROM ../../../+builder
+    RUN pwd
+    RUN cargo build --locked --release --bin jormungandr
+
+    # Store the artifact
+    SAVE ARTIFACT target/release/jormungandr jormungandr
+    SAVE IMAGE --cache-hint
+
+docker-local:
+    FROM ../../../+deployment
+    WORKDIR /app
+    ARG tag="latest"
+    ARG registry
+
+    COPY +build/jormungandr .
+    COPY entry.sh .
+
+    COPY node_config.yaml .
+    RUN chmod +x entry.sh
+    RUN pwd
+    ENV NODE_CONFIG_PATH=/app/node_config.yaml
+    ENV BIN_PATH=/app/jormungandr
+    ENTRYPOINT ["/app/entry.sh"]
+    SAVE IMAGE --push ${registry}jormungandr:$tag

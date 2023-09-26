@@ -82,8 +82,8 @@ fn merge_voteplans(voteplans: Vec<VotePlanStatus>) -> Result<Vec<MergedVotePlan>
     }
 
     group_by_proposals
-        .into_iter()
-        .map(|(_key, mut group)| {
+        .into_values()
+        .map(|mut group| {
             let ids = group.iter().map(|group| group.id).collect();
 
             let mut proposals = group

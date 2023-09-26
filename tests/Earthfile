@@ -1,0 +1,20 @@
+VERSION 0.7
+
+generate-client:
+
+    FROM ubuntu:latest
+
+    RUN echo "START"
+    RUN apt-get update
+    RUN echo "UPDATED"
+    RUN apt-get install bash
+    RUN echo "INSTALLED BASH"
+    RUN apt-get install curl -y
+    RUN echo "INSTALLED CURL"
+    RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    #RUN curl -sL https://deb.nodesource.com/setup_18.x | bash
+    RUN echo "DOWNLOADED SETUP"
+    RUN apt-get install nodejs
+    RUN echo "INSTALLED NODEJS"
+    RUN node -v
+    RUN npm -v

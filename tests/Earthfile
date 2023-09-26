@@ -11,10 +11,16 @@ generate-client:
     RUN echo "INSTALLED BASH"
     RUN apt-get install curl -y
     RUN echo "INSTALLED CURL"
+    RUN apt-get install gpg -y
+    RUN echo "INSTALLED GPG"
     RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
     #RUN curl -sL https://deb.nodesource.com/setup_18.x | bash
     RUN echo "DOWNLOADED SETUP"
-    RUN apt-get install nodejs
+    RUN apt-get install nodejs -y
     RUN echo "INSTALLED NODEJS"
+    RUN apt-get install npm -y
+    RUN echo "INSTALLED NPM"
     RUN node -v
     RUN npm -v
+    RUN npm install @openapitools/openapi-generator-cli -g
+    RUN echo "INSTALLED CLI"

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["INPUT_NAME"],"fn":["proposal_new"],"struct":["ProposalPrivate","ProposalPublic","Settings"]};
+window.SIDEBAR_ITEMS = {"fn":["proposal_new"],"struct":["ProposalPrivate","ProposalPublic","Settings"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["HRP"],"struct":["AddWitness"]};
+window.SIDEBAR_ITEMS = {"struct":["AddWitness"]};

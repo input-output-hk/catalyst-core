@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"opaque":[""],"struct":["Contents","ContentsBuilder"],"type":["BlockContentHash","BlockContentSize"]};
+window.SIDEBAR_ITEMS = {"struct":["Contents","ContentsBuilder"],"type":["BlockContentHash","BlockContentSize"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["filter","handler"],"opaque":[""],"static":["S"],"struct":["__StaticPath"]};
+window.SIDEBAR_ITEMS = {"fn":["filter","handler"]};

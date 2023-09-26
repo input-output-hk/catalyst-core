@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["GossipError"],"fn":["is_ipv4_global"],"struct":["Gossip","Gossips"]};
+window.SIDEBAR_ITEMS = {"enum":["GossipError"],"struct":["Gossip","Gossips"]};

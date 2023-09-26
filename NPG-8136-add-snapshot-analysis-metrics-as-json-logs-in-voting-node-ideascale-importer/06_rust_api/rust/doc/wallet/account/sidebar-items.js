@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["EitherAccount","Error"],"opaque":[""],"struct":["AccountId","State","Wallet","WalletBuildTx"]};
+window.SIDEBAR_ITEMS = {"enum":["EitherAccount","Error"],"struct":["AccountId","State","Wallet","WalletBuildTx"]};

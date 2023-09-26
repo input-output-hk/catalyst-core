@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["report_invalid"],"opaque":[""],"struct":["ForcedErrorCode","GeneralException","InvalidBatch"]};
+window.SIDEBAR_ITEMS = {"fn":["report_invalid"],"struct":["ForcedErrorCode","GeneralException","InvalidBatch"]};

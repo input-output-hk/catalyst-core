@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["PaginationInterval"],"fn":["compute_interval","compute_range_boundaries"],"opaque":[""],"struct":["ConnectionFields","InclusivePaginationInterval","PageMeta","ValidatedPaginationArguments"]};
+window.SIDEBAR_ITEMS = {"enum":["PaginationInterval"],"fn":["compute_interval","compute_range_boundaries"],"struct":["ConnectionFields","InclusivePaginationInterval","PageMeta","ValidatedPaginationArguments"]};

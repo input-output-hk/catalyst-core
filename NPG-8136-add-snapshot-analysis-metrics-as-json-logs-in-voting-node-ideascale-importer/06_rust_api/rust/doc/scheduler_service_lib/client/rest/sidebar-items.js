@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"static":["CALLSITE","META"],"struct":["SchedulerRestClient"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["SchedulerRestClient"]};

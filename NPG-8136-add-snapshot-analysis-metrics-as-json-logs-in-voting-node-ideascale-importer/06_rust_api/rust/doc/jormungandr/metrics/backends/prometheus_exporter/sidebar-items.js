@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["totals"],"struct":["Prometheus"],"type":["UIntGauge"]};
+window.SIDEBAR_ITEMS = {"struct":["Prometheus"],"type":["UIntGauge"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["_strategy_of_0","_to_fn_ptr"],"opaque":[""],"struct":["Ed25519","Priv","Pub","Sig"]};
+window.SIDEBAR_ITEMS = {"struct":["Ed25519","Priv","Pub","Sig"]};

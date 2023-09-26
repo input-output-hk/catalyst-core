@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["EnclaveError"],"opaque":[""],"struct":["Enclave"]};
+window.SIDEBAR_ITEMS = {"enum":["EnclaveError"],"struct":["Enclave"]};

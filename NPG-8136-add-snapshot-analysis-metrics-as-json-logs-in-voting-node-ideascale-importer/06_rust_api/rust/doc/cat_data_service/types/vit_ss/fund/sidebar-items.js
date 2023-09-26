@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["FundNextInfoSerde","FundSerde","FundStageDatesSerde","FundWithNextSerde"]};
+window.SIDEBAR_ITEMS = {};

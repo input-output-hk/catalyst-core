@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["Builder","Client"],"type":["BlockSubscription","FragmentSubscription","GossipSubscription"]};

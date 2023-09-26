@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["metrics_count_method","metrics_method"],"mod":["backends"],"struct":["Metrics","MetricsBuilder"],"trait":["MetricsBackend"]};

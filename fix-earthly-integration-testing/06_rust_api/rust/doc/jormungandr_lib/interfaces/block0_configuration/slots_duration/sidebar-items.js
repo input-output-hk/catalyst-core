@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["TryFromSlotDurationError"],"struct":["SlotDuration","SlotDurationVisitor"]};
+window.SIDEBAR_ITEMS = {"enum":["TryFromSlotDurationError"],"struct":["SlotDuration"]};

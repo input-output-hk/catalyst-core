@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["get_all_challenges","get_challenge_by_id","get_challenge_by_id_and_group_id"],"opaque":[""]};
+window.SIDEBAR_ITEMS = {"fn":["get_all_challenges","get_challenge_by_id","get_challenge_by_id_and_group_id"]};

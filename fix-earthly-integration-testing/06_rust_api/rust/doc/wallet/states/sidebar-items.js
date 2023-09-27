@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Status"],"opaque":[""],"struct":["StateRef","States"]};
+window.SIDEBAR_ITEMS = {"enum":["Status"],"struct":["StateRef","States"]};

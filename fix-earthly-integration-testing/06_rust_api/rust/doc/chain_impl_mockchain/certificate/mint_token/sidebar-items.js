@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["_strategy_of_name","_strategy_of_policy","_strategy_of_to","_strategy_of_value","_to_fn_ptr"],"mod":["tests"],"opaque":[""],"struct":["MintToken"]};
+window.SIDEBAR_ITEMS = {"mod":["tests"],"struct":["MintToken"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["review","reviews_exec"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"fn":["review","reviews_exec"]};

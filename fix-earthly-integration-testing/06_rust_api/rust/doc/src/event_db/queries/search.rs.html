@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/event-db/src/queries/search.rs`."><title>search.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="event_db" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (22f247c6f 2023-03-13)" data-search-js="search-d1bc581867fd0849.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../event_db/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/event-db/src/queries/search.rs`."><title>search.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="event_db" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (0288f2e19 2023-09-25)" data-channel="nightly" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../event_db/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1091,7 +1091,31 @@
 <a href="#1091" id="1091">1091</a>
 <a href="#1092" id="1092">1092</a>
 <a href="#1093" id="1093">1093</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+<a href="#1094" id="1094">1094</a>
+<a href="#1095" id="1095">1095</a>
+<a href="#1096" id="1096">1096</a>
+<a href="#1097" id="1097">1097</a>
+<a href="#1098" id="1098">1098</a>
+<a href="#1099" id="1099">1099</a>
+<a href="#1100" id="1100">1100</a>
+<a href="#1101" id="1101">1101</a>
+<a href="#1102" id="1102">1102</a>
+<a href="#1103" id="1103">1103</a>
+<a href="#1104" id="1104">1104</a>
+<a href="#1105" id="1105">1105</a>
+<a href="#1106" id="1106">1106</a>
+<a href="#1107" id="1107">1107</a>
+<a href="#1108" id="1108">1108</a>
+<a href="#1109" id="1109">1109</a>
+<a href="#1110" id="1110">1110</a>
+<a href="#1111" id="1111">1111</a>
+<a href="#1112" id="1112">1112</a>
+<a href="#1113" id="1113">1113</a>
+<a href="#1114" id="1114">1114</a>
+<a href="#1115" id="1115">1115</a>
+<a href="#1116" id="1116">1116</a>
+<a href="#1117" id="1117">1117</a>
+</pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     types::{
         search::{
             SearchConstraint, SearchOrderBy, SearchQuery, SearchResult, SearchTable, ValueResults,
@@ -1384,10 +1408,18 @@
             .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
-        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">5</span>);
+        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">6</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
             <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
+                EventSummary {
+                    id: EventId(<span class="number">0</span>),
+                    name: <span class="string">&quot;Test Fund&quot;</span>.to_string(),
+                    starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(NaiveDateTime::default(), Utc)),
+                    ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(NaiveDateTime::default(), Utc)),
+                    reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">true</span>,
+                },
                 EventSummary {
                     id: EventId(<span class="number">1</span>),
                     name: <span class="string">&quot;Test Fund 1&quot;</span>.to_string(),
@@ -1493,7 +1525,7 @@
                     ends: <span class="prelude-val">None</span>,
                     reg_checked: <span class="prelude-val">None</span>,
                     is_final: <span class="bool-val">false</span>,
-                }
+                },
             ]))
         );
 
@@ -1501,7 +1533,7 @@
             .search(search_query, <span class="bool-val">true</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
-        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">5</span>);
+        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">6</span>);
         <span class="macro">assert_eq!</span>(query_result.results, <span class="prelude-val">None</span>);
 
         <span class="kw">let </span>search_query = SearchQuery {
@@ -1519,7 +1551,7 @@
             .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)
             .<span class="kw">await
             </span>.unwrap();
-        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">5</span>);
+        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">6</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
             <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
@@ -1629,6 +1661,14 @@
                     )),
                     is_final: <span class="bool-val">true</span>,
                 },
+                EventSummary {
+                    id: EventId(<span class="number">0</span>),
+                    name: <span class="string">&quot;Test Fund&quot;</span>.to_string(),
+                    starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(NaiveDateTime::default(), Utc)),
+                    ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(NaiveDateTime::default(), Utc)),
+                    reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">true</span>,
+                }
             ]))
         );
 
@@ -1675,7 +1715,7 @@
             .search(search_query.clone(), <span class="bool-val">false</span>, <span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="number">2</span>))
             .<span class="kw">await
             </span>.unwrap();
-        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">3</span>);
+        <span class="macro">assert_eq!</span>(query_result.total, <span class="number">4</span>);
         <span class="macro">assert_eq!</span>(
             query_result.results,
             <span class="prelude-val">Some</span>(ValueResults::Events(<span class="macro">vec!</span>[
@@ -1757,6 +1797,14 @@
                     )),
                     is_final: <span class="bool-val">true</span>,
                 },
+                EventSummary {
+                    id: EventId(<span class="number">0</span>),
+                    name: <span class="string">&quot;Test Fund&quot;</span>.to_string(),
+                    starts: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(NaiveDateTime::default(), Utc)),
+                    ends: <span class="prelude-val">Some</span>(DateTime::&lt;Utc&gt;::from_utc(NaiveDateTime::default(), Utc)),
+                    reg_checked: <span class="prelude-val">None</span>,
+                    is_final: <span class="bool-val">true</span>,
+                }
             ]))
         );
 
@@ -2184,5 +2232,4 @@
         )
     }
 }
-</code></pre></div>
-</section></main></body></html>
+</code></pre></div></section></main></body></html>

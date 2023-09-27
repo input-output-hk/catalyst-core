@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["__stability","__static_ref_initialize","get_available_port"],"static":["LAZY"],"struct":["MockBootstrap","MockController","NEXT_AVAILABLE_PORT_NUMBER","OCCUPIED_PORTS"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["get_available_port"],"struct":["MockBootstrap","MockController","NEXT_AVAILABLE_PORT_NUMBER","OCCUPIED_PORTS"]};

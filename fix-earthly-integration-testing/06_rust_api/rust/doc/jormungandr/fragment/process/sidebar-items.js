@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["BRANCHES","DESCRIPTION"],"enum":["Error"],"fn":["hourly_wakeup","open_log_file"],"opaque":[""],"static":["CALLSITE","META"],"struct":["Process"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["Process"]};

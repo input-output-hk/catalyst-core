@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["filter"],"mod":["advisor_reviews","challenges","funds","genesis","health","proposals","search","service_version","snapshot","votes"],"opaque":[""],"static":["S"],"struct":["__StaticPath"]};
+window.SIDEBAR_ITEMS = {"fn":["filter"],"mod":["advisor_reviews","challenges","funds","genesis","health","proposals","search","service_version","snapshot","votes"]};

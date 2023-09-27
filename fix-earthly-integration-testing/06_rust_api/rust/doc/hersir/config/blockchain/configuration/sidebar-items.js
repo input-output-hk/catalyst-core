@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"opaque":[""],"struct":["BlockchainBuilder","BlockchainConfiguration"]};
+window.SIDEBAR_ITEMS = {"struct":["BlockchainBuilder","BlockchainConfiguration"]};

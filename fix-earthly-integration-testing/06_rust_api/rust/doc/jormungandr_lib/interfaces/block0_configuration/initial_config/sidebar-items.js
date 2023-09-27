@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ConsensusVersionDef","DiscriminationDef","FromConfigParamsError"],"fn":["param_missing_error"],"struct":["BlockchainConfiguration"],"type":["StaticStr"]};
+window.SIDEBAR_ITEMS = {"enum":["ConsensusVersionDef","DiscriminationDef","FromConfigParamsError"],"struct":["BlockchainConfiguration"],"type":["StaticStr"]};

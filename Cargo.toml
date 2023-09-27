@@ -23,6 +23,7 @@ members = [
   "src/chain-wallet-libs/bindings/wallet-c",
   "src/chain-wallet-libs/bindings/wallet-core",
   "src/chain-wallet-libs/bindings/wallet-wasm-js",
+  "src/chain-wallet-libs/bindings/wallet-uniffi",
   "src/event-db",
   "src/jormungandr/jormungandr-lib",
   "src/jormungandr/jormungandr",

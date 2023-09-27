@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["ProcessingOutcome"],"mod":["connect"],"static":["CALLSITE","META"],"struct":["Client","ClientBuilder","InboundSubscriptions","Progress"]};
+window.SIDEBAR_ITEMS = {"enum":["ProcessingOutcome"],"mod":["connect"],"struct":["Client","ClientBuilder","InboundSubscriptions","Progress"]};

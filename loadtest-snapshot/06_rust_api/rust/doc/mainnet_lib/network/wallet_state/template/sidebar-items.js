@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["build","build_default"],"mod":["actor","arbitrary","external_providers"],"opaque":[""]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["build","build_default"],"mod":["actor","arbitrary","external_providers"]};

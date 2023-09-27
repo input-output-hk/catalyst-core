@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["check_last_block_time"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"fn":["check_last_block_time"]};

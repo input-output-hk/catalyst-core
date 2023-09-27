@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["run_listen_socket"],"opaque":[""],"static":["CALLSITE","META"]};
+window.SIDEBAR_ITEMS = {"fn":["run_listen_socket"]};

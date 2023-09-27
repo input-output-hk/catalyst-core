@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"opaque":[""],"struct":["WatchClient"]};
+window.SIDEBAR_ITEMS = {"struct":["WatchClient"]};

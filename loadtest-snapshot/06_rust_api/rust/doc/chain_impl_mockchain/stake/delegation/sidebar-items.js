@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["PoolError"],"opaque":[""],"struct":["PoolLastRewards","PoolState","PoolsState"]};
+window.SIDEBAR_ITEMS = {"enum":["PoolError"],"struct":["PoolLastRewards","PoolState","PoolsState"]};

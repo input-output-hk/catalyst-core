@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["SearchColumnSerde","SearchTableSerde"],"struct":["SearchConstraintSerde","SearchOrderBySerde","SearchQuerySerde","SearchResultSerde"]};
+window.SIDEBAR_ITEMS = {};

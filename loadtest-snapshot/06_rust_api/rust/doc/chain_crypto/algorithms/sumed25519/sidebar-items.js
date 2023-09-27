@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["DEPTH"],"fn":["_to_fn_ptr"],"mod":["common","sum"],"struct":["SumEd25519_12"]};
+window.SIDEBAR_ITEMS = {"constant":["DEPTH"],"mod":["common","sum"],"struct":["SumEd25519_12"]};

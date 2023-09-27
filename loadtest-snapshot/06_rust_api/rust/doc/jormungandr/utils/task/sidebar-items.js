@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Input","ServiceError"],"static":["CALLSITE","META"],"struct":["Service","Services","TaskMessageBox","TokioServiceInfo"]};
+window.SIDEBAR_ITEMS = {"enum":["Input","ServiceError"],"struct":["Service","Services","TaskMessageBox","TokioServiceInfo"]};

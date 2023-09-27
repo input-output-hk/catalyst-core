@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["_to_fn_ptr"],"mod":["vrf"],"struct":["RistrettoGroup2HashDh"]};
+window.SIDEBAR_ITEMS = {"mod":["vrf"],"struct":["RistrettoGroup2HashDh"]};

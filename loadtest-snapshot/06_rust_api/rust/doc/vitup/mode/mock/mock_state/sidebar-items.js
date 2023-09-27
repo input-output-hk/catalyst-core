@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"static":["CALLSITE","META"],"struct":["MockState"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["MockState"]};

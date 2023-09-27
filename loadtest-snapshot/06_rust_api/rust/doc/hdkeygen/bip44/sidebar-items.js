@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["COIN_TYPE"]};
+window.SIDEBAR_ITEMS = {};

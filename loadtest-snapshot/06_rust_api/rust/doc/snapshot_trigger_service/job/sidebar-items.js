@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["SNAPSHOT_FILE"],"struct":["SnapshotJobRunner"]};
+window.SIDEBAR_ITEMS = {"struct":["SnapshotJobRunner"]};

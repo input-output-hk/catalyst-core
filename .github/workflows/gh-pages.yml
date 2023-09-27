@@ -75,7 +75,7 @@ jobs:
           rm -rf /opt/hostedtoolcache
 
       - name: Build Docs
-        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.4.3
+        uses: docker://ghcr.io/input-output-hk/catalyst-gh-tools:v1.4.4
         with:
           driver-opts: network=host
           entrypoint: cargo

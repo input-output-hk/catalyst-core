@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ConsensusType"],"mod":["tests"],"struct":["ChainLength"],"type":["ConsensusVersion","HeaderId"]};

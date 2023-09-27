@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["process_request"],"struct":["DurationRequestConsumer","Executor","FixedCountRequestConsumer","NoopReducer","RateLimiter"],"type":["Req"]};

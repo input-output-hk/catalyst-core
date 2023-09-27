@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error","IdeascaleError","ValidateCommand"],"mod":["config","deployment","ideascale"]};

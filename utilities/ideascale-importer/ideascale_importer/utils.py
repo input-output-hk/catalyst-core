@@ -59,7 +59,7 @@ class RunCmdFailed(Exception):
 async def run_cmd(name: str, cmd: str):
     """Run a command."""
     with logger.contextualize(name=name):
-        logger.info("Executing command", command_line=cmd)
+        logger.info("Executing command")
         p = await asyncio.create_subprocess_shell(
             cmd,
             stdout=asyncio.subprocess.PIPE,

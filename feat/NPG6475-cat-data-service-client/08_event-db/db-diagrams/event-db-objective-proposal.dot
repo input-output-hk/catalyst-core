@@ -109,6 +109,12 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="deleted"  align='text'><font>deleted</font><br align='left'/></td>
+                <td   ><font>boolean</font></td>
+                <td port="deleted_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Flag which defines was this objective<br align='left'/>(challenge) deleted from ideascale or<br align='left'/>not. DEPRECATED: only used for ideascale<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
                 <td port="rewards_currency"  align='text'><font>rewards_currency</font><br align='left'/></td>
                 <td   ><font><i>text</i></font></td>
                 <td port="rewards_currency_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The currency rewards values are<br align='left'/>represented as.</i><br align="left"/></font></td>
@@ -331,6 +337,12 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="deleted"  align='text'><font>deleted</font><br align='left'/></td>
+                <td   ><font>boolean</font></td>
+                <td port="deleted_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Flag which defines was this proposal<br align='left'/>deleted from ideascale or not.<br align='left'/>DEPRECATED: only used for ideascale<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
                 <td port="extra"  align='text'><font>extra</font><br align='left'/></td>
                 <td   ><font><i>jsonb</i></font></td>
                 <td port="extra_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Extra data about the proposal.<br align='left'/> The types of extra data are defined by<br align='left'/>the proposal type and are not enforced.<br align='left'/> Extra Fields for `native` challenges:<br align='left'/>    NONE.<br align='left'/><br align='left'/> Extra Fields for `simple` challenges:<br align='left'/>    &quot;problem&quot;  : &lt;text&gt; - Statement<br align='left'/>of the problem the proposal tries to<br align='left'/>address.<br align='left'/>    &quot;solution&quot; : &lt;text&gt; - The Solution<br align='left'/>to the challenge.<br align='left'/><br align='left'/> Extra Fields for `community choice`<br align='left'/>challenge:<br align='left'/>    &quot;brief&quot;      : &lt;text&gt; - Brief<br align='left'/>explanation of a proposal.<br align='left'/>    &quot;importance&quot; : &lt;text&gt; - The<br align='left'/>importance of the proposal.<br align='left'/>    &quot;goal&quot;       : &lt;text&gt; - The goal of<br align='left'/>the proposal is addressed to meet.<br align='left'/>    &quot;metrics&quot;    : &lt;text&gt; - The metrics<br align='left'/>of the proposal or how success will be<br align='left'/>determined.</i><br align="left"/></font></td>
@@ -417,6 +429,18 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="assessor_level"  align='text'><font>assessor_level</font><br align='left'/></td>
+                <td   ><font><i>integer</i></font></td>
+                <td port="assessor_level_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Assessors level ID</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="reward_address"  align='text'><font>reward_address</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="reward_address_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Assessors reward address</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
                 <td port="impact_alignment_rating_given"  align='text'><font>impact_alignment_rating_given</font><br align='left'/></td>
                 <td   ><font><i>integer</i></font></td>
                 <td port="impact_alignment_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The  numeric rating assigned to the<br align='left'/>proposal by the assessor.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
@@ -456,6 +480,12 @@ digraph erd {
                 <td port="ranking"  align='text'><font>ranking</font><br align='left'/></td>
                 <td   ><font><i>integer</i></font></td>
                 <td port="ranking_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Numeric  Measure of quality of this<br align='left'/>review according to veteran community<br align='left'/>advisors.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="flags"  align='text'><font>flags</font><br align='left'/></td>
+                <td   ><font><i>jsonb</i></font></td>
+                <td port="flags_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>OPTIONAL: JSON Array which defines the<br align='left'/>flags raised for this review.<br align='left'/>Flags can be raised for different<br align='left'/>reasons and have different metadata.<br align='left'/>Each entry =<br align='left'/>```jsonc<br align='left'/>{<br align='left'/>   &quot;flag_type&quot;: &quot;&lt;flag_type&gt;&quot;, &#x2f;&#x2f; Enum<br align='left'/>of the flag type (0: Profanity, 1:<br align='left'/>Similarity 2: AI generated).<br align='left'/>   &quot;score&quot;: &lt;score&gt;, &#x2f;&#x2f; Profanity score,<br align='left'/>similarity score, or AI generated score.<br align='left'/>0-1.<br align='left'/>   &quot;related_reviews&quot;: [&lt;review_id&gt;] &#x2f;&#x2f;<br align='left'/>Array of review IDs that this flag is<br align='left'/>related to (valid for similarity).<br align='left'/>}<br align='left'/>```</i><br align="left"/></font></td>
             </tr>
             
 
@@ -658,6 +688,29 @@ digraph erd {
 
     
 
+    "reviewer_level" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>reviewer_level</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id"  align='text'><font>row_id</font><br align='left'/></td>
+            </tr>
+            
+
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>ABRIDGED</i><br align="left"/></font></td>
+            </tr>
+        </table>
+    >];
+
+    
+
 
     "LEGEND" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
@@ -712,6 +765,8 @@ digraph erd {
     "proposal":"bb_vote_options_out" -> "vote_options":"objective"
     
     "proposal_review":"proposal_id_out" -> "proposal":"row_id"
+    
+    "proposal_review":"assessor_level_out" -> "reviewer_level":"row_id"
     
     "objective_review_metric":"objective_out" -> "objective":"row_id"
     

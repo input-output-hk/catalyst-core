@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["store_scores_in_sqllite_db"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["store_proposals_into_file","store_score_into_proposal"]};

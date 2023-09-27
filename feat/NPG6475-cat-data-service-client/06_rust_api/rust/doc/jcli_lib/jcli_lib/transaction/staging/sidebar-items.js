@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["StagingKind","__Field"],"struct":["Staging","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["StagingKind"],"struct":["Staging"]};

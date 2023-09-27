@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["default_goals","default_groups","default_result_url","default_survey_url"],"struct":["FundInfo","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"fn":["default_goals","default_groups","default_result_url","default_survey_url"],"struct":["FundInfo"]};

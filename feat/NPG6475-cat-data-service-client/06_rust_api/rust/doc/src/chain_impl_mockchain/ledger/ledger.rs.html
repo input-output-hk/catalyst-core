@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/chain-libs/chain-impl-mockchain/src/ledger/ledger.rs`."><title>ledger.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="chain_impl_mockchain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (22f247c6f 2023-03-13)" data-search-js="search-d1bc581867fd0849.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../chain_impl_mockchain/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/chain-libs/chain-impl-mockchain/src/ledger/ledger.rs`."><title>ledger.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="chain_impl_mockchain" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (0288f2e19 2023-09-25)" data-channel="nightly" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../chain_impl_mockchain/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -2942,7 +2942,7 @@
 <a href="#2942" id="2942">2942</a>
 <a href="#2943" id="2943">2943</a>
 <a href="#2944" id="2944">2944</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Mockchain ledger. Ledger exists in order to update the
+</pre></div><pre class="rust"><code><span class="doccomment">//! Mockchain ledger. Ledger exists in order to update the
 //! current state and verify transactions.
 
 </span><span class="kw">use </span><span class="kw">super</span>::check::{<span class="self">self</span>, TxVerifyError};
@@ -3937,10 +3937,10 @@
     }
 
     <span class="comment">// Runs transaction validations, spends the tx fee, updates and returns the account ledger.
-    </span><span class="kw">fn </span>execute_apply_transaction&lt;<span class="lifetime">&#39;a</span>, Extra&gt;(
+    </span><span class="kw">fn </span>execute_apply_transaction&lt;Extra&gt;(
         <span class="kw-2">mut </span><span class="self">self</span>,
         fragment_id: <span class="kw-2">&amp;</span>FragmentId,
-        tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;<span class="lifetime">&#39;a</span>, Extra&gt;,
+        tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;<span class="lifetime">&#39;_</span>, Extra&gt;,
         fee_deduction: FeeDeductionMode,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>, Value), Error&gt;
     <span class="kw">where
@@ -3960,10 +3960,10 @@
     /// inputs and outputs, as well as spending the fee value from the related
     /// account id. Returns an Error if the account cannot afford the fee or
     /// if the spending counter doesn&#39;t match.
-    </span><span class="kw">pub fn </span>apply_transaction&lt;<span class="lifetime">&#39;a</span>, Extra&gt;(
+    </span><span class="kw">pub fn </span>apply_transaction&lt;Extra&gt;(
         <span class="self">self</span>,
         fragment_id: <span class="kw-2">&amp;</span>FragmentId,
-        tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;<span class="lifetime">&#39;a</span>, Extra&gt;,
+        tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;<span class="lifetime">&#39;_</span>, Extra&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>, Value), Error&gt;
     <span class="kw">where
         </span>Extra: Payload,
@@ -3975,10 +3975,10 @@
 
     <span class="comment">// Applies vote cast transaction to the account ledger by validating and verifying
     // inputs and outputs, deducing the fee, but ignoring the spending counter checks.
-    </span><span class="kw">fn </span>apply_transaction_for_vote_cast&lt;<span class="lifetime">&#39;a</span>, Extra&gt;(
+    </span><span class="kw">fn </span>apply_transaction_for_vote_cast&lt;Extra&gt;(
         <span class="self">self</span>,
         fragment_id: <span class="kw-2">&amp;</span>FragmentId,
-        tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;<span class="lifetime">&#39;a</span>, Extra&gt;,
+        tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;<span class="lifetime">&#39;_</span>, Extra&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="self">Self</span>, Value), Error&gt;
     <span class="kw">where
         </span>Extra: Payload,
@@ -4017,10 +4017,10 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="kw">pub fn </span>apply_update_vote&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>apply_update_vote(
         <span class="kw-2">mut </span><span class="self">self</span>,
         vote: <span class="kw-2">&amp;</span>UpdateVote,
-        auth_data: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        auth_data: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
         sig: BftLeaderBindingSignature,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="kw">if </span>sig.verify_slice(vote.voter_id().as_public_key(), auth_data) != Verification::Success {
@@ -4087,10 +4087,10 @@
             .collect()
     }
 
-    <span class="kw">pub fn </span>apply_vote_tally&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>apply_vote_tally(
         <span class="kw-2">mut </span><span class="self">self</span>,
         tally: <span class="kw-2">&amp;</span>certificate::VoteTally,
-        bad: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        bad: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
         sig: certificate::TallyProof,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="kw">if </span>sig.verify(tally.tally_type(), bad) == Verification::Failed {
@@ -4129,10 +4129,10 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="kw">pub fn </span>apply_pool_registration_signcheck&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>apply_pool_registration_signcheck(
         <span class="self">self</span>,
         cert: <span class="kw-2">&amp;</span>certificate::PoolRegistration,
-        bad: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        bad: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
         sig: certificate::PoolSignature,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         check::valid_pool_registration_certificate(cert)<span class="question-mark">?</span>;
@@ -4155,10 +4155,10 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="kw">pub fn </span>apply_pool_retirement&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>apply_pool_retirement(
         <span class="kw-2">mut </span><span class="self">self</span>,
         auth_cert: <span class="kw-2">&amp;</span>certificate::PoolRetirement,
-        bad: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        bad: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
         sig: certificate::PoolSignature,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         check::valid_pool_signature(<span class="kw-2">&amp;</span>sig)<span class="question-mark">?</span>;
@@ -4172,10 +4172,10 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="kw">pub fn </span>apply_pool_update&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="kw">pub fn </span>apply_pool_update(
         <span class="kw-2">mut </span><span class="self">self</span>,
         auth_cert: <span class="kw-2">&amp;</span>certificate::PoolUpdate,
-        bad: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;a</span>&gt;,
+        bad: <span class="kw-2">&amp;</span>TransactionBindingAuthData&lt;<span class="lifetime">&#39;_</span>&gt;,
         sig: certificate::PoolSignature,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         check::valid_pool_update_certificate(auth_cert)<span class="question-mark">?</span>;
@@ -4632,7 +4632,7 @@
     <span class="prelude-val">Ok</span>(utxos)
 }
 
-<span class="kw">fn </span>calculate_fee&lt;<span class="lifetime">&#39;a</span>, Extra: Payload&gt;(tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;<span class="lifetime">&#39;a</span>, Extra&gt;, fees: <span class="kw-2">&amp;</span>LinearFee) -&gt; Value {
+<span class="kw">fn </span>calculate_fee&lt;Extra: Payload&gt;(tx: <span class="kw-2">&amp;</span>TransactionSlice&lt;<span class="lifetime">&#39;_</span>, Extra&gt;, fees: <span class="kw-2">&amp;</span>LinearFee) -&gt; Value {
     fees.calculate_tx(tx)
 }
 
@@ -4673,12 +4673,12 @@
     }
 }
 
-<span class="kw">fn </span>single_account_witness_verify&lt;<span class="lifetime">&#39;a</span>&gt;(
+<span class="kw">fn </span>single_account_witness_verify(
     ledger: account::Ledger,
     block0_hash: <span class="kw-2">&amp;</span>HeaderId,
     sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash,
     account_id: <span class="kw-2">&amp;</span>account::Identifier,
-    witness: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>account::Witness,
+    witness: <span class="kw-2">&amp;</span>account::Witness,
     spending_counter: account::SpendingCounter,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;account::Ledger, Error&gt; {
     <span class="kw">let </span>tidsc = WitnessAccountData::new(block0_hash, sign_data_hash, spending_counter);
@@ -4692,12 +4692,12 @@
     <span class="prelude-val">Ok</span>(ledger)
 }
 
-<span class="kw">fn </span>input_single_account_verify&lt;<span class="lifetime">&#39;a</span>&gt;(
+<span class="kw">fn </span>input_single_account_verify(
     ledger: account::Ledger,
     block0_hash: <span class="kw-2">&amp;</span>HeaderId,
     sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash,
     account_id: <span class="kw-2">&amp;</span>account::Identifier,
-    witness: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>account::Witness,
+    witness: <span class="kw-2">&amp;</span>account::Witness,
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;account::Ledger, Error&gt; {
@@ -4714,12 +4714,12 @@
     <span class="prelude-val">Ok</span>(ledger)
 }
 
-<span class="kw">fn </span>input_single_account_witness_verify_with_no_spending_counter_check&lt;<span class="lifetime">&#39;a</span>&gt;(
+<span class="kw">fn </span>input_single_account_witness_verify_with_no_spending_counter_check(
     ledger: account::Ledger,
     block0_hash: <span class="kw-2">&amp;</span>HeaderId,
     sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash,
     account_id: <span class="kw-2">&amp;</span>account::Identifier,
-    witness: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>account::Witness,
+    witness: <span class="kw-2">&amp;</span>account::Witness,
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;account::Ledger, Error&gt; {
@@ -4735,12 +4735,12 @@
     <span class="prelude-val">Ok</span>(ledger)
 }
 
-<span class="kw">fn </span>multi_account_witness_verify&lt;<span class="lifetime">&#39;a</span>&gt;(
+<span class="kw">fn </span>multi_account_witness_verify(
     ledger: multisig::Ledger,
     block0_hash: <span class="kw-2">&amp;</span>HeaderId,
     sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash,
     account_id: <span class="kw-2">&amp;</span>multisig::Identifier,
-    witness: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>multisig::Witness,
+    witness: <span class="kw-2">&amp;</span>multisig::Witness,
     spending_counter: account::SpendingCounter,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;multisig::Ledger, Error&gt; {
     <span class="kw">let </span>declaration = ledger.get_declaration_by_id(account_id)<span class="question-mark">?</span>;
@@ -4754,12 +4754,12 @@
     <span class="prelude-val">Ok</span>(ledger)
 }
 
-<span class="kw">fn </span>input_multi_account_verify&lt;<span class="lifetime">&#39;a</span>&gt;(
+<span class="kw">fn </span>input_multi_account_verify(
     ledger: multisig::Ledger,
     block0_hash: <span class="kw-2">&amp;</span>HeaderId,
     sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash,
     account_id: <span class="kw-2">&amp;</span>multisig::Identifier,
-    witness: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>multisig::Witness,
+    witness: <span class="kw-2">&amp;</span>multisig::Witness,
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;multisig::Ledger, Error&gt; {
@@ -4775,12 +4775,12 @@
     <span class="prelude-val">Ok</span>(ledger)
 }
 
-<span class="kw">fn </span>input_multi_account_witness_verify_with_no_spending_counter_check&lt;<span class="lifetime">&#39;a</span>&gt;(
+<span class="kw">fn </span>input_multi_account_witness_verify_with_no_spending_counter_check(
     ledger: multisig::Ledger,
     block0_hash: <span class="kw-2">&amp;</span>HeaderId,
     sign_data_hash: <span class="kw-2">&amp;</span>TransactionSignDataHash,
     account_id: <span class="kw-2">&amp;</span>multisig::Identifier,
-    witness: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>multisig::Witness,
+    witness: <span class="kw-2">&amp;</span>multisig::Witness,
     spending_counter: account::SpendingCounter,
     value: Value,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;multisig::Ledger, Error&gt; {
@@ -5886,5 +5886,4 @@
             .is_err());
     }
 }
-</code></pre></div>
-</section></main></body></html>
+</code></pre></div></section></main></body></html>

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["deserialize_status_code","serialize_status_code"],"struct":["CreateMessageResponse","InnerResponse","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"]};
+window.SIDEBAR_ITEMS = {"fn":["deserialize_status_code","serialize_status_code"],"struct":["CreateMessageResponse","InnerResponse"]};

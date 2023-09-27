@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"fn":["generate_vote_plans"],"struct":["VotePlanKey","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"fn":["generate_vote_plans"],"struct":["VotePlanKey"]};

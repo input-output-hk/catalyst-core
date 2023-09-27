@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["VARIANTS"],"enum":["WrappedPoisonError","__Field","__PrivResult"],"fn":["check_if_started","spawn_scheduler"],"opaque":[""],"struct":["ManagerService","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["WrappedPoisonError"],"fn":["check_if_started","spawn_scheduler"],"struct":["ManagerService"]};

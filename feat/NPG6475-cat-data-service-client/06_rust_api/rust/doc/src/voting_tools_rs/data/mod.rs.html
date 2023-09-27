@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/voting-tools-rs/src/data/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="voting_tools_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (22f247c6f 2023-03-13)" data-search-js="search-d1bc581867fd0849.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../voting_tools_rs/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/voting-tools-rs/src/data/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="voting_tools_rs" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (0288f2e19 2023-09-25)" data-channel="nightly" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../voting_tools_rs/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -720,13 +720,29 @@
 <a href="#720" id="720">720</a>
 <a href="#721" id="721">721</a>
 <a href="#722" id="722">722</a>
-</pre><pre class="rust"><code><span class="attr">#[allow(clippy::all)]
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+</pre></div><pre class="rust"><code><span class="attr">#![allow(clippy::all)]
 </span><span class="kw">use </span>std::{error::Error, ffi::OsString, io::Cursor};
 
-<span class="kw">use crate</span>::{
-    validation::hash,
-    verify::{is_valid_rewards_address, stake_key_hash, StakeKeyHash},
-};
+<span class="kw">use </span><span class="kw">crate</span>::verify::{is_valid_rewards_address, stake_key_hash, StakeKeyHash};
+
 <span class="kw">use </span>bytekind::{Bytes, HexString};
 <span class="kw">use </span>ciborium::value::Value;
 <span class="kw">use </span>clap::builder::OsStr;
@@ -736,17 +752,17 @@
 
 <span class="kw">use </span>serde::{Deserialize, Serialize, Serializer};
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>arbitrary;
-<span class="kw">mod </span>cbor;
-<span class="comment">// mod crypto;
-</span><span class="kw">pub use </span>crypto2::{PubKey, Sig};
+<span class="kw">pub use </span>crypto2::{PubKey, Sig};
 <span class="kw">mod </span>crypto2;
-<span class="comment">// pub use crypto::{PubKey, Sig};
-</span><span class="kw">pub mod </span>hex_bytes;
+
+<span class="kw">pub mod </span>hex_bytes;
 <span class="kw">mod </span>network_id;
 <span class="kw">pub use </span>network_id::NetworkId;
 
 <span class="kw">use </span>test_strategy::Arbitrary;
+
+<span class="kw">use </span>hash::hash;
+<span class="kw">mod </span>hash;
 
 <span class="comment">// Networks
 </span><span class="kw">const </span>NETWORK_ID: usize = <span class="number">0</span>;
@@ -890,7 +906,7 @@
     ///  - signing the hash with the private key used to generate the stake key
     </span><span class="kw">pub fn </span>validate_signature_bin(<span class="kw-2">&amp;</span><span class="self">self</span>, bin_reg: Vec&lt;u8&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
         <span class="kw">let </span>bytes = bin_reg;
-        <span class="kw">let </span>hash_bytes = hash::hash(<span class="kw-2">&amp;</span>bytes);
+        <span class="kw">let </span>hash_bytes = hash(<span class="kw-2">&amp;</span>bytes);
 
         <span class="kw">let </span>pub_key = Ed25519::public_from_binary(<span class="self">self</span>.registration.stake_key.as_ref())
             .map_err(|e| RegistrationError::StakePublicKeyError { err: e.to_string() })<span class="question-mark">?</span>;
@@ -902,9 +918,26 @@
             Verification::Failed =&gt; <span class="prelude-val">Err</span>(RegistrationError::MismatchedSignature { hash_bytes }),
         }
     }
+
+    <span class="kw">pub fn </span>validate_multi_delegation(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        multi_delegation_enabled: bool,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), RegistrationError&gt; {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.registration.voting_key {
+            VotingKey::Direct(<span class="kw">_</span>) =&gt; (),
+            VotingKey::Delegated(delegation) =&gt; {
+                <span class="kw">if </span>!multi_delegation_enabled &amp;&amp; delegation.len() != <span class="number">1 </span>{
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(RegistrationError::DelegationError {
+                        err: <span class="string">&quot;CIP-36 Multiple Delegations are unsupported.&quot;</span>.to_string(),
+                    });
+                }
+            }
+        }
+        <span class="prelude-val">Ok</span>(())
+    }
 }
 
-<span class="doccomment">/// A Raw Registration from the DB.
+<span class="doccomment">/// A Raw Registration from the `DB.arbitrary_signed_registration`
 ///
 </span><span class="attr">#[derive(Debug, Clone)]
 </span><span class="kw">pub struct </span>RawRegistration {
@@ -1057,7 +1090,7 @@
         <span class="prelude-val">Err</span>(err) =&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;ED25119 signature should be 64 bytes {}&quot;</span>, err),
+                    err: <span class="macro">format!</span>(<span class="string">&quot;ED25119 signature should be 64 bytes {err}&quot;</span>),
                 },
             )))
         }
@@ -1065,7 +1098,8 @@
     <span class="prelude-val">Ok</span>(sig)
 }
 
-<span class="kw">fn </span>inspect_metamap_sig(
+<span class="attr">#[allow(clippy::manual_let_else)]
+</span><span class="kw">fn </span>inspect_metamap_sig(
     spec_61285: <span class="kw-2">&amp;</span>[Value],
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>Vec&lt;(Value, Value)&gt;, <span class="prelude-ty">Result</span>&lt;Signature, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
     <span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>spec_61285[KEY_61285] {
@@ -1087,7 +1121,7 @@
         <span class="kw">_ </span>=&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                 RegistrationError::RawBinCborSignatureFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {:?}&quot;</span>, decoded),
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {decoded:?}&quot;</span>),
                 },
             )))
         }
@@ -1173,7 +1207,8 @@
     <span class="prelude-val">Ok</span>(stake_key)
 }
 
-<span class="kw">fn </span>inspect_voting_key(
+<span class="attr">#[allow(clippy::manual_let_else)]
+</span><span class="kw">fn </span>inspect_voting_key(
     metamap: <span class="kw-2">&amp;</span>[(Value, Value)],
 ) -&gt; <span class="prelude-ty">Result</span>&lt;VotingKey, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
     <span class="kw">let </span>voting_key = <span class="kw">match </span><span class="kw-2">&amp;</span>metamap[DELEGATIONS_OR_DIRECT] {
@@ -1204,9 +1239,8 @@
                                     <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                                         RegistrationError::RawBinCborRegistrationFailure {
                                             err: <span class="macro">format!</span>(
-                                                <span class="string">&quot;Unable to extract weight for delegation {}&quot;</span>,
-                                                err
-                                            ),
+                                                <span class="string">&quot;Unable to extract weight for delegation {err}&quot;
+                                            </span>),
                                         },
                                     )))
                                 }
@@ -1248,7 +1282,8 @@
     <span class="prelude-val">Ok</span>(voting_key)
 }
 
-<span class="kw">fn </span>inspect_metamap_reg(
+<span class="attr">#[allow(clippy::manual_let_else)]
+</span><span class="kw">fn </span>inspect_metamap_reg(
     spec_61284: <span class="kw-2">&amp;</span>[Value],
 ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>Vec&lt;(Value, Value)&gt;, <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt;&gt; {
     <span class="kw">let </span>metamap = <span class="kw">match </span><span class="kw-2">&amp;</span>spec_61284[KEY_61284] {
@@ -1270,7 +1305,7 @@
         <span class="kw">_ </span>=&gt; {
             <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="prelude-val">Err</span>(Box::new(
                 RegistrationError::RawBinCborRegistrationFailure {
-                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {:?}&quot;</span>, decoded),
+                    err: <span class="macro">format!</span>(<span class="string">&quot;Not congruent with CIP-36 {decoded:?}&quot;</span>),
                 },
             )))
         }
@@ -1406,11 +1441,12 @@
     ///
     /// Errors if the string is not valid hex
     ///
-    /// ```
-    /// # use crate::data::RewardsAddress;
-    /// let address = RewardsAddress::from_hex(&quot;0000&quot;).unwrap();
-    /// assert_eq!(address.0, vec![0, 0]);
-    /// ```
+    ///
+    /// Test broken, can not import `data` crate, it&#39;s private.
+    /// # use `crate::voting_tools_rs::data::RewardsAddress`;
+    /// let address = `RewardsAddress::from_hex(&quot;0000&quot;).unwrap`();
+    /// `assert_eq!(address.0`, vec![0, 0]);
+    ///
     </span><span class="attr">#[inline]
     </span><span class="kw">pub fn </span>from_hex(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, FromHexError&gt; {
         <span class="kw">let </span>bytes = hex::decode(s)<span class="question-mark">?</span>;
@@ -1442,5 +1478,4 @@
 
 <span class="macro">hex_impls!</span>(VotingKeyHex);
 <span class="macro">hex_impls!</span>(StakeKeyHex);
-</code></pre></div>
-</section></main></body></html>
+</code></pre></div></section></main></body></html>

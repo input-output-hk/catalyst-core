@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["test_api","vectors"]};
+window.SIDEBAR_ITEMS = {"mod":["test_api"]};

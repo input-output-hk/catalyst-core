@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["__Field"],"mod":["ada_rewards","approval","challenge_title","clean_string"],"struct":["Challenge","Fund","Funnel","Proposal","ProposalCustomFieldsByKey","Proposer","Stage","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"mod":["ada_rewards","approval","challenge_title","clean_string"],"struct":["Challenge","Fund","Funnel","Proposal","ProposalCustomFieldsByKey","Proposer","Stage"]};

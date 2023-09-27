@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["SIZE"],"macro":["Hash"],"struct":["HashedKey","LevelIndex"],"trait":["Hash","Hasher"]};
+window.SIDEBAR_ITEMS = {"constant":["SIZE"],"derive":["Hash"],"struct":["HashedKey","LevelIndex"],"trait":["Hash","Hasher"]};

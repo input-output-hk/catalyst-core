@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["join_streams","send_message","serve_subscription"],"opaque":[""],"static":["CALLSITE","META"],"struct":["NodeService"],"type":["SubscriptionStream"]};
+window.SIDEBAR_ITEMS = {"fn":["join_streams","send_message","serve_subscription"],"struct":["NodeService"],"type":["SubscriptionStream"]};

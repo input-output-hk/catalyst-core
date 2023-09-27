@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["EpochStabilityDepth","__Visitor"]};
+window.SIDEBAR_ITEMS = {"struct":["EpochStabilityDepth"]};

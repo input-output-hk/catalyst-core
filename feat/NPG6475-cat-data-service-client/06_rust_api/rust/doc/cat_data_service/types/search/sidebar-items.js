@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["SearchColumnSerde","SearchTableSerde","__Field"],"struct":["SearchConstraintSerde","SearchOrderBySerde","SearchQuerySerde","SearchResultSerde","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {};

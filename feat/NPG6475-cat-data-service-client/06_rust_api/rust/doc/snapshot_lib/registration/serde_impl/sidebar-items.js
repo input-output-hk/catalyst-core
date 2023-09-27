@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["reward_addr_from_hex"],"struct":["DelegationsVisitor","IdentifierDef","VotingKeyVisitor"]};
+window.SIDEBAR_ITEMS = {"struct":["IdentifierDef","VotingKeyVisitor"]};

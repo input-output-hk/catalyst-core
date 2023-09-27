@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["CommitteeTemplate","__Field"],"struct":["__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["CommitteeTemplate"]};

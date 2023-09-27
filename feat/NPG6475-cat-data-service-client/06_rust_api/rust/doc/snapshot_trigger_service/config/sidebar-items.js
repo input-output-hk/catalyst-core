@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["Error","NetworkType","__Field"],"fn":["read_config","write_config"],"mod":["job"],"struct":["Configuration","ConfigurationBuilder","JobParameters","VotingToolsParams","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["Error","NetworkType"],"fn":["read_config","write_config"],"mod":["job"],"struct":["Configuration","ConfigurationBuilder","JobParameters","VotingToolsParams"]};

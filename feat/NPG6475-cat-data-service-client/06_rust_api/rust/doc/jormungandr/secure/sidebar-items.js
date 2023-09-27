@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS"],"enum":["NodeSecretFromFileError","__Field"],"mod":["enclave"],"struct":["Bft","GenesisPraos","NodePublic","NodeSecret","OwnerKey","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["NodeSecretFromFileError"],"mod":["enclave"],"struct":["Bft","GenesisPraos","NodePublic","NodeSecret","OwnerKey"]};

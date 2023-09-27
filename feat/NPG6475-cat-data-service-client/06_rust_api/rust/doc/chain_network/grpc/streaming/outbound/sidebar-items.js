@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["__assert_not_repr_packed"],"struct":["OutboundStream","OutboundTryStream","__OutboundStream","__OutboundStreamProjection","__OutboundStreamProjectionRef","__OutboundTryStream","__OutboundTryStreamProjection","__OutboundTryStreamProjectionRef"],"trait":["OutboundStreamMustNotImplDrop","OutboundTryStreamMustNotImplDrop"]};
+window.SIDEBAR_ITEMS = {"struct":["OutboundStream","OutboundTryStream"]};

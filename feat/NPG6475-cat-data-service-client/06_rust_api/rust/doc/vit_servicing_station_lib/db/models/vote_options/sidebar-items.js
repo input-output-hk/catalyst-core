@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["VoteOptions","__Visitor"],"type":["VoteOptionsMap"]};
+window.SIDEBAR_ITEMS = {"struct":["VoteOptions"],"type":["VoteOptionsMap"]};

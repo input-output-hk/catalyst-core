@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["LeadershipError"],"fn":["prepare_block","too_late"],"opaque":[""],"static":["CALLSITE","META"],"struct":["Entry","Module","ModuleConfig"]};
+window.SIDEBAR_ITEMS = {"enum":["LeadershipError"],"fn":["prepare_block","too_late"],"struct":["Entry","Module","ModuleConfig"]};

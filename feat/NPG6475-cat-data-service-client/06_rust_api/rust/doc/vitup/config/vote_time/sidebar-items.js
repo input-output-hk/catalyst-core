@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","FORMAT"],"enum":["VoteTime","__Field"],"struct":["VoteBlockchainTime","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"]};
+window.SIDEBAR_ITEMS = {"constant":["FORMAT"],"enum":["VoteTime"],"struct":["VoteBlockchainTime"]};

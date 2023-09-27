@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/cat-data-service/src/service/v1/event/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="cat_data_service" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (22f247c6f 2023-03-13)" data-search-js="search-d1bc581867fd0849.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../../cat_data_service/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/cat-data-service/src/service/v1/event/mod.rs`."><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="cat_data_service" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (0288f2e19 2023-09-25)" data-channel="nightly" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../../src-files.js"></script><script defer src="../../../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../../cat_data_service/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -318,7 +318,20 @@
 <a href="#318" id="318">318</a>
 <a href="#319" id="319">319</a>
 <a href="#320" id="320">320</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::LimitOffset;
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::LimitOffset;
 <span class="kw">use crate</span>::{
     service::{handle_result, Error},
     state::State,
@@ -407,9 +420,9 @@
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use </span><span class="kw">crate</span>::service::{app, tests::body_data_json_check};
+    <span class="kw">use </span><span class="kw">crate</span>::service::{app, tests::response_body_to_json};
     <span class="kw">use </span>axum::{
-        body::{Body, HttpBody},
+        body::Body,
         http::{Request, StatusCode},
     };
     <span class="kw">use </span>tower::ServiceExt;
@@ -425,8 +438,8 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
+        <span class="macro">assert_eq!</span>(
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
             <span class="macro">serde_json::json!</span>(
                 {
                     <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
@@ -474,11 +487,11 @@
                         </span>}
                     ]
                 }
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}&quot;</span>, <span class="number">10</span>))
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/event/{0}&quot;</span>, <span class="number">100</span>))
             .body(Body::empty())
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
@@ -496,10 +509,17 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
+        <span class="macro">assert_eq!</span>(
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
             <span class="macro">serde_json::json!</span>(
                 [
+                    {
+                        <span class="string">&quot;id&quot;</span>: <span class="number">0</span>,
+                        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund&quot;</span>,
+                        <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+                    </span>},
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
                         <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 1&quot;</span>,
@@ -535,10 +555,10 @@
                         <span class="string">&quot;id&quot;</span>: <span class="number">5</span>,
                         <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 5&quot;</span>,
                         <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
-                    </span>},
+                    </span>}
                 ]
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?offset={0}&quot;</span>, <span class="number">1</span>))
@@ -546,10 +566,18 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
+        <span class="macro">assert_eq!</span>(
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
             <span class="macro">serde_json::json!</span>(
                 [
+                    {
+                        <span class="string">&quot;id&quot;</span>: <span class="number">1</span>,
+                        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 1&quot;</span>,
+                        <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2020-05-01T12:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2020-06-01T12:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;reg_checked&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;final&quot;</span>: <span class="bool-val">true</span>,
+                    },
                     {
                         <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
                         <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 2&quot;</span>,
@@ -577,10 +605,10 @@
                         <span class="string">&quot;id&quot;</span>: <span class="number">5</span>,
                         <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 5&quot;</span>,
                         <span class="string">&quot;final&quot;</span>: <span class="bool-val">false
-                    </span>},
+                    </span>}
                 ]
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?limit={0}&quot;</span>, <span class="number">1</span>))
@@ -588,8 +616,29 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
+        <span class="macro">assert_eq!</span>(
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
+            <span class="macro">serde_json::json!</span>(
+                [
+                    {
+                        <span class="string">&quot;id&quot;</span>: <span class="number">0</span>,
+                        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund&quot;</span>,
+                        <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;1970-01-01T00:00:00+00:00&quot;</span>,
+                        <span class="string">&quot;final&quot;</span>: <span class="bool-val">true
+                    </span>}
+                ]
+            ),
+        );
+
+        <span class="kw">let </span>request = Request::builder()
+            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?limit={0}&amp;offset={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
+        <span class="macro">assert_eq!</span>(
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
             <span class="macro">serde_json::json!</span>(
                 [
                     {
@@ -599,32 +648,10 @@
                         <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2020-06-01T12:00:00+00:00&quot;</span>,
                         <span class="string">&quot;reg_checked&quot;</span>: <span class="string">&quot;2020-03-31T12:00:00+00:00&quot;</span>,
                         <span class="string">&quot;final&quot;</span>: <span class="bool-val">true</span>,
-                    },
+                    }
                 ]
-            )
-        ));
-
-        <span class="kw">let </span>request = Request::builder()
-            .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?limit={0}&amp;offset={1}&quot;</span>, <span class="number">1</span>, <span class="number">1</span>))
-            .body(Body::empty())
-            .unwrap();
-        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
-        <span class="macro">assert_eq!</span>(response.status(), StatusCode::OK);
-        <span class="macro">assert!</span>(body_data_json_check(
-            response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec(),
-            <span class="macro">serde_json::json!</span>(
-                [
-                    {
-                        <span class="string">&quot;id&quot;</span>: <span class="number">2</span>,
-                        <span class="string">&quot;name&quot;</span>: <span class="string">&quot;Test Fund 2&quot;</span>,
-                        <span class="string">&quot;starts&quot;</span>: <span class="string">&quot;2021-05-01T12:00:00+00:00&quot;</span>,
-                        <span class="string">&quot;ends&quot;</span>: <span class="string">&quot;2021-06-01T12:00:00+00:00&quot;</span>,
-                        <span class="string">&quot;reg_checked&quot;</span>: <span class="string">&quot;2021-03-31T12:00:00+00:00&quot;</span>,
-                        <span class="string">&quot;final&quot;</span>: <span class="bool-val">true</span>,
-                    },
-                ]
-            )
-        ));
+            ),
+        );
 
         <span class="kw">let </span>request = Request::builder()
             .uri(<span class="macro">format!</span>(<span class="string">&quot;/api/v1/events?offset={0}&quot;</span>, <span class="number">10</span>))
@@ -632,11 +659,9 @@
             .unwrap();
         <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
         <span class="macro">assert_eq!</span>(
-            String::from_utf8(response.into_body().data().<span class="kw">await</span>.unwrap().unwrap().to_vec())
-                .unwrap(),
-            serde_json::to_string(<span class="kw-2">&amp;</span>Vec::&lt;()&gt;::new()).unwrap()
+            response_body_to_json(response).<span class="kw">await</span>.unwrap(),
+            <span class="macro">serde_json::json!</span>([])
         );
     }
 }
-</code></pre></div>
-</section></main></body></html>
+</code></pre></div></section></main></body></html>

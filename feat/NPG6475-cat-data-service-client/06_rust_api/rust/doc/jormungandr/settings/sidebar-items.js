@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Block0Info"],"fn":["__stability","__static_ref_initialize"],"mod":["command_arguments","logging","start"],"static":["LAZY"],"struct":["CommandLine","LOG_FILTER_LEVEL_POSSIBLE_VALUES"]};
+window.SIDEBAR_ITEMS = {"enum":["Block0Info"],"mod":["command_arguments","logging","start"],"struct":["CommandLine","LOG_FILTER_LEVEL_POSSIBLE_VALUES"]};

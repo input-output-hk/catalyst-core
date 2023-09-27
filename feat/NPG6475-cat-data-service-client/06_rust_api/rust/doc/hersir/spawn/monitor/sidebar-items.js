@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["run_health_check","spawn_network"],"static":["POOLS"]};
+window.SIDEBAR_ITEMS = {"fn":["run_health_check","spawn_network"]};

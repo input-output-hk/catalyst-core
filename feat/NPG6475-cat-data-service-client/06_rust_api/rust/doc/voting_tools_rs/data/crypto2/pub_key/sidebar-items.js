@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["_strategy_of_0","_to_fn_ptr"],"opaque":[""],"struct":["PubKey"]};
+window.SIDEBAR_ITEMS = {"struct":["PubKey"]};

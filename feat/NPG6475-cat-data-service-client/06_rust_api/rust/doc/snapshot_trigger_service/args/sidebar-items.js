@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"opaque":[""],"struct":["TriggerServiceCommand"]};
+window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["TriggerServiceCommand"]};

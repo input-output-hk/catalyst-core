@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["FIELDS","VARIANTS"],"enum":["ConsensusVersionDef","DiscriminationDef","FromConfigParamsError","__Field"],"fn":["param_missing_error"],"struct":["BlockchainConfiguration","__DeserializeWith","__FieldVisitor","__SerializeWith","__Visitor"],"type":["StaticStr"]};
+window.SIDEBAR_ITEMS = {"enum":["ConsensusVersionDef","DiscriminationDef","FromConfigParamsError"],"struct":["BlockchainConfiguration"],"type":["StaticStr"]};

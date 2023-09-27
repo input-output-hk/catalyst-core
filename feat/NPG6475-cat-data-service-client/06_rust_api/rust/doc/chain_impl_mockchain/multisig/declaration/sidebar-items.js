@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["DeclElement","DeclarationError"],"fn":["_strategy_of_0","_to_fn_ptr","owners_to_identifier"],"opaque":[""],"struct":["Declaration","Identifier"],"type":["Pk","Sig"]};
+window.SIDEBAR_ITEMS = {"enum":["DeclElement","DeclarationError"],"fn":["owners_to_identifier"],"struct":["Declaration","Identifier"],"type":["Pk","Sig"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["_strategy_of_0","_to_fn_ptr","arbitrary_public_key","arbitrary_secret_key","public_key_strategy","static_secret_key"],"opaque":[""],"struct":["TestCryptoGen","TestCryptoRng"]};
+window.SIDEBAR_ITEMS = {"fn":["arbitrary_public_key","arbitrary_secret_key","public_key_strategy","static_secret_key"],"struct":["TestCryptoGen","TestCryptoRng"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["VARIANTS"],"enum":["FeesGoTo","__Field"],"struct":["FromStrFeesGoToError","TryFromFeesGoToError","__FieldVisitor","__Visitor"]};
+window.SIDEBAR_ITEMS = {"enum":["FeesGoTo"],"struct":["FromStrFeesGoToError","TryFromFeesGoToError"]};

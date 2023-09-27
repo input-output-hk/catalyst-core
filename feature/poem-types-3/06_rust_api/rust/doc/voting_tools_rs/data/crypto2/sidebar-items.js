@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["pub_key","sig"]};

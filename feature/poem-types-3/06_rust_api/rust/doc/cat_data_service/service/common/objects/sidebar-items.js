@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["delegate_public_key","event_id","event_summary","objective","objective_details","objective_id","objective_summary","objective_type","objective_types","reward_currency","reward_definition","stake_public_key","voter_group","voter_group_id","voter_info","voter_registration","voting_power_algorithm","voting_power_settings","voting_public_key"]};

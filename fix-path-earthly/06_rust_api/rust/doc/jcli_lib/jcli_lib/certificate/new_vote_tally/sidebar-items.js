@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["VoteTallyRegistration"],"struct":["PrivateTally","PublicTally"]};

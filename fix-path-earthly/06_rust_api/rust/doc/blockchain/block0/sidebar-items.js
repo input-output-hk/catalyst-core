@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Block0Error","Block0Malformed"],"fn":["initial","slot_duration","start_time"]};

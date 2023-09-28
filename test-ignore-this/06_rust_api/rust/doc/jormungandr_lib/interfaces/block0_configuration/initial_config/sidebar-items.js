@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ConsensusVersionDef","DiscriminationDef","FromConfigParamsError"],"struct":["BlockchainConfiguration"],"type":["StaticStr"]};

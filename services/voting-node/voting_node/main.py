@@ -3,6 +3,8 @@
 Main entrypoint for executing the voting node service from the shell command-line.
 """
 
+import json
+import logging
 import click
 import uvicorn
 from ideascale_importer.utils import configure_logger
@@ -30,7 +32,7 @@ def voting_node_cli():
     """Deploy a jormungandr node for voting events."""
 
 
-@click.command()
+@click.command(context_settings={"show_default": True})
 @click.option(
     "--reloadable",
     is_flag=True,
@@ -50,7 +52,7 @@ def voting_node_cli():
     default="0.0.0.0",
     help="""Host for the voting node API.
 
-    If left unset it will look for envvar `VOTING_HOST`. If no host is found, the default value is: 0.0.0.0""",
+    If left unset it will look for envvar `VOTING_HOST`.""",
 )
 @click.option(
     "--api-port",
@@ -58,7 +60,7 @@ def voting_node_cli():
     default=8000,
     help="""Port for the voting node API.
 
-    If left unset it will look for envvar `VOTING_PORT`. If no port is found, the default value is: 8000""",
+    If left unset it will look for envvar `VOTING_PORT`.""",
 )
 @click.option(
     "--log-level",
@@ -67,16 +69,16 @@ def voting_node_cli():
     type=click.Choice(["info", "debug", "warn", "error", "trace"]),
     help="""Set the level for logs in the voting node.
 
-    If left unset it will look for envvar `VOTING_LOG_LEVEL`. If no level is found, the default value is: info""",
+    If left unset it will look for envvar `VOTING_LOG_LEVEL`.""",
 )
 @click.option(
     "--log-format",
     envvar=VOTING_LOG_FORMAT,
-    default="text",
+    default="json",
     type=click.Choice(["text", "json"]),
     help="""Set the format for logs in the voting node.
 
-    If left unset it will look for envvar `VOTING_LOG_FORMAT`. If no format is found, the default value is: text""",
+    If left unset it will look for envvar `VOTING_LOG_FORMAT`.""",
 )
 @click.option(
     "--database-url",

@@ -4,11 +4,19 @@ on:
   pull_request:
     branches:
       - main
+      - fix-earthly-integration-testing
 
 permissions:
   id-token: write
   contents: read
   packages: write
+
+env:
+  AWS_REGION: eu-central-1
+  AWS_ROLE_ARN: arn:aws:iam::332405224602:role/ci
+  EARTHLY_VERSION: 0.7.6
+  ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
+  TAG: ${{ github.sha }}
 
 jobs:
   build:
@@ -17,6 +25,12 @@ jobs:
     env:
       FORCE_COLOR: 1
     steps:
+      - name: Setup CI
+        uses: input-output-hk/catalyst-ci/actions/setup@master
+        with:
+          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
+          aws_region: ${{ env.AWS_REGION }}
+          earthly_version: ${{ env.EARTHLY_VERSION }}
       - name: Install Earthly
         uses: earthly/actions/setup-earthly@v1
         with:
@@ -24,14 +38,12 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Login to GitHub Container Registry
+      - name: Login to ECR
         uses: docker/login-action@v2
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: ${{ env.ECR_REGISTRY }}
       - name: Run tests
         env:
           EARTHLY_SECRETS: "IDEASCALE_EMAIL=${{ secrets.IDEASCALE_EMAIL }}, IDEASCALE_PASSWORD=${{ secrets.IDEASCALE_PASSWORD }}, IDEASCALE_API_TOKEN=${{ secrets.IDEASCALE_API_TOKEN }}"
         run: |
-          earthly -P --remote-cache=ghcr.io/${{ github.repository }}:cache +test
+          earthly -P --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" +test

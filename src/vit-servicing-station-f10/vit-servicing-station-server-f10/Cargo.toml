@@ -1,5 +1,5 @@
 [package]
-name = "vit-servicing-station-server"
+name = "vit-servicing-station-server-f10"
 version = "0.5.0"
 authors = ["danielsanchezq <daniel.sanchez@iohk.io>"]
 edition = "2018"
@@ -14,5 +14,5 @@ tracing = "0.1.21"
 tracing-futures = "0.2.4"
 tracing-subscriber = { version = "0.3", features=["fmt"] }
 tracing-appender = "0.2"
-vit-servicing-station-lib = { path = "../vit-servicing-station-lib" }
+vit-servicing-station-lib-f10 = { path = "../vit-servicing-station-lib-f10" }
 snapshot-service = { path = "../snapshot-service" }

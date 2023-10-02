@@ -1,5 +1,5 @@
 [package]
-name = "vit-servicing-station-tests"
+name = "vit-servicing-station-tests-f10"
 version = "0.5.0"
 authors = ["dkijania <dariusz.kijania@iohk.io>"]
 edition = "2018"
@@ -22,7 +22,7 @@ rand_core = "0.5"
 assert_fs = "1.0.0"
 assert_cmd = "2"
 hyper = "0.14.2"
-vit-servicing-station-lib = {path= "../vit-servicing-station-lib"}
+vit-servicing-station-lib-f10 = {path= "../vit-servicing-station-lib-f10"}
 lazy_static = "1.4"
 rand = "0.7"
 url = "2.2"

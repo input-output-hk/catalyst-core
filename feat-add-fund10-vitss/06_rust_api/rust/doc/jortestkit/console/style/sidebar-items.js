@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["TICKER"],"mod":["icons"],"struct":["binary","error","info","scenario_title","seed","success"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["TemplateLoad"],"fn":["parse_challenges","parse_funds","parse_proposals","parse_reviews"],"struct":["ExternalValidVotingTemplateGenerator"]};

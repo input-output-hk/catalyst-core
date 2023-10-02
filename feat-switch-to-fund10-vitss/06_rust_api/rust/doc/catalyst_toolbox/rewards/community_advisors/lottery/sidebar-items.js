@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["lottery_distribution"],"type":["CasWinnings","TicketsDistribution","TotalTickets"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DOWN","UP","VERSION"],"enum":["Error"],"struct":["MigrationFilesBuilder"]};

@@ -42,4 +42,4 @@ libsqlite3-sys =  { version = "0.9.3", features = ["bundled"] }
 [dev-dependencies]
 tempfile = "3"
 rand = "0.8"
-#jormungandr-lib-f10 = { package = "jormungandr-lib", git = "https://github.com/input-output-hk/jormungandr", branch = "catalyst-fund9" }
+jormungandr-lib = { workspace = true }

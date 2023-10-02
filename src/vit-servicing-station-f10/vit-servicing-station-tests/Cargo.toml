@@ -1,0 +1,57 @@
+[package]
+name = "vit-servicing-station-tests"
+version = "0.5.0"
+authors = ["dkijania <dariusz.kijania@iohk.io>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+base64 = "0.12.1"
+cfg-if = "0.1"
+time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
+diesel = { version = "1.4.4", features = ["sqlite", "r2d2"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0.53"
+structopt = "0.3.14"
+thiserror = "1.0"
+tokio = { version = "1.0", features = ["macros", "sync", "fs"] }
+diesel_migrations = "1.4.0"
+tempfile = "3"
+rand_core = "0.5"
+assert_fs = "1.0.0"
+assert_cmd = "2"
+hyper = "0.14.2"
+vit-servicing-station-lib = {path= "../vit-servicing-station-lib"}
+lazy_static = "1.4"
+rand = "0.7"
+url = "2.2"
+quickcheck = { version = "0.9" }
+quickcheck_macros = { version = "0.9" }
+predicates = { version = "2.0", default-features = false, features = ["diff"] }
+jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
+chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund9", features = [ "property-test-api" ] }
+chain-addr      = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund9", features = [ "property-test-api" ] }
+chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund9", features = [ "property-test-api" ] }
+voting-hir = { git = "https://github.com/input-output-hk/catalyst-toolbox", branch = "catalyst-fund9", features = ["serde"] }
+fake = { version = "2.2", features=['http']}
+pretty_assertions = "0.6"
+dyn-clone = "1.0.4"
+itertools = "0.10.3"
+
+[dependencies.reqwest]
+version = "0.11"
+default-features = false
+features = ["blocking","native-tls"]
+
+# This solves building on windows when sqlite3lib is not installed or missing in the `$PATH`
+# as it happens with the github actions pipeline associated to this project.
+[target.'cfg(windows)'.dependencies]
+libsqlite3-sys =  { version = "0.9.3", features = ["bundled"] }
+
+[features]
+test-api = []
+# feature for excluding performance tests from standard cargo test run
+non-functional = []
+# sub category of non-functional tests
+soak = []

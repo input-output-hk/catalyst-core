@@ -1,0 +1,18 @@
+[package]
+name = "vit-servicing-station-server"
+version = "0.5.0"
+authors = ["danielsanchezq <daniel.sanchez@iohk.io>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+log = "0.4.11"
+structopt = "0.3.14"
+tokio = { version = "^1.0", features = ["macros", "rt-multi-thread"] }
+tracing = "0.1.21"
+tracing-futures = "0.2.4"
+tracing-subscriber = { version = "0.3", features=["fmt"] }
+tracing-appender = "0.2"
+vit-servicing-station-lib = { path = "../vit-servicing-station-lib" }
+snapshot-service = { path = "../snapshot-service" }

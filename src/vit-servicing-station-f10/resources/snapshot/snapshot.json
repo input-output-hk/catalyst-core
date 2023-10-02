@@ -1,0 +1,18 @@
+[
+  {
+    "voting_key": "ed25519_pk19t8y8xl43uy99ywngpfcfsaklw76h48m965y5cszt5phmj2uv4psucdev9",
+    "voting_power": "1",
+    "group": "g1"
+  },
+  {
+    "voting_key": "ed25519_pk158t34dk8qmjs0mcwgsa5hg75qrg00wl2mejgt45vkelhf22d0wwqf22u0v",
+    "voting_power": "3",
+    "group": "g1"
+  },
+  {
+    "voting_key": "ed25519_pk1fht207rmf0wqfdx59n4fa4dskvqq0w88rh2hgnava0g825lspcmsctw8t2",
+    "voting_power": "4",
+    "group": "g1"
+  }
+]
+

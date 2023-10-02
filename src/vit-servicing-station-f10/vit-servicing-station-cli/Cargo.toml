@@ -1,0 +1,26 @@
+[package]
+name = "vit-servicing-station-cli"
+version = "0.5.0"
+authors = ["danielsanchezq <daniel.sanchez@iohk.io>"]
+edition = "2018"
+license = "MIT OR Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+base64 = "0.12.1"
+time = "0.3"
+csv = "1.1"
+diesel = "1.4"
+rand = "0.7.3"
+r2d2 = "0.8"
+structopt = "0.3.14"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1"
+tempfile = "3.1.0"
+thiserror = "1.0"
+vit-servicing-station-lib = { path = "../vit-servicing-station-lib" }
+
+[dev-dependencies]
+diesel = { version = "1.4.5", features = ["sqlite", "r2d2"] }
+diesel_migrations = "1.4.0"

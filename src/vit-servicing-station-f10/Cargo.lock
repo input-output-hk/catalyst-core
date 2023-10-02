@@ -4045,7 +4045,6 @@ dependencies = [
  "eccoxide",
  "http-zipkin",
  "itertools 0.9.0",
- "jormungandr-lib",
  "libsqlite3-sys",
  "log",
  "notify",

@@ -99,7 +99,9 @@ pub struct Cors {
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
+#[derive(Default)]
 pub enum LogLevel {
+    #[default]
     Disabled,
     Error,
     Warn,
@@ -324,11 +326,7 @@ impl fmt::Display for LogLevel {
     }
 }
 
-impl Default for LogLevel {
-    fn default() -> Self {
-        LogLevel::Disabled
-    }
-}
+
 
 pub fn load_settings_from_file(file_path: &str) -> Result<ServiceSettings, impl std::error::Error> {
     let f = fs::File::open(file_path)?;

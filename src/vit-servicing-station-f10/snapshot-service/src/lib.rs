@@ -83,7 +83,7 @@ impl SharedContext {
             let mut key = [0u8; size_of::<TagId>() + 32usize];
 
             let (tag_part, id_part) = key.split_at_mut(size_of::<TagId>());
-            tag_part.copy_from_slice(&*tag);
+            tag_part.copy_from_slice(&tag);
             id_part.copy_from_slice(id.as_ref().as_ref());
 
             key

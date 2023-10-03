@@ -7,10 +7,10 @@ pub use external::{
     ExternalValidVotingTemplateGenerator, TemplateLoad,
 };
 use serde::{Deserialize, Serialize};
-use vit_servicing_station_lib::db::models::challenges::ChallengeHighlights;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewRanking;
-use vit_servicing_station_lib::db::models::proposals::{ChallengeType, ProposalChallengeInfo};
-use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
+use vit_servicing_station_lib_f10::db::models::challenges::ChallengeHighlights;
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::ReviewRanking;
+use vit_servicing_station_lib_f10::db::models::proposals::{ChallengeType, ProposalChallengeInfo};
+use vit_servicing_station_lib_f10::db::models::vote_options::VoteOptions;
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct FundTemplate {
@@ -38,7 +38,7 @@ pub struct ProposalTemplate {
     #[serde(default)]
     pub proposer_relevant_experience: String,
     #[serde(
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_vote_options_from_string"
+        deserialize_with = "vit_servicing_station_lib_f10::utils::serde::deserialize_vote_options_from_string"
     )]
     pub chain_vote_options: VoteOptions,
     pub chain_vote_type: String,

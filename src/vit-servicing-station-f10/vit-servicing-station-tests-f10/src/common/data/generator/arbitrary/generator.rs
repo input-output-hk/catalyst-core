@@ -7,7 +7,7 @@ use fake::Fake;
 use rand::{rngs::OsRng, RngCore};
 use std::{collections::HashMap, iter};
 use time::{Duration, OffsetDateTime};
-use vit_servicing_station_lib::{db::models::api_tokens::ApiTokenData, v0::api_token::ApiToken};
+use vit_servicing_station_lib_f10::{db::models::api_tokens::ApiTokenData, v0::api_token::ApiToken};
 
 #[derive(Clone)]
 pub struct ArbitraryGenerator {

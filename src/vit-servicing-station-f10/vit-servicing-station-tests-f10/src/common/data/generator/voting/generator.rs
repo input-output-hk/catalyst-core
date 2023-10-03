@@ -2,9 +2,9 @@ use super::parameters::SingleVotePlanParameters;
 use crate::common::data::generator::{ArbitraryGenerator, Snapshot, ValidVotingTemplateGenerator};
 use crate::common::data::ValidVotePlanParameters;
 use chain_impl_mockchain::certificate::VotePlan;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
-use vit_servicing_station_lib::db::models::{
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib_f10::db::models::proposals::FullProposalInfo;
+use vit_servicing_station_lib_f10::db::models::{
     challenges::Challenge,
     funds::Fund,
     proposals::{Category, Proposal, Proposer},

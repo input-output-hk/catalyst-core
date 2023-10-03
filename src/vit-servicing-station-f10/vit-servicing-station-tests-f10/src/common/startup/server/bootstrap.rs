@@ -9,7 +9,7 @@ use assert_fs::TempDir;
 use std::path::PathBuf;
 use std::process::Stdio;
 use thiserror::Error;
-use vit_servicing_station_lib::server::settings::LogLevel;
+use vit_servicing_station_lib_f10::server::settings::LogLevel;
 
 pub struct ServerBootstrapper {
     settings_builder: ServerSettingsBuilder,

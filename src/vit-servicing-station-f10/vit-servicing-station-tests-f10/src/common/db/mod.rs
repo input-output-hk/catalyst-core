@@ -2,10 +2,10 @@ use diesel::expression_methods::ExpressionMethods;
 use diesel::query_dsl::RunQueryDsl;
 use diesel::{Insertable, SqliteConnection};
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
-use vit_servicing_station_lib::db::models::goals::InsertGoal;
-use vit_servicing_station_lib::db::schema::goals;
-use vit_servicing_station_lib::db::{
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib_f10::db::models::goals::InsertGoal;
+use vit_servicing_station_lib_f10::db::schema::goals;
+use vit_servicing_station_lib_f10::db::{
     models::{
         api_tokens::ApiTokenData,
         challenges::Challenge,

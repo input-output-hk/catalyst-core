@@ -1,15 +1,15 @@
 use diesel::{ExpressionMethods, Insertable};
 use serde::Deserialize;
 use std::convert::TryInto;
-use vit_servicing_station_lib::db::models::challenges::{
+use vit_servicing_station_lib_f10::db::models::challenges::{
     Challenge as DbChallenge, ChallengeHighlights,
 };
-use vit_servicing_station_lib::db::models::community_advisors_reviews::{self, ReviewRanking};
-use vit_servicing_station_lib::db::models::proposals::{
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::{self, ReviewRanking};
+use vit_servicing_station_lib_f10::db::models::proposals::{
     self, community_choice, simple, Category, ChallengeType, ProposalChallengeInfo, Proposer,
 };
-use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
-use vit_servicing_station_lib::db::schema::challenges;
+use vit_servicing_station_lib_f10::db::models::vote_options::VoteOptions;
+use vit_servicing_station_lib_f10::db::schema::challenges;
 
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct Challenge {
@@ -64,9 +64,9 @@ pub struct Proposal {
     #[serde(alias = "proposerRelevantExperience")]
     pub proposer_relevant_experience: String,
     #[serde(alias = "chainProposalId")]
-    #[serde(serialize_with = "vit_servicing_station_lib::utils::serde::serialize_bin_as_str")]
+    #[serde(serialize_with = "vit_servicing_station_lib_f10::utils::serde::serialize_bin_as_str")]
     #[serde(
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_string_as_bytes"
+        deserialize_with = "vit_servicing_station_lib_f10::utils::serde::deserialize_string_as_bytes"
     )]
     pub chain_proposal_id: Vec<u8>,
     #[serde(alias = "chainProposalIndex")]
@@ -77,26 +77,26 @@ pub struct Proposal {
     pub chain_voteplan_id: String,
     #[serde(alias = "chainVoteStartTime", default = "Default::default")]
     #[serde(
-        serialize_with = "vit_servicing_station_lib::utils::serde::serialize_unix_timestamp_as_rfc3339"
+        serialize_with = "vit_servicing_station_lib_f10::utils::serde::serialize_unix_timestamp_as_rfc3339"
     )]
     #[serde(
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_unix_timestamp_from_rfc3339"
+        deserialize_with = "vit_servicing_station_lib_f10::utils::serde::deserialize_unix_timestamp_from_rfc3339"
     )]
     pub chain_vote_start_time: i64,
     #[serde(alias = "chainVoteEndTime", default = "Default::default")]
     #[serde(
-        serialize_with = "vit_servicing_station_lib::utils::serde::serialize_unix_timestamp_as_rfc3339"
+        serialize_with = "vit_servicing_station_lib_f10::utils::serde::serialize_unix_timestamp_as_rfc3339"
     )]
     #[serde(
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_unix_timestamp_from_rfc3339"
+        deserialize_with = "vit_servicing_station_lib_f10::utils::serde::deserialize_unix_timestamp_from_rfc3339"
     )]
     pub chain_vote_end_time: i64,
     #[serde(alias = "chainCommitteeEndTime", default = "Default::default")]
     #[serde(
-        serialize_with = "vit_servicing_station_lib::utils::serde::serialize_unix_timestamp_as_rfc3339"
+        serialize_with = "vit_servicing_station_lib_f10::utils::serde::serialize_unix_timestamp_as_rfc3339"
     )]
     #[serde(
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_unix_timestamp_from_rfc3339"
+        deserialize_with = "vit_servicing_station_lib_f10::utils::serde::deserialize_unix_timestamp_from_rfc3339"
     )]
     pub chain_committee_end_time: i64,
     #[serde(alias = "chainVoteplanPayload", default = "Default::default")]
@@ -247,18 +247,18 @@ pub struct AdvisorReview {
     auditability_note: String,
     #[serde(
         alias = "Excellent",
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_truthy_falsy"
+        deserialize_with = "vit_servicing_station_lib_f10::utils::serde::deserialize_truthy_falsy"
     )]
     excellent: bool,
     #[serde(
         alias = "Good",
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_truthy_falsy"
+        deserialize_with = "vit_servicing_station_lib_f10::utils::serde::deserialize_truthy_falsy"
     )]
     good: bool,
     #[serde(
         default,
         alias = "Filtered Out",
-        deserialize_with = "vit_servicing_station_lib::utils::serde::deserialize_truthy_falsy"
+        deserialize_with = "vit_servicing_station_lib_f10::utils::serde::deserialize_truthy_falsy"
     )]
     filtered_out: bool,
 }

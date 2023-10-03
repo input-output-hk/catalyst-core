@@ -1,6 +1,6 @@
 use crate::common::startup::server::BootstrapCommandBuilder;
 use assert_cmd::assert::OutputAssertExt;
-use vit_servicing_station_lib::server::exit_codes::ApplicationExitCode;
+use vit_servicing_station_lib_f10::server::exit_codes::ApplicationExitCode;
 
 #[test]
 pub fn malformed_path() {

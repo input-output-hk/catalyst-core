@@ -1,11 +1,11 @@
 use super::FundInfo;
 use crate::common::data::SingleVotePlanParameters;
 use chain_impl_mockchain::testing::scenario::template::VotePlanDef;
-use vit_servicing_station_lib::db::models::challenges::Challenge;
-use vit_servicing_station_lib::db::models::funds::Fund;
-use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
+use vit_servicing_station_lib_f10::db::models::challenges::Challenge;
+use vit_servicing_station_lib_f10::db::models::funds::Fund;
+use vit_servicing_station_lib_f10::db::models::vote_options::VoteOptions;
 
-use vit_servicing_station_lib::db::models::voteplans::Voteplan;
+use vit_servicing_station_lib_f10::db::models::voteplans::Voteplan;
 
 pub struct CurrentFund {
     pub vote_plans: Vec<SingleVotePlanParameters>,

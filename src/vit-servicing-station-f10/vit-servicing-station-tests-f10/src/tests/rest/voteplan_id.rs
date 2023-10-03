@@ -1,8 +1,8 @@
 use crate::common::data::multivoteplan_snapshot;
 use crate::common::startup::{db::DbBuilder, server::ServerBootstrapper};
 use assert_fs::TempDir;
-use vit_servicing_station_lib::db::models::proposals::Proposal;
-use vit_servicing_station_lib::v0::endpoints::proposals::ProposalVoteplanIdAndIndexes;
+use vit_servicing_station_lib_f10::db::models::proposals::Proposal;
+use vit_servicing_station_lib_f10::v0::endpoints::proposals::ProposalVoteplanIdAndIndexes;
 #[test]
 pub fn get_proposals_by_voteplan_id_and_index() {
     let temp_dir = TempDir::new().unwrap().into_persistent();

@@ -1,5 +1,5 @@
 use super::dates::FundDates;
-use vit_servicing_station_lib::db::models::{funds::Fund, goals::Goal};
+use vit_servicing_station_lib_f10::db::models::{funds::Fund, goals::Goal};
 
 #[derive(Debug, Clone)]
 pub struct FundInfo {

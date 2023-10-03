@@ -1,4 +1,4 @@
-use vit_servicing_station_lib::db::models::{
+use vit_servicing_station_lib_f10::db::models::{
     api_tokens::ApiTokenData, challenges::Challenge, funds::Fund, proposals::FullProposalInfo,
     voteplans::Voteplan,
 };

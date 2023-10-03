@@ -5,7 +5,7 @@ use crate::common::{
 };
 use assert_fs::TempDir;
 use reqwest::StatusCode;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::{
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::{
     AdvisorReview, ReviewRanking,
 };
 

@@ -5,7 +5,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::str::FromStr;
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::{
+use vit_servicing_station_lib_f10::db::models::{
     api_tokens::ApiTokenData, challenges::Challenge, funds::Fund,
 };
 
@@ -14,8 +14,8 @@ use crate::common::{
     db::{DbInserter, DbInserterError},
     paths::MIGRATION_DIR,
 };
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib_f10::db::models::proposals::FullProposalInfo;
 
 const VIT_STATION_DB: &str = "vit_station.db";
 

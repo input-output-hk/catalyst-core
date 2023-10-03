@@ -13,15 +13,15 @@ use fake::{
     },
     Fake,
 };
-use vit_servicing_station_lib::db::models::challenges::ChallengeHighlights;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::ReviewRanking;
-use vit_servicing_station_lib::db::models::proposals::community_choice::ChallengeInfo as CommunityChoiceChallengeInfo;
-use vit_servicing_station_lib::db::models::proposals::simple::ChallengeInfo as SimpleChallengeInfo;
-use vit_servicing_station_lib::db::models::proposals::Category;
-use vit_servicing_station_lib::db::models::proposals::ChallengeType;
-use vit_servicing_station_lib::db::models::proposals::ProposalChallengeInfo;
-use vit_servicing_station_lib::db::models::proposals::Proposer;
-use vit_servicing_station_lib::db::models::vote_options::VoteOptions;
+use vit_servicing_station_lib_f10::db::models::challenges::ChallengeHighlights;
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::ReviewRanking;
+use vit_servicing_station_lib_f10::db::models::proposals::community_choice::ChallengeInfo as CommunityChoiceChallengeInfo;
+use vit_servicing_station_lib_f10::db::models::proposals::simple::ChallengeInfo as SimpleChallengeInfo;
+use vit_servicing_station_lib_f10::db::models::proposals::Category;
+use vit_servicing_station_lib_f10::db::models::proposals::ChallengeType;
+use vit_servicing_station_lib_f10::db::models::proposals::ProposalChallengeInfo;
+use vit_servicing_station_lib_f10::db::models::proposals::Proposer;
+use vit_servicing_station_lib_f10::db::models::vote_options::VoteOptions;
 
 #[derive(Clone)]
 pub struct ArbitraryValidVotingTemplateGenerator {

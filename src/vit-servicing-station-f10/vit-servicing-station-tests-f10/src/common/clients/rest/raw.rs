@@ -3,7 +3,7 @@ use reqwest::blocking::Response;
 use super::Error;
 use super::{RestClientLogger, RestPathBuilder};
 use url::Url;
-use vit_servicing_station_lib::v0::api_token::API_TOKEN_HEADER;
+use vit_servicing_station_lib_f10::v0::api_token::API_TOKEN_HEADER;
 
 #[derive(Debug, Clone)]
 pub struct RestClient {

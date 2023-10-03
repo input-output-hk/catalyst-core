@@ -1,7 +1,7 @@
 use crate::task::ExecTask;
 use structopt::StructOpt;
 use thiserror::Error;
-use vit_servicing_station_lib::db::{
+use vit_servicing_station_lib_f10::db::{
     load_db_connection_pool, migrations::initialize_db_with_migration, Error as DbPoolError,
 };
 

@@ -8,8 +8,8 @@ use crate::common::{
 use assert_cmd::assert::OutputAssertExt;
 use assert_fs::{fixture::PathChild, TempDir};
 use std::path::PathBuf;
-use vit_servicing_station_lib::server::settings::LogLevel;
-use vit_servicing_station_lib::server::settings::ServiceSettings;
+use vit_servicing_station_lib_f10::server::settings::LogLevel;
+use vit_servicing_station_lib_f10::server::settings::ServiceSettings;
 
 #[test]
 pub fn out_settings_provided() {

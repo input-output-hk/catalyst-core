@@ -11,11 +11,11 @@ use reqwest::blocking::Response;
 use std::collections::HashMap;
 use thiserror::Error;
 use url::Url;
-use vit_servicing_station_lib::db::models::challenges::Challenge;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
-use vit_servicing_station_lib::server::settings::ServiceSettings;
-use vit_servicing_station_lib::{
+use vit_servicing_station_lib_f10::db::models::challenges::Challenge;
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib_f10::db::models::proposals::FullProposalInfo;
+use vit_servicing_station_lib_f10::server::settings::ServiceSettings;
+use vit_servicing_station_lib_f10::{
     db::models::{funds::Fund, proposals::Proposal},
     v0::endpoints::{proposals::ProposalVoteplanIdAndIndexes, service_version::ServiceVersion},
 };

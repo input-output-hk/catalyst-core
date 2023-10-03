@@ -7,11 +7,11 @@ use std::io;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 use thiserror::Error;
-use vit_servicing_station_lib::db::models::goals::InsertGoal;
-use vit_servicing_station_lib::db::models::proposals::{
+use vit_servicing_station_lib_f10::db::models::goals::InsertGoal;
+use vit_servicing_station_lib_f10::db::models::proposals::{
     community_choice, simple, ProposalChallengeInfo,
 };
-use vit_servicing_station_lib::db::{
+use vit_servicing_station_lib_f10::db::{
     load_db_connection_pool,
     models::{funds::Fund, proposals::Proposal, voteplans::Voteplan},
 };
@@ -154,7 +154,7 @@ impl CsvDataCmd {
         let mut funds_iter = funds.into_iter();
 
         // insert fund and retrieve fund with id
-        let fund = vit_servicing_station_lib::db::queries::funds::insert_fund(
+        let fund = vit_servicing_station_lib_f10::db::queries::funds::insert_fund(
             funds_iter
                 .next()
                 .ok_or_else(|| Error::InvalidFundData(funds_path.to_string_lossy().to_string()))?,
@@ -163,7 +163,7 @@ impl CsvDataCmd {
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
         for fund in funds_iter {
-            vit_servicing_station_lib::db::queries::funds::insert_fund(fund, &db_conn)
+            vit_servicing_station_lib_f10::db::queries::funds::insert_fund(fund, &db_conn)
                 .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
         }
 
@@ -186,29 +186,29 @@ impl CsvDataCmd {
             goal.fund_id = fund.id;
         }
 
-        vit_servicing_station_lib::db::queries::voteplans::batch_insert_voteplans(
+        vit_servicing_station_lib_f10::db::queries::voteplans::batch_insert_voteplans(
             &voteplans, &db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
-        vit_servicing_station_lib::db::queries::proposals::batch_insert_proposals(
+        vit_servicing_station_lib_f10::db::queries::proposals::batch_insert_proposals(
             &proposals, &db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
-        vit_servicing_station_lib::db::queries::proposals::batch_insert_simple_challenge_data(
+        vit_servicing_station_lib_f10::db::queries::proposals::batch_insert_simple_challenge_data(
             &simple_proposals_data,
             &db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
-        vit_servicing_station_lib::db::queries::proposals::batch_insert_community_choice_challenge_data(
+        vit_servicing_station_lib_f10::db::queries::proposals::batch_insert_community_choice_challenge_data(
             &community_proposals_data,
             &db_conn,
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
-        vit_servicing_station_lib::db::queries::challenges::batch_insert_challenges(
+        vit_servicing_station_lib_f10::db::queries::challenges::batch_insert_challenges(
             &challenges
                 .into_iter()
                 .map(|c| c.into_db_challenge_values())
@@ -217,10 +217,10 @@ impl CsvDataCmd {
         )
         .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
-        vit_servicing_station_lib::db::queries::community_advisors_reviews::batch_insert_advisor_reviews(&reviews, &db_conn)
+        vit_servicing_station_lib_f10::db::queries::community_advisors_reviews::batch_insert_advisor_reviews(&reviews, &db_conn)
             .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
-        vit_servicing_station_lib::db::queries::goals::batch_insert(goals, &db_conn)
+        vit_servicing_station_lib_f10::db::queries::goals::batch_insert(goals, &db_conn)
             .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
 
         Ok(())

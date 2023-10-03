@@ -3,7 +3,7 @@ use structopt::StructOpt;
 
 use tracing::{error, info};
 use tracing_appender::non_blocking::WorkerGuard;
-use vit_servicing_station_lib::{
+use vit_servicing_station_lib_f10::{
     db, server, server::exit_codes::ApplicationExitCode, server::settings as server_settings,
     server::settings::ServiceSettings, v0,
 };

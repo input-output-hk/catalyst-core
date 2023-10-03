@@ -2,7 +2,7 @@ mod fund;
 mod vote_plan;
 
 pub use fund::{CurrentFund, FundDates, FundInfo};
-use vit_servicing_station_lib::db::models::funds::FundStageDates;
+use vit_servicing_station_lib_f10::db::models::funds::FundStageDates;
 pub use vote_plan::SingleVotePlanParameters;
 
 pub struct ValidVotePlanParameters {

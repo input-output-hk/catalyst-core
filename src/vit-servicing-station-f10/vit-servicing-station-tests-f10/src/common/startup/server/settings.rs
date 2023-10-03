@@ -4,7 +4,7 @@ use std::{
     net::SocketAddr,
     path::{Path, PathBuf},
 };
-use vit_servicing_station_lib::server::settings::{
+use vit_servicing_station_lib_f10::server::settings::{
     dump_settings_to_file, load_settings_from_file, Cors, LogLevel, ServiceSettings,
 };
 

@@ -6,7 +6,7 @@ use std::io;
 use structopt::StructOpt;
 use thiserror::Error;
 use time::{Duration, OffsetDateTime};
-use vit_servicing_station_lib::{
+use vit_servicing_station_lib_f10::{
     db::{
         load_db_connection_pool, models::api_tokens::ApiTokenData,
         queries::api_tokens::insert_token_data, DbConnection, Error as DbPoolError,
@@ -163,7 +163,7 @@ impl ExecTask for ApiTokenCmd {
 #[cfg(test)]
 mod test {
     use super::*;
-    use vit_servicing_station_lib::db::{
+    use vit_servicing_station_lib_f10::db::{
         load_db_connection_pool, migrations::initialize_db_with_migration,
         queries::api_tokens::query_token_data_by_token,
     };

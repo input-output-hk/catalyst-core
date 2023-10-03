@@ -2,10 +2,10 @@ use jortestkit::csv::CsvFileBuilder;
 use std::path::Path;
 use thiserror::Error;
 use time::format_description::well_known::Rfc3339;
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
-use vit_servicing_station_lib::db::models::goals::InsertGoal;
-use vit_servicing_station_lib::db::models::proposals::{FullProposalInfo, ProposalChallengeInfo};
-use vit_servicing_station_lib::{
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib_f10::db::models::goals::InsertGoal;
+use vit_servicing_station_lib_f10::db::models::proposals::{FullProposalInfo, ProposalChallengeInfo};
+use vit_servicing_station_lib_f10::{
     db::models::{challenges::Challenge, funds::Fund, voteplans::Voteplan},
     utils::datetime::unix_timestamp_to_datetime,
 };

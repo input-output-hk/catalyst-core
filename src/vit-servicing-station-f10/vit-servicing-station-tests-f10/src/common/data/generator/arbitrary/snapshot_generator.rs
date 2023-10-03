@@ -3,9 +3,9 @@ use crate::common::data::ArbitraryValidVotingTemplateGenerator;
 use crate::common::data::{Snapshot, ValidVotingTemplateGenerator};
 use std::iter;
 use time::{Duration, OffsetDateTime};
-use vit_servicing_station_lib::db::models::funds::FundStageDates;
-use vit_servicing_station_lib::db::models::goals::Goal;
-use vit_servicing_station_lib::db::models::{
+use vit_servicing_station_lib_f10::db::models::funds::FundStageDates;
+use vit_servicing_station_lib_f10::db::models::goals::Goal;
+use vit_servicing_station_lib_f10::db::models::{
     api_tokens::ApiTokenData,
     challenges::Challenge,
     funds::Fund,
@@ -13,8 +13,8 @@ use vit_servicing_station_lib::db::models::{
     voteplans::Voteplan,
 };
 
-use vit_servicing_station_lib::db::models::community_advisors_reviews::AdvisorReview;
-use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
+use vit_servicing_station_lib_f10::db::models::community_advisors_reviews::AdvisorReview;
+use vit_servicing_station_lib_f10::db::models::proposals::FullProposalInfo;
 
 struct FundDateTimes {
     start: OffsetDateTime,

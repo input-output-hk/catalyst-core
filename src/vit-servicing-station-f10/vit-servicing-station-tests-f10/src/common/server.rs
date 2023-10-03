@@ -2,7 +2,7 @@ use super::clients::RestClient;
 use super::logger::Logger;
 use std::path::PathBuf;
 use std::process::Child;
-use vit_servicing_station_lib::server::settings::ServiceSettings;
+use vit_servicing_station_lib_f10::server::settings::ServiceSettings;
 
 pub struct Server {
     process: Child,

@@ -15,7 +15,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use vit_servicing_station_lib::server::exit_codes::ApplicationExitCode;
+use vit_servicing_station_lib_f10::server::exit_codes::ApplicationExitCode;
 
 #[test]
 pub fn no_in_settings_provided() {

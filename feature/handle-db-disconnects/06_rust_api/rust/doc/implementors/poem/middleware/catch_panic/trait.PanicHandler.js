@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"cat_data_service":[["impl PanicHandler for <a class=\"struct\" href=\"cat_data_service/service/utilities/catch_panic/struct.ServicePanicHandler.html\" title=\"struct cat_data_service::service::utilities::catch_panic::ServicePanicHandler\">ServicePanicHandler</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

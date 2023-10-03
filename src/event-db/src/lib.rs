@@ -6,6 +6,7 @@ use error::Error;
 use schema_check::SchemaVersion;
 use std::str::FromStr;
 use tokio_postgres::NoTls;
+use tracing;
 
 mod config_table;
 pub mod error;

@@ -326,8 +326,6 @@ impl fmt::Display for LogLevel {
     }
 }
 
-
-
 pub fn load_settings_from_file(file_path: &str) -> Result<ServiceSettings, impl std::error::Error> {
     let f = fs::File::open(file_path)?;
     serde_json::from_reader(&f)

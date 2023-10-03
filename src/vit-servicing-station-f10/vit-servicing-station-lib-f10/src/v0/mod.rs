@@ -32,24 +32,19 @@ pub async fn filter(
             parent_span_id = Empty,
         );
         if let Some(remote_addr) = info.remote_addr() {
-            span.record("remote_addr", &remote_addr.to_string().as_str());
+            span.record("remote_addr", remote_addr.to_string().as_str());
         }
         if let Some(trace_context) = get_trace_context(info.request_headers()) {
-            span.record("trace_id", &trace_context.trace_id().to_string().as_str());
-            span.record("span_id", &trace_context.span_id().to_string().as_str());
+            span.record("trace_id", trace_context.trace_id().to_string().as_str());
+            span.record("span_id", trace_context.span_id().to_string().as_str());
             if let Some(parent_span_id) = trace_context.parent_id() {
-                span.record("parent_span_id", &parent_span_id.to_string().as_str());
+                span.record("parent_span_id", parent_span_id.to_string().as_str());
             }
         }
         span
     });
 
-    let v0 = endpoints::filter(
-        v0_root.boxed(),
-        ctx.clone(),
-        enable_api_tokens,
-    )
-    .await;
+    let v0 = endpoints::filter(v0_root.boxed(), ctx.clone(), enable_api_tokens).await;
 
     let service_version =
         endpoints::service_version::filter(service_version_root.boxed(), ctx).await;

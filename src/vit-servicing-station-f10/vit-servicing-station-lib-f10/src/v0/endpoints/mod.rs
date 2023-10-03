@@ -46,7 +46,6 @@ pub async fn filter(
         let fund_filter = warp::path!("fund" / ..).and(funds::admin_filter(context.clone()));
 
         base.and(fund_filter)
-
     };
 
     let api_token_filter = if enable_api_tokens {

@@ -17,10 +17,7 @@ fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
             format!("Cannot create path tree {}", path.to_str().unwrap()),
         )
     })?)?;
-    fs::OpenOptions::new()
-        .create(true)
-        .write(true)
-        .open(path)?;
+    fs::OpenOptions::new().create(true).write(true).open(path)?;
     Ok(())
 }
 

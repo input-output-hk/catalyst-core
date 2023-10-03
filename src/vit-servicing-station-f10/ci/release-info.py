@@ -71,10 +71,10 @@ else:
 
 # Cargo workspace crates/packages for versioning bundle
 crates = {
-    'vit-servicing-station-cli':[],
-    'vit-servicing-station-lib':[],
-    'vit-servicing-station-server':[],
-    'vit-servicing-station-tests':[]
+    'vit-servicing-station-cli-f10':[],
+    'vit-servicing-station-lib-f10':[],
+    'vit-servicing-station-server-f10':[],
+    'vit-servicing-station-tests-f10':[]
 }
 
 version = bundle_version(crates)
@@ -92,4 +92,3 @@ elif release_type == 'nightly':
 
 for name in 'version', 'date', 'tag', 'release_type', 'release_flags':
     print('::set-output name={0}::{1}'.format(name, globals()[name]))
-

@@ -2,4 +2,4 @@
 # see diesel.rs/guides/configuring-diesel-cli
 
 [print_schema]
-file = "vit-servicing-station-lib/src/db/schema.rs"
+file = "vit-servicing-station-lib-f10/src/db/schema.rs"

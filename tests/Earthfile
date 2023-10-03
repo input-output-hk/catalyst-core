@@ -2,7 +2,7 @@ VERSION 0.7
 
 FROM debian:stable-slim
 
-# BASH, CURL, GPG, NODEJS, NPM, JDK, JRE
+# BASH, CURL, GPG, NODEJS, NPM, JRE
 dependencies:
     RUN apt-get update
     RUN apt-get install bash
@@ -15,8 +15,8 @@ dependencies:
 
 generate-client:
     FROM +dependencies
-    
-    # TODO: GET RIGHT FILE FROM POEM GENERATION / BY COPY FILE IN REPO
+
+    # TODO: Get the correct file from openapi doc generation target - https://github.com/input-output-hk/catalyst-core/issues/589
     ARG openapispec_file="./petstore.yaml"
     COPY $openapispec_file .
 

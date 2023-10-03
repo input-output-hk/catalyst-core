@@ -1,11 +1,9 @@
 mod rest;
-mod voting_power;
 
 use crate::common::data::Snapshot as Data;
 use rand::rngs::OsRng;
 use rand::RngCore;
 pub use rest::VitRestRequestGenerator;
-pub use voting_power::VotingPowerRequestGenerator;
 
 #[derive(Clone, Debug)]
 struct SnapshotRandomizer {

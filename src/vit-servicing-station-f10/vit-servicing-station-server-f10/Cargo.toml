@@ -15,4 +15,4 @@ tracing-futures = "0.2.4"
 tracing-subscriber = { version = "0.3", features=["fmt"] }
 tracing-appender = "0.2"
 vit-servicing-station-lib-f10 = { path = "../vit-servicing-station-lib-f10" }
-snapshot-service = { path = "../snapshot-service" }
+#snapshot-service = { path = "../snapshot-service" }

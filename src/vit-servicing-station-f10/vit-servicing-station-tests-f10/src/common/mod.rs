@@ -6,5 +6,4 @@ pub mod load;
 pub mod logger;
 pub mod paths;
 pub mod server;
-pub mod snapshot;
 pub mod startup;

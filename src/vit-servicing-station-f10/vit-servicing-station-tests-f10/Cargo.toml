@@ -29,11 +29,10 @@ url = "2.2"
 quickcheck = { version = "0.9" }
 quickcheck_macros = { version = "0.9" }
 predicates = { version = "2.0", default-features = false, features = ["diff"] }
-jortestkit = { git = "https://github.com/input-output-hk/jortestkit.git", branch = "master" }
-chain-impl-mockchain = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund9", features = [ "property-test-api" ] }
-chain-addr      = { path = "../../chain-libs/chain-addr", features = [ "property-test-api" ] }
-chain-crypto    = { git = "https://github.com/input-output-hk/chain-libs.git", branch = "catalyst-fund9", features = [ "property-test-api" ] }
-voting-hir = { git = "https://github.com/input-output-hk/catalyst-toolbox", branch = "catalyst-fund9", features = ["serde"] }
+jortestkit = { path = "../../jortestkit" }
+chain-impl-mockchain = { workspace = true, features = [ "property-test-api" ] }
+chain-addr = { path = "../../chain-libs/chain-addr", features = [ "property-test-api" ] }
+chain-crypto = { path = "../../chain-libs/chain-crypto", features = [ "property-test-api" ] }
 fake = { version = "2.2", features=['http']}
 pretty_assertions = "0.6"
 dyn-clone = "1.0.4"

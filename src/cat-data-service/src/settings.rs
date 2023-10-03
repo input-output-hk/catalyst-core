@@ -36,6 +36,9 @@ const API_HOSTNAMES_DEFAULT: &str = "https://api.prod.projectcatalyst.io";
 /// Default API_URL_PREFIX used in development.
 const API_URL_PREFIX_DEFAULT: &str = "/api";
 
+/// Default RETRY_AFTER_DELAY_SECONDS used in development.
+pub(crate) const RETRY_AFTER_DELAY_SECONDS_DEFAULT: &str = "120";
+
 #[derive(Args, Clone)]
 pub struct Settings {
     /// Server binding address

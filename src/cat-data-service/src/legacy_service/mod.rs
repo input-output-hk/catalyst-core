@@ -1,10 +1,11 @@
 //! Main entrypoint to the Legacy AXUM version of the service
 //!
 use crate::service::{Error, ErrorMessage};
+use crate::settings::RETRY_AFTER_DELAY_SECONDS_DEFAULT;
 use crate::state::State;
 use axum::{
     extract::MatchedPath,
-    http::{Method, Request, StatusCode},
+    http::{header, Method, Request, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::get,
@@ -96,6 +97,14 @@ fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
         Err(Error::EventDb(event_db::error::Error::NotFound(error))) => {
             (StatusCode::NOT_FOUND, Json(ErrorMessage::new(error))).into_response()
         }
+        Err(Error::EventDb(event_db::error::Error::ConnectionTimeout)) => (
+            StatusCode::SERVICE_UNAVAILABLE,
+            [(
+                header::RETRY_AFTER,
+                format!("{}", RETRY_AFTER_DELAY_SECONDS_DEFAULT),
+            )],
+        )
+            .into_response(),
         Err(error) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorMessage::new(error.to_string())),

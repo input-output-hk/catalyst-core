@@ -33,7 +33,7 @@ impl ArbitraryValidVotePlanConfig {
             .proposals
             .iter_mut()
             .enumerate()
-            .for_each(|(i, mut p)| {
+            .for_each(|(i, p)| {
                 p.challenge_id = Some(i);
             });
         self.challenges.push(challenge);

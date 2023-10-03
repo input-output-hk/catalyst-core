@@ -20,7 +20,7 @@ fn check_and_build_proper_path(path: &Path) -> std::io::Result<()> {
     fs::OpenOptions::new()
         .create(true)
         .write(true)
-        .open(&path)?;
+        .open(path)?;
     Ok(())
 }
 

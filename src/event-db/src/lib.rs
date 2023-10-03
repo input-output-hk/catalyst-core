@@ -6,7 +6,6 @@ use error::Error;
 use schema_check::SchemaVersion;
 use std::str::FromStr;
 use tokio_postgres::NoTls;
-use tracing;
 
 mod config_table;
 pub mod error;
@@ -59,7 +58,7 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
     let database_url = match url {
         Some(url) => url.to_string(),
         // If the Database connection URL is not supplied, try and get from the env var.
-        None => std::env::var(DATABASE_URL_ENVVAR)?,
+        None => std::env::var(DATABASE_URL_ENVVAR).map_err(|_| Error::NoDatabaseUrl)?,
     };
 
     let config = tokio_postgres::config::Config::from_str(&database_url)?;
@@ -70,7 +69,18 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
 
     let db = EventDB { pool };
 
-    db.schema_version_check().await?;
+    match db.schema_version_check().await {
+        Ok(current_ver) => {
+            tracing::info!(schema_version = current_ver, "verified schema version")
+        }
+        Err(e) => {
+            tracing::warn!(error = e.to_string(), "could not verify schema version");
+            // Only return error if it is not a connection timeout
+            if e != Error::ConnectionTimeout {
+                return Err(e);
+            }
+        }
+    };
 
     Ok(db)
 }

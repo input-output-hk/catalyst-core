@@ -63,7 +63,8 @@ builder:
         libssl-dev \
         libpq-dev \
         libsqlite3-dev \
-        protobuf-compiler
+        protobuf-compiler \
+        pkg-config
     RUN rustup component add rustfmt
     COPY --dir book src tests Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME

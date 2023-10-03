@@ -30,8 +30,7 @@ build-cache:
         libssl-dev \
         libpq-dev \
         libsqlite3-dev \
-        protobuf-compiler \
-        pkg-config
+        protobuf-compiler
 
 
     RUN cargo chef cook --release
@@ -65,8 +64,7 @@ builder:
         libssl-dev \
         libpq-dev \
         libsqlite3-dev \
-        protobuf-compiler \
-        pkg-config
+        protobuf-compiler
 
     RUN rustup component add rustfmt
     COPY --dir book src tests Cargo.lock Cargo.toml .

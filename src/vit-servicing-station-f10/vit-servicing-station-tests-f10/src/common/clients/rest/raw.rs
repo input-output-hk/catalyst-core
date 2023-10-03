@@ -99,7 +99,6 @@ impl RestClient {
     pub fn client(&self) -> Result<reqwest::blocking::Client, reqwest::Error> {
         reqwest::blocking::Client::builder()
             .danger_accept_invalid_certs(true)
-            .danger_accept_invalid_hostnames(true)
             .build()
             .map_err(Into::into)
     }

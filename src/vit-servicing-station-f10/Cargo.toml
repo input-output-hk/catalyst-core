@@ -1,8 +1,0 @@
-[workspace]
-members = [
-  "vit-servicing-station-cli-f10",
-  "vit-servicing-station-lib-f10",
-  "vit-servicing-station-server-f10",
-  "vit-servicing-station-tests-f10",
-  "snapshot-service"
-]

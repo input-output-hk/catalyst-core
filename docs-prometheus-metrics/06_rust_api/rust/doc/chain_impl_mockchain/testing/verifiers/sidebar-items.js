@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["ledger_verifier"],"struct":["LedgerStateVerifier"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["EXTENDED_KEY_SIZE"],"struct":["Ed25519Extended","ExtendedPriv"]};

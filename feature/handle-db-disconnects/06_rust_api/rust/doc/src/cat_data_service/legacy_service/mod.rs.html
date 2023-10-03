@@ -167,13 +167,23 @@
 <a href="#167" id="167">167</a>
 <a href="#168" id="168">168</a>
 <a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Main entrypoint to the Legacy AXUM version of the service
 //!
 </span><span class="kw">use </span><span class="kw">crate</span>::service::{Error, ErrorMessage};
+<span class="kw">use </span><span class="kw">crate</span>::settings::RETRY_AFTER_DELAY_SECONDS_DEFAULT;
 <span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::{
     extract::MatchedPath,
-    http::{Method, Request, StatusCode},
+    http::{header, Method, Request, StatusCode},
     middleware::{<span class="self">self</span>, Next},
     response::{IntoResponse, Response},
     routing::get,
@@ -265,6 +275,14 @@
         <span class="prelude-val">Err</span>(Error::EventDb(event_db::error::Error::NotFound(error))) =&gt; {
             (StatusCode::NOT_FOUND, Json(ErrorMessage::new(error))).into_response()
         }
+        <span class="prelude-val">Err</span>(Error::EventDb(event_db::error::Error::ConnectionTimeout)) =&gt; (
+            StatusCode::SERVICE_UNAVAILABLE,
+            [(
+                header::RETRY_AFTER,
+                <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, RETRY_AFTER_DELAY_SECONDS_DEFAULT),
+            )],
+        )
+            .into_response(),
         <span class="prelude-val">Err</span>(error) =&gt; (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorMessage::new(error.to_string())),

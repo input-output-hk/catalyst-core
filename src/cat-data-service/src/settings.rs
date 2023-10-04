@@ -36,8 +36,11 @@ const API_HOSTNAMES_DEFAULT: &str = "https://api.prod.projectcatalyst.io";
 /// Default API_URL_PREFIX used in development.
 const API_URL_PREFIX_DEFAULT: &str = "/api";
 
-/// Default RETRY_AFTER_DELAY_SECONDS used in development.
-pub(crate) const RETRY_AFTER_DELAY_SECONDS_DEFAULT: &str = "120";
+/// The default delay-seconds in the 'Retry-After' header of 503 responses.
+pub(crate) const RETRY_AFTER_DELAY_SECONDS_DEFAULT: u64 = 120;
+/// The name of the env var that specifies the delay-seconds in the 'Retry-After' header of 503
+/// responses.
+pub(crate) const RETRY_AFTER_DELAY_SECONDS_ENVVAR: &str = "RETRY_AFTER_DELAY_SECONDS";
 
 #[derive(Args, Clone)]
 pub struct Settings {

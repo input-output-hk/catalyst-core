@@ -1,7 +1,7 @@
 //! Main entrypoint to the Legacy AXUM version of the service
 //!
 use crate::service::{Error, ErrorMessage};
-use crate::settings::RETRY_AFTER_DELAY_SECONDS_DEFAULT;
+use crate::settings::{RETRY_AFTER_DELAY_SECONDS_DEFAULT, RETRY_AFTER_DELAY_SECONDS_ENVVAR};
 use crate::state::State;
 use axum::{
     extract::MatchedPath,
@@ -97,14 +97,23 @@ fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
         Err(Error::EventDb(event_db::error::Error::NotFound(error))) => {
             (StatusCode::NOT_FOUND, Json(ErrorMessage::new(error))).into_response()
         }
-        Err(Error::EventDb(event_db::error::Error::ConnectionTimeout)) => (
-            StatusCode::SERVICE_UNAVAILABLE,
-            [(
-                header::RETRY_AFTER,
-                format!("{}", RETRY_AFTER_DELAY_SECONDS_DEFAULT),
-            )],
-        )
-            .into_response(),
+        Err(Error::EventDb(event_db::error::Error::ConnectionTimeout)) => {
+            let retry_after_delay_seconds: u64 = {
+                // Check the current value of the RETRY_AFTER_DELAY_SECONDS env var,
+                // this is needed because the value can modified  by the
+                // '/health/retry-after' endpoint.
+                if let Ok(delay) = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR) {
+                    delay.parse().unwrap_or(RETRY_AFTER_DELAY_SECONDS_DEFAULT)
+                } else {
+                    RETRY_AFTER_DELAY_SECONDS_DEFAULT
+                }
+            };
+            (
+                StatusCode::SERVICE_UNAVAILABLE,
+                [(header::RETRY_AFTER, retry_after_delay_seconds.to_string())],
+            )
+                .into_response()
+        }
         Err(error) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorMessage::new(error.to_string())),

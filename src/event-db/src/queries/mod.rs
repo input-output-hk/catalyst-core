@@ -6,7 +6,7 @@ use self::{
     registration::RegistrationQueries,
     search::SearchQueries,
 };
-use crate::EventDB;
+use crate::{schema_check::SchemaVersion, EventDB};
 
 pub mod event;
 pub mod registration;
@@ -23,6 +23,7 @@ pub trait EventDbQueries:
     + SearchQueries
     + BallotQueries
     + vit_ss::fund::VitSSFundQueries
+    + SchemaVersion
 {
 }
 

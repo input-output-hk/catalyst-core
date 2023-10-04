@@ -21,6 +21,8 @@ const DATABASE_URL_ENVVAR: &str = "EVENT_DB_URL";
 /// Must equal the last Migrations Version Number.
 pub const DATABASE_SCHEMA_VERSION: i32 = 9;
 
+pub const RETRY_AFTER_DELAY_SECONDS_DEFAULT: u64 = 120;
+pub const RETRY_AFTER_DELAY_SECONDS_ENVVAR: &str = "RETRY_AFTER_DELAY_SECONDS";
 #[allow(unused)]
 /// Connection to the Election Database
 pub struct EventDB {

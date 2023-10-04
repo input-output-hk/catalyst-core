@@ -1,13 +1,14 @@
-use crate::service::Error;
+use crate::{service::Error, state::State};
 use axum::{routing::get, Router};
+use std::sync::Arc;
 
 use super::handle_result;
 
-pub fn health() -> Router {
+pub fn health(state: Arc<State>) -> Router {
     Router::new()
         .route(
             "/health/ready",
-            get(|| async { handle_result(ready_exec().await) }),
+            get(|| async { handle_result(ready_exec(state).await) }),
         )
         .route(
             "/health/live",
@@ -15,9 +16,10 @@ pub fn health() -> Router {
         )
 }
 
-async fn ready_exec() -> Result<bool, Error> {
+async fn ready_exec(state: Arc<State>) -> Result<bool, Error> {
     tracing::debug!("health ready exec");
 
+    state.event_db.schema_version_check().await?;
     Ok(true)
 }
 

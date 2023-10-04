@@ -25,8 +25,8 @@ mod v1;
 pub fn app(state: Arc<State>) -> Router {
     // build our application with a route
     let v0 = v0::v0(state.clone());
-    let v1 = v1::v1(state);
-    let health = health::health();
+    let v1 = v1::v1(state.clone());
+    let health = health::health(state);
     Router::new().nest("/api", v1.merge(v0)).merge(health)
 }
 

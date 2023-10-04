@@ -56,8 +56,7 @@ impl ValidVotePlanGenerator {
                         .voting_tally_end,
                     chain_voteplan_payload: payload_type.to_string(),
                     chain_vote_encryption_key: single_vote_plan
-                        .vote_encryption_key()
-                        .unwrap_or_else(|| "".to_string()),
+                        .vote_encryption_key().unwrap_or_default(),
                     fund_id: self.parameters.current_fund.info.fund_id,
                 }
             })

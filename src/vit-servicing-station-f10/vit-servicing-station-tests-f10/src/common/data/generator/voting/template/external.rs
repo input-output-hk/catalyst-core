@@ -63,24 +63,24 @@ impl ExternalValidVotingTemplateGenerator {
 }
 
 pub fn parse_proposals(proposals: PathBuf) -> Result<LinkedList<ProposalTemplate>, TemplateLoad> {
-    serde_json::from_str(&std::fs::read_to_string(&proposals)?)
+    serde_json::from_str(&std::fs::read_to_string(proposals)?)
         .map_err(|err| TemplateLoad::Proposal(err.to_string()))
 }
 
 pub fn parse_challenges(
     challenges: PathBuf,
 ) -> Result<LinkedList<ChallengeTemplate>, TemplateLoad> {
-    serde_json::from_str(&std::fs::read_to_string(&challenges)?)
+    serde_json::from_str(&std::fs::read_to_string(challenges)?)
         .map_err(|err| TemplateLoad::Challenge(err.to_string()))
 }
 
 pub fn parse_funds(funds: PathBuf) -> Result<LinkedList<FundTemplate>, TemplateLoad> {
-    serde_json::from_str(&std::fs::read_to_string(&funds)?)
+    serde_json::from_str(&std::fs::read_to_string(funds)?)
         .map_err(|err| TemplateLoad::Fund(err.to_string()))
 }
 
 pub fn parse_reviews(reviews: PathBuf) -> Result<LinkedList<ReviewTemplate>, TemplateLoad> {
-    serde_json::from_str(&std::fs::read_to_string(&reviews)?)
+    serde_json::from_str(&std::fs::read_to_string(reviews)?)
         .map_err(|err| TemplateLoad::Review(err.to_string()))
 }
 

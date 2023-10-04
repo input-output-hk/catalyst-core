@@ -24,6 +24,6 @@ impl Logger {
     }
 
     pub fn any_error(&self) -> bool {
-        self.log_lines().iter().any(|x| x.contains(&"[ERROR]"))
+        self.log_lines().iter().any(|x| x.contains("[ERROR]"))
     }
 }

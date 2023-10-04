@@ -107,6 +107,7 @@ result*
 .vscode
 **/.idea/
 .temp/
+tests/tmp/
 
 # std
 .std

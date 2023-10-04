@@ -176,10 +176,19 @@
 <a href="#176" id="176">176</a>
 <a href="#177" id="177">177</a>
 <a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Main entrypoint to the Legacy AXUM version of the service
 //!
 </span><span class="kw">use </span><span class="kw">crate</span>::service::{Error, ErrorMessage};
-<span class="kw">use </span><span class="kw">crate</span>::settings::RETRY_AFTER_DELAY_SECONDS_DEFAULT;
+<span class="kw">use </span><span class="kw">crate</span>::settings::{RETRY_AFTER_DELAY_SECONDS_DEFAULT, RETRY_AFTER_DELAY_SECONDS_ENVVAR};
 <span class="kw">use </span><span class="kw">crate</span>::state::State;
 <span class="kw">use </span>axum::{
     extract::MatchedPath,
@@ -203,8 +212,8 @@
 <span class="kw">pub fn </span>app(state: Arc&lt;State&gt;) -&gt; Router {
     <span class="comment">// build our application with a route
     </span><span class="kw">let </span>v0 = v0::v0(state.clone());
-    <span class="kw">let </span>v1 = v1::v1(state);
-    <span class="kw">let </span>health = health::health();
+    <span class="kw">let </span>v1 = v1::v1(state.clone());
+    <span class="kw">let </span>health = health::health(state);
     Router::new().nest(<span class="string">&quot;/api&quot;</span>, v1.merge(v0)).merge(health)
 }
 
@@ -275,14 +284,23 @@
         <span class="prelude-val">Err</span>(Error::EventDb(event_db::error::Error::NotFound(error))) =&gt; {
             (StatusCode::NOT_FOUND, Json(ErrorMessage::new(error))).into_response()
         }
-        <span class="prelude-val">Err</span>(Error::EventDb(event_db::error::Error::ConnectionTimeout)) =&gt; (
-            StatusCode::SERVICE_UNAVAILABLE,
-            [(
-                header::RETRY_AFTER,
-                <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, RETRY_AFTER_DELAY_SECONDS_DEFAULT),
-            )],
-        )
-            .into_response(),
+        <span class="prelude-val">Err</span>(Error::EventDb(event_db::error::Error::ConnectionTimeout)) =&gt; {
+            <span class="kw">let </span>retry_after_delay_seconds: u64 = {
+                <span class="comment">// Check the current value of the RETRY_AFTER_DELAY_SECONDS env var,
+                // this is needed because the value can modified  by the
+                // &#39;/health/retry-after&#39; endpoint.
+                </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(delay) = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR) {
+                    delay.parse().unwrap_or(RETRY_AFTER_DELAY_SECONDS_DEFAULT)
+                } <span class="kw">else </span>{
+                    RETRY_AFTER_DELAY_SECONDS_DEFAULT
+                }
+            };
+            (
+                StatusCode::SERVICE_UNAVAILABLE,
+                [(header::RETRY_AFTER, retry_after_delay_seconds.to_string())],
+            )
+                .into_response()
+        }
         <span class="prelude-val">Err</span>(error) =&gt; (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(ErrorMessage::new(error.to_string())),

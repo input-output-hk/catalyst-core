@@ -342,6 +342,9 @@
 <a href="#342" id="342">342</a>
 <a href="#343" id="343">343</a>
 <a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Command line and environment variable settings for the service
 //!
 </span><span class="kw">use </span><span class="kw">crate</span>::logger::{LogLevel, LOG_LEVEL_DEFAULT};
@@ -380,8 +383,11 @@
 <span class="doccomment">/// Default API_URL_PREFIX used in development.
 </span><span class="kw">const </span>API_URL_PREFIX_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;/api&quot;</span>;
 
-<span class="doccomment">/// Default RETRY_AFTER_DELAY_SECONDS used in development.
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>RETRY_AFTER_DELAY_SECONDS_DEFAULT: <span class="kw-2">&amp;</span>str = <span class="string">&quot;120&quot;</span>;
+<span class="doccomment">/// The default delay-seconds in the &#39;Retry-After&#39; header of 503 responses.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>RETRY_AFTER_DELAY_SECONDS_DEFAULT: u64 = <span class="number">120</span>;
+<span class="doccomment">/// The name of the env var that specifies the delay-seconds in the &#39;Retry-After&#39; header of 503
+/// responses.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>RETRY_AFTER_DELAY_SECONDS_ENVVAR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;RETRY_AFTER_DELAY_SECONDS&quot;</span>;
 
 <span class="attr">#[derive(Args, Clone)]
 </span><span class="kw">pub struct </span>Settings {

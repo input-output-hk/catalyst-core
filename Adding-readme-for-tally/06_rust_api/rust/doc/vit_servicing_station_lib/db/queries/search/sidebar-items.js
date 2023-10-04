@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_impl_query_id_for_random","build_challenges_query","build_proposals_query","map_limit","map_offset","search","search_count","search_count_db","search_db"],"struct":["RANDOM"],"type":["ChallengesSelectST","SelectProposalsST"]};

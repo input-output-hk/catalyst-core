@@ -16,7 +16,7 @@ dependencies:
 generate-client:
     FROM +dependencies
 
-    # TODO: Get the correct file from openapi doc generation target - https://github.com/input-output-hk/catalyst-core/issues/589
+    # TODO(@nicopado): Get the correct file from openapi doc generation target - https://github.com/input-output-hk/catalyst-core/issues/589
     ARG openapispec_file="./petstore.yaml"
     COPY $openapispec_file .
 

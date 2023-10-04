@@ -225,7 +225,7 @@ pub async fn start_rest_server(context: ContextLock) -> Result<(), Error> {
                 let span = span!(Level::INFO, "rest api call received");
                 let _enter = span.enter();
                 tracing::info!("get block0");
-                Ok::<Vec<u8>, E>(context.read().unwrap().block0_bin())
+                Ok::<Vec<u8>>(context.read().unwrap().block0_bin())
             })
             .with(warp::reply::with::headers(default_headers()));
 

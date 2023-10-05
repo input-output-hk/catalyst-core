@@ -68,6 +68,9 @@ pub struct Settings {
     /// Logging level
     #[clap(long, default_value = LOG_LEVEL_DEFAULT)]
     pub log_level: LogLevel,
+
+    #[clap(long, env, default_value = "120")]
+    pub delay_seconds: u64,
 }
 
 /// An environment variable read as a string.

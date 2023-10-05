@@ -15,12 +15,13 @@ pub struct State {
     /// This is Private, it needs to be accessed with a function.
     //event_db_handle: Arc<ArcSwap<Option<dyn EventDbQueries>>>, // Private need to get it with a function.
     pub event_db: Arc<dyn EventDbQueries>, // This needs to be obsoleted, we want the DB to be able to be down.
+    pub delay_seconds: u64,
     #[cfg(feature = "jorm-mock")]
     pub jorm: std::sync::Mutex<jorm_mock::JormState>,
 }
 
 impl State {
-    pub async fn new(database_url: Option<String>) -> Result<Self, Error> {
+    pub async fn new(database_url: Option<String>, delay_seconds: u64) -> Result<Self, Error> {
         // Get a connection to the Database.
         let event_db = match database_url.clone() {
             Some(url) => Arc::new(event_db::establish_connection(Some(url.as_str())).await?),
@@ -34,6 +35,7 @@ impl State {
             //db_url: database_url,
             //event_db_handle: Arc::new(RwLock::new(None)),
             event_db,
+            delay_seconds,
             #[cfg(feature = "jorm-mock")]
             jorm: std::sync::Mutex::new(jorm),
         };

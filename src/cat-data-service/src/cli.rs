@@ -1,6 +1,10 @@
-use crate::{logger, service, settings::Settings, state::State};
+use crate::{
+    logger, service,
+    settings::{Settings, RETRY_AFTER_DELAY_SECONDS_ENVVAR},
+    state::State,
+};
 use clap::Parser;
-use std::sync::Arc;
+use std::{env::set_var, sync::Arc};
 
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
@@ -22,7 +26,13 @@ impl Cli {
             Self::Run(settings) => {
                 logger::init(settings.log_level).unwrap();
 
-                let state = Arc::new(State::new(Some(settings.database_url)).await?);
+                let state = Arc::new(
+                    State::new(Some(settings.database_url), settings.delay_seconds).await?,
+                );
+                set_var(
+                    RETRY_AFTER_DELAY_SECONDS_ENVVAR,
+                    settings.delay_seconds.to_string(),
+                );
                 service::run(&settings.address, &settings.metrics_address, state).await?;
                 Ok(())
             }

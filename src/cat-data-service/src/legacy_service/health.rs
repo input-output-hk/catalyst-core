@@ -1,6 +1,9 @@
 use crate::{
     service::Error,
-    settings::{RetryAfterParams, RETRY_AFTER_DELAY_SECONDS_ENVVAR, RETRY_AFTER_HTTP_DATE_ENVVAR},
+    settings::{
+        RetryAfterParams, RETRY_AFTER_DELAY_SECONDS_ENVVAR, RETRY_AFTER_HTTP_DATE_DEFAULT,
+        RETRY_AFTER_HTTP_DATE_ENVVAR,
+    },
     state::State,
 };
 use axum::{
@@ -50,29 +53,45 @@ async fn live_exec() -> Result<bool, Error> {
     Ok(true)
 }
 
-async fn retry_after_exec(params: Query<RetryAfterParams>, _state: Arc<State>) -> Response {
+async fn retry_after_exec(params: Query<RetryAfterParams>, state: Arc<State>) -> Response {
     tracing::debug!(params = format!("{params:?}"), "health retry_after exec");
     match params.0 {
         RetryAfterParams {
             http_date: None,
             delay_seconds: None,
-        } => tracing::debug!("RETRY_AFTER RESET"),
-        RetryAfterParams {
-            http_date,
-            delay_seconds,
         } => {
-            if let Some(http_date) = http_date {
-                let date_str = http_date.to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
-                tracing::debug!(http_date = date_str, "HTTP_DATE ADDED");
-                std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
-            };
-            if let Some(delay_seconds) = delay_seconds {
-                tracing::debug!(
-                    delay_seconds = delay_seconds.to_string(),
-                    "DELAY_SECONDS ADDED"
-                );
-                std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_seconds.to_string());
-            };
+            tracing::debug!("RETRY_AFTER RESET");
+            let date_str = RETRY_AFTER_HTTP_DATE_DEFAULT;
+            tracing::debug!(http_date = date_str, "HTTP_DATE RESET");
+            std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+
+            let delay_secs = state.delay_seconds.to_string();
+            tracing::debug!(delay_seconds = delay_secs, "DELAY_SECONDS RESET");
+            std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_secs);
+        }
+        RetryAfterParams {
+            http_date: Some(http_date),
+            delay_seconds: _,
+        } => {
+            let date_str = http_date.to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
+            tracing::debug!(http_date = date_str, "HTTP_DATE SET");
+            std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+
+            let delay_secs = state.delay_seconds.to_string();
+            tracing::debug!(delay_seconds = delay_secs, "DELAY_SECONDS RESET");
+            std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_secs);
+        }
+        RetryAfterParams {
+            http_date: None,
+            delay_seconds: Some(delay_seconds),
+        } => {
+            let date_str = RETRY_AFTER_HTTP_DATE_DEFAULT;
+            tracing::debug!(http_date = date_str, "HTTP_DATE RESET");
+            std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+
+            let delay_secs = delay_seconds.to_string();
+            tracing::debug!(delay_seconds = delay_secs, "DELAY_SECONDS SET");
+            std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_seconds.to_string());
         }
     }
 

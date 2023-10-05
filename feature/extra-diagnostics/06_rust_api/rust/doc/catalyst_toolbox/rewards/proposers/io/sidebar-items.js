@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["vecs_to_maps","write_csv","write_json","write_results"],"type":["CleanedVitSSData"]};

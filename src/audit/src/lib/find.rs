@@ -187,7 +187,7 @@ pub fn find_vote(jormungandr_database: &Path, voting_key: String) -> Result<Vec<
 pub fn all_voters(
     jormungandr_database: &Path,
 ) -> Result<(HashSet<std::string::String>, HashSet<std::string::String>), Box<dyn error::Error>> {
-    let fragments = extract_fragments_from_storage(&jormungandr_database).unwrap();
+    let fragments = extract_fragments_from_storage(jormungandr_database).unwrap();
 
     let mut unique_voters_ca = HashSet::new();
     let mut unique_voters_0x = HashSet::new();
@@ -267,7 +267,7 @@ pub fn batch_key_check(
 
         let voting_key = voting_key_61824_format.public_key().unwrap().to_string();
 
-        let votes = find_vote(&jormungandr_database, voting_key)?;
+        let votes = find_vote(jormungandr_database, voting_key)?;
 
         flagged_keys.insert(key.clone(), votes.clone());
 

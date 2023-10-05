@@ -1,6 +1,6 @@
 //! Shared state used by all endpoints.
 //!
-use crate::cli::Error;
+use crate::{cli::Error, settings::RETRY_AFTER_DELAY_SECONDS_DEFAULT};
 use event_db::queries::EventDbQueries;
 use std::sync::Arc;
 
@@ -21,7 +21,16 @@ pub struct State {
 }
 
 impl State {
-    pub async fn new(database_url: Option<String>, delay_seconds: u64) -> Result<Self, Error> {
+    #[allow(dead_code)]
+    pub async fn new(database_url: Option<String>) -> Result<Self, Error> {
+        let delay_seconds: u64 = RETRY_AFTER_DELAY_SECONDS_DEFAULT;
+        Self::new_with_delay(database_url, delay_seconds).await
+    }
+
+    pub async fn new_with_delay(
+        database_url: Option<String>,
+        delay_seconds: u64,
+    ) -> Result<Self, Error> {
         // Get a connection to the Database.
         let event_db = match database_url.clone() {
             Some(url) => Arc::new(event_db::establish_connection(Some(url.as_str())).await?),

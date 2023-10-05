@@ -27,7 +27,8 @@ impl Cli {
                 logger::init(settings.log_level).unwrap();
 
                 let state = Arc::new(
-                    State::new(Some(settings.database_url), settings.delay_seconds).await?,
+                    State::new_with_delay(Some(settings.database_url), settings.delay_seconds)
+                        .await?,
                 );
                 set_var(
                     RETRY_AFTER_DELAY_SECONDS_ENVVAR,

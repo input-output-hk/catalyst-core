@@ -92,8 +92,69 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{service::Error, state::State};
-<span class="kw">use </span>axum::{routing::get, Router};
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+    service::Error,
+    settings::{RetryAfterParams, RETRY_AFTER_DELAY_SECONDS_ENVVAR, RETRY_AFTER_HTTP_DATE_ENVVAR},
+    state::State,
+};
+<span class="kw">use </span>axum::{
+    body,
+    extract::Query,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    routing::{get, put},
+    Router,
+};
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">use </span><span class="kw">super</span>::handle_result;
@@ -102,11 +163,21 @@
     Router::new()
         .route(
             <span class="string">&quot;/health/ready&quot;</span>,
-            get(|| <span class="kw">async </span>{ handle_result(ready_exec(state).<span class="kw">await</span>) }),
+            get({
+                <span class="kw">let </span>state = state.clone();
+                <span class="kw">move </span>|| <span class="kw">async </span>{ handle_result(ready_exec(state).<span class="kw">await</span>) }
+            }),
         )
         .route(
             <span class="string">&quot;/health/live&quot;</span>,
             get(|| <span class="kw">async </span>{ handle_result(live_exec().<span class="kw">await</span>) }),
+        )
+        .route(
+            <span class="string">&quot;/health/retry-after&quot;</span>,
+            put({
+                <span class="kw">let </span>state = state.clone();
+                <span class="kw">move </span>|params| <span class="kw">async </span>{ retry_after_exec(params, state).<span class="kw">await </span>}
+            }),
         )
 }
 
@@ -121,6 +192,35 @@
     <span class="macro">tracing::debug!</span>(<span class="string">&quot;health live exec&quot;</span>);
 
     <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
+}
+
+<span class="kw">async fn </span>retry_after_exec(params: Query&lt;RetryAfterParams&gt;, _state: Arc&lt;State&gt;) -&gt; Response {
+    <span class="macro">tracing::debug!</span>(params = <span class="macro">format!</span>(<span class="string">&quot;{params:?}&quot;</span>), <span class="string">&quot;health retry_after exec&quot;</span>);
+    <span class="kw">match </span>params.<span class="number">0 </span>{
+        RetryAfterParams {
+            http_date: <span class="prelude-val">None</span>,
+            delay_seconds: <span class="prelude-val">None</span>,
+        } =&gt; <span class="macro">tracing::debug!</span>(<span class="string">&quot;RETRY_AFTER RESET&quot;</span>),
+        RetryAfterParams {
+            http_date,
+            delay_seconds,
+        } =&gt; {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(http_date) = http_date {
+                <span class="kw">let </span>date_str = http_date.to_rfc3339_opts(chrono::SecondsFormat::Secs, <span class="bool-val">true</span>);
+                <span class="macro">tracing::debug!</span>(http_date = date_str, <span class="string">&quot;HTTP_DATE ADDED&quot;</span>);
+                std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+            };
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(delay_seconds) = delay_seconds {
+                <span class="macro">tracing::debug!</span>(
+                    delay_seconds = delay_seconds.to_string(),
+                    <span class="string">&quot;DELAY_SECONDS ADDED&quot;
+                </span>);
+                std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_seconds.to_string());
+            };
+        }
+    }
+
+    (StatusCode::NO_CONTENT, body::Empty::new()).into_response()
 }
 
 <span class="doccomment">/// Need to setup and run a test event db instance

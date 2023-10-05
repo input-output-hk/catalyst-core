@@ -110,6 +110,8 @@
 <a href="#110" id="110">110</a>
 <a href="#111" id="111">111</a>
 <a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Catalyst Election Database crate
 </span><span class="kw">use </span>bb8::Pool;
 <span class="kw">use </span>bb8_postgres::PostgresConnectionManager;
@@ -155,7 +157,9 @@
 ///
 /// This function will return an error if:
 /// * `url` is None and the environment variable &quot;`DATABASE_URL`&quot; isn&#39;t set.
-/// * There is any error communicating the the database to check its schema.
+/// * There is any error communicating the the database to check its schema, EXCEPT
+///   if the connection to the DB times out. If connection timeout happens, the
+///   schmea version won&#39;t be checked, and it will logged as a warning.
 /// * The database schema in the DB does not 100% match the schema supported by
 ///   this library.
 ///

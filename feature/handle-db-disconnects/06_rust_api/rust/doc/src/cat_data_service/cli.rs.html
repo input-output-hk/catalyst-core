@@ -29,9 +29,23 @@
 <a href="#29" id="29">29</a>
 <a href="#30" id="30">30</a>
 <a href="#31" id="31">31</a>
-</pre><pre class="rust"><code><span class="kw">use crate</span>::{logger, service, settings::Settings, state::State};
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+    logger, service,
+    settings::{Settings, RETRY_AFTER_DELAY_SECONDS_ENVVAR},
+    state::State,
+};
 <span class="kw">use </span>clap::Parser;
-<span class="kw">use </span>std::sync::Arc;
+<span class="kw">use </span>std::{env::set_var, sync::Arc};
 
 <span class="attr">#[derive(thiserror::Error, Debug)]
 </span><span class="kw">pub enum </span>Error {
@@ -53,7 +67,13 @@
             <span class="self">Self</span>::Run(settings) =&gt; {
                 logger::init(settings.log_level).unwrap();
 
-                <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">Some</span>(settings.database_url)).<span class="kw">await</span><span class="question-mark">?</span>);
+                <span class="kw">let </span>state = Arc::new(
+                    State::new(<span class="prelude-val">Some</span>(settings.database_url), settings.delay_seconds).<span class="kw">await</span><span class="question-mark">?</span>,
+                );
+                set_var(
+                    RETRY_AFTER_DELAY_SECONDS_ENVVAR,
+                    settings.delay_seconds.to_string(),
+                );
                 service::run(<span class="kw-2">&amp;</span>settings.address, <span class="kw-2">&amp;</span>settings.metrics_address, state).<span class="kw">await</span><span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(())
             }

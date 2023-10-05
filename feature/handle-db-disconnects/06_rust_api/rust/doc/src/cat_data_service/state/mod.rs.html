@@ -52,6 +52,8 @@
 <a href="#52" id="52">52</a>
 <a href="#53" id="53">53</a>
 <a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Shared state used by all endpoints.
 //!
 </span><span class="kw">use </span><span class="kw">crate</span>::cli::Error;
@@ -69,12 +71,13 @@
     /// This is Private, it needs to be accessed with a function.
     </span><span class="comment">//event_db_handle: Arc&lt;ArcSwap&lt;Option&lt;dyn EventDbQueries&gt;&gt;&gt;, // Private need to get it with a function.
     </span><span class="kw">pub </span>event_db: Arc&lt;<span class="kw">dyn </span>EventDbQueries&gt;, <span class="comment">// This needs to be obsoleted, we want the DB to be able to be down.
-    </span><span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
+    </span><span class="kw">pub </span>delay_seconds: u64,
+    <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
     </span><span class="kw">pub </span>jorm: std::sync::Mutex&lt;jorm_mock::JormState&gt;,
 }
 
 <span class="kw">impl </span>State {
-    <span class="kw">pub async fn </span>new(database_url: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
+    <span class="kw">pub async fn </span>new(database_url: <span class="prelude-ty">Option</span>&lt;String&gt;, delay_seconds: u64) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="comment">// Get a connection to the Database.
         </span><span class="kw">let </span>event_db = <span class="kw">match </span>database_url.clone() {
             <span class="prelude-val">Some</span>(url) =&gt; Arc::new(event_db::establish_connection(<span class="prelude-val">Some</span>(url.as_str())).<span class="kw">await</span><span class="question-mark">?</span>),
@@ -88,6 +91,7 @@
             <span class="comment">//db_url: database_url,
             //event_db_handle: Arc::new(RwLock::new(None)),
             </span>event_db,
+            delay_seconds,
             <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
             </span>jorm: std::sync::Mutex::new(jorm),
         };

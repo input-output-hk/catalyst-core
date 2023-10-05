@@ -369,6 +369,9 @@
 <a href="#369" id="369">369</a>
 <a href="#370" id="370">370</a>
 <a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Command line and environment variable settings for the service
 //!
 </span><span class="kw">use </span><span class="kw">crate</span>::logger::{LogLevel, LOG_LEVEL_DEFAULT};
@@ -439,6 +442,9 @@
     <span class="doccomment">/// Logging level
     </span><span class="attr">#[clap(long, default_value = LOG_LEVEL_DEFAULT)]
     </span><span class="kw">pub </span>log_level: LogLevel,
+
+    <span class="attr">#[clap(long, env, default_value = <span class="string">&quot;120&quot;</span>)]
+    </span><span class="kw">pub </span>delay_seconds: u64,
 }
 
 <span class="doccomment">/// An environment variable read as a string.

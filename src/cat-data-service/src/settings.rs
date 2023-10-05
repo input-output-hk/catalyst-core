@@ -38,6 +38,13 @@ const API_HOSTNAMES_DEFAULT: &str = "https://api.prod.projectcatalyst.io";
 /// Default API_URL_PREFIX used in development.
 const API_URL_PREFIX_DEFAULT: &str = "/api";
 
+/// The name of the env var that specifies the delay-seconds in the 'Retry-After' header of 503
+/// responses.
+pub(crate) const RETRY_AFTER_HTTP_DATE_ENVVAR: &str = "RETRY_AFTER_HTTP_DATE";
+
+/// The default http-date in the 'Retry-After' header of 503 responses.
+pub(crate) const RETRY_AFTER_HTTP_DATE_DEFAULT: &str = "1970-01-01T00:00:00Z";
+
 /// The default delay-seconds in the 'Retry-After' header of 503 responses.
 pub(crate) const RETRY_AFTER_DELAY_SECONDS_DEFAULT: u64 = 120;
 /// The name of the env var that specifies the delay-seconds in the 'Retry-After' header of 503
@@ -115,7 +122,7 @@ pub(crate) struct RetryAfterParams {
 impl Default for RetryAfterParams {
     fn default() -> Self {
         RetryAfterParams {
-            http_date: Some("1970-01-01T00:00:00Z".parse::<DateTime<Utc>>().unwrap()), //Some(Utc.timestamp_opt(0, 0).unwrap()),
+            http_date: Some(RETRY_AFTER_HTTP_DATE_DEFAULT.parse().unwrap()),
             delay_seconds: Some(RETRY_AFTER_DELAY_SECONDS_DEFAULT),
         }
     }

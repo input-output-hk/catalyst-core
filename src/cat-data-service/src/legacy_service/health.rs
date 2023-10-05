@@ -1,4 +1,8 @@
-use crate::{service::Error, settings::RetryAfterParams, state::State};
+use crate::{
+    service::Error,
+    settings::{RetryAfterParams, RETRY_AFTER_DELAY_SECONDS_ENVVAR, RETRY_AFTER_HTTP_DATE_ENVVAR},
+    state::State,
+};
 use axum::{
     body,
     extract::Query,
@@ -47,7 +51,6 @@ async fn live_exec() -> Result<bool, Error> {
 }
 
 async fn retry_after_exec(params: Query<RetryAfterParams>, _state: Arc<State>) -> Response {
-    //let Query(params) = params.unwrap_or(Default::default());
     tracing::debug!(params = format!("{params:?}"), "health retry_after exec");
     match params.0 {
         RetryAfterParams {
@@ -55,16 +58,22 @@ async fn retry_after_exec(params: Query<RetryAfterParams>, _state: Arc<State>) -
             delay_seconds: None,
         } => tracing::debug!("RETRY_AFTER RESET"),
         RetryAfterParams {
-            http_date: Some(http_date),
-            delay_seconds: _,
-        } => tracing::debug!(http_date = http_date.to_string(), "HTTP_DATE ADDED"),
-        RetryAfterParams {
-            http_date: _,
-            delay_seconds: Some(delay_seconds),
-        } => tracing::debug!(
-            delay_seconds = delay_seconds.to_string(),
-            "DELAY_SECONDS ADDED"
-        ),
+            http_date,
+            delay_seconds,
+        } => {
+            if let Some(http_date) = http_date {
+                let date_str = http_date.to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
+                tracing::debug!(http_date = date_str, "HTTP_DATE ADDED");
+                std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+            };
+            if let Some(delay_seconds) = delay_seconds {
+                tracing::debug!(
+                    delay_seconds = delay_seconds.to_string(),
+                    "DELAY_SECONDS ADDED"
+                );
+                std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_seconds.to_string());
+            };
+        }
     }
 
     (StatusCode::NO_CONTENT, body::Empty::new()).into_response()

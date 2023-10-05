@@ -187,7 +187,7 @@ pub fn find_vote(jormungandr_database: &Path, voting_key: String) -> Result<Vec<
 pub fn all_voters(
     jormungandr_database: &Path,
 ) -> Result<(HashSet<std::string::String>, HashSet<std::string::String>), Box<dyn error::Error>> {
-    let fragments = extract_fragments_from_storage(jormungandr_database).unwrap();
+    let fragments = extract_fragments_from_storage(jormungandr_database)?;
 
     let mut unique_voters_ca = HashSet::new();
     let mut unique_voters_0x = HashSet::new();
@@ -205,10 +205,13 @@ pub fn all_voters(
             unique_voters_ca.insert(caster.to_string().clone());
 
             let voting_key_61824_format = AddressReadable::from_string("ca", &caster.to_string())
-                .unwrap()
+                .expect("infallible")
                 .to_address();
 
-            let voting_key = voting_key_61824_format.public_key().unwrap().to_string();
+            let voting_key = voting_key_61824_format
+                .public_key()
+                .expect("infallible")
+                .to_string();
             unique_voters_0x.insert(voting_key);
         }
     }
@@ -232,7 +235,7 @@ pub fn convert_key_formats(voting_key: String) -> Result<String, Box<dyn error::
         Ok(voting_key)
     } else {
         // we need to convert this to our internal key representation
-        let decoded_voting_key = hex::decode(voting_key).unwrap();
+        let decoded_voting_key = hex::decode(voting_key)?;
         let voting_key: PublicKey<Ed25519> = PublicKey::from_binary(&decoded_voting_key)?;
         let addr = Address(Discrimination::Production, Kind::Single(voting_key.clone()));
         let addr_readable = AddressReadable::from_address("ca", &addr);
@@ -241,14 +244,15 @@ pub fn convert_key_formats(voting_key: String) -> Result<String, Box<dyn error::
     }
 }
 
-pub fn read_lines(filename: &str) -> Vec<String> {
+/// read voter keys from file
+pub fn read_lines(filename: &str) -> Result<Vec<String>, Box<dyn error::Error>> {
     let mut result = Vec::new();
 
-    for line in read_to_string(filename).unwrap().lines() {
+    for line in read_to_string(filename)?.lines() {
         result.push(line.to_string())
     }
 
-    result
+    Ok(result)
 }
 
 /// check key history of multiple keys and write metadata to file
@@ -258,14 +262,17 @@ pub fn batch_key_check(
 ) -> Result<(), Box<dyn error::Error>> {
     let mut flagged_keys = HashMap::new();
 
-    let keys = read_lines(&key_file);
+    let keys = read_lines(&key_file)?;
 
     for key in keys {
         let voting_key_61824_format = AddressReadable::from_string("ca", &key)
-            .unwrap()
+            .expect("infallible")
             .to_address();
 
-        let voting_key = voting_key_61824_format.public_key().unwrap().to_string();
+        let voting_key = voting_key_61824_format
+            .public_key()
+            .expect("infallible")
+            .to_string();
 
         let votes = find_vote(jormungandr_database, voting_key)?;
 
@@ -280,8 +287,7 @@ pub fn batch_key_check(
         .write(true)
         .create(true)
         .truncate(true)
-        .open(flagged_file.clone())
-        .unwrap();
+        .open(flagged_file.clone())?;
     let writer = BufWriter::new(file);
 
     serde_json::to_writer_pretty(writer, &flagged_keys)?;

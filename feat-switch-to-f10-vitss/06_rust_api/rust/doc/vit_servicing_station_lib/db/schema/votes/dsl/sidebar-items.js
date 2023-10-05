@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["__static_cond"]};

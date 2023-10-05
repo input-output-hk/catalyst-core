@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_impl_query_id_for_fund_id","_impl_query_id_for_goal_name","_impl_query_id_for_id"],"struct":["fund_id","goal_name","id","star"]};

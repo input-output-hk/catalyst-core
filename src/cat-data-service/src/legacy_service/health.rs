@@ -1,5 +1,12 @@
-use crate::{service::Error, state::State};
-use axum::{routing::get, Router};
+use crate::{service::Error, settings::RetryAfterParams, state::State};
+use axum::{
+    body,
+    extract::Query,
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    routing::{get, put},
+    Router,
+};
 use std::sync::Arc;
 
 use super::handle_result;
@@ -8,11 +15,21 @@ pub fn health(state: Arc<State>) -> Router {
     Router::new()
         .route(
             "/health/ready",
-            get(|| async { handle_result(ready_exec(state).await) }),
+            get({
+                let state = state.clone();
+                move || async { handle_result(ready_exec(state).await) }
+            }),
         )
         .route(
             "/health/live",
             get(|| async { handle_result(live_exec().await) }),
+        )
+        .route(
+            "/health/retry-after",
+            put({
+                let state = state.clone();
+                move |params| async { retry_after_exec(params, state).await }
+            }),
         )
 }
 
@@ -27,6 +44,30 @@ async fn live_exec() -> Result<bool, Error> {
     tracing::debug!("health live exec");
 
     Ok(true)
+}
+
+async fn retry_after_exec(params: Query<RetryAfterParams>, _state: Arc<State>) -> Response {
+    //let Query(params) = params.unwrap_or(Default::default());
+    tracing::debug!(params = format!("{params:?}"), "health retry_after exec");
+    match params.0 {
+        RetryAfterParams {
+            http_date: None,
+            delay_seconds: None,
+        } => tracing::debug!("RETRY_AFTER RESET"),
+        RetryAfterParams {
+            http_date: Some(http_date),
+            delay_seconds: _,
+        } => tracing::debug!(http_date = http_date.to_string(), "HTTP_DATE ADDED"),
+        RetryAfterParams {
+            http_date: _,
+            delay_seconds: Some(delay_seconds),
+        } => tracing::debug!(
+            delay_seconds = delay_seconds.to_string(),
+            "DELAY_SECONDS ADDED"
+        ),
+    }
+
+    (StatusCode::NO_CONTENT, body::Empty::new()).into_response()
 }
 
 /// Need to setup and run a test event db instance

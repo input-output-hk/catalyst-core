@@ -1,9 +1,11 @@
 //! Command line and environment variable settings for the service
 //!
 use crate::logger::{LogLevel, LOG_LEVEL_DEFAULT};
+use chrono::prelude::*;
 use clap::Args;
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
+use serde::Deserialize;
 use std::env;
 use std::net::{IpAddr, SocketAddr};
 use tracing::log::error;
@@ -101,6 +103,21 @@ impl StringEnvVar {
     /// * &str - the value
     pub(crate) fn as_str(&self) -> &str {
         &self.0
+    }
+}
+
+#[derive(Deserialize, Debug)]
+pub(crate) struct RetryAfterParams {
+    pub(crate) http_date: Option<DateTime<Utc>>,
+    pub(crate) delay_seconds: Option<u64>,
+}
+
+impl Default for RetryAfterParams {
+    fn default() -> Self {
+        RetryAfterParams {
+            http_date: Some("1970-01-01T00:00:00Z".parse::<DateTime<Utc>>().unwrap()), //Some(Utc.timestamp_opt(0, 0).unwrap()),
+            delay_seconds: Some(RETRY_AFTER_DELAY_SECONDS_DEFAULT),
+        }
     }
 }
 

@@ -37,7 +37,7 @@ fn metrics_app() -> Router {
 
 fn cors_layer() -> CorsLayer {
     CorsLayer::new()
-        .allow_methods([Method::GET, Method::POST])
+        .allow_methods([Method::GET, Method::POST, Method::PUT])
         .allow_origin(Any)
         .allow_headers(Any)
 }

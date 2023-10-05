@@ -139,12 +139,16 @@
 <a href="#139" id="139">139</a>
 <a href="#140" id="140">140</a>
 <a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//!
 //! Find my vote
 //!
 
 </span><span class="kw">use </span>clap::Parser;
-<span class="kw">use </span>lib::find::{all_voters, convert_key_formats, find_vote, read_lines};
+<span class="kw">use </span>lib::find::{all_voters, batch_key_check, convert_key_formats, find_vote, read_lines};
 <span class="kw">use </span>tracing::{info, Level};
 
 <span class="kw">use </span>color_eyre::Result;
@@ -172,7 +176,7 @@
     </span><span class="attr">#[clap(short, long)]
     </span>key_to_convert: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="doccomment">/// check batch of keys and write history to file
-    </span><span class="attr">#[clap(short, long)]
+    </span><span class="attr">#[clap(short, long, requires = <span class="string">&quot;fragments&quot;</span>)]
     </span>key_file: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
@@ -233,7 +237,11 @@
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(_aggregate) = args.aggregate {
         <span class="comment">// Load and replay fund fragments from storage
-        </span><span class="kw">let </span>storage_path = PathBuf::from(args.fragments.expect(<span class="string">&quot;enforced by clap: infallible&quot;</span>));
+        </span><span class="kw">let </span>storage_path = PathBuf::from(
+            args.fragments
+                .clone()
+                .expect(<span class="string">&quot;enforced by clap: infallible&quot;</span>),
+        );
 
         <span class="macro">info!</span>(<span class="string">&quot;collecting all voting keys in ca and 0x format&quot;</span>);
 
@@ -268,9 +276,9 @@
     }
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(keyfile) = args.key_file {
-        <span class="kw">let </span>keys = read_lines(<span class="kw-2">&amp;</span>keyfile);
+        <span class="kw">let </span>storage_path = PathBuf::from(args.fragments.expect(<span class="string">&quot;enforced by clap: infallible&quot;</span>));
 
-        batch_key_check(jormungandr_database, key_file)
+        batch_key_check(<span class="kw-2">&amp;</span>storage_path, keyfile);
     }
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(voting_key) = args.key_to_convert {

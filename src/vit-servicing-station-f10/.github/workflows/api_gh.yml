@@ -1,0 +1,37 @@
+name: Api gh-pages
+
+# Run on each push to master
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'doc/api/*.yaml'
+
+jobs:
+  api_gh:
+    runs-on: ubuntu-latest
+    name: gh-pages
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Bundle
+        uses: seeebiii/redoc-cli-github-action@v10
+        with:
+          args: 'bundle doc/api/v0.yaml -o html/index.html'
+
+      - name: Check Result
+        run: |
+          ls -al
+          test -f html/index.html || (echo "Missing index.html from previous step." && exit 1)
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: ${{ github.event.head_commit.message }}
+          publish_dir: ./html
+          publish_branch: gh-pages  # deploying branch
+

@@ -1,0 +1,4 @@
+extends: spectral:oas
+rules:
+  # https://github.com/stoplightio/spectral/issues/1271
+  oas3-unused-component: off

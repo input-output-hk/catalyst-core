@@ -43,3 +43,14 @@ VOTING_KEY='ca1q0uftf4873xazhmhqrrqg4kfx7fmzfqlm5w80wake5lu3fxjfjxpk6wv3f7'
 ./target/release/find --key-to-convert $VOTING_KEY
 
 ```
+
+### Check a batch of keys
+```bash
+
+KEY_FILE='/tmp/keyfile.txt'
+FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
+
+./target/release/find --fragments $FRAGMENTS_STORAGE --key-file $KEY_FILE
+
+```
+

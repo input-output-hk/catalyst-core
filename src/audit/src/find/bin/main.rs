@@ -3,7 +3,7 @@
 //!
 
 use clap::Parser;
-use lib::find::{all_voters, batch_key_check, convert_key_formats, find_vote, read_lines};
+use lib::find::{all_voters, batch_key_check, convert_key_formats, find_vote};
 use tracing::{info, Level};
 
 use color_eyre::Result;
@@ -132,8 +132,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Some(keyfile) = args.key_file {
         let storage_path = PathBuf::from(args.fragments.expect("enforced by clap: infallible"));
-
-        batch_key_check(&storage_path, keyfile);
+        batch_key_check(&storage_path, keyfile)?;
     }
 
     if let Some(voting_key) = args.key_to_convert {

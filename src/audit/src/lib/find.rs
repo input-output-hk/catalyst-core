@@ -252,7 +252,10 @@ pub fn read_lines(filename: &str) -> Vec<String> {
 }
 
 /// check key history of multiple keys and write metadata to file
-pub fn batch_key_check(jormungandr_database: &Path, key_file: String) {
+pub fn batch_key_check(
+    jormungandr_database: &Path,
+    key_file: String,
+) -> Result<(), Box<dyn error::Error>> {
     let mut flagged_keys = HashMap::new();
 
     let keys = read_lines(&key_file);
@@ -264,7 +267,7 @@ pub fn batch_key_check(jormungandr_database: &Path, key_file: String) {
 
         let voting_key = voting_key_61824_format.public_key().unwrap().to_string();
 
-        let votes = find_vote(&jormungandr_database, voting_key).unwrap();
+        let votes = find_vote(&jormungandr_database, voting_key)?;
 
         flagged_keys.insert(key.clone(), votes.clone());
 
@@ -277,11 +280,15 @@ pub fn batch_key_check(jormungandr_database: &Path, key_file: String) {
         .write(true)
         .create(true)
         .truncate(true)
-        .open(flagged_file)
+        .open(flagged_file.clone())
         .unwrap();
     let writer = BufWriter::new(file);
 
-    serde_json::to_writer_pretty(writer, &flagged_keys).unwrap();
+    serde_json::to_writer_pretty(writer, &flagged_keys)?;
+
+    info!("flagged keys and metadata saved here {:?}", flagged_file);
+
+    Ok(())
 }
 
 #[cfg(test)]

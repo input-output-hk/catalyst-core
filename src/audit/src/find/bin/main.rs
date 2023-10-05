@@ -3,7 +3,7 @@
 //!
 
 use clap::Parser;
-use lib::find::{all_voters, convert_key_formats, find_vote, read_lines};
+use lib::find::{all_voters, batch_key_check, convert_key_formats, find_vote, read_lines};
 use tracing::{info, Level};
 
 use color_eyre::Result;
@@ -31,7 +31,7 @@ pub struct Args {
     #[clap(short, long)]
     key_to_convert: Option<String>,
     /// check batch of keys and write history to file
-    #[clap(short, long)]
+    #[clap(short, long, requires = "fragments")]
     key_file: Option<String>,
 }
 
@@ -92,7 +92,11 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     if let Some(_aggregate) = args.aggregate {
         // Load and replay fund fragments from storage
-        let storage_path = PathBuf::from(args.fragments.expect("enforced by clap: infallible"));
+        let storage_path = PathBuf::from(
+            args.fragments
+                .clone()
+                .expect("enforced by clap: infallible"),
+        );
 
         info!("collecting all voting keys in ca and 0x format");
 
@@ -127,9 +131,9 @@ fn main() -> Result<(), Box<dyn Error>> {
     }
 
     if let Some(keyfile) = args.key_file {
-        let keys = read_lines(&keyfile);
+        let storage_path = PathBuf::from(args.fragments.expect("enforced by clap: infallible"));
 
-        batch_key_check(jormungandr_database, key_file)
+        batch_key_check(&storage_path, keyfile);
     }
 
     if let Some(voting_key) = args.key_to_convert {

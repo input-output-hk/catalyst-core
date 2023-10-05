@@ -1,0 +1,793 @@
+openapi: 3.0.3
+
+info:
+  title: VIT as a Service Rest API
+  description: Voting Implementation Testnet Rest API v0
+  version: 0.2.2
+  contact:
+    url: "http://github.com/input-output-hk/vit-servicing-station"
+
+tags:
+  - name: fund
+    description: Information on treasury fund campaigns.
+  - name: challenge
+    description: Information on challenges, structuring proposals within a fund.
+  - name: proposal
+    description: Information on funding proposals.
+  - name: reviews
+    description: Information on reviews.
+  - name: snapshot
+    description: Continuous snapshot related information.
+
+servers:
+  - url: "http://localhost"
+
+paths:
+  /api/v0/fund:
+    get:
+      operationId: getCurrentFund
+      summary: Get available fund
+      tags: [fund]
+      description: |
+        Retrieves information on the current treasury fund campaign.
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Fund"
+                  - $ref: "#/components/schemas/NextFundInfo"
+
+  /api/v0/fund/{id}:
+    get:
+      operationId: getFund
+      summary: Get fund by id
+      tags: [fund]
+      description: |
+        Retrieves information on the identified treasury fund campaign.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fund"
+        "404":
+          description: The requested fund was not found
+
+  /api/v0/funds:
+    get:
+      operationId: getFunds
+      summary: Get list of the fund id
+      tags: [fund]
+      description: |
+        Get list of all the funds in the db.
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      format: int32
+                      description: Identifier of the fund campaign.
+        "404":
+          description: The requested fund was not found
+
+  /api/v0/proposals:
+    post:
+      operationId: getProposalsByChainInfo
+      summary: Get proposal by id
+      tags: [ proposal ]
+      description: |
+        Retrieves queried proposals.
+      requestBody:
+        description: List of voteplan id and indexes query
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/ProposalsByVoteplanIdAndIndexQuery'
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProposalWithChallengeInfo"
+
+    get:
+      operationId: getAllProposals
+      summary: Get all available proposals
+      tags: [proposal]
+      description: |
+        Lists all available proposals.
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ProposalWithChallengeInfo"
+
+  /api/v0/proposals/{id}:
+    get:
+      operationId: getProposal
+      summary: Get proposal by id
+      tags: [proposal]
+      description: |
+        Retrieves information on the identified proposal.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProposalWithChallengeInfo"
+        "404":
+          description: The requested proposal was not found
+
+  /api/v0/challenges:
+    get:
+      operationId: getAllChallenges
+      summary: Get all available challenges
+      tags: [challenge]
+      description: |
+        Lists all available challenges following insertion order.
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/Challenge"
+        "404":
+          description: The requested challenge was not found
+
+  /api/v0/challenges/{id}:
+    get:
+      operationId: getChallenge
+      summary: Get challenge by id
+      tags: [challenge]
+      description: |
+        Retrieves information on the identified challenge,
+        including the proposals submitted for it.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChallengeWithProposals"
+        "404":
+          description: The requested challenge was not found
+
+  /api/v0/reviews/{proposal_id}:
+    get:
+      operationId: getProposalReviews
+      summary: Get reviews related to a proposal
+      tags: [reviews]
+      description: |
+        Retrieves advisor reviews information for the provided proposal id.
+      parameters:
+        - in: path
+          name: proposal_id
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdvisorReviews"
+
+  /api/v0/snapshot/{tag}/{voting_key}:
+    get:
+      operationId: getVotingPower
+      summary: Get voting power by voting key
+      tags: [snapshot]
+      description: |
+        Get voting power by voting key
+      parameters:
+        - in: path
+          name: tag
+          schema:
+            type: string
+          required: true
+        - in: path
+          name: voting_key
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VotingPowers"
+        "400":
+          description: Not found
+
+  /api/v0/snapshot:
+    get:
+      operationId: getSnapshotTags
+      summary: Get list of available versions
+      tags: [snapshot]
+      description: |
+        Get list of available snapshot versions, which can be used to retrieve
+        voting power
+      responses:
+        "200":
+          description: Success
+
+  /api/v0/admin/snapshot/{tag}:
+    put:
+      operationId: updateSnapshot
+      summary: Replace the snapshot data for the given tag
+      tags: [snapshot]
+      description: |
+        Replace the snapshot data for the given tag
+      parameters:
+        - in: path
+          name: tag
+          schema:
+            type: string
+          required: true
+      requestBody:
+        description: list of VoterHIR entries in json format
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+
+      responses:
+        "200":
+          description: Success
+
+  /api/v0/admin/fund:
+    put:
+      operationId: putFund
+      summary: Update or create fund
+      tags: [fund]
+      description: |
+        Update or replace the fund in the db with the one provided.
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+      responses:
+        "200":
+          description: Valid response
+        "400":
+          description: The input is malformed.
+
+
+components:
+  schemas:
+    Fund:
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: Identifier of the fund campaign.
+        fund_name:
+          type: string
+          description: Human-readable name of the fund campaign.
+        fund_goal:
+          type: string
+          description: Description of the campaign's goals.
+        voting_power_info:
+          type: string
+          deprecated: true
+          description: Deprecated, same as registration_snapshot_time.
+        voting_power_threshold:
+          type: integer
+          format: int64
+          description: |
+            Minimal amount of funds required for a valid voter registration.
+            This amount is in lovelace.
+        rewards_info:
+          type: string
+        fund_start_time:
+          type: string
+          format: date-time
+          description: Date and time for the start of the current voting period.
+        fund_end_time:
+          type: string
+          format: date-time
+          description: Date and time for the end of the current voting period.
+        next_fund_start_time:
+          type: string
+          format: date-time
+          description: Date and time for the start of the next voting period.
+        registration_snapshot_time:
+          type: string
+          format: date-time
+          description: Date and time for blockchain state snapshot capturing voter registrations.
+        next_registration_snapshot_time:
+          type: string
+          format: date-time
+          description: Date and time for next blockchain state snapshot capturing voter registrations.
+        chain_vote_plans:
+          type: array
+          items:
+            $ref: "#/components/schemas/VotePlan"
+          description: Vote plans registered for voting in this fund campaign.
+        challenges:
+          type: array
+          items:
+            $ref: "#/components/schemas/Challenge"
+          description: A list of campaign challenges structuring the proposals.
+        goals:
+          type: array
+          items:
+            $ref: "#/components/schemas/Goal"
+          description: The list of campaign goals for this fund.
+        insight_sharing_start:
+          type: string
+          format: date-time
+        proposal_submission_start:
+          type: string
+          format: date-time
+        refine_proposals_start:
+          type: string
+          format: date-time
+        finalize_proposals_start:
+          type: string
+          format: date-time
+        proposal_assessment_start:
+          type: string
+          format: date-time
+        assessment_qa_start:
+          type: string
+          format: date-time
+        snapshot_start:
+          type: string
+          format: date-time
+        voting_start:
+          type: string
+          format: date-time
+        voting_end:
+          type: string
+          format: date-time
+        tallying_end:
+          type: string
+          format: date-time
+
+    VotePlan:
+      properties:
+        id:
+          type: integer
+          format: int32
+          description: API identifier of the vote plan.
+        chain_voteplan_id:
+          type: string
+          format: hash
+          description: Blockchain ID of the vote plan transaction.
+        chain_vote_start_time:
+          type: string
+          format: date-time
+          description: Date and time for the start of voting on this vote plan.
+        chain_vote_end_time:
+          type: string
+          format: date-time
+          description: Date and time for the end of voting on this vote plan.
+        chain_committee_end_time:
+          type: string
+          format: date-time
+          description: Date and time for the end of tallying on this vote plan.
+        chain_voteplan_payload:
+          type: string
+          description: |
+            Whether the voting is done using the public or the privacy-preserving protocol.
+        fund_id:
+          type: integer
+          format: int32
+          description: The fund ID this vote plan belongs to.
+
+    Proposal:
+      properties:
+        internal_id:
+          type: integer
+          format: int32
+          description: The API identifier for this proposal.
+        proposal_id:
+          type: string
+          description: Unique identifier for this proposal.
+        proposal_category:
+          type: object
+          properties:
+            category_id:
+              type: string
+            category_name:
+              type: string
+            category_description:
+              type: string
+        proposal_title:
+          type: string
+          description: Short title of the proposal.
+        proposal_summary:
+          type: string
+          description: Brief description of the proposal.
+        proposal_public_key:
+          type: string
+          format: binary
+        proposal_funds:
+          type: integer
+          format: int64
+          description: The amount of funds requested by this proposal.
+        proposal_url:
+          type: string
+          description: URL to a web page with details on this proposal.
+        proposal_files:
+          type: string
+        proposer:
+          type: object
+          properties:
+            proposer_name:
+              type: string
+              description: Name of the author of the proposal.
+            proposer_email:
+              type: string
+              description: Email address of the author of the proposal.
+            proposer_url:
+              type: string
+              description: URL to a web resource with details about the author of the proposal.
+        chain_proposal_id:
+          type: string
+          description: Identifier of the proposal on the blockchain.
+        chain_proposal_index:
+          type: integer
+          format: int64
+          description: Index of the proposal in the vote plan.
+        chain_vote_options:
+          description: Map of named vote options to choice indices.
+          type: object
+        chain_voteplan_id:
+          type: string
+          description: Identifier of the vote plan this proposal belongs to.
+        chain_vote_start_time:
+          type: string
+          format: date-time
+          description: Date and time for the start of voting on this proposal's vote plan.
+        chain_vote_end_time:
+          type: string
+          format: date-time
+          description: Date and time for the start of voting on this proposal's vote plan.
+        chain_committee_end_time:
+          type: string
+          format: date-time
+          description: Date and time for the end of tallying on this proposal's vote plan.
+        chain_voteplan_payload:
+          type: string
+          description: |
+            Whether the voting is done using the public or the privacy-preserving protocol.
+
+    ChallengeType:
+      type: string
+      enum:
+        - simple
+        - community-choice
+
+    ProposalWithChallengeInfo:
+      discriminator:
+        propertyName: challenge_type
+        mapping:
+          simple: "#/components/schemas/SimpleProposal"
+          community-choice: "#/components/schemas/CommunityChoiceProposal"
+      allOf:
+        - $ref: "#/components/schemas/Proposal"
+        - type: object
+          properties:
+            fund_id:
+              type: integer
+              format: int32
+            challenge_id:
+              type: integer
+              format: int32
+            reviews_count:
+              type: integer
+              format: int32
+              description: Total amount of individual reviews per assessor
+            challenge_type:
+              $ref: "#/components/schemas/ChallengeType"
+
+    SimpleProposal:
+      allOf:
+        - $ref: "#/components/schemas/ProposalWithChallengeInfo"
+        - type: object
+          properties:
+            proposal_solution:
+              type: string
+      example:
+        {
+          "internal_id": 22,
+          "proposal_id": "4af0e6b3452cd4ee822b2ec1859fd57b5512f85c14875f408081aa9b796dfc6e",
+          "proposal_title": "Authentication for DeepFake Defense",
+          "proposal_summary": "Deepfake videos are dangerous.",
+          "proposal_solution": "We will create a cryptographic proof on Cardano that verifies videos are real by connecting their blockchain ID.",
+          "proposal_public_key": "Fvd8zI3DH85qnaChQE6Aymt1diMJP32LB0AdpheZh/Q=",
+          "proposal_funds": 12000,
+          "proposal_url": "http://ideascale.com/t/UM5UZBd2t",
+          "proposal_files_url": "",
+          "proposal_impact_score": 0,
+          "proposer":
+            {
+              "proposer_name": "Community Member",
+              "proposer_email": "example@vit.iohk.io",
+              "proposer_url": "",
+              "proposer_relevant_experience": "Cryptography student, website development, blockchain technologist.",
+            },
+          "chain_proposal_id": "4af0e6b3452cd4ee822b2ec1859fd57b5512f85c14875f408081aa9b796dfc6e",
+          "chain_proposal_index": 0,
+          "chain_vote_options": { "blank": 0, "yes": 1, "no": 2 },
+          "chain_voteplan_id": "b1eeb620baf1445672f6c9422481aff0f6babaf775760d187a7703027e098166",
+          "chain_vote_start_time": "2021-02-10T14:40:27+00:00",
+          "chain_vote_end_time": "2021-02-11T10:10:27+00:00",
+          "chain_committee_end_time": "2021-02-11T11:40:27+00:00",
+          "chain_voteplan_payload": "public",
+          "chain_vote_encryption_key": "",
+          "fund_id": 20,
+          "challenge_id": 2,
+          "challenge_type": "simple",
+        }
+
+    CommunityChoiceProposal:
+      allOf:
+        - $ref: "#/components/schemas/ProposalWithChallengeInfo"
+        - type: object
+          properties:
+            proposal_brief:
+              type: string
+            proposal_importance:
+              type: string
+            proposal_goal:
+              type: string
+            proposal_metrics:
+              type: string
+      example:
+        {
+          "internal_id": 31,
+          "proposal_id": "494d8d685e3b195eb5610494f1721db7747df0517cb1b6a705bb3cebfef3c998",
+          "proposal_title": "A for ADA Cryptoalphabet 4 children",
+          "proposal_summary": "How to increase general awareness about Cardano and cryptocurrencies?\nHow to make fun community-building incentives?",
+          "proposal_brief": "A for ADA",
+          "proposal_importance": "We need to get them while they're young.",
+          "proposal_goal": "Nebulous.",
+          "proposal_metrics": "\\- Number of people engaged into the creation of Cryptoalphabet",
+          "proposal_public_key": "zqUCWwguCt6+NHYjkpvasvccuA7l2SuabE+1C0bzf3Y=",
+          "proposal_funds": 4800,
+          "proposal_url": "http://ideascale.com/t/UM5UZBd1p",
+          "proposal_files_url": "",
+          "proposal_impact_score": 133,
+          "proposer":
+            {
+              "proposer_name": "Community Member",
+              "proposer_email": "example@vit.iohk.io",
+              "proposer_url": "",
+              "proposer_relevant_experience": "",
+            },
+          "chain_proposal_id": "494d8d685e3b195eb5610494f1721db7747df0517cb1b6a705bb3cebfef3c998",
+          "chain_proposal_index": 9,
+          "chain_vote_options": { "no": 2, "yes": 1, "blank": 0 },
+          "chain_voteplan_id": "b1eeb620baf1445672f6c9422481aff0f6babaf775760d187a7703027e098166",
+          "chain_vote_start_time": "2021-02-10T14:40:27+00:00",
+          "chain_vote_end_time": "2021-02-11T10:10:27+00:00",
+          "chain_committee_end_time": "2021-02-11T11:40:27+00:00",
+          "chain_voteplan_payload": "public",
+          "chain_vote_encryption_key": "",
+          "fund_id": 20,
+          "challenge_id": 1,
+          "challenge_type": "community-choice",
+        }
+
+    Challenge:
+      properties:
+        id:
+          type: integer
+          format: int32
+        challenge_type:
+          $ref: "#/components/schemas/ChallengeType"
+        title:
+          type: string
+        description:
+          type: string
+        rewards_total:
+          type: integer
+          format: int64
+        fund_id:
+          type: integer
+          format: int32
+        challenge_url:
+          type: string
+        highlights:
+          $ref: "#/components/schemas/ChallengeHighlights"
+
+    ChallengeWithProposals:
+      allOf:
+        - $ref: "#/components/schemas/Challenge"
+        - type: object
+          properties:
+            proposals:
+              type: array
+              items:
+                $ref: "#/components/schemas/Proposal"
+
+    AdvisorReview:
+      properties:
+        id:
+          type: integer
+          format: i32
+        proposal_id:
+          type: integer
+          format: i32
+        assessor:
+          type: string
+        impact_alignment_rating_given:
+          $ref: "#/components/schemas/Rating"
+        impact_alignment_note:
+          type: string
+        feasibility_rating_given:
+          $ref: "#/components/schemas/Rating"
+        feasibility_note:
+          type: string
+        auditability_rating_given:
+          $ref: "#/components/schemas/Rating"
+        auditability_note:
+          type: string
+        ranking:
+          description: Measure of quality of this review according to veteran community advisors
+          type: string
+          enum:
+            - Excellent
+            - Good
+            - FilteredOut
+            - NA
+
+    Rating:
+      type: integer
+      format: i32
+      minimum: 0
+      maximum: 500
+      description: Rating in range [0, 500] (0 stars to 5 stars)
+
+    AdvisorReviews:
+      type: array
+      items:
+        $ref: "#/components/schemas/AdvisorReview"
+      example:
+        [
+          {
+            "id": 1,
+            "proposal_id": 1234,
+            "rating_given": 0,
+            "assessor": "za_assessor_432",
+            "note": "foo bar",
+            "tag": "Alignment",
+          },
+        ]
+
+    ChallengeHighlights:
+      properties:
+        sponsor:
+          type: string
+
+    ProposalsByVoteplanIdAndIndexQuery:
+      type: array
+      items:
+        $ref: "#/components/schemas/ProposalVoteplanIdAndIndex"
+
+    ProposalVoteplanIdAndIndex:
+      properties:
+        voteplan_id: 
+          type: string
+        indexes:
+          type: array
+          items:
+              type: integer
+              format: i64
+
+    VotingPowers:
+      type: array
+      items:
+        $ref: "#/components/schemas/VotingPower"
+      example:
+        [
+          {
+            "voting_power": 1000,
+            "voting_group": "representative",
+          },
+        ]
+
+    VotingPower:
+      properties:
+        voting_power:
+          type: integer
+          format: u64
+        voting_group:
+          type: string
+
+    NextFundInfo:
+      properties:
+        next:
+          properties:
+            id:
+              type: integer
+              format: int32
+              description: Identifier of the fund campaign.
+            fund_name:
+              type: string
+              description: Human-readable name of the fund campaign.
+            insight_sharing_start:
+              type: string
+              format: date-time
+            proposal_submission_start:
+              type: string
+              format: date-time
+            refine_proposals_start:
+              type: string
+              format: date-time
+            finalize_proposals_start:
+              type: string
+              format: date-time
+            proposal_assessment_start:
+              type: string
+              format: date-time
+            assessment_qa_start:
+              type: string
+              format: date-time
+            snapshot_start:
+              type: string
+              format: date-time
+            voting_start:
+              type: string
+              format: date-time
+            voting_end:
+              type: string
+              format: date-time
+            tallying_end:
+              type: string
+              format: date-time
+
+    Goal:
+      properties:
+        id:
+          type: integer
+          format: int32
+        goal_name:
+          type: string
+        fund_id:
+          type: integer
+          format: int32

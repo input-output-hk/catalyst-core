@@ -564,7 +564,7 @@
 </span><span class="kw">pub fn </span>all_voters(
     jormungandr_database: <span class="kw-2">&amp;</span>Path,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(HashSet&lt;std::string::String&gt;, HashSet&lt;std::string::String&gt;), Box&lt;<span class="kw">dyn </span>error::Error&gt;&gt; {
-    <span class="kw">let </span>fragments = extract_fragments_from_storage(<span class="kw-2">&amp;</span>jormungandr_database).unwrap();
+    <span class="kw">let </span>fragments = extract_fragments_from_storage(jormungandr_database).unwrap();
 
     <span class="kw">let </span><span class="kw-2">mut </span>unique_voters_ca = HashSet::new();
     <span class="kw">let </span><span class="kw-2">mut </span>unique_voters_0x = HashSet::new();
@@ -644,7 +644,7 @@
 
         <span class="kw">let </span>voting_key = voting_key_61824_format.public_key().unwrap().to_string();
 
-        <span class="kw">let </span>votes = find_vote(<span class="kw-2">&amp;</span>jormungandr_database, voting_key)<span class="question-mark">?</span>;
+        <span class="kw">let </span>votes = find_vote(jormungandr_database, voting_key)<span class="question-mark">?</span>;
 
         flagged_keys.insert(key.clone(), votes.clone());
 

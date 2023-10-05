@@ -142,13 +142,12 @@
 <a href="#142" id="142">142</a>
 <a href="#143" id="143">143</a>
 <a href="#144" id="144">144</a>
-<a href="#145" id="145">145</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//!
 //! Find my vote
 //!
 
 </span><span class="kw">use </span>clap::Parser;
-<span class="kw">use </span>lib::find::{all_voters, batch_key_check, convert_key_formats, find_vote, read_lines};
+<span class="kw">use </span>lib::find::{all_voters, batch_key_check, convert_key_formats, find_vote};
 <span class="kw">use </span>tracing::{info, Level};
 
 <span class="kw">use </span>color_eyre::Result;
@@ -277,8 +276,7 @@
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(keyfile) = args.key_file {
         <span class="kw">let </span>storage_path = PathBuf::from(args.fragments.expect(<span class="string">&quot;enforced by clap: infallible&quot;</span>));
-
-        batch_key_check(<span class="kw-2">&amp;</span>storage_path, keyfile);
+        batch_key_check(<span class="kw-2">&amp;</span>storage_path, keyfile)<span class="question-mark">?</span>;
     }
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(voting_key) = args.key_to_convert {

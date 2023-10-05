@@ -375,6 +375,12 @@
 <a href="#375" id="375">375</a>
 <a href="#376" id="376">376</a>
 <a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>bech32::{<span class="self">self</span>, FromBase32};
 <span class="kw">use </span>chain_addr::{Address, AddressReadable, Kind};
 <span class="kw">use </span>chain_crypto::{Ed25519, PublicKey};
@@ -564,7 +570,7 @@
 </span><span class="kw">pub fn </span>all_voters(
     jormungandr_database: <span class="kw-2">&amp;</span>Path,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(HashSet&lt;std::string::String&gt;, HashSet&lt;std::string::String&gt;), Box&lt;<span class="kw">dyn </span>error::Error&gt;&gt; {
-    <span class="kw">let </span>fragments = extract_fragments_from_storage(jormungandr_database).unwrap();
+    <span class="kw">let </span>fragments = extract_fragments_from_storage(jormungandr_database)<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>unique_voters_ca = HashSet::new();
     <span class="kw">let </span><span class="kw-2">mut </span>unique_voters_0x = HashSet::new();
@@ -582,10 +588,13 @@
             unique_voters_ca.insert(caster.to_string().clone());
 
             <span class="kw">let </span>voting_key_61824_format = AddressReadable::from_string(<span class="string">&quot;ca&quot;</span>, <span class="kw-2">&amp;</span>caster.to_string())
-                .unwrap()
+                .expect(<span class="string">&quot;infallible&quot;</span>)
                 .to_address();
 
-            <span class="kw">let </span>voting_key = voting_key_61824_format.public_key().unwrap().to_string();
+            <span class="kw">let </span>voting_key = voting_key_61824_format
+                .public_key()
+                .expect(<span class="string">&quot;infallible&quot;</span>)
+                .to_string();
             unique_voters_0x.insert(voting_key);
         }
     }
@@ -609,7 +618,7 @@
         <span class="prelude-val">Ok</span>(voting_key)
     } <span class="kw">else </span>{
         <span class="comment">// we need to convert this to our internal key representation
-        </span><span class="kw">let </span>decoded_voting_key = hex::decode(voting_key).unwrap();
+        </span><span class="kw">let </span>decoded_voting_key = hex::decode(voting_key)<span class="question-mark">?</span>;
         <span class="kw">let </span>voting_key: PublicKey&lt;Ed25519&gt; = PublicKey::from_binary(<span class="kw-2">&amp;</span>decoded_voting_key)<span class="question-mark">?</span>;
         <span class="kw">let </span>addr = Address(Discrimination::Production, Kind::Single(voting_key.clone()));
         <span class="kw">let </span>addr_readable = AddressReadable::from_address(<span class="string">&quot;ca&quot;</span>, <span class="kw-2">&amp;</span>addr);
@@ -618,14 +627,15 @@
     }
 }
 
-<span class="kw">pub fn </span>read_lines(filename: <span class="kw-2">&amp;</span>str) -&gt; Vec&lt;String&gt; {
+<span class="doccomment">/// read voter keys from file
+</span><span class="kw">pub fn </span>read_lines(filename: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;String&gt;, Box&lt;<span class="kw">dyn </span>error::Error&gt;&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>result = Vec::new();
 
-    <span class="kw">for </span>line <span class="kw">in </span>read_to_string(filename).unwrap().lines() {
+    <span class="kw">for </span>line <span class="kw">in </span>read_to_string(filename)<span class="question-mark">?</span>.lines() {
         result.push(line.to_string())
     }
 
-    result
+    <span class="prelude-val">Ok</span>(result)
 }
 
 <span class="doccomment">/// check key history of multiple keys and write metadata to file
@@ -635,14 +645,17 @@
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>error::Error&gt;&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>flagged_keys = HashMap::new();
 
-    <span class="kw">let </span>keys = read_lines(<span class="kw-2">&amp;</span>key_file);
+    <span class="kw">let </span>keys = read_lines(<span class="kw-2">&amp;</span>key_file)<span class="question-mark">?</span>;
 
     <span class="kw">for </span>key <span class="kw">in </span>keys {
         <span class="kw">let </span>voting_key_61824_format = AddressReadable::from_string(<span class="string">&quot;ca&quot;</span>, <span class="kw-2">&amp;</span>key)
-            .unwrap()
+            .expect(<span class="string">&quot;infallible&quot;</span>)
             .to_address();
 
-        <span class="kw">let </span>voting_key = voting_key_61824_format.public_key().unwrap().to_string();
+        <span class="kw">let </span>voting_key = voting_key_61824_format
+            .public_key()
+            .expect(<span class="string">&quot;infallible&quot;</span>)
+            .to_string();
 
         <span class="kw">let </span>votes = find_vote(jormungandr_database, voting_key)<span class="question-mark">?</span>;
 
@@ -657,8 +670,7 @@
         .write(<span class="bool-val">true</span>)
         .create(<span class="bool-val">true</span>)
         .truncate(<span class="bool-val">true</span>)
-        .open(flagged_file.clone())
-        .unwrap();
+        .open(flagged_file.clone())<span class="question-mark">?</span>;
     <span class="kw">let </span>writer = BufWriter::new(file);
 
     serde_json::to_writer_pretty(writer, <span class="kw-2">&amp;</span>flagged_keys)<span class="question-mark">?</span>;

@@ -103,11 +103,11 @@ fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
         }
         Err(Error::EventDb(event_db::error::Error::ConnectionTimeout)) => {
             let http_date: DateTime<Utc> = {
-                // Check the current value of the RETRY_AFTER_DELAY_SECONDS env var,
+                // Check the current value of the `RETRY_AFTER_HTTP_DATE` env var,
                 // this is needed because the value can modified  by the
                 // '/health/retry-after' endpoint.
-                if let Ok(delay) = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR) {
-                    delay
+                if let Ok(http_date) = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR) {
+                    http_date
                         .parse()
                         .unwrap_or(RETRY_AFTER_HTTP_DATE_DEFAULT.parse().unwrap())
                 } else {
@@ -115,6 +115,8 @@ fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
                 }
             };
             if http_date > Utc::now() {
+                // If `http_date` is in the future, return 503 with the `http-date` in the
+                // `Retry-After` header.
                 return (
                     StatusCode::SERVICE_UNAVAILABLE,
                     [(
@@ -125,7 +127,7 @@ fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
                     .into_response();
             }
             let delay_seconds: u64 = {
-                // Check the current value of the RETRY_AFTER_DELAY_SECONDS env var,
+                // Check the current value of the `RETRY_AFTER_DELAY_SECONDS` env var,
                 // this is needed because the value can modified  by the
                 // '/health/retry-after' endpoint.
                 if let Ok(delay) = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR) {

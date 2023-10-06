@@ -131,6 +131,27 @@ impl Default for RetryAfterParams {
     }
 }
 
+impl RetryAfterParams {
+    /// Set `RETRY_AFTER_HTTP_DATE` env var.
+    pub fn delay_seconds_set_var(delay_secs: u64) {
+        let delay_secs = delay_secs.to_string();
+        std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, &delay_secs);
+        tracing::debug!(
+            delay_seconds = delay_secs,
+            "{RETRY_AFTER_DELAY_SECONDS_ENVVAR:} ENV set"
+        );
+    }
+    /// Set `RETRY_AFTER_HTTP_DATE` env var.
+    pub fn http_date_set_var(date_str: &str) {
+        let date_str = date_str.to_string();
+        std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, &date_str);
+        tracing::debug!(
+            http_date = date_str,
+            "{RETRY_AFTER_HTTP_DATE_ENVVAR:} ENV set"
+        );
+    }
+}
+
 // Lazy intialization of all env vars which are not command line parameters.
 // All env vars used by the application should be listed here and all should have a default.
 // The default for all NON Secret values should be suitable for Production, and NOT development.

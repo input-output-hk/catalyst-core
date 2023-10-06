@@ -3,7 +3,6 @@ use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use dotenvy::dotenv;
 use error::Error;
-use schema_check::SchemaVersion;
 use std::str::FromStr;
 use tokio_postgres::NoTls;
 
@@ -70,19 +69,6 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
     let pool = Pool::builder().build(pg_mgr).await?;
 
     let db = EventDB { pool };
-
-    match db.schema_version_check().await {
-        Ok(current_ver) => {
-            tracing::info!(schema_version = current_ver, "verified schema version")
-        }
-        Err(e) => {
-            tracing::warn!(error = e.to_string(), "could not verify schema version");
-            // Only return error if it is not a connection timeout
-            if e != Error::ConnectionTimeout {
-                return Err(e);
-            }
-        }
-    };
 
     Ok(db)
 }

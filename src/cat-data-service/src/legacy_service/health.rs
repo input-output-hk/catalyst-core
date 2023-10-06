@@ -1,9 +1,6 @@
 use crate::{
     service::Error,
-    settings::{
-        RetryAfterParams, RETRY_AFTER_DELAY_SECONDS_ENVVAR, RETRY_AFTER_HTTP_DATE_DEFAULT,
-        RETRY_AFTER_HTTP_DATE_ENVVAR,
-    },
+    settings::{RetryAfterParams, RETRY_AFTER_HTTP_DATE_DEFAULT},
     state::State,
 };
 use axum::{
@@ -53,45 +50,48 @@ async fn live_exec() -> Result<bool, Error> {
     Ok(true)
 }
 
-async fn retry_after_exec(params: Query<RetryAfterParams>, state: Arc<State>) -> Response {
+async fn retry_after_exec(Query(params): Query<RetryAfterParams>, state: Arc<State>) -> Response {
     tracing::debug!(params = format!("{params:?}"), "health retry_after exec");
-    match params.0 {
+    println!("query params: {params:?}");
+
+    match params {
+        // Request without query parameters resets env vars.
+        // Sets `RETRY_AFTER_HTTP_DATE` to the default value.
+        // Sets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
         RetryAfterParams {
             http_date: None,
             delay_seconds: None,
         } => {
-            tracing::debug!("RETRY_AFTER RESET");
-            let date_str = RETRY_AFTER_HTTP_DATE_DEFAULT;
-            tracing::debug!(http_date = date_str, "HTTP_DATE RESET");
-            std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+            tracing::debug!("RETRY_AFTER parameters RESET");
 
-            let delay_secs = state.delay_seconds.to_string();
-            tracing::debug!(delay_seconds = delay_secs, "DELAY_SECONDS RESET");
-            std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_secs);
+            let date_str = RETRY_AFTER_HTTP_DATE_DEFAULT;
+            RetryAfterParams::http_date_set_var(date_str);
+
+            let delay_secs = state.delay_seconds;
+            RetryAfterParams::delay_seconds_set_var(delay_secs);
         }
+        // Request with `http_date` query parameter sets `RETRY_AFTER_HTTP_DATE` env var,
+        // and resets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
         RetryAfterParams {
             http_date: Some(http_date),
             delay_seconds: _,
         } => {
             let date_str = http_date.to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
-            tracing::debug!(http_date = date_str, "HTTP_DATE SET");
-            std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+            RetryAfterParams::http_date_set_var(&date_str);
 
-            let delay_secs = state.delay_seconds.to_string();
-            tracing::debug!(delay_seconds = delay_secs, "DELAY_SECONDS RESET");
-            std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_secs);
+            let delay_secs = state.delay_seconds;
+            RetryAfterParams::delay_seconds_set_var(delay_secs);
         }
+        // Request with `delay_seconds` query parameter sets `RETRY_AFTER_DELAY_SECONDS` env var,
+        // and resets `RETRY_AFTER_HTTP_DATE` to the default value.
         RetryAfterParams {
             http_date: None,
             delay_seconds: Some(delay_seconds),
         } => {
             let date_str = RETRY_AFTER_HTTP_DATE_DEFAULT;
-            tracing::debug!(http_date = date_str, "HTTP_DATE RESET");
-            std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+            RetryAfterParams::http_date_set_var(date_str);
 
-            let delay_secs = delay_seconds.to_string();
-            tracing::debug!(delay_seconds = delay_secs, "DELAY_SECONDS SET");
-            std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_seconds.to_string());
+            RetryAfterParams::delay_seconds_set_var(delay_seconds);
         }
     }
 
@@ -115,7 +115,11 @@ async fn retry_after_exec(params: Query<RetryAfterParams>, state: Arc<State>) ->
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 #[cfg(test)]
 mod tests {
-    use crate::{legacy_service::app, state::State};
+    use crate::{
+        legacy_service::app,
+        settings::{RETRY_AFTER_HTTP_DATE_DEFAULT, RETRY_AFTER_HTTP_DATE_ENVVAR},
+        state::State,
+    };
     use axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
@@ -159,5 +163,73 @@ mod tests {
                 .as_str(),
             r#"true"#
         );
+    }
+
+    #[tokio::test]
+    async fn health_retry_after_test() {
+        use crate::settings::RETRY_AFTER_DELAY_SECONDS_ENVVAR;
+        const INITIAL_DELAY_SECONDS: u64 = 200;
+
+        let state = Arc::new(
+            State::new_with_delay(None, INITIAL_DELAY_SECONDS)
+                .await
+                .unwrap(),
+        );
+        let app = app(state);
+
+        // Request without query parameters resets env vars.
+        // Sets `RETRY_AFTER_HTTP_DATE` to the default value.
+        // Sets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
+        let request = Request::builder()
+            .uri("/health/retry-after".to_string())
+            .method("PUT")
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let delay_seconds_envvar_value = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR).unwrap();
+        assert_eq!(
+            delay_seconds_envvar_value,
+            INITIAL_DELAY_SECONDS.to_string()
+        );
+
+        let http_date_envvar_value = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR).unwrap();
+        assert_eq!(http_date_envvar_value, RETRY_AFTER_HTTP_DATE_DEFAULT);
+
+        // Request with `http_date` query parameter sets `RETRY_AFTER_HTTP_DATE` env var,
+        // and resets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
+        let request = Request::builder()
+            .uri("/health/retry-after?http_date=2040-01-01T00:00:00Z".to_string())
+            .method("PUT")
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let http_date_envvar_value = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR).unwrap();
+        assert_eq!(http_date_envvar_value, "2040-01-01T00:00:00Z");
+
+        let delay_seconds_envvar_value = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR).unwrap();
+        assert_eq!(
+            delay_seconds_envvar_value,
+            INITIAL_DELAY_SECONDS.to_string()
+        );
+
+        // Request with `delay_seconds` query parameter sets `RETRY_AFTER_DELAY_SECONDS` env var,
+        // and resets `RETRY_AFTER_HTTP_DATE` to the default value.
+        let request = Request::builder()
+            .uri("/health/retry-after?delay_seconds=900".to_string())
+            .method("PUT")
+            .body(Body::empty())
+            .unwrap();
+        let response = app.clone().oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+
+        let http_date_envvar_value = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR).unwrap();
+        assert_eq!(http_date_envvar_value, RETRY_AFTER_HTTP_DATE_DEFAULT);
+
+        let delay_seconds_envvar_value = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR).unwrap();
+        assert_eq!(delay_seconds_envvar_value, "900".to_string());
     }
 }

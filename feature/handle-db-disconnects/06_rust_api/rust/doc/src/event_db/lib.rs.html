@@ -98,26 +98,11 @@
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
-<a href="#101" id="101">101</a>
-<a href="#102" id="102">102</a>
-<a href="#103" id="103">103</a>
-<a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
-<a href="#106" id="106">106</a>
-<a href="#107" id="107">107</a>
-<a href="#108" id="108">108</a>
-<a href="#109" id="109">109</a>
-<a href="#110" id="110">110</a>
-<a href="#111" id="111">111</a>
-<a href="#112" id="112">112</a>
-<a href="#113" id="113">113</a>
-<a href="#114" id="114">114</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Catalyst Election Database crate
 </span><span class="kw">use </span>bb8::Pool;
 <span class="kw">use </span>bb8_postgres::PostgresConnectionManager;
 <span class="kw">use </span>dotenvy::dotenv;
 <span class="kw">use </span>error::Error;
-<span class="kw">use </span>schema_check::SchemaVersion;
 <span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>tokio_postgres::NoTls;
 
@@ -184,19 +169,6 @@
     <span class="kw">let </span>pool = Pool::builder().build(pg_mgr).<span class="kw">await</span><span class="question-mark">?</span>;
 
     <span class="kw">let </span>db = EventDB { pool };
-
-    <span class="kw">match </span>db.schema_version_check().<span class="kw">await </span>{
-        <span class="prelude-val">Ok</span>(current_ver) =&gt; {
-            <span class="macro">tracing::info!</span>(schema_version = current_ver, <span class="string">&quot;verified schema version&quot;</span>)
-        }
-        <span class="prelude-val">Err</span>(e) =&gt; {
-            <span class="macro">tracing::warn!</span>(error = e.to_string(), <span class="string">&quot;could not verify schema version&quot;</span>);
-            <span class="comment">// Only return error if it is not a connection timeout
-            </span><span class="kw">if </span>e != Error::ConnectionTimeout {
-                <span class="kw">return </span><span class="prelude-val">Err</span>(e);
-            }
-        }
-    };
 
     <span class="prelude-val">Ok</span>(db)
 }

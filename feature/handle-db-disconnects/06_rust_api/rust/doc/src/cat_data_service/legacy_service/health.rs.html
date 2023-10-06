@@ -161,12 +161,81 @@
 <a href="#161" id="161">161</a>
 <a href="#162" id="162">162</a>
 <a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::Error,
-    settings::{
-        RetryAfterParams, RETRY_AFTER_DELAY_SECONDS_ENVVAR, RETRY_AFTER_HTTP_DATE_DEFAULT,
-        RETRY_AFTER_HTTP_DATE_ENVVAR,
-    },
+    settings::{RetryAfterParams, RETRY_AFTER_HTTP_DATE_DEFAULT},
     state::State,
 };
 <span class="kw">use </span>axum::{
@@ -216,45 +285,48 @@
     <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
 }
 
-<span class="kw">async fn </span>retry_after_exec(params: Query&lt;RetryAfterParams&gt;, state: Arc&lt;State&gt;) -&gt; Response {
+<span class="kw">async fn </span>retry_after_exec(Query(params): Query&lt;RetryAfterParams&gt;, state: Arc&lt;State&gt;) -&gt; Response {
     <span class="macro">tracing::debug!</span>(params = <span class="macro">format!</span>(<span class="string">&quot;{params:?}&quot;</span>), <span class="string">&quot;health retry_after exec&quot;</span>);
-    <span class="kw">match </span>params.<span class="number">0 </span>{
-        RetryAfterParams {
+    <span class="macro">println!</span>(<span class="string">&quot;query params: {params:?}&quot;</span>);
+
+    <span class="kw">match </span>params {
+        <span class="comment">// Request without query parameters resets env vars.
+        // Sets `RETRY_AFTER_HTTP_DATE` to the default value.
+        // Sets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
+        </span>RetryAfterParams {
             http_date: <span class="prelude-val">None</span>,
             delay_seconds: <span class="prelude-val">None</span>,
         } =&gt; {
-            <span class="macro">tracing::debug!</span>(<span class="string">&quot;RETRY_AFTER RESET&quot;</span>);
-            <span class="kw">let </span>date_str = RETRY_AFTER_HTTP_DATE_DEFAULT;
-            <span class="macro">tracing::debug!</span>(http_date = date_str, <span class="string">&quot;HTTP_DATE RESET&quot;</span>);
-            std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+            <span class="macro">tracing::debug!</span>(<span class="string">&quot;RETRY_AFTER parameters RESET&quot;</span>);
 
-            <span class="kw">let </span>delay_secs = state.delay_seconds.to_string();
-            <span class="macro">tracing::debug!</span>(delay_seconds = delay_secs, <span class="string">&quot;DELAY_SECONDS RESET&quot;</span>);
-            std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_secs);
+            <span class="kw">let </span>date_str = RETRY_AFTER_HTTP_DATE_DEFAULT;
+            RetryAfterParams::http_date_set_var(date_str);
+
+            <span class="kw">let </span>delay_secs = state.delay_seconds;
+            RetryAfterParams::delay_seconds_set_var(delay_secs);
         }
-        RetryAfterParams {
+        <span class="comment">// Request with `http_date` query parameter sets `RETRY_AFTER_HTTP_DATE` env var,
+        // and resets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
+        </span>RetryAfterParams {
             http_date: <span class="prelude-val">Some</span>(http_date),
             delay_seconds: <span class="kw">_</span>,
         } =&gt; {
             <span class="kw">let </span>date_str = http_date.to_rfc3339_opts(chrono::SecondsFormat::Secs, <span class="bool-val">true</span>);
-            <span class="macro">tracing::debug!</span>(http_date = date_str, <span class="string">&quot;HTTP_DATE SET&quot;</span>);
-            std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+            RetryAfterParams::http_date_set_var(<span class="kw-2">&amp;</span>date_str);
 
-            <span class="kw">let </span>delay_secs = state.delay_seconds.to_string();
-            <span class="macro">tracing::debug!</span>(delay_seconds = delay_secs, <span class="string">&quot;DELAY_SECONDS RESET&quot;</span>);
-            std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_secs);
+            <span class="kw">let </span>delay_secs = state.delay_seconds;
+            RetryAfterParams::delay_seconds_set_var(delay_secs);
         }
-        RetryAfterParams {
+        <span class="comment">// Request with `delay_seconds` query parameter sets `RETRY_AFTER_DELAY_SECONDS` env var,
+        // and resets `RETRY_AFTER_HTTP_DATE` to the default value.
+        </span>RetryAfterParams {
             http_date: <span class="prelude-val">None</span>,
             delay_seconds: <span class="prelude-val">Some</span>(delay_seconds),
         } =&gt; {
             <span class="kw">let </span>date_str = RETRY_AFTER_HTTP_DATE_DEFAULT;
-            <span class="macro">tracing::debug!</span>(http_date = date_str, <span class="string">&quot;HTTP_DATE RESET&quot;</span>);
-            std::env::set_var(RETRY_AFTER_HTTP_DATE_ENVVAR, date_str);
+            RetryAfterParams::http_date_set_var(date_str);
 
-            <span class="kw">let </span>delay_secs = delay_seconds.to_string();
-            <span class="macro">tracing::debug!</span>(delay_seconds = delay_secs, <span class="string">&quot;DELAY_SECONDS SET&quot;</span>);
-            std::env::set_var(RETRY_AFTER_DELAY_SECONDS_ENVVAR, delay_seconds.to_string());
+            RetryAfterParams::delay_seconds_set_var(delay_seconds);
         }
     }
 
@@ -278,7 +350,11 @@
 /// https://github.com/input-output-hk/catalyst-core/tree/main/src/event-db/Readme.md
 </span><span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use crate</span>::{legacy_service::app, state::State};
+    <span class="kw">use crate</span>::{
+        legacy_service::app,
+        settings::{RETRY_AFTER_HTTP_DATE_DEFAULT, RETRY_AFTER_HTTP_DATE_ENVVAR},
+        state::State,
+    };
     <span class="kw">use </span>axum::{
         body::{Body, HttpBody},
         http::{Request, StatusCode},
@@ -322,6 +398,74 @@
                 .as_str(),
             <span class="string">r#&quot;true&quot;#
         </span>);
+    }
+
+    <span class="attr">#[tokio::test]
+    </span><span class="kw">async fn </span>health_retry_after_test() {
+        <span class="kw">use </span><span class="kw">crate</span>::settings::RETRY_AFTER_DELAY_SECONDS_ENVVAR;
+        <span class="kw">const </span>INITIAL_DELAY_SECONDS: u64 = <span class="number">200</span>;
+
+        <span class="kw">let </span>state = Arc::new(
+            State::new_with_delay(<span class="prelude-val">None</span>, INITIAL_DELAY_SECONDS)
+                .<span class="kw">await
+                </span>.unwrap(),
+        );
+        <span class="kw">let </span>app = app(state);
+
+        <span class="comment">// Request without query parameters resets env vars.
+        // Sets `RETRY_AFTER_HTTP_DATE` to the default value.
+        // Sets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
+        </span><span class="kw">let </span>request = Request::builder()
+            .uri(<span class="string">&quot;/health/retry-after&quot;</span>.to_string())
+            .method(<span class="string">&quot;PUT&quot;</span>)
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NO_CONTENT);
+
+        <span class="kw">let </span>delay_seconds_envvar_value = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR).unwrap();
+        <span class="macro">assert_eq!</span>(
+            delay_seconds_envvar_value,
+            INITIAL_DELAY_SECONDS.to_string()
+        );
+
+        <span class="kw">let </span>http_date_envvar_value = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR).unwrap();
+        <span class="macro">assert_eq!</span>(http_date_envvar_value, RETRY_AFTER_HTTP_DATE_DEFAULT);
+
+        <span class="comment">// Request with `http_date` query parameter sets `RETRY_AFTER_HTTP_DATE` env var,
+        // and resets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
+        </span><span class="kw">let </span>request = Request::builder()
+            .uri(<span class="string">&quot;/health/retry-after?http_date=2040-01-01T00:00:00Z&quot;</span>.to_string())
+            .method(<span class="string">&quot;PUT&quot;</span>)
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NO_CONTENT);
+
+        <span class="kw">let </span>http_date_envvar_value = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR).unwrap();
+        <span class="macro">assert_eq!</span>(http_date_envvar_value, <span class="string">&quot;2040-01-01T00:00:00Z&quot;</span>);
+
+        <span class="kw">let </span>delay_seconds_envvar_value = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR).unwrap();
+        <span class="macro">assert_eq!</span>(
+            delay_seconds_envvar_value,
+            INITIAL_DELAY_SECONDS.to_string()
+        );
+
+        <span class="comment">// Request with `delay_seconds` query parameter sets `RETRY_AFTER_DELAY_SECONDS` env var,
+        // and resets `RETRY_AFTER_HTTP_DATE` to the default value.
+        </span><span class="kw">let </span>request = Request::builder()
+            .uri(<span class="string">&quot;/health/retry-after?delay_seconds=900&quot;</span>.to_string())
+            .method(<span class="string">&quot;PUT&quot;</span>)
+            .body(Body::empty())
+            .unwrap();
+        <span class="kw">let </span>response = app.clone().oneshot(request).<span class="kw">await</span>.unwrap();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::NO_CONTENT);
+
+        <span class="kw">let </span>http_date_envvar_value = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR).unwrap();
+        <span class="macro">assert_eq!</span>(http_date_envvar_value, RETRY_AFTER_HTTP_DATE_DEFAULT);
+
+        <span class="kw">let </span>delay_seconds_envvar_value = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR).unwrap();
+        <span class="macro">assert_eq!</span>(delay_seconds_envvar_value, <span class="string">&quot;900&quot;</span>.to_string());
     }
 }
 </code></pre></div>

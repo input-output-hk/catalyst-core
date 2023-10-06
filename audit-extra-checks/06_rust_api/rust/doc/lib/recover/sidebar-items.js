@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","ReplayError","ValidationError"],"fn":["committee_id_to_address","deconstruct_account_transaction","recover_ledger_from_fragments","valid_vote_cast"],"struct":["FragmentReplayer","ReplayedFragment","ValidatedFragment","VoteFragmentFilter"]};

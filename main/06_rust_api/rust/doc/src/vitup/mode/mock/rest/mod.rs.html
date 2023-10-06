@@ -401,6 +401,8 @@
 <a href="#401" id="401">401</a>
 <a href="#402" id="402">402</a>
 <a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
 </pre></div><pre class="rust"><code><span class="kw">mod </span>admin;
 <span class="kw">mod </span>control;
 <span class="kw">mod </span>cors;
@@ -628,7 +630,9 @@
                 <span class="kw">let </span>span = <span class="macro">span!</span>(Level::INFO, <span class="string">&quot;rest api call received&quot;</span>);
                 <span class="kw">let </span>_enter = span.enter();
                 <span class="macro">tracing::info!</span>(<span class="string">&quot;get block0&quot;</span>);
-                <span class="prelude-val">Ok</span>(context.read().unwrap().block0_bin())
+                <span class="comment">//unwrapping is ok because this is a test module
+                </span><span class="kw">let </span>context_result = context.read().unwrap();
+                context_result.block0_bin()
             })
             .with(warp::reply::with::headers(default_headers()));
 

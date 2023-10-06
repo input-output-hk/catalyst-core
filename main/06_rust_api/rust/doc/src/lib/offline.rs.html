@@ -230,7 +230,7 @@
     </span>CorruptedFragments,
 }
 
-<span class="attr">#[derive(Serialize, Debug)]
+<span class="attr">#[derive(Serialize, Debug, Clone)]
 </span><span class="kw">pub struct </span>Vote {
     <span class="kw">pub </span>fragment_id: String,
     <span class="kw">pub </span>caster: Address,

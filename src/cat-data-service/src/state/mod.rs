@@ -33,8 +33,8 @@ impl State {
     ) -> Result<Self, Error> {
         // Get a connection to the Database.
         let event_db = match database_url.clone() {
-            Some(url) => Arc::new(event_db::establish_connection(Some(url.as_str())).await?),
-            None => Arc::new(event_db::establish_connection(None).await?),
+            Some(url) => Arc::new(event_db::EventDB::new(Some(url.as_str())).await?),
+            None => Arc::new(event_db::EventDB::new(None).await?),
         };
 
         #[cfg(feature = "jorm-mock")]

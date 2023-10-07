@@ -12,6 +12,8 @@ pub mod queries;
 pub mod schema_check;
 pub mod types;
 
+use crate::schema_check::SchemaVersion;
+
 /// Database URL Environment Variable name.
 /// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
 const DATABASE_URL_ENVVAR: &str = "EVENT_DB_URL";
@@ -27,6 +29,26 @@ pub struct EventDB {
     // All database operations (queries, inserts, etc) should be constrained
     // to this crate and should be exported with a clean data access api.
     pool: Pool<PostgresConnectionManager<NoTls>>,
+}
+
+impl EventDB {
+    pub async fn new(url: Option<&str>) -> Result<EventDB, Error> {
+        let database_url = match url {
+            Some(url) => url.to_string(),
+            // If the Database connection URL is not supplied, try and get from the env var.
+            None => std::env::var(DATABASE_URL_ENVVAR).map_err(|_| Error::NoDatabaseUrl)?,
+        };
+
+        let config = tokio_postgres::config::Config::from_str(&database_url)?;
+
+        let pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
+
+        let pool = Pool::builder().build(pg_mgr).await?;
+
+        let db = EventDB { pool };
+
+        Ok(db)
+    }
 }
 
 /// Establish a connection to the database, and check the schema is up-to-date.
@@ -56,19 +78,9 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
     // Support env vars in a `.env` file,  doesn't need to exist.
     dotenv().ok();
 
-    let database_url = match url {
-        Some(url) => url.to_string(),
-        // If the Database connection URL is not supplied, try and get from the env var.
-        None => std::env::var(DATABASE_URL_ENVVAR).map_err(|_| Error::NoDatabaseUrl)?,
-    };
+    let db = EventDB::new(url).await?;
 
-    let config = tokio_postgres::config::Config::from_str(&database_url)?;
-
-    let pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
-
-    let pool = Pool::builder().build(pg_mgr).await?;
-
-    let db = EventDB { pool };
+    db.schema_version_check().await?;
 
     Ok(db)
 }

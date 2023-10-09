@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Adversary"],"mod":["all","votes_only"]};

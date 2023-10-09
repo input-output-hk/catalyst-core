@@ -98,8 +98,8 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
         <span class="comment">// Get a connection to the Database.
         </span><span class="kw">let </span>event_db = <span class="kw">match </span>database_url.clone() {
-            <span class="prelude-val">Some</span>(url) =&gt; Arc::new(event_db::establish_connection(<span class="prelude-val">Some</span>(url.as_str())).<span class="kw">await</span><span class="question-mark">?</span>),
-            <span class="prelude-val">None </span>=&gt; Arc::new(event_db::establish_connection(<span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>),
+            <span class="prelude-val">Some</span>(url) =&gt; Arc::new(event_db::EventDB::new(<span class="prelude-val">Some</span>(url.as_str())).<span class="kw">await</span><span class="question-mark">?</span>),
+            <span class="prelude-val">None </span>=&gt; Arc::new(event_db::EventDB::new(<span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>),
         };
 
         <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]

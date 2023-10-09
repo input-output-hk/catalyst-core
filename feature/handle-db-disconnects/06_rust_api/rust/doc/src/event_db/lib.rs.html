@@ -98,6 +98,18 @@
 <a href="#98" id="98">98</a>
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Catalyst Election Database crate
 </span><span class="kw">use </span>bb8::Pool;
 <span class="kw">use </span>bb8_postgres::PostgresConnectionManager;
@@ -111,6 +123,8 @@
 <span class="kw">pub mod </span>queries;
 <span class="kw">pub mod </span>schema_check;
 <span class="kw">pub mod </span>types;
+
+<span class="kw">use </span><span class="kw">crate</span>::schema_check::SchemaVersion;
 
 <span class="doccomment">/// Database URL Environment Variable name.
 /// eg: &quot;`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`&quot;
@@ -127,6 +141,26 @@
     // All database operations (queries, inserts, etc) should be constrained
     // to this crate and should be exported with a clean data access api.
     </span>pool: Pool&lt;PostgresConnectionManager&lt;NoTls&gt;&gt;,
+}
+
+<span class="kw">impl </span>EventDB {
+    <span class="kw">pub async fn </span>new(url: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;EventDB, Error&gt; {
+        <span class="kw">let </span>database_url = <span class="kw">match </span>url {
+            <span class="prelude-val">Some</span>(url) =&gt; url.to_string(),
+            <span class="comment">// If the Database connection URL is not supplied, try and get from the env var.
+            </span><span class="prelude-val">None </span>=&gt; std::env::var(DATABASE_URL_ENVVAR).map_err(|<span class="kw">_</span>| Error::NoDatabaseUrl)<span class="question-mark">?</span>,
+        };
+
+        <span class="kw">let </span>config = tokio_postgres::config::Config::from_str(<span class="kw-2">&amp;</span>database_url)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
+
+        <span class="kw">let </span>pool = Pool::builder().build(pg_mgr).<span class="kw">await</span><span class="question-mark">?</span>;
+
+        <span class="kw">let </span>db = EventDB { pool };
+
+        <span class="prelude-val">Ok</span>(db)
+    }
 }
 
 <span class="doccomment">/// Establish a connection to the database, and check the schema is up-to-date.
@@ -156,19 +190,9 @@
     <span class="comment">// Support env vars in a `.env` file,  doesn&#39;t need to exist.
     </span>dotenv().ok();
 
-    <span class="kw">let </span>database_url = <span class="kw">match </span>url {
-        <span class="prelude-val">Some</span>(url) =&gt; url.to_string(),
-        <span class="comment">// If the Database connection URL is not supplied, try and get from the env var.
-        </span><span class="prelude-val">None </span>=&gt; std::env::var(DATABASE_URL_ENVVAR).map_err(|<span class="kw">_</span>| Error::NoDatabaseUrl)<span class="question-mark">?</span>,
-    };
+    <span class="kw">let </span>db = EventDB::new(url).<span class="kw">await</span><span class="question-mark">?</span>;
 
-    <span class="kw">let </span>config = tokio_postgres::config::Config::from_str(<span class="kw-2">&amp;</span>database_url)<span class="question-mark">?</span>;
-
-    <span class="kw">let </span>pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
-
-    <span class="kw">let </span>pool = Pool::builder().build(pg_mgr).<span class="kw">await</span><span class="question-mark">?</span>;
-
-    <span class="kw">let </span>db = EventDB { pool };
+    db.schema_version_check().<span class="kw">await</span><span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(db)
 }

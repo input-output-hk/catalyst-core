@@ -3,11 +3,12 @@ use crate::service::common::objects::{
 };
 use crate::service::common::responses::resp_2xx::OK;
 use crate::service::common::responses::resp_4xx::NotFound;
-use crate::service::common::responses::resp_5xx::{server_error, ServerError};
+use crate::service::common::responses::resp_5xx::{server_error, ServerError, ServiceUnavailable};
+use crate::settings::RetryAfterParams;
 use crate::{service::common::tags::ApiTags, state::State};
 use poem::web::Data;
 use poem_extensions::response;
-use poem_extensions::UniResponse::{T200, T404, T500};
+use poem_extensions::UniResponse::{T200, T404, T500, T503};
 use poem_openapi::{
     param::{Path, Query},
     payload::Json,
@@ -54,6 +55,7 @@ impl RegistrationApi {
            200: OK<Json<VoterRegistration>>,
            404: NotFound,
            500: ServerError,
+           503: ServiceUnavailable,
        } {
         let voter = pool
             .event_db
@@ -68,6 +70,9 @@ impl RegistrationApi {
                 Ok(voter) => T200(OK(Json(voter))),
                 Err(err) => T500(server_error!("{}", err.to_string())),
             },
+            Err(event_db::error::Error::ConnectionTimeout) => T503(ServiceUnavailable(
+                RetryAfterParams::header_value_from_env(pool.delay_seconds),
+            )),
             Err(event_db::error::Error::NotFound(_)) => T404(NotFound),
             Err(err) => T500(server_error!("{}", err.to_string())),
         }

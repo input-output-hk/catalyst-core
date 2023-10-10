@@ -1,9 +1,14 @@
 //! Implementation of the GET /health/ready endpoint
 
+use std::sync::Arc;
+
 use crate::service::common::responses::resp_2xx::NoContent;
-use crate::service::common::responses::resp_5xx::{ServerError, ServiceUnavailable};
+use crate::service::common::responses::resp_5xx::{server_error, ServerError, ServiceUnavailable};
+use crate::settings::RetryAfterParams;
+use crate::state::State;
+use poem::web::Data;
 use poem_extensions::response;
-use poem_extensions::UniResponse::T204;
+use poem_extensions::UniResponse::{T204, T500, T503};
 
 pub(crate) type AllResponses = response! {
     204: NoContent,
@@ -35,7 +40,22 @@ pub(crate) type AllResponses = response! {
 /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
 /// * 503 Service Unavailable - Service is not ready, do not send other requests.
 #[allow(clippy::unused_async)]
-pub(crate) async fn endpoint() -> AllResponses {
+pub(crate) async fn endpoint(state: Data<&Arc<State>>) -> AllResponses {
     // otherwise everything seems to be A-OK
-    T204(NoContent)
+    match state.event_db.schema_version_check().await {
+        Ok(current_ver) => {
+            tracing::info!(schema_version = current_ver, "verified schema version");
+            T204(NoContent)
+        }
+        Err(e) => {
+            tracing::warn!(error = e.to_string(), "could not verify schema version");
+            // Only return error if it is not a connection timeout
+            match e {
+                event_db::error::Error::ConnectionTimeout => T503(ServiceUnavailable(
+                    RetryAfterParams::header_value_from_env(state.delay_seconds),
+                )),
+                err => T500(server_error!("{}", err.to_string())),
+            }
+        }
+    }
 }

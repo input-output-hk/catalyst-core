@@ -93,4 +93,21 @@ impl ResponseError for ServerError {
 /// or has become unavailable.*
 ///
 /// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
-pub(crate) struct ServiceUnavailable;
+pub(crate) struct ServiceUnavailable(#[oai(header = "retry-after")] pub(crate) String);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use axum::http::HeaderValue;
+    use poem::IntoResponse;
+
+    #[tokio::test]
+    async fn into_response() {
+        let response = ServiceUnavailable("120".to_string()).into_response();
+        assert_eq!(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        assert_eq!(
+            response.headers().get("RETRY-AFTER"),
+            Some(&HeaderValue::from_static("120"))
+        );
+    }
+}

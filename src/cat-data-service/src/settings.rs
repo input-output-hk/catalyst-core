@@ -150,6 +150,42 @@ impl RetryAfterParams {
             "{RETRY_AFTER_HTTP_DATE_ENVVAR:} ENV set"
         );
     }
+    /// Return the header value string from env.
+    pub fn header_value_from_env(delay_reset: u64) -> String {
+        // Check the current value of the `RETRY_AFTER_HTTP_DATE` env var,
+        // this is needed because the value can modified  by the
+        // '/health/retry-after' endpoint.
+        if let Ok(http_date_str) = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR) {
+            if http_date_str != RETRY_AFTER_HTTP_DATE_DEFAULT {
+                if let Ok(http_date) = http_date_str.parse::<DateTime<Utc>>() {
+                    if http_date > Utc::now() {
+                        // If `http_date` is in the future, return 503 with the `http-date` in the
+                        // `Retry-After` header.
+                        return format!("{}", http_date.format("%a, %d %b %Y %H:%M:%S GMT"));
+                    } else {
+                        // If `http_date` has past, return 503 with the initial settings `delay-seconds` in the
+                        // `Retry-After` header.
+                        Self::http_date_set_var(RETRY_AFTER_HTTP_DATE_DEFAULT);
+                        Self::delay_seconds_set_var(delay_reset);
+                        return delay_reset.to_string();
+                    }
+                }
+            }
+        }
+
+        // Check the current value of the `RETRY_AFTER_DELAY_SECONDS` env var,
+        // this is needed because the value can modified  by the
+        // '/health/retry-after' endpoint.
+        if let Ok(delay) = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR) {
+            if let Ok(delay_seconds) = delay.parse::<u64>() {
+                delay_seconds.to_string()
+            } else {
+                delay_reset.to_string()
+            }
+        } else {
+            delay_reset.to_string()
+        }
+    }
 }
 
 // Lazy intialization of all env vars which are not command line parameters.

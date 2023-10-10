@@ -31,8 +31,8 @@ impl Cli {
                         .await?,
                 );
 
-                // Check the schema version, if connection to DB timesout, log as warning,
-                // otherwise, return Error.
+                // Check the schema version, if connection to DB timesout, log as warning and
+                // continue, otherwise, return Error.
                 match state.event_db.schema_version_check().await {
                     Ok(current_ver) => {
                         tracing::info!(schema_version = current_ver, "verified schema version")

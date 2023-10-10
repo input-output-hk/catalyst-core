@@ -13,7 +13,7 @@ pub(crate) struct BadRequest<T: IntoResponse + Payload>(T);
 #[oai(status = 400)]
 /// This error means that the request was malformed.
 /// It has failed to pass validation, as specified by the OpenAPI schema.
-pub(crate) struct ApiValidationError(PlainText<String>);
+pub(crate) struct ApiValidationError(pub(crate) PlainText<String>);
 
 #[derive(OneResponse)]
 #[oai(status = 401)]

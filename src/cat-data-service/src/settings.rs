@@ -1,7 +1,7 @@
 //! Command line and environment variable settings for the service
 //!
 use crate::logger::{LogLevel, LOG_LEVEL_DEFAULT};
-use chrono::prelude::*;
+use chrono::{DateTime, Utc};
 use clap::Args;
 use dotenvy::dotenv;
 use lazy_static::lazy_static;
@@ -118,7 +118,9 @@ impl StringEnvVar {
 
 #[derive(Deserialize, Debug)]
 pub(crate) struct RetryAfterParams {
+    #[serde(rename = "http-date")]
     pub(crate) http_date: Option<DateTime<Utc>>,
+    #[serde(rename = "delay-seconds")]
     pub(crate) delay_seconds: Option<u64>,
 }
 

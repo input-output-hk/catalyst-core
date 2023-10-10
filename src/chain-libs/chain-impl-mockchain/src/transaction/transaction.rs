@@ -317,7 +317,6 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
     }
 
     if codec.has_bytes_left() {
-        println!("codec {:?}", hex::encode(codec.into_inner()));
         return Err(TransactionStructError::SpuriousTrailingData);
     }
     Ok(TransactionStruct {

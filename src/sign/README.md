@@ -19,7 +19,7 @@
 cargo build --release -p sign
 ```  
 
-*Generate fragment in byte representation*
+*Generate raw fragment in byte representation*
 
 ```bash
 

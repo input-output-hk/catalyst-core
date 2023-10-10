@@ -1,7 +1,7 @@
 //! Shared state used by all endpoints.
 //!
 use crate::{cli::Error, settings::RETRY_AFTER_DELAY_SECONDS_DEFAULT};
-use event_db::queries::EventDbQueries;
+use event_db::{queries::EventDbQueries, EventDB};
 use std::sync::Arc;
 
 #[cfg(feature = "jorm-mock")]
@@ -22,19 +22,16 @@ pub struct State {
 
 impl State {
     #[allow(dead_code)]
-    pub async fn new(database_url: Option<String>) -> Result<Self, Error> {
-        let delay_seconds: u64 = RETRY_AFTER_DELAY_SECONDS_DEFAULT;
-        Self::new_with_delay(database_url, delay_seconds).await
-    }
-
-    pub async fn new_with_delay(
+    pub async fn new(
         database_url: Option<String>,
-        delay_seconds: u64,
+        delay_seconds: Option<u64>,
     ) -> Result<Self, Error> {
+        let delay_seconds: u64 = delay_seconds.unwrap_or(RETRY_AFTER_DELAY_SECONDS_DEFAULT);
+        //
         // Get a connection to the Database.
-        let event_db = match database_url.clone() {
-            Some(url) => Arc::new(event_db::EventDB::new(Some(url.as_str())).await?),
-            None => Arc::new(event_db::EventDB::new(None).await?),
+        let db = match database_url.clone() {
+            Some(url) => EventDB::new(Some(url.as_str())).await?,
+            None => EventDB::new(None).await?,
         };
 
         #[cfg(feature = "jorm-mock")]
@@ -43,7 +40,7 @@ impl State {
         let state = Self {
             //db_url: database_url,
             //event_db_handle: Arc::new(RwLock::new(None)),
-            event_db,
+            event_db: Arc::new(db),
             delay_seconds,
             #[cfg(feature = "jorm-mock")]
             jorm: std::sync::Mutex::new(jorm),

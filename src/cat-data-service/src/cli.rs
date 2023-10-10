@@ -27,8 +27,7 @@ impl Cli {
                 logger::init(settings.log_level).unwrap();
 
                 let state = Arc::new(
-                    State::new_with_delay(Some(settings.database_url), settings.delay_seconds)
-                        .await?,
+                    State::new(Some(settings.database_url), Some(settings.delay_seconds)).await?,
                 );
 
                 // Check the schema version, if connection to DB timesout, log as warning and

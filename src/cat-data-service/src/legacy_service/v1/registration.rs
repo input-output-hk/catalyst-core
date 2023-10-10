@@ -117,7 +117,7 @@ mod tests {
 
     #[tokio::test]
     async fn voter_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
+        let state = Arc::new(State::new(None, None).await.unwrap());
         let app = app(state);
 
         let request = Request::builder()
@@ -247,7 +247,7 @@ mod tests {
 
     #[tokio::test]
     async fn delegations_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
+        let state = Arc::new(State::new(None, None).await.unwrap());
         let app = app(state);
 
         let request = Request::builder()

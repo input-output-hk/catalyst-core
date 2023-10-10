@@ -129,7 +129,7 @@ mod tests {
 
     #[tokio::test]
     async fn health_ready_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
+        let state = Arc::new(State::new(None, None).await.unwrap());
         let app = app(state);
 
         let request = Request::builder()
@@ -148,7 +148,7 @@ mod tests {
 
     #[tokio::test]
     async fn health_live_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
+        let state = Arc::new(State::new(None, None).await.unwrap());
         let app = app(state);
 
         let request = Request::builder()
@@ -170,11 +170,7 @@ mod tests {
         use crate::settings::RETRY_AFTER_DELAY_SECONDS_ENVVAR;
         const INITIAL_DELAY_SECONDS: u64 = 200;
 
-        let state = Arc::new(
-            State::new_with_delay(None, INITIAL_DELAY_SECONDS)
-                .await
-                .unwrap(),
-        );
+        let state = Arc::new(State::new(None, Some(INITIAL_DELAY_SECONDS)).await.unwrap());
         let app = app(state);
 
         // Request without query parameters resets env vars.
@@ -200,7 +196,7 @@ mod tests {
         // Request with `http_date` query parameter sets `RETRY_AFTER_HTTP_DATE` env var,
         // and resets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
         let request = Request::builder()
-            .uri("/health/retry-after?http_date=2040-01-01T00:00:00Z".to_string())
+            .uri("/health/retry-after?http-date=2040-01-01T00:00:00Z".to_string())
             .method("PUT")
             .body(Body::empty())
             .unwrap();
@@ -219,7 +215,7 @@ mod tests {
         // Request with `delay_seconds` query parameter sets `RETRY_AFTER_DELAY_SECONDS` env var,
         // and resets `RETRY_AFTER_HTTP_DATE` to the default value.
         let request = Request::builder()
-            .uri("/health/retry-after?delay_seconds=900".to_string())
+            .uri("/health/retry-after?delay-seconds=900".to_string())
             .method("PUT")
             .body(Body::empty())
             .unwrap();

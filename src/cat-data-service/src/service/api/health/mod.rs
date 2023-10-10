@@ -126,7 +126,7 @@ mod tests {
 
     #[tokio::test]
     async fn health_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
+        let state = Arc::new(State::new(None, None).await.unwrap());
         let app = mk_test_app(state);
 
         let resp = app.get("/api/health/started").send().await;

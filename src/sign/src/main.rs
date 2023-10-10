@@ -2,15 +2,10 @@
 //! Fragment generator
 //!
 
-use chain_core::property::FromStr;
-use chain_impl_mockchain::{
-    certificate::{VoteCast, VotePlanId},
-    vote::Payload,
-};
 use chain_vote::ElectionPublicKey;
 use clap::Parser;
 use color_eyre::Result;
-use lib::fragment::generate_vote_fragment;
+use lib::fragment::{compose_encrypted_vote_part, generate_vote_fragment};
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
@@ -62,23 +57,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     let ek = ElectionPublicKey::from_bytes(&election_pk)
         .ok_or("unable to parse election pub key".to_string())?;
 
-    // encrypted vote and proof
-    let (encrypted_vote, proof) =
-        chain_impl_mockchain::vote::encrypt_vote(&mut rng, &crs, &ek, vote);
+    let (ciphertexts, proof) = ek.encrypt_and_prove_vote(&mut rng, &crs, vote);
+    let (proof, encrypted_vote) = compose_encrypted_vote_part(ciphertexts.clone(), proof)?;
 
-    // wrap in payload
-    let payload = Payload::Private {
+    let fragment_bytes = generate_vote_fragment(
+        keypair,
         encrypted_vote,
         proof,
-    };
-
-    let vote_cast = VoteCast::new(
-        VotePlanId::from_str(&args.vote_plan_id.clone())?,
-        args.proposal.clone(),
-        payload,
-    );
-
-    let fragment_bytes = generate_vote_fragment(keypair, vote_cast)?;
+        args.proposal,
+        args.vote_plan_id.as_bytes(),
+    )?;
 
     // fragment in hex: output consumed as input to another program
     println!("{:?}", hex::encode(fragment_bytes.clone()));

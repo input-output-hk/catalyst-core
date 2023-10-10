@@ -208,16 +208,22 @@
 <a href="#208" id="208">208</a>
 <a href="#209" id="209">209</a>
 <a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::service::common::objects::{
     event_id::EventId, voter_registration::VoterRegistration, voting_public_key::VotingPublicKey,
 };
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_2xx::OK;
 <span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_4xx::NotFound;
-<span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_5xx::{server_error, ServerError};
+<span class="kw">use </span><span class="kw">crate</span>::service::common::responses::resp_5xx::{server_error, ServerError, ServiceUnavailable};
+<span class="kw">use </span><span class="kw">crate</span>::settings::RetryAfterParams;
 <span class="kw">use crate</span>::{service::common::tags::ApiTags, state::State};
 <span class="kw">use </span>poem::web::Data;
 <span class="kw">use </span>poem_extensions::response;
-<span class="kw">use </span>poem_extensions::UniResponse::{T200, T404, T500};
+<span class="kw">use </span>poem_extensions::UniResponse::{T200, T404, T500, T503};
 <span class="kw">use </span>poem_openapi::{
     param::{Path, Query},
     payload::Json,
@@ -264,6 +270,7 @@
            <span class="number">200</span>: OK&lt;Json&lt;VoterRegistration&gt;&gt;,
            <span class="number">404</span>: NotFound,
            <span class="number">500</span>: ServerError,
+           <span class="number">503</span>: ServiceUnavailable,
        } {
         <span class="kw">let </span>voter = pool
             .event_db
@@ -278,6 +285,9 @@
                 <span class="prelude-val">Ok</span>(voter) =&gt; T200(OK(Json(voter))),
                 <span class="prelude-val">Err</span>(err) =&gt; T500(<span class="macro">server_error!</span>(<span class="string">&quot;{}&quot;</span>, err.to_string())),
             },
+            <span class="prelude-val">Err</span>(event_db::error::Error::ConnectionTimeout) =&gt; T503(ServiceUnavailable(
+                RetryAfterParams::header_value_from_env(pool.delay_seconds),
+            )),
             <span class="prelude-val">Err</span>(event_db::error::Error::NotFound(<span class="kw">_</span>)) =&gt; T404(NotFound),
             <span class="prelude-val">Err</span>(err) =&gt; T500(<span class="macro">server_error!</span>(<span class="string">&quot;{}&quot;</span>, err.to_string())),
         }

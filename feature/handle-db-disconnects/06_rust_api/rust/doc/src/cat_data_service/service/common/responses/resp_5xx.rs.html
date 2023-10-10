@@ -94,6 +94,23 @@
 <a href="#94" id="94">94</a>
 <a href="#95" id="95">95</a>
 <a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
 </pre><pre class="rust"><code><span class="doccomment">//! This module contains common and re-usable responses with a 4xx response code.
 /// While using macro-vis lib, you will get the uncommon_codepoints warning, so you will probably want to place this in your crate root
 </span><span class="kw">use </span><span class="kw">crate</span>::settings::generate_github_issue_url;
@@ -189,6 +206,23 @@
 /// or has become unavailable.*
 ///
 /// #### NO DATA BODY IS RETURNED FOR THIS RESPONSE
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ServiceUnavailable;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ServiceUnavailable(<span class="attr">#[oai(header = <span class="string">&quot;retry-after&quot;</span>)] </span><span class="kw">pub</span>(<span class="kw">crate</span>) String);
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>axum::http::HeaderValue;
+    <span class="kw">use </span>poem::IntoResponse;
+
+    <span class="attr">#[tokio::test]
+    </span><span class="kw">async fn </span>into_response() {
+        <span class="kw">let </span>response = ServiceUnavailable(<span class="string">&quot;120&quot;</span>.to_string()).into_response();
+        <span class="macro">assert_eq!</span>(response.status(), StatusCode::SERVICE_UNAVAILABLE);
+        <span class="macro">assert_eq!</span>(
+            response.headers().get(<span class="string">&quot;RETRY-AFTER&quot;</span>),
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>HeaderValue::from_static(<span class="string">&quot;120&quot;</span>))
+        );
+    }
+}
 </code></pre></div>
 </section></main></body></html>

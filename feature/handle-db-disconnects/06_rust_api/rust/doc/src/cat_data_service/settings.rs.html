@@ -393,10 +393,48 @@
 <a href="#393" id="393">393</a>
 <a href="#394" id="394">394</a>
 <a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Command line and environment variable settings for the service
 //!
 </span><span class="kw">use </span><span class="kw">crate</span>::logger::{LogLevel, LOG_LEVEL_DEFAULT};
-<span class="kw">use </span>chrono::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>clap::Args;
 <span class="kw">use </span>dotenvy::dotenv;
 <span class="kw">use </span>lazy_static::lazy_static;
@@ -513,8 +551,10 @@
 
 <span class="attr">#[derive(Deserialize, Debug)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>RetryAfterParams {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) http_date: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) delay_seconds: <span class="prelude-ty">Option</span>&lt;u64&gt;,
+    <span class="attr">#[serde(rename = <span class="string">&quot;http-date&quot;</span>)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) http_date: <span class="prelude-ty">Option</span>&lt;DateTime&lt;Utc&gt;&gt;,
+    <span class="attr">#[serde(rename = <span class="string">&quot;delay-seconds&quot;</span>)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) delay_seconds: <span class="prelude-ty">Option</span>&lt;u64&gt;,
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>RetryAfterParams {
@@ -544,6 +584,42 @@
             http_date = date_str,
             <span class="string">&quot;{RETRY_AFTER_HTTP_DATE_ENVVAR:} ENV set&quot;
         </span>);
+    }
+    <span class="doccomment">/// Return the header value string from env.
+    </span><span class="kw">pub fn </span>header_value_from_env(delay_reset: u64) -&gt; String {
+        <span class="comment">// Check the current value of the `RETRY_AFTER_HTTP_DATE` env var,
+        // this is needed because the value can modified  by the
+        // &#39;/health/retry-after&#39; endpoint.
+        </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(http_date_str) = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR) {
+            <span class="kw">if </span>http_date_str != RETRY_AFTER_HTTP_DATE_DEFAULT {
+                <span class="kw">if let </span><span class="prelude-val">Ok</span>(http_date) = http_date_str.parse::&lt;DateTime&lt;Utc&gt;&gt;() {
+                    <span class="kw">if </span>http_date &gt; Utc::now() {
+                        <span class="comment">// If `http_date` is in the future, return 503 with the `http-date` in the
+                        // `Retry-After` header.
+                        </span><span class="kw">return </span><span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, http_date.format(<span class="string">&quot;%a, %d %b %Y %H:%M:%S GMT&quot;</span>));
+                    } <span class="kw">else </span>{
+                        <span class="comment">// If `http_date` has past, return 503 with the initial settings `delay-seconds` in the
+                        // `Retry-After` header.
+                        </span><span class="self">Self</span>::http_date_set_var(RETRY_AFTER_HTTP_DATE_DEFAULT);
+                        <span class="self">Self</span>::delay_seconds_set_var(delay_reset);
+                        <span class="kw">return </span>delay_reset.to_string();
+                    }
+                }
+            }
+        }
+
+        <span class="comment">// Check the current value of the `RETRY_AFTER_DELAY_SECONDS` env var,
+        // this is needed because the value can modified  by the
+        // &#39;/health/retry-after&#39; endpoint.
+        </span><span class="kw">if let </span><span class="prelude-val">Ok</span>(delay) = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR) {
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(delay_seconds) = delay.parse::&lt;u64&gt;() {
+                delay_seconds.to_string()
+            } <span class="kw">else </span>{
+                delay_reset.to_string()
+            }
+        } <span class="kw">else </span>{
+            delay_reset.to_string()
+        }
     }
 }
 

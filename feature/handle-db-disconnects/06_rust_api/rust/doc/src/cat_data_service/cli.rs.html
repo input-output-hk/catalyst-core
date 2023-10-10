@@ -89,8 +89,8 @@
                         .<span class="kw">await</span><span class="question-mark">?</span>,
                 );
 
-                <span class="comment">// Check the schema version, if connection to DB timesout, log as warning,
-                // otherwise, return Error.
+                <span class="comment">// Check the schema version, if connection to DB timesout, log as warning and
+                // continue, otherwise, return Error.
                 </span><span class="kw">match </span>state.event_db.schema_version_check().<span class="kw">await </span>{
                     <span class="prelude-val">Ok</span>(current_ver) =&gt; {
                         <span class="macro">tracing::info!</span>(schema_version = current_ver, <span class="string">&quot;verified schema version&quot;</span>)

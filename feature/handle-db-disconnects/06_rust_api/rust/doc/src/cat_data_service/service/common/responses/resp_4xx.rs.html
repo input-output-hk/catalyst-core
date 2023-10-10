@@ -57,7 +57,7 @@
 #[oai(status = <span class="number">400</span>)]
 </span><span class="doccomment">/// This error means that the request was malformed.
 /// It has failed to pass validation, as specified by the OpenAPI schema.
-</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ApiValidationError(PlainText&lt;String&gt;);
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>ApiValidationError(<span class="kw">pub</span>(<span class="kw">crate</span>) PlainText&lt;String&gt;);
 
 <span class="attr">#[derive(OneResponse)]
 #[oai(status = <span class="number">401</span>)]

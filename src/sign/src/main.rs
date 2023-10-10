@@ -80,7 +80,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let fragment_bytes = generate_vote_fragment(keypair, vote_cast)?;
 
-    // fragment in hex
+    // fragment in hex: output consumed as input to another program
     println!("{:?}", hex::encode(fragment_bytes.clone()));
 
     Ok(())

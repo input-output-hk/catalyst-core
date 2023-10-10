@@ -219,6 +219,7 @@ mod tests {
     #[test]
     fn unit_vector() {
         let uv = UnitVector::new(5, 0).unwrap();
+
         assert_eq!(
             &uv.iter().collect::<Vec<_>>()[..],
             [true, false, false, false, false]

@@ -53,6 +53,7 @@ members = [
   "src/voting-tools-rs",
   "src/cat-data-service",
   "src/audit",
+  "src/sign",
 ]
 
 [workspace.dependencies]

@@ -265,6 +265,7 @@ pub(super) struct TransactionStruct {
 /// Verify the structure of the transaction and return all the offsets
 fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionStructError> {
     let sz = slice.len();
+
     let mut codec = Codec::new(slice);
 
     // read payload
@@ -316,6 +317,7 @@ fn get_spine<P: Payload>(slice: &[u8]) -> Result<TransactionStruct, TransactionS
     }
 
     if codec.has_bytes_left() {
+        println!("codec {:?}", hex::encode(codec.into_inner()));
         return Err(TransactionStructError::SpuriousTrailingData);
     }
     Ok(TransactionStruct {

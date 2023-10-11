@@ -39,12 +39,3 @@ rand_core = { version = "0.5.1", default-features = false }
 
 
 ed25519-dalek = "1.0.1"
-
-[dev-dependencies]
-[lib]
-name = "lib"
-path = "src/lib/mod.rs"
-
-[[bin]]
-name = "signer"
-path = "src/main.rs"

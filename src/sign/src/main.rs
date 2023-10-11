@@ -5,12 +5,15 @@
 use chain_vote::ElectionPublicKey;
 use clap::Parser;
 use color_eyre::Result;
-use lib::fragment::{compose_encrypted_vote_part, generate_vote_fragment};
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
 
 use ed25519_dalek::*;
 use std::error::Error;
+
+use crate::fragment::{compose_encrypted_vote_part, generate_vote_fragment};
+
+mod fragment;
 
 ///
 /// Args defines and declares CLI behaviour within the context of clap

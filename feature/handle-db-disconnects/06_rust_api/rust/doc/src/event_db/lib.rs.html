@@ -110,6 +110,9 @@
 <a href="#110" id="110">110</a>
 <a href="#111" id="111">111</a>
 <a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Catalyst Election Database crate
 </span><span class="kw">use </span>bb8::Pool;
 <span class="kw">use </span>bb8_postgres::PostgresConnectionManager;
@@ -144,7 +147,10 @@
 }
 
 <span class="kw">impl </span>EventDB {
-    <span class="kw">pub async fn </span>new(url: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;EventDB, Error&gt; {
+    <span class="doccomment">/// Return a configured EventDB connection pool.
+    /// Accepts an optional database url, if None is set, it defaults to the
+    /// env var `EVENT_DB_URL`, otherwise it returns an Error.
+    </span><span class="kw">pub async fn </span>new(url: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;EventDB, Error&gt; {
         <span class="kw">let </span>database_url = <span class="kw">match </span>url {
             <span class="prelude-val">Some</span>(url) =&gt; url.to_string(),
             <span class="comment">// If the Database connection URL is not supplied, try and get from the env var.

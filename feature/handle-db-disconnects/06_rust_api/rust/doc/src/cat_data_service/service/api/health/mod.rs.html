@@ -288,10 +288,10 @@
         <span class="kw">let </span>resp = app.get(<span class="string">&quot;/api/health/started&quot;</span>).send().<span class="kw">await</span>;
         resp.assert_status(StatusCode::NO_CONTENT);
 
-        <span class="comment">//let resp = app.get(&quot;/api/health/ready&quot;).send().await;
-        //resp.assert_status(StatusCode::NO_CONTENT);
+        <span class="kw">let </span>resp = app.get(<span class="string">&quot;/api/health/ready&quot;</span>).send().<span class="kw">await</span>;
+        resp.assert_status(StatusCode::NO_CONTENT);
 
-        </span><span class="kw">let </span>resp = app.get(<span class="string">&quot;/api/health/live&quot;</span>).send().<span class="kw">await</span>;
+        <span class="kw">let </span>resp = app.get(<span class="string">&quot;/api/health/live&quot;</span>).send().<span class="kw">await</span>;
         resp.assert_status(StatusCode::NO_CONTENT);
 
         <span class="kw">let </span>resp = app.put(<span class="string">&quot;/api/health/retry-after&quot;</span>).send().<span class="kw">await</span>;

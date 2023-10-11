@@ -44,7 +44,7 @@ const VALUE: u64 = 0;
 /// Padding and Tag are 1 byte each; size must be added to the fragment size
 const PADDING_AND_TAG_SIZE: u32 = 2;
 
-/// Generate vote fragment
+/// Generate vote fragment in bytes
 pub fn generate_vote_fragment(
     keypair: Keypair,
     encrypted_vote: Vec<u8>,
@@ -81,7 +81,7 @@ pub fn generate_vote_fragment(
     Ok(vote_cast.into_inner())
 }
 
-/// Generate Inputs-Outputs-Witnesses
+/// Generate Inputs-Outputs-Witnesses in bytes
 fn compose_inputs_and_witnesses(
     keypair: Keypair,
     data_to_sign: Vec<u8>,
@@ -113,7 +113,7 @@ fn compose_inputs_and_witnesses(
     Ok((inputs, witnesses))
 }
 
-/// compose encrypted vote part
+/// compose encrypted vote and proof in bytes
 pub fn compose_encrypted_vote_part(
     ciphertexts: Vec<Ciphertext>,
     proof: ProofOfCorrectVote,

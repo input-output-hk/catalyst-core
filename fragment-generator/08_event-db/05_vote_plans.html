@@ -1,0 +1,571 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Vote Plan Tables - Catalyst Voting System - Core Technology</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href=".././book/assets/css/mdbook-admonish.css">
+        <link rel="stylesheet" href=".././book/assets/css/open-in.css">
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item affix "><a href="../00_prologue.html">Prologue</a></li><li class="chapter-item "><a href="../01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item "><a href="../02_core_ledger/index.html"><strong aria-hidden="true">2.</strong> Core Ledger</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/01_concepts/index.html"><strong aria-hidden="true">2.1.</strong> General Concepts</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/01_concepts/blockchain.html"><strong aria-hidden="true">2.1.1.</strong> Blockchain concepts</a></li><li class="chapter-item "><a href="../02_core_ledger/01_concepts/network.html"><strong aria-hidden="true">2.1.2.</strong> Network overview</a></li><li class="chapter-item "><a href="../02_core_ledger/01_concepts/node.html"><strong aria-hidden="true">2.1.3.</strong> Node organization</a></li><li class="chapter-item "><a href="../02_core_ledger/01_concepts/stake.html"><strong aria-hidden="true">2.1.4.</strong> Stake</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/index.html"><strong aria-hidden="true">2.2.</strong> Quickstart</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/01_command_line.html"><strong aria-hidden="true">2.2.1.</strong> Command line tools</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/02_passive_node.html"><strong aria-hidden="true">2.2.2.</strong> Starting a passive node</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/03_rest_api.html"><strong aria-hidden="true">2.2.3.</strong> REST Api</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/04_explorer.html"><strong aria-hidden="true">2.2.4.</strong> Explorer mode</a></li><li class="chapter-item "><a href="../02_core_ledger/02_quickstart/05_leader_candidate.html"><strong aria-hidden="true">2.2.5.</strong> How to start a node as a leader candidate</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/index.html"><strong aria-hidden="true">2.3.</strong> Configuration</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/03_configuration/leadership.html"><strong aria-hidden="true">2.3.1.</strong> Leadership</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/logging.html"><strong aria-hidden="true">2.3.2.</strong> Logging</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/mempool.html"><strong aria-hidden="true">2.3.3.</strong> Mempool</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/network.html"><strong aria-hidden="true">2.3.4.</strong> Node network</a></li><li class="chapter-item "><a href="../02_core_ledger/03_configuration/prometheus.html"><strong aria-hidden="true">2.3.5.</strong> Prometheus</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/index.html"><strong aria-hidden="true">2.4.</strong> jcli</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/04_jcli/address.html"><strong aria-hidden="true">2.4.1.</strong> Address</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/certificate.html"><strong aria-hidden="true">2.4.2.</strong> Certificate</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/genesis.html"><strong aria-hidden="true">2.4.3.</strong> Genesis</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/key.html"><strong aria-hidden="true">2.4.4.</strong> cryptographic keys</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/rest.html"><strong aria-hidden="true">2.4.5.</strong> REST</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/transaction.html"><strong aria-hidden="true">2.4.6.</strong> Transaction</a></li><li class="chapter-item "><a href="../02_core_ledger/04_jcli/vote.html"><strong aria-hidden="true">2.4.7.</strong> Voting</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/index.html"><strong aria-hidden="true">2.5.</strong> Staking with Jörmungandr</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/delegating_stake.html"><strong aria-hidden="true">2.5.1.</strong> Delegating your stake</a></li><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/registering_stake_pool.html"><strong aria-hidden="true">2.5.2.</strong> Registering a stake pool</a></li><li class="chapter-item "><a href="../02_core_ledger/05_stake_pool/retiring_stake_pool.html"><strong aria-hidden="true">2.5.3.</strong> Retiring a stake pool</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/index.html"><strong aria-hidden="true">2.6.</strong> Advanced</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/06_advanced/01_the_genesis_block.html"><strong aria-hidden="true">2.6.1.</strong> genesis file</a></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/02_starting_bft_blockchain.html"><strong aria-hidden="true">2.6.2.</strong> starting a bft node</a></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/03_starting_genesis_praos_blockchain.html"><strong aria-hidden="true">2.6.3.</strong> starting a genesis blockchain</a></li><li class="chapter-item "><a href="../02_core_ledger/06_advanced/04_vote_fragments_voteplan_blockchain_relationships.html"><strong aria-hidden="true">2.6.4.</strong> How Vote plans, Vote Fragments and the blockchain transaction work and inter-relate</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/07_specs/index.html"><strong aria-hidden="true">2.7.</strong> Jormungandr Specifications</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/07_specs/migration.html"><strong aria-hidden="true">2.7.1.</strong> MIGRATION</a></li><li class="chapter-item "><a href="../02_core_ledger/07_specs/network.html"><strong aria-hidden="true">2.7.2.</strong> Network</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/index.html"><strong aria-hidden="true">2.8.</strong> testing</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/08_testing/automation.html"><strong aria-hidden="true">2.8.1.</strong> jormungandr-automation</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/hersir.html"><strong aria-hidden="true">2.8.2.</strong> Hersir</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/integration_tests.html"><strong aria-hidden="true">2.8.3.</strong> jormungandr-integration-tests</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/loki.html"><strong aria-hidden="true">2.8.4.</strong> Loki</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/mjolnir.html"><strong aria-hidden="true">2.8.5.</strong> Mjolnir</a></li><li class="chapter-item "><a href="../02_core_ledger/08_testing/thor.html"><strong aria-hidden="true">2.8.6.</strong> Thor</a></li></ol></li><li class="chapter-item "><a href="../02_core_ledger/09_internal_design/index.html"><strong aria-hidden="true">2.9.</strong> Internal Design</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../02_core_ledger/09_internal_design/01_auto-start.html"><strong aria-hidden="true">2.9.1.</strong> Automatic deployment of the voting blockchain</a></li><li class="chapter-item "><a href="../02_core_ledger/09_internal_design/02_permissionless_auth.html"><strong aria-hidden="true">2.9.2.</strong> Permissionless Auth</a></li></ol></li></ol></li><li class="chapter-item "><a href="../03_core_testing/index.html"><strong aria-hidden="true">3.</strong> Catalyst testing User Guide</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/iapyx/index.html"><strong aria-hidden="true">3.1.</strong> Iapyx</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/iapyx/iapyx.html"><strong aria-hidden="true">3.1.1.</strong> Iapyx</a></li><li class="chapter-item "><a href="../03_core_testing/iapyx/load.html"><strong aria-hidden="true">3.1.2.</strong> Iapyx Load</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/integration-tests/index.html"><strong aria-hidden="true">3.2.</strong> integration-tests</a></li><li class="chapter-item "><a href="../03_core_testing/registration-service/index.html"><strong aria-hidden="true">3.3.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/registration-service/cli.html"><strong aria-hidden="true">3.3.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../03_core_testing/registration-service/configuration.html"><strong aria-hidden="true">3.3.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/registration-verify-service/index.html"><strong aria-hidden="true">3.4.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/registration-verify-service/cli.html"><strong aria-hidden="true">3.4.1.</strong> Registration Verify CLI</a></li><li class="chapter-item "><a href="../03_core_testing/registration-verify-service/configuration.html"><strong aria-hidden="true">3.4.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/snapshot-service/index.html"><strong aria-hidden="true">3.5.</strong> Snapshot trigger service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/snapshot-service/cli.html"><strong aria-hidden="true">3.5.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../03_core_testing/snapshot-service/configuration.html"><strong aria-hidden="true">3.5.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/snapshot-wormhole/index.html"><strong aria-hidden="true">3.6.</strong> snapshot wormhole</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/snapshot-wormhole/configuration.html"><strong aria-hidden="true">3.6.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/valgrind/index.html"><strong aria-hidden="true">3.7.</strong> valgrind</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/valgrind/configuration.html"><strong aria-hidden="true">3.7.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/vitup/index.html"><strong aria-hidden="true">3.8.</strong> vitup</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/vitup/configuration.html"><strong aria-hidden="true">3.8.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation/index.html"><strong aria-hidden="true">3.8.2.</strong> Data Generation</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation/reset.html"><strong aria-hidden="true">3.8.2.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation/snapshot.html"><strong aria-hidden="true">3.8.2.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../03_core_testing/vitup/data_generation.html"><strong aria-hidden="true">3.8.3.</strong> Data Generation</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/mock.html"><strong aria-hidden="true">3.8.4.</strong> Mock</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/mock_farm.html"><strong aria-hidden="true">3.8.5.</strong> Mock Farm</a></li><li class="chapter-item "><a href="../03_core_testing/vitup/run_modes.html"><strong aria-hidden="true">3.8.6.</strong> Configuration modes</a></li></ol></li></ol></li><li class="chapter-item "><a href="../04_core_vitss/index.html"><strong aria-hidden="true">4.</strong> Core VIT Servicing Station</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../04_core_vitss/testing.html"><strong aria-hidden="true">4.1.</strong> vit-servicing-station-tests</a></li></ol></li><li class="chapter-item "><a href="../05_unified_platform/index.html"><strong aria-hidden="true">5.</strong> Unified Platform</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/index.html"><strong aria-hidden="true">5.1.</strong> Overview</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/01_cardano_nodes.html"><strong aria-hidden="true">5.1.1.</strong> Cardano Nodes</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/index.html"><strong aria-hidden="true">5.1.2.</strong> Bridge Pipeline</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/01_block_reader.html"><strong aria-hidden="true">5.1.2.1.</strong> Block Reader</a></li></ol></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/03_rest_http_service.html"><strong aria-hidden="true">5.1.3.</strong> REST HTTP Service</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/04_event_stream.html"><strong aria-hidden="true">5.1.4.</strong> Event Stream</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/index.html"><strong aria-hidden="true">5.1.5.</strong> Database</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/01_registration_db.html"><strong aria-hidden="true">5.1.5.1.</strong> Registrations Database</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/02_staked_ada_db.html"><strong aria-hidden="true">5.1.5.2.</strong> Staked ADA Database</a></li><li class="chapter-item "><a href="../05_unified_platform/01_catalyst-cardano-bridge/05_database/03_transaction_state.html"><strong aria-hidden="true">5.1.5.3.</strong> Transaction State Database</a></li></ol></li></ol></li></ol></li><li class="chapter-item "><a href="../06_rust_api/index.html"><strong aria-hidden="true">6.</strong> Rust API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../06_rust_api/rust_style_guide.html"><strong aria-hidden="true">6.1.</strong> 🦀 Rust Style Guide</a></li></ol></li><li class="chapter-item "><a href="../07_web_api/index.html"><strong aria-hidden="true">7.</strong> Web API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../07_web_api/catalyst-core-api.html"><strong aria-hidden="true">7.1.</strong> Catalyst Core API V1</a></li><li class="chapter-item "><a href="../07_web_api/dbsync-explorer.html"><strong aria-hidden="true">7.2.</strong> dbSync Explorer HTTP/REST API V1</a></li><li class="chapter-item "><a href="../07_web_api/vit-servicing-station-v0.html"><strong aria-hidden="true">7.3.</strong> VIT Servicing Station HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vit-testing-mock-farm-v0.html"><strong aria-hidden="true">7.4.</strong> VIT Testing Mock Farm HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vit-testing-mock-v0.html"><strong aria-hidden="true">7.5.</strong> VIT Testing Mock HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vote-ledger-v0.html"><strong aria-hidden="true">7.6.</strong> Vote Ledger HTTP/REST API V0</a></li><li class="chapter-item "><a href="../07_web_api/vote-ledger-v1.html"><strong aria-hidden="true">7.7.</strong> Vote Ledger HTTP/REST API V1</a></li></ol></li><li class="chapter-item expanded "><a href="../08_event-db/index.html"><strong aria-hidden="true">8.</strong> Event DB crate</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../08_event-db/01_development.html"><strong aria-hidden="true">8.1.</strong> Event DB Local Development</a></li><li class="chapter-item "><a href="../08_event-db/02_config-tables.html"><strong aria-hidden="true">8.2.</strong> General Configuration</a></li><li class="chapter-item "><a href="../08_event-db/03_event-table.html"><strong aria-hidden="true">8.3.</strong> Event Definition Table</a></li><li class="chapter-item "><a href="../08_event-db/04_objective_tables.html"><strong aria-hidden="true">8.4.</strong> Objective and Proposal  Tables</a></li><li class="chapter-item expanded "><a href="../08_event-db/05_vote_plans.html" class="active"><strong aria-hidden="true">8.5.</strong> Vote Plan Tables</a></li><li class="chapter-item "><a href="../08_event-db/06_snapshot_tables.html"><strong aria-hidden="true">8.6.</strong> Voter Voting Power Snapshot and Vote Storage Table</a></li><li class="chapter-item "><a href="../08_event-db/07_automation_support.html"><strong aria-hidden="true">8.7.</strong> Catalyst Automation Support Tables</a></li><li class="chapter-item "><a href="../08_event-db/08_moderation.html"><strong aria-hidden="true">8.8.</strong> Moderation Stage</a></li></ol></li><li class="chapter-item "><a href="../09_python_api/index.html"><strong aria-hidden="true">9.</strong> Python API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../09_python_api/voting-node-api.html"><strong aria-hidden="true">9.1.</strong> Voting Node API documentation</a></li></ol></li><li class="chapter-item "><a href="../97_CONTRIBUTING.html"><strong aria-hidden="true">10.</strong> Contributing to Catalyst Core</a></li><li class="chapter-item "><a href="../98_CODE_OF_CONDUCT.html"><strong aria-hidden="true">11.</strong> Contributor Covenant Code of Conduct</a></li><li class="chapter-item "><a href="../99_example_enhanced_markup.html"><strong aria-hidden="true">12.</strong> Example Enhanced Markup</a></li><li class="chapter-item affix "><a href="../ZZ_suffix.html">Suffix</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Catalyst Voting System - Core Technology</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/input-output-hk/catalyst-core" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="vote-plan-tables"><a class="header" href="#vote-plan-tables">Vote Plan Tables</a></h1>
+<p>These Tables represent the on-chain vote plan for an event.</p>
+<h2 id="vote-plan-table-diagram"><a class="header" href="#vote-plan-table-diagram">Vote Plan Table Diagram</a></h2>
+<pre><svg width="1659pt" height="728pt"
+ viewBox="0.00 0.00 1659.00 727.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 723.5)">
+<title>erd</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-723.5 1655,-723.5 1655,4 -4,4"/>
+<text text-anchor="middle" x="825.5" y="-687" font-family="Times,serif" font-size="30.00" fill="blue">Catalyst Event Database &#45; Vote Plans</text>
+<!-- proposal_voteplan -->
+<g id="node1" class="node">
+<title>proposal_voteplan</title>
+<polygon fill="#009879" stroke="none" points="0,-446.5 0,-473.5 575,-473.5 575,-446.5 0,-446.5"/>
+<polygon fill="none" stroke="black" points="0,-446.5 0,-473.5 575,-473.5 575,-446.5 0,-446.5"/>
+<text text-anchor="start" x="185.5" y="-452.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal_voteplan</text>
+<polygon fill="none" stroke="black" points="0,-422.5 0,-446.5 168,-446.5 168,-422.5 0,-422.5"/>
+<text text-anchor="start" x="52.5" y="-427.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="168,-422.5 168,-446.5 251,-446.5 251,-422.5 168,-422.5"/>
+<text text-anchor="start" x="188.5" y="-427.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="251,-422.5 251,-446.5 575,-446.5 575,-422.5 251,-422.5"/>
+<text text-anchor="start" x="355.25" y="-427.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="0,-388.5 0,-422.5 168,-422.5 168,-388.5 0,-388.5"/>
+<polygon fill="none" stroke="black" points="0,-388.5 0,-422.5 168,-422.5 168,-388.5 0,-388.5"/>
+<text text-anchor="start" x="3" y="-400.05" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="168,-388.5 168,-422.5 251,-422.5 251,-388.5 168,-388.5"/>
+<polygon fill="none" stroke="black" points="168,-388.5 168,-422.5 251,-422.5 251,-388.5 168,-388.5"/>
+<text text-anchor="start" x="172.75" y="-400.05" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="#54ff9f" stroke="none" points="251,-388.5 251,-422.5 575,-422.5 575,-388.5 251,-388.5"/>
+<polygon fill="none" stroke="black" points="251,-388.5 251,-422.5 575,-422.5 575,-388.5 251,-388.5"/>
+<text text-anchor="start" x="254" y="-407.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic ID of this Voteplan/Proposal</text>
+<text text-anchor="start" x="254" y="-393.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">M&#45;M relationship.</text>
+<polygon fill="none" stroke="black" points="0,-354.5 0,-388.5 168,-388.5 168,-354.5 0,-354.5"/>
+<text text-anchor="start" x="3" y="-366.05" font-family="Times,serif" font-size="16.00">proposal_id</text>
+<polygon fill="none" stroke="black" points="168,-354.5 168,-388.5 251,-388.5 251,-354.5 168,-354.5"/>
+<text text-anchor="start" x="179.5" y="-367.05" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="251,-354.5 251,-388.5 575,-388.5 575,-354.5 251,-354.5"/>
+<text text-anchor="start" x="254" y="-373.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The link to the Proposal primary key</text>
+<text text-anchor="start" x="254" y="-359.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">that links to this voteplan.</text>
+<polygon fill="none" stroke="black" points="0,-320.5 0,-354.5 168,-354.5 168,-320.5 0,-320.5"/>
+<text text-anchor="start" x="3" y="-332.05" font-family="Times,serif" font-size="16.00">voteplan_id</text>
+<polygon fill="none" stroke="black" points="168,-320.5 168,-354.5 251,-354.5 251,-320.5 168,-320.5"/>
+<text text-anchor="start" x="179.5" y="-333.05" font-family="Times,serif" font-style="italic" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="251,-320.5 251,-354.5 575,-354.5 575,-320.5 251,-320.5"/>
+<text text-anchor="start" x="254" y="-339.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The link to the Voteplan primary key</text>
+<text text-anchor="start" x="254" y="-325.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">that links to this proposal.</text>
+<polygon fill="none" stroke="black" points="0,-272.5 0,-320.5 168,-320.5 168,-272.5 0,-272.5"/>
+<text text-anchor="start" x="3" y="-291.05" font-family="Times,serif" font-size="16.00">bb_proposal_index</text>
+<polygon fill="none" stroke="black" points="168,-272.5 168,-320.5 251,-320.5 251,-272.5 168,-272.5"/>
+<text text-anchor="start" x="185.12" y="-292.05" font-family="Times,serif" font-style="italic" font-size="16.00">bigint</text>
+<polygon fill="none" stroke="black" points="251,-272.5 251,-320.5 575,-320.5 575,-272.5 251,-272.5"/>
+<text text-anchor="start" x="254" y="-305.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The Index with the voteplan used by</text>
+<text text-anchor="start" x="254" y="-291.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">the voting ledger/bulletin board that</text>
+<text text-anchor="start" x="254" y="-277.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">references this proposal.</text>
+<polygon fill="#333333" stroke="none" points="0,-249.5 0,-272.5 575,-272.5 575,-249.5 0,-249.5"/>
+<polygon fill="none" stroke="black" points="0,-249.5 0,-272.5 575,-272.5 575,-249.5 0,-249.5"/>
+<text text-anchor="start" x="3" y="-257.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">Table to link Proposals to Vote plans in a Many to Many relationship.</text>
+</g>
+<!-- voteplan -->
+<g id="node2" class="node">
+<title>voteplan</title>
+<polygon fill="#009879" stroke="none" points="611,-331 611,-358 1132,-358 1132,-331 611,-331"/>
+<polygon fill="none" stroke="black" points="611,-331 611,-358 1132,-358 1132,-331 611,-331"/>
+<text text-anchor="start" x="823.5" y="-337" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voteplan</text>
+<polygon fill="none" stroke="black" points="611,-307 611,-331 742,-331 742,-307 611,-307"/>
+<text text-anchor="start" x="645" y="-311.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="742,-307 742,-331 821,-331 821,-307 742,-307"/>
+<text text-anchor="start" x="760.5" y="-311.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="821,-307 821,-331 1132,-331 1132,-307 821,-307"/>
+<text text-anchor="start" x="918.75" y="-311.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="611,-282 611,-307 742,-307 742,-282 611,-282"/>
+<polygon fill="none" stroke="black" points="611,-282 611,-307 742,-307 742,-282 611,-282"/>
+<text text-anchor="start" x="614" y="-288.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="742,-282 742,-307 821,-307 821,-282 742,-282"/>
+<polygon fill="none" stroke="black" points="742,-282 742,-307 821,-307 821,-282 742,-282"/>
+<text text-anchor="start" x="744.75" y="-288.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="#54ff9f" stroke="none" points="821,-282 821,-307 1132,-307 1132,-282 821,-282"/>
+<polygon fill="none" stroke="black" points="821,-282 821,-307 1132,-307 1132,-282 821,-282"/>
+<text text-anchor="start" x="824" y="-290.82" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic Unique Key</text>
+<polygon fill="none" stroke="black" points="611,-257 611,-282 742,-282 742,-257 611,-257"/>
+<text text-anchor="start" x="614" y="-263.8" font-family="Times,serif" font-size="16.00">objective_id</text>
+<polygon fill="none" stroke="black" points="742,-257 742,-282 821,-282 821,-257 742,-257"/>
+<text text-anchor="start" x="751.5" y="-263.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="821,-257 821,-282 1132,-282 1132,-257 821,-257"/>
+<text text-anchor="start" x="824" y="-265.82" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="none" stroke="black" points="611,-209 611,-257 742,-257 742,-209 611,-209"/>
+<text text-anchor="start" x="614" y="-227.55" font-family="Times,serif" font-size="16.00">id</text>
+<polygon fill="none" stroke="black" points="742,-209 742,-257 821,-257 821,-209 742,-209"/>
+<text text-anchor="start" x="750" y="-227.55" font-family="Times,serif" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="821,-209 821,-257 1132,-257 1132,-209 821,-209"/>
+<text text-anchor="start" x="824" y="-241.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The ID of the Vote plan in the voting</text>
+<text text-anchor="start" x="824" y="-227.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ledger/bulletin board.</text>
+<text text-anchor="start" x="824" y="-213.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">A Binary value encoded as hex.</text>
+<polygon fill="none" stroke="black" points="611,-175 611,-209 742,-209 742,-175 611,-175"/>
+<text text-anchor="start" x="614" y="-186.55" font-family="Times,serif" font-size="16.00">category</text>
+<polygon fill="none" stroke="black" points="742,-175 742,-209 821,-209 821,-175 742,-175"/>
+<text text-anchor="start" x="765.38" y="-186.55" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="821,-175 821,-209 1132,-209 1132,-175 821,-175"/>
+<text text-anchor="start" x="824" y="-193.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The kind of vote which can be cast on</text>
+<text text-anchor="start" x="824" y="-179.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">this vote plan.</text>
+<polygon fill="none" stroke="black" points="611,-127 611,-175 742,-175 742,-127 611,-127"/>
+<text text-anchor="start" x="614" y="-145.55" font-family="Times,serif" font-size="16.00">encryption_key</text>
+<polygon fill="none" stroke="black" points="742,-127 742,-175 821,-175 821,-127 742,-127"/>
+<text text-anchor="start" x="750" y="-146.55" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="821,-127 821,-175 1132,-175 1132,-127 821,-127"/>
+<text text-anchor="start" x="824" y="-159.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The public encryption key used.</text>
+<text text-anchor="start" x="824" y="-145.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">ONLY if required by the voteplan</text>
+<text text-anchor="start" x="824" y="-131.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">category.</text>
+<polygon fill="none" stroke="black" points="611,-93 611,-127 742,-127 742,-93 611,-93"/>
+<text text-anchor="start" x="614" y="-104.55" font-family="Times,serif" font-size="16.00">group_id</text>
+<polygon fill="none" stroke="black" points="742,-93 742,-127 821,-127 821,-93 742,-93"/>
+<text text-anchor="start" x="765.38" y="-105.55" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="821,-93 821,-127 1132,-127 1132,-93 821,-93"/>
+<text text-anchor="start" x="824" y="-111.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The identifier of voting power token</text>
+<text text-anchor="start" x="824" y="-97.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">used withing this plan.</text>
+<polygon fill="none" stroke="black" points="611,-68 611,-93 742,-93 742,-68 611,-68"/>
+<text text-anchor="start" x="614" y="-74.8" font-family="Times,serif" font-size="16.00">token_id</text>
+<polygon fill="none" stroke="black" points="742,-68 742,-93 821,-93 821,-68 742,-68"/>
+<text text-anchor="start" x="765.38" y="-75.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="821,-68 821,-93 1132,-93 1132,-68 821,-68"/>
+<text text-anchor="start" x="824" y="-76.83" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">none</text>
+<polygon fill="#333333" stroke="none" points="611,-45 611,-68 1132,-68 1132,-45 611,-45"/>
+<polygon fill="none" stroke="black" points="611,-45 611,-68 1132,-68 1132,-45 611,-45"/>
+<text text-anchor="start" x="614" y="-52.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">All Vote plans.</text>
+</g>
+<!-- proposal_voteplan&#45;&gt;voteplan -->
+<g id="edge5" class="edge">
+<title>proposal_voteplan:voteplan_id_out&#45;&gt;voteplan:row_id</title>
+<path fill="none" stroke="black" d="M575,-337.5C595.25,-337.5 589.91,-309.11 600.56,-298.47"/>
+<polygon fill="black" stroke="black" points="601.48,-301.86 609.59,-295.04 598.99,-295.32 601.48,-301.86"/>
+</g>
+<!-- proposal -->
+<g id="node6" class="node">
+<title>proposal</title>
+<polygon fill="#009879" stroke="none" points="820.5,-452 820.5,-479 922.5,-479 922.5,-452 820.5,-452"/>
+<polygon fill="none" stroke="black" points="820.5,-452 820.5,-479 922.5,-479 922.5,-452 820.5,-452"/>
+<text text-anchor="start" x="823.5" y="-458" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal</text>
+<polygon fill="none" stroke="black" points="820.5,-428 820.5,-452 922.5,-452 922.5,-428 820.5,-428"/>
+<text text-anchor="start" x="840" y="-432.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="820.5,-403 820.5,-428 922.5,-428 922.5,-403 820.5,-403"/>
+<text text-anchor="start" x="823.5" y="-409.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#333333" stroke="none" points="820.5,-380 820.5,-403 922.5,-403 922.5,-380 820.5,-380"/>
+<polygon fill="none" stroke="black" points="820.5,-380 820.5,-403 922.5,-403 922.5,-380 820.5,-380"/>
+<text text-anchor="start" x="823.5" y="-387.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+</g>
+<!-- proposal_voteplan&#45;&gt;proposal -->
+<g id="edge4" class="edge">
+<title>proposal_voteplan:proposal_id_out&#45;&gt;proposal:row_id</title>
+<path fill="none" stroke="black" d="M575,-371.5C681.53,-371.5 707.32,-412.46 808.17,-415.34"/>
+<polygon fill="black" stroke="black" points="807.94,-418.84 817.99,-415.48 808.04,-411.84 807.94,-418.84"/>
+</g>
+<!-- voteplan_category -->
+<g id="node3" class="node">
+<title>voteplan_category</title>
+<polygon fill="#009879" stroke="none" points="1168,-232.5 1168,-259.5 1651,-259.5 1651,-232.5 1168,-232.5"/>
+<polygon fill="none" stroke="black" points="1168,-232.5 1168,-259.5 1651,-259.5 1651,-232.5 1168,-232.5"/>
+<text text-anchor="start" x="1307.5" y="-238.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voteplan_category</text>
+<polygon fill="none" stroke="black" points="1168,-208.5 1168,-232.5 1261,-232.5 1261,-208.5 1168,-208.5"/>
+<text text-anchor="start" x="1183" y="-213.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1261,-208.5 1261,-232.5 1332,-232.5 1332,-208.5 1261,-208.5"/>
+<text text-anchor="start" x="1275.5" y="-213.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="1332,-208.5 1332,-232.5 1651,-232.5 1651,-208.5 1332,-208.5"/>
+<text text-anchor="start" x="1433.75" y="-213.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="1168,-174.5 1168,-208.5 1261,-208.5 1261,-174.5 1168,-174.5"/>
+<polygon fill="none" stroke="black" points="1168,-174.5 1168,-208.5 1261,-208.5 1261,-174.5 1168,-174.5"/>
+<text text-anchor="start" x="1171" y="-186.05" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="#54ff9f" stroke="none" points="1261,-174.5 1261,-208.5 1332,-208.5 1332,-174.5 1261,-174.5"/>
+<polygon fill="none" stroke="black" points="1261,-174.5 1261,-208.5 1332,-208.5 1332,-174.5 1261,-174.5"/>
+<text text-anchor="start" x="1280.38" y="-186.05" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="#54ff9f" stroke="none" points="1332,-174.5 1332,-208.5 1651,-208.5 1651,-174.5 1332,-174.5"/>
+<polygon fill="none" stroke="black" points="1332,-174.5 1332,-208.5 1651,-208.5 1651,-174.5 1332,-174.5"/>
+<text text-anchor="start" x="1335" y="-193.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The UNIQUE name of this voteplan</text>
+<text text-anchor="start" x="1335" y="-179.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">category.</text>
+<polygon fill="none" stroke="black" points="1168,-140.5 1168,-174.5 1261,-174.5 1261,-140.5 1168,-140.5"/>
+<text text-anchor="start" x="1171" y="-152.05" font-family="Times,serif" font-size="16.00">public_key</text>
+<polygon fill="none" stroke="black" points="1261,-140.5 1261,-174.5 1332,-174.5 1332,-140.5 1261,-140.5"/>
+<text text-anchor="start" x="1263.88" y="-153.05" font-family="Times,serif" font-style="italic" font-size="16.00">boolean</text>
+<polygon fill="none" stroke="black" points="1332,-140.5 1332,-174.5 1651,-174.5 1651,-140.5 1332,-140.5"/>
+<text text-anchor="start" x="1335" y="-159.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Does this vote plan category require a</text>
+<text text-anchor="start" x="1335" y="-145.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">public key.</text>
+<polygon fill="#333333" stroke="none" points="1168,-117.5 1168,-140.5 1651,-140.5 1651,-117.5 1168,-117.5"/>
+<polygon fill="none" stroke="black" points="1168,-117.5 1168,-140.5 1651,-140.5 1651,-117.5 1168,-117.5"/>
+<text text-anchor="start" x="1171" y="-125.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">The category of vote plan currently supported.</text>
+</g>
+<!-- voteplan&#45;&gt;voteplan_category -->
+<g id="edge2" class="edge">
+<title>voteplan:category_out&#45;&gt;voteplan_category:name</title>
+<path fill="none" stroke="black" d="M1132,-191.5C1143.38,-191.5 1148.68,-191.5 1156.55,-191.5"/>
+<polygon fill="black" stroke="black" points="1156.49,-195 1166.49,-191.5 1156.49,-188 1156.49,-195"/>
+</g>
+<!-- voting_group -->
+<g id="node4" class="node">
+<title>voting_group</title>
+<polygon fill="#009879" stroke="none" points="1232.5,-72 1232.5,-99 1586.5,-99 1586.5,-72 1232.5,-72"/>
+<polygon fill="none" stroke="black" points="1232.5,-72 1232.5,-99 1586.5,-99 1586.5,-72 1232.5,-72"/>
+<text text-anchor="start" x="1337.5" y="-78" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">voting_group</text>
+<polygon fill="none" stroke="black" points="1232.5,-48 1232.5,-72 1301.5,-72 1301.5,-48 1232.5,-48"/>
+<text text-anchor="start" x="1235.5" y="-52.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1301.5,-48 1301.5,-72 1349.5,-72 1349.5,-48 1301.5,-48"/>
+<text text-anchor="start" x="1304.5" y="-52.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="1349.5,-48 1349.5,-72 1586.5,-72 1586.5,-48 1349.5,-48"/>
+<text text-anchor="start" x="1410.25" y="-52.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="1232.5,-23 1232.5,-48 1301.5,-48 1301.5,-23 1232.5,-23"/>
+<polygon fill="none" stroke="black" points="1232.5,-23 1232.5,-48 1301.5,-48 1301.5,-23 1232.5,-23"/>
+<text text-anchor="start" x="1235.5" y="-29.8" font-family="Times,serif" font-size="16.00">name</text>
+<polygon fill="#54ff9f" stroke="none" points="1301.5,-23 1301.5,-48 1349.5,-48 1349.5,-23 1301.5,-23"/>
+<polygon fill="none" stroke="black" points="1301.5,-23 1301.5,-48 1349.5,-48 1349.5,-23 1301.5,-23"/>
+<text text-anchor="start" x="1309.38" y="-29.8" font-family="Times,serif" font-size="16.00">text</text>
+<polygon fill="#54ff9f" stroke="none" points="1349.5,-23 1349.5,-48 1586.5,-48 1586.5,-23 1349.5,-23"/>
+<polygon fill="none" stroke="black" points="1349.5,-23 1349.5,-48 1586.5,-48 1586.5,-23 1349.5,-23"/>
+<text text-anchor="start" x="1352.5" y="-31.82" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The ID of this voting group.</text>
+<polygon fill="#333333" stroke="none" points="1232.5,0 1232.5,-23 1586.5,-23 1586.5,0 1232.5,0"/>
+<polygon fill="none" stroke="black" points="1232.5,0 1232.5,-23 1586.5,-23 1586.5,0 1232.5,0"/>
+<text text-anchor="start" x="1235.5" y="-7.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">All Groups.</text>
+</g>
+<!-- voteplan&#45;&gt;voting_group -->
+<g id="edge3" class="edge">
+<title>voteplan:group_id_out&#45;&gt;voting_group:name</title>
+<path fill="none" stroke="black" d="M1132,-109.5C1183.02,-109.5 1177.62,-46.08 1220.26,-36.66"/>
+<polygon fill="black" stroke="black" points="1220.41,-40.17 1229.99,-35.66 1219.69,-33.2 1220.41,-40.17"/>
+</g>
+<!-- objective -->
+<g id="node5" class="node">
+<title>objective</title>
+<polygon fill="#009879" stroke="none" points="1352.5,-354 1352.5,-381 1466.5,-381 1466.5,-354 1352.5,-354"/>
+<polygon fill="none" stroke="black" points="1352.5,-354 1352.5,-381 1466.5,-381 1466.5,-354 1352.5,-354"/>
+<text text-anchor="start" x="1355.5" y="-360" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">objective</text>
+<polygon fill="none" stroke="black" points="1352.5,-330 1352.5,-354 1466.5,-354 1466.5,-330 1352.5,-330"/>
+<text text-anchor="start" x="1378" y="-334.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="1352.5,-305 1352.5,-330 1466.5,-330 1466.5,-305 1352.5,-305"/>
+<text text-anchor="start" x="1355.5" y="-311.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#333333" stroke="none" points="1352.5,-282 1352.5,-305 1466.5,-305 1466.5,-282 1352.5,-282"/>
+<polygon fill="none" stroke="black" points="1352.5,-282 1352.5,-305 1466.5,-305 1466.5,-282 1352.5,-282"/>
+<text text-anchor="start" x="1355.5" y="-289.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+</g>
+<!-- voteplan&#45;&gt;objective -->
+<g id="edge1" class="edge">
+<title>voteplan:objective_id_out&#45;&gt;objective:row_id</title>
+<path fill="none" stroke="black" d="M1132,-269.5C1227.96,-269.5 1249.97,-313.82 1340.15,-317.29"/>
+<polygon fill="black" stroke="black" points="1339.92,-320.78 1349.99,-317.47 1340.05,-313.78 1339.92,-320.78"/>
+</g>
+<!-- LEGEND -->
+<g id="node7" class="node">
+<title>LEGEND</title>
+<polygon fill="Pink" stroke="none" points="149,-644.5 149,-671.5 426,-671.5 426,-644.5 149,-644.5"/>
+<polygon fill="none" stroke="black" points="149,-644.5 149,-671.5 426,-671.5 426,-644.5 149,-644.5"/>
+<text text-anchor="start" x="251.5" y="-650.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">LEGEND</text>
+<polygon fill="none" stroke="black" points="149,-620.5 149,-644.5 324,-644.5 324,-620.5 149,-620.5"/>
+<text text-anchor="start" x="215.5" y="-625.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="324,-620.5 324,-644.5 426,-644.5 426,-620.5 324,-620.5"/>
+<text text-anchor="start" x="338.25" y="-625.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Example</text>
+<polygon fill="#54ff9f" stroke="none" points="149,-595.5 149,-620.5 324,-620.5 324,-595.5 149,-595.5"/>
+<polygon fill="none" stroke="black" points="149,-595.5 149,-620.5 324,-620.5 324,-595.5 149,-595.5"/>
+<text text-anchor="start" x="152" y="-602.3" font-family="Times,serif" font-size="16.00">Primary Key</text>
+<polygon fill="#54ff9f" stroke="none" points="324,-595.5 324,-620.5 426,-620.5 426,-595.5 324,-595.5"/>
+<polygon fill="none" stroke="black" points="324,-595.5 324,-620.5 426,-620.5 426,-595.5 324,-595.5"/>
+<text text-anchor="start" x="338.25" y="-602.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="149,-570.5 149,-595.5 324,-595.5 324,-570.5 149,-570.5"/>
+<text text-anchor="start" x="152" y="-577.3" font-family="Times,serif" font-size="16.00">Standard Field</text>
+<polygon fill="none" stroke="black" points="324,-570.5 324,-595.5 426,-595.5 426,-570.5 324,-570.5"/>
+<text text-anchor="start" x="352.12" y="-577.3" font-family="Times,serif" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="149,-545.5 149,-570.5 324,-570.5 324,-545.5 149,-545.5"/>
+<text text-anchor="start" x="152" y="-552.3" font-family="Times,serif" font-size="16.00">Nullable Field</text>
+<polygon fill="none" stroke="black" points="324,-545.5 324,-570.5 426,-570.5 426,-545.5 324,-545.5"/>
+<text text-anchor="start" x="358.88" y="-553.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="149,-520.5 149,-545.5 324,-545.5 324,-520.5 149,-520.5"/>
+<text text-anchor="start" x="152" y="-527.3" font-family="Times,serif" font-size="16.00">Sized Field</text>
+<polygon fill="none" stroke="black" points="324,-520.5 324,-545.5 426,-545.5 426,-520.5 324,-520.5"/>
+<text text-anchor="start" x="327" y="-527.3" font-family="Times,serif" font-size="16.00">varchar(32)</text>
+<polygon fill="none" stroke="black" points="149,-495.5 149,-520.5 324,-520.5 324,-495.5 149,-495.5"/>
+<text text-anchor="start" x="152" y="-502.3" font-family="Times,serif" font-size="16.00">Autoincrement Field</text>
+<polygon fill="none" stroke="black" points="324,-495.5 324,-520.5 426,-520.5 426,-495.5 324,-495.5"/>
+<text text-anchor="start" x="338.25" y="-502.3" font-family="Times,serif" font-size="16.00">integer+</text>
+</g>
+</g>
+</svg>
+</pre>
+<h2 id="schema"><a class="header" href="#schema">Schema</a></h2>
+<pre><code class="language-sql">-- Catalyst Event Database
+
+-- Vote Plan Categories
+
+CREATE TABLE voteplan_category
+(
+    name TEXT PRIMARY KEY,
+    public_key BOOL
+);
+
+
+INSERT INTO voteplan_category (name, public_key)
+VALUES
+    ('public', false), -- Fully public votes only
+    ('private', true), -- Fully private votes only.
+    ('cast-private', true); -- Private until tally, then decrypted.
+
+COMMENT ON TABLE voteplan_category IS 'The category of vote plan currently supported.';
+COMMENT ON COLUMN voteplan_category.name IS 'The UNIQUE name of this voteplan category.';
+COMMENT ON COLUMN voteplan_category.public_key IS 'Does this vote plan category require a public key.';
+
+
+-- groups
+
+CREATE TABLE voting_group (
+    name TEXT PRIMARY KEY
+);
+
+INSERT INTO voting_group (name)
+VALUES
+    ('direct'), -- Direct Voters
+    ('rep'); -- Delegated Voter (Check what is the real name for this group we already use in snapshot)
+
+COMMENT ON TABLE voting_group IS 'All Groups.';
+COMMENT ON COLUMN voting_group.name IS 'The ID of this voting group.';
+
+-- Vote Plans
+
+CREATE TABLE voteplan
+(
+    row_id SERIAL PRIMARY KEY,
+    objective_id INTEGER NOT NULL,
+
+    id VARCHAR NOT NULL,
+    category TEXT NOT NULL,
+    encryption_key VARCHAR,
+    group_id TEXT,
+    token_id TEXT,
+
+    FOREIGN KEY(objective_id) REFERENCES objective(row_id)  ON DELETE CASCADE,
+    FOREIGN KEY(category) REFERENCES voteplan_category(name)  ON DELETE CASCADE,
+    FOREIGN KEY(group_id) REFERENCES voting_group(name)  ON DELETE CASCADE
+);
+
+COMMENT ON TABLE voteplan IS 'All Vote plans.';
+
+COMMENT ON COLUMN voteplan.row_id IS 'Synthetic Unique Key';
+COMMENT ON COLUMN voteplan.id IS
+'The ID of the Vote plan in the voting ledger/bulletin board.
+A Binary value encoded as hex.';
+COMMENT ON COLUMN voteplan.category IS 'The kind of vote which can be cast on this vote plan.';
+COMMENT ON COLUMN voteplan.encryption_key IS
+'The public encryption key used.
+ONLY if required by the voteplan category.';
+COMMENT ON COLUMN voteplan.group_id IS 'The identifier of voting power token used withing this plan.';
+
+-- Table to link Proposals to Vote plans in a many-many relationship.
+-- This Many-Many relationship arises because:
+--  in the vote ledger/bulletin board,
+--      one proposal may be within multiple different vote plans,
+--      and each voteplan can contain multiple proposals.
+CREATE TABLE proposal_voteplan
+(
+    row_id SERIAL PRIMARY KEY,
+    proposal_id INTEGER,
+    voteplan_id INTEGER,
+    bb_proposal_index BIGINT,
+
+    FOREIGN KEY(proposal_id) REFERENCES proposal(row_id) ON DELETE CASCADE,
+    FOREIGN KEY(voteplan_id) REFERENCES voteplan(row_id) ON DELETE CASCADE
+);
+
+CREATE UNIQUE INDEX proposal_voteplan_idx ON proposal_voteplan(proposal_id,voteplan_id,bb_proposal_index);
+
+COMMENT ON TABLE proposal_voteplan IS 'Table to link Proposals to Vote plans in a Many to Many relationship.';
+COMMENT ON COLUMN proposal_voteplan.row_id IS 'Synthetic ID of this Voteplan/Proposal M-M relationship.';
+COMMENT ON COLUMN proposal_voteplan.proposal_id IS 'The link to the Proposal primary key that links to this voteplan.';
+COMMENT ON COLUMN proposal_voteplan.voteplan_id IS 'The link to the Voteplan primary key that links to this proposal.';
+COMMENT ON COLUMN proposal_voteplan.bb_proposal_index IS 'The Index with the voteplan used by the voting ledger/bulletin board that references this proposal.';
+
+</code></pre>
+<footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/08_event-db/05_vote_plans.md">Edit this page on GitHub.</a></footer>
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../08_event-db/04_objective_tables.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../08_event-db/06_snapshot_tables.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../08_event-db/04_objective_tables.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../08_event-db/06_snapshot_tables.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

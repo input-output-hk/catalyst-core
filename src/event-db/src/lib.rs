@@ -32,6 +32,9 @@ pub struct EventDB {
 }
 
 impl EventDB {
+    /// Return a configured EventDB connection pool.
+    /// Accepts an optional database url, if None is set, it defaults to the
+    /// env var `EVENT_DB_URL`, otherwise it returns an Error.
     pub async fn new(url: Option<&str>) -> Result<EventDB, Error> {
         let database_url = match url {
             Some(url) => url.to_string(),

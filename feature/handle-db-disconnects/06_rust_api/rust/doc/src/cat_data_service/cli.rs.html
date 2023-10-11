@@ -55,7 +55,6 @@
 <a href="#55" id="55">55</a>
 <a href="#56" id="56">56</a>
 <a href="#57" id="57">57</a>
-<a href="#58" id="58">58</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     logger, service,
     settings::{RetryAfterParams, Settings},
@@ -85,8 +84,7 @@
                 logger::init(settings.log_level).unwrap();
 
                 <span class="kw">let </span>state = Arc::new(
-                    State::new_with_delay(<span class="prelude-val">Some</span>(settings.database_url), settings.delay_seconds)
-                        .<span class="kw">await</span><span class="question-mark">?</span>,
+                    State::new(<span class="prelude-val">Some</span>(settings.database_url), <span class="prelude-val">Some</span>(settings.delay_seconds)).<span class="kw">await</span><span class="question-mark">?</span>,
                 );
 
                 <span class="comment">// Check the schema version, if connection to DB timesout, log as warning and

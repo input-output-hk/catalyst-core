@@ -1063,7 +1063,7 @@
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>search_events_test() {
-        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
+        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = app(state);
 
         <span class="kw">let </span>request = Request::builder()
@@ -1405,7 +1405,7 @@
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>search_objectives_test() {
-        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
+        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = app(state);
 
         <span class="kw">let </span>request = Request::builder()
@@ -1706,7 +1706,7 @@
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>search_proposals_test() {
-        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
+        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = app(state);
 
         <span class="kw">let </span>request = Request::builder()

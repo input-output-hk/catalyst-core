@@ -60,13 +60,10 @@
 <a href="#60" id="60">60</a>
 <a href="#61" id="61">61</a>
 <a href="#62" id="62">62</a>
-<a href="#63" id="63">63</a>
-<a href="#64" id="64">64</a>
-<a href="#65" id="65">65</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Shared state used by all endpoints.
 //!
 </span><span class="kw">use crate</span>::{cli::Error, settings::RETRY_AFTER_DELAY_SECONDS_DEFAULT};
-<span class="kw">use </span>event_db::queries::EventDbQueries;
+<span class="kw">use </span>event_db::{queries::EventDbQueries, EventDB};
 <span class="kw">use </span>std::sync::Arc;
 
 <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
@@ -87,19 +84,16 @@
 
 <span class="kw">impl </span>State {
     <span class="attr">#[allow(dead_code)]
-    </span><span class="kw">pub async fn </span>new(database_url: <span class="prelude-ty">Option</span>&lt;String&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
-        <span class="kw">let </span>delay_seconds: u64 = RETRY_AFTER_DELAY_SECONDS_DEFAULT;
-        <span class="self">Self</span>::new_with_delay(database_url, delay_seconds).<span class="kw">await
-    </span>}
-
-    <span class="kw">pub async fn </span>new_with_delay(
+    </span><span class="kw">pub async fn </span>new(
         database_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
-        delay_seconds: u64,
+        delay_seconds: <span class="prelude-ty">Option</span>&lt;u64&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, Error&gt; {
-        <span class="comment">// Get a connection to the Database.
-        </span><span class="kw">let </span>event_db = <span class="kw">match </span>database_url.clone() {
-            <span class="prelude-val">Some</span>(url) =&gt; Arc::new(event_db::EventDB::new(<span class="prelude-val">Some</span>(url.as_str())).<span class="kw">await</span><span class="question-mark">?</span>),
-            <span class="prelude-val">None </span>=&gt; Arc::new(event_db::EventDB::new(<span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>),
+        <span class="kw">let </span>delay_seconds: u64 = delay_seconds.unwrap_or(RETRY_AFTER_DELAY_SECONDS_DEFAULT);
+        <span class="comment">//
+        // Get a connection to the Database.
+        </span><span class="kw">let </span>db = <span class="kw">match </span>database_url.clone() {
+            <span class="prelude-val">Some</span>(url) =&gt; EventDB::new(<span class="prelude-val">Some</span>(url.as_str())).<span class="kw">await</span><span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; EventDB::new(<span class="prelude-val">None</span>).<span class="kw">await</span><span class="question-mark">?</span>,
         };
 
         <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
@@ -108,7 +102,7 @@
         <span class="kw">let </span>state = <span class="self">Self </span>{
             <span class="comment">//db_url: database_url,
             //event_db_handle: Arc::new(RwLock::new(None)),
-            </span>event_db,
+            </span>event_db: Arc::new(db),
             delay_seconds,
             <span class="attr">#[cfg(feature = <span class="string">&quot;jorm-mock&quot;</span>)]
             </span>jorm: std::sync::Mutex::new(jorm),

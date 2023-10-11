@@ -229,10 +229,6 @@
 <a href="#229" id="229">229</a>
 <a href="#230" id="230">230</a>
 <a href="#231" id="231">231</a>
-<a href="#232" id="232">232</a>
-<a href="#233" id="233">233</a>
-<a href="#234" id="234">234</a>
-<a href="#235" id="235">235</a>
 </pre><pre class="rust"><code><span class="kw">use crate</span>::{
     service::Error,
     settings::{RetryAfterParams, RETRY_AFTER_HTTP_DATE_DEFAULT},
@@ -364,7 +360,7 @@
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>health_ready_test() {
-        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
+        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = app(state);
 
         <span class="kw">let </span>request = Request::builder()
@@ -383,7 +379,7 @@
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>health_live_test() {
-        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
+        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = app(state);
 
         <span class="kw">let </span>request = Request::builder()
@@ -405,11 +401,7 @@
         <span class="kw">use </span><span class="kw">crate</span>::settings::RETRY_AFTER_DELAY_SECONDS_ENVVAR;
         <span class="kw">const </span>INITIAL_DELAY_SECONDS: u64 = <span class="number">200</span>;
 
-        <span class="kw">let </span>state = Arc::new(
-            State::new_with_delay(<span class="prelude-val">None</span>, INITIAL_DELAY_SECONDS)
-                .<span class="kw">await
-                </span>.unwrap(),
-        );
+        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(INITIAL_DELAY_SECONDS)).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = app(state);
 
         <span class="comment">// Request without query parameters resets env vars.
@@ -435,7 +427,7 @@
         <span class="comment">// Request with `http_date` query parameter sets `RETRY_AFTER_HTTP_DATE` env var,
         // and resets `RETRY_AFTER_DELAY_SECONDS` to initial state value.
         </span><span class="kw">let </span>request = Request::builder()
-            .uri(<span class="string">&quot;/health/retry-after?http_date=2040-01-01T00:00:00Z&quot;</span>.to_string())
+            .uri(<span class="string">&quot;/health/retry-after?http-date=2040-01-01T00:00:00Z&quot;</span>.to_string())
             .method(<span class="string">&quot;PUT&quot;</span>)
             .body(Body::empty())
             .unwrap();
@@ -454,7 +446,7 @@
         <span class="comment">// Request with `delay_seconds` query parameter sets `RETRY_AFTER_DELAY_SECONDS` env var,
         // and resets `RETRY_AFTER_HTTP_DATE` to the default value.
         </span><span class="kw">let </span>request = Request::builder()
-            .uri(<span class="string">&quot;/health/retry-after?delay_seconds=900&quot;</span>.to_string())
+            .uri(<span class="string">&quot;/health/retry-after?delay-seconds=900&quot;</span>.to_string())
             .method(<span class="string">&quot;PUT&quot;</span>)
             .body(Body::empty())
             .unwrap();

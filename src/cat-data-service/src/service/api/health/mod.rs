@@ -132,8 +132,8 @@ mod tests {
         let resp = app.get("/api/health/started").send().await;
         resp.assert_status(StatusCode::NO_CONTENT);
 
-        //let resp = app.get("/api/health/ready").send().await;
-        //resp.assert_status(StatusCode::NO_CONTENT);
+        let resp = app.get("/api/health/ready").send().await;
+        resp.assert_status(StatusCode::NO_CONTENT);
 
         let resp = app.get("/api/health/live").send().await;
         resp.assert_status(StatusCode::NO_CONTENT);

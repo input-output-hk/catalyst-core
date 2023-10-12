@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["LeadershipLogStatus"],"mod":["internal"],"opaque":[""],"struct":["LeadershipLogHandle","Logs"]};
+window.SIDEBAR_ITEMS = {"enum":["LeadershipLogStatus"],"mod":["internal"],"struct":["LeadershipLogHandle","Logs"]};

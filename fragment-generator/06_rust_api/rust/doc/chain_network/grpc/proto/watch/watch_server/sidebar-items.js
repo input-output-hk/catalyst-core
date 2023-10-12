@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["BlockSubscriptionSvc","SyncMultiverseSvc","TipSubscriptionSvc","WatchServer","_Inner"],"trait":["Watch"]};
+window.SIDEBAR_ITEMS = {"struct":["WatchServer","_Inner"],"trait":["Watch"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["SIZE"],"enum":["AnyBlockVersion","BlockVersion"]};
+window.SIDEBAR_ITEMS = {"enum":["AnyBlockVersion","BlockVersion"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Certificate"],"opaque":[""],"struct":["EvmMapping","MintToken","OwnerStakeDelegation","PoolRegistration","PoolRetirement","PoolUpdate","StakeDelegation","Token","UpdateProposal","UpdateVote","VoteCast","VotePlan","VoteTally"],"trait":["AmbiguousIfMoreThanOne"]};
+window.SIDEBAR_ITEMS = {"enum":["Certificate"],"struct":["EvmMapping","MintToken","OwnerStakeDelegation","PoolRegistration","PoolRetirement","PoolUpdate","StakeDelegation","UpdateProposal","UpdateVote","VoteCast","VotePlan","VoteTally"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["filter","get_delegator_info","get_voters_info"],"mod":["handlers","routes"],"opaque":[""],"static":["CALLSITE","META"],"struct":["DelegatorInfo","RawSnapshotInput","SnapshotInfoInput","VoterInfo","VotersInfo"],"type":["Group","Tag"]};
+window.SIDEBAR_ITEMS = {"fn":["filter","get_delegator_info","get_voters_info"],"mod":["handlers","routes"],"struct":["DelegatorInfo","RawSnapshotInput","SnapshotInfoInput","VoterInfo","VotersInfo"],"type":["Group","Tag"]};

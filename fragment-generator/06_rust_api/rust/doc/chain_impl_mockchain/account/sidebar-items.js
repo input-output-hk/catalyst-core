@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["_strategy_of_0","_to_fn_ptr"],"mod":["test"],"opaque":[""],"struct":["Identifier"],"type":["AccountAlg","Ledger","Witness"]};
+window.SIDEBAR_ITEMS = {"mod":["test"],"struct":["Identifier"],"type":["AccountAlg","Ledger","Witness"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["VotingStatusSerde"]};
+window.SIDEBAR_ITEMS = {};

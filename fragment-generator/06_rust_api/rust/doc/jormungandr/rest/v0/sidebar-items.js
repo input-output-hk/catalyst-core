@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["filter","handle_rejection"],"mod":["handlers","logic"],"opaque":[""],"static":["S"],"struct":["__StaticPath"]};
+window.SIDEBAR_ITEMS = {"fn":["filter","handle_rejection"],"mod":["handlers","logic"]};

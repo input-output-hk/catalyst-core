@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["_DERIVE_core_fmt_Debug_FOR_FragmentVerifierError"],"enum":["ExitStrategy","FragmentVerifierError"],"opaque":[""],"struct":["FragmentVerifier"]};
+window.SIDEBAR_ITEMS = {"constant":["_DERIVE_core_fmt_Debug_FOR_FragmentVerifierError"],"enum":["ExitStrategy","FragmentVerifierError"],"struct":["FragmentVerifier"]};

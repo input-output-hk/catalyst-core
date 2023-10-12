@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["CLIENT_RETRY_WAIT"],"enum":["MockClientError"],"opaque":[""],"struct":["JormungandrClient","JormungandrWatchClient"],"type":["WatchTipNotifier"]};
+window.SIDEBAR_ITEMS = {"constant":["CLIENT_RETRY_WAIT"],"enum":["MockClientError"],"struct":["JormungandrClient","JormungandrWatchClient"],"type":["WatchTipNotifier"]};

@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Cli","Error"],"opaque":[""]};
+window.SIDEBAR_ITEMS = {"enum":["Cli","Error"]};

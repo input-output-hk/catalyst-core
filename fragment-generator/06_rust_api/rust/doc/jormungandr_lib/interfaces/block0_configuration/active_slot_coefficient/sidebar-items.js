@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["TryFromActiveSlotCoefficientError"],"struct":["ActiveSlotCoefficient","ActiveSlotCoefficientVisitor"]};
+window.SIDEBAR_ITEMS = {"enum":["TryFromActiveSlotCoefficientError"],"struct":["ActiveSlotCoefficient"]};

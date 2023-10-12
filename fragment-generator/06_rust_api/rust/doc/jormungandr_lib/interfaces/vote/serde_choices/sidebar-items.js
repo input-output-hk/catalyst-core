@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["deserialize","serialize"],"struct":["OptionsVisitor"]};
+window.SIDEBAR_ITEMS = {"fn":["deserialize","serialize"]};

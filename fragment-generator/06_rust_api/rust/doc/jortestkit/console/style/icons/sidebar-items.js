@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["__stability","__static_ref_initialize"],"static":["LAZY"],"struct":["account","block","blockchain","failure","ignored","jcli","jormungandr","scenario","seed","success","transaction","wallet"],"type":["Icon"]};
+window.SIDEBAR_ITEMS = {"struct":["account","block","blockchain","failure","ignored","jcli","jormungandr","scenario","seed","success","transaction","wallet"],"type":["Icon"]};

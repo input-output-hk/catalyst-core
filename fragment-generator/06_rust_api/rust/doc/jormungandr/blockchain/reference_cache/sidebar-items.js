@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"opaque":[""],"struct":["RefCache"]};
+window.SIDEBAR_ITEMS = {"struct":["RefCache"]};

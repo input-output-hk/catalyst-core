@@ -469,7 +469,7 @@
         proof_bytes.put_bytes(<span class="kw-2">&amp;</span>response.to_bytes())<span class="question-mark">?</span>;
     }
 
-    proof_bytes.put_bytes(proof.r().as_bytes())<span class="question-mark">?</span>;
+    proof_bytes.put_bytes(<span class="kw-2">&amp;</span>proof.r().to_bytes())<span class="question-mark">?</span>;
 
     <span class="comment">// prepend with SIZE-ELEMENT-8BIT
     </span><span class="kw">let </span><span class="kw-2">mut </span>proof_vote = Codec::new(Vec::new());

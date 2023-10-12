@@ -2,6 +2,8 @@
 //! Fragment generator
 //!
 
+use bech32::Error as Bech32Error;
+use bech32::FromBase32;
 use chain_vote::ElectionPublicKey;
 use clap::Parser;
 use color_eyre::Result;
@@ -46,14 +48,20 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let pk = hex::decode(args.public_key)?;
     let mut sk = hex::decode(args.private_key)?;
-    let election_pk = hex::decode(args.election_pub_key)?;
+
+    // Election pub key published as a Bech32_encoded address
+    // which consists of 3 parts: A Human-Readable Part (HRP) + Separator + Data:
+    let (_hrp, data, _variant) =
+        bech32::decode(&args.election_pub_key).map_err(Bech32Error::from)?;
+
+    let election_pk = Vec::<u8>::from_base32(&data).map_err(Bech32Error::from)?;
 
     // join sk+pk together, api requirement
     sk.extend(pk.clone());
     let keypair: Keypair = Keypair::from_bytes(&sk)?;
 
     // vote
-    let vote = chain_vote::Vote::new(2, 1 as usize).unwrap();
+    let vote = chain_vote::Vote::new(2, 1_usize)?;
     let crs = chain_vote::Crs::from_hash(args.vote_plan_id.clone().as_bytes());
 
     // parse ek key

@@ -76,7 +76,7 @@ pub fn generate_vote_fragment(
     vote_cast.put_be_u32(data.len() as u32 + PADDING_AND_TAG_SIZE)?;
     vote_cast.put_u8(PADDING)?;
     vote_cast.put_u8(VOTE_CAST_TAG)?;
-    vote_cast.put_bytes(&data.as_slice())?;
+    vote_cast.put_bytes(data.as_slice())?;
 
     Ok(vote_cast.into_inner())
 }
@@ -130,7 +130,7 @@ pub fn compose_encrypted_vote_part(
     // prepend with SIZE-ELEMENT-8BIT
     let mut encrypted_vote = Codec::new(Vec::new());
     encrypted_vote.put_u8(size_element as u8)?;
-    encrypted_vote.put_bytes(&encrypted_bytes.as_slice())?;
+    encrypted_vote.put_bytes(encrypted_bytes.as_slice())?;
 
     let mut proof_bytes = Codec::new(Vec::new());
 
@@ -138,15 +138,15 @@ pub fn compose_encrypted_vote_part(
         proof_bytes.put_bytes(&announcement.to_bytes())?;
     }
 
-    for cipher in proof.ds().into_iter() {
+    for cipher in proof.ds() {
         proof_bytes.put_bytes(&cipher.to_bytes())?;
     }
 
-    for response in proof.zwvs().into_iter() {
+    for response in proof.zwvs() {
         proof_bytes.put_bytes(&response.to_bytes())?;
     }
 
-    proof_bytes.put_bytes(&proof.r().as_bytes())?;
+    proof_bytes.put_bytes(proof.r().as_bytes())?;
 
     // prepend with SIZE-ELEMENT-8BIT
     let mut proof_vote = Codec::new(Vec::new());

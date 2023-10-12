@@ -23,12 +23,12 @@ cargo build --release -p sign
 
 ```bash
 
-ELECTION_PUB_KEY=bed88887abe0a84f64691fe0bdfa3daf1a6cd697a13f07ae07588910ce39c927
+ELECTION_PUB_KEY=ristretto255_votepk1ppxnuxrqa4728evnp2ues000uvwvwtxmtf77ejc29lknjuqqu44s4cfmja
 ALICE_SK=56e367979579e2ce27fbd305892b0706b7dede999a534a864a7430a5c6aefd3c
 ALICE_PK=ea084d2d80ed0ab681333d934efc56df3868d13d46a2de3b7f27f40b62e5344d
 PROPOSAL=5
 VOTE_PLAN_ID=36ad42885189a0ac3438cdb57bc8ac7f6542e05a59d1f2e4d1d38194c9d4ac7b
 
-./target/release/signer --election-pub-key $ELECTION_PUB_KEY --private-key $ALICE_SK --public-key $ALICE_PK --proposal $PROPOSAL --vote-plan-id $VOTE_PLAN_ID
+./target/release/sign --election-pub-key $ELECTION_PUB_KEY --private-key $ALICE_SK --public-key $ALICE_PK --proposal $PROPOSAL --vote-plan-id $VOTE_PLAN_ID
 
 ```

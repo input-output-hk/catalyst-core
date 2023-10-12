@@ -6526,6 +6526,7 @@ checksum = "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
 name = "sign"
 version = "0.1.0"
 dependencies = [
+ "bech32 0.8.1",
  "chain-addr",
  "chain-core",
  "chain-crypto",

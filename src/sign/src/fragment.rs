@@ -146,7 +146,7 @@ pub fn compose_encrypted_vote_part(
         proof_bytes.put_bytes(&response.to_bytes())?;
     }
 
-    proof_bytes.put_bytes(proof.r().as_bytes())?;
+    proof_bytes.put_bytes(&proof.r().to_bytes())?;
 
     // prepend with SIZE-ELEMENT-8BIT
     let mut proof_vote = Codec::new(Vec::new());

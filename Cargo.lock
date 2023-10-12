@@ -6766,7 +6766,7 @@ dependencies = [
  "chain-storage",
  "chain-time",
  "chain-vote",
- "clap 4.2.1",
+ "clap 4.4.6",
  "clap_complete_command",
  "color-eyre",
  "cryptoxide 0.4.4",

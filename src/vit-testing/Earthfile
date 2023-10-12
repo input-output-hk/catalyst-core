@@ -1,0 +1,12 @@
+VERSION 0.7
+
+build:
+    FROM ../../+builder
+    RUN cargo build --locked --release -p iapyx -p valgrind -p vitup
+
+    # Store the artifact
+    SAVE ARTIFACT target/release/iapyx iapyx
+    SAVE ARTIFACT target/release/iapyx-load iapyx-load
+    SAVE ARTIFACT target/release/valgrind valgrind
+    SAVE ARTIFACT target/release/vitup vitup
+    SAVE IMAGE --cache-hint

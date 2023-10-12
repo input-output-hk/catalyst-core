@@ -127,7 +127,7 @@ jobs:
 
       # We are excluding cat-dat-service and event-db because we are already running it with Earthly
       - name: Build and archive tests
-        run: | 
+        run: |
           cargo nextest archive \
             --workspace \
             --exclude vitup \
@@ -138,8 +138,13 @@ jobs:
             --exclude vit-servicing-station-server \
             --exclude vit-servicing-station-tests \
             --exclude vit-servicing-station-lib \
+            --exclude vit-servicing-station-cli-f10 \
+            --exclude vit-servicing-station-server-f10 \
+            --exclude vit-servicing-station-tests-f10 \
+            --exclude vit-servicing-station-lib-f10 \
             --exclude cat-data-service \
             --exclude event-db \
+            --exclude wallet-uniffi \
             --archive-file nextest-archive.tar.zst
 
       - name: Save test archive
@@ -210,6 +215,8 @@ jobs:
           path: |
                   target/debug/vit-servicing-station-cli
                   target/debug/vit-servicing-station-server
+                  target/debug/vit-servicing-station-cli-f10
+                  target/debug/vit-servicing-station-server-f10
                   target/debug/jcli
                   target/debug/jormungandr
                   target/debug/explorer
@@ -220,7 +227,7 @@ jobs:
 
       - name: Install cargo-make
         run: cargo install --force cargo-make
-      
+
       - name: Install refinery
         run: cargo install refinery_cli
 
@@ -231,7 +238,7 @@ jobs:
       - name: Build external dependencies
         if: steps.deps-cache.outputs.cache-hit != 'true'
         run:
-          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p jcli -p jormungandr -p explorer
+          cargo build -p vit-servicing-station-cli -p vit-servicing-station-server -p vit-servicing-station-cli-f10 -p vit-servicing-station-server-f10 -p jcli -p jormungandr -p explorer
 
       - name: Setup Event DB
         env:
@@ -241,7 +248,7 @@ jobs:
       # We are excluding cat-dat-service and event-db because we are already running it with Earthly
       - name: Build and archive tests
         if: steps.archive-cache.outputs.cache-hit != 'true'
-        run: | 
+        run: |
           cargo nextest archive \
             --workspace \
             --exclude vitup \
@@ -252,8 +259,13 @@ jobs:
             --exclude vit-servicing-station-server \
             --exclude vit-servicing-station-tests \
             --exclude vit-servicing-station-lib \
+            --exclude vit-servicing-station-cli-f10 \
+            --exclude vit-servicing-station-server-f10 \
+            --exclude vit-servicing-station-tests-f10 \
+            --exclude vit-servicing-station-lib-f10 \
             --exclude cat-data-service \
             --exclude event-db \
+            --exclude wallet-uniffi \
             --archive-file nextest-archive.tar.zst
 
       - name: Run Catalyst Core tests
@@ -374,11 +386,18 @@ jobs:
         run:
           sudo apt install -y protobuf-compiler libssl-dev libpq-dev libsqlite3-dev pkg-config
 
+      - name: Install uniffi
+        uses: actions-rs/install@v0.1
+        with:
+          crate: uniffi_bindgen
+          version: 0.21.1
+          use-tool-cache: true
+
       - name: Clippy and fmt
         uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{env.RUST_LATEST_STABLE_VERSION}}
           components: rustfmt, clippy
-          
+
       - run: rustup component add clippy
       - run: scripts/check-fmt.sh

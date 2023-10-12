@@ -32,6 +32,7 @@ build-cache:
         libsqlite3-dev \
         protobuf-compiler
 
+
     RUN cargo chef cook --release
     SAVE ARTIFACT target
     SAVE ARTIFACT $CARGO_HOME cargo_home
@@ -64,6 +65,7 @@ builder:
         libpq-dev \
         libsqlite3-dev \
         protobuf-compiler
+
     RUN rustup component add rustfmt
     COPY --dir book src tests Cargo.lock Cargo.toml .
     COPY +build-cache/cargo_home $CARGO_HOME

@@ -23,6 +23,7 @@ members = [
   "src/chain-wallet-libs/bindings/wallet-c",
   "src/chain-wallet-libs/bindings/wallet-core",
   "src/chain-wallet-libs/bindings/wallet-wasm-js",
+  "src/chain-wallet-libs/bindings/wallet-uniffi",
   "src/event-db",
   "src/jormungandr/jormungandr-lib",
   "src/jormungandr/jormungandr",
@@ -53,6 +54,10 @@ members = [
   "src/voting-tools-rs",
   "src/cat-data-service",
   "src/audit",
+  "src/vit-servicing-station-f10/vit-servicing-station-cli-f10",
+  "src/vit-servicing-station-f10/vit-servicing-station-lib-f10",
+  "src/vit-servicing-station-f10/vit-servicing-station-server-f10",
+  "src/vit-servicing-station-f10/vit-servicing-station-tests-f10",
   "src/sign",
 ]
 

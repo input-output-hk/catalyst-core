@@ -162,7 +162,12 @@ impl Wallet {
         let mut guard = self.0.lock().unwrap();
 
         guard
-            .set_state(wallet_core::Value(value), counter)
+            .set_state(
+                wallet_core::Value(value),
+                counter
+                    .try_into()
+                    .map_err(|_| WalletError::InvalidSpendingCounters)?,
+            )
             .map_err(|_| WalletError::InvalidSpendingCounters)?;
 
         Ok(())
@@ -203,7 +208,7 @@ impl Wallet {
     pub fn spending_counters(&self) -> Vec<u32> {
         let wallet = self.0.lock().unwrap();
 
-        wallet.spending_counter()
+        wallet.spending_counter().to_vec()
     }
 
     pub fn total_value(&self) -> Value {

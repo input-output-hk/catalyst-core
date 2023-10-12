@@ -1,0 +1,45 @@
+name: Nix
+on:
+  push:
+    branches:
+      - master
+      - catalyst-fund*
+  pull_request:
+
+jobs:
+  build-server:
+    name: Build server
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup
+      uses: ./.github/actions/nix-common-setup
+      with:
+        CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+    - name: Flake check
+      run: nix flake check
+    - name: Build
+      run: nix build .#vit-servicing-station-server
+
+  build:
+    name: Build ${{ matrix.package }}
+    needs: build-server
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+        - cli
+        - lib
+        - tests
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup
+      uses: ./.github/actions/nix-common-setup
+      with:
+        CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+    - name: Build
+      run: nix build .#vit-servicing-station-${{ matrix.package }}

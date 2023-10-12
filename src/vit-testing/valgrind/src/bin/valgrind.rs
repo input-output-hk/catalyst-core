@@ -75,7 +75,7 @@ async fn main() {
 
         let block0_content = server_stub.block0();
 
-        let block0 = warp::path!("block0").map(move || Ok(block0_content.clone()));
+        let block0 = warp::path!("block0").map(move || block0_content.clone());
 
         root.and(
             proposals

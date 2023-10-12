@@ -38,14 +38,19 @@ docker-compose:
 
 # Need to be run with the -P flag
 test:
-    FROM ../../+builder
+    FROM earthly/dind:alpine
 
     COPY +docker-compose/docker-compose.yml .
     WITH DOCKER \
         --compose docker-compose.yml \
         --pull postgres:14 \
         --load migrations:latest=(../../containers/event-db-migrations+docker --data=test) \
+        --load test:latest=(../../+builder) \
         --service migrations \
         --allow-privileged
-        RUN EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev" cargo test -p event-db
+        RUN docker run \
+            --network default_default \
+            -e EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev" \
+            test:latest \
+                cargo test -p event-db
     END

@@ -76,11 +76,21 @@
 <a href="#76" id="76">76</a>
 <a href="#77" id="77">77</a>
 <a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
 </pre><pre class="rust"><code><span class="doccomment">//!
 //! Fragment generator
 //!
 
-</span><span class="kw">use </span>chain_vote::ElectionPublicKey;
+</span><span class="kw">use </span>bech32::Error <span class="kw">as </span>Bech32Error;
+<span class="kw">use </span>bech32::FromBase32;
+<span class="kw">use </span>chain_vote::ElectionPublicKey;
 <span class="kw">use </span>clap::Parser;
 <span class="kw">use </span>color_eyre::Result;
 <span class="kw">use </span>rand::SeedableRng;
@@ -124,14 +134,20 @@
 
     <span class="kw">let </span>pk = hex::decode(args.public_key)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>sk = hex::decode(args.private_key)<span class="question-mark">?</span>;
-    <span class="kw">let </span>election_pk = hex::decode(args.election_pub_key)<span class="question-mark">?</span>;
+
+    <span class="comment">// Election pub key published as a Bech32_encoded address
+    // which consists of 3 parts: A Human-Readable Part (HRP) + Separator + Data:
+    </span><span class="kw">let </span>(_hrp, data, _variant) =
+        bech32::decode(<span class="kw-2">&amp;</span>args.election_pub_key).map_err(Bech32Error::from)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>election_pk = Vec::&lt;u8&gt;::from_base32(<span class="kw-2">&amp;</span>data).map_err(Bech32Error::from)<span class="question-mark">?</span>;
 
     <span class="comment">// join sk+pk together, api requirement
     </span>sk.extend(pk.clone());
     <span class="kw">let </span>keypair: Keypair = Keypair::from_bytes(<span class="kw-2">&amp;</span>sk)<span class="question-mark">?</span>;
 
     <span class="comment">// vote
-    </span><span class="kw">let </span>vote = chain_vote::Vote::new(<span class="number">2</span>, <span class="number">1 </span><span class="kw">as </span>usize).unwrap();
+    </span><span class="kw">let </span>vote = chain_vote::Vote::new(<span class="number">2</span>, <span class="number">1_usize</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>crs = chain_vote::Crs::from_hash(args.vote_plan_id.clone().as_bytes());
 
     <span class="comment">// parse ek key

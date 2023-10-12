@@ -399,7 +399,7 @@
     vote_cast.put_be_u32(data.len() <span class="kw">as </span>u32 + PADDING_AND_TAG_SIZE)<span class="question-mark">?</span>;
     vote_cast.put_u8(PADDING)<span class="question-mark">?</span>;
     vote_cast.put_u8(VOTE_CAST_TAG)<span class="question-mark">?</span>;
-    vote_cast.put_bytes(<span class="kw-2">&amp;</span>data.as_slice())<span class="question-mark">?</span>;
+    vote_cast.put_bytes(data.as_slice())<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(vote_cast.into_inner())
 }
@@ -453,7 +453,7 @@
     <span class="comment">// prepend with SIZE-ELEMENT-8BIT
     </span><span class="kw">let </span><span class="kw-2">mut </span>encrypted_vote = Codec::new(Vec::new());
     encrypted_vote.put_u8(size_element <span class="kw">as </span>u8)<span class="question-mark">?</span>;
-    encrypted_vote.put_bytes(<span class="kw-2">&amp;</span>encrypted_bytes.as_slice())<span class="question-mark">?</span>;
+    encrypted_vote.put_bytes(encrypted_bytes.as_slice())<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>proof_bytes = Codec::new(Vec::new());
 
@@ -461,15 +461,15 @@
         proof_bytes.put_bytes(<span class="kw-2">&amp;</span>announcement.to_bytes())<span class="question-mark">?</span>;
     }
 
-    <span class="kw">for </span>cipher <span class="kw">in </span>proof.ds().into_iter() {
+    <span class="kw">for </span>cipher <span class="kw">in </span>proof.ds() {
         proof_bytes.put_bytes(<span class="kw-2">&amp;</span>cipher.to_bytes())<span class="question-mark">?</span>;
     }
 
-    <span class="kw">for </span>response <span class="kw">in </span>proof.zwvs().into_iter() {
+    <span class="kw">for </span>response <span class="kw">in </span>proof.zwvs() {
         proof_bytes.put_bytes(<span class="kw-2">&amp;</span>response.to_bytes())<span class="question-mark">?</span>;
     }
 
-    proof_bytes.put_bytes(<span class="kw-2">&amp;</span>proof.r().as_bytes())<span class="question-mark">?</span>;
+    proof_bytes.put_bytes(proof.r().as_bytes())<span class="question-mark">?</span>;
 
     <span class="comment">// prepend with SIZE-ELEMENT-8BIT
     </span><span class="kw">let </span><span class="kw-2">mut </span>proof_vote = Codec::new(Vec::new());

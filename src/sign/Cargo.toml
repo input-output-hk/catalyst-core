@@ -14,9 +14,7 @@ chain-core = { path = "../chain-libs/chain-core" }
 chain-impl-mockchain = { path = "../chain-libs/chain-impl-mockchain" ,features= ["audit"]}
 chain-ser = { path = "../chain-libs/chain-ser" }
 chain-storage = { path = "../chain-libs/chain-storage" }
-chain-time = { path = "../chain-libs/chain-time" }
-wallet = { path = "../chain-wallet-libs/wallet" }
-typed-bytes = { path = "../chain-libs/typed-bytes" }
+
 
 hex = "0.4"
 cryptoxide = "0.4.2"

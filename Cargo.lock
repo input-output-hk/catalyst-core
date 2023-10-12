@@ -6764,7 +6764,6 @@ dependencies = [
  "chain-impl-mockchain",
  "chain-ser",
  "chain-storage",
- "chain-time",
  "chain-vote",
  "clap 4.4.6",
  "clap_complete_command",
@@ -6781,8 +6780,6 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "thiserror",
- "typed-bytes",
- "wallet",
 ]
 
 [[package]]

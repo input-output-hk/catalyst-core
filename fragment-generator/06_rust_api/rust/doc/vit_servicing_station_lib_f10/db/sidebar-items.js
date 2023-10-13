@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["TEST_CONN_QUERY"],"fn":["load_db_connection_pool"],"mod":["migrations","models","queries","schema","views_schema"],"type":["Db","DbConnection","DbConnectionPool","Error"]};

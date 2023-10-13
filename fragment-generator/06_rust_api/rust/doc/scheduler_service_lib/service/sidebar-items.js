@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["WrappedPoisonError"],"fn":["check_if_started","spawn_scheduler"],"struct":["ManagerService"]};

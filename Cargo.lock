@@ -6754,6 +6754,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "24188a676b6ae68c3b2cb3a01be17fbf7240ce009799bb56d5b1409051e78fde"
 
 [[package]]
+name = "sign"
+version = "0.1.0"
+dependencies = [
+ "bech32 0.8.1",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-storage",
+ "chain-vote",
+ "clap 4.4.6",
+ "clap_complete_command",
+ "color-eyre",
+ "cryptoxide 0.4.4",
+ "csv",
+ "ed25519-dalek",
+ "hex",
+ "jormungandr-lib",
+ "rand 0.8.5",
+ "rand_chacha 0.3.1",
+ "rand_core 0.5.1",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "thiserror",
+]
+
+[[package]]
 name = "signal-hook"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"

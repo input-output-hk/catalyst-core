@@ -1,0 +1,40 @@
+[package]
+name = "sign"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chain-crypto = { path = "../chain-libs/chain-crypto" }
+chain-vote = { path = "../chain-libs/chain-vote" }
+jormungandr-lib = { path = "../jormungandr/jormungandr-lib" }
+chain-addr = { path = "../chain-libs/chain-addr" }
+chain-core = { path = "../chain-libs/chain-core" }
+chain-impl-mockchain = { path = "../chain-libs/chain-impl-mockchain" ,features= ["audit"]}
+chain-ser = { path = "../chain-libs/chain-ser" }
+chain-storage = { path = "../chain-libs/chain-storage" }
+
+
+hex = "0.4"
+cryptoxide = "0.4.2"
+rand_chacha = "0.3"
+
+clap = { version = "4", features = ["derive", "cargo"] }
+clap_complete_command = { version = "0.5" }
+
+color-eyre = "0.6"
+thiserror = "1.0.40"
+csv = "1.1"
+
+serde = "1.0"
+serde_json = "1.0"
+serde_yaml = "0.8.17"
+rand = "0.8.3"
+bech32 = "0.8"
+
+
+rand_core = { version = "0.5.1", default-features = false }
+
+
+ed25519-dalek = "1.0.1"

@@ -58,6 +58,7 @@ members = [
   "src/vit-servicing-station-f10/vit-servicing-station-lib-f10",
   "src/vit-servicing-station-f10/vit-servicing-station-server-f10",
   "src/vit-servicing-station-f10/vit-servicing-station-tests-f10",
+  "src/sign",
 ]
 
 [workspace.dependencies]

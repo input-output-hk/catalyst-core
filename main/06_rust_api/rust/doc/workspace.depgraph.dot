@@ -57,6 +57,7 @@ digraph {
     55 [ label = "vit-servicing-station-lib-f10" shape = box]
     56 [ label = "vit-servicing-station-server-f10" shape = box]
     57 [ label = "vit-servicing-station-tests-f10" shape = box]
+    58 [ label = "sign" shape = box]
     1 -> 18 [ ]
     1 -> 24 [ ]
     1 -> 25 [ style = dotted]
@@ -136,5 +137,7 @@ digraph {
     57 -> 7 [ ]
     57 -> 17 [ ]
     57 -> 55 [ ]
+    58 -> 13 [ ]
+    58 -> 15 [ ]
 }
 

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ENCRYPTED_PAYLOAD","EPOCH","INPUT","INPUT_ACCOUNT","NONCE","OUTPUT","PADDING","PADDING_AND_TAG_SIZE","SLOT","VALUE","VOTE_CAST_TAG","WITNESS_SCHEME"],"fn":["compose_encrypted_vote_part","compose_inputs_and_witnesses","generate_vote_fragment"]};

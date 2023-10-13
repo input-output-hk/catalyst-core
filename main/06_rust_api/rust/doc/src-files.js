@@ -42,6 +42,7 @@ var srcIndex = JSON.parse('{\
 "offline":["",[],["main.rs"]],\
 "scheduler_service_lib":["",[["client",[],["args.rs","mod.rs","rest.rs"]],["rest",[],["files.rs","health.rs","mod.rs","token.rs"]]],["config.rs","context.rs","file_lister.rs","lib.rs","service.rs","state.rs"]],\
 "settings":["",[],["lib.rs"]],\
+"sign":["",[],["fragment.rs","main.rs"]],\
 "signals_handler":["",[],["lib.rs"]],\
 "snapshot_cli":["",[],["snapshot-cli.rs"]],\
 "snapshot_lib":["",[],["influence_cap.rs","lib.rs","registration.rs","sve.rs","voter_hir.rs","voting_group.rs"]],\

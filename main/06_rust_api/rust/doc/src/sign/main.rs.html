@@ -162,7 +162,7 @@
         encrypted_vote,
         proof,
         args.proposal,
-        args.vote_plan_id.as_bytes(),
+        <span class="kw-2">&amp;</span>hex::decode(args.vote_plan_id)<span class="question-mark">?</span>,
     )<span class="question-mark">?</span>;
 
     <span class="comment">// fragment in hex: output consumed as input to another program

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["make_witness","make_witness_with_lane","make_witnesses"]};

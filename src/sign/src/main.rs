@@ -76,7 +76,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         encrypted_vote,
         proof,
         args.proposal,
-        args.vote_plan_id.as_bytes(),
+        &hex::decode(args.vote_plan_id)?,
     )?;
 
     // fragment in hex: output consumed as input to another program

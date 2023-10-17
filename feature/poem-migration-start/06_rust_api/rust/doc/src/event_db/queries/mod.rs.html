@@ -27,6 +27,7 @@
 <a href="#27" id="27">27</a>
 <a href="#28" id="28">28</a>
 <a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="self">self</span>::{
     event::{
         ballot::BallotQueries, objective::ObjectiveQueries, proposal::ProposalQueries,
@@ -35,7 +36,7 @@
     registration::RegistrationQueries,
     search::SearchQueries,
 };
-<span class="kw">use </span><span class="kw">crate</span>::EventDB;
+<span class="kw">use crate</span>::{schema_check::SchemaVersion, EventDB};
 
 <span class="kw">pub mod </span>event;
 <span class="kw">pub mod </span>registration;
@@ -52,6 +53,7 @@
     + SearchQueries
     + BallotQueries
     + vit_ss::fund::VitSSFundQueries
+    + SchemaVersion
 {
 }
 

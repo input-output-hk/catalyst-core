@@ -105,11 +105,66 @@
 <a href="#105" id="105">105</a>
 <a href="#106" id="106">106</a>
 <a href="#107" id="107">107</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::service::common::tags::ApiTags;
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{service::common::tags::ApiTags, settings::RetryAfterParams, state::State};
+<span class="kw">use </span>poem::{
+    web::{Data, Query},
+    <span class="prelude-ty">Result</span>,
+};
 <span class="kw">use </span>poem_openapi::OpenApi;
+<span class="kw">use </span>std::sync::Arc;
 
 <span class="kw">mod </span>live_get;
 <span class="kw">mod </span>ready_get;
+<span class="kw">mod </span>retry_after_put;
 <span class="kw">mod </span>started_get;
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>HealthApi;
@@ -152,8 +207,8 @@
     /// * 500 Server Error - If anything within this function fails unexpectedly.
     /// * 503 Service Unavailable - Service is not ready, requests to other
     /// endpoints should not be sent until the service becomes ready.
-    </span><span class="kw">async fn </span>ready_get(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ready_get::AllResponses {
-        ready_get::endpoint().<span class="kw">await
+    </span><span class="kw">async fn </span>ready_get(<span class="kw-2">&amp;</span><span class="self">self</span>, state: Data&lt;<span class="kw-2">&amp;</span>Arc&lt;State&gt;&gt;) -&gt; ready_get::AllResponses {
+        ready_get::endpoint(state).<span class="kw">await
     </span>}
 
     <span class="attr">#[oai(path = <span class="string">&quot;/live&quot;</span>, method = <span class="string">&quot;get&quot;</span>, operation_id = <span class="string">&quot;healthLive&quot;</span>)]
@@ -173,6 +228,34 @@
     /// * 503 Service Unavailable - Service is possibly not running reliably.
     </span><span class="kw">async fn </span>live_get(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; live_get::AllResponses {
         live_get::endpoint().<span class="kw">await
+    </span>}
+
+    <span class="attr">#[oai(
+        path = <span class="string">&quot;/retry-after&quot;</span>,
+        method = <span class="string">&quot;put&quot;</span>,
+        operation_id = <span class="string">&quot;healthRetryAfter&quot;
+    </span>)]
+    </span><span class="doccomment">/// Service Ready
+    ///
+    /// This endpoint is used to determine if the service is ready and able to serve requests.
+    ///
+    /// ## Note
+    ///
+    /// *This endpoint is for internal use of the service deployment infrastructure.
+    /// It may not be exposed publicly.*
+    ///
+    /// ## Responses
+    ///
+    /// * 204 No Content - Service is Ready and can serve requests.
+    /// * 500 Server Error - If anything within this function fails unexpectedly.
+    /// * 503 Service Unavailable - Service is not ready, requests to other
+    /// endpoints should not be sent until the service becomes ready.
+    </span><span class="kw">async fn </span>retry_after(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        params: <span class="prelude-ty">Result</span>&lt;Query&lt;RetryAfterParams&gt;&gt;,
+        state: Data&lt;<span class="kw-2">&amp;</span>Arc&lt;State&gt;&gt;,
+    ) -&gt; retry_after_put::AllResponses {
+        retry_after_put::endpoint(params, state).<span class="kw">await
     </span>}
 }
 
@@ -199,7 +282,7 @@
 
     <span class="attr">#[tokio::test]
     </span><span class="kw">async fn </span>health_test() {
-        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
+        <span class="kw">let </span>state = Arc::new(State::new(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>).<span class="kw">await</span>.unwrap());
         <span class="kw">let </span>app = mk_test_app(state);
 
         <span class="kw">let </span>resp = app.get(<span class="string">&quot;/api/health/started&quot;</span>).send().<span class="kw">await</span>;
@@ -209,6 +292,21 @@
         resp.assert_status(StatusCode::NO_CONTENT);
 
         <span class="kw">let </span>resp = app.get(<span class="string">&quot;/api/health/live&quot;</span>).send().<span class="kw">await</span>;
+        resp.assert_status(StatusCode::NO_CONTENT);
+
+        <span class="kw">let </span>resp = app.put(<span class="string">&quot;/api/health/retry-after&quot;</span>).send().<span class="kw">await</span>;
+        resp.assert_status(StatusCode::NO_CONTENT);
+
+        <span class="kw">let </span>resp = app
+            .put(<span class="string">&quot;/api/health/retry-after?delay-seconds=1&quot;</span>)
+            .send()
+            .<span class="kw">await</span>;
+        resp.assert_status(StatusCode::NO_CONTENT);
+
+        <span class="kw">let </span>resp = app
+            .put(<span class="string">&quot;/api/health/retry-after?http-date=2099-01-01T00:00:00Z&quot;</span>)
+            .send()
+            .<span class="kw">await</span>;
         resp.assert_status(StatusCode::NO_CONTENT);
     }
 }

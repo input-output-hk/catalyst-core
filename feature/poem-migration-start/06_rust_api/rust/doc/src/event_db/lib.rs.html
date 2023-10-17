@@ -99,12 +99,25 @@
 <a href="#99" id="99">99</a>
 <a href="#100" id="100">100</a>
 <a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Catalyst Election Database crate
 </span><span class="kw">use </span>bb8::Pool;
 <span class="kw">use </span>bb8_postgres::PostgresConnectionManager;
 <span class="kw">use </span>dotenvy::dotenv;
 <span class="kw">use </span>error::Error;
-<span class="kw">use </span>schema_check::SchemaVersion;
 <span class="kw">use </span>std::str::FromStr;
 <span class="kw">use </span>tokio_postgres::NoTls;
 
@@ -113,6 +126,8 @@
 <span class="kw">pub mod </span>queries;
 <span class="kw">pub mod </span>schema_check;
 <span class="kw">pub mod </span>types;
+
+<span class="kw">use </span><span class="kw">crate</span>::schema_check::SchemaVersion;
 
 <span class="doccomment">/// Database URL Environment Variable name.
 /// eg: &quot;`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`&quot;
@@ -131,6 +146,29 @@
     </span>pool: Pool&lt;PostgresConnectionManager&lt;NoTls&gt;&gt;,
 }
 
+<span class="kw">impl </span>EventDB {
+    <span class="doccomment">/// Return a configured EventDB connection pool.
+    /// Accepts an optional database url, if None is set, it defaults to the
+    /// env var `EVENT_DB_URL`, otherwise it returns an Error.
+    </span><span class="kw">pub async fn </span>new(url: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;EventDB, Error&gt; {
+        <span class="kw">let </span>database_url = <span class="kw">match </span>url {
+            <span class="prelude-val">Some</span>(url) =&gt; url.to_string(),
+            <span class="comment">// If the Database connection URL is not supplied, try and get from the env var.
+            </span><span class="prelude-val">None </span>=&gt; std::env::var(DATABASE_URL_ENVVAR).map_err(|<span class="kw">_</span>| Error::NoDatabaseUrl)<span class="question-mark">?</span>,
+        };
+
+        <span class="kw">let </span>config = tokio_postgres::config::Config::from_str(<span class="kw-2">&amp;</span>database_url)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
+
+        <span class="kw">let </span>pool = Pool::builder().build(pg_mgr).<span class="kw">await</span><span class="question-mark">?</span>;
+
+        <span class="kw">let </span>db = EventDB { pool };
+
+        <span class="prelude-val">Ok</span>(db)
+    }
+}
+
 <span class="doccomment">/// Establish a connection to the database, and check the schema is up-to-date.
 ///
 /// # Parameters
@@ -144,7 +182,9 @@
 ///
 /// This function will return an error if:
 /// * `url` is None and the environment variable &quot;`DATABASE_URL`&quot; isn&#39;t set.
-/// * There is any error communicating the the database to check its schema.
+/// * There is any error communicating the the database to check its schema, EXCEPT
+///   if the connection to the DB times out. If connection timeout happens, the
+///   schmea version won&#39;t be checked, and it will logged as a warning.
 /// * The database schema in the DB does not 100% match the schema supported by
 ///   this library.
 ///
@@ -156,19 +196,7 @@
     <span class="comment">// Support env vars in a `.env` file,  doesn&#39;t need to exist.
     </span>dotenv().ok();
 
-    <span class="kw">let </span>database_url = <span class="kw">match </span>url {
-        <span class="prelude-val">Some</span>(url) =&gt; url.to_string(),
-        <span class="comment">// If the Database connection URL is not supplied, try and get from the env var.
-        </span><span class="prelude-val">None </span>=&gt; std::env::var(DATABASE_URL_ENVVAR)<span class="question-mark">?</span>,
-    };
-
-    <span class="kw">let </span>config = tokio_postgres::config::Config::from_str(<span class="kw-2">&amp;</span>database_url)<span class="question-mark">?</span>;
-
-    <span class="kw">let </span>pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
-
-    <span class="kw">let </span>pool = Pool::builder().build(pg_mgr).<span class="kw">await</span><span class="question-mark">?</span>;
-
-    <span class="kw">let </span>db = EventDB { pool };
+    <span class="kw">let </span>db = EventDB::new(url).<span class="kw">await</span><span class="question-mark">?</span>;
 
     db.schema_version_check().<span class="kw">await</span><span class="question-mark">?</span>;
 

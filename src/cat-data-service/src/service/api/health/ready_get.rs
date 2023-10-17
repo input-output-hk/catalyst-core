@@ -39,7 +39,6 @@ pub(crate) type AllResponses = response! {
 /// * 204 No Content - Service is Ready to serve requests.
 /// * 500 Server Error - If anything within this function fails unexpectedly. (Possible but unlikely)
 /// * 503 Service Unavailable - Service is not ready, do not send other requests.
-#[allow(clippy::unused_async)]
 pub(crate) async fn endpoint(state: Data<&Arc<State>>) -> AllResponses {
     // otherwise everything seems to be A-OK
     match state.event_db.schema_version_check().await {

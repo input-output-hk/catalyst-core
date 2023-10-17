@@ -485,6 +485,9 @@
 <a href="#485" id="485">485</a>
 <a href="#486" id="486">486</a>
 <a href="#487" id="487">487</a>
+<a href="#488" id="488">488</a>
+<a href="#489" id="489">489</a>
+<a href="#490" id="490">490</a>
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::{Threshold, VoteCount};
 <span class="kw">use </span>chain_addr::{Discrimination, Kind};
 <span class="kw">use </span>chain_impl_mockchain::transaction::UnspecifiedAccountIdentifier;
@@ -874,11 +877,14 @@
             Rewards::ONE,
         )
         .unwrap();
-        assert_are_close(rewards.values().sum::&lt;Rewards&gt;(), Rewards::ONE);
-        <span class="kw">for </span>(<span class="kw">_</span>, reward) <span class="kw">in </span>rewards {
-            <span class="macro">assert_eq!</span>(reward, Rewards::ONE / Rewards::from(<span class="number">9u8</span>));
-        }
-    }
+        <span class="comment">// The only assertion that we can make at this point is that the sum
+        // of the voter rewards is equal to the total rewards.
+        </span>assert_are_close(rewards.values().sum::&lt;Rewards&gt;(), Rewards::ONE);
+        <span class="comment">// These assertions are invalid, as the rewards are dependent on the weighted capped voting power.
+        // for (_, reward) in rewards {
+        //     assert_eq!(reward, Rewards::ONE / Rewards::from(9u8));
+        // }
+    </span>}
 
     <span class="attr">#[proptest]
     </span><span class="kw">fn </span>test_per_category_threshold(raw_snapshot: RawSnapshot) {

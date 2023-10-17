@@ -96,7 +96,7 @@ mod tests {
 
     #[tokio::test]
     async fn event_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
+        let state = Arc::new(State::new(None, None).await.unwrap());
         let app = app(state);
 
         let request = Request::builder()
@@ -167,7 +167,7 @@ mod tests {
 
     #[tokio::test]
     async fn events_test() {
-        let state = Arc::new(State::new(None).await.unwrap());
+        let state = Arc::new(State::new(None, None).await.unwrap());
         let app = app(state);
 
         let request = Request::builder()

@@ -58,7 +58,7 @@ pub(crate) async fn endpoint(
         }
         15 => {
             error!("id: {id:?}, action: {action:?}");
-            T503(ServiceUnavailable)
+            T503(ServiceUnavailable("120".to_string()))
         }
         20 => {
             panic!("id: {id:?}, action: {action:?}");

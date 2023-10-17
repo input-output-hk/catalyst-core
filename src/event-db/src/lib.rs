@@ -3,7 +3,6 @@ use bb8::Pool;
 use bb8_postgres::PostgresConnectionManager;
 use dotenvy::dotenv;
 use error::Error;
-use schema_check::SchemaVersion;
 use std::str::FromStr;
 use tokio_postgres::NoTls;
 
@@ -12,6 +11,8 @@ pub mod error;
 pub mod queries;
 pub mod schema_check;
 pub mod types;
+
+use crate::schema_check::SchemaVersion;
 
 /// Database URL Environment Variable name.
 /// eg: "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
@@ -30,6 +31,29 @@ pub struct EventDB {
     pool: Pool<PostgresConnectionManager<NoTls>>,
 }
 
+impl EventDB {
+    /// Return a configured EventDB connection pool.
+    /// Accepts an optional database url, if None is set, it defaults to the
+    /// env var `EVENT_DB_URL`, otherwise it returns an Error.
+    pub async fn new(url: Option<&str>) -> Result<EventDB, Error> {
+        let database_url = match url {
+            Some(url) => url.to_string(),
+            // If the Database connection URL is not supplied, try and get from the env var.
+            None => std::env::var(DATABASE_URL_ENVVAR).map_err(|_| Error::NoDatabaseUrl)?,
+        };
+
+        let config = tokio_postgres::config::Config::from_str(&database_url)?;
+
+        let pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
+
+        let pool = Pool::builder().build(pg_mgr).await?;
+
+        let db = EventDB { pool };
+
+        Ok(db)
+    }
+}
+
 /// Establish a connection to the database, and check the schema is up-to-date.
 ///
 /// # Parameters
@@ -43,7 +67,9 @@ pub struct EventDB {
 ///
 /// This function will return an error if:
 /// * `url` is None and the environment variable "`DATABASE_URL`" isn't set.
-/// * There is any error communicating the the database to check its schema.
+/// * There is any error communicating the the database to check its schema, EXCEPT
+///   if the connection to the DB times out. If connection timeout happens, the
+///   schmea version won't be checked, and it will logged as a warning.
 /// * The database schema in the DB does not 100% match the schema supported by
 ///   this library.
 ///
@@ -55,19 +81,7 @@ pub async fn establish_connection(url: Option<&str>) -> Result<EventDB, Error> {
     // Support env vars in a `.env` file,  doesn't need to exist.
     dotenv().ok();
 
-    let database_url = match url {
-        Some(url) => url.to_string(),
-        // If the Database connection URL is not supplied, try and get from the env var.
-        None => std::env::var(DATABASE_URL_ENVVAR)?,
-    };
-
-    let config = tokio_postgres::config::Config::from_str(&database_url)?;
-
-    let pg_mgr = PostgresConnectionManager::new(config, tokio_postgres::NoTls);
-
-    let pool = Pool::builder().build(pg_mgr).await?;
-
-    let db = EventDB { pool };
+    let db = EventDB::new(url).await?;
 
     db.schema_version_check().await?;
 

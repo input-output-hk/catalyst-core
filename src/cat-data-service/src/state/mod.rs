@@ -1,7 +1,7 @@
 //! Shared state used by all endpoints.
 //!
-use crate::cli::Error;
-use event_db::queries::EventDbQueries;
+use crate::{cli::Error, settings::RETRY_AFTER_DELAY_SECONDS_DEFAULT};
+use event_db::{queries::EventDbQueries, EventDB};
 use std::sync::Arc;
 
 #[cfg(feature = "jorm-mock")]
@@ -15,16 +15,22 @@ pub struct State {
     /// This is Private, it needs to be accessed with a function.
     //event_db_handle: Arc<ArcSwap<Option<dyn EventDbQueries>>>, // Private need to get it with a function.
     pub event_db: Arc<dyn EventDbQueries>, // This needs to be obsoleted, we want the DB to be able to be down.
+    pub delay_seconds: u64,
     #[cfg(feature = "jorm-mock")]
     pub jorm: std::sync::Mutex<jorm_mock::JormState>,
 }
 
 impl State {
-    pub async fn new(database_url: Option<String>) -> Result<Self, Error> {
+    pub async fn new(
+        database_url: Option<String>,
+        delay_seconds: Option<u64>,
+    ) -> Result<Self, Error> {
+        let delay_seconds: u64 = delay_seconds.unwrap_or(RETRY_AFTER_DELAY_SECONDS_DEFAULT);
+        //
         // Get a connection to the Database.
-        let event_db = match database_url.clone() {
-            Some(url) => Arc::new(event_db::establish_connection(Some(url.as_str())).await?),
-            None => Arc::new(event_db::establish_connection(None).await?),
+        let db = match database_url.clone() {
+            Some(url) => EventDB::new(Some(url.as_str())).await?,
+            None => EventDB::new(None).await?,
         };
 
         #[cfg(feature = "jorm-mock")]
@@ -33,7 +39,8 @@ impl State {
         let state = Self {
             //db_url: database_url,
             //event_db_handle: Arc::new(RwLock::new(None)),
-            event_db,
+            event_db: Arc::new(db),
+            delay_seconds,
             #[cfg(feature = "jorm-mock")]
             jorm: std::sync::Mutex::new(jorm),
         };

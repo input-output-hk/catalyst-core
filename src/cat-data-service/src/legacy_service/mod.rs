@@ -1,15 +1,20 @@
 //! Main entrypoint to the Legacy AXUM version of the service
 //!
 use crate::service::{Error, ErrorMessage};
+use crate::settings::{
+    RETRY_AFTER_DELAY_SECONDS_DEFAULT, RETRY_AFTER_DELAY_SECONDS_ENVVAR,
+    RETRY_AFTER_HTTP_DATE_DEFAULT, RETRY_AFTER_HTTP_DATE_ENVVAR,
+};
 use crate::state::State;
 use axum::{
     extract::MatchedPath,
-    http::{Method, Request, StatusCode},
+    http::{header, Method, Request, StatusCode},
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::get,
     Json, Router,
 };
+use chrono::{DateTime, Utc};
 use metrics_exporter_prometheus::{Matcher, PrometheusBuilder, PrometheusHandle};
 use serde::Serialize;
 use std::{future::ready, net::SocketAddr, sync::Arc, time::Instant};
@@ -24,8 +29,8 @@ mod v1;
 pub fn app(state: Arc<State>) -> Router {
     // build our application with a route
     let v0 = v0::v0(state.clone());
-    let v1 = v1::v1(state);
-    let health = health::health();
+    let v1 = v1::v1(state.clone());
+    let health = health::health(state);
     Router::new().nest("/api", v1.merge(v0)).merge(health)
 }
 
@@ -36,7 +41,7 @@ fn metrics_app() -> Router {
 
 fn cors_layer() -> CorsLayer {
     CorsLayer::new()
-        .allow_methods([Method::GET, Method::POST])
+        .allow_methods([Method::GET, Method::POST, Method::PUT])
         .allow_origin(Any)
         .allow_headers(Any)
 }
@@ -95,6 +100,47 @@ fn handle_result<T: Serialize>(res: Result<T, Error>) -> Response {
         Ok(res) => (StatusCode::OK, Json(res)).into_response(),
         Err(Error::EventDb(event_db::error::Error::NotFound(error))) => {
             (StatusCode::NOT_FOUND, Json(ErrorMessage::new(error))).into_response()
+        }
+        Err(Error::EventDb(event_db::error::Error::ConnectionTimeout)) => {
+            let http_date: DateTime<Utc> = {
+                // Check the current value of the `RETRY_AFTER_HTTP_DATE` env var,
+                // this is needed because the value can modified  by the
+                // '/health/retry-after' endpoint.
+                if let Ok(http_date) = std::env::var(RETRY_AFTER_HTTP_DATE_ENVVAR) {
+                    http_date
+                        .parse()
+                        .unwrap_or(RETRY_AFTER_HTTP_DATE_DEFAULT.parse().unwrap())
+                } else {
+                    RETRY_AFTER_HTTP_DATE_DEFAULT.parse().unwrap()
+                }
+            };
+            if http_date > Utc::now() {
+                // If `http_date` is in the future, return 503 with the `http-date` in the
+                // `Retry-After` header.
+                return (
+                    StatusCode::SERVICE_UNAVAILABLE,
+                    [(
+                        header::RETRY_AFTER,
+                        format!("{}", http_date.format("%a, %d %b %Y %H:%M:%S GMT")),
+                    )],
+                )
+                    .into_response();
+            }
+            let delay_seconds: u64 = {
+                // Check the current value of the `RETRY_AFTER_DELAY_SECONDS` env var,
+                // this is needed because the value can modified  by the
+                // '/health/retry-after' endpoint.
+                if let Ok(delay) = std::env::var(RETRY_AFTER_DELAY_SECONDS_ENVVAR) {
+                    delay.parse().unwrap_or(RETRY_AFTER_DELAY_SECONDS_DEFAULT)
+                } else {
+                    RETRY_AFTER_DELAY_SECONDS_DEFAULT
+                }
+            };
+            (
+                StatusCode::SERVICE_UNAVAILABLE,
+                [(header::RETRY_AFTER, delay_seconds.to_string())],
+            )
+                .into_response()
         }
         Err(error) => (
             StatusCode::INTERNAL_SERVER_ERROR,

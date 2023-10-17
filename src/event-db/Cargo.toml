@@ -24,3 +24,5 @@ tokio = { version = "1", features = ["full"] }
 chrono = { workspace = true }
 
 rust_decimal = {  workspace = true, features = ["serde-with-float", "db-tokio-postgres"] }
+
+tracing = { workspace = true }

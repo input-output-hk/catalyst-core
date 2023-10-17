@@ -1,4 +1,8 @@
-use crate::{logger, service, settings::Settings, state::State};
+use crate::{
+    logger, service,
+    settings::{RetryAfterParams, Settings},
+    state::State,
+};
 use clap::Parser;
 use std::sync::Arc;
 
@@ -22,7 +26,29 @@ impl Cli {
             Self::Run(settings) => {
                 logger::init(settings.log_level).unwrap();
 
-                let state = Arc::new(State::new(Some(settings.database_url)).await?);
+                let state = Arc::new(
+                    State::new(Some(settings.database_url), Some(settings.delay_seconds)).await?,
+                );
+
+                // Check the schema version, if connection to DB timesout, log as warning and
+                // continue, otherwise, return Error.
+                match state.event_db.schema_version_check().await {
+                    Ok(current_ver) => {
+                        tracing::info!(schema_version = current_ver, "verified schema version")
+                    }
+                    Err(e) => {
+                        tracing::warn!(error = e.to_string(), "could not verify schema version");
+                        // Only return error if it is not a connection timeout
+                        if e != event_db::error::Error::ConnectionTimeout {
+                            return Err(e.into());
+                        }
+                    }
+                };
+
+                // Initialize the `RETRY_AFTER_DELAY_SECONDS` env var with the
+                // initial value stored in settings.
+                RetryAfterParams::delay_seconds_set_var(settings.delay_seconds);
+
                 service::run(&settings.address, &settings.metrics_address, state).await?;
                 Ok(())
             }

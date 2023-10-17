@@ -21,7 +21,6 @@ pub struct State {
 }
 
 impl State {
-    #[allow(dead_code)]
     pub async fn new(
         database_url: Option<String>,
         delay_seconds: Option<u64>,

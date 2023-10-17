@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["endpoint"],"opaque":[""],"static":["CALLSITE","META"],"type":["AllResponses"]};

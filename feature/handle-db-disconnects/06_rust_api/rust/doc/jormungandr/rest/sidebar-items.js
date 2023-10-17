@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["display_internal_server_error","error_to_body","run_server_with_app","setup_cors","setup_prometheus","start_rest_server"],"mod":["prometheus","v0","v1"],"opaque":[""],"static":["CALLSITE","META","S"],"struct":["Config","__StaticPath"]};

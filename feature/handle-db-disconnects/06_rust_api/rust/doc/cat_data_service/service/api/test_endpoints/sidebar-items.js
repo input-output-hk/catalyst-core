@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["test_get","test_post"],"opaque":[""],"struct":["TestApi"]};

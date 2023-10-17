@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["HIGH_INTEREST","LOW_INTERESET","NORMAL_INTEREST"],"fn":["parse_interest"],"struct":["ParseError","Rings","RingsConfig"]};

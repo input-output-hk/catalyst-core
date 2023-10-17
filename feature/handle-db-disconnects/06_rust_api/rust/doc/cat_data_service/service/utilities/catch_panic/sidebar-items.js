@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["BACKTRACE","LOCATION"],"fn":["__getit","__init","set_panic_hook"],"static":["__KEY"],"struct":["ServicePanicHandler"]};

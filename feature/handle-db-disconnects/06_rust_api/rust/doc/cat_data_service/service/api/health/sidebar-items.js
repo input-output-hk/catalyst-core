@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["live_get","ready_get","retry_after_put","started_get"],"opaque":[""],"struct":["HealthApi"]};

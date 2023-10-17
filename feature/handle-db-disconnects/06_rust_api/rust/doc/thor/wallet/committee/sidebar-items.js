@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["single"],"struct":["CommitteeCommunicationData","CommitteeCommunicationDataManager","CommitteeDataManager","CommitteeMembershipData","CommitteeMembershipDataManager"]};

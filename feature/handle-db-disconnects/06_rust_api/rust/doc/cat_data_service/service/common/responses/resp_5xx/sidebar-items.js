@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["server_error"],"struct":["ServerError","ServerErrorPayload","ServiceUnavailable"]};

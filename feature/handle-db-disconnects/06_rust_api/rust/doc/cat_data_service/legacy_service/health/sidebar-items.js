@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["health","live_exec","ready_exec","retry_after_exec"],"opaque":[""],"static":["CALLSITE","META"]};

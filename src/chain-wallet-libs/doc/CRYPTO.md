@@ -33,7 +33,7 @@ Valid BIP39 Encoding defined (where CS is Checksum Size):
 | 15 words     | 165 bits     | 160 bits (20 bytes) | 5 bits |
 | 18 words     | 198 bits     | 192 bits (24 bytes) | 6 bits |
 | 21 words     | 231 bits     | 224 bits (28 bytes) | 7 bits |
-| 24 words     | 264 bits     | 254 bits (32 bytes) | 8 bits |
+| 24 words     | 264 bits     | 256 bits (32 bytes) | 8 bits |
 
 Words of the dictionary are different enough that it should
 be hard to swap by mistake one word by another close by,

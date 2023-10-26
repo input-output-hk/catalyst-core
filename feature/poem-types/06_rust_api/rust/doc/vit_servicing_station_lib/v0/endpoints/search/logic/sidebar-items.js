@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["search","search_count"],"opaque":[""]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["next_id","subcommand"],"struct":["Block"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"static":["GLOBAL_ID_COUNTER"],"struct":["Block","BlockId"]};

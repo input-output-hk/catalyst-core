@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["PayloadType"],"opaque":[""],"struct":["ChainLength","EpochNumber","ExternalProposalId","IndexCursor","NonZero","PoolId","PublicKey","Slot","TimeOffsetSeconds","Value","VoteOptionRange","VotePlanCount","VotePlanId","VoteStatusCount","Weight"],"type":["BlockCount","PoolCount","TransactionCount","VotePlanStatusCount"]};

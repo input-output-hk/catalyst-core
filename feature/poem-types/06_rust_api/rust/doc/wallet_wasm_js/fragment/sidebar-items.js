@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["__wasm_bindgen_generated_Fragment_from_bytes","__wasm_bindgen_generated_Fragment_id","__wasm_bindgen_generated_Fragment_to_bytes","__wbg_fragment_new","__wbg_fragmentid_new","__wbg_instanceof_FragmentIds_6c2b8eab6b540adf"],"struct":["Fragment","FragmentId","FragmentIds"]};

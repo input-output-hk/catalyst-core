@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["ApiValidationError","BadRequest","Forbidden","MethodNotAllowed","NotAcceptable","NotFound","Unauthorized","ValidationError"]};

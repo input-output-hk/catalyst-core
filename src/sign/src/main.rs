@@ -35,6 +35,12 @@ pub struct Args {
     /// proposal to vote on
     #[clap(short, long)]
     proposal: u8,
+    /// Epoch
+    #[clap(short, long)]
+    epoch: u32,
+    /// Slot
+    #[clap(short, long)]
+    slot: u32,
     /// vote plan hash
     #[clap(short, long)]
     vote_plan_id: String,
@@ -77,6 +83,8 @@ fn main() -> Result<(), Box<dyn Error>> {
         proof,
         args.proposal,
         &hex::decode(args.vote_plan_id)?,
+        args.epoch,
+        args.slot,
     )?;
 
     // fragment in hex: output consumed as input to another program

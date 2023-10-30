@@ -17,11 +17,6 @@ const VOTE_CAST_TAG: u8 = 11;
 /// INPUT-ACCOUNT = %xff VALUE UNTAG-ACCOUNT-ID
 const INPUT_ACCOUNT: u8 = 255;
 
-/// Block epoch + slot
-/// This is redundant as time checks have been removed
-const EPOCH: u32 = 0;
-const SLOT: u32 = 0;
-
 /// Only 1 input (subsequently 1 witness), no output
 /// VoteCast TX should have only 1 input, 0 output and 1 witness (signature).
 const INPUT: u8 = 1;
@@ -51,6 +46,8 @@ pub fn generate_vote_fragment(
     proof: Vec<u8>,
     proposal: u8,
     vote_plan_id: &[u8],
+    epoch: u32,
+    slot: u32,
 ) -> Result<Vec<u8>, Box<dyn error::Error>> {
     let mut vote_cast = Codec::new(Vec::new());
 
@@ -62,7 +59,8 @@ pub fn generate_vote_fragment(
 
     let data_to_sign = vote_cast.into_inner().clone();
 
-    let (inputs, witness) = compose_inputs_and_witnesses(keypair, data_to_sign.clone())?;
+    let (inputs, witness) =
+        compose_inputs_and_witnesses(keypair, data_to_sign.clone(), epoch, slot)?;
 
     let mut vote_cast = Codec::new(Vec::new());
     vote_cast.put_bytes(&data_to_sign)?;
@@ -85,11 +83,13 @@ pub fn generate_vote_fragment(
 fn compose_inputs_and_witnesses(
     keypair: Keypair,
     data_to_sign: Vec<u8>,
+    epoch: u32,
+    slot: u32,
 ) -> Result<(Vec<u8>, Vec<u8>), Box<dyn error::Error>> {
     let mut inputs = Codec::new(Vec::new());
 
-    inputs.put_be_u32(EPOCH)?;
-    inputs.put_be_u32(SLOT)?;
+    inputs.put_be_u32(epoch)?;
+    inputs.put_be_u32(slot)?;
     inputs.put_u8(INPUT)?;
     inputs.put_u8(OUTPUT)?;
 
@@ -219,6 +219,8 @@ mod tests {
             proof,
             5,
             &hex::decode(vote_plan_id.clone()).unwrap(),
+            0,
+            0,
         )
         .unwrap();
 

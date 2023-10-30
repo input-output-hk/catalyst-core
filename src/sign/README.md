@@ -12,6 +12,8 @@
 - Alice private key
 - proposal to vote on
 - vote plan id (hash of voteplan)
+- epoch
+- slot
 
 *Example usage:*
 

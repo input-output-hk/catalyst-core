@@ -14,7 +14,6 @@ permissions:
 env:
   AWS_REGION: eu-central-1
   AWS_ROLE_ARN: arn:aws:iam::332405224602:role/ci
-  EARTHLY_VERSION: 0.7.6
   ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
   TAG: ${{ github.sha }}
 
@@ -25,19 +24,15 @@ jobs:
     env:
       FORCE_COLOR: 1
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Setup CI
         uses: input-output-hk/catalyst-ci/actions/setup@master
         with:
           aws_role_arn: ${{ env.AWS_ROLE_ARN }}
           aws_region: ${{ env.AWS_REGION }}
-          earthly_version: ${{ env.EARTHLY_VERSION }}
-      - name: Install Earthly
-        uses: earthly/actions/setup-earthly@v1
-        with:
-          version: v0.7.0
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+          earthly_runner_secret: ${{ secrets.EARTHLY_RUNNER_SECRET }}
       - name: Login to ECR
         uses: docker/login-action@v2
         with:

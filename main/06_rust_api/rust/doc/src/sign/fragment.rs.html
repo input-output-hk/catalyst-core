@@ -321,6 +321,8 @@
 <a href="#321" id="321">321</a>
 <a href="#322" id="322">322</a>
 <a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Generate Fragments based upon specification
 //! Reference specfication for more context in relation to constants outlined in this file.
 
@@ -339,11 +341,6 @@
 
 <span class="doccomment">/// INPUT-ACCOUNT = %xff VALUE UNTAG-ACCOUNT-ID
 </span><span class="kw">const </span>INPUT_ACCOUNT: u8 = <span class="number">255</span>;
-
-<span class="doccomment">/// Block epoch + slot
-/// This is redundant as time checks have been removed
-</span><span class="kw">const </span>EPOCH: u32 = <span class="number">0</span>;
-<span class="kw">const </span>SLOT: u32 = <span class="number">0</span>;
 
 <span class="doccomment">/// Only 1 input (subsequently 1 witness), no output
 /// VoteCast TX should have only 1 input, 0 output and 1 witness (signature).
@@ -374,6 +371,8 @@
     proof: Vec&lt;u8&gt;,
     proposal: u8,
     vote_plan_id: <span class="kw-2">&amp;</span>[u8],
+    epoch: u32,
+    slot: u32,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;u8&gt;, Box&lt;<span class="kw">dyn </span>error::Error&gt;&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>vote_cast = Codec::new(Vec::new());
 
@@ -385,7 +384,8 @@
 
     <span class="kw">let </span>data_to_sign = vote_cast.into_inner().clone();
 
-    <span class="kw">let </span>(inputs, witness) = compose_inputs_and_witnesses(keypair, data_to_sign.clone())<span class="question-mark">?</span>;
+    <span class="kw">let </span>(inputs, witness) =
+        compose_inputs_and_witnesses(keypair, data_to_sign.clone(), epoch, slot)<span class="question-mark">?</span>;
 
     <span class="kw">let </span><span class="kw-2">mut </span>vote_cast = Codec::new(Vec::new());
     vote_cast.put_bytes(<span class="kw-2">&amp;</span>data_to_sign)<span class="question-mark">?</span>;
@@ -408,11 +408,13 @@
 </span><span class="kw">fn </span>compose_inputs_and_witnesses(
     keypair: Keypair,
     data_to_sign: Vec&lt;u8&gt;,
+    epoch: u32,
+    slot: u32,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;(Vec&lt;u8&gt;, Vec&lt;u8&gt;), Box&lt;<span class="kw">dyn </span>error::Error&gt;&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>inputs = Codec::new(Vec::new());
 
-    inputs.put_be_u32(EPOCH)<span class="question-mark">?</span>;
-    inputs.put_be_u32(SLOT)<span class="question-mark">?</span>;
+    inputs.put_be_u32(epoch)<span class="question-mark">?</span>;
+    inputs.put_be_u32(slot)<span class="question-mark">?</span>;
     inputs.put_u8(INPUT)<span class="question-mark">?</span>;
     inputs.put_u8(OUTPUT)<span class="question-mark">?</span>;
 
@@ -542,6 +544,8 @@
             proof,
             <span class="number">5</span>,
             <span class="kw-2">&amp;</span>hex::decode(vote_plan_id.clone()).unwrap(),
+            <span class="number">0</span>,
+            <span class="number">0</span>,
         )
         .unwrap();
 

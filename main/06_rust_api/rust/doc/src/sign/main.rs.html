@@ -84,6 +84,14 @@
 <a href="#84" id="84">84</a>
 <a href="#85" id="85">85</a>
 <a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//!
 //! Fragment generator
 //!
@@ -121,6 +129,12 @@
     <span class="doccomment">/// proposal to vote on
     </span><span class="attr">#[clap(short, long)]
     </span>proposal: u8,
+    <span class="doccomment">/// Epoch
+    </span><span class="attr">#[clap(short, long)]
+    </span>epoch: u32,
+    <span class="doccomment">/// Slot
+    </span><span class="attr">#[clap(short, long)]
+    </span>slot: u32,
     <span class="doccomment">/// vote plan hash
     </span><span class="attr">#[clap(short, long)]
     </span>vote_plan_id: String,
@@ -163,6 +177,8 @@
         proof,
         args.proposal,
         <span class="kw-2">&amp;</span>hex::decode(args.vote_plan_id)<span class="question-mark">?</span>,
+        args.epoch,
+        args.slot,
     )<span class="question-mark">?</span>;
 
     <span class="comment">// fragment in hex: output consumed as input to another program

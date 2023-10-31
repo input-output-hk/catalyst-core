@@ -12,6 +12,8 @@
 - Alice private key
 - proposal to vote on
 - vote plan id (hash of voteplan)
+- epoch
+- slot
 
 *Example usage:*
 
@@ -28,7 +30,9 @@ ALICE_SK=56e367979579e2ce27fbd305892b0706b7dede999a534a864a7430a5c6aefd3c
 ALICE_PK=ea084d2d80ed0ab681333d934efc56df3868d13d46a2de3b7f27f40b62e5344d
 PROPOSAL=5
 VOTE_PLAN_ID=36ad42885189a0ac3438cdb57bc8ac7f6542e05a59d1f2e4d1d38194c9d4ac7b
+EPOCH=0
+SLOT=0
 
-./target/release/sign --election-pub-key $ELECTION_PUB_KEY --private-key $ALICE_SK --public-key $ALICE_PK --proposal $PROPOSAL --vote-plan-id $VOTE_PLAN_ID
+./target/release/sign --election-pub-key $ELECTION_PUB_KEY --private-key $ALICE_SK --public-key $ALICE_PK --proposal $PROPOSAL --vote-plan-id $VOTE_PLAN_ID --epoch $EPOCH --slot $SLOT
 
 ```

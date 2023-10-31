@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["InMemoryDbSync","Settings","SharedInMemoryDbSync"],"trait":["BlockDateFromCardanoAbsoluteSlotNo"],"type":["Address","BlockNo"]};

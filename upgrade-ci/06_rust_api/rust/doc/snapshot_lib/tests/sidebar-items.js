@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["DummyAssigner","_TestNonCatalystRegsAreIgnoredArgs","_TestThresholdArgs","_TestVotingPowerAllDistributedArgs"]};

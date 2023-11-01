@@ -1,7 +1,10 @@
 VERSION 0.7
 
-build:
+deps:
     FROM ../../+rust-toolchain
+
+build:
+    FROM +deps
 
     # Build refinery
     RUN cargo install refinery_cli --version 0.8.7 --root .
@@ -9,10 +12,9 @@ build:
     SAVE ARTIFACT ./bin/refinery refinery
     SAVE IMAGE --cache-hint
 
-docker:
-    FROM ../../+deployment
+publish:
+    FROM debian:stable-slim
     ARG tag="latest"
-    ARG registry
     ARG data="historic"
 
     WORKDIR /eventdb
@@ -52,9 +54,7 @@ docker:
     RUN chmod ugo+x ./entry.sh
 
     ENTRYPOINT ["./entry.sh"]
-
-    # Push the container...
-    SAVE IMAGE --push ${registry}migrations:$tag
+    SAVE IMAGE migrations:$tag
 
 # TODO: Enable this when CI supports passing -P dynamically
 # test:

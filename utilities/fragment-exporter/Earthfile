@@ -1,3 +1,4 @@
+# Set the Earthly version to 0.7
 VERSION 0.7
 
 deps:
@@ -16,7 +17,6 @@ deps:
     COPY poetry.lock .
 
     RUN poetry install --only main --no-root
-    RUN poetry install --only dev --no-root
 
 src:
     FROM +deps
@@ -26,11 +26,12 @@ src:
 check:
     FROM +src
 
+    RUN poetry install --only dev
     RUN poetry run black --check .
     RUN poetry run ruff check .
 
 build:
-    FROM +src
+    FROM +check
 
     RUN poetry export --without-hashes -f requirements.txt --output requirements.txt
     RUN poetry build --no-cache -f wheel

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["staked_utxo_ada"]};

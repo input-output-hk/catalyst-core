@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["delegation_ratio","delegation_ratio_sum"],"struct":["WeightedPoolId","WeightedPoolIds"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["calc_dreps_rewards","filter_requirements"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_impl_queryable_for_group"],"struct":["Group"]};

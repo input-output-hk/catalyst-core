@@ -16,7 +16,7 @@ deps:
     COPY poetry.lock .
 
     RUN poetry install --only main --no-root
-    RUN poetry install --only dev
+    RUN poetry install --only dev --no-root
 
 src:
     FROM +deps

@@ -122,7 +122,7 @@ ci:
     BUILD ./containers/event-db-migrations+test
 
 # Define the test stage, which runs the Rust project's tests
-test:
+test-all:
     BUILD ./src/event-db+test
     BUILD ./src/cat-data-service+test
     BUILD ./utilities/ideascale-importer+test

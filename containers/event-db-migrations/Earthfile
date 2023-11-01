@@ -56,8 +56,10 @@ docker:
     # Push the container...
     SAVE IMAGE --push ${registry}migrations:$tag
 
-test:
-    WITH DOCKER \
-        --load test:latest=+docker
-        RUN docker run test:latest
-    END
+# TODO: Enable this when CI supports passing -P dynamically
+# test:
+#     FROM earthly/dind:alpine
+#     WITH DOCKER \
+#         --load test:latest=+docker
+#         RUN docker run test:latest
+#     END

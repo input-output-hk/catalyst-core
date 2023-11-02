@@ -37,20 +37,21 @@ docker-compose:
     SAVE ARTIFACT docker-compose.yml
 
 # Need to be run with the -P flag
-test:
-    FROM earthly/dind:alpine
+# TODO: Enable this when CI supports passing -P dynamically
+# test:
+#     FROM earthly/dind:alpine
 
-    COPY +docker-compose/docker-compose.yml .
-    WITH DOCKER \
-        --compose docker-compose.yml \
-        --pull postgres:14 \
-        --load migrations:latest=(../../containers/event-db-migrations+docker --data=test) \
-        --load test:latest=(../../+builder) \
-        --service migrations \
-        --allow-privileged
-        RUN docker run \
-            --network default_default \
-            -e EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev" \
-            test:latest \
-                cargo test -p event-db
-    END
+#     COPY +docker-compose/docker-compose.yml .
+#     WITH DOCKER \
+#         --compose docker-compose.yml \
+#         --pull postgres:14 \
+#         --load migrations:latest=(../../containers/event-db-migrations+docker --data=test) \
+#         --load test:latest=(../../+builder) \
+#         --service migrations \
+#         --allow-privileged
+#         RUN docker run \
+#             --network default_default \
+#             -e EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev" \
+#             test:latest \
+#                 cargo test -p event-db
+#     END

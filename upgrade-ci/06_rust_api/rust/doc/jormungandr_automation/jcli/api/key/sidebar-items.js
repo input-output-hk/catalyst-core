@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_KEY_TYPE"],"struct":["Key"]};

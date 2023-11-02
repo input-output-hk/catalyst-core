@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["ballot","ballot_exec"]};

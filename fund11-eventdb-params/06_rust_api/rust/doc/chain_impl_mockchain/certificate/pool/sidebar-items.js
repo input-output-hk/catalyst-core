@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["ALL_USED_BITMASK","MANAGEMENT_THRESHOLD_BITMASK"],"enum":["PoolSignature"],"struct":["PoolOwnersSignature","PoolPermissions","PoolRegistration","PoolRetirement","PoolUpdate"],"type":["GenesisPraosLeaderHash","IndexSignatures","ManagementThreshold","PoolId","PoolOwnersSigned","PoolRegistrationHash"]};

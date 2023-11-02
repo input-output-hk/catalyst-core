@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["OldAddressMatchXPub"],"fn":["oldaddress_from_xpub"],"mod":["tests"],"struct":["OldAddress","UtxoDeclaration"]};

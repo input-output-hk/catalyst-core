@@ -43,11 +43,11 @@ publish:
     COPY --dir ../../src/event-db+build/migrations ./migrations
     IF [ "$data" = "historic" ]
         COPY --dir ../../src/event-db+build/historic_data ./historic_data
+        COPY ../../src/event-db+build/stage_data ./stage_data
     ELSE IF [ "$data" = "test" ]
         COPY --dir ../../src/event-db+build/test_data ./test_data
     END
     COPY ../../src/event-db+build/refinery.toml .
-    COPY ../../src/event-db+build/stage_data ./stage_data
 
     VOLUME /eventdb/tmp
     COPY ./entry.sh .

@@ -100,7 +100,7 @@ all:
     BUILD ./src/voting-tools-rs+docker --tag=$tag --registry=$registry_final
     BUILD ./src/cat-data-service+publish --tag=$tag --registry=$registry_final
 
-    BUILD ./services/voting-node+docker --tag=$tag --registry=$registry_final
+    BUILD ./services/voting-node+publish --tag=$tag --registry=$registry_final
     BUILD ./utilities/ideascale-importer+docker --tag=$tag --registry=$registry_final
 
 all-with-tags:
@@ -148,7 +148,7 @@ local:
     LOCALLY
     BUILD ./containers/event-db-migrations+publish
     BUILD ./src/cat-data-service+publish
-    BUILD ./services/voting-node+docker
+    BUILD ./services/voting-node+publish
 
     RUN mkdir -p ./local
     COPY ./containers/dev-local+build/docker-compose.yml ./local/

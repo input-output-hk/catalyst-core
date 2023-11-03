@@ -91,16 +91,16 @@ all:
     END
 
     # Build and tag all Docker images
-    BUILD ./containers/event-db-migrations+docker --tag=$tag --registry=$registry_final
+    BUILD ./containers/event-db-migrations+publish --tag=$tag --registry=$registry_final
 
     # Build crate images from the workspace
     BUILD ./src/jormungandr/jormungandr+docker --tag=$tag --registry=$registry_final
     BUILD ./src/jormungandr/jcli+docker --tag=$tag --registry=$registry_final
     BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag --registry=$registry_final
     BUILD ./src/voting-tools-rs+docker --tag=$tag --registry=$registry_final
-    BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/cat-data-service+publish --tag=$tag --registry=$registry_final
 
-    BUILD ./services/voting-node+docker --tag=$tag --registry=$registry_final
+    BUILD ./services/voting-node+publish --tag=$tag --registry=$registry_final
     BUILD ./utilities/ideascale-importer+docker --tag=$tag --registry=$registry_final
 
 all-with-tags:
@@ -123,9 +123,10 @@ ci:
 
 # Define the test stage, which runs the Rust project's tests
 test-all:
-    BUILD ./src/event-db+test
-    BUILD ./src/cat-data-service+test
-    BUILD ./utilities/ideascale-importer+test
+# TODO: Enable this when CI supports passing -P dynamically
+#    BUILD ./src/event-db+test
+#    BUILD ./src/cat-data-service+test
+#    BUILD ./utilities/ideascale-importer+test
 
 tag-workspace:
     ARG SVU_VERSION=1.10.2
@@ -145,9 +146,9 @@ tag-workspace:
 
 local:
     LOCALLY
-    BUILD ./containers/event-db-migrations+docker
-    BUILD ./src/cat-data-service+docker
-    BUILD ./services/voting-node+docker
+    BUILD ./containers/event-db-migrations+publish
+    BUILD ./src/cat-data-service+publish
+    BUILD ./services/voting-node+publish
 
     RUN mkdir -p ./local
     COPY ./containers/dev-local+build/docker-compose.yml ./local/

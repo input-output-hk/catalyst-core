@@ -1,43 +1,45 @@
 VERSION 0.7
 
-build:
+deps:
     FROM ../../+builder
+
+build:
+    FROM +deps
     RUN cargo build --locked --release --bin cat-data-service --features jorm-mock
 
     # Store the artifact
     SAVE ARTIFACT target/release/cat-data-service cat-data-service
     SAVE IMAGE --cache-hint
 
-docker:
-    FROM ../../+deployment
+# TODO: Enable this when CI supports passing -P dynamically
+# test:
+#     FROM earthly/dind:alpine
+
+#     COPY ../../src/event-db+docker-compose/docker-compose.yml docker-compose.yml
+#     WITH DOCKER \
+#         --compose docker-compose.yml \
+#         --pull postgres:14 \
+#         --load migrations:latest=(../../containers/event-db-migrations+docker --data=test) \
+#         --load test:latest=(../../+builder) \
+#         --service migrations \
+#         --allow-privileged
+#         RUN docker run \
+#             --network default_default \
+#             -e EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev" \
+#             test:latest \
+#                 cargo test -p cat-data-service --all-features
+#     END
+
+publish:
+    FROM debian:stable-slim
 
     WORKDIR /app
     ARG tag="latest"
-    ARG registry
 
     COPY +build/cat-data-service .
     COPY entry.sh .
     RUN chmod +x entry.sh
 
     ENTRYPOINT ["/app/entry.sh"]
-    SAVE IMAGE --push ${registry}cat-data-service:$tag
-
-# Need to be run with the -P flag
-test:
-    FROM earthly/dind:alpine
-
-    COPY ../../src/event-db+docker-compose/docker-compose.yml docker-compose.yml
-    WITH DOCKER \
-        --compose docker-compose.yml \
-        --pull postgres:14 \
-        --load migrations:latest=(../../containers/event-db-migrations+docker --data=test) \
-        --load test:latest=(../../+builder) \
-        --service migrations \
-        --allow-privileged
-        RUN docker run \
-            --network default_default \
-            -e EVENT_DB_URL="postgres://catalyst-event-dev:CHANGE_ME@postgres/CatalystEventDev" \
-            test:latest \
-                cargo test -p cat-data-service --all-features
-    END
+    SAVE IMAGE cat-data-service:$tag
 

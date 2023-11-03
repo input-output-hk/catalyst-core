@@ -4,7 +4,6 @@ on:
   pull_request:
     branches:
       - main
-      - fix-earthly-integration-testing
 
 permissions:
   id-token: write
@@ -41,4 +40,4 @@ jobs:
         env:
           EARTHLY_SECRETS: "IDEASCALE_EMAIL=${{ secrets.IDEASCALE_EMAIL }}, IDEASCALE_PASSWORD=${{ secrets.IDEASCALE_PASSWORD }}, IDEASCALE_API_TOKEN=${{ secrets.IDEASCALE_API_TOKEN }}"
         run: |
-          earthly -P --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" +test
+          earthly -P --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" +test-all

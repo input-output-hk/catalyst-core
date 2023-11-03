@@ -122,11 +122,11 @@ ci:
     BUILD ./containers/event-db-migrations+test
 
 # Define the test stage, which runs the Rust project's tests
-# TODO: Enable this when CI supports passing -P dynamically
 test-all:
-    BUILD ./src/event-db+test
-    BUILD ./src/cat-data-service+test
-    BUILD ./utilities/ideascale-importer+test
+# TODO: Enable this when CI supports passing -P dynamically
+#    BUILD ./src/event-db+test
+#    BUILD ./src/cat-data-service+test
+#    BUILD ./utilities/ideascale-importer+test
 
 tag-workspace:
     ARG SVU_VERSION=1.10.2

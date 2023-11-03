@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CompoundingType","Limit"],"fn":["rewards_contribution_calculation","tax_cut"],"mod":["tests"],"struct":["Parameters","Ratio","SystemInformation","TaxDistribution","TaxType"]};

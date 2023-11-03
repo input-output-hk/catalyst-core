@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"vit_servicing_station_lib_f10":[["impl Migration for <a class=\"struct\" href=\"vit_servicing_station_lib_f10/db/migrations/embedded_migrations/struct.EmbeddedMigration.html\" title=\"struct vit_servicing_station_lib_f10::db::migrations::embedded_migrations::EmbeddedMigration\">EmbeddedMigration</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

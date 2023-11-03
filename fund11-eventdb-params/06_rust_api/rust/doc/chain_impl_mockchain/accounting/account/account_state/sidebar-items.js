@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DELEGATION_RATIO_MAX_DECLS"],"enum":["DelegationType"],"struct":["AccountState","DelegationRatio","Iter"]};

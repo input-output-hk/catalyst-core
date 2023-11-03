@@ -94,14 +94,14 @@ all:
     BUILD ./containers/event-db-migrations+publish --tag=$tag --registry=$registry_final
 
     # Build crate images from the workspace
-    BUILD ./src/jormungandr/jormungandr+publish --tag=$tag --registry=$registry_final
-    BUILD ./src/jormungandr/jcli+publish --tag=$tag --registry=$registry_final
-    BUILD ./src/catalyst-toolbox/catalyst-toolbox+publish --tag=$tag --registry=$registry_final
-    BUILD ./src/voting-tools-rs+publish --tag=$tag --registry=$registry_final
-    BUILD ./src/cat-data-service+publish --tag=$tag --registry=$registry_final
+    BUILD ./src/jormungandr/jormungandr+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/jormungandr/jcli+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/voting-tools-rs+docker --tag=$tag --registry=$registry_final
+    BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
 
-    BUILD ./services/voting-node+publish --tag=$tag --registry=$registry_final
-    BUILD ./utilities/ideascale-importer+publish --tag=$tag --registry=$registry_final
+    BUILD ./services/voting-node+docker --tag=$tag --registry=$registry_final
+    BUILD ./utilities/ideascale-importer+docker --tag=$tag --registry=$registry_final
 
 all-with-tags:
     FROM +tag-workspace
@@ -147,8 +147,8 @@ tag-workspace:
 local:
     LOCALLY
     BUILD ./containers/event-db-migrations+publish
-    BUILD ./src/cat-data-service+publish
-    BUILD ./services/voting-node+publish
+    BUILD ./src/cat-data-service+docker
+    BUILD ./services/voting-node+docker
 
     RUN mkdir -p ./local
     COPY ./containers/dev-local+build/docker-compose.yml ./local/

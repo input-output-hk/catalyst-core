@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","LogFormat","LogOutput"],"struct":["LogGuard","LogSettings"]};

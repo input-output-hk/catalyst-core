@@ -48,7 +48,8 @@ INSERT INTO config (id, id2, id3, value) VALUES (
             "score_field": "Rating"
         }
      }'
-);
+) ON CONFLICT (id, id2, id3) DO UPDATE
+SET value = EXCLUDED.value;
 
 -- Use F11 params for event with row_id = 11.
 INSERT INTO config (id, id2, id3, value) VALUES (
@@ -56,4 +57,5 @@ INSERT INTO config (id, id2, id3, value) VALUES (
     'ideascale_params',
     '11',
     '{"params_id": "F11"}'
-);
+) ON CONFLICT (id, id2, id3) DO UPDATE
+SET value = EXCLUDED.value;

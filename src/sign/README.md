@@ -1,4 +1,5 @@
 # Fragment generator and signer:
+Generates vote fragments and signs them accordingly
 
 ## Specifications
  [*see here for format.abnf*](../chain-libs/chain-impl-mockchain/doc/format.abnf)

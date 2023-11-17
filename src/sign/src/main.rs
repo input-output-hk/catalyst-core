@@ -68,7 +68,9 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // vote
     let vote = chain_vote::Vote::new(2, 1_usize)?;
-    let crs = chain_vote::Crs::from_hash(args.vote_plan_id.clone().as_bytes());
+    
+    // common reference string
+    let crs = chain_vote::Crs::from_hash(&hex::decode(args.vote_plan_id.clone())?);
 
     // parse ek key
     let ek = ElectionPublicKey::from_bytes(&election_pk)

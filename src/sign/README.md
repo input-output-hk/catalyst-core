@@ -1,4 +1,4 @@
-# Fragment generator and signer:
+# **Vote** Fragment generator and signer:
 Generates vote fragments and signs them accordingly
 
 ## Specifications
@@ -6,7 +6,7 @@ Generates vote fragments and signs them accordingly
 
  [*see here for format.md*](../chain-libs/chain-impl-mockchain/doc/format.md)
 
-## Ingredients for generating a fragment
+## Ingredients for generating a **vote** fragment
 
 - Election public key
 - Alice public key
@@ -22,7 +22,7 @@ Generates vote fragments and signs them accordingly
 cargo build --release -p sign
 ```  
 
-*Generate raw fragment in byte representation*
+*Generate raw vote fragment in byte representation*
 
 ```bash
 

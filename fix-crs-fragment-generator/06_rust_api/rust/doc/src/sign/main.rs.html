@@ -91,9 +91,6 @@
 <a href="#91" id="91">91</a>
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
-<a href="#94" id="94">94</a>
-<a href="#95" id="95">95</a>
-<a href="#96" id="96">96</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//!
 //! Fragment generator
 //!
@@ -161,10 +158,7 @@
     <span class="comment">// join sk+pk together, api requirement
     </span>sk.extend(pk.clone());
     <span class="kw">let </span>keypair: Keypair = Keypair::from_bytes(<span class="kw-2">&amp;</span>sk)<span class="question-mark">?</span>;
-
-    <span class="comment">// vote
-    </span><span class="kw">let </span>vote = chain_vote::Vote::new(<span class="number">2</span>, <span class="number">1_usize</span>)<span class="question-mark">?</span>;
-    
+    <span class="kw">let </span>vote = chain_vote::Vote::new(<span class="number">2</span>, <span class="number">1_usize</span>)<span class="question-mark">?</span>;
     <span class="comment">// common reference string
     </span><span class="kw">let </span>crs = chain_vote::Crs::from_hash(<span class="kw-2">&amp;</span>hex::decode(args.vote_plan_id.clone())<span class="question-mark">?</span>);
 

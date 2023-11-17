@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["committee","crs","election_public_key","tally"],"struct":["VotesCommand"]};

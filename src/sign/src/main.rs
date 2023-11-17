@@ -65,10 +65,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // join sk+pk together, api requirement
     sk.extend(pk.clone());
     let keypair: Keypair = Keypair::from_bytes(&sk)?;
-
-    // vote
     let vote = chain_vote::Vote::new(2, 1_usize)?;
-    
     // common reference string
     let crs = chain_vote::Crs::from_hash(&hex::decode(args.vote_plan_id.clone())?);
 

@@ -436,6 +436,7 @@ class Importer:
                     snapshot_tool_cmd = (
                         "ssh"
                         f" -i {self.ssh_config.keyfile_path}"
+                        " -oTCPKeepAlive=no -oServerAliveInterval=20"
                         f" {self.ssh_config.destination}"
                         f" {self.ssh_config.snapshot_tool_path}"
                         f" --db-user {db_user}"

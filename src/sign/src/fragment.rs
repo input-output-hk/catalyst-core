@@ -181,7 +181,7 @@ mod tests {
     use jormungandr_lib::interfaces::AccountIdentifier;
 
     #[test]
-    fn test_fragment_generation() {
+    fn fragment_generation() {
         let mut csprng = OsRng;
 
         // User key for signing witness
@@ -289,7 +289,7 @@ mod tests {
     }
 
     #[test]
-    fn test_encrypted_vote_generation() {
+    fn encrypted_vote_generation() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
 
         // vote plan id

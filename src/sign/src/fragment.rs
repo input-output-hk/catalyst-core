@@ -206,7 +206,7 @@ mod tests {
         // vote
         let vote = chain_vote::Vote::new(2, 1 as usize).unwrap();
 
-        let crs = chain_vote::Crs::from_hash(vote_plan_id.as_bytes());
+        let crs = chain_vote::Crs::from_hash(&hex::decode(vote_plan_id.as_bytes()).unwrap());
 
         let (ciphertexts, proof) = ek.encrypt_and_prove_vote(&mut rng, &crs, vote);
         let (proof, encrypted_vote) =

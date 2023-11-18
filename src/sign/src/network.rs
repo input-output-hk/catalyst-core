@@ -64,7 +64,7 @@ impl Network {
     }
 
     /// construct headers for octet-stream
-    fn construct_headers(&self) -> HeaderMap {
+    pub fn construct_headers(&self) -> HeaderMap {
         let mut headers = HeaderMap::new();
         headers.insert(
             CONTENT_TYPE,
@@ -74,6 +74,7 @@ impl Network {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use crate::network::{Network, NodeResponse};
     use ed25519_dalek::Keypair;

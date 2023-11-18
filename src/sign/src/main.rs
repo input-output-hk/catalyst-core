@@ -15,8 +15,8 @@ use std::error::Error;
 
 use crate::fragment::{compose_encrypted_vote_part, generate_vote_fragment};
 
-mod fragment;
-mod network;
+pub mod fragment;
+pub mod network;
 
 ///
 /// Args defines and declares CLI behaviour within the context of clap

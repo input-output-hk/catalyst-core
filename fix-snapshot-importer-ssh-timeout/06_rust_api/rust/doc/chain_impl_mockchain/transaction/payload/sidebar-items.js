@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["NoExtra","PayloadAuthData","PayloadAuthSlice","PayloadData","PayloadSlice"],"trait":["Payload"]};

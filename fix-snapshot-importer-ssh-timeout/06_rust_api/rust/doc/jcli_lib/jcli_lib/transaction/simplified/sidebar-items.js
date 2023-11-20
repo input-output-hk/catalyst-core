@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["common_fee_from_settings","create_new_private_key","create_receiver_address","create_receiver_secret_key_and_address","make_address","make_transaction"],"struct":["MakeTransaction"]};

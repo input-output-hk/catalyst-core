@@ -181,7 +181,7 @@ mod tests {
     use jormungandr_lib::interfaces::AccountIdentifier;
 
     #[test]
-    fn test_fragment_generation() {
+    fn fragment_generation() {
         let mut csprng = OsRng;
 
         // User key for signing witness
@@ -206,7 +206,7 @@ mod tests {
         // vote
         let vote = chain_vote::Vote::new(2, 1 as usize).unwrap();
 
-        let crs = chain_vote::Crs::from_hash(vote_plan_id.as_bytes());
+        let crs = chain_vote::Crs::from_hash(&hex::decode(vote_plan_id.as_bytes()).unwrap());
 
         let (ciphertexts, proof) = ek.encrypt_and_prove_vote(&mut rng, &crs, vote);
         let (proof, encrypted_vote) =
@@ -289,7 +289,7 @@ mod tests {
     }
 
     #[test]
-    fn test_encrypted_vote_generation() {
+    fn encrypted_vote_generation() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
 
         // vote plan id

@@ -86,7 +86,12 @@ def import_snapshot(
             and ssh_snapshot_tool_path is not None
             and ssh_snapshot_tool_output_dir is not None
         ):
-            ssh_config = SSHConfig(ssh_keyfile, ssh_destination, ssh_snapshot_tool_path, ssh_snapshot_tool_output_dir)
+            ssh_config = SSHConfig(
+                keyfile_path=ssh_keyfile,
+                destination=ssh_destination,
+                snapshot_tool_path=ssh_snapshot_tool_path,
+                snapshot_tool_output_dir=ssh_snapshot_tool_output_dir,
+            )
         else:
             if snapshot_tool_ssh:
                 logger.error(

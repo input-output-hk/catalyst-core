@@ -20,3 +20,35 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 
 ```
 
+### Aggregrate all voter keys and write to file
+```bash
+
+FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
+./target/release/find --fragments $FRAGMENTS_STORAGE --aggregate true
+
+```
+
+### Convert key formats
+```bash
+
+VOTING_KEY='e5b0a5c250f78b574b8b17283bcc6c7692f72fc58090f4a0a2362497d28d1a85'
+
+./target/release/find --key-to-convert $VOTING_KEY
+
+
+VOTING_KEY='ca1q0uftf4873xazhmhqrrqg4kfx7fmzfqlm5w80wake5lu3fxjfjxpk6wv3f7'
+
+./target/release/find --key-to-convert $VOTING_KEY
+
+```
+
+### Check a batch of keys presented in a file format and write key metadata to a file.
+```bash
+
+KEY_FILE='/tmp/keyfile.txt'
+FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
+
+./target/release/find --fragments $FRAGMENTS_STORAGE --key-file $KEY_FILE
+
+```
+

@@ -93,11 +93,13 @@ fn weighted_avarage_score(
     let allocated_weight = review_weight(allocated_weight, allocated_count);
     let not_allocated_weight = review_weight(not_allocated_weight, not_allocated_count);
 
-    let res = (total_allocated_rating as f64 * allocated_weight
+    let mut res = (total_allocated_rating as f64 * allocated_weight
         + total_not_allocated_rating as f64 * not_allocated_weight)
         / (allocated_weight * allocated_count as f64
             + not_allocated_weight * not_allocated_count as f64);
 
+    // round to 1 decimal place
+    res = (10.0 * res).round() / 10.0;
     Ok(res)
 }
 
@@ -119,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    fn weighted_score_test() {
+    fn weighted_score_test_1() {
         let allocated_weight = 0.8;
         let not_allocated_weight = 0.2;
 
@@ -159,6 +161,90 @@ mod tests {
         assert_eq!(result, 2.6);
 
         assert!(weighted_avarage_score(0.5, 0.6, &[]).is_err());
+    }
+
+    #[test]
+    fn weighted_score_test_2() {
+        let allocated_weight = 0.7;
+        let not_allocated_weight = 0.3;
+
+        let reviews = vec![
+            Review {
+                rating: 1,
+                allocated: false,
+            },
+            Review {
+                rating: 2,
+                allocated: false,
+            },
+            Review {
+                rating: 3,
+                allocated: false,
+            },
+            Review {
+                rating: 4,
+                allocated: false,
+            },
+            Review {
+                rating: 5,
+                allocated: false,
+            },
+            Review {
+                rating: 6,
+                allocated: true,
+            },
+            Review {
+                rating: 8,
+                allocated: true,
+            },
+        ];
+
+        let result =
+            weighted_avarage_score(allocated_weight, not_allocated_weight, &reviews).unwrap();
+        // To be precise the result should be `5.799999999999999`, but we are rounding to 1 decimal place
+        assert_eq!(result, 5.8);
+    }
+
+    #[test]
+    fn weighted_score_test_3() {
+        let allocated_weight = 0.7;
+        let not_allocated_weight = 0.3;
+
+        let reviews = vec![
+            Review {
+                rating: 1,
+                allocated: false,
+            },
+            Review {
+                rating: 2,
+                allocated: false,
+            },
+            Review {
+                rating: 3,
+                allocated: false,
+            },
+            Review {
+                rating: 4,
+                allocated: false,
+            },
+            Review {
+                rating: 5,
+                allocated: false,
+            },
+            Review {
+                rating: 6,
+                allocated: true,
+            },
+            Review {
+                rating: 7,
+                allocated: true,
+            },
+        ];
+
+        let result =
+            weighted_avarage_score(allocated_weight, not_allocated_weight, &reviews).unwrap();
+        // To be precise the result should be `5.449999999999999`, but we are rounding to 1 decimal place
+        assert_eq!(result, 5.4);
     }
 
     #[test]

@@ -2,110 +2,27 @@ name: CI
 
 on:
   push:
-    branches:
-        - main
-    paths:
-        - ".github/workflows/ci.yml"
-        - "containers/**"
-        - "services/**"
-        - "src/**"
-        - "utilities/**"
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
   packages: write
 
-env:
-  AWS_REGION: eu-central-1
-  AWS_ROLE_ARN: arn:aws:iam::332405224602:role/ci
-  EARTHLY_TARGET: docker
-  EARTHLY_VERSION: 0.7.6
-  ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
-  TAG: ${{ github.sha }}
-
 jobs:
-  discover:
-    runs-on: ubuntu-latest
-    outputs:
-      json: ${{ steps.discover.outputs.json}}
-      images: ${{ steps.discover.outputs.images}}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup CI
-        uses: input-output-hk/catalyst-ci/actions/setup@master
-        with:
-          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
-          aws_region: ${{ env.AWS_REGION }}
-          earthly_version: ${{ env.EARTHLY_VERSION }}
-      - name: Discover Earthfiles
-        uses: input-output-hk/catalyst-ci/actions/discover@master
-        id: discover
-        with:
-          parse_images: "true"
-          targets: ${{ env.EARTHLY_TARGET }}
-  cache:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup CI
-        uses: input-output-hk/catalyst-ci/actions/setup@master
-        with:
-          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
-          aws_region: ${{ env.AWS_REGION }}
-          earthly_version: ${{ env.EARTHLY_VERSION }}
-      - name: Build cache
-        uses: input-output-hk/catalyst-ci/actions/build@master
-        with:
-          earthfile: .
-          earthly_satellite: ${{ secrets.EARTHLY_SATELLITE_ADDRESS }}
-          target: builder
-  build:
-    runs-on: ubuntu-latest
-    needs: [cache, discover]
-    strategy:
-      fail-fast: false
-      matrix:
-        earthfile: ${{ fromJson(needs.discover.outputs.json) }}
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup CI
-        uses: input-output-hk/catalyst-ci/actions/setup@master
-        with:
-          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
-          aws_region: ${{ env.AWS_REGION }}
-          earthly_version: ${{ env.EARTHLY_VERSION }}
-      - name: Login to ECR
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.ECR_REGISTRY }}
-      - name: Build and publish
-        uses: input-output-hk/catalyst-ci/actions/build@master
-        with:
-          earthfile: ${{ matrix.earthfile.path }}
-          earthly_satellite: ${{ secrets.EARTHLY_SATELLITE_ADDRESS }}
-          images: ${{ matrix.earthfile.images }}
-          publish: "true"
-          registry: ${{ env.ECR_REGISTRY }}
-          tags: "${{ env.TAG }}"
-          target: ${{ env.EARTHLY_TARGET }}
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [discover, build]
-    steps:
-      - name: Setup CI
-        uses: input-output-hk/catalyst-ci/actions/setup@master
-        id: setup
-        with:
-          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
-          aws_region: ${{ env.AWS_REGION }}
-          earthly_version: ${{ env.EARTHLY_VERSION }}
-      - name: Deploy
-        uses: input-output-hk/catalyst-ci/actions/deploy@master
-        with:
-          deployment_repo: input-output-hk/catalyst-world
-          # NOTE: For new services being deployed, this list must be updated
-          images: cat-data-service fragment-exporter migrations voting-node
-          environment: dev
-          tag: ${{ env.TAG }}
-          token: ${{ steps.setup.outputs.token }}
+  ci:
+    uses: input-output-hk/catalyst-ci/.github/workflows/ci.yml@master
+    with:
+      aws_ecr_registry: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
+      aws_role_arn: arn:aws:iam::332405224602:role/ci
+      aws_region: eu-central-1
+      deployment_images: |
+        cat-data-service
+        fragment-exporter
+        migrations
+        voting-node
+    secrets:
+      deployment_token: ${{ secrets.CI_BOT_TOKEN }}
+      dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
+      dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
+      earthly_runner_address: ${{ secrets.EARTHLY_SATELLITE_ADDRESS }}
+      earthly_runner_secret: ${{ secrets.EARTHLY_RUNNER_SECRET }}

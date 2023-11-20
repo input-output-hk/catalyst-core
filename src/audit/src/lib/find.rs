@@ -1,5 +1,5 @@
 use bech32::{self, FromBase32};
-use chain_addr::{Address, Kind};
+use chain_addr::{Address, AddressReadable, Kind};
 use chain_crypto::{Ed25519, PublicKey};
 use chain_impl_mockchain::account;
 
@@ -10,15 +10,21 @@ use chain_impl_mockchain::{
     block::Block, chaintypes::HeaderId, fragment::Fragment, transaction::InputEnum,
 };
 
-use tracing::error;
+use tracing::{error, info};
 
 use jormungandr_lib::interfaces::AccountIdentifier;
 
 const MAIN_TAG: &str = "HEAD";
 
-use std::path::Path;
+use std::{
+    collections::{HashMap, HashSet},
+    error,
+    fs::{read_to_string, File},
+    io::BufWriter,
+    path::{Path, PathBuf},
+};
 
-use crate::offline::Vote;
+use crate::offline::{extract_fragments_from_storage, Vote};
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -177,14 +183,146 @@ pub fn find_vote(jormungandr_database: &Path, voting_key: String) -> Result<Vec<
     Ok(votes)
 }
 
+/// Collect all voting keys in ca and 0x format and write to files
+pub fn all_voters(
+    jormungandr_database: &Path,
+) -> Result<(HashSet<std::string::String>, HashSet<std::string::String>), Box<dyn error::Error>> {
+    let fragments = extract_fragments_from_storage(jormungandr_database)?;
+
+    let mut unique_voters_ca = HashSet::new();
+    let mut unique_voters_0x = HashSet::new();
+
+    for fragment in fragments {
+        if let Fragment::VoteCast(tx) = fragment.clone() {
+            let input = tx.as_slice().inputs().iter().next().unwrap().to_enum();
+            let caster = if let InputEnum::AccountInput(account_id, _value) = input {
+                AccountIdentifier::from(account_id).into_address(Discrimination::Production, "ca")
+            } else {
+                error!("Corrupted fragment {:?}", fragment);
+                continue;
+            };
+
+            unique_voters_ca.insert(caster.to_string().clone());
+
+            let voting_key_61824_format = AddressReadable::from_string("ca", &caster.to_string())
+                .expect("infallible")
+                .to_address();
+
+            let voting_key = voting_key_61824_format
+                .public_key()
+                .expect("infallible")
+                .to_string();
+            unique_voters_0x.insert(voting_key);
+        }
+    }
+
+    info!("unique voters ca {:?}", unique_voters_ca.len());
+    info!("unique voters 0x {:?}", unique_voters_0x.len());
+
+    Ok((unique_voters_ca, unique_voters_0x))
+}
+
+/// convert keys from ca to 0x and vice versa
+pub fn convert_key_formats(voting_key: String) -> Result<String, Box<dyn error::Error>> {
+    if voting_key.starts_with("ca") {
+        let voting_key_61824_format = AddressReadable::from_string("ca", &voting_key)?.to_address();
+
+        let voting_key = voting_key_61824_format
+            .public_key()
+            .expect("addr to pub key is infallible")
+            .to_string();
+
+        Ok(voting_key)
+    } else {
+        // we need to convert this to our internal key representation
+        let decoded_voting_key = hex::decode(voting_key)?;
+        let voting_key: PublicKey<Ed25519> = PublicKey::from_binary(&decoded_voting_key)?;
+        let addr = Address(Discrimination::Production, Kind::Single(voting_key.clone()));
+        let addr_readable = AddressReadable::from_address("ca", &addr);
+
+        Ok(addr_readable.to_string())
+    }
+}
+
+/// read voter keys from file
+pub fn read_lines(filename: &str) -> Result<Vec<String>, Box<dyn error::Error>> {
+    let mut result = Vec::new();
+
+    for line in read_to_string(filename)?.lines() {
+        result.push(line.to_string())
+    }
+
+    Ok(result)
+}
+
+/// check key history of multiple keys and write metadata to file
+pub fn batch_key_check(
+    jormungandr_database: &Path,
+    key_file: String,
+) -> Result<(), Box<dyn error::Error>> {
+    let mut flagged_keys = HashMap::new();
+
+    let keys = read_lines(&key_file)?;
+
+    for key in keys {
+        let voting_key_61824_format = AddressReadable::from_string("ca", &key)
+            .expect("infallible")
+            .to_address();
+
+        let voting_key = voting_key_61824_format
+            .public_key()
+            .expect("infallible")
+            .to_string();
+
+        let votes = find_vote(jormungandr_database, voting_key)?;
+
+        flagged_keys.insert(key.clone(), votes.clone());
+
+        info!("Inserted: key: {} vote: {:?}", key, votes);
+    }
+
+    let flagged_file = PathBuf::from("/tmp/inspect").with_extension("flag_keys.json");
+
+    let file = File::options()
+        .write(true)
+        .create(true)
+        .truncate(true)
+        .open(flagged_file.clone())?;
+    let writer = BufWriter::new(file);
+
+    serde_json::to_writer_pretty(writer, &flagged_keys)?;
+
+    info!("flagged keys and metadata saved here {:?}", flagged_file);
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
+
     use std::path::PathBuf;
 
     use chain_addr::{Address, AddressReadable, Discrimination, Kind};
     use chain_crypto::{Ed25519, PublicKey};
 
     use crate::find::find_vote;
+
+    use super::convert_key_formats;
+
+    #[test]
+    fn test_key_conversion() {
+        let voting_key_0x =
+            "f895a6a7f44dd15f7700c60456c93793b1241fdd1c77bbb6cd3fc8a4d24c8c1b".to_string();
+
+        let converted_key = convert_key_formats(voting_key_0x.clone()).unwrap();
+
+        let voting_key_ca =
+            "ca1q0uftf4873xazhmhqrrqg4kfx7fmzfqlm5w80wake5lu3fxjfjxpk6wv3f7".to_string();
+
+        assert_eq!(converted_key, voting_key_ca,);
+
+        assert_eq!(convert_key_formats(voting_key_ca).unwrap(), voting_key_0x);
+    }
 
     #[test]
     #[ignore]

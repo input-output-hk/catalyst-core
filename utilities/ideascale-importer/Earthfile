@@ -73,12 +73,13 @@ docker:
     SAVE IMAGE --push ${registry}ideascale-importer:$tag
 
 # Run tests
-test:
-    FROM +build
+# TODO: Enable this when CI supports secrets
+# test:
+#     FROM +build
 
-    RUN --no-cache \
-        --secret IDEASCALE_EMAIL \
-        --secret IDEASCALE_PASSWORD \
-        --secret IDEASCALE_API_TOKEN \
-        IDEASCALE_API_URL="https://temp-cardano-sandbox.ideascale.com" \
-        poetry run pytest
+#     RUN --no-cache \
+#         --secret IDEASCALE_EMAIL \
+#         --secret IDEASCALE_PASSWORD \
+#         --secret IDEASCALE_API_TOKEN \
+#         IDEASCALE_API_URL="https://temp-cardano-sandbox.ideascale.com" \
+#         poetry run pytest

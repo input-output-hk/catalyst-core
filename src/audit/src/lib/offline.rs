@@ -38,7 +38,7 @@ pub enum Error {
     CorruptedFragments,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct Vote {
     pub fragment_id: String,
     pub caster: Address,

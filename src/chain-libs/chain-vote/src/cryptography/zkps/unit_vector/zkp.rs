@@ -293,6 +293,17 @@ impl Zkp {
         self.ibas.iter()
     }
 
+    /// Return announcement commitments group elements
+    pub fn announcments_group_elements(&self) -> Vec<GroupElement> {
+        let mut announcements = Vec::new();
+        for g in self.ibas.clone() {
+            announcements.push(g.i);
+            announcements.push(g.b);
+            announcements.push(g.a)
+        }
+        announcements
+    }
+
     /// Return an iterator of the encryptions of the polynomial coefficients
     pub fn ds(&self) -> impl Iterator<Item = &Ciphertext> {
         self.ds.iter()
@@ -301,6 +312,18 @@ impl Zkp {
     /// Return an iterator of the response related to the randomness
     pub fn zwvs(&self) -> impl Iterator<Item = &ResponseRandomness> {
         self.zwvs.iter()
+    }
+
+    /// Return an iterator of the response related to the randomness
+    pub fn response_randomness_group_elements(&self) -> Vec<Scalar> {
+        let mut response = Vec::new();
+        for z in self.zwvs.iter().clone() {
+            response.push(z.z.clone());
+            response.push(z.w.clone());
+            response.push(z.v.clone());
+        }
+
+        response
     }
 
     /// Return R

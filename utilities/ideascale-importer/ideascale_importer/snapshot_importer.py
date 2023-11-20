@@ -266,6 +266,7 @@ class SnapshotReport(BaseModel):
     registrations_count: int = 0
     registered_voting_power: int = 0
     unregistered_voting_power: int = 0
+    eligible_voters_count: int = 0
     processed_voting_power: int = 0
     cip_15_registration_count: int = 0
     cip_36_single_registration_count: int = 0
@@ -435,6 +436,7 @@ class Importer:
                     snapshot_tool_cmd = (
                         "ssh"
                         f" -i {self.ssh_config.keyfile_path}"
+                        " -oTCPKeepAlive=no -oServerAliveInterval=20"
                         f" {self.ssh_config.destination}"
                         f" {self.ssh_config.snapshot_tool_path}"
                         f" --db-user {db_user}"
@@ -702,6 +704,7 @@ class Importer:
             for ctd in network_processed_snapshot:
                 for snapshot_contribution in ctd.contributions:
                     network_report.processed_voting_power += snapshot_contribution.value
+                    network_report.eligible_voters_count += 1
 
                     voting_key = ctd.hir.voting_key
                     # This can be removed once it's fixed in catalyst-toolbox
@@ -746,6 +749,7 @@ class Importer:
                 total_cip_36_multi_registrations=network_report.cip_36_multi_registration_count,
                 total_registered_voting_power=network_report.registered_voting_power,
                 total_unregistered_voting_power=network_report.unregistered_voting_power,
+                total_eligible_voters=network_report.eligible_voters_count,
                 total_processed_voting_power=network_report.processed_voting_power,
                 total_rewards_payable=network_report.rewards_payable,
                 total_rewards_unpayable=network_report.rewards_unpayable,

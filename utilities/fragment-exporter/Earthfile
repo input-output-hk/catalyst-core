@@ -1,10 +1,8 @@
 # Set the Earthly version to 0.7
 VERSION 0.7
 
-# Use current debian stable with python
-FROM python:3.11-slim-bookworm
-
-poetry:
+deps:
+    FROM python:3.11-slim-bookworm
     WORKDIR /work
 
     ENV POETRY_HOME=/tmp/poetry
@@ -21,19 +19,16 @@ poetry:
     RUN poetry install --only main --no-root
 
 src:
-    FROM +poetry
+    FROM +deps
 
-    COPY --dir fragment_exporter README.md .
+    COPY --dir fragment_exporter tests README.md .
 
 check:
     FROM +src
 
-    COPY --dir tests tests
-
     RUN poetry install --only dev
     RUN poetry run black --check .
     RUN poetry run ruff check .
-    RUN poetry run pytest -v
 
 build:
     FROM +check
@@ -44,9 +39,14 @@ build:
     SAVE ARTIFACT dist
     SAVE ARTIFACT requirements.txt
 
-docker:
+test:
+    FROM +build
+
+    RUN poetry run pytest -v
+
+publish:
+    FROM python:3.11-slim-bookworm
     ARG tag="latest"
-    ARG registry
 
     WORKDIR /app
 
@@ -59,5 +59,4 @@ docker:
     RUN pip3 install --no-cache *.whl
 
     ENTRYPOINT ["/app/entry.sh"]
-
-    SAVE IMAGE --push ${registry}fragment-exporter:$tag
+    SAVE IMAGE fragment-exporter:$tag

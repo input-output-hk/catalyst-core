@@ -249,6 +249,12 @@ impl RawRest {
         headers
     }
 
+    fn construct_headers_json(&self) -> HeaderMap {
+        let mut headers = HeaderMap::new();
+        headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
+        headers
+    }
+
     fn post(
         &self,
         path: &str,
@@ -310,7 +316,7 @@ impl RawRest {
     ) -> Result<Response, reqwest::Error> {
         self.client
             .post(self.path(ApiVersion::V1, "fragments"))
-            .headers(self.construct_headers())
+            .headers(self.construct_headers_json())
             .json(&FragmentsBatch {
                 fail_fast,
                 fragments,

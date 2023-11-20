@@ -42,8 +42,8 @@ impl EventDB {
         LEFT JOIN snapshot ON event.row_id = snapshot.event
         WHERE event.row_id = $1;";
 
-    const EVENT_GOALS_QUERY: &'static str = "SELECT goal.idx, goal.name 
-                                            FROM goal 
+    const EVENT_GOALS_QUERY: &'static str = "SELECT goal.idx, goal.name
+                                            FROM goal
                                             WHERE goal.event_id = $1;";
 }
 
@@ -205,14 +205,6 @@ mod tests {
             events,
             vec![
                 EventSummary {
-                    id: EventId(0),
-                    name: "Test Fund".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
-                    ends: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
-                    reg_checked: None,
-                    is_final: true,
-                },
-                EventSummary {
                     id: EventId(1),
                     name: "Test Fund 1".to_string(),
                     starts: Some(DateTime::<Utc>::from_utc(
@@ -326,14 +318,6 @@ mod tests {
             events,
             vec![
                 EventSummary {
-                    id: EventId(0),
-                    name: "Test Fund".to_string(),
-                    starts: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
-                    ends: Some(DateTime::<Utc>::from_utc(NaiveDateTime::default(), Utc)),
-                    reg_checked: None,
-                    is_final: true,
-                },
-                EventSummary {
                     id: EventId(1),
                     name: "Test Fund 1".to_string(),
                     starts: Some(DateTime::<Utc>::from_utc(
@@ -359,10 +343,36 @@ mod tests {
                     )),
                     is_final: true,
                 },
+                EventSummary {
+                    id: EventId(2),
+                    name: "Test Fund 2".to_string(),
+                    starts: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 5, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    ends: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 6, 1).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    reg_checked: Some(DateTime::<Utc>::from_utc(
+                        NaiveDateTime::new(
+                            NaiveDate::from_ymd_opt(2021, 3, 31).unwrap(),
+                            NaiveTime::from_hms_opt(12, 0, 0).unwrap()
+                        ),
+                        Utc
+                    )),
+                    is_final: true,
+                },
             ]
         );
 
-        let events = event_db.get_events(Some(1), Some(1)).await.unwrap();
+        let events = event_db.get_events(Some(1), Some(0)).await.unwrap();
         assert_eq!(
             events,
             vec![EventSummary {

@@ -1,7 +1,10 @@
 VERSION 0.7
 
-build:
+deps:
     FROM ../../+rust-toolchain
+
+build:
+    FROM +deps
 
     # Build refinery
     RUN cargo install refinery_cli --version 0.8.7 --root .
@@ -9,10 +12,9 @@ build:
     SAVE ARTIFACT ./bin/refinery refinery
     SAVE IMAGE --cache-hint
 
-docker:
-    FROM ../../+deployment
+publish:
+    FROM debian:stable-slim
     ARG tag="latest"
-    ARG registry
     ARG data="historic"
 
     WORKDIR /eventdb
@@ -41,23 +43,23 @@ docker:
     COPY --dir ../../src/event-db+build/migrations ./migrations
     IF [ "$data" = "historic" ]
         COPY --dir ../../src/event-db+build/historic_data ./historic_data
+        COPY ../../src/event-db+build/stage_data ./stage_data
     ELSE IF [ "$data" = "test" ]
         COPY --dir ../../src/event-db+build/test_data ./test_data
     END
     COPY ../../src/event-db+build/refinery.toml .
-    COPY ../../src/event-db+build/stage_data ./stage_data
 
     VOLUME /eventdb/tmp
     COPY ./entry.sh .
     RUN chmod ugo+x ./entry.sh
 
     ENTRYPOINT ["./entry.sh"]
+    SAVE IMAGE migrations:$tag
 
-    # Push the container...
-    SAVE IMAGE --push ${registry}migrations:$tag
-
-test:
-    WITH DOCKER \
-        --load test:latest=+docker
-        RUN docker run test:latest
-    END
+# TODO: Enable this when CI supports passing -P dynamically
+# test:
+#     FROM earthly/dind:alpine
+#     WITH DOCKER \
+#         --load test:latest=+docker
+#         RUN docker run test:latest
+#     END

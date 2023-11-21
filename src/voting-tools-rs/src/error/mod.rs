@@ -86,8 +86,7 @@ pub enum RegistrationError {
 /// Useful for providing more detailed error messages about why a particular registration was
 /// rejected
 ///
-/// `registration` is an `Option` because some errors prevent us from even generating a
-/// [`SignedRegistration`] struct
+/// `registration` is an `Option` because some errors prevent us from even generating it
 #[derive(Debug, Serialize)]
 pub struct InvalidRegistration {
     pub spec_61284: Option<String>,

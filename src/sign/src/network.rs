@@ -38,7 +38,7 @@ pub struct Accepted {
 pub struct Network {
     pub client: Client,
     /// URL for posting a signed vote fragment
-    /// e.g https://core.projectcatalyst.io/api/v0/message
+    /// e.g <https://core.projectcatalyst.io/api/v0/message>
     pub fragment_url: String,
 }
 

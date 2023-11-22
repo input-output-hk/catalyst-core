@@ -23,6 +23,12 @@ pub struct Value(value::Value);
 
 impl Value {
     #[inline]
+    #[must_use]
+    pub fn as_u64(self) -> u64 {
+        self.0 .0
+    }
+
+    #[inline]
     pub fn saturating_add(self, other: Self) -> Self {
         Value(self.0.saturating_add(other.0))
     }

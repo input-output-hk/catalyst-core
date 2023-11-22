@@ -147,6 +147,18 @@ impl SigningKey {
     }
 
     #[inline]
+    pub fn to_hex(&self) -> String {
+        match &self.0 {
+            EitherEd25519SecretKey::Normal(ed25519_key) => {
+                hex::encode(ed25519_key.clone().leak_secret().as_ref())
+            }
+            EitherEd25519SecretKey::Extended(ed25519e_key) => {
+                hex::encode(ed25519e_key.clone().leak_secret().as_ref())
+            }
+        }
+    }
+
+    #[inline]
     pub fn from_bech32_str(s: &str) -> Result<Self, SigningKeyParseError> {
         use chain_crypto::bech32::Bech32 as _;
 

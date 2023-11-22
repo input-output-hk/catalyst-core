@@ -28,7 +28,7 @@ pub async fn get_delegator_info(
 }
 
 /// Snapshot information update with timestamp.
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Clone, Debug, /* PartialEq, Eq, */ Deserialize, Serialize)]
 pub struct SnapshotInfoInput {
     pub snapshot: Vec<SnapshotInfo>,
     #[serde(deserialize_with = "crate::utils::serde::deserialize_unix_timestamp_from_rfc3339")]

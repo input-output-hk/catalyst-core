@@ -11,6 +11,13 @@ const TESTNET_STAKE_PREFIX: &str = "stake_test";
 #[derive(Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct RewardAddress(pub String);
 
+impl RewardAddress {
+    pub fn to_loadtest_snapshot(&self) -> RewardAddress {
+        let prefix = &self.0[..self.0.len() - 4];
+        RewardAddress(format!("{}0000", prefix))
+    }
+}
+
 impl Deref for RewardAddress {
     type Target = String;
     fn deref(&self) -> &Self::Target {
@@ -26,6 +33,13 @@ impl DerefMut for RewardAddress {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq)]
 pub struct StakeAddress(pub String);
+
+impl StakeAddress {
+    pub fn to_loadtest_snapshot(&self) -> StakeAddress {
+        let prefix = &self.0[..self.0.len() - 4];
+        StakeAddress(format!("{}0000", prefix))
+    }
+}
 
 impl Deref for StakeAddress {
     type Target = String;

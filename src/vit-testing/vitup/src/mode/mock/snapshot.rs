@@ -37,6 +37,7 @@ impl VoterSnapshot {
                 parameters.voting_power_cap,
                 &|_vk: &Identifier| String::new(),
                 Discrimination::Production,
+                false,
             )?
             .to_full_snapshot_info();
 
@@ -201,6 +202,9 @@ impl Arbitrary for ArbitraryVoterHIR {
                             ),
                         )
                         .into(),
+                        overlimit: false,
+                        private_key: None,
+                        underthreshold: false,
                     })
                 })
                 .boxed()
@@ -223,6 +227,9 @@ impl Arbitrary for ArbitraryVoterHIR {
                             ),
                         )
                         .into(),
+                        overlimit: false,
+                        private_key: None,
+                        underthreshold: false,
                     })
                 })
                 .boxed()

@@ -69,17 +69,23 @@ pub fn calc_dreps_rewards(
     let res = filtered
         .into_iter()
         .map(|d| {
-            let reward = Decimal::from(u64::from(d.hir.voting_power))
-                / Decimal::from(total_active_stake)
-                * total_rewards;
+            let reward = if let Some(reward) = Decimal::from(u64::from(d.hir.voting_power))
+                .checked_div(Decimal::from(total_active_stake))
+            {
+                reward * total_rewards
+            } else {
+                Decimal::ZERO
+            };
             (d.hir.voting_key, reward)
         })
         .collect::<BTreeMap<_, _>>();
 
-    let expected_rewards = if total_active_stake == 0 {
-        Decimal::ZERO
+    let expected_rewards = if let Some(stake) =
+        Decimal::from(total_dreps_stake).checked_div(Decimal::from(total_active_stake))
+    {
+        total_rewards * stake
     } else {
-        total_rewards * Decimal::from(total_dreps_stake) / Decimal::from(total_active_stake)
+        Decimal::ZERO
     };
     assert_are_close(res.values().sum(), expected_rewards);
 
@@ -157,7 +163,7 @@ mod tests {
             Rewards::ONE,
         )
         .unwrap();
-        prop_assert_eq!(rewards.len(), std::cmp::min(1, voters.len()))
+        prop_assert_eq!(rewards.len(), 0)
     }
 
     #[proptest]

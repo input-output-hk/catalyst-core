@@ -21,6 +21,10 @@ impl MainnetWalletExtension for CardanoWallet {
             voting_key: self.catalyst_public_key(),
             voting_group: group.to_string(),
             voting_power: self.stake().into(),
+            address: self.catalyst_address().into(),
+            underthreshold: false,
+            overlimit: false,
+            private_key: None,
         }
     }
 }

@@ -138,8 +138,6 @@
 <a href="#138" id="138">138</a>
 <a href="#139" id="139">139</a>
 <a href="#140" id="140">140</a>
-<a href="#141" id="141">141</a>
-<a href="#142" id="142">142</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//!
 //! Test code
 //! Example code on how to send a raw vote fragment
@@ -218,7 +216,7 @@
 
 <span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="kw">use </span><span class="kw">crate</span>::network::{Network, NodeResponse};
+    <span class="kw">use </span><span class="kw">crate</span>::network::Network;
     <span class="kw">use </span>ed25519_dalek::Keypair;
     <span class="kw">use </span>rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
     <span class="kw">use </span>rand_core::OsRng;
@@ -277,9 +275,7 @@
 
         <span class="kw">let </span>response = client.send_fragment(fragment_bytes).unwrap();
 
-        <span class="kw">let </span>resp_json = response.json::&lt;NodeResponse&gt;().unwrap();
-
-        <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, resp_json);
+        <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, response);
     }
 }
 </code></pre></div></section></main></body></html>

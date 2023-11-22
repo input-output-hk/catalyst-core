@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["MAIN_TAG"],"enum":["Error"],"fn":["find_vote","id_from_pub"],"struct":["AccountId"]};
+window.SIDEBAR_ITEMS = {"constant":["MAIN_TAG"],"enum":["Error"],"fn":["all_voters","batch_key_check","convert_key_formats","find_vote","id_from_pub","read_lines"],"struct":["AccountId"]};

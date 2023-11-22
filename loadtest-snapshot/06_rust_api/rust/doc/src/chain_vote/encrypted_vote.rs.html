@@ -245,6 +245,7 @@
 <a href="#245" id="245">245</a>
 <a href="#246" id="246">246</a>
 <a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::cryptography::{Ciphertext, UnitVectorZkp};
 <span class="kw">use </span><span class="kw">crate</span>::tally::ElectionFingerprint;
 <span class="kw">use </span><span class="kw">crate</span>::Scalar;
@@ -466,6 +467,7 @@
     <span class="attr">#[test]
     </span><span class="kw">fn </span>unit_vector() {
         <span class="kw">let </span>uv = UnitVector::new(<span class="number">5</span>, <span class="number">0</span>).unwrap();
+
         <span class="macro">assert_eq!</span>(
             <span class="kw-2">&amp;</span>uv.iter().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()[..],
             [<span class="bool-val">true</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>]

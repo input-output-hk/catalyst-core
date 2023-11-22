@@ -249,6 +249,7 @@
 <a href="#249" id="249">249</a>
 <a href="#250" id="250">250</a>
 <a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::convert::TryInto;
 
 <span class="kw">use </span>chain_addr::Discrimination;
@@ -313,6 +314,7 @@
             <span class="self">self</span>.content.voting_power_cap,
             assigner,
             Discrimination::Production,
+            <span class="bool-val">false</span>,
         )<span class="question-mark">?
         </span>.to_full_snapshot_info())
     }

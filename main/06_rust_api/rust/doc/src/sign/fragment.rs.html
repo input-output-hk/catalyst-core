@@ -506,7 +506,7 @@
     <span class="kw">use </span>jormungandr_lib::interfaces::AccountIdentifier;
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_fragment_generation() {
+    </span><span class="kw">fn </span>fragment_generation() {
         <span class="kw">let </span><span class="kw-2">mut </span>csprng = OsRng;
 
         <span class="comment">// User key for signing witness
@@ -531,7 +531,7 @@
         <span class="comment">// vote
         </span><span class="kw">let </span>vote = chain_vote::Vote::new(<span class="number">2</span>, <span class="number">1 </span><span class="kw">as </span>usize).unwrap();
 
-        <span class="kw">let </span>crs = chain_vote::Crs::from_hash(vote_plan_id.as_bytes());
+        <span class="kw">let </span>crs = chain_vote::Crs::from_hash(<span class="kw-2">&amp;</span>hex::decode(vote_plan_id.as_bytes()).unwrap());
 
         <span class="kw">let </span>(ciphertexts, proof) = ek.encrypt_and_prove_vote(<span class="kw-2">&amp;mut </span>rng, <span class="kw-2">&amp;</span>crs, vote);
         <span class="kw">let </span>(proof, encrypted_vote) =
@@ -614,7 +614,7 @@
     }
 
     <span class="attr">#[test]
-    </span><span class="kw">fn </span>test_encrypted_vote_generation() {
+    </span><span class="kw">fn </span>encrypted_vote_generation() {
         <span class="kw">let </span><span class="kw-2">mut </span>rng = ChaCha20Rng::from_seed([<span class="number">0u8</span>; <span class="number">32</span>]);
 
         <span class="comment">// vote plan id

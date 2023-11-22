@@ -76,7 +76,7 @@ impl Network {
 
 #[cfg(test)]
 mod tests {
-    use crate::network::{Network, NodeResponse};
+    use crate::network::Network;
     use ed25519_dalek::Keypair;
     use rand_chacha::{rand_core::SeedableRng, ChaCha20Rng};
     use rand_core::OsRng;
@@ -135,8 +135,6 @@ mod tests {
 
         let response = client.send_fragment(fragment_bytes).unwrap();
 
-        let resp_json = response.json::<NodeResponse>().unwrap();
-
-        println!("{:?}", resp_json);
+        println!("{:?}", response);
     }
 }

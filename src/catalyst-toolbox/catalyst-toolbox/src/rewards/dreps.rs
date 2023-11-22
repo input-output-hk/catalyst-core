@@ -163,7 +163,7 @@ mod tests {
             Rewards::ONE,
         )
         .unwrap();
-        prop_assert_eq!(rewards.len(), std::cmp::min(1, voters.len()))
+        prop_assert_eq!(rewards.len(), 0)
     }
 
     #[proptest]

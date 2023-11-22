@@ -417,7 +417,7 @@
             Rewards::ONE,
         )
         .unwrap();
-        <span class="macro">prop_assert_eq!</span>(rewards.len(), std::cmp::min(<span class="number">1</span>, voters.len()))
+        <span class="macro">prop_assert_eq!</span>(rewards.len(), <span class="number">0</span>)
     }
 
     <span class="attr">#[proptest]

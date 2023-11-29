@@ -43,7 +43,7 @@ impl OutputFile {
         match self.output {
             None => self,
             Some(ref path) => {
-                let mut new_path: PathBuf = PathBuf::new();
+                let mut new_path: PathBuf = path.parent().expect("Parent will exist").to_path_buf();
 
                 if let Some(path) = path.file_stem() {
                     new_path.push(path);

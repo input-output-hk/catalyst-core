@@ -242,7 +242,7 @@ impl SnapshotCmd {
             .voters
             .iter()
             .sorted_by_key(|v| v.hir.address.clone())
-            .filter(|v| !v.hir.underthreshold) // Summary does not have voters who don;t have enough voting power.
+            .filter(|v| !v.hir.underthreshold) // Summary does not have voters who don't have enough voting power.
             .map(|v| SnapshotSummaryVoter {
                 address: v.hir.address.to_string(),
                 value: v.hir.voting_power.as_u64() / 1000000, // Lovelace to Whole ADA conversion.

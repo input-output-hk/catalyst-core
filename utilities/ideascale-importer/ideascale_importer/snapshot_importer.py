@@ -40,6 +40,12 @@ class SnapshotProcessedEntry(BaseModel):
     hir: HIR
 
 
+class CatalystToolboxOutput(BaseModel):
+    """Represents the output of catalyst-toolbox."""
+
+    voters: List[SnapshotProcessedEntry]
+
+
 class Registration(BaseModel):
     """Represents a voter registration."""
 
@@ -533,10 +539,10 @@ class Importer:
             catalyst_toolbox_data_raw_json = f.read()
 
         catalyst_toolbox_data_dict = json.loads(catalyst_toolbox_data_raw_json)
-        catalyst_toolbox_data: Dict[str, List[SnapshotProcessedEntry]] = {}
-        for k, entries in catalyst_toolbox_data_dict.items():
+        catalyst_toolbox_data: Dict[str, CatalystToolboxOutput] = {}
+        for network_id, data in catalyst_toolbox_data_dict.items():
             try:
-                catalyst_toolbox_data[k] = [SnapshotProcessedEntry.model_validate(e) for e in entries]
+                catalyst_toolbox_data[network_id] = CatalystToolboxOutput.model_validate(data)
             except Exception as e:
                 logger.error(f"ERROR: {repr(e)}")
 
@@ -701,7 +707,7 @@ class Importer:
         for network_id, network_processed_snapshot in catalyst_toolbox_data.items():
             network_report = network_snapshot_reports[network_id]
 
-            for ctd in network_processed_snapshot:
+            for ctd in network_processed_snapshot.voters:
                 for snapshot_contribution in ctd.contributions:
                     network_report.processed_voting_power += snapshot_contribution.value
                     network_report.eligible_voters_count += 1

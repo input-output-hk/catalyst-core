@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["for_each_output","on_tx_input_and_witnesses","on_tx_output"]};

@@ -495,7 +495,7 @@ class Importer:
                     f" -m {self.event_parameters.min_stake_threshold}"
                     f" -v {self.event_parameters.voting_power_cap}"
                     f" --dreps {self.dreps_out_file}"
-                    f" --output-format json {params.catalyst_toolbox_out_file}"
+                    f" {params.catalyst_toolbox_out_file}"
                 )
 
                 await run_cmd("catalyst-toolbox", catalyst_toolbox_cmd)

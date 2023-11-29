@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["VALUE_SERIALIZED_SIZE"],"enum":["ValueError"],"struct":["SplitValueIn","Value"]};

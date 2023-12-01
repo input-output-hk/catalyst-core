@@ -275,17 +275,17 @@ class IdeascaleComRev(Model):
     @classmethod
     def parse_custom_fields(cls, values):
         """Parse custom fields into fields."""
-        if "would you like to participate as a reviewer in the community review stage?" in values["profile_questions"]:
+        if "would you like to participate as a reviewer in fund11 community review stage?" in values["profile_questions"]:
             values["subscribed"] = (
-                values["profile_questions"]["would you like to participate as a reviewer in the community review stage?"]
+                values["profile_questions"]["would you like to participate as a reviewer in fund11 community review stage?"]
                 == "Yes, I want to be a Community Reviewer and I also understand the role."
             )
         else:
             values["subscribed"] = False
         if "rewards address" in values["profile_questions"]:
             values["rewards_address"] = values["profile_questions"]["rewards address"]
-        if "preferred challenges" in values["profile_questions"]:
-            pf = values["profile_questions"]["preferred challenges"].strip()
+        if "f11 preferred challenges" in values["profile_questions"]:
+            pf = values["profile_questions"]["f11 preferred challenges"].strip()
             if pf == "":
                 values["preferred_challenges"] = []
             else:

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["args","builder","cli","config","controller","error","spawn","style","utils"]};

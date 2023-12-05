@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["DryRunCommand","RegistrationError","VotingKey"],"fn":["show_error_warning","voting_power"],"mod":["cli","data","db","error","exports","logic","test_api","testing","verification"],"struct":["Args","DbConfig","InvalidRegistration","RegistrationCorruptedBin","Sig","Signature","SlotNo","SnapshotEntry","VotingPowerArgs","VotingPurpose"]};

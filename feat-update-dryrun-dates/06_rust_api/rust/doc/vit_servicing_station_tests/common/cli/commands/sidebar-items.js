@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["csv_data","db","token"],"struct":["VitCliCommand"]};

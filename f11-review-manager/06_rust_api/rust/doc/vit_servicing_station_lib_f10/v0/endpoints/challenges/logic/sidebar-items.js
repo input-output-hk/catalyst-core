@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_all_challenges","get_challenge_by_id"]};

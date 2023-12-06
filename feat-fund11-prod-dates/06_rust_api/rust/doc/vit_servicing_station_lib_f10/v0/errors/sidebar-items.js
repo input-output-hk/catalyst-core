@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["HandleError"],"fn":["handle_rejection"]};

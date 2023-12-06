@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["assert_accepted_rejected","assert_bad_request"],"struct":["FragmentLogVerifier"]};

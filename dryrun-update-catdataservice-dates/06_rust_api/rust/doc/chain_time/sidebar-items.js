@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["era","timeframe","timeline","units"]};

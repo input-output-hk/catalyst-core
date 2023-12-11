@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["BlockDateParseError"],"fn":["builder"],"mod":["builder","header","test"],"struct":["Block","BlockDate"],"type":["Epoch","SlotId"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["DataCommandArgs","RandomDataCommandArgs"],"mod":["committee","data","qr","snapshot"],"struct":["CommitteeIdCommandArgs","ExternalDataCommandArgs","QrCommandArgs","SnapshotCommandArgs"]};

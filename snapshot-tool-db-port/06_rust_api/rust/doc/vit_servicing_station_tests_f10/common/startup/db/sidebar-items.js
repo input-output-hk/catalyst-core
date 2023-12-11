@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["VIT_STATION_DB"],"enum":["DbBuilderError"],"struct":["DbBuilder"]};

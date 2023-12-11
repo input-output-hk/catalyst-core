@@ -404,7 +404,7 @@ class Importer:
             with logger.contextualize(network_id=network_id):
                 # Extract the db_user, db_pass, db_host, and db_name from the address using a regular expression
                 match = re.match(
-                    r"^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+):?([0-9]*)\/(?P<db_name>[^?]+)?",
+                    r"^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+:?[0-9]*)\/(?P<db_name>[^?]+)?",
                     dbsync_url,
                 )
 

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["PROCESS_IMPROVEMENTS_ID"],"enum":["Error"],"fn":["build_challenges","build_fund","build_proposals","fetch_all","filter_proposal_by_stage_type","filter_stages","get_from_extra_fields","get_from_extra_fields_options"],"mod":["fetch","models"],"struct":["CustomFieldTags","IdeaScaleData"],"type":["Scores","Sponsors"]};

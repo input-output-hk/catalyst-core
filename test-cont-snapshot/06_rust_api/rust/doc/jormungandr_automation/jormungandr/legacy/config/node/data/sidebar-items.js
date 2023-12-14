@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["LegacyNodeConfig","Log","P2p","TrustedPeer"]};

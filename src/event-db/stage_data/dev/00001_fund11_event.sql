@@ -35,16 +35,16 @@ INSERT INTO event (
     1,                      -- Max Voting Power PCT
     NULL,                   -- Review Rewards
     '2023-12-05 08:00:00',  -- Start Time
-    '2023-12-20 18:00:00',  -- End Time
+    '2023-12-30 18:00:00',  -- End Time
     '2023-12-05 08:00:00',  -- Insight Sharing Start
     '2023-12-05 08:00:00',  -- Proposal Submission Start
     '2023-12-05 08:00:00',  -- Refine Proposals Start
     '2023-12-05 08:00:00',  -- Finalize Proposals Start
     '2023-12-05 08:00:00',  -- Proposal Assessment Start
     '2023-12-05 08:00:00',  -- Assessment QA Start
-    '2023-12-13 16:00:00',  -- Voting Starts
-    '2023-12-14 22:00:00',  -- Voting Ends
-    '2023-12-20 18:00:00',  -- Tallying Ends
+    '2023-12-19 16:00:00',  -- Voting Starts
+    '2023-12-29 22:00:00',  -- Voting Ends
+    '2023-12-30 18:00:00',  -- Tallying Ends
     NULL,                   -- Block 0 Data
     NULL,                   -- Block 0 Hash
     1,                      -- Committee Size

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["build_path_for_challenge","sanitize_name"]};

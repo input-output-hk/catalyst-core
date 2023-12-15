@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"jormungandr":[["impl <a class=\"trait\" href=\"chain_network/core/server/gossip/trait.GossipService.html\" title=\"trait chain_network::core::server::gossip::GossipService\">GossipService</a> for <a class=\"struct\" href=\"jormungandr/network/service/struct.NodeService.html\" title=\"struct jormungandr::network::service::NodeService\">NodeService</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

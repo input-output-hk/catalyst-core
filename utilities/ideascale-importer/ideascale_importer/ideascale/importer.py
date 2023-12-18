@@ -178,19 +178,21 @@ class InvalidRewardsString(Exception):
 
 
 def parse_reward(s: str) -> Reward:
-    """Parse budget and currency from 3 different templates.
+    """Parse budget and currency.
 
-    1. $500,000 in ada
-    2. $200,000 in CLAP tokens
-    3. 12,800,000 ada.
+    1. 500,000 (budget: 500000, currency: ADA)
+    2. ₳12,800,000 (budget: 12800000, currency: ADA)
     """
-    result = re.search(r"\$?(.*?)\s+(?:in\s)?(\S*)", s)
+    rewards = ""
+    currency = ""
+    result = re.search(r"(\₳?)(.*)", s)
+
     if result is None:
         raise InvalidRewardsString()
-
-    amount = re.sub(r"\D", "", result.group(1))
-    currency = result.group(2)
-    return Reward(amount=int(amount, base=10), currency=currency.upper())
+    else:
+        rewards = re.sub("\D", "", result.group(2))
+        currency = "ADA" #result.group(1)
+        return Reward(amount=int(rewards, base=10), currency=currency)
 
 
 def get_objective_category(c: Campaign) -> str:

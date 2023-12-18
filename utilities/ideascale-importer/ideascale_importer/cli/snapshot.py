@@ -33,13 +33,6 @@ def import_snapshot(
             "If this is set, running snapshot_tool will be skipped and the contents of this file will be used"
         ),
     ),
-    dreps_file: str = typer.Option(
-        None,
-        help=(
-            "Should be a file containing the list of dreps as returned by the GVC API."
-            "If this is set, calling GVC dreps API will be skipped and the contents of this file will be used"
-        ),
-    ),
     log_level: str = typer.Option(
         "info",
         envvar="SNAPSHOT_LOG_LEVEL",
@@ -111,7 +104,6 @@ def import_snapshot(
                 catalyst_toolbox_path=catalyst_toolbox_path,
                 gvc_api_url=gvc_api_url,
                 raw_snapshot_file=raw_snapshot_file,
-                dreps_file=dreps_file,
                 ssh_config=ssh_config,
             )
             await importer.run()

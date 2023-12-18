@@ -293,7 +293,6 @@ class Importer:
         catalyst_toolbox_path: str,
         gvc_api_url: str,
         raw_snapshot_file: Optional[str] = None,
-        dreps_file: Optional[str] = None,
         ssh_config: Optional[SSHConfig] = None,
     ):
         """Initialize the importer."""
@@ -320,8 +319,6 @@ class Importer:
         self.ssh_config = ssh_config
 
         self.dreps_json = "[]"
-        self.dreps_file = dreps_file
-        self.dreps_out_file = os.path.join(output_dir, "dreps.json")
 
         if not os.path.exists(output_dir):
             raise OutputDirectoryDoesNotExist(output_dir)
@@ -366,24 +363,6 @@ class Importer:
             finally:
                 if conn is not None:
                     await conn.close()
-
-    async def _fetch_gvc_dreps_list(self):
-        logger.info("Fetching drep list from GVC")
-
-        gvc_client = GvcClient(self.gvc_api_url)
-
-        dreps = []
-        try:
-            dreps = await gvc_client.dreps()
-        except Exception as e:
-            logger.error("Failed to get dreps, using drep cache", error=str(e))
-        await gvc_client.close()
-
-        self.dreps_json = json.dumps([d.model_dump() for d in dreps])
-
-        dreps_data = CatalystToolboxDreps(reps=[d.attributes.voting_key for d in dreps])
-        with open(self.dreps_out_file, "w") as f:
-            json.dump(dreps_data.model_dump(), f)
 
     def _split_raw_snapshot_file(self, raw_snapshot_file: str):
         logger.info("Splitting raw snapshot file for processing")
@@ -500,7 +479,6 @@ class Importer:
                     f" -s {params.snapshot_tool_out_file}"
                     f" -m {self.event_parameters.min_stake_threshold}"
                     f" -v {self.event_parameters.voting_power_cap}"
-                    f" --dreps {self.dreps_out_file}"
                     f" {params.catalyst_toolbox_out_file}"
                 )
 
@@ -804,13 +782,6 @@ class Importer:
         """Take a snapshot and write the data to the database."""
         await self._fetch_eventdb_parameters()
         await self._fetch_network_parameters()
-
-        if self.dreps_file is None:
-            await self._fetch_gvc_dreps_list()
-        else:
-            logger.info("Skipping dreps GVC API call. Reading dreps file")
-            with open(self.dreps_file) as f:
-                self.dreps = json.load(f)
 
         if self.raw_snapshot_file is not None:
             logger.info("Skipping snapshot_tool execution")

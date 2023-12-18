@@ -2,11 +2,15 @@
 
 import re
 import asyncpg
+import json
 import csv
+import strict_rfc3339
 from loguru import logger
 from markdownify import markdownify
 from pydantic import BaseModel
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Set, Union
+
+from ideascale_importer.db.models import Objective
 
 from .client import Campaign, CampaignGroup, Client, Idea
 import ideascale_importer.db
@@ -293,31 +297,54 @@ class Importer:
         ideas = []
         for stage_id in self.config.stage_ids:
             ideas.extend(await client.stage_ideas(stage_id=stage_id))
-        await client.close()
 
         vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, ["yes", "no"])
         mapper = Mapper(vote_options_id, self.config)
 
-        objectives = [mapper.map_objective(a, self.event_id) for a in group.campaigns]
+        async def _process_campaigns(campaigns):
+            objectives: List[Objective] = []
+            themes: List[str] = []
+            for campaign in campaigns:
+                objectives.append(mapper.map_objective(campaign, self.event_id))
+                campaign_themes = await client.event_themes(campaign.id, "f11_themes")
+                themes.extend(campaign_themes)
+            themes = list(set(themes))
+            themes.sort()
+            return objectives, themes
+        objectives, themes  = await _process_campaigns(group.campaigns)
+        await client.close()
         objective_count = len(objectives)
         proposal_count = 0
 
+
+        fund_goal = {
+            "timestamp": strict_rfc3339.now_to_rfc3339_utcoffset(integer=True),
+            "themes": themes
+        }
+
         async with self.conn.transaction():
-            inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id", "event"], pre_update_cols={"deleted": True}, pre_update_cond={"event": f"= {self.event_id}"})
-            inserted_objectives_ix = {o.id: o for o in inserted_objectives}
+            try:
+                await ideascale_importer.db.update_event_description(self.conn, self.event_id, json.dumps(fund_goal))
+            except Exception as e:
+                logger.error("Error updating event description", error=e)
 
-            proposals_with_campaign_id = [(a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)) for a in ideas]
-            proposals = []
-            for objective_id, p in proposals_with_campaign_id:
-                if objective_id in inserted_objectives_ix:
-                    p.objective = inserted_objectives_ix[objective_id].row_id
-                    proposals.append(p)
+            try:
+                inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id", "event"], pre_update_cols={"deleted": True}, pre_update_cond={"event": f"= {self.event_id}"})
+                inserted_objectives_ix = {o.id: o for o in inserted_objectives}
 
-            proposal_count = len(proposals)
+                proposals_with_campaign_id = [(a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)) for a in ideas]
+                proposals = []
+                for objective_id, p in proposals_with_campaign_id:
+                    if objective_id in inserted_objectives_ix:
+                        p.objective = inserted_objectives_ix[objective_id].row_id
+                        proposals.append(p)
 
-            all_objectives = await ideascale_importer.db.select(self.conn, objectives[0], cond={"event": f"= {self.event_id}"})
-            all_objectives_str = ','.join([f"{objective.row_id}" for objective in all_objectives])
+                proposal_count = len(proposals)
 
-            await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id", "objective"], pre_update_cols={"deleted": True}, pre_update_cond={"objective": f"IN ({all_objectives_str})"})
+                all_objectives = await ideascale_importer.db.select(self.conn, objectives[0], cond={"event": f"= {self.event_id}"})
+                all_objectives_str = ','.join([f"{objective.row_id}" for objective in all_objectives])
+                await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id", "objective"], pre_update_cols={"deleted": True}, pre_update_cond={"objective": f"IN ({all_objectives_str})"})
+            except Exception as e:
+                logger.error("Error updating DB objectives and proposals", error=e)
 
         logger.info("Imported objectives and proposals", objective_count=objective_count, proposal_count=proposal_count)

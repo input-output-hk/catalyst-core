@@ -209,6 +209,16 @@ class Client:
         res = await self._get(f"/a/rest/v1/funnels/{funnel_id}")
         return Funnel.model_validate(res)
 
+    async def event_themes(self, campaign_id: int, themes_custom_key: str) -> List[str]:
+        """Get the list of themes for this Fund,by IdeaScale `campaign_id`."""
+        try:
+            res = await self._get(f"/a/rest/v1/customFields/idea/campaigns/{campaign_id}")
+            themes_fields = [f for f in res if f['key'] and f['key'] == themes_custom_key]
+            themes = themes_fields[0]["options"].split('\r\n')
+            return themes
+        except Exception as e:
+            raise Exception(f"Unable to fetch themes: {e}")
+
     async def _get(self, path: str) -> Mapping[str, Any] | Iterable[Mapping[str, Any]]:
         """Execute a GET request on IdeaScale API."""
         headers = {"api_token": self.api_token}

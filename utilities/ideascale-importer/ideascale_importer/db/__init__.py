@@ -172,6 +172,13 @@ async def event_exists(conn: asyncpg.Connection, id: int) -> bool:
     return row is not None
 
 
+async def update_event_description(conn: asyncpg.Connection, row_id: int, description: str):
+    """Update the event description.
+
+    NOTE: this field includes a JSON string used to inform other services."""
+    await conn.execute(f"UPDATE event SET description = '{description}' WHERE row_id = $1", row_id)
+
+
 class VoteOptionsNotFound(Exception):
     """Raised when a vote option is not found."""
 

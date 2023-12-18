@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ArchiveReaderError"],"fn":["deserialize_block_date_from_float","load_from_csv","load_from_folder"],"struct":["ArchiverRecord"]};

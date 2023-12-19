@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["_impl_query_id_for_proposal_brief","_impl_query_id_for_proposal_goal","_impl_query_id_for_proposal_id","_impl_query_id_for_proposal_importance","_impl_query_id_for_proposal_metrics"],"struct":["proposal_brief","proposal_goal","proposal_id","proposal_importance","proposal_metrics","star"]};

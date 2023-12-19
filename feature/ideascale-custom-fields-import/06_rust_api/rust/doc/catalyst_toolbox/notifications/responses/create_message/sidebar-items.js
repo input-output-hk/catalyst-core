@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["deserialize_status_code","serialize_status_code"],"struct":["CreateMessageResponse","InnerResponse"]};

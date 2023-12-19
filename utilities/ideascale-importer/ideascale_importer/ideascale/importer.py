@@ -123,6 +123,14 @@ class Mapper:
             if mv is not None:
                 extra[k] = html_to_md(mv)
 
+        # Hijack `proposal.files_url` with JSON string used by the mobile app.
+        files_url_str = json.dumps({
+            "open_source": a.custom_fields_by_key.get("f11_open_source_choice"),
+            "external_link1": a.custom_fields_by_key.get("f11_link_1"),
+            "external_link2": a.custom_fields_by_key.get("f11_link_2"),
+            "external_link3": a.custom_fields_by_key.get("f11_link_3"),
+            "themes": a.custom_fields_by_key.get("f11_themes"),
+        })
         return ideascale_importer.db.models.Proposal(
             id=a.id,
             objective=0,  # should be set later
@@ -133,7 +141,7 @@ class Mapper:
             public_key=public_key,
             funds=funds,
             url=a.url,
-            files_url="",
+            files_url=f"'{files_url_str}'",
             impact_score=impact_scores.get(a.id, 0),
             extra=extra,
             proposer_name=proposer_name,
@@ -314,19 +322,20 @@ class Importer:
             themes.sort()
             return objectives, themes
         objectives, themes  = await _process_campaigns(group.campaigns)
+
         await client.close()
+
         objective_count = len(objectives)
         proposal_count = 0
-
-
-        fund_goal = {
+        # Hijack `event.description` with JSON string used by the mobile app.
+        fund_goal_str = json.dumps({
             "timestamp": strict_rfc3339.now_to_rfc3339_utcoffset(integer=True),
             "themes": themes
-        }
+        })
 
         async with self.conn.transaction():
             try:
-                await ideascale_importer.db.update_event_description(self.conn, self.event_id, json.dumps(fund_goal))
+                await ideascale_importer.db.update_event_description(self.conn, self.event_id, fund_goal_str)
             except Exception as e:
                 logger.error("Error updating event description", error=e)
 

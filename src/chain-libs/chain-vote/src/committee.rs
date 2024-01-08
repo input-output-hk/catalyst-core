@@ -56,7 +56,35 @@ impl ElectionPublicKey {
         );
         (ciphertexts, proof)
     }
+    //-------------------------------------------------------------------------------------
+    // The encrypt_vote and prove_encrypted_vote methods are not the part of the original ElectionPublicKey trait,
+    // they are added only for a more selective benchmarking in this crate
+    //-------------------------------------------------------------------------------------
+    pub fn encrypt_vote<R: RngCore + CryptoRng>(
+        &self,
+        rng: &mut R,
+        vote: Vote,
+    ) -> (EncryptedVote, Vec<Scalar>) {
+        let encryption_randomness = vec![Scalar::random(rng); vote.len()];
+        let vote_enc = encryption_randomness
+            .iter()
+            .zip(vote.iter())
+            .map(|(r, v)| self.as_raw().encrypt_with_r(&Scalar::from(v), r))
+            .collect();
+        (vote_enc, encryption_randomness)
+    }
 
+    pub fn prove_encrypted_vote<R: RngCore + CryptoRng>(
+        &self,
+        rng: &mut R,
+        crs: &Crs,
+        vote: Vote,
+        vote_enc: &EncryptedVote,
+        encryption_randomness: &[Scalar],
+    ) -> ProofOfCorrectVote {
+        ProofOfCorrectVote::generate(rng, crs, &self.0, &vote, encryption_randomness, vote_enc)
+    }
+    //-------------------------------------------------------------------------------------
     /// Create an election public key from all the participants of this committee
     pub fn from_participants(pks: &[MemberPublicKey]) -> Self {
         let mut k = pks[0].0.pk.clone();

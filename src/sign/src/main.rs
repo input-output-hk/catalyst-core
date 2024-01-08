@@ -45,6 +45,9 @@ pub struct Args {
     /// vote plan hash
     #[clap(short, long)]
     vote_plan_id: String,
+    /// vote yay or nay
+    #[clap(short, long)]
+    choice: u8,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -66,7 +69,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     // join sk+pk together, api requirement
     sk.extend(pk.clone());
     let keypair: Keypair = Keypair::from_bytes(&sk)?;
-    let vote = chain_vote::Vote::new(2, 1_usize)?;
+
+    let choice = args.choice;
+
+    let vote = chain_vote::Vote::new(2, choice.into())?;
     // common reference string
     let crs = chain_vote::Crs::from_hash(&hex::decode(args.vote_plan_id.clone())?);
 

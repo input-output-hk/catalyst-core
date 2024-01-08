@@ -92,6 +92,12 @@
 <a href="#92" id="92">92</a>
 <a href="#93" id="93">93</a>
 <a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//!
 //! Fragment generator
 //!
@@ -139,6 +145,9 @@
     <span class="doccomment">/// vote plan hash
     </span><span class="attr">#[clap(short, long)]
     </span>vote_plan_id: String,
+    <span class="doccomment">/// vote yay or nay
+    </span><span class="attr">#[clap(short, long)]
+    </span>choice: u8,
 }
 
 <span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
@@ -160,7 +169,10 @@
     <span class="comment">// join sk+pk together, api requirement
     </span>sk.extend(pk.clone());
     <span class="kw">let </span>keypair: Keypair = Keypair::from_bytes(<span class="kw-2">&amp;</span>sk)<span class="question-mark">?</span>;
-    <span class="kw">let </span>vote = chain_vote::Vote::new(<span class="number">2</span>, <span class="number">1_usize</span>)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span>choice = args.choice;
+
+    <span class="kw">let </span>vote = chain_vote::Vote::new(<span class="number">2</span>, choice.into())<span class="question-mark">?</span>;
     <span class="comment">// common reference string
     </span><span class="kw">let </span>crs = chain_vote::Crs::from_hash(<span class="kw-2">&amp;</span>hex::decode(args.vote_plan_id.clone())<span class="question-mark">?</span>);
 

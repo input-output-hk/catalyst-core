@@ -134,7 +134,7 @@ pub(crate) fn generate_polys(
     #[inline]
     fn mul(poly: &[Scalar], poly_deg1: &(Scalar, bool)) -> Vec<Scalar> {
         let mut result = poly.iter().map(|p| p * &poly_deg1.0).collect::<Vec<_>>();
-        if poly_deg1.1 == true {
+        if poly_deg1.1 {
             for i in 0..poly.len() - 1 {
                 result[i + 1] = &result[i + 1] + &poly[i];
             }
@@ -151,12 +151,12 @@ pub(crate) fn generate_polys(
         if current_level != params.max_level {
             let next_level = current_level + 1;
             let left_subtree = polynomials_bin_tree(
-                &mul(&parent, &params.deltas_0[current_level]),
+                &mul(parent, &params.deltas_0[current_level]),
                 next_level,
                 params,
             );
             let right_subtree = polynomials_bin_tree(
-                &mul(&parent, &params.deltas_1[current_level]),
+                &mul(parent, &params.deltas_1[current_level]),
                 next_level,
                 params,
             );

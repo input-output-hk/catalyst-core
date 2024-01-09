@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["block","message","node","utxo","vote"],"struct":["V0Command"]};

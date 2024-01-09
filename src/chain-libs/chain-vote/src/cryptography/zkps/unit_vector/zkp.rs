@@ -72,27 +72,23 @@ impl Zkp {
         // Generate First verifier challenge
         let mut cc = ChallengeContext::new(&ck, public_key, ciphers.as_ref());
         let cy = cc.first_challenge(&first_announcement_vec);
+        // The `cy_powers` is used multiple times so compute their values just once and store them
+        let cy_powers = cy.exp_iter().take(ciphers.len()).collect::<Vec<_>>();
 
         let (poly_coeff_enc, rs) = {
-            let pjs = generate_polys(
-                ciphers.len(),
-                &idx_binary_rep,
-                bits,
-                &blinding_randomness_vec,
-            );
+            let mut pjs = generate_polys(&idx_binary_rep, bits, &blinding_randomness_vec);
+            // Padding with zeroes the high-order coefficients to make all polynomials of 'bits' length
+            pjs.iter_mut().for_each(|p| p.resize(bits, Scalar::zero()));
 
             // Generate new Rs for Ds
             let mut rs = Vec::with_capacity(bits);
             let mut ds = Vec::with_capacity(bits);
 
             for i in 0..bits {
-                let sum =
-                    cy.exp_iter()
-                        .zip(pjs.iter())
-                        .fold(Scalar::zero(), |sum, (c_pows, pj)| {
-                            let s = sum + c_pows * pj.get_coefficient_at(i);
-                            s
-                        });
+                let sum = cy_powers
+                    .iter()
+                    .zip(pjs.iter())
+                    .fold(Scalar::zero(), |sum, (c_pows, pj)| sum + c_pows * &pj[i]);
 
                 let (d, r) = public_key.encrypt_return_r(&sum, rng);
                 ds.push(d);
@@ -111,23 +107,22 @@ impl Zkp {
             .map(|(abcd, index)| abcd.gen_response(&cx, index))
             .collect::<Vec<_>>();
 
+        // Getting cx^logN from exp_iter instead of separate binary exponentiation with Scalar.power()
+        let cx_pows = cx.exp_iter().take(bits + 1).collect::<Vec<_>>();
+
         // Compute R
         let response = {
-            let cx_pow = cx.power(cipher_randoms.bits());
-            let p1 = cipher_randoms.iter().zip(cy.exp_iter()).fold(
-                Scalar::zero(),
-                |acc, (r, cy_pows)| {
-                    let el = r * &cx_pow * cy_pows;
-                    el + acc
-                },
-            );
+            let cx_pow = &cx_pows[bits];
+            let p1 = cipher_randoms
+                .iter()
+                .zip(cy_powers.iter())
+                .fold(Scalar::zero(), |acc, (r, cy_pows)| {
+                    acc + r * cx_pow * cy_pows
+                });
             let p2 = rs
                 .iter()
-                .zip(cx.exp_iter())
-                .fold(Scalar::zero(), |acc, (r, cx_pows)| {
-                    let el = r * cx_pows;
-                    el + acc
-                });
+                .zip(cx_pows.iter())
+                .fold(Scalar::zero(), |acc, (r, cx_power)| acc + r * cx_power);
             p1 + p2
         };
 
@@ -177,27 +172,19 @@ impl Zkp {
     ) -> bool {
         let bits = ciphertexts.bits();
         let length = ciphertexts.len();
-        let cx_pow = challenge_x.power(bits);
-
-        let powers_cx = challenge_x.exp_iter();
-        let powers_cy = challenge_y.exp_iter();
-
-        let powers_z_iterator = powers_z_encs_iter(&self.zwvs, challenge_x, &(bits as u32));
-
-        let zero = public_key.encrypt_with_r(&Scalar::zero(), &self.r);
 
         // Challenge value for batching two equations into a single multiscalar mult.
-        let batch_challenge = Scalar::random(&mut thread_rng());
+        let batch_challenge1 = Scalar::random(&mut thread_rng());
 
         for (zwv, iba) in self.zwvs.iter().zip(self.ibas.iter()) {
             if GroupElement::vartime_multiscalar_multiplication(
                 iter::once(zwv.z.clone())
-                    .chain(iter::once(&zwv.w + &batch_challenge * &zwv.v))
+                    .chain(iter::once(&zwv.w + &batch_challenge1 * &zwv.v))
                     .chain(iter::once(
-                        &batch_challenge * (&zwv.z - challenge_x) - challenge_x,
+                        &batch_challenge1 * (&zwv.z - challenge_x) - challenge_x,
                     ))
                     .chain(iter::once(Scalar::one().negate()))
-                    .chain(iter::once(batch_challenge.negate())),
+                    .chain(iter::once(batch_challenge1.negate())),
                 iter::once(GroupElement::generator())
                     .chain(iter::once(commitment_key.h.clone()))
                     .chain(iter::once(iba.i.clone()))
@@ -209,29 +196,53 @@ impl Zkp {
             }
         }
 
-        let mega_check = GroupElement::vartime_multiscalar_multiplication(
-            powers_cy
-                .clone()
-                .take(length)
-                .map(|s| s * &cx_pow)
-                .chain(powers_cy.clone().take(length).map(|s| s * &cx_pow))
-                .chain(powers_cy.take(length))
-                .chain(powers_cx.clone().take(bits))
-                .chain(powers_cx.take(bits))
-                .chain(iter::once(Scalar::one().negate()))
-                .chain(iter::once(Scalar::one().negate())),
+        let products_z_iter = powers_z_encs_iter(&self.zwvs, challenge_x, &(bits as u32));
+        let powers_cy = challenge_y.exp_iter().take(length).collect::<Vec<_>>();
+
+        let products_z_mul_powers_cy_sum = powers_cy
+            .iter()
+            .zip(products_z_iter)
+            .fold(Scalar::zero(), |sum, (cy_i, z_i)| sum + &z_i * cy_i);
+
+        // The `powers_cx` and `powers_cy_mul_cx_log_n` are needed multiple times
+        // so computing right away their values from exp_iter.
+        // Also getting cx^logN from exp_iter instead of separate exponentiation with Scalar.power()
+        let mut powers_cx = challenge_x.exp_iter().take(bits + 1).collect::<Vec<_>>();
+        let cx_log_n = powers_cx.pop().unwrap(); // cx^logN
+        let powers_cy_mul_cx_log_n = powers_cy
+            .iter()
+            .map(|cy_i| cy_i * &cx_log_n)
+            .collect::<Vec<_>>();
+
+        let batch_challenge2 = Scalar::random(&mut thread_rng());
+
+        GroupElement::vartime_multiscalar_multiplication(
+            powers_cy_mul_cx_log_n
+                .iter()
+                .map(|p| p * &batch_challenge2)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .chain(
+                    powers_cx
+                        .iter()
+                        .map(|p| p * &batch_challenge2)
+                        .collect::<Vec<_>>(),
+                )
+                .chain(iter::once(
+                    products_z_mul_powers_cy_sum - self.r.clone() * &batch_challenge2,
+                ))
+                .chain(powers_cy_mul_cx_log_n)
+                .chain(powers_cx)
+                .chain(iter::once(self.r.negate())),
             ciphertexts
                 .iter()
-                .map(|ctxt| ctxt.e2.clone())
-                .chain(ciphertexts.iter().map(|ctxt| ctxt.e1.clone()))
-                .chain(powers_z_iterator.take(length))
-                .chain(self.ds.iter().map(|ctxt| ctxt.e1.clone()))
-                .chain(self.ds.iter().map(|ctxt| ctxt.e2.clone()))
-                .chain(iter::once(zero.e1.clone()))
-                .chain(iter::once(zero.e2)),
-        );
-
-        mega_check == GroupElement::zero()
+                .map(|ct| ct.e1.clone())
+                .chain(self.ds.iter().map(|d| d.e1.clone()))
+                .chain(iter::once(GroupElement::generator()))
+                .chain(ciphertexts.iter().map(|ct| ct.e2.clone()))
+                .chain(self.ds.iter().map(|d| d.e2.clone()))
+                .chain(iter::once(public_key.pk.clone())),
+        ) == GroupElement::zero()
     }
 
     /// Try to generate a `Proof` from a buffer
@@ -363,19 +374,18 @@ struct ZPowExp {
 }
 
 impl Iterator for ZPowExp {
-    type Item = GroupElement;
+    type Item = Scalar;
 
-    fn next(&mut self) -> Option<GroupElement> {
+    fn next(&mut self) -> Option<Scalar> {
         let z_pow = powers_z_encs(&self.z, self.challenge_x.clone(), self.index, self.bit_size);
         self.index += 1;
-        Some(z_pow.negate() * GroupElement::generator())
+        Some(z_pow.negate())
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
         (usize::MAX, None)
     }
 }
-
 // Return an iterator of the powers of `ZPowExp`.
 #[allow(dead_code)] // can be removed if the default flag is ristretto instead of sec2
 fn powers_z_encs_iter(z: &[ResponseRandomness], challenge_x: &Scalar, bit_size: &u32) -> ZPowExp {
@@ -485,7 +495,26 @@ mod tests {
             Ciphertext::zero(),
             Ciphertext::zero(),
         ];
-        assert!(!proof.verify(&crs, &public_key, &fake_encryption))
+        assert!(!proof.verify(&crs, &public_key, &fake_encryption));
+
+        // Testing a case with swapped components (e1, e2) in UV's ElGamal ciphertexts
+        let ciphertexts_swapped = ciphertexts
+            .into_iter()
+            .map(|ct| Ciphertext {
+                e1: ct.e2,
+                e2: ct.e1,
+            })
+            .collect::<Vec<_>>();
+
+        let proof_swapped = Zkp::generate(
+            &mut r,
+            &crs,
+            &public_key,
+            &unit_vector,
+            &encryption_randomness,
+            &ciphertexts_swapped,
+        );
+        assert!(!proof_swapped.verify(&crs, &public_key, &ciphertexts_swapped));
     }
 
     #[test]

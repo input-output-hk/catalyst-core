@@ -34,7 +34,7 @@ INSERT INTO event (
     450000000,              -- Voting Power Threshold
     1,                      -- Max Voting Power PCT
     NULL,                   -- Review Rewards
-    '2024-01-04 08:00:00',  -- Start Time
+    '2024-01-04 08:00:01',  -- Start Time
     '2023-12-30 18:00:00',  -- End Time
     '2024-01-04 08:00:00',  -- Insight Sharing Start
     '2024-01-04 08:00:00',  -- Proposal Submission Start

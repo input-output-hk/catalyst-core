@@ -100,7 +100,7 @@ jobs:
           cargo llvm-cov report --lcov --output-path ./lcov.info
 
       - name: Upload code coverage to coveralls.io
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@tests/typhon-registration
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: "./lcov.info"

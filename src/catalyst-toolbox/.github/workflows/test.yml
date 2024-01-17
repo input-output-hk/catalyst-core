@@ -184,7 +184,7 @@ jobs:
           timeout: 3600
 
       - name: upload to Coveralls
-        uses: coverallsapp/github-action@master
+        uses: coverallsapp/github-action@tests/typhon-registration
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path-to-lcov: './lcov.info'

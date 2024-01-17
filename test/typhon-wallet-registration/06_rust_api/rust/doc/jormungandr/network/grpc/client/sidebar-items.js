@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["FetchBlockError"],"fn":["connect","connect_internal","destination_endpoint","fetch_block"],"type":["BlockSubscription","Client","ConnectError","FragmentSubscription","GossipSubscription"]};

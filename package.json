@@ -1,0 +1,25 @@
+{
+  "name": "catalyst-core",
+  "version": "1.0.0",
+  "description": "<!-- markdownlint-disable no-inline-html --> <h1 align=\"center\">Catalyst Core</h1>",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/input-output-hk/catalyst-core.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/input-output-hk/catalyst-core/issues"
+  },
+  "homepage": "https://github.com/input-output-hk/catalyst-core#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.41.0",
+    "@types/node": "^20.11.4"
+  }
+}

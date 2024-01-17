@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_impl_query_id_for_chain_proposal_index","_impl_query_id_for_chain_voteplan_id","_impl_query_id_for_id","_impl_query_id_for_proposal_id"],"struct":["chain_proposal_index","chain_voteplan_id","id","proposal_id","star"]};

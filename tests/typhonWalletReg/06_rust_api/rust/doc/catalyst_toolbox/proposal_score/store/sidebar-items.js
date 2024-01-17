@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["store_proposals_into_file","store_score_into_proposal"]};

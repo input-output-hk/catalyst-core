@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_impl_insertable_for_insertgoal"],"struct":["InsertGoal"]};

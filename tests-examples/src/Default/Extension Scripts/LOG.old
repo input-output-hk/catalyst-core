@@ -1,2 +1,3 @@
-2024/01/18-20:47:45.673 13a03 Creating DB /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-examples/src/Default/Extension Scripts since it was missing.
-2024/01/18-20:47:45.680 13a03 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-examples/src/Default/Extension Scripts/MANIFEST-000001
+2024/01/18-20:48:59.096 8703 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-examples/src/Default/Extension Scripts/MANIFEST-000001
+2024/01/18-20:48:59.096 8703 Recovering log #3
+2024/01/18-20:48:59.096 8703 Reusing old log /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-examples/src/Default/Extension Scripts/000003.log 

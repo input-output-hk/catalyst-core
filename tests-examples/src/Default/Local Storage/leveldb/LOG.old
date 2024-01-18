@@ -1,2 +1,3 @@
-2024/01/18-20:47:45.690 2d03 Creating DB /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-examples/src/Default/Local Storage/leveldb since it was missing.
-2024/01/18-20:47:45.737 2d03 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-examples/src/Default/Local Storage/leveldb/MANIFEST-000001
+2024/01/18-20:48:58.781 2e03 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-examples/src/Default/Local Storage/leveldb/MANIFEST-000001
+2024/01/18-20:48:58.782 2e03 Recovering log #3
+2024/01/18-20:48:58.782 2e03 Reusing old log /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-examples/src/Default/Local Storage/leveldb/000003.log 

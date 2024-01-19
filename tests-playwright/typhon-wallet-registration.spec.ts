@@ -49,7 +49,12 @@ test('Open Extension Page and Click Button with XPath', async ({}) => {
   // Click the second button
   await newTab.click(secondButtonSelector);
 
-  // Keeping the browser open (remove the timeout or adjust as needed)
+  // Reset the state of user
+  // for (const page of browser.pages()) {
+  //   await page.close();
+  // }
+
+  // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
   await page.waitForTimeout(300000); // Adjust the time as needed
   await new Promise(resolve => { /* never resolves */ });
 });

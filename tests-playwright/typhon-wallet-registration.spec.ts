@@ -41,6 +41,14 @@ test('Open Extension Page and Click Button with XPath', async ({}) => {
   // Click the button using XPath
   await newTab.click(buttonXPath);
 
+  const secondButtonSelector = '#headlessui-menu-item-6';
+
+  // Wait for the second button to be visible
+  await newTab.waitForSelector(secondButtonSelector, { state: 'visible' });
+
+  // Click the second button
+  await newTab.click(secondButtonSelector);
+
   // Keeping the browser open (remove the timeout or adjust as needed)
   await page.waitForTimeout(300000); // Adjust the time as needed
   await new Promise(resolve => { /* never resolves */ });

@@ -1,4 +1,5 @@
 import { test, chromium, BrowserContext, Page } from '@playwright/test';
+import { getWalletCredentials } from './credentials';
 
 test('Open Extension Page and Click Button with XPath', async ({}) => {
   const extensionPath: string = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/extensions';

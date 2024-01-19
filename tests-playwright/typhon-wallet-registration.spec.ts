@@ -17,11 +17,14 @@ test('Open Extension Page', async ({}) => {
 
   // Creating a new context and page
   const page = await browser.newPage();
+  const buttonSelector = '#headlessui-menu-button-1';
 
   // Navigating to the extension's page
   await page.goto(`chrome-extension://kfdniefadaanbjodldohaedphafoffoh/tab.html#/wallet/access`);
+  await page.waitForSelector(buttonSelector);
+  await page.click(buttonSelector);
 
-  // Keeping the browser open (remove the timeout or adjust as needed)
+  // Keeping the browser open to debug(remove the timeout or adjust as needed)
   await page.waitForTimeout(300000); // Adjust the time as needed
   await new Promise(resolve => { /* never resolves */ });
 });

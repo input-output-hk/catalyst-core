@@ -1,6 +1,6 @@
-import { test, chromium } from '@playwright/test';
+import { test, chromium, BrowserContext, Page } from '@playwright/test';
 
-test('Open Extension Page', async ({}) => {
+test('Open Extension Page and Click Button with XPath', async ({}) => {
   const extensionPath: string = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/extensions';
   const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
   const extensionPage: string = 'tab.html'; // Replace with the specific page
@@ -17,14 +17,31 @@ test('Open Extension Page', async ({}) => {
 
   // Creating a new context and page
   const page = await browser.newPage();
-  const buttonSelector = '#headlessui-menu-button-1';
+  await page.waitForTimeout(1000); // Adjust the timeout as needed
 
-  // Navigating to the extension's page
-  await page.goto(`chrome-extension://kfdniefadaanbjodldohaedphafoffoh/tab.html#/wallet/access`);
-  await page.waitForSelector(buttonSelector);
-  await page.click(buttonSelector);
+  // Get all pages (tabs) in the context
+  const pages = browser.pages();
 
-  // Keeping the browser open to debug(remove the timeout or adjust as needed)
+  // The new tab is typically the last one in the list
+  const newTab = pages[pages.length - 1];
+
+  // Now you can interact with the new tab
+  await newTab.bringToFront(); // Brings the new tab to the foreground
+
+  // Example: Get the title of the new tab
+  const title = await newTab.title();
+  console.log(`Title of the new tab: ${title}`);
+
+  // XPath selector for the button
+  const buttonXPath = '//*[@id="headlessui-menu-button-1"]';
+
+  // Wait for the button to be visible
+  await newTab.waitForSelector(buttonXPath, { state: 'visible' });
+
+  // Click the button using XPath
+  await newTab.click(buttonXPath);
+
+  // Keeping the browser open (remove the timeout or adjust as needed)
   await page.waitForTimeout(300000); // Adjust the time as needed
   await new Promise(resolve => { /* never resolves */ });
 });

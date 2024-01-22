@@ -14,7 +14,7 @@ interface SeedPhrase {
 const getSeedPhrase = (): string[] => {
   const seedPhraseArray: string[] = [];
   for (let i = 1; i <= 15; i++) {
-    const word = process.env[`SEED_WORD_${i}`];
+    const word = process.env[`WALLET1_SEED_WORD_${i}`];
     if (!word) {
       throw new Error(`Seed word ${i} is missing`);
     }

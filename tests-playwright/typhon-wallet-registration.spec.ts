@@ -1,5 +1,6 @@
 import { test, chromium, BrowserContext, Page } from '@playwright/test';
 import { getWalletCredentials } from './credentials';
+import { getSeedPhrase } from './seed-phrase';
 
 test('Open Extension Page and Click Button with XPath', async ({}) => {
   const extensionPath: string = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/extensions';
@@ -64,6 +65,27 @@ test('Open Extension Page and Click Button with XPath', async ({}) => {
   await newTab.waitForSelector(continueButton, { state: 'visible' });
   await newTab.click(continueButton);
 
+  const seedPhrase = getSeedPhrase();
+  for (let i = 0; i < seedPhrase.length; i++) {
+  const ftSeedPhrase1 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(1) > div > input';
+  await newTab.waitForSelector(ftSeedPhrase1, { state: 'visible' });
+  await newTab.fill(ftSeedPhrase1, seedPhrase[i]);
+  
+  const ftSeedPhrase2 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(2) > div > input';
+  const ftSeedPhrase3 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(3) > div > input';
+  const ftSeedPhrase4 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(4) > div > input';
+  const ftSeedPhrase5 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(5) > div > input';
+  const ftSeedPhrase6 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(6) > div > input';
+  const ftSeedPhrase7 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(7) > div > input';
+  const ftSeedPhrase8 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(8) > div > input';
+  const ftSeedPhrase9 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(9) > div > input';
+  const ftSeedPhrase10 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(10) > div > input';
+  const ftSeedPhrase11 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(11) > div > input';
+  const ftSeedPhrase12 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(12) > div > input';
+  const ftSeedPhrase13 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(13) > div > input';
+  const ftSeedPhrase14 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(14) > div > input';
+  const ftSeedPhrase15 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(15) > div > input';
+
   // Reset the state of user
   // for (const page of browser.pages()) {
   //   await page.close();
@@ -72,4 +94,4 @@ test('Open Extension Page and Click Button with XPath', async ({}) => {
   // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
   await page.waitForTimeout(300000); // Adjust the time as needed
   await new Promise(resolve => { /* never resolves */ });
-});
+}});

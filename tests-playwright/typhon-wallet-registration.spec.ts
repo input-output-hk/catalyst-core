@@ -60,7 +60,7 @@ test('Open Extension Page and Click Button with XPath', async ({}) => {
   await newTab.waitForSelector(agreeToTC, { state: 'visible' });
   await newTab.click(agreeToTC);
 
-  const continueButton = '//*[button="Continue"]';
+  const continueButton = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(2) > div > button';
   await newTab.waitForSelector(continueButton, { state: 'visible' });
   await newTab.click(continueButton);
 

@@ -3,8 +3,8 @@ import { getWalletCredentials } from './credentials';
 
 test('Open Extension Page and Click Button with XPath', async ({}) => {
   const extensionPath: string = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/extensions';
-  const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
-  const extensionPage: string = 'tab.html'; // Replace with the specific page
+  // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
+  // const extensionPage: string = 'tab.html'; // Replace with the specific page
   const userDataDir = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/src/usrdatadir'; // Path to the user data directory
 
   // Launch Chromium with the extension
@@ -33,22 +33,36 @@ test('Open Extension Page and Click Button with XPath', async ({}) => {
   const title = await newTab.title();
   console.log(`Title of the new tab: ${title}`);
 
-  // XPath selector for the button
-  const buttonXPath = '//*[@id="headlessui-menu-button-1"]';
-
-  // Wait for the button to be visible
-  await newTab.waitForSelector(buttonXPath, { state: 'visible' });
-
-  // Click the button using XPath
-  await newTab.click(buttonXPath);
+  const firstButtonSelector = '//*[@id="headlessui-menu-button-1"]';
+  await newTab.waitForSelector(firstButtonSelector, { state: 'visible' });
+  await newTab.click(firstButtonSelector);
 
   const secondButtonSelector = '#headlessui-menu-item-6';
-
-  // Wait for the second button to be visible
   await newTab.waitForSelector(secondButtonSelector, { state: 'visible' });
-
-  // Click the second button
   await newTab.click(secondButtonSelector);
+
+  const thirdButtonSelector = '//*[text()="Import"]';
+  await newTab.waitForSelector(thirdButtonSelector, { state: 'visible' });
+  await newTab.click(thirdButtonSelector);
+
+  const WalletCredentials = getWalletCredentials('WALLET1');
+  const usernameInput = `//input[@type='text' and @maxlength='36']`;
+  const passwordInput = `//input[@type='password' and @maxlength='300']`;
+  const cfpwInput = `//input[@type='password' and @maxlength='300' and @placeholder='Confirm Password']`;
+  await newTab.waitForSelector(usernameInput, { state: 'visible' });
+  await newTab.waitForSelector(passwordInput, { state: 'visible' });
+  await newTab.waitForSelector(cfpwInput, { state: 'visible' });
+  await newTab.fill(usernameInput, WalletCredentials.username);
+  await newTab.fill(passwordInput, WalletCredentials.password);
+  await newTab.fill(cfpwInput, WalletCredentials.password);
+
+  const agreeToTC = '//*[@id="termsAndConditions]'
+  await newTab.waitForSelector(agreeToTC, { state: 'visible' });
+  await newTab.click(agreeToTC);
+
+  const continueButton = '//*[button="Continue"]';
+  await newTab.waitForSelector(continueButton, { state: 'visible' });
+  await newTab.click(continueButton);
 
   // Reset the state of user
   // for (const page of browser.pages()) {

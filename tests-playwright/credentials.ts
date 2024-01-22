@@ -1,8 +1,7 @@
 import dotenv from 'dotenv';
-import path from 'path';
 
 // Construct the path to the .env file
-const envPath = path.join(__dirname, '..', 'catalyst-core', 'src', 'typhon-wallet-storage.env');
+const envPath = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/src/typhon-wallet-storage.env';
 dotenv.config({ path: envPath });
 
 interface WalletCredentials {

@@ -46,9 +46,9 @@ test('Open Extension Page and Click Button with XPath', async ({}) => {
   await newTab.click(thirdButtonSelector);
 
   const WalletCredentials = getWalletCredentials('WALLET1');
-  const usernameInput = `//input[@type='text' and @maxlength='36']`;
-  const passwordInput = `//input[@type='password' and @maxlength='300']`;
-  const cfpwInput = `//input[@type='password' and @maxlength='300' and @placeholder='Confirm Password']`;
+  const usernameInput = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(2) > div > input';
+  const passwordInput = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(2) > div > div:nth-child(2) > input';
+  const cfpwInput = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(2) > div > div:nth-child(3) > input';
   await newTab.waitForSelector(usernameInput, { state: 'visible' });
   await newTab.waitForSelector(passwordInput, { state: 'visible' });
   await newTab.waitForSelector(cfpwInput, { state: 'visible' });
@@ -56,7 +56,7 @@ test('Open Extension Page and Click Button with XPath', async ({}) => {
   await newTab.fill(passwordInput, WalletCredentials.password);
   await newTab.fill(cfpwInput, WalletCredentials.password);
 
-  const agreeToTC = '//*[@id="termsAndConditions]'
+  const agreeToTC = '#termsAndConditions'
   await newTab.waitForSelector(agreeToTC, { state: 'visible' });
   await newTab.click(agreeToTC);
 

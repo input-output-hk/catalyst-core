@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["generate_qr_and_hashes","pin_to_bytes"],"trait":["WalletExtension"]};

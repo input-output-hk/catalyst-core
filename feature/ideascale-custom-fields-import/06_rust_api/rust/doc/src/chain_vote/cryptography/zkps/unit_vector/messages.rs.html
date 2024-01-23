@@ -158,12 +158,62 @@
 <a href="#158" id="158">158</a>
 <a href="#159" id="159">159</a>
 <a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
+<a href="#178" id="178">178</a>
+<a href="#179" id="179">179</a>
+<a href="#180" id="180">180</a>
+<a href="#181" id="181">181</a>
+<a href="#182" id="182">182</a>
+<a href="#183" id="183">183</a>
+<a href="#184" id="184">184</a>
+<a href="#185" id="185">185</a>
+<a href="#186" id="186">186</a>
+<a href="#187" id="187">187</a>
+<a href="#188" id="188">188</a>
+<a href="#189" id="189">189</a>
+<a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
+<a href="#196" id="196">196</a>
+<a href="#197" id="197">197</a>
+<a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Structures used by the prover of `unit_vector_zkp` during the proof generation. We use the
 //! same notation defined in Figure 8
 
 </span><span class="kw">use </span><span class="kw">crate</span>::cryptography::CommitmentKey;
-<span class="kw">use </span><span class="kw">crate</span>::encrypted_vote::binrep;
-<span class="kw">use </span><span class="kw">crate</span>::math::polynomial::Polynomial;
 <span class="kw">use crate</span>::{GroupElement, Scalar};
 <span class="kw">use </span>rand_core::{CryptoRng, RngCore};
 
@@ -279,43 +329,97 @@
 }
 
 <span class="doccomment">/// Generate the polynomials used in Step 5, of the proof generation in Figure 8.
+/// Denoting unit-vector&#39;s size as N, this method takes 2(N - 2) polynomial multiplications
+/// instead of N * (logN - 1) for the direct implementation
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>generate_polys(
-    ciphers_len: usize,
     idx_binary_rep: <span class="kw-2">&amp;</span>[bool],
     bits: usize,
     blinding_randomness_vec: <span class="kw-2">&amp;</span>[BlindingRandomness],
-) -&gt; Vec&lt;Polynomial&gt; {
-    <span class="comment">// Compute polynomials pj(x)
-    </span><span class="kw">let </span>polys = idx_binary_rep
-        .iter()
-        .zip(blinding_randomness_vec.iter())
-        .map(|(ix, abcd)| {
-            <span class="kw">let </span>z1 = Polynomial::new(bits).set2(abcd.beta.clone(), (<span class="kw-2">*</span>ix).into());
-            <span class="kw">let </span>z0 = Polynomial::new(bits).set2(abcd.beta.negate(), (!ix).into());
-            (z0, z1)
+) -&gt; Vec&lt;Vec&lt;Scalar&gt;&gt; {
+    <span class="comment">// Multiplication of an arbitrary-degree polynomial on a degree-1 polynomial with a binary non-const term
+    // By being tailored for a given specific type of poly_deg1-multiplier it
+    // has better performance than naive polynomials multiplication:
+    // at most poly.len() - 1 additions and poly.len() multiplications instead of 2 * poly.len()
+    //
+    // NOTE: should be replaced with naive polynomial multiplication, if const-time (data-independent)
+    // multiplication complexity is needed
+    </span><span class="attr">#[inline]
+    </span><span class="kw">fn </span>mul(poly: <span class="kw-2">&amp;</span>[Scalar], poly_deg1: <span class="kw-2">&amp;</span>(Scalar, bool)) -&gt; Vec&lt;Scalar&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>result = poly.iter().map(|p| p * <span class="kw-2">&amp;</span>poly_deg1.<span class="number">0</span>).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+        <span class="kw">if </span>poly_deg1.<span class="number">1 </span>{
+            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..poly.len() - <span class="number">1 </span>{
+                result[i + <span class="number">1</span>] = <span class="kw-2">&amp;</span>result[i + <span class="number">1</span>] + <span class="kw-2">&amp;</span>poly[i];
+            }
+            result.push(poly.last().unwrap().clone());
+        }
+        result
+    }
+    <span class="comment">// Binary tree which leaves are the polynomials corresponding to the indices in range [0, bits)
+    </span><span class="kw">fn </span>polynomials_bin_tree(
+        parent: <span class="kw-2">&amp;</span>[Scalar],
+        current_level: usize,
+        params: <span class="kw-2">&amp;</span>TreeParams,
+    ) -&gt; Vec&lt;Vec&lt;Scalar&gt;&gt; {
+        <span class="kw">if </span>current_level != params.max_level {
+            <span class="kw">let </span>next_level = current_level + <span class="number">1</span>;
+            <span class="kw">let </span>left_subtree = polynomials_bin_tree(
+                <span class="kw-2">&amp;</span>mul(parent, <span class="kw-2">&amp;</span>params.deltas_0[current_level]),
+                next_level,
+                params,
+            );
+            <span class="kw">let </span>right_subtree = polynomials_bin_tree(
+                <span class="kw-2">&amp;</span>mul(parent, <span class="kw-2">&amp;</span>params.deltas_1[current_level]),
+                next_level,
+                params,
+            );
+            left_subtree
+                .into_iter()
+                .chain(right_subtree.into_iter())
+                .collect()
+        } <span class="kw">else </span>{
+            <span class="macro">vec!</span>[parent.to_vec()]
+        }
+    }
+    <span class="comment">// Precomputed degree-1 polynomials with values of the Kronecker delta function (for both possible inputs: 0 and 1)
+    // and with corresponding beta-randomness for each bit of a given unit vector
+    </span><span class="kw">let </span>deltas_0 = (<span class="number">0</span>..bits)
+        .map(|i| {
+            (
+                blinding_randomness_vec[i].beta.clone().negate(),
+                !idx_binary_rep[i],
+            )
         })
         .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
-    <span class="kw">let </span><span class="kw-2">mut </span>pjs = Vec::new();
-    <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..ciphers_len {
-        <span class="kw">let </span>j = binrep(i, bits <span class="kw">as </span>u32);
+    <span class="kw">let </span>deltas_1 = (<span class="number">0</span>..bits)
+        .map(|i| (blinding_randomness_vec[i].beta.clone(), idx_binary_rep[i]))
+        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
-        <span class="kw">let </span><span class="kw-2">mut </span>acc = <span class="kw">if </span>j[<span class="number">0</span>] {
-            polys[<span class="number">0</span>].<span class="number">1</span>.clone()
-        } <span class="kw">else </span>{
-            polys[<span class="number">0</span>].<span class="number">0</span>.clone()
-        };
-        <span class="kw">for </span>k <span class="kw">in </span><span class="number">1</span>..bits {
-            <span class="kw">let </span>t = <span class="kw">if </span>j[k] {
-                polys[k].<span class="number">1</span>.clone()
-            } <span class="kw">else </span>{
-                polys[k].<span class="number">0</span>.clone()
-            };
-            acc = acc * t;
-        }
-        pjs.push(acc)
+    <span class="kw">struct </span>TreeParams {
+        max_level: usize,
+        deltas_0: Vec&lt;(Scalar, bool)&gt;,
+        deltas_1: Vec&lt;(Scalar, bool)&gt;,
     }
-
-    pjs
+    <span class="kw">let </span>tp = TreeParams {
+        max_level: bits,
+        deltas_0,
+        deltas_1,
+    };
+    <span class="comment">// Building 2 subtrees from delta_0[0] and delta_1[0] to avoid 2 excessive multiplications with 1 as it would be with
+    // polynomials_bin_tree(&amp;[Scalar::one()], 0, &amp;tp)
+    </span><span class="kw">let </span>left_subtree = polynomials_bin_tree(
+        <span class="kw-2">&amp;</span>[tp.deltas_0[<span class="number">0</span>].<span class="number">0</span>.clone(), Scalar::from(tp.deltas_0[<span class="number">0</span>].<span class="number">1</span>)],
+        <span class="number">1</span>,
+        <span class="kw-2">&amp;</span>tp,
+    );
+    <span class="kw">let </span>right_subtree = polynomials_bin_tree(
+        <span class="kw-2">&amp;</span>[tp.deltas_1[<span class="number">0</span>].<span class="number">0</span>.clone(), Scalar::from(tp.deltas_1[<span class="number">0</span>].<span class="number">1</span>)],
+        <span class="number">1</span>,
+        <span class="kw-2">&amp;</span>tp,
+    );
+    left_subtree
+        .into_iter()
+        .chain(right_subtree.into_iter())
+        .collect()
 }
 </code></pre></div></section></main></body></html>

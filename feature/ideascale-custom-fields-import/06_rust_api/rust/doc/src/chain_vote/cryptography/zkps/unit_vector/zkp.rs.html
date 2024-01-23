@@ -561,6 +561,35 @@
 <a href="#561" id="561">561</a>
 <a href="#562" id="562">562</a>
 <a href="#563" id="563">563</a>
+<a href="#564" id="564">564</a>
+<a href="#565" id="565">565</a>
+<a href="#566" id="566">566</a>
+<a href="#567" id="567">567</a>
+<a href="#568" id="568">568</a>
+<a href="#569" id="569">569</a>
+<a href="#570" id="570">570</a>
+<a href="#571" id="571">571</a>
+<a href="#572" id="572">572</a>
+<a href="#573" id="573">573</a>
+<a href="#574" id="574">574</a>
+<a href="#575" id="575">575</a>
+<a href="#576" id="576">576</a>
+<a href="#577" id="577">577</a>
+<a href="#578" id="578">578</a>
+<a href="#579" id="579">579</a>
+<a href="#580" id="580">580</a>
+<a href="#581" id="581">581</a>
+<a href="#582" id="582">582</a>
+<a href="#583" id="583">583</a>
+<a href="#584" id="584">584</a>
+<a href="#585" id="585">585</a>
+<a href="#586" id="586">586</a>
+<a href="#587" id="587">587</a>
+<a href="#588" id="588">588</a>
+<a href="#589" id="589">589</a>
+<a href="#590" id="590">590</a>
+<a href="#591" id="591">591</a>
+<a href="#592" id="592">592</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Implementation of the Unit Vector ZK argument presented by
 //! Zhang, Oliynykov and Balogum in
 //! [&quot;A Treasury System for Cryptocurrencies: Enabling Better Collaborative Intelligence&quot;](https://www.ndss-symposium.org/wp-content/uploads/2019/02/ndss2019_02A-2_Zhang_paper.pdf).
@@ -635,27 +664,23 @@
         <span class="comment">// Generate First verifier challenge
         </span><span class="kw">let </span><span class="kw-2">mut </span>cc = ChallengeContext::new(<span class="kw-2">&amp;</span>ck, public_key, ciphers.as_ref());
         <span class="kw">let </span>cy = cc.first_challenge(<span class="kw-2">&amp;</span>first_announcement_vec);
+        <span class="comment">// The `cy_powers` is used multiple times so compute their values just once and store them
+        </span><span class="kw">let </span>cy_powers = cy.exp_iter().take(ciphers.len()).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
         <span class="kw">let </span>(poly_coeff_enc, rs) = {
-            <span class="kw">let </span>pjs = generate_polys(
-                ciphers.len(),
-                <span class="kw-2">&amp;</span>idx_binary_rep,
-                bits,
-                <span class="kw-2">&amp;</span>blinding_randomness_vec,
-            );
+            <span class="kw">let </span><span class="kw-2">mut </span>pjs = generate_polys(<span class="kw-2">&amp;</span>idx_binary_rep, bits, <span class="kw-2">&amp;</span>blinding_randomness_vec);
+            <span class="comment">// Padding with zeroes the high-order coefficients to make all polynomials of &#39;bits&#39; length
+            </span>pjs.iter_mut().for_each(|p| p.resize(bits, Scalar::zero()));
 
             <span class="comment">// Generate new Rs for Ds
             </span><span class="kw">let </span><span class="kw-2">mut </span>rs = Vec::with_capacity(bits);
             <span class="kw">let </span><span class="kw-2">mut </span>ds = Vec::with_capacity(bits);
 
             <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..bits {
-                <span class="kw">let </span>sum =
-                    cy.exp_iter()
-                        .zip(pjs.iter())
-                        .fold(Scalar::zero(), |sum, (c_pows, pj)| {
-                            <span class="kw">let </span>s = sum + c_pows * pj.get_coefficient_at(i);
-                            s
-                        });
+                <span class="kw">let </span>sum = cy_powers
+                    .iter()
+                    .zip(pjs.iter())
+                    .fold(Scalar::zero(), |sum, (c_pows, pj)| sum + c_pows * <span class="kw-2">&amp;</span>pj[i]);
 
                 <span class="kw">let </span>(d, r) = public_key.encrypt_return_r(<span class="kw-2">&amp;</span>sum, rng);
                 ds.push(d);
@@ -674,23 +699,22 @@
             .map(|(abcd, index)| abcd.gen_response(<span class="kw-2">&amp;</span>cx, index))
             .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
+        <span class="comment">// Getting cx^logN from exp_iter instead of separate binary exponentiation with Scalar.power()
+        </span><span class="kw">let </span>cx_pows = cx.exp_iter().take(bits + <span class="number">1</span>).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+
         <span class="comment">// Compute R
         </span><span class="kw">let </span>response = {
-            <span class="kw">let </span>cx_pow = cx.power(cipher_randoms.bits());
-            <span class="kw">let </span>p1 = cipher_randoms.iter().zip(cy.exp_iter()).fold(
-                Scalar::zero(),
-                |acc, (r, cy_pows)| {
-                    <span class="kw">let </span>el = r * <span class="kw-2">&amp;</span>cx_pow * cy_pows;
-                    el + acc
-                },
-            );
+            <span class="kw">let </span>cx_pow = <span class="kw-2">&amp;</span>cx_pows[bits];
+            <span class="kw">let </span>p1 = cipher_randoms
+                .iter()
+                .zip(cy_powers.iter())
+                .fold(Scalar::zero(), |acc, (r, cy_pows)| {
+                    acc + r * cx_pow * cy_pows
+                });
             <span class="kw">let </span>p2 = rs
                 .iter()
-                .zip(cx.exp_iter())
-                .fold(Scalar::zero(), |acc, (r, cx_pows)| {
-                    <span class="kw">let </span>el = r * cx_pows;
-                    el + acc
-                });
+                .zip(cx_pows.iter())
+                .fold(Scalar::zero(), |acc, (r, cx_power)| acc + r * cx_power);
             p1 + p2
         };
 
@@ -740,27 +764,19 @@
     ) -&gt; bool {
         <span class="kw">let </span>bits = ciphertexts.bits();
         <span class="kw">let </span>length = ciphertexts.len();
-        <span class="kw">let </span>cx_pow = challenge_x.power(bits);
-
-        <span class="kw">let </span>powers_cx = challenge_x.exp_iter();
-        <span class="kw">let </span>powers_cy = challenge_y.exp_iter();
-
-        <span class="kw">let </span>powers_z_iterator = powers_z_encs_iter(<span class="kw-2">&amp;</span><span class="self">self</span>.zwvs, challenge_x, <span class="kw-2">&amp;</span>(bits <span class="kw">as </span>u32));
-
-        <span class="kw">let </span>zero = public_key.encrypt_with_r(<span class="kw-2">&amp;</span>Scalar::zero(), <span class="kw-2">&amp;</span><span class="self">self</span>.r);
 
         <span class="comment">// Challenge value for batching two equations into a single multiscalar mult.
-        </span><span class="kw">let </span>batch_challenge = Scalar::random(<span class="kw-2">&amp;mut </span>thread_rng());
+        </span><span class="kw">let </span>batch_challenge1 = Scalar::random(<span class="kw-2">&amp;mut </span>thread_rng());
 
         <span class="kw">for </span>(zwv, iba) <span class="kw">in </span><span class="self">self</span>.zwvs.iter().zip(<span class="self">self</span>.ibas.iter()) {
             <span class="kw">if </span>GroupElement::vartime_multiscalar_multiplication(
                 iter::once(zwv.z.clone())
-                    .chain(iter::once(<span class="kw-2">&amp;</span>zwv.w + <span class="kw-2">&amp;</span>batch_challenge * <span class="kw-2">&amp;</span>zwv.v))
+                    .chain(iter::once(<span class="kw-2">&amp;</span>zwv.w + <span class="kw-2">&amp;</span>batch_challenge1 * <span class="kw-2">&amp;</span>zwv.v))
                     .chain(iter::once(
-                        <span class="kw-2">&amp;</span>batch_challenge * (<span class="kw-2">&amp;</span>zwv.z - challenge_x) - challenge_x,
+                        <span class="kw-2">&amp;</span>batch_challenge1 * (<span class="kw-2">&amp;</span>zwv.z - challenge_x) - challenge_x,
                     ))
                     .chain(iter::once(Scalar::one().negate()))
-                    .chain(iter::once(batch_challenge.negate())),
+                    .chain(iter::once(batch_challenge1.negate())),
                 iter::once(GroupElement::generator())
                     .chain(iter::once(commitment_key.h.clone()))
                     .chain(iter::once(iba.i.clone()))
@@ -772,29 +788,53 @@
             }
         }
 
-        <span class="kw">let </span>mega_check = GroupElement::vartime_multiscalar_multiplication(
-            powers_cy
-                .clone()
-                .take(length)
-                .map(|s| s * <span class="kw-2">&amp;</span>cx_pow)
-                .chain(powers_cy.clone().take(length).map(|s| s * <span class="kw-2">&amp;</span>cx_pow))
-                .chain(powers_cy.take(length))
-                .chain(powers_cx.clone().take(bits))
-                .chain(powers_cx.take(bits))
-                .chain(iter::once(Scalar::one().negate()))
-                .chain(iter::once(Scalar::one().negate())),
+        <span class="kw">let </span>products_z_iter = powers_z_encs_iter(<span class="kw-2">&amp;</span><span class="self">self</span>.zwvs, challenge_x, <span class="kw-2">&amp;</span>(bits <span class="kw">as </span>u32));
+        <span class="kw">let </span>powers_cy = challenge_y.exp_iter().take(length).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+
+        <span class="kw">let </span>products_z_mul_powers_cy_sum = powers_cy
+            .iter()
+            .zip(products_z_iter)
+            .fold(Scalar::zero(), |sum, (cy_i, z_i)| sum + <span class="kw-2">&amp;</span>z_i * cy_i);
+
+        <span class="comment">// The `powers_cx` and `powers_cy_mul_cx_log_n` are needed multiple times
+        // so computing right away their values from exp_iter.
+        // Also getting cx^logN from exp_iter instead of separate exponentiation with Scalar.power()
+        </span><span class="kw">let </span><span class="kw-2">mut </span>powers_cx = challenge_x.exp_iter().take(bits + <span class="number">1</span>).collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+        <span class="kw">let </span>cx_log_n = powers_cx.pop().unwrap(); <span class="comment">// cx^logN
+        </span><span class="kw">let </span>powers_cy_mul_cx_log_n = powers_cy
+            .iter()
+            .map(|cy_i| cy_i * <span class="kw-2">&amp;</span>cx_log_n)
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+
+        <span class="kw">let </span>batch_challenge2 = Scalar::random(<span class="kw-2">&amp;mut </span>thread_rng());
+
+        GroupElement::vartime_multiscalar_multiplication(
+            powers_cy_mul_cx_log_n
+                .iter()
+                .map(|p| p * <span class="kw-2">&amp;</span>batch_challenge2)
+                .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+                .into_iter()
+                .chain(
+                    powers_cx
+                        .iter()
+                        .map(|p| p * <span class="kw-2">&amp;</span>batch_challenge2)
+                        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+                )
+                .chain(iter::once(
+                    products_z_mul_powers_cy_sum - <span class="self">self</span>.r.clone() * <span class="kw-2">&amp;</span>batch_challenge2,
+                ))
+                .chain(powers_cy_mul_cx_log_n)
+                .chain(powers_cx)
+                .chain(iter::once(<span class="self">self</span>.r.negate())),
             ciphertexts
                 .iter()
-                .map(|ctxt| ctxt.e2.clone())
-                .chain(ciphertexts.iter().map(|ctxt| ctxt.e1.clone()))
-                .chain(powers_z_iterator.take(length))
-                .chain(<span class="self">self</span>.ds.iter().map(|ctxt| ctxt.e1.clone()))
-                .chain(<span class="self">self</span>.ds.iter().map(|ctxt| ctxt.e2.clone()))
-                .chain(iter::once(zero.e1.clone()))
-                .chain(iter::once(zero.e2)),
-        );
-
-        mega_check == GroupElement::zero()
+                .map(|ct| ct.e1.clone())
+                .chain(<span class="self">self</span>.ds.iter().map(|d| d.e1.clone()))
+                .chain(iter::once(GroupElement::generator()))
+                .chain(ciphertexts.iter().map(|ct| ct.e2.clone()))
+                .chain(<span class="self">self</span>.ds.iter().map(|d| d.e2.clone()))
+                .chain(iter::once(public_key.pk.clone())),
+        ) == GroupElement::zero()
     }
 
     <span class="doccomment">/// Try to generate a `Proof` from a buffer
@@ -926,19 +966,18 @@
 }
 
 <span class="kw">impl </span>Iterator <span class="kw">for </span>ZPowExp {
-    <span class="kw">type </span>Item = GroupElement;
+    <span class="kw">type </span>Item = Scalar;
 
-    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;GroupElement&gt; {
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Scalar&gt; {
         <span class="kw">let </span>z_pow = powers_z_encs(<span class="kw-2">&amp;</span><span class="self">self</span>.z, <span class="self">self</span>.challenge_x.clone(), <span class="self">self</span>.index, <span class="self">self</span>.bit_size);
         <span class="self">self</span>.index += <span class="number">1</span>;
-        <span class="prelude-val">Some</span>(z_pow.negate() * GroupElement::generator())
+        <span class="prelude-val">Some</span>(z_pow.negate())
     }
 
     <span class="kw">fn </span>size_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (usize, <span class="prelude-ty">Option</span>&lt;usize&gt;) {
         (usize::MAX, <span class="prelude-val">None</span>)
     }
 }
-
 <span class="comment">// Return an iterator of the powers of `ZPowExp`.
 </span><span class="attr">#[allow(dead_code)] </span><span class="comment">// can be removed if the default flag is ristretto instead of sec2
 </span><span class="kw">fn </span>powers_z_encs_iter(z: <span class="kw-2">&amp;</span>[ResponseRandomness], challenge_x: <span class="kw-2">&amp;</span>Scalar, bit_size: <span class="kw-2">&amp;</span>u32) -&gt; ZPowExp {
@@ -1048,7 +1087,26 @@
             Ciphertext::zero(),
             Ciphertext::zero(),
         ];
-        <span class="macro">assert!</span>(!proof.verify(<span class="kw-2">&amp;</span>crs, <span class="kw-2">&amp;</span>public_key, <span class="kw-2">&amp;</span>fake_encryption))
+        <span class="macro">assert!</span>(!proof.verify(<span class="kw-2">&amp;</span>crs, <span class="kw-2">&amp;</span>public_key, <span class="kw-2">&amp;</span>fake_encryption));
+
+        <span class="comment">// Testing a case with swapped components (e1, e2) in UV&#39;s ElGamal ciphertexts
+        </span><span class="kw">let </span>ciphertexts_swapped = ciphertexts
+            .into_iter()
+            .map(|ct| Ciphertext {
+                e1: ct.e2,
+                e2: ct.e1,
+            })
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+
+        <span class="kw">let </span>proof_swapped = Zkp::generate(
+            <span class="kw-2">&amp;mut </span>r,
+            <span class="kw-2">&amp;</span>crs,
+            <span class="kw-2">&amp;</span>public_key,
+            <span class="kw-2">&amp;</span>unit_vector,
+            <span class="kw-2">&amp;</span>encryption_randomness,
+            <span class="kw-2">&amp;</span>ciphertexts_swapped,
+        );
+        <span class="macro">assert!</span>(!proof_swapped.verify(<span class="kw-2">&amp;</span>crs, <span class="kw-2">&amp;</span>public_key, <span class="kw-2">&amp;</span>ciphertexts_swapped));
     }
 
     <span class="attr">#[test]

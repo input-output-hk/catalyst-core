@@ -213,8 +213,8 @@ class Client:
         """Get the list of themes for this Fund,by IdeaScale `campaign_id`."""
         try:
             res = await self._get(f"/a/rest/v1/customFields/idea/campaigns/{campaign_id}")
-            themes_fields = [f for f in res if f['key'] and f['key'] == themes_custom_key]
-            themes = themes_fields[0]["options"].split('\r\n')
+            themes_fields = [f for f in res if f["key"] and f["key"] == themes_custom_key]
+            themes = themes_fields[0]["options"].split("\r\n")
             return themes
         except Exception as e:
             raise Exception(f"Unable to fetch themes: {e}")

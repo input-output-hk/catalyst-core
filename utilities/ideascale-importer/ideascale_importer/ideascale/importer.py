@@ -5,12 +5,15 @@ import asyncpg
 import json
 import csv
 import strict_rfc3339
+import tempfile
 from loguru import logger
 from markdownify import markdownify
+from pathlib import Path
 from pydantic import BaseModel
-from typing import Any, Dict, List, Mapping, Optional, Set, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 from ideascale_importer.db.models import Objective
+from ideascale_importer.ideascale.artifacts import json_from_proposal, objective_to_challenge_json
 
 from .client import Campaign, CampaignGroup, Client, Idea
 import ideascale_importer.db
@@ -55,6 +58,7 @@ class Config(BaseModel):
         """Load configuration from a JSON object."""
         return Config.model_validate(val)
 
+
 class ReadProposalsScoresCsv(Exception):
     """Raised when the proposals impact scores csv cannot be read."""
 
@@ -84,12 +88,13 @@ class Mapper:
         except InvalidRewardsString as e:
             raise MapObjectiveError("reward", "tagline", str(e))
 
+        title = a.name.replace(f"F{event_id}:", "").strip()
         return ideascale_importer.db.models.Objective(
             row_id=0,
             id=a.id,
             event=event_id,
             category=get_objective_category(a),
-            title=a.name,
+            title=title,
             description=html_to_md(a.description),
             deleted=False,
             rewards_currency=reward.currency,
@@ -124,13 +129,15 @@ class Mapper:
                 extra[k] = html_to_md(mv)
 
         # Hijack `proposal.files_url` with JSON string used by the mobile app.
-        files_url_str = json.dumps({
-            "open_source": a.custom_fields_by_key.get("f11_open_source_choice"),
-            "external_link1": a.custom_fields_by_key.get("f11_link_1"),
-            "external_link2": a.custom_fields_by_key.get("f11_link_2"),
-            "external_link3": a.custom_fields_by_key.get("f11_link_3"),
-            "themes": a.custom_fields_by_key.get("f11_themes"),
-        })
+        files_url_str = str(
+            {
+                "open_source": a.custom_fields_by_key.get("f11_open_source_choice"),
+                "external_link1": a.custom_fields_by_key.get("f11_link_1"),
+                "external_link2": a.custom_fields_by_key.get("f11_link_2"),
+                "external_link3": a.custom_fields_by_key.get("f11_link_3"),
+                "themes": a.custom_fields_by_key.get("f11_themes"),
+            }
+        )
         return ideascale_importer.db.models.Proposal(
             id=a.id,
             objective=0,  # should be set later
@@ -141,7 +148,7 @@ class Mapper:
             public_key=public_key,
             funds=funds,
             url=a.url,
-            files_url=f"'{files_url_str}'",
+            files_url=files_url_str,
             impact_score=impact_scores.get(a.id, 0),
             extra=extra,
             proposer_name=proposer_name,
@@ -198,8 +205,8 @@ def parse_reward(s: str) -> Reward:
     if result is None:
         raise InvalidRewardsString()
     else:
-        rewards = re.sub("\D", "", result.group(2))
-        currency = "ADA" #result.group(1)
+        rewards = re.sub("\\D", "", result.group(2))
+        currency = "ADA"  # result.group(1)
         return Reward(amount=int(rewards, base=10), currency=currency)
 
 
@@ -209,7 +216,7 @@ def get_objective_category(c: Campaign) -> str:
 
     if "catalyst natives" in r:
         return "catalyst-native"
-    elif "objective setting" in r:
+    elif "challenge setting" in r:
         return "catalyst-community-choice"
     else:
         return "catalyst-simple"
@@ -253,14 +260,10 @@ class Importer:
 
     async def load_config(self):
         """Load the configuration setting from the event db."""
-
         logger.debug("Loading ideascale config from the event-db")
 
         config = ideascale_importer.db.models.Config(row_id=0, id="ideascale", id2=f"{self.event_id}", id3="", value=None)
-        res = await ideascale_importer.db.select(self.conn, config,  cond={
-            "id": f"= '{config.id}'",
-            "AND id2": f"= '{config.id2}'"
-            })
+        res = await ideascale_importer.db.select(self.conn, config, cond={"id": f"= '{config.id}'", "AND id2": f"= '{config.id2}'"})
         if len(res) == 0:
             raise Exception("Cannot find ideascale config in the event-db database")
         self.config = Config.from_json(res[0].value)
@@ -282,6 +285,10 @@ class Importer:
             raise Exception("Not connected to the database")
 
         await self.load_config()
+
+        output_dir = Path(tempfile.gettempdir()).joinpath("catalyst-artifacts")
+        output_dir.mkdir(exist_ok=True)
+        logger.debug("Created temporary directory for artifact storage", output_dir=output_dir)
 
         if not await ideascale_importer.db.event_exists(self.conn, self.event_id):
             logger.error("No event exists with the given id")
@@ -308,30 +315,24 @@ class Importer:
         for stage_id in self.config.stage_ids:
             ideas.extend(await client.stage_ideas(stage_id=stage_id))
 
+        outuput_ideas = output_dir.joinpath("ideas.json")
+        out_data = [i.model_dump() for i in ideas]
+        outuput_ideas.write_text(json.dumps(out_data, indent=2))
         vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, ["yes", "no"])
+
+        # mapper used to convert ideascale data to db and json formats.
         mapper = Mapper(vote_options_id, self.config)
 
-        async def _process_campaigns(campaigns):
-            objectives: List[Objective] = []
-            themes: List[str] = []
-            for campaign in campaigns:
-                objectives.append(mapper.map_objective(campaign, self.event_id))
-                campaign_themes = await client.event_themes(campaign.id, "f11_themes")
-                themes.extend(campaign_themes)
-            themes = list(set(themes))
-            themes.sort()
-            return objectives, themes
-        objectives, themes  = await _process_campaigns(group.campaigns)
+        objectives, themes = await self.process_campaigns(client, mapper, group.campaigns)
 
         await client.close()
 
         objective_count = len(objectives)
-        proposal_count = 0
+
+        proposals = []
+
         # Hijack `event.description` with JSON string used by the mobile app.
-        fund_goal_str = json.dumps({
-            "timestamp": strict_rfc3339.now_to_rfc3339_utcoffset(integer=True),
-            "themes": themes
-        })
+        fund_goal_str = json.dumps({"timestamp": strict_rfc3339.now_to_rfc3339_utcoffset(integer=True), "themes": themes})
 
         async with self.conn.transaction():
             try:
@@ -340,22 +341,64 @@ class Importer:
                 logger.error("Error updating event description", error=e)
 
             try:
-                inserted_objectives = await ideascale_importer.db.upsert_many(self.conn, objectives, conflict_cols=["id", "event"], pre_update_cols={"deleted": True}, pre_update_cond={"event": f"= {self.event_id}"})
+                inserted_objectives = await ideascale_importer.db.upsert_many(
+                    self.conn,
+                    objectives,
+                    conflict_cols=["id", "event"],
+                    pre_update_cols={"deleted": True},
+                    pre_update_cond={"event": f"= {self.event_id}"},
+                )
                 inserted_objectives_ix = {o.id: o for o in inserted_objectives}
 
-                proposals_with_campaign_id = [(a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)) for a in ideas]
-                proposals = []
-                for objective_id, p in proposals_with_campaign_id:
-                    if objective_id in inserted_objectives_ix:
-                        p.objective = inserted_objectives_ix[objective_id].row_id
-                        proposals.append(p)
+                challenges = [
+                    objective_to_challenge_json(o, self.ideascale_api_url, idx + 1) for idx, o in enumerate(inserted_objectives)
+                ]
+                challenges_ix = {c.internal_id: c for c in challenges}
+                outuput_objs = output_dir.joinpath("challenges.json")
+                out_data = [c.model_dump() for c in challenges]
+                outuput_objs.write_text(json.dumps(out_data, indent=4))
 
-                proposal_count = len(proposals)
+                proposals, proposals_json = self.convert_ideas_to_proposals(ideas, mapper, inserted_objectives_ix, challenges_ix)
+
+                outuput_f = output_dir.joinpath("proposals.json")
+                outuput_f.write_text(json.dumps(proposals_json, indent=4))
 
                 all_objectives = await ideascale_importer.db.select(self.conn, objectives[0], cond={"event": f"= {self.event_id}"})
-                all_objectives_str = ','.join([f"{objective.row_id}" for objective in all_objectives])
-                await ideascale_importer.db.upsert_many(self.conn, proposals, conflict_cols=["id", "objective"], pre_update_cols={"deleted": True}, pre_update_cond={"objective": f"IN ({all_objectives_str})"})
+                all_objectives_str = ",".join([f"{objective.row_id}" for objective in all_objectives])
+                await ideascale_importer.db.upsert_many(
+                    self.conn,
+                    proposals,
+                    conflict_cols=["id", "objective"],
+                    pre_update_cols={"deleted": True},
+                    pre_update_cond={"objective": f"IN ({all_objectives_str})"},
+                )
+
             except Exception as e:
                 logger.error("Error updating DB objectives and proposals", error=e)
 
-        logger.info("Imported objectives and proposals", objective_count=objective_count, proposal_count=proposal_count)
+        logger.info("Imported objectives and proposals", objective_count=objective_count, proposal_count=len(proposals))
+
+    async def process_campaigns(self, client, mapper, campaigns):
+        objectives: List[Objective] = []
+        themes: List[str] = []
+        for campaign in campaigns:
+            objectives.append(mapper.map_objective(campaign, self.event_id))
+            campaign_themes = await client.event_themes(campaign.id, "f11_themes")
+            themes.extend(campaign_themes)
+        themes = list(set(themes))
+        themes.sort()
+        return objectives, themes
+
+    def convert_ideas_to_proposals(self, ideas, mapper, inserted_objectives_ix, challenges_ix):
+        proposals = []
+        proposals_json = []
+        for cnt, a in enumerate(ideas):
+            objective_id, p = a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)
+            if objective_id in inserted_objectives_ix:
+                objective = inserted_objectives_ix[objective_id]
+                print(f"objective {objective}")
+                p.objective = objective.row_id
+                proposals.append(p)
+                p_json = json_from_proposal(p, challenges_ix[objective.id], self.event_id, cnt)
+                proposals_json.append(p_json.model_dump(exclude_none=True))
+        return proposals, proposals_json

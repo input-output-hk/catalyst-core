@@ -1,7 +1,7 @@
 """IdeaScale CLI commands."""
 
 import asyncio
-from typing import Optional, List
+from typing import Optional
 import typer
 
 from ideascale_importer.ideascale.client import Client

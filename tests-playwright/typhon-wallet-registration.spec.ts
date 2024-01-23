@@ -66,7 +66,7 @@ test('Open Extension Page and Click Button with XPath', async ({ }) => {
   await newTab.click(continueButton);
 
   async function clickBlankSpace(newTab) {
-    const blankSpace = '#app > div > div > div.flex-grow.overflow-auto > div > div.container.mx-auto.flex.justify-between.items-center > a > img';
+    const blankSpace = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div.flex.justify-between.items-start > div.flex-initial.flex.flex-col.mr-2 > span.text-primary.font-medium.text-xl';
     await newTab.waitForSelector(blankSpace, { state: 'visible' });
     await newTab.click(blankSpace);
   }

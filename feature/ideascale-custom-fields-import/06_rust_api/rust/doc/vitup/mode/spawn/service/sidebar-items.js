@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["single_run","spawn_network"]};

@@ -66,32 +66,43 @@ test('Open Extension Page and Click Button with XPath', async ({}) => {
   await newTab.click(continueButton);
 
   const seedPhrase = getSeedPhrase();
-  for (let i = 0; i < seedPhrase.length; i++) {
-  const ftSeedPhrase1 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(1) > div > input';
-  await newTab.waitForSelector(ftSeedPhrase1, { state: 'visible' });
-  await newTab.fill(ftSeedPhrase1, seedPhrase[i]);
-  
-  const ftSeedPhrase2 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(2) > div > input';
-  const ftSeedPhrase3 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(3) > div > input';
-  const ftSeedPhrase4 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(4) > div > input';
-  const ftSeedPhrase5 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(5) > div > input';
-  const ftSeedPhrase6 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(6) > div > input';
-  const ftSeedPhrase7 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(7) > div > input';
-  const ftSeedPhrase8 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(8) > div > input';
-  const ftSeedPhrase9 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(9) > div > input';
-  const ftSeedPhrase10 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(10) > div > input';
-  const ftSeedPhrase11 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(11) > div > input';
-  const ftSeedPhrase12 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(12) > div > input';
-  const ftSeedPhrase13 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(13) > div > input';
-  const ftSeedPhrase14 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(14) > div > input';
-  const ftSeedPhrase15 = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(15) > div > input';
 
-  // Reset the state of user
-  // for (const page of browser.pages()) {
-  //   await page.close();
-  // }
+for (let i = 0; i < seedPhrase.length; i++) {
+    // Construct the selector dynamically for each element in the seedPhrase
+    const ftSeedPhraseSelector = `#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(${i + 1}) > div > input`;
 
-  // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
-  await page.waitForTimeout(300000); // Adjust the time as needed
-  await new Promise(resolve => { /* never resolves */ });
-}});
+    await newTab.waitForSelector(ftSeedPhraseSelector, { state: 'visible' });
+    await newTab.fill(ftSeedPhraseSelector, seedPhrase[i]);
+}
+const blankSpace = '#app > div > div > div.flex-grow.overflow-auto > div > div.container.mx-auto.flex.justify-between.items-center > a > img';
+await newTab.waitForSelector(blankSpace, { state: 'visible' });
+await newTab.click(blankSpace);
+
+const unlockWallet = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div.mt-6.text-center.flex.justify-center > button';
+await newTab.waitForSelector(unlockWallet, { state: 'visible' });
+await newTab.click(unlockWallet);
+
+const logOut = '#app > div > div > div.flex-grow.overflow-auto > div > div > div.hidden.h-full.overflow-y-scroll.flex-grow-0.flex-shrink-0.lg\:block.lg\:w-64 > div > div > div.mt-5.flex-grow.flex.flex-col.pl-3.pr-7.text-sm.labelColor2 > div.p-3.flex.space-x-3.items-center.cursor-pointer.hover\:text-primary > div:nth-child(2)';
+await newTab.waitForSelector(logOut, { state: 'visible' });
+await newTab.click(logOut);
+
+const chooseAccount = '#app > div > div > div.flex-grow.overflow-auto > div > div.flex.justify-center > div > div > div.w-full.flex-grow.flex.flex-col.overflow-scroll.dark\:bg-dark-2.border-b.dark\:border-dark-3.pt-7.pb-2.px-4.space-y-2 > div';
+await newTab.waitForSelector(chooseAccount, { state: 'visible' });
+await newTab.click(chooseAccount);
+
+const removeAccount = '#app > div > div > div.flex-grow.overflow-auto > div > div.flex.justify-center > div > div > div.flex-grow.flex.flex-col.items-center.pt-5.w-full > div.flex.items-center.justify-between.border-t.border-primary-8.dark\:border-dark-3.bg-primary-2.dark\:bg-dark-2.pl-3.pr-2.py-3.space-x-2 > button';
+await newTab.waitForSelector(removeAccount, { state: 'visible' });
+await newTab.click(removeAccount);
+
+const confirmRemove = '#headlessui-dialog-17 > div > div.relative.inline-block.w-full.text-left.align-middle.cardColor.rounded-lg.shadow-xl.transform.p-6.pt-4.mx-3.my-8.max-w-2xl > div.max-w-lg > div.mt-5.flex.justify-end.items-center.space-x-3 > button.btn.bg-primary.text-xs.w-full.sm\:w-20.uppercase.px-4.py-2.font-medium.text-white.hover\:bg-opacity-80';
+await newTab.waitForSelector(confirmRemove, { state: 'visible' });
+await newTab.click(confirmRemove);
+
+const addNew = '#app > div > div > div.flex-grow.overflow-auto > div > div.flex.justify-center > div > div > div.absolute.py-2.pl-2.pr-3.flex.justify-center.items-center.rounded-full.text-sm.bg-primary-80.hover\:bg-primary-100.text-white.cursor-pointer.bottom-14.right-3.shadow-xl';
+await newTab.waitForSelector(addNew, { state: 'visible' });
+await newTab.click(addNew);
+
+// Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
+await page.waitForTimeout(3000000); // Adjust the time as needed
+await new Promise(resolve => { /* never resolves */ });
+});

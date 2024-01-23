@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["HIGH_INTEREST","LOW_INTERESET","NORMAL_INTEREST"],"struct":["ParseError","Rings","RingsConfig"]};

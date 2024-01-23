@@ -19,7 +19,7 @@ def import_snapshot(
     network_ids: List[str] = typer.Option(
         ...,
         envvar="SNAPSHOT_NETWORK_IDS",
-        help="Network id to pass as parameter to snapshot_tool",
+        help=("Network id to pass as parameter to snapshot_tool. Valid values are: 'mainnet' 'preprod' 'testnet'"),
     ),
     snapshot_tool_path: str = typer.Option(default="snapshot_tool", envvar="SNAPSHOT_TOOL_PATH", help="Path to the snapshot tool"),
     catalyst_toolbox_path: str = typer.Option(

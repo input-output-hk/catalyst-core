@@ -219,6 +219,7 @@ class Snapshot(Model):
         """Return the name of the table that this model is stored in."""
         return "snapshot"
 
+
 @dataclass
 class Config(Model):
     """Represents a database config."""

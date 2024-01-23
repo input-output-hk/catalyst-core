@@ -17,14 +17,14 @@ INSERT INTO config (id, id2, id3, value) VALUES (
         "proposals": {
             "field_mappings": {
                 "proposer_url": ["relevant_link_1", "website__github_repository__or_any_other_relevant_link__", "relevant_link_3"],
-                "proposer_relevant_experience": "relevant_experience",
+                "proposer_relevant_experience": "f11_project_team",
                 "public_key": "ada_payment_address__",
-                "funds": ["requested_funds", "requested_funds_in_ada","requested_funds_coti"]
+                "funds": ["f11_requested_funds", "requested_funds_in_ada","requested_funds_coti"]
             },
             "extra_field_mappings": {
                 "metrics": "key_metrics_to_measure",
                 "goal": "how_does_success_look_like_",
-                "solution": "problem_solution",
+                "solution": "f11_proposal_solution",
                 "brief": "challenge_brief",
                 "importance": "importance",
                 "full_solution": "please_describe_your_proposed_solution",

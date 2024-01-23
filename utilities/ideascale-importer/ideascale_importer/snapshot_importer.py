@@ -290,14 +290,12 @@ class Importer:
         network_ids: List[Literal["mainnet", "preprod", "testnet"]],
         snapshot_tool_path: str,
         catalyst_toolbox_path: str,
-        gvc_api_url: str,
         raw_snapshot_file: Optional[str] = None,
         ssh_config: Optional[SSHConfig] = None,
     ):
         """Initialize the importer."""
         self.snapshot_tool_path = snapshot_tool_path
         self.catalyst_toolbox_path = catalyst_toolbox_path
-        self.gvc_api_url = gvc_api_url
 
         self.eventdb_url = eventdb_url
         self.event_id = event_id

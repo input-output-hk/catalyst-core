@@ -87,7 +87,8 @@ def json_from_proposal(prop: Proposal, challenge: ChallengesJson, fund_id: int, 
 
 
 class FundsJson(BaseModel):
+    """Current Fund (Event) information in JSON used for output artifacts."""
     id: int
     goal: str
     threshold: int
-    rewards_info: str
+    rewards_info: str = ""

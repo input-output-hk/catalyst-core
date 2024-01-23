@@ -13,7 +13,7 @@ from pydantic import BaseModel
 from typing import Any, Dict, List, Mapping, Optional, Union
 
 from ideascale_importer.db.models import Objective
-from ideascale_importer.ideascale.artifacts import json_from_proposal, objective_to_challenge_json
+from ideascale_importer.ideascale.artifacts import FundsJson, json_from_proposal, objective_to_challenge_json
 
 from .client import Campaign, CampaignGroup, Client, Idea
 import ideascale_importer.db
@@ -232,6 +232,7 @@ class Importer:
         event_id: int,
         proposals_scores_csv_path: Optional[str],
         ideascale_api_url: str,
+        output_dir: Optional[Path],
     ):
         """Initialize the importer."""
         self.api_token = api_token
@@ -239,6 +240,7 @@ class Importer:
         self.event_id = event_id
         self.conn: asyncpg.Connection | None = None
         self.ideascale_api_url = ideascale_api_url
+        self.output_dir = output_dir
 
         self.proposals_impact_scores: Dict[int, int] = {}
         if proposals_scores_csv_path is not None:
@@ -286,10 +288,6 @@ class Importer:
 
         await self.load_config()
 
-        output_dir = Path(tempfile.gettempdir()).joinpath("catalyst-artifacts")
-        output_dir.mkdir(exist_ok=True)
-        logger.debug("Created temporary directory for artifact storage", output_dir=output_dir)
-
         if not await ideascale_importer.db.event_exists(self.conn, self.event_id):
             logger.error("No event exists with the given id")
             return
@@ -315,9 +313,6 @@ class Importer:
         for stage_id in self.config.stage_ids:
             ideas.extend(await client.stage_ideas(stage_id=stage_id))
 
-        outuput_ideas = output_dir.joinpath("ideas.json")
-        out_data = [i.model_dump() for i in ideas]
-        outuput_ideas.write_text(json.dumps(out_data, indent=2))
         vote_options_id = await ideascale_importer.db.get_vote_options_id(self.conn, ["yes", "no"])
 
         # mapper used to convert ideascale data to db and json formats.
@@ -332,8 +327,17 @@ class Importer:
         proposals = []
 
         # Hijack `event.description` with JSON string used by the mobile app.
-        fund_goal_str = json.dumps({"timestamp": strict_rfc3339.now_to_rfc3339_utcoffset(integer=True), "themes": themes})
+        fund_goal = {"timestamp": strict_rfc3339.now_to_rfc3339_utcoffset(integer=True), "themes": themes}
+        fund_goal_str = json.dumps(fund_goal)
 
+        threshold = await ideascale_importer.db.event_threshold(self.conn, self.event_id)
+
+        funds_json = FundsJson(id=self.event_id, goal=str(fund_goal), threshold=threshold)
+
+        if self.output_dir is not None:
+            outuput_ideas = self.output_dir.joinpath("funds.json")
+            out_data = funds_json.model_dump()
+            outuput_ideas.write_text(json.dumps(out_data, indent=4))
         async with self.conn.transaction():
             try:
                 await ideascale_importer.db.update_event_description(self.conn, self.event_id, fund_goal_str)
@@ -354,14 +358,17 @@ class Importer:
                     objective_to_challenge_json(o, self.ideascale_api_url, idx + 1) for idx, o in enumerate(inserted_objectives)
                 ]
                 challenges_ix = {c.internal_id: c for c in challenges}
-                outuput_objs = output_dir.joinpath("challenges.json")
-                out_data = [c.model_dump() for c in challenges]
-                outuput_objs.write_text(json.dumps(out_data, indent=4))
+
+                if self.output_dir is not None:
+                    outuput_objs = self.output_dir.joinpath("challenges.json")
+                    out_data = [c.model_dump() for c in challenges]
+                    outuput_objs.write_text(json.dumps(out_data, indent=4))
 
                 proposals, proposals_json = self.convert_ideas_to_proposals(ideas, mapper, inserted_objectives_ix, challenges_ix)
 
-                outuput_f = output_dir.joinpath("proposals.json")
-                outuput_f.write_text(json.dumps(proposals_json, indent=4))
+                if self.output_dir is not None:
+                    outuput_f = self.output_dir.joinpath("proposals.json")
+                    outuput_f.write_text(json.dumps(proposals_json, indent=4))
 
                 all_objectives = await ideascale_importer.db.select(self.conn, objectives[0], cond={"event": f"= {self.event_id}"})
                 all_objectives_str = ",".join([f"{objective.row_id}" for objective in all_objectives])
@@ -396,7 +403,6 @@ class Importer:
             objective_id, p = a.campaign_id, mapper.map_proposal(a, self.proposals_impact_scores)
             if objective_id in inserted_objectives_ix:
                 objective = inserted_objectives_ix[objective_id]
-                print(f"objective {objective}")
                 p.objective = objective.row_id
                 proposals.append(p)
                 p_json = json_from_proposal(p, challenges_ix[objective.id], self.event_id, cnt)

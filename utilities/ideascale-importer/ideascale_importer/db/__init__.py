@@ -64,6 +64,7 @@ async def insert(conn: asyncpg.Connection, model: Model) -> Any:
         return ret[0]
     return None
 
+
 async def select(conn: asyncpg.Connection, model: Model, cond: Dict[str, str] = {}) -> List[Any]:
     """Select a single model."""
 
@@ -77,7 +78,7 @@ async def select(conn: asyncpg.Connection, model: Model, cond: Dict[str, str] = 
         SELECT {cols_str}
         FROM {model.table()}
         {f' WHERE {cond_str}' if cond_str else ' '}
-    """.strip()  
+    """.strip()
 
     result = await conn.fetch(stmt_template)
 
@@ -123,9 +124,13 @@ async def upsert_many(
     pre_update_set_str = ",".join([f"{col} = {val}" for col, val in pre_update_cols.items()])
     pre_update_cond_str = " ".join([f"{col} {cond}" for col, cond in pre_update_cond.items()])
 
-    pre_update_template = f"""
+    pre_update_template = (
+        f"""
         WITH updated AS ({ f"UPDATE {models[0].table()} SET {pre_update_set_str} {f' WHERE {pre_update_cond_str}' if pre_update_cond_str else ' '}" })
-        """.strip() if pre_update_set_str else " "     
+        """.strip()
+        if pre_update_set_str
+        else " "
+    )
 
     stmt_template = f"""
         {pre_update_template}
@@ -171,6 +176,20 @@ async def event_exists(conn: asyncpg.Connection, id: int) -> bool:
     row = await conn.fetchrow("SELECT row_id FROM event WHERE row_id = $1", id)
     return row is not None
 
+
+class EventThesholdNotFound(Exception):
+    """Raised when the event's voting power threshold is not found."""
+
+    ...
+
+
+async def event_threshold(conn: asyncpg.Connection, row_id: int) -> int:
+    """Fetch the event's voting power threshold in ADA."""
+    res = await conn.fetchrow("SELECT voting_power_threshold FROM event WHERE row_id = $1", row_id)
+    if res is None:
+        raise EventThesholdNotFound()
+    threshold = int(res["voting_power_threshold"]/1000000)
+    return threshold
 
 async def update_event_description(conn: asyncpg.Connection, row_id: int, description: str):
     """Update the event description.

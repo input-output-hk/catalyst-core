@@ -175,7 +175,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cargo/registry/cache
-          key: 'cargo-deps-v2-${{ hashFiles(''Cargo.lock'') }}'
+          key: 'cargo-deps-v2-${{ hashFiles(''Cargo.lock'') }}
 
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1

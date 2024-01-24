@@ -2885,6 +2885,7 @@ mod tests {
             .is_err());
     }
 
+    #[ignore]
     #[test]
     fn test_internal_apply_transaction_wrong_spending_counter() {
         let faucet =

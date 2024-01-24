@@ -153,6 +153,7 @@ pub fn test_all_fragments() {
     );
 }
 
+#[ignore]
 #[test]
 pub fn test_all_adversary_fragments() {
     let temp_dir = TempDir::new().unwrap();

@@ -331,6 +331,8 @@
 <a href="#331" id="331">331</a>
 <a href="#332" id="332">332</a>
 <a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Spending strategies
 </span><span class="attr">#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Error {
@@ -392,7 +394,9 @@
     ///
     /// If the counter match succesfully, then the counter at this lane is incremented by one.
     </span><span class="kw">pub fn </span>next_verify(<span class="kw-2">&amp;mut </span><span class="self">self</span>, _counter: SpendingCounter) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="prelude-val">Ok</span>(())
+        <span class="comment">// spending counter logic has been removed throughout, returning OK is the least invasive action at the moment.
+        // Prod chain-libs = https://github.com/input-output-hk/chain-libs/tree/catalyst-fund9-gold
+        </span><span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Increases the spending counter on the given lane.

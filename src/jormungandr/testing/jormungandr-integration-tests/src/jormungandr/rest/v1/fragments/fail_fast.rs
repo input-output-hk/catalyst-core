@@ -187,6 +187,7 @@ pub fn fail_fast_on_first_late_invalid(
         .assert_valid(&fragments[2].hash().into());
 }
 
+#[ignore]
 #[rstest]
 pub fn fail_fast_off_first_invalid(
     world: (

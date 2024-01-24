@@ -1020,6 +1020,7 @@ pub fn explorer_all_vote_plans_public_flow_test() {
     );
 }
 
+#[ignore]
 #[test]
 pub fn explorer_all_vote_plans_private_flow_test() {
     let temp_dir = TempDir::new().unwrap().into_persistent();

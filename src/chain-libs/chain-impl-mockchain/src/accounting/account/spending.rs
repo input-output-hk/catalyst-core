@@ -59,6 +59,8 @@ impl SpendingCounterIncreasing {
     ///
     /// If the counter match succesfully, then the counter at this lane is incremented by one.
     pub fn next_verify(&mut self, _counter: SpendingCounter) -> Result<(), Error> {
+        // spending counter logic has been removed throughout, returning OK is the least invasive action at the moment.
+        // Prod chain-libs = https://github.com/input-output-hk/chain-libs/tree/catalyst-fund9-gold
         Ok(())
     }
 

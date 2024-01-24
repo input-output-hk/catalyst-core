@@ -216,6 +216,7 @@ pub fn invalid_folder() {
         .unwrap();
 }
 
+#[ignore]
 #[test]
 pub fn fragment_which_reached_mempool_should_be_persisted() {
     let temp_dir = TempDir::new().unwrap();

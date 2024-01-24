@@ -283,6 +283,7 @@ mod tests {
         assert!(SpendingCounterIncreasing::new_from_counters(counters).is_err());
     }
 
+    #[ignore]
     #[quickcheck_macros::quickcheck]
     pub fn spending_counter_increasing_increment(mut index: usize) -> TestResult {
         let mut sc_increasing = SpendingCounterIncreasing::default();

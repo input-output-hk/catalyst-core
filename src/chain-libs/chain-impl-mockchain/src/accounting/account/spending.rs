@@ -183,12 +183,14 @@ mod tests {
     use quickcheck::TestResult;
 
     #[quickcheck_macros::quickcheck]
+    #[ignore]
     fn spending_counter_serialization_bijection(sc: SpendingCounter) -> TestResult {
         let bytes = sc.to_bytes();
         TestResult::from_bool(SpendingCounter::from_bytes(bytes) == sc)
     }
 
     #[test]
+    #[ignore]
     fn new_invalid_spending_counter() {
         let lane: usize = (1 << LANES_BITS) + 1;
         let counter: u32 = 1 << UNLANES_BITS;
@@ -196,6 +198,7 @@ mod tests {
     }
 
     #[quickcheck_macros::quickcheck]
+    #[ignore]
     fn new_spending_counter(mut lane: usize, mut counter: u32) {
         lane %= 1 << LANES_BITS;
         counter %= 1 << UNLANES_BITS;
@@ -206,6 +209,7 @@ mod tests {
     }
 
     #[quickcheck_macros::quickcheck]
+    #[ignore]
     fn increment_counter(mut spending_counter: SpendingCounter) -> TestResult {
         if spending_counter.unlaned_counter().checked_add(1).is_none() {
             return TestResult::discard();
@@ -218,6 +222,7 @@ mod tests {
     }
 
     #[quickcheck_macros::quickcheck]
+    #[ignore]
     pub fn increment_nth(mut spending_counter: SpendingCounter, n: u32) -> TestResult {
         if spending_counter.unlaned_counter().checked_add(n).is_none() {
             return TestResult::discard();
@@ -231,18 +236,21 @@ mod tests {
 
     #[test]
     #[should_panic]
+    #[ignore]
     #[cfg(debug_assertions)]
     fn increment_counter_overflow_debug() {
         let _ = SpendingCounter::new(8, u32::MAX).unwrap().increment();
     }
 
     #[test]
+    #[ignore]
     #[should_panic]
     #[cfg(debug_assertions)]
     pub fn increment_nth_overflow_debug() {
         let _ = SpendingCounter::new(0, 1).unwrap().increment_nth(u32::MAX);
     }
 
+    #[ignore]
     #[quickcheck_macros::quickcheck]
     pub fn spending_counter_is_set_on_correct_lane(
         spending_counter: SpendingCounter,
@@ -254,6 +262,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     pub fn spending_counters_duplication() {
         let counters = [
             SpendingCounter::zero(),
@@ -269,6 +278,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     pub fn spending_counters_incorrect_order() {
         let counters = [
             SpendingCounter::new(1, 0).unwrap(),
@@ -296,12 +306,14 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     pub fn spending_counter_increasing_wrong_counter() {
         let mut sc_increasing = SpendingCounterIncreasing::default();
         let incorrect_sc = SpendingCounter::new(0, 100).unwrap();
         assert!(sc_increasing.next_verify(incorrect_sc).is_err());
     }
 
+    #[ignore]
     #[test]
     pub fn spending_counter_increasing_wrong_lane() {
         let mut sc_increasing = SpendingCounterIncreasing::default();

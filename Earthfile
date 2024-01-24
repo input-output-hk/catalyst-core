@@ -1,5 +1,5 @@
 # Set the Earthly version to 0.7
-VERSION 0.8
+VERSION 0.7
 FROM debian:stable-slim
 
 rust-toolchain:

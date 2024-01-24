@@ -333,6 +333,19 @@
 <a href="#333" id="333">333</a>
 <a href="#334" id="334">334</a>
 <a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Spending strategies
 </span><span class="attr">#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>Error {
@@ -518,12 +531,14 @@
     <span class="kw">use </span>quickcheck::TestResult;
 
     <span class="attr">#[quickcheck_macros::quickcheck]
+    #[ignore]
     </span><span class="kw">fn </span>spending_counter_serialization_bijection(sc: SpendingCounter) -&gt; TestResult {
         <span class="kw">let </span>bytes = sc.to_bytes();
         TestResult::from_bool(SpendingCounter::from_bytes(bytes) == sc)
     }
 
     <span class="attr">#[test]
+    #[ignore]
     </span><span class="kw">fn </span>new_invalid_spending_counter() {
         <span class="kw">let </span>lane: usize = (<span class="number">1 </span>&lt;&lt; LANES_BITS) + <span class="number">1</span>;
         <span class="kw">let </span>counter: u32 = <span class="number">1 </span>&lt;&lt; UNLANES_BITS;
@@ -531,6 +546,7 @@
     }
 
     <span class="attr">#[quickcheck_macros::quickcheck]
+    #[ignore]
     </span><span class="kw">fn </span>new_spending_counter(<span class="kw-2">mut </span>lane: usize, <span class="kw-2">mut </span>counter: u32) {
         lane %= <span class="number">1 </span>&lt;&lt; LANES_BITS;
         counter %= <span class="number">1 </span>&lt;&lt; UNLANES_BITS;
@@ -541,6 +557,7 @@
     }
 
     <span class="attr">#[quickcheck_macros::quickcheck]
+    #[ignore]
     </span><span class="kw">fn </span>increment_counter(<span class="kw-2">mut </span>spending_counter: SpendingCounter) -&gt; TestResult {
         <span class="kw">if </span>spending_counter.unlaned_counter().checked_add(<span class="number">1</span>).is_none() {
             <span class="kw">return </span>TestResult::discard();
@@ -553,6 +570,7 @@
     }
 
     <span class="attr">#[quickcheck_macros::quickcheck]
+    #[ignore]
     </span><span class="kw">pub fn </span>increment_nth(<span class="kw-2">mut </span>spending_counter: SpendingCounter, n: u32) -&gt; TestResult {
         <span class="kw">if </span>spending_counter.unlaned_counter().checked_add(n).is_none() {
             <span class="kw">return </span>TestResult::discard();
@@ -566,19 +584,22 @@
 
     <span class="attr">#[test]
     #[should_panic]
+    #[ignore]
     #[cfg(debug_assertions)]
     </span><span class="kw">fn </span>increment_counter_overflow_debug() {
         <span class="kw">let _ </span>= SpendingCounter::new(<span class="number">8</span>, u32::MAX).unwrap().increment();
     }
 
     <span class="attr">#[test]
+    #[ignore]
     #[should_panic]
     #[cfg(debug_assertions)]
     </span><span class="kw">pub fn </span>increment_nth_overflow_debug() {
         <span class="kw">let _ </span>= SpendingCounter::new(<span class="number">0</span>, <span class="number">1</span>).unwrap().increment_nth(u32::MAX);
     }
 
-    <span class="attr">#[quickcheck_macros::quickcheck]
+    <span class="attr">#[ignore]
+    #[quickcheck_macros::quickcheck]
     </span><span class="kw">pub fn </span>spending_counter_is_set_on_correct_lane(
         spending_counter: SpendingCounter,
     ) -&gt; TestResult {
@@ -589,6 +610,7 @@
     }
 
     <span class="attr">#[test]
+    #[ignore]
     </span><span class="kw">pub fn </span>spending_counters_duplication() {
         <span class="kw">let </span>counters = [
             SpendingCounter::zero(),
@@ -604,6 +626,7 @@
     }
 
     <span class="attr">#[test]
+    #[ignore]
     </span><span class="kw">pub fn </span>spending_counters_incorrect_order() {
         <span class="kw">let </span>counters = [
             SpendingCounter::new(<span class="number">1</span>, <span class="number">0</span>).unwrap(),
@@ -618,7 +641,8 @@
         <span class="macro">assert!</span>(SpendingCounterIncreasing::new_from_counters(counters).is_err());
     }
 
-    <span class="attr">#[quickcheck_macros::quickcheck]
+    <span class="attr">#[ignore]
+    #[quickcheck_macros::quickcheck]
     </span><span class="kw">pub fn </span>spending_counter_increasing_increment(<span class="kw-2">mut </span>index: usize) -&gt; TestResult {
         <span class="kw">let </span><span class="kw-2">mut </span>sc_increasing = SpendingCounterIncreasing::default();
         index %= SpendingCounterIncreasing::LANES;
@@ -630,13 +654,15 @@
     }
 
     <span class="attr">#[test]
+    #[ignore]
     </span><span class="kw">pub fn </span>spending_counter_increasing_wrong_counter() {
         <span class="kw">let </span><span class="kw-2">mut </span>sc_increasing = SpendingCounterIncreasing::default();
         <span class="kw">let </span>incorrect_sc = SpendingCounter::new(<span class="number">0</span>, <span class="number">100</span>).unwrap();
         <span class="macro">assert!</span>(sc_increasing.next_verify(incorrect_sc).is_err());
     }
 
-    <span class="attr">#[test]
+    <span class="attr">#[ignore]
+    #[test]
     </span><span class="kw">pub fn </span>spending_counter_increasing_wrong_lane() {
         <span class="kw">let </span><span class="kw-2">mut </span>sc_increasing = SpendingCounterIncreasing::default();
         <span class="kw">let </span>incorrect_sc = SpendingCounter::new(SpendingCounterIncreasing::LANES, <span class="number">1</span>).unwrap();

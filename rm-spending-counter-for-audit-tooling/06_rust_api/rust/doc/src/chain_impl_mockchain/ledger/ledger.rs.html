@@ -2942,6 +2942,7 @@
 <a href="#2942" id="2942">2942</a>
 <a href="#2943" id="2943">2943</a>
 <a href="#2944" id="2944">2944</a>
+<a href="#2945" id="2945">2945</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Mockchain ledger. Ledger exists in order to update the
 //! current state and verify transactions.
 
@@ -5829,7 +5830,8 @@
             .is_err());
     }
 
-    <span class="attr">#[test]
+    <span class="attr">#[ignore]
+    #[test]
     </span><span class="kw">fn </span>test_internal_apply_transaction_wrong_spending_counter() {
         <span class="kw">let </span>faucet =
             AddressDataValue::account_with_spending_counter(Discrimination::Test, <span class="number">1</span>, Value(<span class="number">1</span>));

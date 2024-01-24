@@ -19,7 +19,7 @@ jobs:
       pull-requests: read
       statuses: write
     steps:
-      - uses: deepakputhraya/action-pr-title@tests/typhon-registration
+      - uses: deepakputhraya/action-pr-title@master
         with:
           regex: '^(?:feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(?:\(.+\))?:\s.+(\s\|\s)(NPG-\d+)$'
           github_token: ${{ github.token }}

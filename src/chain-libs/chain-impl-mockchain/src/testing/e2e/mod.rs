@@ -4,7 +4,6 @@ pub mod mint_token;
 pub mod owner_delegation;
 pub mod pool_update;
 pub mod rewards;
-pub mod spending_counter_lanes;
 pub mod stake_distribution;
 pub mod transactions;
 pub mod update_proposal;

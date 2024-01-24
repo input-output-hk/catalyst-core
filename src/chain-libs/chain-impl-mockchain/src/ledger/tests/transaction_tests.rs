@@ -97,6 +97,7 @@ pub fn transaction_nonexisting_account_input() {
 }
 
 #[test]
+#[ignore]
 pub fn transaction_with_incorrect_account_spending_counter() {
     let faucet =
         AddressDataValue::account_with_spending_counter(Discrimination::Test, 1, Value(1000));

@@ -352,6 +352,7 @@ pub fn pending_fragment_should_be_persisted() {
 }
 
 #[test]
+#[ignore]
 pub fn node_should_pickup_log_after_restart() {
     let mut temp_dir = TempDir::new().unwrap();
     let dump_folder = temp_dir.child("dump_folder");

@@ -111,17 +111,17 @@ test('Open Extension Page and Click Button with XPath', async ({ }) => {
   const newTab2 = await browser.newPage();
   await newTab2.goto('https://docs.cardano.org/cardano-testnet/tools/faucet/');
 
-  let buttonVisible = false;
-  while (!buttonVisible) {
-    const acceptAll = '//*[@id="4a095186-62d9-403b-b45f-c1b6ae646e0f"]/div[2]/button[2]';
-    await page.waitForSelector(acceptAll, { state: 'visible' });
-    await page.click(acceptAll);
-    await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-    buttonVisible = await page.isVisible('#gatsby-focus-wrapper > div > div > div.css-14y15z9.eh2b2dx0 > div > main > div > div.pageWrap > div.css-12kimzl.egxxftl2 > div > form > div.MuiBox-root.jss9 > button > span.MuiButton-label');
-    await page.waitForTimeout(100); // wait for 100 milliseconds
+  async function clickBlankSpace2(newTab) {
+    const blankSpace2 = '#gatsby-focus-wrapper > div > div > div.css-14y15z9.eh2b2dx0 > div > main > div > div.pageWrap > div.titleWrapper.css-0.ejiqw051 > h1';
+    await newTab.waitForSelector(blankSpace2, { state: 'visible' });
+    await newTab.click(blankSpace2);
   }
 
+  await clickBlankSpace2(newTab2);
+  await newTab2.evaluate(() => window.scrollBy(0, window.innerHeight+100));
+  await newTab2.waitForTimeout(100);
+
   // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
-  await page.waitForTimeout(3000000); // Adjust the time as needed
+  await page.waitForTimeout(300000); // Adjust the time as needed
   await new Promise(resolve => { /* never resolves */ });
 });

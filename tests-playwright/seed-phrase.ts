@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Construct the path to the .txt file
-const txtPath = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/typhon-wallet-storage.txt';
+const txtPath = '../../catalyst-core/tests-playwright/typhon-wallet-storage.txt';
 
 // Read the contents of the .txt file
 const txtContent = fs.readFileSync(path.resolve(txtPath), 'utf8');

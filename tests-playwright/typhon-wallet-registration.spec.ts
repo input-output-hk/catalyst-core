@@ -3,10 +3,10 @@ import { getWalletCredentials } from './credentials';
 import { getSeedPhrase } from './seed-phrase';
 
 test('Open Extension Page and Click Button with XPath', async ({ }) => {
-  const extensionPath: string = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/extensions';
+  const extensionPath: string = '../../catalyst-core/extensions';
   // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
   // const extensionPage: string = 'tab.html'; // Replace with the specific page
-  const userDataDir = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/src/usrdatadir'; // Path to the user data directory
+  const userDataDir = '../../catalyst-core/src/usrdatadir'; // Path to the user data directory
 
   // Launch Chromium with the extension
   const browser = await chromium.launchPersistentContext(userDataDir, {

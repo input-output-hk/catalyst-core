@@ -1,3 +1,3 @@
-2024/01/25-19:28:13.416 a603 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/src/usrdatadir/Default/Sync Data/LevelDB/MANIFEST-000001
-2024/01/25-19:28:13.416 a603 Recovering log #3
-2024/01/25-19:28:13.417 a603 Reusing old log /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/src/usrdatadir/Default/Sync Data/LevelDB/000003.log 
+2024/01/25-20:13:50.694 a303 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/src/usrdatadir/Default/Sync Data/LevelDB/MANIFEST-000001
+2024/01/25-20:13:50.695 a303 Recovering log #3
+2024/01/25-20:13:50.696 a303 Reusing old log /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/src/usrdatadir/Default/Sync Data/LevelDB/000003.log 

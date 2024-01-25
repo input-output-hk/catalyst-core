@@ -44,7 +44,6 @@ pub fn transaction_fail_when_255_outputs() {
     );
 }
 
-#[ignore]
 #[test]
 pub fn duplicated_account_transaction() {
     let mut test_ledger = LedgerBuilder::from_config(ConfigBuilder::new())

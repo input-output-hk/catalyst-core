@@ -351,7 +351,6 @@ pub fn test_mempool_log_max_entries_equals_0() {
         .unwrap();
 }
 
-#[ignore]
 #[test]
 pub fn test_mempool_pool_max_entries_overrides_log_max_entries() {
     let temp_dir = TempDir::new().unwrap();

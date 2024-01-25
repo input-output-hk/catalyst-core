@@ -104,7 +104,6 @@ pub fn dump_send_correct_fragments() {
     assert_all_fragment_are_persisted(dump_folder.path(), persistent_log_path.path());
 }
 
-#[ignore]
 #[test]
 pub fn dump_send_invalid_fragments() {
     let temp_dir = TempDir::new().unwrap();
@@ -216,7 +215,6 @@ pub fn invalid_folder() {
         .unwrap();
 }
 
-#[ignore]
 #[test]
 pub fn fragment_which_reached_mempool_should_be_persisted() {
     let temp_dir = TempDir::new().unwrap();
@@ -260,7 +258,6 @@ pub fn fragment_which_reached_mempool_should_be_persisted() {
     assert_all_fragment_are_persisted(dump_folder.path(), persistent_log_path.path());
 }
 
-#[ignore]
 #[test]
 pub fn fragment_which_is_not_in_fragment_log_should_be_persisted() {
     let temp_dir = TempDir::new().unwrap();
@@ -355,7 +352,6 @@ pub fn pending_fragment_should_be_persisted() {
 }
 
 #[test]
-#[ignore]
 pub fn node_should_pickup_log_after_restart() {
     let mut temp_dir = TempDir::new().unwrap();
     let dump_folder = temp_dir.child("dump_folder");

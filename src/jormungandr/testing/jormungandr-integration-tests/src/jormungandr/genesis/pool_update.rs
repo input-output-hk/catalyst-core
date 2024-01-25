@@ -8,7 +8,6 @@ use jormungandr_automation::{
 };
 use thor::TransactionHash;
 
-#[ignore]
 #[test]
 pub fn update_pool_fees_is_not_allowed() {
     let temp_dir = TempDir::new().unwrap();

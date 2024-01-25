@@ -392,7 +392,6 @@ mod tests {
         );
     }
 
-    #[ignore]
     #[test]
     fn test_add_duplicated_vote_should_return_error() {
         let mut update_state = UpdateState::new();

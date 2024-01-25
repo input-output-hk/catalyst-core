@@ -688,7 +688,6 @@ pub fn jcli_e2e_flow() {
     );
 }
 
-#[ignore]
 #[test]
 pub fn duplicated_vote() {
     let temp_dir = TempDir::new().unwrap();
@@ -759,7 +758,6 @@ pub fn duplicated_vote() {
     );
 }
 
-#[ignore]
 #[test]
 pub fn non_duplicated_vote() {
     let temp_dir = TempDir::new().unwrap();

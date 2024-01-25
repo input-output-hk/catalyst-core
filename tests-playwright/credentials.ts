@@ -1,8 +1,19 @@
-import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
-// Construct the path to the .env file
-const envPath = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/src/typhon-wallet-storage.env';
-dotenv.config({ path: envPath });
+// Construct the path to the .txt file
+const txtPath = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/typhon-wallet-storage.txt';
+
+// Read the contents of the .txt file
+const txtContent = fs.readFileSync(path.resolve(txtPath), 'utf8');
+
+// Parse the contents and set them to process.env
+txtContent.split('\n').forEach(line => {
+  const [key, value] = line.split('=');
+  if (key && value) {
+    process.env[key.trim()] = value.trim();
+  }
+});
 
 interface WalletCredentials {
   username: string;

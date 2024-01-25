@@ -737,7 +737,6 @@
 <a href="#737" id="737">737</a>
 <a href="#738" id="738">738</a>
 <a href="#739" id="739">739</a>
-<a href="#740" id="740">740</a>
 </pre></div><pre class="rust"><code><span class="comment">//use crate::certificate::{verify_certificate, HasPublicKeys, SignatureRaw};
 </span><span class="kw">use </span><span class="kw">crate</span>::certificate::{UpdateProposal, UpdateProposalId, UpdateVote, UpdateVoterId};
 <span class="kw">use </span><span class="kw">crate</span>::date::BlockDate;
@@ -1132,8 +1131,7 @@
         );
     }
 
-    <span class="attr">#[ignore]
-    #[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>test_add_duplicated_vote_should_return_error() {
         <span class="kw">let </span><span class="kw-2">mut </span>update_state = UpdateState::new();
         <span class="kw">let </span>proposal_id = TestGen::hash();

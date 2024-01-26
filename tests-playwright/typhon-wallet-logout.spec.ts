@@ -39,11 +39,11 @@ test('Logout', async ({ }) => {
   await newTab.waitForSelector(removeAccount, { state: 'visible' });
   await newTab.click(removeAccount);
 
-  const confirmRemove = '#headlessui-dialog-17 > div > div.relative.inline-block.w-full.text-left.align-middle.cardColor.rounded-lg.shadow-xl.transform.p-6.pt-4.mx-3.my-8.max-w-2xl > div.max-w-lg > div.mt-5.flex.justify-end.items-center.space-x-3 > button.btn.bg-primary.text-xs.w-full.sm\:w-20.uppercase.px-4.py-2.font-medium.text-white.hover\:bg-opacity-80';
-  await newTab.waitForSelector(confirmRemove, { state: 'visible' });
-  await newTab.click(confirmRemove);
+  const confirmRemove = 'button.btn.bg-primary';
+  await newTab.waitForSelector(confirmRemove, {state: 'visible'});
+  await newTab.click(confirmRemove)
 
-  const addNew = '#app > div > div > div.flex-grow.overflow-auto > div > div.flex.justify-center > div > div > div.absolute.py-2.pl-2.pr-3.flex.justify-center.items-center.rounded-full.text-sm.bg-primary-80.hover\:bg-primary-100.text-white.cursor-pointer.bottom-14.right-3.shadow-xl';
+  const addNew = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[4]';
   await newTab.waitForSelector(addNew, { state: 'visible' });
   await newTab.click(addNew);
 

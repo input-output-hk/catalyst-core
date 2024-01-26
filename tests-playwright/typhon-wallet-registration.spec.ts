@@ -20,14 +20,8 @@ test('Open Extension Page and Click Button with XPath', async ({ }) => {
   // Creating a new context and page
   const page = await browser.newPage();
   await page.waitForTimeout(1000); // Adjust the timeout as needed
-
-  // Get all pages (tabs) in the context
   const pages = browser.pages();
-
-  // The new tab is typically the last one in the list
   const newTab = pages[pages.length - 1];
-
-  // Now you can interact with the new tab
   await newTab.bringToFront(); // Brings the new tab to the foreground
 
   // Example: Get the title of the new tab
@@ -107,6 +101,9 @@ test('Open Extension Page and Click Button with XPath', async ({ }) => {
   const copyAddress = '#receiveAddress > div > div.grow > button';
   await newTab.waitForSelector(copyAddress, { state: 'visible' });
   await newTab.click(copyAddress);
+  await newTab.waitForTimeout(500);
+  const copiedText = await newTab.evaluate(() => navigator.clipboard.readText());
+  console.log('Copied Address:', copiedText);
 
   const newTab2 = await browser.newPage();
   await newTab2.goto('https://docs.cardano.org/cardano-testnet/tools/faucet/');
@@ -120,6 +117,13 @@ test('Open Extension Page and Click Button with XPath', async ({ }) => {
   await clickBlankSpace2(newTab2);
   await newTab2.evaluate(() => window.scrollBy(0, window.innerHeight+100));
   await newTab2.waitForTimeout(100);
+
+  const addressField = ('#gatsby-focus-wrapper > div > div > div.css-14y15z9.eh2b2dx0 > div > main > div > div.pageWrap > div.css-12kimzl.egxxftl2 > div > form > div.MuiBox-root.jss8 > div > div > input'); // Replace '#passwordField' with the correct selector for the password field
+  await newTab2.waitForSelector(addressField, { state: 'visible' });
+  await newTab2.click(addressField);
+  await newTab2.keyboard.down('Meta'); // Use 'Meta' on Mac
+  await newTab2.keyboard.press('V');
+  await newTab2.keyboard.up('Meta'); // Use 'Meta' on Mac
 
   // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
   await page.waitForTimeout(300000); // Adjust the time as needed

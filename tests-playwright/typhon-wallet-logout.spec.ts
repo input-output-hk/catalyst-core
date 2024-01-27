@@ -47,8 +47,4 @@ test('Logout', async ({ }) => {
   await newTab.waitForSelector(addNew, { state: 'visible' });
   await newTab.click(addNew);
 
-  // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
-  await newTab.waitForTimeout(300000); // Adjust the time as needed
-  await new Promise(resolve => { /* never resolves */ });
-
 });

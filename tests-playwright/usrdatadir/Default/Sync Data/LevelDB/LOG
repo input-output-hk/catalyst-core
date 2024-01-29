@@ -1,2 +1,3 @@
-2024/01/29-22:10:34.965 9d03 Creating DB /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/Sync Data/LevelDB since it was missing.
-2024/01/29-22:10:34.979 9d03 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/Sync Data/LevelDB/MANIFEST-000001
+2024/01/29-22:16:31.317 a403 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/Sync Data/LevelDB/MANIFEST-000001
+2024/01/29-22:16:31.318 a403 Recovering log #3
+2024/01/29-22:16:31.318 a403 Reusing old log /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/Sync Data/LevelDB/000003.log 

@@ -125,5 +125,4 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /src/typhon-wallet-storage/
-/extensions/*
-/usrdatadir/*
+/tests-playwright/usrdatadir/*

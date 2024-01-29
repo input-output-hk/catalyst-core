@@ -1,2 +1,3 @@
-2024/01/29-22:10:34.966 be03 Creating DB /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/Site Characteristics Database since it was missing.
-2024/01/29-22:10:34.984 be03 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/Site Characteristics Database/MANIFEST-000001
+2024/01/29-22:16:31.318 14603 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/Site Characteristics Database/MANIFEST-000001
+2024/01/29-22:16:31.318 14603 Recovering log #3
+2024/01/29-22:16:31.318 14603 Reusing old log /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/Site Characteristics Database/000003.log 

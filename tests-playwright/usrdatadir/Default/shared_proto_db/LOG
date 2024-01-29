@@ -1,2 +1,3 @@
-2024/01/29-22:10:35.350 9d03 Creating DB /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/shared_proto_db since it was missing.
-2024/01/29-22:10:35.357 9d03 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/shared_proto_db/MANIFEST-000001
+2024/01/29-22:16:31.663 f703 Reusing MANIFEST /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/shared_proto_db/MANIFEST-000001
+2024/01/29-22:16:31.665 f703 Recovering log #3
+2024/01/29-22:16:31.665 f703 Reusing old log /Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/tests-playwright/usrdatadir/Default/shared_proto_db/000003.log 

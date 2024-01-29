@@ -2,11 +2,11 @@ import { test, chromium, BrowserContext, Page } from '@playwright/test';
 import { getWalletCredentials } from './credentials';
 import { getSeedPhrase } from './seed-phrase';
 
-test('Open Extension Page and Click Button with XPath', async ({ }) => {
-  const extensionPath: string = '../../catalyst-core/extensions';
+test('import wallet', async ({ }) => {
+  const extensionPath: string = '../../catalyst-core/tests-playwright/extensions';
   // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
   // const extensionPage: string = 'tab.html'; // Replace with the specific page
-  const userDataDir = '../../catalyst-core/src/usrdatadir'; // Path to the user data directory
+  const userDataDir = '../../catalyst-core/tests-playwright/usrdatadir'; // Path to the user data directory
 
   // Launch Chromium with the extension
   const browser = await chromium.launchPersistentContext(userDataDir, {
@@ -26,7 +26,7 @@ test('Open Extension Page and Click Button with XPath', async ({ }) => {
 
   // Example: Get the title of the new tab
   const title = await newTab.title();
-  console.log(`Title of the new tab: ${title}`);
+  console.log(`title of the new tab: ${title}`);
 
   const firstButtonSelector = '//*[@id="headlessui-menu-button-1"]';
   await newTab.waitForSelector(firstButtonSelector, { state: 'visible' });
@@ -78,38 +78,69 @@ test('Open Extension Page and Click Button with XPath', async ({ }) => {
   await newTab.waitForSelector(unlockWallet, { state: 'visible' });
   await newTab.click(unlockWallet);
 
-  const copyAddress = '#receiveAddress > div > div.grow > button';
-  await newTab.waitForSelector(copyAddress, { state: 'visible' });
-  await newTab.click(copyAddress);
-  await newTab.waitForTimeout(500);
-  const copiedText = await newTab.evaluate(() => navigator.clipboard.readText());
-  console.log('Copied Address:', copiedText);
+  const divSelector = '//*[@id="lc"]/div[2]/div[1]/div[2]/div/div[1]/div[1]/div/div[2]/div[1]/div/span[1]';
+  await newTab.waitForSelector(divSelector, { state: 'visible' });
 
-  const newTab2 = await browser.newPage();
-  await newTab2.goto('https://docs.cardano.org/cardano-testnet/tools/faucet/');
-
-  async function clickBlankSpace2(newTab) {
-    const blankSpace2 = '#gatsby-focus-wrapper > div > div > div.css-14y15z9.eh2b2dx0 > div > main > div > div.pageWrap > div.titleWrapper.css-0.ejiqw051 > h1';
-    await newTab.waitForSelector(blankSpace2, { state: 'visible' });
-    await newTab.click(blankSpace2);
+  // Use the selector to retrieve the element handle
+  const elementHandle = await newTab.$(divSelector);
+  if (elementHandle) {
+    // Retrieve the text content of the element
+    const textContent = await elementHandle.textContent();
+    if (textContent !== null) {
+      // Remove any formatting that might interfere with parseFloat
+      const cleanedText = textContent.replace(/,/g, '').trim();
+      // Parse the text content as a float
+      const floatValue = parseFloat(cleanedText);
+      if (!isNaN(floatValue)) {
+        if (floatValue < 500) {
+          // Log the message if the float value is less than 500
+          console.log('not eligible for voting ☹️');
+        } else {
+          // Log the message if the float value is equal to or more than 500
+          console.log('eligible for voting ☺');
+        }
+      } else {
+        console.log('text content is not a valid float:', textContent);
+      }
+    } else {
+      console.log('no text content found for the specified selector:', divSelector);
+    }
+  } else {
+    console.log('element not found for the specified XPath:', divSelector);
   }
 
-  await clickBlankSpace2(newTab2);
-  await newTab2.evaluate(() => window.scrollBy(0, window.innerHeight+100));
-  await newTab2.waitForTimeout(100);
+  // const copyAddress = '#receiveAddress > div > div.grow > button';
+  // await newTab.waitForSelector(copyAddress, { state: 'visible' });
+  // await newTab.click(copyAddress);
+  // await newTab.waitForTimeout(500);
+  // const copiedText = await newTab.evaluate(() => navigator.clipboard.readText());
+  // console.log('Copied Address:', copiedText);
 
-  const addressField = ('//*[@id="gatsby-focus-wrapper"]/div/div/div[2]/div/main/div/div[1]/div[2]/div/form/div[3]/div/div/input');
-  await newTab2.waitForSelector(addressField, { state: 'visible' });
-  await newTab2.click(addressField);
-  await newTab2.keyboard.down('Meta'); // Use 'Meta' on Mac
-  await newTab2.keyboard.press('V');
-  await newTab2.keyboard.up('Meta'); // Use 'Meta' on Mac
+  // const newTab2 = await browser.newPage();
+  // await newTab2.goto('https://docs.cardano.org/cardano-testnet/tools/faucet/');
 
-  const captcha = '//*[@id="rc-anchor-container"]/div[3]/div[1]/div/div';
-  await newTab2.waitForSelector(captcha, { state: 'visible' });
-  await newTab2.click(captcha);
+  // async function clickBlankSpace2(newTab) {
+  //   const blankSpace2 = '#gatsby-focus-wrapper > div > div > div.css-14y15z9.eh2b2dx0 > div > main > div > div.pageWrap > div.titleWrapper.css-0.ejiqw051 > h1';
+  //   await newTab.waitForSelector(blankSpace2, { state: 'visible' });
+  //   await newTab.click(blankSpace2);
+  // }
+
+  // await clickBlankSpace2(newTab2);
+  // await newTab2.evaluate(() => window.scrollBy(0, window.innerHeight+100));
+  // await newTab2.waitForTimeout(100);
+
+  // const addressField = ('//*[@id="gatsby-focus-wrapper"]/div/div/div[2]/div/main/div/div[1]/div[2]/div/form/div[3]/div/div/input');
+  // await newTab2.waitForSelector(addressField, { state: 'visible' });
+  // await newTab2.click(addressField);
+  // await newTab2.keyboard.down('Meta'); // Use 'Meta' on Mac
+  // await newTab2.keyboard.press('V');
+  // await newTab2.keyboard.up('Meta'); // Use 'Meta' on Mac
+
+  // const captcha = '//*[@id="rc-anchor-container"]/div[3]/div[1]/div/div';
+  // await newTab2.waitForSelector(captcha, { state: 'visible' });
+  // await newTab2.click(captcha);
 
   // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
-  await page.waitForTimeout(300000); // Adjust the time as needed
-  await new Promise(resolve => { /* never resolves */ });
-});
+  // await page.waitForTimeout(300000); // Adjust the time as needed
+  // await new Promise(resolve => { /* never resolves */ });
+})

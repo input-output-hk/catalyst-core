@@ -125,5 +125,5 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /src/typhon-wallet-storage/
-# catalyst-core/tests-playwright/extensions
-# catalyst-core/tests-playwright/usrdatadir
+catalyst-core/tests-playwright/extensions
+catalyst-core/tests-playwright/usrdatadir

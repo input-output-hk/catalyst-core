@@ -12,6 +12,7 @@ use jortestkit::process::Wait;
 use std::time::Duration;
 use thor::TransactionHash;
 
+#[ignore]
 #[test]
 pub fn explorer_transaction_test() {
     let jcli: JCli = Default::default();

@@ -58,34 +58,14 @@ impl SpendingCounterIncreasing {
     /// an error reported.
     ///
     /// If the counter match succesfully, then the counter at this lane is incremented by one.
-    pub fn next_verify(&mut self, counter: SpendingCounter) -> Result<(), Error> {
-        let actual_counter = self.nexts[counter.lane()];
-
-        if actual_counter != counter {
-            Err(Error::SpendingCredentialInvalid {
-                expected: actual_counter,
-                actual: counter,
-            })
-        } else {
-            self.next_unchecked(counter);
-            Ok(())
-        }
+    pub fn next_verify(&mut self, _counter: SpendingCounter) -> Result<(), Error> {
+        // spending counter has been removed
+        Ok(())
     }
 
     /// Increases the spending counter on the given lane.
-    pub(crate) fn next_unchecked(&mut self, unchecked_counter: SpendingCounter) {
-        let lane = unchecked_counter.lane();
-        let counter_to_update = self.nexts[lane];
-        if counter_to_update != unchecked_counter {
-            tracing::warn!(
-                "Invalid spending counter, {}",
-                Error::SpendingCredentialInvalid {
-                    expected: counter_to_update,
-                    actual: unchecked_counter,
-                }
-            );
-        }
-        self.nexts[lane] = counter_to_update.increment();
+    pub(crate) fn next_unchecked(&mut self, _unchecked_counter: SpendingCounter) {
+        // spending counter removed
     }
 }
 

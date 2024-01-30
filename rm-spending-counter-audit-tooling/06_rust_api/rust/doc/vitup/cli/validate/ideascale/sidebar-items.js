@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ChallengeError","Error","ProposalError","ReviewError"],"struct":["IdeascaleValidateCommand"]};

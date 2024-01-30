@@ -10,7 +10,7 @@ test('Logout', async ({ }) => {
 
   // Launch Chromium with the extension
   const browser = await chromium.launchPersistentContext(userDataDir, {
-    headless: false, // Extensions only work in headful mode
+    headless: false, // Extensions only work in headful mode =)
     args: [
       `--disable-extensions-except=${extensionPath}`,
       `--load-extension=${extensionPath}`,

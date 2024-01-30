@@ -119,10 +119,8 @@ treefmt.toml
 
 # local earthly Environments
 local/*
-node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-/src/typhon-wallet-storage/
+/test-results/*
+/playwright-report/*    
+/blob-report/*
+/playwright/.cache/*
 /tests-playwright/usrdatadir/*

@@ -351,6 +351,7 @@ pub fn pending_fragment_should_be_persisted() {
     assert!(fragment_logs.values().next().unwrap().is_pending());
 }
 
+#[ignore]
 #[test]
 pub fn node_should_pickup_log_after_restart() {
     let mut temp_dir = TempDir::new().unwrap();

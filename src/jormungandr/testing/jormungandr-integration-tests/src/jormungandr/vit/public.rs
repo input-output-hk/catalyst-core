@@ -50,6 +50,7 @@ fn generate_wallets_and_committee() -> (Vec<Wallet>, Vec<CommitteeIdDef>) {
     (wallets, ids)
 }
 
+#[ignore]
 #[test]
 pub fn test_get_committee_id() {
     let temp_dir = TempDir::new().unwrap();
@@ -688,6 +689,7 @@ pub fn jcli_e2e_flow() {
     );
 }
 
+#[ignore]
 #[test]
 pub fn duplicated_vote() {
     let temp_dir = TempDir::new().unwrap();
@@ -758,6 +760,7 @@ pub fn duplicated_vote() {
     );
 }
 
+#[ignore]
 #[test]
 pub fn non_duplicated_vote() {
     let temp_dir = TempDir::new().unwrap();

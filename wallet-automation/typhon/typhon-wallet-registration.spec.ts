@@ -89,7 +89,6 @@ test('import wallet', async ({ }) => {
     if (textContent !== null) {
       // Remove any formatting that might interfere with parseFloat
       const cleanedText = textContent.replace(/,/g, '').trim();
-      // Parse the text content as a float
       const floatValue = parseFloat(cleanedText);
       if (!isNaN(floatValue)) {
         if (floatValue < 500) {

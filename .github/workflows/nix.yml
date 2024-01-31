@@ -1,23 +1,6 @@
 name: Nix CI
 
-on:
-  pull_request:
-    paths:
-      - ".github/workflows/nix.yml"
-      - "nix/**"
-      - "src/**"
-      - "Cargo.*"
-      - "flake.*"
-  push:
-    branches:
-      - main
-    paths:
-      - ".github/workflows/nix.yml"
-      - "nix/**"
-      - "src/**"
-      - "Cargo.*"
-      - "flake.*"
-  workflow_dispatch:
+on: {}
 
 permissions:
   id-token: write

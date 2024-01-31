@@ -4,13 +4,12 @@ import { getSeedPhrase } from './seed-phrase';
 
 test('Logout', async ({ }) => {
   const extensionPath: string = '../../wallet-automation/typhon/extensions';
-  // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
-  // const extensionPage: string = 'tab.html'; // Replace with the specific page
-  const userDataDir = '../../wallet-automation/typhon/usrdatadir'; // Path to the user data directory
+  // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // replace with extension's ID
+  // const extensionPage: string = 'tab.html'; // replace with the specific page
+  const userDataDir = '../../wallet-automation/typhon/usrdatadir'; // path to the user data directory
 
-  // Launch Chromium with the extension
   const browser = await chromium.launchPersistentContext(userDataDir, {
-    headless: false, // Extensions only work in headful mode =)
+    headless: false, // extensions only work in headful mode =)
     args: [
       `--disable-extensions-except=${extensionPath}`,
       `--load-extension=${extensionPath}`,

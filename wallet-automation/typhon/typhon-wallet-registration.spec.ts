@@ -142,4 +142,5 @@ test('import wallet', async ({ }) => {
   // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
   // await page.waitForTimeout(300000); // Adjust the time as needed
   // await new Promise(resolve => { /* never resolves */ });
+  // test
 })

@@ -3,10 +3,10 @@ import { getWalletCredentials } from './credentials';
 import { getSeedPhrase } from './seed-phrase';
 
 test('import wallet', async ({ }) => {
-  const extensionPath: string = '../../catalyst-core/tests-playwright/extensions';
+  const extensionPath: string = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/wallet-automation/typhon/extensions';
   // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
   // const extensionPage: string = 'tab.html'; // Replace with the specific page
-  const userDataDir = '../../catalyst-core/tests-playwright/usrdatadir'; // Path to the user data directory
+  const userDataDir = '/Users/alicechaiyakul/typhon-wallet-registration/catalyst-core/wallet-automation/typhon/seed-phrase.ts'; // Path to the user data directory
 
   // Launch Chromium with the extension
   const browser = await chromium.launchPersistentContext(userDataDir, {

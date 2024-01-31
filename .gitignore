@@ -123,4 +123,4 @@ local/*
 /playwright-report/*    
 /blob-report/*
 /playwright/.cache/*
-/tests-playwright/usrdatadir/*
+/wallet-automation/typhon/usrdatadir/*

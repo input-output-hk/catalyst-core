@@ -107,7 +107,7 @@ test('import wallet', async ({ }) => {
   } else {
     console.log('element not found for the specified XPath:', divSelector);
   }
-
+  
   // const copyAddress = '#receiveAddress > div > div.grow > button';
   // await newTab.waitForSelector(copyAddress, { state: 'visible' });
   // await newTab.click(copyAddress);

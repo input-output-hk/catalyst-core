@@ -3,11 +3,12 @@ import { getWalletCredentials } from './credentials';
 import { getSeedPhrase } from './seed-phrase';
 
 test('Logout', async ({ }) => {
-  const extensionPath: string = '../../../tests/wallet-automation/typhon/extensions';
-  // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // replace with extension's ID
-  // const extensionPage: string = 'tab.html'; // replace with the specific page
-  const userDataDir = '../../../tests/wallet-automation/typhon/usrdatadir'; // path to the user data directory
-
+  const path = require('path');
+  const extensionPath: string = path.resolve(__dirname, 'extensions');
+  // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
+  // const extensionPage: string = 'tab.html'; // Replace with the specific page
+  const userDataDir = path.resolve(__dirname, 'usrdatadir');
+  
   const browser = await chromium.launchPersistentContext(userDataDir, {
     headless: false, // extensions only work in headful mode =)
     args: [

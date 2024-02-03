@@ -1,11 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-// Construct the path to the .txt file
-const txtPath = '../../wallet-automation/typhon/typhon-wallet-storage.txt';
-
-// Read the contents of the .txt file
-const txtContent = fs.readFileSync(path.resolve(txtPath), 'utf8');
+const txtContent = fs.readFileSync(path.resolve(__dirname,'typhon-wallet-storage.txt'), 'utf8');;
 
 // Parse the contents and set them to process.env
 txtContent.split('\n').forEach(line => {

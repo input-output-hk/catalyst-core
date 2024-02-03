@@ -3,12 +3,12 @@ import { getWalletCredentials } from './credentials';
 import { getSeedPhrase } from './seed-phrase';
 
 test('import wallet', async ({ }) => {
-  const extensionPath: string = '../../../tests/wallet-automation/typhon/extensions';
+  const path = require('path');
+  const extensionPath: string = path.resolve(__dirname, 'extensions');
   // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
   // const extensionPage: string = 'tab.html'; // Replace with the specific page
-  const userDataDir = '../../../tests/wallet-automation/typhon/usrdatadir'; // Path to the user data directory
+  const userDataDir = path.resolve(__dirname, 'usrdatadir');
 
-  // Launch Chromium with the extension
   const browser = await chromium.launchPersistentContext(userDataDir, {
     headless: false, // Extensions only work in headful mode
     args: [
@@ -90,6 +90,7 @@ test('import wallet', async ({ }) => {
       // Remove any formatting that might interfere with parseFloat
       const cleanedText = textContent.replace(/,/g, '').trim();
       const floatValue = parseFloat(cleanedText);
+      console.log('ADA:', floatValue)
       if (!isNaN(floatValue)) {
         if (floatValue < 500) {
           // Log the message if the float value is less than 500

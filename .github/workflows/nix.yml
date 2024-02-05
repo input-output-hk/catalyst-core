@@ -71,7 +71,7 @@ jobs:
           nix_key: ${{ secrets.NIX_SIGNING_KEY }}
           cache: ${{ env.S3_CACHE }}
   publish-containers:
-    #if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     needs:
       - discover
       - build-packages

@@ -1,99 +1,69 @@
 name: Nix CI
-
-on: {}
-
-permissions:
-  id-token: write
-  contents: read
-
-concurrency:
-  group: ${{ github.sha }}
-  cancel-in-progress: true
-
-env:
-  AWS_REGION: eu-central-1
-  AWS_ROLE_ARN: arn:aws:iam::332405224602:role/ci
-  ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
-  S3_CACHE: s3://iog-catalyst-nix?region=eu-central-1
+on:
+  push:
+    branches:
+      - main
+      - catalyst-fund*
+  pull_request:
 
 jobs:
-  discover:
+  decision:
+    name: Decide what we need to build
+    runs-on: ubuntu-latest
+
     outputs:
-      hits: ${{ steps.discovery.outputs.hits }}
-      nix_conf: ${{ steps.discovery.outputs.nix_conf }}
-    runs-on: ubuntu-latest
-    concurrency:
-      group: ${{ github.workflow }}
+      packages: ${{ steps.packages.outputs.packages }}
+
     steps:
-      - name: Standard Discovery
-        uses: divnix/std-action/discover@v0.0.4
-        id: discovery
-  build-packages:
-    needs: discover
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ${{ fromJSON(needs.discover.outputs.hits).packages.build }}
-    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
-        with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@v0.0.4
-        with:
-          extra_nix_config: |
-            ${{ needs.discover.outputs.nix_conf }}
-          json: ${{ toJSON(matrix.target) }}
-          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
-          cache: ${{ env.S3_CACHE }}
-  build-devshells:
-    needs: discover
-    strategy:
-      fail-fast: false
-      matrix:
-        target: ${{ fromJSON(needs.discover.outputs.hits).devshells.build }}
-    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
-        with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-      - uses: divnix/std-action/run@v0.0.4
-        with:
-          extra_nix_config: |
-            ${{ needs.discover.outputs.nix_conf }}
-          json: ${{ toJSON(matrix.target) }}
-          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
-          cache: ${{ env.S3_CACHE }}
-  publish-containers:
-    if: github.ref == 'refs/heads/main'
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup
+      uses: ./.github/actions/nix-common-setup
+      with:
+        CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+    - name: Packages
+      id: packages
+      run: |
+        packages=$(nix eval .#packages.x86_64-linux --apply builtins.attrNames --json)
+        echo "PACKAGES -> $packages"
+        echo "::set-output name=packages::$packages"
+
+  build:
+    name: Build ${{ matrix.package }} package
     needs:
-      - discover
-      - build-packages
+      - decision
+    runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
-        target: ${{ fromJSON(needs.discover.outputs.hits).containers.publish }}
-    name: ${{ matrix.target.cell }} - ${{ matrix.target.name }}
-    runs-on: ubuntu-latest
+        package: ${{ fromJSON(needs.decision.outputs.packages) }}
+        exclude:
+          - package: default
+
     steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
-        with:
-          role-to-assume: ${{ env.AWS_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION }}
-      - name: Configure Registry
-        run: |
-          aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin "${{ env.ECR_REGISTRY }}"
-      - uses: divnix/std-action/run@v0.0.4
-        with:
-          extra_nix_config: |
-            ${{ needs.discover.outputs.nix_conf }}
-          json: ${{ toJSON(matrix.target) }}
-          nix_key: ${{ secrets.NIX_SIGNING_KEY }}
-          cache: ${{ env.S3_CACHE }}
+
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup
+      uses: ./.github/actions/nix-common-setup
+      with:
+        CACHIX_AUTH_TOKEN: ${{ secrets.CACHIX_AUTH_TOKEN }}
+
+    - name: Build package
+      run: |
+        path=$(nix eval --raw .#packages.x86_64-linux.${{ matrix.package }})
+        hash=${path:11:32}
+        url="https://iog.cachix.org/$hash.narinfo";
+        if curl --output /dev/null --silent --head --fail "$url"; then
+          echo "Nothing to build!!!"
+          echo ""
+          echo "See build log with:"
+          echo "  nix log $path"
+          echo ""
+        else
+          nix build .#packages.x86_64-linux.${{ matrix.package }} --show-trace -L
+        fi

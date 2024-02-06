@@ -1,5 +1,7 @@
 # Audit Tooling:
 
+Use this branch[*here*](https://github.com/input-output-hk/catalyst-core/tree/rm-spending-counter-audits-tooling)
+
 ## Offline audit
 
 ### Download Fund State

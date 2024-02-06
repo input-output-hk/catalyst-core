@@ -499,21 +499,21 @@ version = "0.1.0"
 dependencies = [
  "base64 0.21.7",
  "bech32 0.8.1",
- "chain-addr 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-core 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-crypto 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-impl-mockchain 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-ser 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-storage 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-time 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-vote 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
  "clap 4.4.18",
  "clap_complete_command",
  "color-eyre",
  "criterion",
  "csv",
  "hex",
- "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
+ "jormungandr-lib",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "rand_core 0.6.4",
@@ -524,7 +524,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "tracing-subscriber",
- "wallet 0.8.3 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
+ "wallet",
 ]
 
 [[package]]
@@ -761,8 +761,8 @@ dependencies = [
 name = "blockchain"
 version = "0.1.0"
 dependencies = [
- "chain-impl-mockchain 0.1.0",
- "chain-time 0.1.0",
+ "chain-impl-mockchain",
+ "chain-time",
  "lru",
  "thiserror",
 ]
@@ -915,16 +915,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cardano-legacy-address"
-version = "0.1.1"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "cbor_event",
- "cryptoxide 0.4.4",
- "ed25519-bip32 0.4.1",
-]
-
-[[package]]
 name = "cardano-serialization-lib"
 version = "11.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -988,11 +978,11 @@ name = "cat-data-service"
 version = "0.1.0"
 dependencies = [
  "axum",
- "chain-impl-mockchain 0.1.0",
+ "chain-impl-mockchain",
  "chrono",
  "clap 4.4.18",
  "event-db",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "metrics",
  "metrics-exporter-prometheus",
  "quickcheck",
@@ -1016,14 +1006,14 @@ dependencies = [
  "assert_cmd",
  "assert_fs",
  "bech32 0.8.1",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-ser 0.1.0",
- "chain-storage 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
  "clap 4.4.18",
  "color-eyre",
  "csv",
@@ -1038,7 +1028,7 @@ dependencies = [
  "jcli",
  "jormungandr-automation",
  "jormungandr-integration-tests",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "once_cell",
  "predicates 2.1.5",
@@ -1070,7 +1060,7 @@ dependencies = [
  "versionisator",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
- "wallet 0.8.3",
+ "wallet",
 ]
 
 [[package]]
@@ -1169,8 +1159,8 @@ name = "chain-addr"
 version = "0.1.0"
 dependencies = [
  "bech32 0.8.1",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
+ "chain-core",
+ "chain-crypto",
  "cryptoxide 0.4.4",
  "proptest",
  "quickcheck",
@@ -1179,30 +1169,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "chain-addr"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "bech32 0.8.1",
- "chain-core 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-crypto 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "cryptoxide 0.4.4",
- "serde",
-]
-
-[[package]]
 name = "chain-core"
 version = "0.1.0"
 dependencies = [
- "chain-ser 0.1.0",
-]
-
-[[package]]
-name = "chain-core"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "chain-ser 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
+ "chain-ser",
 ]
 
 [[package]]
@@ -1226,47 +1196,25 @@ dependencies = [
  "sha2 0.10.8",
  "smoke",
  "test-strategy",
- "typed-bytes 0.1.0",
-]
-
-[[package]]
-name = "chain-crypto"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "bech32 0.8.1",
- "cryptoxide 0.4.4",
- "curve25519-dalek-ng",
- "ed25519-bip32 0.4.1",
- "ed25519-dalek",
- "generic-array",
- "hex",
- "proptest",
- "quickcheck",
- "rand 0.8.5",
- "rand_core 0.6.4",
- "rayon",
- "sha2 0.10.8",
- "test-strategy",
- "typed-bytes 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
+ "typed-bytes",
 ]
 
 [[package]]
 name = "chain-impl-mockchain"
 version = "0.1.0"
 dependencies = [
- "cardano-legacy-address 0.1.1",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-ser 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-ser",
+ "chain-time",
+ "chain-vote",
  "criterion",
  "cryptoxide 0.4.4",
  "ed25519-bip32 0.4.1",
  "hex",
- "imhamt 0.1.0",
+ "imhamt",
  "lazy_static",
  "proptest",
  "quickcheck",
@@ -1277,39 +1225,14 @@ dependencies = [
  "rayon",
  "serde",
  "serde_json",
- "sparse-array 0.1.0",
+ "sparse-array",
  "strum 0.24.1",
  "strum_macros 0.24.3",
  "tempfile",
  "test-strategy",
  "thiserror",
  "tracing",
- "typed-bytes 0.1.0",
-]
-
-[[package]]
-name = "chain-impl-mockchain"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "cardano-legacy-address 0.1.1 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-addr 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-core 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-crypto 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-ser 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-time 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-vote 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "cryptoxide 0.4.4",
- "hex",
- "imhamt 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "rand 0.8.5",
- "rand_core 0.6.4",
- "sparse-array 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "strum 0.24.1",
- "strum_macros 0.24.3",
- "thiserror",
- "tracing",
- "typed-bytes 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
+ "typed-bytes",
 ]
 
 [[package]]
@@ -1317,7 +1240,7 @@ name = "chain-network"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "chain-crypto 0.1.0",
+ "chain-crypto",
  "futures",
  "http-body",
  "pin-project",
@@ -1340,24 +1263,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "chain-path-derivation"
-version = "0.8.3"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "thiserror",
-]
-
-[[package]]
 name = "chain-ser"
 version = "0.1.0"
-dependencies = [
- "thiserror",
-]
-
-[[package]]
-name = "chain-ser"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
 dependencies = [
  "thiserror",
 ]
@@ -1375,33 +1282,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "chain-storage"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "data-pile",
- "sled",
- "thiserror",
-]
-
-[[package]]
 name = "chain-time"
 version = "0.1.0"
 dependencies = [
- "chain-core 0.1.0",
- "chain-ser 0.1.0",
+ "chain-core",
+ "chain-ser",
  "proptest",
  "quickcheck",
  "test-strategy",
-]
-
-[[package]]
-name = "chain-time"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "chain-core 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-ser 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
 ]
 
 [[package]]
@@ -1410,8 +1298,8 @@ version = "0.1.0"
 dependencies = [
  "base64 0.21.7",
  "cfg-if 1.0.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
+ "chain-core",
+ "chain-crypto",
  "const_format",
  "criterion",
  "cryptoxide 0.4.4",
@@ -1420,23 +1308,6 @@ dependencies = [
  "rand_core 0.6.4",
  "rayon",
  "smoke",
- "thiserror",
-]
-
-[[package]]
-name = "chain-vote"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "base64 0.21.7",
- "cfg-if 0.1.10",
- "chain-core 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-crypto 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "const_format",
- "cryptoxide 0.4.4",
- "rand 0.8.5",
- "rand_core 0.6.4",
- "rayon",
  "thiserror",
 ]
 
@@ -2507,24 +2378,24 @@ dependencies = [
  "async-graphql",
  "async-graphql-warp",
  "base64 0.13.1",
- "cardano-legacy-address 0.1.1",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
  "chain-network",
- "chain-ser 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-ser",
+ "chain-time",
+ "chain-vote",
  "clap 4.4.18",
  "futures",
  "futures-channel",
  "futures-util",
  "http-zipkin",
- "imhamt 0.1.0",
+ "imhamt",
  "jormungandr-automation",
  "jormungandr-integration-tests",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "lazy_static",
  "opentelemetry",
  "opentelemetry-otlp",
@@ -3103,33 +2974,16 @@ dependencies = [
 name = "hdkeygen"
 version = "0.8.3"
 dependencies = [
- "cardano-legacy-address 0.1.1",
+ "cardano-legacy-address",
  "cbor_event",
- "chain-addr 0.1.0",
- "chain-crypto 0.1.0",
- "chain-path-derivation 0.8.3",
+ "chain-addr",
+ "chain-crypto",
+ "chain-path-derivation",
  "cryptoxide 0.4.4",
  "ed25519-bip32 0.4.1",
  "hex",
  "quickcheck",
  "quickcheck_macros",
- "thiserror",
- "zeroize",
-]
-
-[[package]]
-name = "hdkeygen"
-version = "0.8.3"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "cardano-legacy-address 0.1.1 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "cbor_event",
- "chain-addr 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-crypto 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-path-derivation 0.8.3 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "cryptoxide 0.4.4",
- "ed25519-bip32 0.4.1",
- "hex",
  "thiserror",
  "zeroize",
 ]
@@ -3193,18 +3047,18 @@ name = "hersir"
 version = "0.1.0"
 dependencies = [
  "assert_fs",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-vote",
  "clap 4.4.18",
  "ctrlc",
  "custom_debug",
  "hex",
  "indicatif",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "parity-multiaddr",
  "rand 0.8.5",
@@ -3419,13 +3273,13 @@ dependencies = [
  "bech32 0.8.1",
  "bincode",
  "catalyst-toolbox",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-ser 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-time",
+ "chain-vote",
  "chrono",
  "clap 4.4.18",
  "cocoon",
@@ -3436,7 +3290,7 @@ dependencies = [
  "dirs",
  "eccoxide 0.2.0",
  "ed25519-bip32 0.3.2",
- "hdkeygen 0.8.3",
+ "hdkeygen",
  "hersir",
  "hex",
  "hyper",
@@ -3444,7 +3298,7 @@ dependencies = [
  "itertools 0.10.5",
  "jcli",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "prettytable-rs",
  "rand 0.8.5",
@@ -3462,7 +3316,7 @@ dependencies = [
  "url",
  "valgrind",
  "vit-servicing-station-lib",
- "wallet 0.8.3",
+ "wallet",
  "wallet-core",
  "warp",
  "warp-reverse-proxy",
@@ -3540,15 +3394,6 @@ dependencies = [
  "test-strategy",
  "thiserror",
  "trybuild",
-]
-
-[[package]]
-name = "imhamt"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "rustc_version",
- "thiserror",
 ]
 
 [[package]]
@@ -3651,11 +3496,11 @@ dependencies = [
  "base64 0.21.7",
  "catalyst-toolbox",
  "cfg-if 1.0.0",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-ser 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
  "chrono",
  "csv",
  "fraction",
@@ -3665,7 +3510,7 @@ dependencies = [
  "image",
  "jcli",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "lazy_static",
  "libmath",
@@ -3760,18 +3605,18 @@ dependencies = [
  "bech32 0.8.1",
  "bincode",
  "bytes",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
  "clap 4.4.18",
  "clap_complete",
  "ed25519-bip32 0.4.1",
  "gtmpl",
  "hex",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "predicates 2.1.5",
  "quickcheck",
  "rand 0.7.3",
@@ -3816,23 +3661,23 @@ dependencies = [
  "async-trait",
  "base64 0.13.1",
  "bech32 0.8.1",
- "cardano-legacy-address 0.1.1",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
  "chain-network",
- "chain-storage 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
  "clap 4.4.18",
  "criterion",
  "enum-as-inner",
  "futures",
  "hex",
  "http-zipkin",
- "imhamt 0.1.0",
- "jormungandr-lib 0.13.0",
+ "imhamt",
+ "jormungandr-lib",
  "jsonrpsee-core",
  "jsonrpsee-http-server",
  "keynesis",
@@ -3886,14 +3731,14 @@ dependencies = [
  "base64 0.13.1",
  "bech32 0.8.1",
  "bytesize",
- "cardano-legacy-address 0.1.1",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-storage 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
  "clap 4.4.18",
  "custom_debug",
  "flate2",
@@ -3903,7 +3748,7 @@ dependencies = [
  "hex",
  "humantime",
  "jcli",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "json",
  "keynesis",
@@ -3936,7 +3781,7 @@ dependencies = [
  "tonic-build 0.6.2",
  "tracing",
  "tracing-subscriber",
- "typed-bytes 0.1.0",
+ "typed-bytes",
  "url",
  "versionisator",
  "warp",
@@ -3951,19 +3796,19 @@ dependencies = [
  "assert_fs",
  "base64 0.13.1",
  "bech32 0.7.3",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
  "fs_extra",
  "futures",
  "hersir",
  "hex",
  "indicatif",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "json",
  "lazy_static",
@@ -4000,13 +3845,13 @@ dependencies = [
  "base64 0.13.1",
  "bech32 0.8.1",
  "bincode",
- "cardano-legacy-address 0.1.1",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "cardano-legacy-address",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
  "ed25519-bip32 0.4.1",
  "hex",
  "http 0.2.11",
@@ -4024,45 +3869,17 @@ dependencies = [
  "serde_yaml 0.8.26",
  "thiserror",
  "time",
- "typed-bytes 0.1.0",
-]
-
-[[package]]
-name = "jormungandr-lib"
-version = "0.13.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "base64 0.13.1",
- "bech32 0.8.1",
- "cardano-legacy-address 0.1.1 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-addr 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-core 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-crypto 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-impl-mockchain 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-time 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-vote 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "hex",
- "http 0.2.11",
- "humantime",
- "parity-multiaddr",
- "rand 0.8.5",
- "rand_chacha 0.3.1",
- "rand_core 0.6.4",
- "serde",
- "serde_with",
- "thiserror",
- "time",
- "typed-bytes 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
+ "typed-bytes",
 ]
 
 [[package]]
 name = "jormungandrwallet"
 version = "0.8.1"
 dependencies = [
- "chain-addr 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-ser 0.1.0",
- "wallet 0.8.3",
+ "chain-addr",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "wallet",
  "wallet-core",
 ]
 
@@ -4387,14 +4204,14 @@ dependencies = [
 name = "loki"
 version = "0.1.0"
 dependencies = [
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
  "clap 4.4.18",
  "custom_debug",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "parity-multiaddr",
  "rand 0.8.5",
  "rand_core 0.6.4",
@@ -4442,13 +4259,13 @@ dependencies = [
  "async-trait",
  "bech32 0.8.1",
  "cardano-serialization-lib",
- "chain-addr 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
+ "chain-addr",
+ "chain-crypto",
+ "chain-impl-mockchain",
  "futures",
  "futures-util",
  "hex",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "lazy_static",
  "pharos",
@@ -4470,7 +4287,7 @@ dependencies = [
  "assert_fs",
  "bech32 0.8.1",
  "cardano-serialization-lib",
- "chain-impl-mockchain 0.1.0",
+ "chain-impl-mockchain",
  "clap 4.4.18",
  "color-eyre",
  "futures",
@@ -4480,7 +4297,7 @@ dependencies = [
  "itertools 0.10.5",
  "job_scheduler_ng",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "mainnet-lib",
  "num-traits",
@@ -4729,17 +4546,17 @@ name = "mjolnir"
 version = "0.1.0"
 dependencies = [
  "assert_fs",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-storage 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-storage",
+ "chain-time",
+ "chain-vote",
  "clap 4.4.18",
  "indicatif",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "loki",
  "rand 0.8.5",
@@ -6993,13 +6810,13 @@ name = "sign"
 version = "0.1.0"
 dependencies = [
  "bech32 0.8.1",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-ser 0.1.0",
- "chain-storage 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-storage",
+ "chain-vote",
  "clap 4.4.18",
  "clap_complete_command",
  "color-eyre",
@@ -7007,7 +6824,7 @@ dependencies = [
  "csv",
  "ed25519-dalek",
  "hex",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "rand_core 0.5.1",
@@ -7165,11 +6982,11 @@ name = "snapshot-lib"
 version = "0.1.0"
 dependencies = [
  "bech32 0.8.1",
- "chain-addr 0.1.0",
- "chain-crypto 0.1.0",
+ "chain-addr",
+ "chain-crypto",
  "fraction",
  "hex",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "proptest",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
@@ -7191,12 +7008,12 @@ version = "0.1.0"
 dependencies = [
  "assert_fs",
  "catalyst-toolbox",
- "chain-addr 0.1.0",
+ "chain-addr",
  "chrono",
  "clap 4.4.18",
  "futures",
  "hex",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "num-traits",
  "reqwest",
@@ -7232,11 +7049,6 @@ dependencies = [
  "proptest",
  "test-strategy",
 ]
-
-[[package]]
-name = "sparse-array"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
 
 [[package]]
 name = "spin"
@@ -7624,11 +7436,11 @@ dependencies = [
  "assert_fs",
  "bech32 0.8.1",
  "bincode",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-vote",
  "clap 4.4.18",
  "cocoon",
  "custom_debug",
@@ -7636,7 +7448,7 @@ dependencies = [
  "hex",
  "jcli",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
@@ -8351,11 +8163,6 @@ name = "typed-bytes"
 version = "0.1.0"
 
 [[package]]
-name = "typed-bytes"
-version = "0.1.0"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-
-[[package]]
 name = "typenum"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8638,19 +8445,19 @@ dependencies = [
 name = "valgrind"
 version = "0.1.0"
 dependencies = [
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-ser 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-time",
+ "chain-vote",
  "clap 4.4.18",
  "hex",
  "hyper",
  "itertools 0.10.5",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "regex",
  "reqwest",
@@ -8661,7 +8468,7 @@ dependencies = [
  "url",
  "vit-servicing-station-lib",
  "vit-servicing-station-tests",
- "wallet 0.8.3",
+ "wallet",
  "wallet-core",
  "warp",
  "warp-reverse-proxy",
@@ -8752,7 +8559,7 @@ version = "0.3.4-dev"
 dependencies = [
  "async-trait",
  "base64 0.13.1",
- "chain-ser 0.1.0",
+ "chain-ser",
  "clap 4.4.18",
  "diesel",
  "diesel_migrations",
@@ -8761,7 +8568,7 @@ dependencies = [
  "event-db",
  "http-zipkin",
  "itertools 0.10.5",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "log",
  "notify",
  "pretty_assertions 1.4.0",
@@ -8797,7 +8604,7 @@ dependencies = [
  "eccoxide 0.2.0",
  "http-zipkin",
  "itertools 0.9.0",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "libsqlite3-sys",
  "log",
  "notify",
@@ -8860,9 +8667,9 @@ dependencies = [
  "assert_fs",
  "base64 0.13.1",
  "cfg-if 0.1.10",
- "chain-addr 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
+ "chain-addr",
+ "chain-crypto",
+ "chain-impl-mockchain",
  "chrono",
  "clap 4.4.18",
  "diesel",
@@ -8871,7 +8678,7 @@ dependencies = [
  "hex",
  "hyper",
  "itertools 0.10.5",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "lazy_static",
  "postgres",
@@ -8902,9 +8709,9 @@ dependencies = [
  "assert_fs",
  "base64 0.12.3",
  "cfg-if 0.1.10",
- "chain-addr 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
+ "chain-addr",
+ "chain-crypto",
+ "chain-impl-mockchain",
  "diesel",
  "diesel_migrations",
  "dyn-clone",
@@ -8940,12 +8747,12 @@ dependencies = [
  "assert_fs",
  "base64 0.13.1",
  "catalyst-toolbox",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-time",
+ "chain-vote",
  "clap 4.4.18",
  "console",
  "csv",
@@ -8963,7 +8770,7 @@ dependencies = [
  "indicatif",
  "itertools 0.10.5",
  "jormungandr-automation",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "jortestkit",
  "json",
  "lazy_static",
@@ -9074,22 +8881,22 @@ dependencies = [
 name = "wallet"
 version = "0.8.3"
 dependencies = [
- "cardano-legacy-address 0.1.1",
+ "cardano-legacy-address",
  "cbor_event",
- "chain-addr 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-path-derivation 0.8.3",
- "chain-ser 0.1.0",
- "chain-time 0.1.0",
+ "chain-addr",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-path-derivation",
+ "chain-ser",
+ "chain-time",
  "cryptoxide 0.4.4",
  "ed25519-bip32 0.4.1",
  "hashlink",
- "hdkeygen 0.8.3",
+ "hdkeygen",
  "hex",
- "imhamt 0.1.0",
+ "imhamt",
  "itertools 0.10.5",
- "jormungandr-lib 0.13.0",
+ "jormungandr-lib",
  "quickcheck",
  "quickcheck_macros",
  "serde",
@@ -9100,67 +8907,42 @@ dependencies = [
 ]
 
 [[package]]
-name = "wallet"
-version = "0.8.3"
-source = "git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling#59bd518f39c3a0d1c61a363b8940d6327c8bed9d"
-dependencies = [
- "cardano-legacy-address 0.1.1 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "cbor_event",
- "chain-addr 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-crypto 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-impl-mockchain 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-path-derivation 0.8.3 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "chain-time 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "cryptoxide 0.4.4",
- "ed25519-bip32 0.4.1",
- "hashlink",
- "hdkeygen 0.8.3 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "hex",
- "imhamt 0.1.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "itertools 0.10.5",
- "jormungandr-lib 0.13.0 (git+https://github.com/input-output-hk/catalyst-core.git?branch=rm-spending-counter-audits-tooling)",
- "serde",
- "thiserror",
- "zeroize",
-]
-
-[[package]]
 name = "wallet-core"
 version = "0.8.3"
 dependencies = [
  "bech32 0.7.3",
- "chain-addr 0.1.0",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-path-derivation 0.8.3",
- "chain-ser 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
- "hdkeygen 0.8.3",
+ "chain-addr",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-path-derivation",
+ "chain-ser",
+ "chain-time",
+ "chain-vote",
+ "hdkeygen",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "symmetric-cipher",
  "thiserror",
- "wallet 0.8.3",
+ "wallet",
 ]
 
 [[package]]
 name = "wallet-uniffi"
 version = "0.8.3"
 dependencies = [
- "chain-addr 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-ser 0.1.0",
- "chain-time 0.1.0",
- "chain-vote 0.1.0",
+ "chain-addr",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-ser",
+ "chain-time",
+ "chain-vote",
  "symmetric-cipher",
  "thiserror",
  "uniffi",
  "uniffi_build",
  "uniffi_macros",
- "wallet 0.8.3",
+ "wallet",
  "wallet-core",
 ]
 
@@ -9169,10 +8951,10 @@ name = "wallet-wasm-js"
 version = "0.8.5"
 dependencies = [
  "bech32 0.7.3",
- "chain-core 0.1.0",
- "chain-crypto 0.1.0",
- "chain-impl-mockchain 0.1.0",
- "chain-vote 0.1.0",
+ "chain-core",
+ "chain-crypto",
+ "chain-impl-mockchain",
+ "chain-vote",
  "clear_on_drop",
  "console_error_panic_hook",
  "getrandom 0.2.12",

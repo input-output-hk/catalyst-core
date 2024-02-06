@@ -34,7 +34,7 @@ build-cache:
         pkg-config
 
 
-    # RUN cargo chef cook --release
+    RUN cargo chef cook --release
     SAVE ARTIFACT target
     SAVE ARTIFACT $CARGO_HOME cargo_home
     SAVE IMAGE --cache-hint

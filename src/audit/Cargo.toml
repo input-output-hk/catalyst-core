@@ -11,7 +11,7 @@ chain-crypto = { git = "https://github.com/input-output-hk/catalyst-core.git", b
 chain-vote = {git = "https://github.com/input-output-hk/catalyst-core.git", branch = "rm-spending-counter-audits-tooling" }
 jormungandr-lib = { git = "https://github.com/input-output-hk/catalyst-core.git", branch = "rm-spending-counter-audits-tooling" }
 chain-core = { git = "https://github.com/input-output-hk/catalyst-core.git", branch = "rm-spending-counter-audits-tooling" }
-chain-impl-mockchain = {git = "https://github.com/input-output-hk/catalyst-core.git", branch = "rm-spending-counter-audits-tooling" }
+chain-impl-mockchain = {git = "https://github.com/input-output-hk/catalyst-core.git", branch = "rm-spending-counter-audits-tooling",features= ["audit"] }
 chain-ser = { git = "https://github.com/input-output-hk/catalyst-core.git", branch = "rm-spending-counter-audits-tooling" }
 chain-storage = { git = "https://github.com/input-output-hk/catalyst-core.git", branch = "rm-spending-counter-audits-tooling" }
 chain-time = { git = "https://github.com/input-output-hk/catalyst-core.git", branch = "rm-spending-counter-audits-tooling" }

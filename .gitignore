@@ -125,4 +125,4 @@ local/*
 /playwright/.cache/*
 tests/wallet-automation/typhon/usrdatadir/*
 tests/wallet-automation/typhon/playwright-report/*
-tests/wallet-automation/typhon/extensions/*
+# tests/wallet-automation/typhon/extensions/*

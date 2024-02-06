@@ -21,10 +21,10 @@ test('import wallet', async ({ }) => {
     const page = await browser.newPage();
     await page.waitForTimeout(1000); // Adjust the timeout as needed
 
-    // Get all pages (tabs) in the context
+    // Get all pages (tabs) in the contextg
     const pages = browser.pages();
 
-    // // The new tab is typically the last one in the list
+    // The new tab is typically the last one in the list
     const newTab = pages[pages.length - 1];
     await newTab.bringToFront(); // Brings the new tab to the foreground
 

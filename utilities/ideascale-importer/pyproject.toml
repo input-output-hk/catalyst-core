@@ -42,6 +42,7 @@ lxml = "4.9.3"
 rich = "^13.3.4"
 
 openpyxl = "^3.1.2"
+strict-rfc3339 = "^0.7"
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1"

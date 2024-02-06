@@ -19,13 +19,13 @@ def import_snapshot(
     network_ids: List[str] = typer.Option(
         ...,
         envvar="SNAPSHOT_NETWORK_IDS",
-        help="Network id to pass as parameter to snapshot_tool",
+        help=("Network id to pass as parameter to snapshot_tool. Valid values are: 'mainnet' 'preprod' 'testnet'"),
     ),
     snapshot_tool_path: str = typer.Option(default="snapshot_tool", envvar="SNAPSHOT_TOOL_PATH", help="Path to the snapshot tool"),
     catalyst_toolbox_path: str = typer.Option(
         default="catalyst-toolbox", envvar="CATALYST_TOOLBOX_PATH", help="Path to the catalyst-toolbox"
     ),
-    gvc_api_url: str = typer.Option(..., envvar="GVC_API_URL", help="URL of the GVC API"),
+    gvc_api_url: str = typer.Option(default="", envvar="GVC_API_URL", help="DEPRECATED. URL of the GVC API"),
     raw_snapshot_file: str = typer.Option(
         None,
         help=(
@@ -102,7 +102,6 @@ def import_snapshot(
                 network_ids=network_ids,
                 snapshot_tool_path=snapshot_tool_path,
                 catalyst_toolbox_path=catalyst_toolbox_path,
-                gvc_api_url=gvc_api_url,
                 raw_snapshot_file=raw_snapshot_file,
                 ssh_config=ssh_config,
             )

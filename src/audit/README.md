@@ -1,6 +1,6 @@
 # Audit Tooling:
 
-[*USE THIS BRANCH*](https://github.com/input-output-hk/catalyst-core/tree/rm-spending-counter-audits-tooling)
+[*USE THIS BRANCH*](https://github.com/input-output-hk/catalyst-core/tree/rm-spending-counter-audits-tooling/src/audit)
 
 ## Offline audit
 

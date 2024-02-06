@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["BASE_IDEASCALE_URL"],"struct":["ReqwestClient"]};

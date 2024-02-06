@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["NODE_CONFIG_FILE","NODE_SECRETS_FILE","NODE_TOPOLOGY_KEY_FILE"],"enum":["Error","InteractiveCommandError","NodeError"],"mod":["error","interactive","monitor"],"struct":["Controller","MonitorController","MonitorControllerBuilder","MonitorLegacyNode","MonitorNode","ProgressBarController"]};

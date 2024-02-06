@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["DiagnosticError","RlimitResource"],"fn":["getrlimit"],"struct":["Diagnostic"]};

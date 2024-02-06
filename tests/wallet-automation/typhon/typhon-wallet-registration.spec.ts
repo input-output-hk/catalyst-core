@@ -2,87 +2,94 @@ import { test, chromium, BrowserContext, Page } from '@playwright/test';
 import { getWalletCredentials } from './credentials';
 import { getSeedPhrase } from './seed-phrase';
 
+
 test('import wallet', async ({ }) => {
   const path = require('path');
-  const extensionPath: string = path.resolve(__dirname, 'extensions');
-  // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh'; // Replace with your extension's ID
-  // const extensionPage: string = 'tab.html'; // Replace with the specific page
-  const userDataDir = path.resolve(__dirname, 'usrdatadir');
+  const extensionPath = path.join(__dirname, 'extensions');
+  const userDataDir = path.join(__dirname, 'usrdatadir');
 
-  const browser = await chromium.launchPersistentContext(userDataDir, {
-    headless: false, // Extensions only work in headful mode
+  // Launch the browser context with your extension
+  const browserContext = await chromium.launchPersistentContext(userDataDir, {
+    headless: false, // Necessary for extensions
     args: [
       `--disable-extensions-except=${extensionPath}`,
       `--load-extension=${extensionPath}`,
     ],
   });
 
-  // Creating a new context and page
-  const page = await browser.newPage();
-  await page.waitForTimeout(1000); // Adjust the timeout as needed
-  const pages = browser.pages();
-  const newTab = pages[pages.length - 1];
-  await newTab.bringToFront(); // Brings the new tab to the foreground
+  // Attempt to retrieve any existing background pages of the extension
+  let backgroundPage = browserContext.backgroundPages()[0];
 
-  // Example: Get the title of the new tab
-  const title = await newTab.title();
-  console.log(`title of the new tab: ${title}`);
+  // If no background page is found, wait for it to be created
+  if (!backgroundPage) {
+    backgroundPage = await browserContext.waitForEvent('backgroundpage');
+  }
 
-  const firstButtonSelector = '//*[@id="headlessui-menu-button-1"]';
-  await newTab.waitForSelector(firstButtonSelector, { state: 'visible' });
-  await newTab.click(firstButtonSelector);
+  // Ensure the background page is accessed correctly
+  if (backgroundPage) {
+    // Example: Get the title of the background page
+    const title = await backgroundPage.title();
+    console.log(`Title of the background page: ${title}`);
+
+    // Interact with elements on the background page
+    const firstButtonSelector = '//*[@id="headlessui-menu-button-1"]';
+    await backgroundPage.waitForSelector(firstButtonSelector, { state: 'visible' });
+    await backgroundPage.click(firstButtonSelector);
+  } else {
+    console.log('Background page not found');
+  }
 
   const secondButtonSelector = '#headlessui-menu-item-6';
-  await newTab.waitForSelector(secondButtonSelector, { state: 'visible' });
-  await newTab.click(secondButtonSelector);
+  await backgroundPage.waitForSelector(secondButtonSelector, { state: 'visible' });
+  await backgroundPage.click(secondButtonSelector);
 
   const thirdButtonSelector = '//*[text()="Import"]';
-  await newTab.waitForSelector(thirdButtonSelector, { state: 'visible' });
-  await newTab.click(thirdButtonSelector);
+  await backgroundPage.waitForSelector(thirdButtonSelector, { state: 'visible' });
+  await backgroundPage.click(thirdButtonSelector);
 
   const WalletCredentials = getWalletCredentials('WALLET1');
   const usernameInput = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(2) > div > input';
   const passwordInput = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(2) > div > div:nth-child(2) > input';
   const cfpwInput = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(2) > div > div:nth-child(3) > input';
-  await newTab.waitForSelector(usernameInput, { state: 'visible' });
-  await newTab.waitForSelector(passwordInput, { state: 'visible' });
-  await newTab.waitForSelector(cfpwInput, { state: 'visible' });
-  await newTab.fill(usernameInput, WalletCredentials.username);
-  await newTab.fill(passwordInput, WalletCredentials.password);
-  await newTab.fill(cfpwInput, WalletCredentials.password);
+  await backgroundPage.waitForSelector(usernameInput, { state: 'visible' });
+  await backgroundPage.waitForSelector(passwordInput, { state: 'visible' });
+  await backgroundPage.waitForSelector(cfpwInput, { state: 'visible' });
+  await backgroundPage.fill(usernameInput, WalletCredentials.username);
+  await backgroundPage.fill(passwordInput, WalletCredentials.password);
+  await backgroundPage.fill(cfpwInput, WalletCredentials.password);
 
   const agreeToTC = '#termsAndConditions'
-  await newTab.waitForSelector(agreeToTC, { state: 'visible' });
-  await newTab.click(agreeToTC);
+  await backgroundPage.waitForSelector(agreeToTC, { state: 'visible' });
+  await backgroundPage.click(agreeToTC);
 
   const continueButton = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(2) > div > button';
-  await newTab.waitForSelector(continueButton, { state: 'visible' });
-  await newTab.click(continueButton);
+  await backgroundPage.waitForSelector(continueButton, { state: 'visible' });
+  await backgroundPage.click(continueButton);
 
-  async function clickBlankSpace(newTab) {
+  async function clickBlankSpace(backgroundPage) {
     const blankSpace = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div.flex.justify-between.items-start > div.flex-initial.flex.flex-col.mr-2 > span.text-primary.font-medium.text-xl';
-    await newTab.waitForSelector(blankSpace, { state: 'visible' });
-    await newTab.click(blankSpace);
+    await backgroundPage.waitForSelector(blankSpace, { state: 'visible' });
+    await backgroundPage.click(blankSpace);
   }
 
   const seedPhrase = getSeedPhrase();
 
   for (let i = 0; i < seedPhrase.length; i++) {
     const ftSeedPhraseSelector = `#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div:nth-child(1) > div:nth-child(2) > div > div > div > div > div:nth-child(${i + 1}) > div > input`;
-    await newTab.waitForSelector(ftSeedPhraseSelector, { state: 'visible' });
-    await newTab.fill(ftSeedPhraseSelector, seedPhrase[i]);
+    await backgroundPage.waitForSelector(ftSeedPhraseSelector, { state: 'visible' });
+    await backgroundPage.fill(ftSeedPhraseSelector, seedPhrase[i]);
   }
 
   const unlockWallet = '#app > div > div > div.flex-grow.overflow-auto > div > div.my-5.flex.justify-center.py-16 > div > div > div > div.mt-6.text-center.flex.justify-center > button';
-  await clickBlankSpace(newTab);
-  await newTab.waitForSelector(unlockWallet, { state: 'visible' });
-  await newTab.click(unlockWallet);
+  await clickBlankSpace(backgroundPage);
+  await backgroundPage.waitForSelector(unlockWallet, { state: 'visible' });
+  await backgroundPage.click(unlockWallet);
 
   const divSelector = '//*[@id="lc"]/div[2]/div[1]/div[2]/div/div[1]/div[1]/div/div[2]/div[1]/div/span[1]';
-  await newTab.waitForSelector(divSelector, { state: 'visible' });
+  await backgroundPage.waitForSelector(divSelector, { state: 'visible' });
 
   // Use the selector to retrieve the element handle
-  const elementHandle = await newTab.$(divSelector);
+  const elementHandle = await backgroundPage.$(divSelector);
   if (elementHandle) {
     // Retrieve the text content of the element
     const textContent = await elementHandle.textContent();
@@ -110,57 +117,57 @@ test('import wallet', async ({ }) => {
   }
 
   const logOut = '//*[@id="app"]/div/div/div[3]/div/div/div[1]/div/div/div[2]/div[11]/div[2]';
-  await newTab.waitForSelector(logOut, { state: 'visible' });
-  await newTab.click(logOut);
+  await backgroundPage.waitForSelector(logOut, { state: 'visible' });
+  await backgroundPage.click(logOut);
 
   const chooseAccount = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[2]/div';
-  await newTab.waitForSelector(chooseAccount, { state: 'visible' });
-  await newTab.click(chooseAccount);
+  await backgroundPage.waitForSelector(chooseAccount, { state: 'visible' });
+  await backgroundPage.click(chooseAccount);
 
   const removeAccount = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[2]/div[4]/button';
-  await newTab.waitForSelector(removeAccount, { state: 'visible' });
-  await newTab.click(removeAccount);
+  await backgroundPage.waitForSelector(removeAccount, { state: 'visible' });
+  await backgroundPage.click(removeAccount);
 
   const confirmRemove = 'button.btn.bg-primary';
-  await newTab.waitForSelector(confirmRemove, {state: 'visible'});
-  await newTab.click(confirmRemove)
+  await backgroundPage.waitForSelector(confirmRemove, {state: 'visible'});
+  await backgroundPage.click(confirmRemove)
 
   const addNew = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[4]';
-  await newTab.waitForSelector(addNew, { state: 'visible' });
-  await newTab.click(addNew);
+  await backgroundPage.waitForSelector(addNew, { state: 'visible' });
+  await backgroundPage.click(addNew);
 
 });
   
   // const copyAddress = '#receiveAddress > div > div.grow > button';
-  // await newTab.waitForSelector(copyAddress, { state: 'visible' });
-  // await newTab.click(copyAddress);
-  // await newTab.waitForTimeout(500);
-  // const copiedText = await newTab.evaluate(() => navigator.clipboard.readText());
+  // await backgroundPage.waitForSelector(copyAddress, { state: 'visible' });
+  // await backgroundPage.click(copyAddress);
+  // await backgroundPage.waitForTimeout(500);
+  // const copiedText = await backgroundPage.evaluate(() => navigator.clipboard.readText());
   // console.log('Copied Address:', copiedText);
 
-  // const newTab2 = await browser.newPage();
-  // await newTab2.goto('https://docs.cardano.org/cardano-testnet/tools/faucet/');
+  // const backgroundPage2 = await browser.newPage();
+  // await backgroundPage2.goto('https://docs.cardano.org/cardano-testnet/tools/faucet/');
 
-  // async function clickBlankSpace2(newTab) {
+  // async function clickBlankSpace2(backgroundPage) {
   //   const blankSpace2 = '#gatsby-focus-wrapper > div > div > div.css-14y15z9.eh2b2dx0 > div > main > div > div.pageWrap > div.titleWrapper.css-0.ejiqw051 > h1';
-  //   await newTab.waitForSelector(blankSpace2, { state: 'visible' });
-  //   await newTab.click(blankSpace2);
+  //   await backgroundPage.waitForSelector(blankSpace2, { state: 'visible' });
+  //   await backgroundPage.click(blankSpace2);
   // }
 
-  // await clickBlankSpace2(newTab2);
-  // await newTab2.evaluate(() => window.scrollBy(0, window.innerHeight+100));
-  // await newTab2.waitForTimeout(100);
+  // await clickBlankSpace2(backgroundPage2);
+  // await backgroundPage2.evaluate(() => window.scrollBy(0, window.innerHeight+100));
+  // await backgroundPage2.waitForTimeout(100);
 
   // const addressField = ('//*[@id="gatsby-focus-wrapper"]/div/div/div[2]/div/main/div/div[1]/div[2]/div/form/div[3]/div/div/input');
-  // await newTab2.waitForSelector(addressField, { state: 'visible' });
-  // await newTab2.click(addressField);
-  // await newTab2.keyboard.down('Meta'); // Use 'Meta' on Mac
-  // await newTab2.keyboard.press('V');
-  // await newTab2.keyboard.up('Meta'); // Use 'Meta' on Mac
+  // await backgroundPage2.waitForSelector(addressField, { state: 'visible' });
+  // await backgroundPage2.click(addressField);
+  // await backgroundPage2.keyboard.down('Meta'); // Use 'Meta' on Mac
+  // await backgroundPage2.keyboard.press('V');
+  // await backgroundPage2.keyboard.up('Meta'); // Use 'Meta' on Mac
 
   // const captcha = '//*[@id="rc-anchor-container"]/div[3]/div[1]/div/div';
-  // await newTab2.waitForSelector(captcha, { state: 'visible' });
-  // await newTab2.click(captcha);
+  // await backgroundPage2.waitForSelector(captcha, { state: 'visible' });
+  // await backgroundPage2.click(captcha);
 
   // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
   // await page.waitForTimeout(300000); // Adjust the time as needed

@@ -20,7 +20,7 @@ interface WalletCredentials {
 const getWalletCredentials = (walletID: string): WalletCredentials => {
   const username = process.env[`${walletID}_USERNAME`];
   const password = process.env[`${walletID}_PASSWORD`]; // Retrieve password from env
-  console.log(`Username: ${username}, Password: ${password}`); // Debugging line
+  console.log(`username: ${username}, password: ${password}`); // Debugging line
 
   if (!username || !password) {
     throw new Error(`Credentials for ${walletID} not found`);

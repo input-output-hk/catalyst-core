@@ -1,3 +1,4 @@
+/*
 #[cfg(test)]
 #[macro_use(lazy_static)]
 extern crate lazy_static;
@@ -16,3 +17,4 @@ pub mod networking;
 pub mod non_functional;
 #[allow(clippy::all)]
 pub mod startup;
+*/

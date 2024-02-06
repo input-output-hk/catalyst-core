@@ -37,17 +37,17 @@ docker:
 
     SAVE IMAGE voices-tests:$tag
 
-test-local-setup:
-    BUILD ../backend+publish
-    BUILD github.com/input-output-hk/catalyst-core/containers/event-db-migrations+publish --data='' --tag='latest'
-    BUILD ../moderation-tool-frontend+publish
-    BUILD +docker
+# test-local-setup:
+#     BUILD ../backend+publish
+#     BUILD github.com/input-output-hk/catalyst-core/containers/event-db-migrations+publish --data='' --tag='latest'
+#     BUILD ../moderation-tool-frontend+publish
+#     BUILD +docker
 
-docker-compose:
-    FROM scratch
+# docker-compose:
+#     FROM scratch
 
-    COPY docker-compose.yml .
-    SAVE ARTIFACT docker-compose.yml
+#     COPY docker-compose.yml .
+#     SAVE ARTIFACT docker-compose.yml
 
 # e2e-test:
 #     FROM earthly/dind:alpine

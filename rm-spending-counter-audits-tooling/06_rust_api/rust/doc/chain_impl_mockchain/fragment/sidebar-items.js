@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Fragment","FragmentTag"],"mod":["config","content","test"],"struct":["Contents","ContentsBuilder"],"type":["BlockContentHash","BlockContentSize","FragmentId"]};

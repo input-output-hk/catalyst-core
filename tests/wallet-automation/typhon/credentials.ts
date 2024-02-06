@@ -15,8 +15,6 @@ interface WalletCredentials {
   username: string;
   password: string; // Added password field
 }
-
-// Function to get wallet credentials
 const getWalletCredentials = (walletID: string): WalletCredentials => {
   const username = process.env[`${walletID}_USERNAME`];
   const password = process.env[`${walletID}_PASSWORD`]; // Retrieve password from env

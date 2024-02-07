@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ChallengeType","ProposalChallengeInfo"],"mod":["community_choice","simple"],"struct":["Category","FullProposalInfo","Proposal","Proposer","SerdeProposalChallengeInfo","SerdeToProposalChallengeInfoError"],"type":["FullProposalsInfoRow"]};

@@ -252,6 +252,7 @@ jobs:
           cargo nextest archive \
             --workspace \
             --exclude vitup \
+            --exclude jormungandr \
             --exclude mainnet-lib \
             --exclude jortestkit \
             --exclude integration-tests \

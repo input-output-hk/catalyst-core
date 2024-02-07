@@ -1,11 +1,13 @@
 VERSION 0.7
 
 deps:
-    FROM mcr.microsoft.com/playwright:v1.40.1-jammy
+    FROM mcr.microsoft.com/playwright:v1.41.0-jammy
     WORKDIR /app
 
     RUN apt-get update && apt-get -y install libnss3 libatk-bridge2.0-0 libdrm-dev libxkbcommon-dev libgbm-dev libasound-dev libatspi2.0-0 libxshmfence-dev
     RUN apt-get install -y postgresql-client
+    RUN apt-get update && apt-get install -y xvfb
+
 
     #Java is needed for allure
     # RUN apt-get update && \
@@ -25,7 +27,7 @@ deps:
 src:
     FROM +deps
 
-    COPY --dir src test-data playwright.config.ts .
+    COPY playwright.config.ts .
 
 docker:
     FROM +src
@@ -37,17 +39,22 @@ docker:
 
     SAVE IMAGE voices-tests:$tag
 
+test:
+    FROM +deps
+    COPY . .
+    RUN xvfb-run npx playwright test
+
 # test-local-setup:
 #     BUILD ../backend+publish
 #     BUILD github.com/input-output-hk/catalyst-core/containers/event-db-migrations+publish --data='' --tag='latest'
 #     BUILD ../moderation-tool-frontend+publish
 #     BUILD +docker
 
-# docker-compose:
-#     FROM scratch
+docker-compose:
+    FROM scratch
 
-#     COPY docker-compose.yml .
-#     SAVE ARTIFACT docker-compose.yml
+    COPY docker-compose.yml .
+    SAVE ARTIFACT docker-compose.yml
 
 # e2e-test:
 #     FROM earthly/dind:alpine

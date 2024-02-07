@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["block","fragment","gossip","handshake","p2p"],"struct":["HandshakeResponse"]};

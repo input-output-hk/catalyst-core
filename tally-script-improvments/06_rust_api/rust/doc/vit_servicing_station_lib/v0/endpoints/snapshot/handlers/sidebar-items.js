@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_delegator_info","get_voters_info"],"struct":["RawSnapshotInput","SnapshotInfoInput"]};

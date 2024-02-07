@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["app","cors_layer","handle_result","metrics_app","run","run_service","setup_metrics_recorder","track_metrics"],"mod":["health","v0","v1"],"struct":["ErrorMessage"]};

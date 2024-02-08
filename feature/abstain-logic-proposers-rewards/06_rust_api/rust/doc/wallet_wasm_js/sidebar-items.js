@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["impl_collection","log"],"mod":["certificates","fragment","utils"],"struct":["Certificate","ElectionPublicKey","Fragment","FragmentId","Payload","Settings","VoteCast","VoteCastTxBuilder","VotePlanId"]};

@@ -17,7 +17,7 @@ interface SeedPhrase {
   seedPhrase: string[];
 }
 
-// Function to get the seed phrase from environment variables
+// function to get the seed phrase from environment variables
 const getSeedPhrase = (): string[] => {
   const seedPhraseArray: string[] = [];
   for (let i = 1; i <= 15; i++) {

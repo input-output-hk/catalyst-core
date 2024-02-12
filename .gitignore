@@ -126,4 +126,4 @@ local/*
 tests/wallet-automation/typhon/usrdatadir/*
 tests/wallet-automation/typhon/playwright-report/*
 tests/wallet-automation/node_modules/*
-# tests/wallet-automation/typhon/extensions/*
+tests/wallet-automation/typhon/extensions/*

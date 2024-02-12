@@ -3,7 +3,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 const url = 'https://clients2.google.com/service/update2/crx?response=redirect&os=win&arch=x64&os_arch=x86_64&nacl_arch=x86-64&prod=chromiumcrx&prodchannel=beta&prodversion=79.0.3945.53&lang=ru&acceptformat=crx3&x=id%3Dkfdniefadaanbjodldohaedphafoffoh%26installsource%3Dondemand%26uc';
-const downloadPath = './downloads'; // Ensure this directory exists or add logic to create it
+const downloadPath = path.resolve(__dirname, 'extensions'); // Ensure this directory exists or add logic to create it
 
 test('downloadFile test', async ({ page }) => {
     // Ensure the download directory exists
@@ -25,7 +25,7 @@ test('downloadFile test', async ({ page }) => {
             timeout: 10000
         });
     } catch (error) {
-        console.log('Navigation caused an exception, likely due to immediate download:', error);
+        console.log('Navigation caused an exception, likely due to immediate download:', 'directDownload');
     }
 
     // Wait for the download to complete

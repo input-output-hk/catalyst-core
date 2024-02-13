@@ -25,7 +25,7 @@ test('downloadFile test', async ({ page }) => {
             timeout: 10000
         });
     } catch (error) {
-        console.log('Navigation caused an exception, likely due to immediate download:', 'directDownload');
+        console.log('navigation caused an exception, likely due to immediate download:', 'directDownload');
     }
 
     // Wait for the download to complete

@@ -1,74 +1,62 @@
 VERSION 0.7
 
+# Define a base target for dependencies
 deps:
     FROM mcr.microsoft.com/playwright:v1.41.0-jammy
     WORKDIR /wallet-automation
 
-    RUN apt-get update && apt-get -y install libnss3 libatk-bridge2.0-0 libdrm-dev libxkbcommon-dev libgbm-dev libasound-dev libatspi2.0-0 libxshmfence-dev
-    RUN apt-get install -y postgresql-client
-    RUN apt-get update && apt-get install -y xvfb
+    # Consolidate RUN commands to reduce layers and ensure cleaner installation
+    RUN apt-get update && apt-get install -y \
+        libnss3 libatk-bridge2.0-0 libdrm-dev libxkbcommon-dev libgbm-dev libasound-dev libatspi2.0-0 libxshmfence-dev postgresql-client xvfb python3.11 python3-pip && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
 
-
-    #Java is needed for allure
+    # Uncomment and adjust Java installation if needed
     # RUN apt-get update && \
-    #     apt-get install -y openjdk-8-jdk && \
-    #     apt-get install -y ant && \
+    #     apt-get install -y openjdk-8-jdk ant && \
     #     apt-get clean && \
-    #     rm -rf /var/lib/apt/lists/ && \
-    #     rm -rf /var/cache/oracle-jdk8-installer;
+    #     rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer;
     # ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
 
     COPY package.json .
     COPY package-lock.json .
 
     RUN npm install
-    ENV PATH /app/node_modules/.bin:$PATH
+    ENV PATH "/wallet-automation/node_modules/.bin:$PATH"
 
+# Define a source target that builds upon deps
 src:
     FROM +deps
 
     COPY playwright.config.ts .
 
+# Define a docker target that builds upon src
 docker:
     FROM +src
     ARG tag="latest"
 
-    # ENV EVENT_DB_URL postgres://postgres:postgres@postgres/CatalystEventDev
-    # ENV MODERATION_FRONTEND_URL http://frontend:80/
-    # ENV VITE_API_URL http://backend:8000/api
+    # Uncomment and adjust environment variables as necessary
+    # ENV EVENT_DB_URL "postgres://postgres:postgres@postgres/CatalystEventDev"
+    # ENV MODERATION_FRONTEND_URL "http://frontend:80/"
+    # ENV VITE_API_URL "http://backend:8000/api"
 
     SAVE IMAGE voices-tests:$tag
 
+# Define a test target that builds upon deps
 test:
     FROM +deps
     COPY . .
-    RUN xvfb-run npx playwright test
+    RUN xvfb-run npx playwright test typhon-wallet-download.spec.ts
+    RUN sleep 2
+    RUN python3 convert-to-zip.py
+    RUN sleep 2
+    RUN xvfb-run -a npx playwright test typhon-wallet-registration.spec.ts
 
-# test-local-setup:
-#     BUILD ../backend+publish
-#     BUILD github.com/input-output-hk/catalyst-core/containers/event-db-migrations+publish --data='' --tag='latest'
-#     BUILD ../moderation-tool-frontend+publish
-#     BUILD +docker
+# Uncomment and adjust local setup and e2e-test targets as necessary
 
+# Define a target for docker-compose configuration
 docker-compose:
     FROM scratch
 
     COPY docker-compose.yml .
     SAVE ARTIFACT docker-compose.yml
-
-# e2e-test:
-#     FROM earthly/dind:alpine
-
-#     COPY +docker-compose/docker-compose.yml .
-#     WITH DOCKER --compose docker-compose.yml \
-#                 --pull postgres:14 \
-#                 --load migrations:latest=(github.com/input-output-hk/catalyst-core/containers/event-db-migrations+publish --data='' --tag='latest') \
-#                 --load voices-backend:latest=(../backend+publish) \
-#                 --load moderation-tool-frontend:latest=(../moderation-tool-frontend+publish) \
-#                 --load test:latest=(+docker) \
-#                 --service postgres \
-#                 --service migrations \
-#                 --service backend \
-#                 --service frontend
-#         RUN docker run --network=default_default test:latest npm test
-#     END

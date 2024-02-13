@@ -4,7 +4,6 @@ import { getSeedPhrase } from './seed-phrase';
 const path = require('path');
 
 test('import wallet', async ({ }) => {
-  const path = require('path');
   const extensionPath: string = path.resolve(__dirname, 'extensions');
   // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh';
   // const extensionPage: string = 'tab.html';
@@ -127,8 +126,8 @@ test('import wallet', async ({ }) => {
   await newTab.click(addNew);
   
   // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
-  await page.waitForTimeout(300000); // Adjust the time as needed
-  await new Promise(resolve => { /* never resolves */ });
+  // await page.waitForTimeout(300000); // Adjust the time as needed
+  // await new Promise(resolve => { /* never resolves */ });
 
 });
 

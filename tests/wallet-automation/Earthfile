@@ -11,13 +11,6 @@ deps:
         apt-get clean && \
         rm -rf /var/lib/apt/lists/*
 
-    # Uncomment and adjust Java installation if needed
-    # RUN apt-get update && \
-    #     apt-get install -y openjdk-8-jdk ant && \
-    #     apt-get clean && \
-    #     rm -rf /var/lib/apt/lists/* /var/cache/oracle-jdk8-installer;
-    # ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
-
     COPY package.json .
     COPY package-lock.json .
 
@@ -28,35 +21,13 @@ deps:
 src:
     FROM +deps
 
+    COPY --dir typhon .
+    COPY convert-to-zip.py .
     COPY playwright.config.ts .
-
-# Define a docker target that builds upon src
-docker:
-    FROM +src
-    ARG tag="latest"
-
-    # Uncomment and adjust environment variables as necessary
-    # ENV EVENT_DB_URL "postgres://postgres:postgres@postgres/CatalystEventDev"
-    # ENV MODERATION_FRONTEND_URL "http://frontend:80/"
-    # ENV VITE_API_URL "http://backend:8000/api"
-
-    SAVE IMAGE voices-tests:$tag
 
 # Define a test target that builds upon deps
 test:
-    FROM +deps
-    COPY . .
+    FROM +src
     RUN xvfb-run npx playwright test typhon-wallet-download.spec.ts
-    RUN sleep 2
     RUN python3 convert-to-zip.py
-    RUN sleep 2
     RUN xvfb-run -a npx playwright test typhon-wallet-registration.spec.ts
-
-# Uncomment and adjust local setup and e2e-test targets as necessary
-
-# Define a target for docker-compose configuration
-docker-compose:
-    FROM scratch
-
-    COPY docker-compose.yml .
-    SAVE ARTIFACT docker-compose.yml

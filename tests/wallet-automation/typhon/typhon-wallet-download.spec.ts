@@ -9,7 +9,6 @@ test('downloadFile test', async ({ page }) => {
     // ensure the download directory exists
     await fs.mkdir(downloadPath, { recursive: true });
 
-    // preemptively set up to handle the download
     const downloadPromise = new Promise(async (resolve) => {
         page.once('download', async (download) => {
             const filePath = path.join(downloadPath, download.suggestedFilename());

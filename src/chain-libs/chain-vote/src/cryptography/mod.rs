@@ -11,4 +11,5 @@ pub(crate) use self::{
 #[cfg(test)]
 pub(crate) use self::elgamal::Keypair;
 
+#[allow(unused_imports)]
 pub use self::elgamal::Ciphertext;

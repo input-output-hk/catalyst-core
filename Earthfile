@@ -3,7 +3,7 @@ VERSION 0.7
 FROM debian:stable-slim
 
 rust-toolchain:
-    FROM rust:1.71.0-slim-bullseye
+    FROM rust:1.75.0-slim-bullseye
 
 # Installs Cargo chef
 install-chef:

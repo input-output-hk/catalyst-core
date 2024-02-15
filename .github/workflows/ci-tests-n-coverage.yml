@@ -6,7 +6,7 @@ on:
     - cron: '5 0 * * *'
 
 env:
-  RUST_LATEST_STABLE_VERSION: 1.71
+  RUST_LATEST_STABLE_VERSION: 1.75
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
   RUST_BACKTRACE: 1

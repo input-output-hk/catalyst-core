@@ -28,6 +28,4 @@ src:
 # Define a test target that builds upon deps
 test:
     FROM +src
-    RUN xvfb-run npx playwright test typhon-wallet-download.spec.ts
-    RUN python3 convert-to-zip.py
-    RUN xvfb-run -a npx playwright test typhon-wallet-registration.spec.ts
+    RUN python3 convert-to-zip.py && xvfb-run -a npx playwright test typhon-wallet-registration.spec.ts

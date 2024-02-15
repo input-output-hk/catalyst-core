@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::{
     types::vit_ss::{
         challenge::{Challenge, ChallengeHighlights},

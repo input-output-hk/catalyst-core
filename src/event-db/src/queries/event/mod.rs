@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::{
     error::Error,
     types::event::{

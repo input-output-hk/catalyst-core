@@ -11,8 +11,7 @@ pub use endurance_benchmark::{
 };
 
 pub use consumption_benchmark::{
-    ConsumptionBenchmarkDef, ConsumptionBenchmarkError, ConsumptionBenchmarkFinish,
-    ConsumptionBenchmarkRun,
+    ConsumptionBenchmarkDef, ConsumptionBenchmarkError, ConsumptionBenchmarkRun,
 };
 
 pub use speed_benchmark::{SpeedBenchmarkDef, SpeedBenchmarkFinish, SpeedBenchmarkRun};

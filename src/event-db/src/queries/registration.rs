@@ -1,3 +1,5 @@
+#![allow(deprecated)]
+
 use crate::{
     types::{
         event::EventId,

@@ -13,6 +13,7 @@ mod kes;
 mod key;
 pub mod multilock;
 mod sign;
+#[allow(hidden_glob_reexports)]
 mod vrf;
 
 pub mod role;

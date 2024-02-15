@@ -2,11 +2,10 @@ import { test, chromium } from '@playwright/test';
 import { getWalletCredentials } from './credentials';
 import { getSeedPhrase } from './seed-phrase';
 const path = require('path');
+// extension ID for Typhon: kfdniefadaanbjodldohaedphafoffoh
 
 test('import wallet', async ({ }) => {
   const extensionPath: string = path.resolve(__dirname, 'extensions');
-  // const extensionId: string = 'kfdniefadaanbjodldohaedphafoffoh';
-  // const extensionPage: string = 'tab.html';
   const userDataDir = path.resolve(__dirname, 'usrdatadir');
 
   const browser = await chromium.launchPersistentContext(userDataDir, {
@@ -125,43 +124,8 @@ test('import wallet', async ({ }) => {
   await newTab.waitForSelector(addNew, { state: 'visible' });
   await newTab.click(addNew);
   
-  // Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
+  // keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
   // await page.waitForTimeout(300000); // Adjust the time as needed
   // await new Promise(resolve => { /* never resolves */ });
 
 });
-
-// const copyAddress = '#receiveAddress > div > div.grow > button';
-// await newTab.waitForSelector(copyAddress, { state: 'visible' });
-// await newTab.click(copyAddress);
-// await newTab.waitForTimeout(500);
-// const copiedText = await newTab.evaluate(() => navigator.clipboard.readText());
-// console.log('Copied Address:', copiedText);
-
-// const newTab2 = await browser.newPage();
-// await newTab2.goto('https://docs.cardano.org/cardano-testnet/tools/faucet/');
-
-// async function clickBlankSpace2(newTab) {
-//   const blankSpace2 = '#gatsby-focus-wrapper > div > div > div.css-14y15z9.eh2b2dx0 > div > main > div > div.pageWrap > div.titleWrapper.css-0.ejiqw051 > h1';
-//   await newTab.waitForSelector(blankSpace2, { state: 'visible' });
-//   await newTab.click(blankSpace2);
-// }
-
-// await clickBlankSpace2(newTab2);
-// await newTab2.evaluate(() => window.scrollBy(0, window.innerHeight+100));
-// await newTab2.waitForTimeout(100);
-
-// const addressField = ('//*[@id="gatsby-focus-wrapper"]/div/div/div[2]/div/main/div/div[1]/div[2]/div/form/div[3]/div/div/input');
-// await newTab2.waitForSelector(addressField, { state: 'visible' });
-// await newTab2.click(addressField);
-// await newTab2.keyboard.down('Meta'); // Use 'Meta' on Mac
-// await newTab2.keyboard.press('V');
-// await newTab2.keyboard.up('Meta'); // Use 'Meta' on Mac
-
-// const captcha = '//*[@id="rc-anchor-container"]/div[3]/div[1]/div/div';
-// await newTab2.waitForSelector(captcha, { state: 'visible' });
-// await newTab2.click(captcha);
-
-// Keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
-// await page.waitForTimeout(300000); // Adjust the time as needed
-// await new Promise(resolve => { /* never resolves */ });

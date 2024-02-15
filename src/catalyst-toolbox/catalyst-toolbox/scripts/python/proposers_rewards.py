@@ -1,5 +1,5 @@
 # coding: utf-8
-from typing import Dict, Optional, List, Tuple, Generator, TextIO, Union, Any, Set
+from typing import Dict, Optional, List, Tuple, Generator, TextIO, Union, Any, Set, Mapping
 
 import sys
 import asyncio
@@ -16,6 +16,12 @@ import pydantic
 import httpx
 import typer
 import yaml
+import asyncio
+import aiohttp
+from rich import print
+from asyncio import run as aiorun
+from copy import deepcopy
+
 
 # VIT servicing station models
 
@@ -28,6 +34,14 @@ NOT_FUNDED_OVER_BUDGET = "Not Funded - Over Budget"
 NOT_FUNDED_APPROVAL_THRESHOLD = "Not Funded - Approval Threshold"
 LOVELACE_FACTOR = 1000000
 
+class Challenge(pydantic.BaseModel):
+    id: int
+    challenge_type: str
+    title: str
+    description: str
+    rewards_total: int
+    fund_id: int
+    challenge_url: str
 
 class Proposal(pydantic.BaseModel):
     internal_id: int
@@ -42,10 +56,42 @@ class Proposal(pydantic.BaseModel):
     fund_id: int
     challenge_id: int
     challenge_type: str
+    challenge: Challenge
+    
+    @pydantic.computed_field
+    @property
+    def ideascale_url(self) -> str:
+        return f"https://cardano.ideascale.com/c/idea/{self.proposal_id}"
 
+class Author(pydantic.BaseModel):
+    """Represents an author."""
+
+    id: int
+    name: str
+    email: str
+    user_name: str = pydantic.Field(alias="userName")
+
+# Ideascale models
+
+class IdeascaleProposal(pydantic.BaseModel):
+    id: int
+    title: str
+    authors: List[Author] = pydantic.Field(default=[])
+
+    @pydantic.model_validator(mode="before")
+    @classmethod
+    def assign_authors_if_any(cls, values):
+        """Assign proposers/co-proposers merging different ideascale fields."""
+        authors = []
+        if "authorInfo" in values:
+            authors.append(Author(**values["authorInfo"]))
+        if "contributors" in values:
+            for contributor in values["contributors"]:
+                authors.append(Author(**contributor))
+        values["authors"] = authors
+        return values
 
 # Jormungandr models
-
 
 class Options(pydantic.BaseModel):
     start: int
@@ -105,15 +151,143 @@ class VoteplanStatus(pydantic.BaseModel):
     proposals: List[ProposalStatus]
 
 
-class Challenge(pydantic.BaseModel):
-    id: int
-    challenge_type: str
-    title: str
-    description: str
-    rewards_total: int
-    fund_id: int
-    challenge_url: str
+class Result(pydantic.BaseModel):
+    internal_id: int
+    proposal_id: str
+    proposal: str
+    yes: int
+    abstain: Optional[int] = None
+    no: Optional[int] = None
+    meets_threshold: str
+    requested_funds: int
+    status: str
+    fund_depletion: int
+    not_funded_reason: str
+    website_url: str
+    ideascale_url: str
+    challenge_title: str
+    challenge_id: int
+    votes_cast: int
+    vote_result: Optional[int] = None
 
+class Winner(pydantic.BaseModel):
+    internal_id: int
+    proposal_id: str
+    project_id: int
+    proposal_title: str
+    requested_funds: int
+    website_url: str
+    ideascale_url: str
+    challenge_title: str
+    challenge_id: int
+    milestone_qty: int
+    authors: List[Author] = pydantic.Field([])
+
+    def dict(self, **kwargs):
+        # Override std dict to list all authors in different columns
+        output = super().dict(**kwargs)
+        _output = {}
+        for k,v in output.items():
+            if k == 'authors':
+                for idx, author in enumerate(v):
+                    _output[f"{k}_{idx}"] = author['email']
+            else:
+                _output[k] = v
+        return _output
+
+# Ideascale interface
+
+class JsonHttpClient:
+    """HTTP Client for JSON APIs."""
+
+    def __init__(self, api_url: str):
+        """Initialize a new instance of JsonHttpClient."""
+        self.api_url = api_url
+        self.request_counter = 0
+
+    async def get(self, path: str, headers: Mapping[str, str] = {}):
+        """Execute a GET request against a service."""
+        url = f"{self.api_url}{path}"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as r:
+                content = b""
+
+                async for c, _ in r.content.iter_chunks():
+                    content += c
+
+                if r.status == 200:
+                    parsed_json = json.loads(content)
+                    return parsed_json
+                else:
+                    raise GetFailed(r.status, r.reason, content)
+
+class GetFailed(Exception):
+    """Raised when a request fails."""
+
+    def __init__(self, status, reason, content):
+        """Initialize a new instance of GetFailed."""
+        super().__init__(f"{status} {reason}\n{content})")
+
+class IdeascaleImporter:
+    """Interface with IdeaScale API."""
+
+    def __init__(self, api_key: str, api_url: str = "https://temp-cardano-sandbox.ideascale.com"):
+        """Initialize entities."""
+        self.api_key = api_key
+        self.api_url = api_url
+        self.inner = JsonHttpClient(self.api_url)
+        self.N_WORKERS = 3
+
+        self.proposals: List[IdeascaleProposal] = []
+    
+    async def import_proposals(self, stage_ids: List[int], page_size: int = 50):
+        """Get all ideas from the stage with the given id.
+
+        Pages are requested concurrently until the latest one fails
+        which signals that that are no more pages left.
+        """
+
+        class WorkerData:
+            def __init__(self, stage_id):
+                self.stage_id = stage_id
+
+                self.page: int = 0
+                self.done: bool = False
+                self.proposals: List[IdeascaleProposal] = []
+
+        async def worker(d: WorkerData, stage_id: int):
+            while True:
+                if d.done:
+                    break
+
+                p = d.page
+                d.page += 1
+
+                res = await self._get(f"/a/rest/v1/stages/{stage_id}/ideas/{p}/{page_size}")
+
+                res_proposals: List[IdeascaleProposal] = []
+                for i in res:
+                    if i["stageId"] == stage_id:
+                        res_proposals.append(IdeascaleProposal(**i))
+
+                d.proposals.extend(res_proposals)
+
+                if len(res_proposals) < page_size:
+                    d.done = True
+        d = {}
+        for stage_id in stage_ids: 
+            print(f"Start proposal requests for stage: {stage_id}")
+            d = WorkerData(stage_id)
+            worker_tasks = [asyncio.create_task(worker(d, stage_id)) for _ in range(self.N_WORKERS)]
+            for task in worker_tasks:
+                await task
+            self.proposals.extend(d.proposals)
+    
+    async def _get(self, path: str):
+        """Execute a GET request."""
+        headers = {"api_token": self.api_key}
+        return await self.inner.get(path, headers)
 
 # File loaders
 
@@ -123,9 +297,9 @@ def load_json_from_file(file_path: str) -> Dict:
         return json.load(f)
 
 
-def get_proposals_from_file(proposals_file_path: str) -> Dict[str, Proposal]:
+def get_proposals_from_file(proposals_file_path: str, challenges: Dict[int, Challenge]) -> Dict[str, Proposal]:
     proposals: Generator[Proposal, None, None] = (
-        Proposal(**proposal_data)
+        Proposal(**proposal_data, challenge=challenges[proposal_data['challenge_id']])
         for proposal_data in load_json_from_file(proposals_file_path)
     )
     proposals_dict = {proposal.chain_proposal_id: proposal for proposal in proposals}
@@ -161,10 +335,10 @@ def get_challenges_from_file(challenges_file_path: str) -> Dict[int, Challenge]:
 def get_proposals_voteplans_and_challenges_from_files(
     proposals_file_path: str, voteplan_file_path: str, challenges_file_path: str
 ) -> Tuple[Dict[str, Proposal], Dict[str, ProposalStatus], Dict[int, Challenge]]:
-    proposals = get_proposals_from_file(proposals_file_path)
     voteplan_proposals = get_voteplan_proposals_from_file(voteplan_file_path)
-    challeges = get_challenges_from_file(challenges_file_path)
-    return proposals, voteplan_proposals, challeges
+    challenges = get_challenges_from_file(challenges_file_path)
+    proposals = get_proposals_from_file(proposals_file_path, challenges)
+    return proposals, voteplan_proposals, challenges
 
 
 def get_excluded_proposals_from_file(excluded_proposals_path: str) -> List[str]:
@@ -262,8 +436,11 @@ def sanity_check_data(
 
 # Analyse and compute needed data
 
+class WinnerSelectionRule(enum.Enum):
+    YES_ONLY: str = "yes_only"
+    YES_NO_DIFF: str = "yes_no_diff"
 
-def extract_yes_no_votes(proposal: Proposal, voteplan_proposal: ProposalStatus):
+def extract_choices_votes(proposal: Proposal, voteplan_proposal: ProposalStatus):
     yes_index = int(proposal.chain_vote_options["yes"])
     no_index = int(proposal.chain_vote_options["no"])
     # we check before if tally is available, so it should be safe to direct access the data
@@ -275,77 +452,64 @@ def extract_yes_no_votes(proposal: Proposal, voteplan_proposal: ProposalStatus):
 def calc_approval_threshold(
     proposal: Proposal,
     voteplan_proposal: ProposalStatus,
-    threshold: float,
     total_stake_threshold: float,
+    winner_selection_rule: WinnerSelectionRule,
+    relative_threshold: float
 ) -> Tuple[int, bool]:
-    yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
-    total_stake = yes_result + no_result
-    pass_total_threshold = total_stake >= float(total_stake_threshold)
-    diff = yes_result - no_result
-    pass_relative_threshold = (yes_result / no_result) >= float(threshold)
-    success = pass_total_threshold and pass_relative_threshold
-    return diff, success
+    yes_result, second_choice_result = extract_choices_votes(proposal, voteplan_proposal)
+    pass_relative_threshold = ((yes_result - second_choice_result) / (yes_result + second_choice_result)) >= float(relative_threshold)
+    if winner_selection_rule == WinnerSelectionRule.YES_ONLY:
+        vote_result = yes_result
+        pass_total_threshold = yes_result >= float(total_stake_threshold)
+    elif winner_selection_rule == WinnerSelectionRule.YES_NO_DIFF:
+        vote_result = yes_result - second_choice_result
+        pass_total_threshold = (yes_result + second_choice_result) >= float(total_stake_threshold)
+    threshold_rules = pass_total_threshold and pass_relative_threshold
+    return vote_result, threshold_rules
 
 
-def calc_vote_difference_and_threshold_success(
+def calc_vote_value_and_threshold_success(
     proposals: Dict[str, Proposal],
     voteplan_proposals: Dict[str, ProposalStatus],
-    threshold: float,
     total_stake_threshold: float,
+    winner_selection_rule: WinnerSelectionRule,
+    relative_threshold: float
 ) -> Dict[str, Tuple[int, bool]]:
     full_ids = set(proposals.keys())
     result = {
         proposal_id: calc_approval_threshold(
             proposals[proposal_id],
             voteplan_proposals[proposal_id],
-            threshold,
             total_stake_threshold,
+            winner_selection_rule,
+            relative_threshold
         )
         for proposal_id in full_ids
     }
     return result
 
 
-Result = namedtuple(
-    "Result",
-    (
-        "internal_id",
-        "proposal_id",
-        "proposal",
-        "overall_score",
-        "yes",
-        "no",
-        "result",
-        "meets_approval_threshold",
-        "requested_dollars",
-        "status",
-        "fund_depletion",
-        "not_funded_reason",
-        "link_to_ideascale",
-    ),
-)
-
-
 def calc_results(
     proposals: Dict[str, Proposal],
     voteplan_proposals: Dict[str, ProposalStatus],
-    fund: float,
-    threshold: float,
+    funds: float,
     total_stake_threshold: float,
+    winner_selection_rule: WinnerSelectionRule,
+    relative_threshold: float
 ) -> List[Result]:
-    success_results = calc_vote_difference_and_threshold_success(
-        proposals, voteplan_proposals, threshold, total_stake_threshold
+    success_results = calc_vote_value_and_threshold_success(
+        proposals, voteplan_proposals, total_stake_threshold, winner_selection_rule, relative_threshold
     )
     sorted_ids = sorted(
         success_results.keys(), key=lambda x: success_results[x][0], reverse=True
     )
     result_lst = []
-    depletion = fund
+    depletion = funds
     for proposal_id in sorted_ids:
         proposal = proposals[proposal_id]
         voteplan_proposal = voteplan_proposals[proposal_id]
-        total_result, threshold_success = success_results[proposal_id]
-        yes_result, no_result = extract_yes_no_votes(proposal, voteplan_proposal)
+        vote_result, threshold_success = success_results[proposal_id]
+        yes_result, second_choice_result = extract_choices_votes(proposal, voteplan_proposal)
         funded = all(
             (threshold_success, depletion > 0, depletion >= proposal.proposal_funds)
         )
@@ -368,19 +532,27 @@ def calc_results(
             proposal=proposal.proposal_title,
             overall_score=proposal.proposal_impact_score / 100,
             yes=yes_result,
-            no=no_result,
-            result=total_result,
-            meets_approval_threshold=YES if threshold_success else NO,
-            requested_dollars=proposal.proposal_funds,
+            meets_threshold=YES if threshold_success else NO,
+            requested_funds=proposal.proposal_funds,
             status=FUNDED if funded else NOT_FUNDED,
             fund_depletion=depletion,
             not_funded_reason=not_funded_reason,
-            link_to_ideascale=proposal.proposal_url,
+            website_url=proposal.proposal_url,
+            ideascale_url=proposal.ideascale_url,
+            challenge_id=proposal.challenge.id,
+            challenge_title=proposal.challenge.title,
+            votes_cast=voteplan_proposal.votes_cast
         )
+
+        if winner_selection_rule == WinnerSelectionRule.YES_ONLY:
+            result.abstain = second_choice_result
+        if winner_selection_rule == WinnerSelectionRule.YES_NO_DIFF:
+            result.vote_result = vote_result
+            result.no = second_choice_result
 
         result_lst.append(result)
 
-    return result_lst
+    return result_lst, depletion
 
 
 def filter_data_by_challenge(
@@ -423,15 +595,69 @@ def calculate_total_stake_from_block0_configuration(
         if fund["address"] not in [key for key in committee_keys]
     )
 
+def extract_relevant_choice(x, winner_selection_rule):
+    if winner_selection_rule == WinnerSelectionRule.YES_ONLY:
+        return x.yes
+    elif winner_selection_rule == WinnerSelectionRule.YES_NO_DIFF:
+        return x.vote_result
+
+def calc_leftovers(results, remaining_funds, excluded_categories, winner_selection_rule):
+    leftovers_candidates = sorted([
+        result
+        for result in deepcopy(results)
+        if (
+            result.status == NOT_FUNDED and
+            result.meets_threshold == YES and
+            result.challenge_id not in excluded_categories
+        )
+    ], key=lambda x: extract_relevant_choice(x, winner_selection_rule), reverse=True)
+
+    depletion = remaining_funds
+    for candidate in leftovers_candidates:
+        funded = depletion >= candidate.requested_funds
+        not_funded_reason = (
+            ""
+            if funded
+            else NOT_FUNDED_OVER_BUDGET
+        )
+        if funded:
+            depletion -= candidate.requested_funds
+        candidate.status = FUNDED if funded else NOT_FUNDED
+        candidate.fund_depletion = depletion
+        candidate.not_funded_reason = not_funded_reason
+    
+    return leftovers_candidates, depletion
+
+def pick_milestones_qty(winner, limits, qty):
+    idx = next((i for i, l in enumerate(limits) if winner.requested_funds > l), None)
+    return qty[idx]
+
+def generate_winners(results, fund_prefix, milestones_limit, milestones_qty, _ideascale_proposals):
+    ideascale_proposals = {p.id: p for p in _ideascale_proposals}
+    winners = []
+    _winners = sorted([r for r in results if r.status == FUNDED], key=lambda r: r.proposal.lower())
+    for idx, _winner in enumerate(_winners):
+        winner = Winner(
+            **_winner.dict(),
+            proposal_title=_winner.proposal,
+            project_id=fund_prefix + idx,
+            milestone_qty=pick_milestones_qty(_winner, milestones_limit, milestones_qty)
+        )
+        if winner.internal_id in ideascale_proposals.keys():
+            winner.authors = ideascale_proposals[winner.internal_id].authors
+        winners.append(winner)
+    return winners
 
 # Output results
 
 
 def output_csv(results: List[Result], f: TextIO):
-    fields = results[0]._fields
-    writer = csv.writer(f)
-    writer.writerow(fields)
-    writer.writerows(results)
+    elements = [r.dict(exclude_none=True) for r in results]
+    keys = max([e.keys() for e in elements], key=len)
+    fields = keys
+    writer = csv.DictWriter(f, fields)
+    writer.writeheader()
+    writer.writerows(elements)
 
 
 def output_json(results: List[Result], f: TextIO):
@@ -440,29 +666,81 @@ def output_json(results: List[Result], f: TextIO):
 
 # CLI
 
-
-def build_path_for_challenge(file_path: str, challenge_name: str) -> str:
-    path, suffix = os.path.splitext(file_path)
-    return f"{path}_{challenge_name}{suffix}"
-
-
 class OutputFormat(enum.Enum):
     CSV: str = "csv"
     JSON: str = "json"
 
 
+def build_path_for_challenge(file_path: str, challenge_name: str, output_format: OutputFormat) -> str:
+    path, suffix = os.path.splitext(file_path)
+    suffix = 'json' if (output_format == OutputFormat.JSON) else 'csv'
+    return f"{path}_{challenge_name}.{suffix}"
+
+
+def save_results(output_path: str, title: str, output_format: OutputFormat, results: List[Results]):
+    challenge_output_file_path = build_path_for_challenge(
+        output_path,
+        re.sub(
+            r"(?u)[^-\w.]", "", title.replace(" ", "_").replace(":", "_")
+        ),
+        output_format
+    )
+
+    with open(
+        challenge_output_file_path, "w", encoding="utf-8", newline=""
+    ) as out_file:
+        if output_format == OutputFormat.JSON:
+            output_json(results, out_file)
+        elif output_format == OutputFormat.CSV:
+            output_csv(results, out_file)
+
+
 def calculate_rewards(
     output_file: str = typer.Option(...),
     block0_path: str = typer.Option(...),
-    total_stake_threshold: float = typer.Option(0.01),
-    approval_threshold: float = typer.Option(1.15),
-    output_format: OutputFormat = typer.Option("csv"),
+    total_stake_threshold: float = typer.Option(
+        0.01,
+        help="""
+        This value indicates the minimum percentage of voting needed by projects to be eligible for funding.
+        Voting choices considered for this depends by the winner rule.
+        """
+    ),
+    relative_threshold: float = typer.Option(
+        0,
+        help="This value indicates the relative threshold between Yes/No votes needed by projects to be eligible for funding."
+    ),
+    output_format: OutputFormat = typer.Option("csv", help="Output format"),
+    winner_selection_rule: WinnerSelectionRule = typer.Option(
+        "yes_only",
+        help="""
+        The selection rule to apply to determine winner.
+        Possible choices are:
+        -   `yes_only` Fuzzy threshold voting: only YES votes are considered for ranking. Only YES votes are considered to calculate thresholds.
+        -   `yes_no_diff` Fuzzy threshold voting: YES/NO difference is considered for ranking. Sum of YES/NO is considered to calculate thresholds.
+        """
+    ),
     proposals_path: Optional[str] = typer.Option(None),
     excluded_proposals_path: Optional[str] = typer.Option(None),
     active_voteplan_path: Optional[str] = typer.Option(None),
     challenges_path: Optional[str] = typer.Option(None),
     vit_station_url: str = typer.Option("https://servicing-station.vit.iohk.io"),
     committee_keys_path: Optional[str] = typer.Option(None),
+    fund_prefix: int = typer.Option(1100001, help="This number will be used to assign progressively project ids to winners."),
+    leftovers_excluded_categories: List[int] = typer.Option(
+        [],
+        help="List of categories IDs that are not considered in leftovers winners calculation."
+    ),
+    milestones_limit: List[int] = typer.Option(
+        [0, 75000, 150000, 300000],
+        help="Map of budgets to assign number of milestones. Lenght must coincide with `milestones_qty` parameter."
+    ),
+    milestones_qty: List[int] = typer.Option(
+        [3, 4, 5, 6],
+        help="Map of milestones qty to assign number of milestones. Lenght must coincide with `milestones_limit` parameter."
+    ),
+    ideascale_api_key: str = typer.Option(None, help="IdeaScale API key"),
+    ideascale_api_url: str = typer.Option("https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"),
+    stage_ids: List[int] = typer.Option([], help="Stage IDs"),
 ):
     """
     Calculate catalyst rewards after tallying process.
@@ -512,33 +790,52 @@ def calculate_rewards(
     # minimum amount of stake needed for a proposal to be accepted
     total_stake_approval_threshold = float(total_stake_threshold) * float(total_stake)
 
+    total_remaining_funds = 0
+
+    all_results = []
+
     for challenge in challenges.values():
         challenge_proposals, challenge_voteplan_proposals = filter_data_by_challenge(
             challenge.id, proposals, voteplan_proposals
         )
-        results = calc_results(
+        results, remaining_funds = calc_results(
             challenge_proposals,
             challenge_voteplan_proposals,
             challenge.rewards_total,
-            approval_threshold,
             total_stake_approval_threshold,
+            winner_selection_rule,
+            relative_threshold
         )
 
-        challenge_output_file_path = build_path_for_challenge(
-            output_file,
-            re.sub(
-                r"(?u)[^-\w.]", "", challenge.title.replace(" ", "_").replace(":", "_")
-            ),
-        )
+        total_remaining_funds += remaining_funds
+        all_results += results
 
-        with open(
-            challenge_output_file_path, "w", encoding="utf-8", newline=""
-        ) as out_file:
-            if output_format == OutputFormat.JSON:
-                output_json(results, out_file)
-            elif output_format == OutputFormat.CSV:
-                output_csv(results, out_file)
+        save_results(output_file, challenge.title, output_format, results)
+        
+    leftover_results, final_remaining_funds = calc_leftovers(all_results, total_remaining_funds, leftovers_excluded_categories, winner_selection_rule)
+    save_results(output_file, 'leftovers', output_format, leftover_results)
 
+    ideascale_proposals = []
+    if (ideascale_api_key):
+        ideascale = IdeascaleImporter(ideascale_api_key, ideascale_api_url)
+
+        async def _get_proposals():
+            await ideascale.import_proposals(stage_ids=stage_ids)
+
+        aiorun(_get_proposals())
+        ideascale_proposals = ideascale.proposals
+
+    milestones_limit.reverse()
+    milestones_qty.reverse()
+    winners = generate_winners(all_results + leftover_results, fund_prefix, milestones_limit, milestones_qty, ideascale_proposals)
+    save_results(output_file, 'winners', output_format, winners)
+
+    print("[bold green]Winners generated.[/bold green]")
+    print(f"Total Stake: {total_stake}")
+    print(f"Total Stake threshold: {total_stake_approval_threshold}")
+    print(f"Leftover budget: {total_remaining_funds}")
+    print(f"Unallocated budget: {final_remaining_funds}")
+    print(f"Funded projects: {len(winners)}")
 
 if __name__ == "__main__":
     typer.run(calculate_rewards)

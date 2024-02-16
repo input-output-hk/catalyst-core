@@ -22,7 +22,6 @@ src:
     FROM +deps
 
     COPY --dir typhon .
-    COPY convert-to-zip.py .
     COPY playwright.config.ts .
     COPY global-setup.ts .
 

@@ -34,7 +34,6 @@
 <a href="#34" id="34">34</a>
 <a href="#35" id="35">35</a>
 <a href="#36" id="36">36</a>
-<a href="#37" id="37">37</a>
 </pre></div><pre class="rust"><code><span class="attr">#[cfg(any(test, feature = <span class="string">&quot;property-test-api&quot;</span>))]
 </span><span class="kw">pub mod </span>testing;
 
@@ -50,8 +49,7 @@
 <span class="kw">mod </span>key;
 <span class="kw">pub mod </span>multilock;
 <span class="kw">mod </span>sign;
-<span class="attr">#[allow(hidden_glob_reexports)]
-</span><span class="kw">mod </span>vrf;
+<span class="kw">mod </span>vrf;
 
 <span class="kw">pub mod </span>role;
 

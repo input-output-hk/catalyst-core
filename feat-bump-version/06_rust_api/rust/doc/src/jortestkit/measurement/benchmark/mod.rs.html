@@ -29,6 +29,7 @@
 <a href="#29" id="29">29</a>
 <a href="#30" id="30">30</a>
 <a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
 </pre></div><pre class="rust"><code><span class="kw">mod </span>consumption_benchmark;
 <span class="kw">mod </span>efficiency_benchmark;
 <span class="kw">mod </span>endurance_benchmark;
@@ -42,7 +43,8 @@
 };
 
 <span class="kw">pub use </span>consumption_benchmark::{
-    ConsumptionBenchmarkDef, ConsumptionBenchmarkError, ConsumptionBenchmarkRun,
+    ConsumptionBenchmarkDef, ConsumptionBenchmarkError, ConsumptionBenchmarkFinish,
+    ConsumptionBenchmarkRun,
 };
 
 <span class="kw">pub use </span>speed_benchmark::{SpeedBenchmarkDef, SpeedBenchmarkFinish, SpeedBenchmarkRun};

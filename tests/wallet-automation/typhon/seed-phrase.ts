@@ -14,7 +14,7 @@ txtContent.split('\n').forEach(line => {
 
 interface SeedPhrase {
 
-  seedPhrase: string[];
+  seedPhrase: string[]; 
 }
 
 // function to get the seed phrase from environment variables
@@ -23,7 +23,7 @@ const getSeedPhrase = (): string[] => {
   for (let i = 1; i <= 15; i++) {
     const word = process.env[`WALLET1_SEED_WORD_${i}`];
     if (!word) {
-      throw new Error(`Seed word ${i} is missing`);
+      throw new Error(`seed word ${i} is missing`);
     }
     seedPhraseArray.push(word);
   }

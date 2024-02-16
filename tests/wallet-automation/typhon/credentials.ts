@@ -3,7 +3,7 @@ import path from 'path';
 
 const txtContent = fs.readFileSync(path.resolve(__dirname,'typhon-wallet-storage.txt'), 'utf8');;
 
-// Parse the contents and set them to process.env
+// parse the contents and set them to process.env
 txtContent.split('\n').forEach(line => {
   const [key, value] = line.split('=');
   if (key && value) {
@@ -13,18 +13,37 @@ txtContent.split('\n').forEach(line => {
 
 interface WalletCredentials {
   username: string;
-  password: string; // Added password field
+  password: string;
 }
 const getWalletCredentials = (walletID: string): WalletCredentials => {
   const username = process.env[`${walletID}_USERNAME`];
-  const password = process.env[`${walletID}_PASSWORD`]; // Retrieve password from env
-  console.log(`username: ${username}, password: ${password}`); // Debugging line
+  const password = process.env[`${walletID}_PASSWORD`];
+  console.log(`username: ${username}, password: ${password}`);
 
   if (!username || !password) {
     throw new Error(`Credentials for ${walletID} not found`);
   }
 
-  return { username, password };  // Include password in the return value
+  return { username, password };
 };
 
-export { getWalletCredentials };
+interface RegistrationPin {
+  one: string;
+  two: string;
+  three: string;
+  four: string;
+}
+const getRegistrationPin = (walletID: string): RegistrationPin => {
+  const one = process.env[`${walletID}_PIN1`];
+  const two = process.env[`${walletID}_PIN2`];
+  const three = process.env[`${walletID}_PIN3`];
+  const four = process.env[`${walletID}_PIN4`];
+
+if (!one || !two || !three || !four) {
+  throw new Error(`PIN for ${walletID} not found`);
+}
+
+return { one, two, three, four };
+};
+
+export { getWalletCredentials, getRegistrationPin };

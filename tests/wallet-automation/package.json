@@ -32,6 +32,7 @@
     "playwright": "^1.41.1",
     "playwright-extra": "^4.3.6",
     "playwright-extra-plugin-stealth": "^0.0.1",
-    "puppeteer-extra-plugin-stealth": "^2.11.2"
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "unzip-crx-3": "^0.2.0"
   }
 }

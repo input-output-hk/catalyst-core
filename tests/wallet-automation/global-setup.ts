@@ -41,5 +41,11 @@ test('downloadFile test', async ({ page }) => {
         throw new Error('downloaded file does not exist.');
     };
 
+    const unzip = require("unzip-crx-3");
+    const crxFile = `${downloadedFilePath}`;
+
+    unzip(crxFile).then(() => {
+    console.log("successfully unzipped your crx file..");
+    });
 });
 

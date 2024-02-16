@@ -23,7 +23,7 @@ export default defineConfig({
     {
       name: 'setup',
       testMatch: [
-      /wallet\-setup\.ts/,
+      /global\-setup\.ts/,
       ],
     },
     {

@@ -5,7 +5,7 @@ const path = require('path');
 // extension ID for Typhon: kfdniefadaanbjodldohaedphafoffoh
 
 test('import wallet', async ({ }) => {
-  const extensionPath: string = path.resolve(__dirname, 'extensions');
+  const extensionPath: string = path.resolve(__dirname, 'extensions/KFDNIEFADAANBJODLDOHAEDPHAFOFFOH_unzipped');
   const userDataDir = path.resolve(__dirname, 'usrdatadir');
 
   const browser = await chromium.launchPersistentContext(userDataDir, {

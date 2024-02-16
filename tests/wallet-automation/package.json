@@ -6,7 +6,9 @@
   "directories": {
     "test": "tests"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "downloadFile test"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/input-output-hk/catalyst-core.git"
@@ -19,20 +21,13 @@
   },
   "homepage": "https://github.com/input-output-hk/catalyst-core#readme",
   "devDependencies": {
-    "@playwright/test": "^1.41.0",
-    "@types/file-saver": "^2.0.7",
-    "@types/jszip": "^3.4.1",
+    "@playwright/test": "^1.41.2",
     "@types/node": "^20.11.4"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
-    "file-saver": "^2.0.5",
-    "jszip": "^3.10.1",
     "node-fetch": "^3.3.2",
-    "playwright": "^1.41.1",
-    "playwright-extra": "^4.3.6",
-    "playwright-extra-plugin-stealth": "^0.0.1",
-    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "playwright": "^1.41.2",
     "unzip-crx-3": "^0.2.0"
   }
 }

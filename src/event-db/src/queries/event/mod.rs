@@ -87,7 +87,8 @@ impl EventQueries for EventDB {
         let conn = self.pool.get().await?;
 
         let rows = conn.query(Self::EVENT_QUERY, &[&event.0]).await?;
-        let row = rows.first()
+        let row = rows
+            .first()
             .ok_or_else(|| Error::NotFound("can not find event value".to_string()))?;
 
         let ends = row

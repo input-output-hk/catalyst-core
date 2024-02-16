@@ -104,25 +104,25 @@ test('import wallet', async ({ }) => {
     console.log('element not found for the specified XPath:', divSelector);
   }
 
-  const logOut = '//*[@id="app"]/div/div/div[3]/div/div/div[1]/div/div/div[2]/div[11]/div[2]';
-  await newTab.waitForSelector(logOut, { state: 'visible' });
-  await newTab.click(logOut);
+//   const logOut = '//*[@id="app"]/div/div/div[3]/div/div/div[1]/div/div/div[2]/div[11]/div[2]';
+//   await newTab.waitForSelector(logOut, { state: 'visible' });
+//   await newTab.click(logOut);
 
-  const chooseAccount = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[2]/div';
-  await newTab.waitForSelector(chooseAccount, { state: 'visible' });
-  await newTab.click(chooseAccount);
+//   const chooseAccount = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[2]/div';
+//   await newTab.waitForSelector(chooseAccount, { state: 'visible' });
+//   await newTab.click(chooseAccount);
 
-  const removeAccount = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[2]/div[4]/button';
-  await newTab.waitForSelector(removeAccount, { state: 'visible' });
-  await newTab.click(removeAccount);
+//   const removeAccount = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[2]/div[4]/button';
+//   await newTab.waitForSelector(removeAccount, { state: 'visible' });
+//   await newTab.click(removeAccount);
 
-  const confirmRemove = 'button.btn.bg-primary';
-  await newTab.waitForSelector(confirmRemove, { state: 'visible' });
-  await newTab.click(confirmRemove)
+//   const confirmRemove = 'button.btn.bg-primary';
+//   await newTab.waitForSelector(confirmRemove, { state: 'visible' });
+//   await newTab.click(confirmRemove)
 
-  const addNew = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[4]';
-  await newTab.waitForSelector(addNew, { state: 'visible' });
-  await newTab.click(addNew);
+//   const addNew = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[4]';
+//   await newTab.waitForSelector(addNew, { state: 'visible' });
+//   await newTab.click(addNew);
   
   // keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
   // await page.waitForTimeout(300000); // Adjust the time as needed

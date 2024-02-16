@@ -24,6 +24,7 @@ src:
     COPY --dir typhon .
     COPY convert-to-zip.py .
     COPY playwright.config.ts .
+    COPY global-setup.ts .
 
 # Define a test target that builds upon deps
 test:

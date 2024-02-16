@@ -11,7 +11,7 @@ The official published results can be found in this file in the form of **active
 
 If you would like to re-generate **activevoteplans.json** yourself, via a live node and historical fragments - [*see here for instructions*](./balance/README.md)
 
-If not, you can begin the audit with the following steps.
+If not, you can begin the audit with the following steps
 
 *Example usage:*
 

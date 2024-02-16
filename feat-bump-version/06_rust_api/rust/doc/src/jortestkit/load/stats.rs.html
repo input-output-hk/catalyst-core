@@ -209,8 +209,8 @@
     <span class="kw">pub fn </span>errors(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;RequestFailure&gt; {
         <span class="self">self</span>.requests
             .iter()
+            .filter(|<span class="kw-2">&amp;</span>r| r.is_err())
             .cloned()
-            .filter(|r| r.is_err())
             .map(|r| r.err().unwrap())
             .collect()
     }

@@ -758,7 +758,7 @@
 
         <span class="kw">let </span>rows = conn.query(<span class="self">Self</span>::FUND_QUERY, <span class="kw-2">&amp;</span>[]).<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>row = rows
-            .get(<span class="number">0</span>)
+            .first()
             .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find fund value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>fund_id = row.try_get(<span class="string">&quot;id&quot;</span>)<span class="question-mark">?</span>;

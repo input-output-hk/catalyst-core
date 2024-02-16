@@ -624,7 +624,7 @@
                 .<span class="kw">await</span><span class="question-mark">?
         </span>};
         <span class="kw">let </span>voter = rows
-            .get(<span class="number">0</span>)
+            .first()
             .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find voter value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>voting_group = VoterGroupId(voter.try_get(<span class="string">&quot;voting_group&quot;</span>)<span class="question-mark">?</span>);
@@ -642,7 +642,7 @@
         </span>};
 
         <span class="kw">let </span>total_voting_power_per_group: i64 = rows
-            .get(<span class="number">0</span>)
+            .first()
             .ok_or_else(|| {
                 Error::NotFound(<span class="string">&quot;can not find total voting power per group value&quot;</span>.to_string())
             })<span class="question-mark">?
@@ -710,7 +710,7 @@
                 .<span class="kw">await</span><span class="question-mark">?
         </span>};
         <span class="kw">let </span>delegator_snapshot_info = rows
-            .get(<span class="number">0</span>)
+            .first()
             .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find delegator value&quot;</span>.to_string()))<span class="question-mark">?</span>;
 
         <span class="kw">let </span>delegation_rows = <span class="kw">if let </span><span class="prelude-val">Some</span>(event) = event {
@@ -751,7 +751,7 @@
                 .<span class="kw">await</span><span class="question-mark">?
         </span>};
         <span class="kw">let </span>total_power: i64 = rows
-            .get(<span class="number">0</span>)
+            .first()
             .ok_or_else(|| Error::NotFound(<span class="string">&quot;can not find total power value&quot;</span>.to_string()))<span class="question-mark">?
             </span>.try_get(<span class="string">&quot;total_voting_power&quot;</span>)<span class="question-mark">?</span>;
 

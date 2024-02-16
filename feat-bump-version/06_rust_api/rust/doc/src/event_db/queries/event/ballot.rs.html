@@ -480,7 +480,7 @@
             )
             .<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="kw">let </span>row = rows
-            .get(<span class="number">0</span>)
+            .first()
             .ok_or_else(|| Error::NotFound(<span class="string">&quot;cat not find ballot value&quot;</span>.to_string()))<span class="question-mark">?</span>;
         <span class="kw">let </span>choices = row.try_get(<span class="string">&quot;objective&quot;</span>)<span class="question-mark">?</span>;
 

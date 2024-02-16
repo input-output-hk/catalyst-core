@@ -204,12 +204,6 @@
 <a href="#204" id="204">204</a>
 <a href="#205" id="205">205</a>
 <a href="#206" id="206">206</a>
-<a href="#207" id="207">207</a>
-<a href="#208" id="208">208</a>
-<a href="#209" id="209">209</a>
-<a href="#210" id="210">210</a>
-<a href="#211" id="211">211</a>
-<a href="#212" id="212">212</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Structures used by the prover of `unit_vector_zkp` during the proof generation. We use the
 //! same notation defined in Figure 8
 
@@ -372,10 +366,7 @@
                 next_level,
                 params,
             );
-            left_subtree
-                .into_iter()
-                .chain(right_subtree.into_iter())
-                .collect()
+            left_subtree.into_iter().chain(right_subtree).collect()
         } <span class="kw">else </span>{
             <span class="macro">vec!</span>[parent.to_vec()]
         }
@@ -417,9 +408,6 @@
         <span class="number">1</span>,
         <span class="kw-2">&amp;</span>tp,
     );
-    left_subtree
-        .into_iter()
-        .chain(right_subtree.into_iter())
-        .collect()
+    left_subtree.into_iter().chain(right_subtree).collect()
 }
 </code></pre></div></section></main></body></html>

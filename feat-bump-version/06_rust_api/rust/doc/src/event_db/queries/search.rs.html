@@ -1239,7 +1239,7 @@
                 )
                 .<span class="kw">await
                 </span>.map_err(|e| Error::NotFound(e.to_string()))<span class="question-mark">?</span>;
-            <span class="kw">let </span>row = rows.get(<span class="number">0</span>).unwrap();
+            <span class="kw">let </span>row = rows.first().unwrap();
 
             <span class="prelude-val">Ok</span>(SearchResult {
                 total: row.try_get(<span class="string">&quot;total&quot;</span>)<span class="question-mark">?</span>,

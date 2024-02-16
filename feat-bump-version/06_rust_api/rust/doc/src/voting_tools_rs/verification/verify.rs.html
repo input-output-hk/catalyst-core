@@ -465,7 +465,7 @@
         };
 
         <span class="kw">match </span>reg.validate_signature_bin(rawreg.bin_reg.clone()) {
-            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; (),
+            <span class="prelude-val">Ok</span>(()) =&gt; (),
             <span class="prelude-val">Err</span>(err) =&gt; {
                 invalids.push(InvalidRegistration {
                     spec_61284: <span class="prelude-val">Some</span>(prefix_hex(<span class="kw-2">&amp;</span>rawreg.bin_reg)),
@@ -481,7 +481,7 @@
         }
 
         <span class="kw">match </span>reg.validate_multi_delegation(cip_36_multidelegations) {
-            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; (),
+            <span class="prelude-val">Ok</span>(()) =&gt; (),
             <span class="prelude-val">Err</span>(err) =&gt; {
                 invalids.push(InvalidRegistration {
                     spec_61284: <span class="prelude-val">Some</span>(prefix_hex(<span class="kw-2">&amp;</span>rawreg.bin_reg)),

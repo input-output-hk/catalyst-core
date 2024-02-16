@@ -162,7 +162,7 @@ pub(crate) fn generate_polys(
             );
             left_subtree
                 .into_iter()
-                .chain(right_subtree.into_iter())
+                .chain(right_subtree)
                 .collect()
         } else {
             vec![parent.to_vec()]
@@ -207,6 +207,6 @@ pub(crate) fn generate_polys(
     );
     left_subtree
         .into_iter()
-        .chain(right_subtree.into_iter())
+        .chain(right_subtree)
         .collect()
 }

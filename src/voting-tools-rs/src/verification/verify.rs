@@ -120,7 +120,7 @@ pub fn filter_registrations(
         };
 
         match reg.validate_signature_bin(rawreg.bin_reg.clone()) {
-            Ok(_) => (),
+            Ok(()) => (),
             Err(err) => {
                 invalids.push(InvalidRegistration {
                     spec_61284: Some(prefix_hex(&rawreg.bin_reg)),
@@ -136,7 +136,7 @@ pub fn filter_registrations(
         }
 
         match reg.validate_multi_delegation(cip_36_multidelegations) {
-            Ok(_) => (),
+            Ok(()) => (),
             Err(err) => {
                 invalids.push(InvalidRegistration {
                     spec_61284: Some(prefix_hex(&rawreg.bin_reg)),

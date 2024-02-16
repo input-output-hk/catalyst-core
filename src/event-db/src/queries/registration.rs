@@ -99,8 +99,7 @@ impl RegistrationQueries for EventDB {
             conn.query(Self::VOTER_BY_LAST_EVENT_QUERY, &[&voting_key])
                 .await?
         };
-        let voter = rows
-            .get(0)
+        let voter = rows.first()
             .ok_or_else(|| Error::NotFound("can not find voter value".to_string()))?;
 
         let voting_group = VoterGroupId(voter.try_get("voting_group")?);
@@ -117,8 +116,7 @@ impl RegistrationQueries for EventDB {
                 .await?
         };
 
-        let total_voting_power_per_group: i64 = rows
-            .get(0)
+        let total_voting_power_per_group: i64 = rows.first()
             .ok_or_else(|| {
                 Error::NotFound("can not find total voting power per group value".to_string())
             })?
@@ -185,8 +183,7 @@ impl RegistrationQueries for EventDB {
             conn.query(Self::DELEGATOR_SNAPSHOT_INFO_BY_LAST_EVENT_QUERY, &[])
                 .await?
         };
-        let delegator_snapshot_info = rows
-            .get(0)
+        let delegator_snapshot_info = rows.first()
             .ok_or_else(|| Error::NotFound("can not find delegator value".to_string()))?;
 
         let delegation_rows = if let Some(event) = event {
@@ -226,8 +223,7 @@ impl RegistrationQueries for EventDB {
             conn.query(Self::TOTAL_POWER_BY_LAST_EVENT_QUERY, &[])
                 .await?
         };
-        let total_power: i64 = rows
-            .get(0)
+        let total_power: i64 = rows.first()
             .ok_or_else(|| Error::NotFound("can not find total power value".to_string()))?
             .try_get("total_voting_power")?;
 

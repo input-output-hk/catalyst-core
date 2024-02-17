@@ -1,7 +1,13 @@
 name: Nix CI
 
-on: {}
-
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+    branches: 
+      - main
+      
 permissions:
   id-token: write
   contents: read

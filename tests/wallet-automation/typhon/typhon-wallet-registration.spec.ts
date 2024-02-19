@@ -162,13 +162,30 @@ test('import wallet', async ({ }) => {
     await newTab.waitForSelector(confirmReg, { state: 'visible' });
     await newTab.click(confirmReg);
 
-    const inputConfirmPassword = '//*[@id="headlessui-dialog-27"]/div/div[2]/div[2]/input';
+    const inputConfirmPassword = 'input[type="password"]';
     await newTab.waitForSelector(inputConfirmPassword, { state: 'visible' });
     await newTab.fill(inputConfirmPassword, WalletCredentials.password);
 
-    const confirmTransaction = '//*[@id="headlessui-dialog-27"]/div/div[2]/div[2]/button';
-    await newTab.waitForSelector(confirmTransaction, { state: 'visible' });
-    await newTab.click(confirmTransaction)
+    const confirmTransactionButton = 'button.mt-2.py-2.5.w-full.bg-primary.text-white.hover:bg-opacity-95.text-sm.rounded-md.focus\\:outline-none.disabled\\:btn-red-300.font-medium.capitalize';
+    await newTab.waitForSelector(confirmTransactionButton, { state: 'visible' });
+    await newTab.click(confirmTransactionButton);
+
+    try {
+        // Wait for the element to be present
+        await page.waitForSelector('//*[@id="lc"]/div[2]/div[2]/div[2]/div[1]/div[1]', { timeout: 5000 });
+
+        // Get the text content of the element
+        const textContent = await page.$eval('//*[@id="lc"]/div[2]/div[2]/div[2]/div[1]/div[1]', el => el.textContent);
+
+        if (textContent) {
+            console.log(textContent.trim()); // Output the captured text
+        } else {
+            console.log('Text content not found'); // Log if text content is not found
+        }
+    } catch (error) {
+        console.error('An error occurred:', error.toString()); // Log any errors that occur
+        console.log('An error occurred'); // Print a message indicating an error occurred
+    }
 
     const logOut = '//*[@id="app"]/div/div/div[3]/div/div/div[1]/div/div/div[2]/div[11]/div[2]';
     await newTab.waitForSelector(logOut, { state: 'visible' });

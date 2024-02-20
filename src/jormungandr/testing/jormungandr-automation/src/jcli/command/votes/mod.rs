@@ -9,7 +9,7 @@ mod tally;
 
 pub use committee::CommitteeCommand;
 pub use crs::CrsCommand;
-pub use election_public_key::ElectionPublicKeyCommand;
+
 pub use tally::TallyCommand;
 
 #[derive(Debug)]

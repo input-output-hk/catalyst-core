@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use super::super::{serialize_datetime_as_rfc3339, SerdeType};
 use chrono::{DateTime, Utc};
 use event_db::types::vit_ss::{

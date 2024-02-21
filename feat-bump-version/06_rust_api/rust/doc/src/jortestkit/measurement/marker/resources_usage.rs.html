@@ -99,8 +99,8 @@
             &amp;&amp; <span class="self">self</span>.virtual_memory_usage == other.virtual_memory_usage
     }
 }
-
-<span class="kw">impl </span>PartialOrd <span class="kw">for </span>ResourcesUsage {
+<span class="attr">#[allow(clippy::non_canonical_partial_ord_impl)]
+</span><span class="kw">impl </span>PartialOrd <span class="kw">for </span>ResourcesUsage {
     <span class="kw">fn </span>partial_cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;Ordering&gt; {
         <span class="kw">let </span>cpu_cmp = <span class="self">self</span>.cpu_usage().partial_cmp(<span class="kw-2">&amp;</span>other.cpu_usage()).unwrap();
         <span class="kw">let </span>memory_cmp = <span class="self">self

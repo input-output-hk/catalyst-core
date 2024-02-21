@@ -23,9 +23,9 @@ mod exports {
         Controller, ControllerBuilder, ControllerBuilderError, ControllerError,
     };
     pub use crate::load::{
-        ArtificialUserLoad, ArtificialUserLoadError, MultiController, MultiControllerError,
-        NodeLoad, NodeLoadError, ServicingStationLoad, ServicingStationLoadError,
-        VoteStatusProvider, WalletRequestGen,
+        config::NodeLoadConfig, ArtificialUserLoad, ArtificialUserLoadError, MultiController,
+        MultiControllerError, NodeLoad, NodeLoadError, ServicingStationLoad,
+        ServicingStationLoadError, VoteStatusProvider, WalletRequestGen,
     };
 
     pub use crate::utils::{expiry, qr};

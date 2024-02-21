@@ -252,6 +252,7 @@ pub mod serde_impl {
             let addr_net = addr_prefix & 0xf;
 
             let addr_type = match addr_type {
+                #[allow(clippy::manual_range_patterns)]
                 // Shelley
                 0x0 | 0x1 | 0x2 | 0x3 | 0x4 | 0x5 | 0x6 | 0x7 => AddrType::Shelley,
                 // Stake

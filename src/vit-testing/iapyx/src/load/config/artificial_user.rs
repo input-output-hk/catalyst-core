@@ -1,4 +1,4 @@
-use crate::NodeLoadConfig;
+use crate::load::config::NodeLoadConfig;
 use jortestkit::load::Configuration;
 use serde::{Deserialize, Serialize};
 

@@ -1,8 +1,8 @@
+use crate::load::config::NodeLoadConfig;
 use crate::load::multi_controller::MultiControllerError;
 use crate::load::request_generators::RequestGenError;
 use crate::load::request_generators::{BatchWalletRequestGen, WalletRequestGen};
 use crate::load::status_provider::VoteStatusProvider;
-use crate::NodeLoadConfig;
 use crate::NodeLoadError;
 use jortestkit::measurement::EfficiencyBenchmarkFinish;
 use thiserror::Error;

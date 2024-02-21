@@ -4,8 +4,8 @@ mod external_providers;
 
 use super::MainnetWalletState;
 use crate::CardanoWallet;
-pub use actor::{delegator, registration, representative, Actor};
-pub use arbitrary::{generate_arbitrary_delegator, Error as ArbitraryError};
+pub use actor::{Actor};
+pub use arbitrary::{generate_arbitrary_delegator};
 use chain_crypto::PublicKeyFromStrError;
 pub use external_providers::{DummyExternalProvider, ExternalProvider};
 use jormungandr_lib::crypto::account::Identifier;

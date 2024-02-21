@@ -1,5 +1,5 @@
 mod configuration;
-pub use chain_impl_mockchain::chaintypes::ConsensusVersion;
+
 pub use configuration::{BlockchainBuilder, BlockchainConfiguration};
 use jormungandr_lib::crypto::hash::Hash;
 use serde::Deserialize;

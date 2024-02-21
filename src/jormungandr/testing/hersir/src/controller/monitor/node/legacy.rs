@@ -7,7 +7,7 @@ use chain_impl_mockchain::{
     header::HeaderId,
 };
 pub use jormungandr_automation::jormungandr::{
-    grpc::JormungandrClient, BackwardCompatibleRest, FragmentNode, FragmentNodeError,
+    BackwardCompatibleRest, FragmentNode, FragmentNodeError,
     JormungandrLogger, JormungandrProcess, JormungandrRest, MemPoolCheck, StartupVerificationMode,
     Status,
 };

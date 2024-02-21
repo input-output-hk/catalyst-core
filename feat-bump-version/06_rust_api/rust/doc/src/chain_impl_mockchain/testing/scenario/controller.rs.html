@@ -496,8 +496,8 @@
     <span class="kw">pub fn </span>wallet(<span class="kw-2">&amp;</span><span class="self">self</span>, alias: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Wallet, ControllerError&gt; {
         <span class="self">self</span>.declared_wallets
             .iter()
+            .find(|<span class="kw-2">&amp;</span>x| x.alias() == alias)
             .cloned()
-            .find(|x| x.alias() == alias)
             .ok_or(ControllerError::UnknownWallet {
                 alias: alias.to_owned(),
             })
@@ -506,8 +506,8 @@
     <span class="kw">pub fn </span>vote_plan(<span class="kw-2">&amp;</span><span class="self">self</span>, alias: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;VotePlanDef, ControllerError&gt; {
         <span class="self">self</span>.declared_vote_plans
             .iter()
+            .find(|<span class="kw-2">&amp;</span>x| x.alias() == alias)
             .cloned()
-            .find(|x| x.alias() == alias)
             .ok_or(ControllerError::UnknownVotePlan {
                 alias: alias.to_owned(),
             })
@@ -520,8 +520,8 @@
     <span class="kw">pub fn </span>stake_pool(<span class="kw-2">&amp;</span><span class="self">self</span>, alias: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;StakePool, ControllerError&gt; {
         <span class="self">self</span>.declared_stake_pools
             .iter()
+            .find(|<span class="kw-2">&amp;</span>x| x.alias() == alias)
             .cloned()
-            .find(|x| x.alias() == alias)
             .ok_or(ControllerError::UnknownStakePool {
                 alias: alias.to_owned(),
             })

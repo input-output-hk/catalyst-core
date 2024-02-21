@@ -329,7 +329,7 @@
         </span>);
         <span class="kw">let </span><span class="kw-2">mut </span>faucet = test_ledger
             .faucets
-            .get(<span class="number">0</span>)
+            .first()
             .cloned()
             .as_mut()
             .expect(<span class="string">&quot;test ledger with no faucet configured&quot;</span>)
@@ -370,7 +370,7 @@
         </span>);
         <span class="kw">let </span><span class="kw-2">mut </span>faucet = test_ledger
             .faucets
-            .get(<span class="number">0</span>)
+            .first()
             .as_mut()
             .expect(<span class="string">&quot;test ledger with no faucet configured&quot;</span>)
             .clone();

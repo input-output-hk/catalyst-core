@@ -186,8 +186,8 @@
     <span class="kw">pub </span>parts: Value,
     <span class="kw">pub </span>remaining: Value,
 }
-
-<span class="kw">impl </span>Value {
+<span class="attr">#[allow(clippy::manual_try_fold)]
+</span><span class="kw">impl </span>Value {
     <span class="kw">pub fn </span>zero() -&gt; <span class="self">Self </span>{
         Value(<span class="number">0</span>)
     }

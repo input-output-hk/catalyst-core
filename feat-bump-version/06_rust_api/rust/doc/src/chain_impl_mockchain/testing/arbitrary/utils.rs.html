@@ -285,8 +285,8 @@
     <span class="kw">pub fn </span>get_result(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TestResult {
         <span class="self">self</span>.<span class="number">0
             </span>.iter()
+            .find(|<span class="kw-2">&amp;</span>x| TestResult::is_failure(x))
             .cloned()
-            .find(TestResult::is_failure)
             .unwrap_or_else(TestResult::passed)
     }
 }

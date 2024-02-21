@@ -30,6 +30,7 @@
 <a href="#30" id="30">30</a>
 <a href="#31" id="31">31</a>
 <a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Library part of iapyx which serves as a core lib for this testing CLI wallet.
 //! Idea behind split was to enable api interface for integration tests without spawning CLI process
 //! but directly operates on API level
@@ -55,10 +56,11 @@
         Controller, ControllerBuilder, ControllerBuilderError, ControllerError,
     };
     <span class="kw">pub use </span><span class="kw">crate</span>::load::{
-        ArtificialUserLoad, ArtificialUserLoadError, MultiController, MultiControllerError,
-        NodeLoad, NodeLoadConfig, NodeLoadError, ServicingStationLoad, ServicingStationLoadError,
-        VoteStatusProvider, WalletRequestGen,
+        config::NodeLoadConfig, ArtificialUserLoad, ArtificialUserLoadError, MultiController,
+        MultiControllerError, NodeLoad, NodeLoadError, ServicingStationLoad,
+        ServicingStationLoadError, VoteStatusProvider, WalletRequestGen,
     };
+
     <span class="kw">pub use </span><span class="kw">crate</span>::utils::{expiry, qr};
     <span class="kw">pub use </span><span class="kw">crate</span>::wallet::{Error <span class="kw">as </span>WalletError, Wallet};
 }

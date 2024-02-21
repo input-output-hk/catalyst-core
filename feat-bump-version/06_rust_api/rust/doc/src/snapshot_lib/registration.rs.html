@@ -481,6 +481,7 @@
 <a href="#481" id="481">481</a>
 <a href="#482" id="482">482</a>
 <a href="#483" id="483">483</a>
+<a href="#484" id="484">484</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;
 <span class="kw">use </span>jormungandr_lib::interfaces::Value;
 <span class="kw">use </span>serde::{de::Error <span class="kw">as _</span>, ser::Error <span class="kw">as _</span>, Deserialize, Serialize};
@@ -735,7 +736,8 @@
             </span><span class="kw">let </span>addr_net = addr_prefix &amp; <span class="number">0xf</span>;
 
             <span class="kw">let </span>addr_type = <span class="kw">match </span>addr_type {
-                <span class="comment">// Shelley
+                <span class="attr">#[allow(clippy::manual_range_patterns)]
+                </span><span class="comment">// Shelley
                 </span><span class="number">0x0 </span>| <span class="number">0x1 </span>| <span class="number">0x2 </span>| <span class="number">0x3 </span>| <span class="number">0x4 </span>| <span class="number">0x5 </span>| <span class="number">0x6 </span>| <span class="number">0x7 </span>=&gt; AddrType::Shelley,
                 <span class="comment">// Stake
                 </span><span class="number">0xf </span>| <span class="number">0xe </span>=&gt; AddrType::Stake,

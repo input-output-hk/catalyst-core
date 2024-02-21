@@ -95,7 +95,7 @@
 
         <span class="kw">let </span>faucets = WalletCollection::arbitrary(g);
         <span class="kw">let </span>splits = utils::split_vec(<span class="kw-2">&amp;</span>faucets.<span class="number">0</span>, g, <span class="number">3</span>);
-        <span class="kw">let </span>stake_pools_owners = splits.get(<span class="number">0</span>).unwrap();
+        <span class="kw">let </span>stake_pools_owners = splits.first().unwrap();
         <span class="kw">let </span>stake_pools: Vec&lt;StakePool&gt; = stake_pools_owners
             .iter()
             .cloned()

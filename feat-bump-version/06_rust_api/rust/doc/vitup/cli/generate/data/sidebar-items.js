@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["DataCommandArgs","Initial","RandomDataCommandArgs"],"mod":["external","perf","random"]};
+window.SIDEBAR_ITEMS = {"enum":["DataCommandArgs","RandomDataCommandArgs"],"mod":["external","perf","random"]};

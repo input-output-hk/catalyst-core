@@ -360,10 +360,11 @@
 <a href="#360" id="360">360</a>
 <a href="#361" id="361">361</a>
 <a href="#362" id="362">362</a>
-</pre></div><pre class="rust"><code><span class="kw">mod </span>helpers;
+</pre></div><pre class="rust"><code><span class="kw">pub mod </span>helpers;
 <span class="kw">mod </span>reviews;
 <span class="kw">pub mod </span>utils;
 
+<span class="kw">use </span><span class="kw">crate</span>::builders::helpers::VitVotePlanDefBuilder;
 <span class="kw">pub use </span><span class="kw">crate</span>::builders::helpers::{build_current_fund, build_servicing_station_parameters};
 <span class="kw">use </span><span class="kw">crate</span>::builders::utils::DeploymentTree;
 <span class="kw">use </span><span class="kw">crate</span>::config;
@@ -379,14 +380,13 @@
 <span class="kw">pub use </span>helpers::{
     convert_to_blockchain_date, convert_to_human_date, discover_archive_input_files,
     generate_qr_and_hashes, get_configuration_from_file_url, ArchiveConfError,
-    ArchiveConfiguration, VitVotePlanDefBuilder, WalletExtension,
+    ArchiveConfiguration,
 };
 <span class="kw">use </span>hersir::builder::settings::Blockchain;
 <span class="kw">use </span>hersir::builder::Node;
 <span class="kw">use </span>hersir::builder::Topology;
 <span class="kw">use </span>hersir::config::{CommitteeTemplate, ExplorerTemplate, SessionSettings, WalletTemplate};
 <span class="kw">use </span>jormungandr_automation::jormungandr::PersistenceMode;
-<span class="kw">pub use </span>jormungandr_lib::interfaces::Initial;
 <span class="kw">use </span>jormungandr_lib::interfaces::NumberOfSlotsPerEpoch;
 <span class="kw">use </span>jormungandr_lib::interfaces::SlotDuration;
 <span class="kw">use </span>jormungandr_lib::interfaces::TokenIdentifier <span class="kw">as </span>TokenIdentifierLib;

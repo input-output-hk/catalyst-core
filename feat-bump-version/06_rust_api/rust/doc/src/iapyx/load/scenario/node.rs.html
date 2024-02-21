@@ -88,11 +88,11 @@
 <a href="#88" id="88">88</a>
 <a href="#89" id="89">89</a>
 <a href="#90" id="90">90</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::load::multi_controller::MultiControllerError;
+</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::load::config::NodeLoadConfig;
+<span class="kw">use </span><span class="kw">crate</span>::load::multi_controller::MultiControllerError;
 <span class="kw">use </span><span class="kw">crate</span>::load::request_generators::RequestGenError;
 <span class="kw">use </span><span class="kw">crate</span>::load::request_generators::{BatchWalletRequestGen, WalletRequestGen};
 <span class="kw">use </span><span class="kw">crate</span>::load::status_provider::VoteStatusProvider;
-<span class="kw">use </span><span class="kw">crate</span>::load::NodeLoadConfig;
 <span class="kw">use </span><span class="kw">crate</span>::NodeLoadError;
 <span class="kw">use </span>jortestkit::measurement::EfficiencyBenchmarkFinish;
 <span class="kw">use </span>thiserror::Error;

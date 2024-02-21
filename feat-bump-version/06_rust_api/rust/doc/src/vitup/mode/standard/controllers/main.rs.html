@@ -377,9 +377,9 @@
 </pre></div><pre class="rust"><code><span class="kw">use super</span>::{
     <span class="kw">super</span>::VitSettings,
     vit_station::{
-        dump_settings_to_file, BootstrapCommandBuilder, DbGenerator,
-        Error <span class="kw">as </span>VitStationControllerError, RestClient, ValidVotePlanParameters,
-        ValidVotingTemplateGenerator, VitStationController, VIT_CONFIG,
+        controller::VitStationController, controller::VIT_CONFIG, dump_settings_to_file,
+        BootstrapCommandBuilder, DbGenerator, Error <span class="kw">as </span>VitStationControllerError, RestClient,
+        ValidVotePlanParameters, ValidVotingTemplateGenerator,
     },
     wallet_proxy::{Error <span class="kw">as </span>WalletProxyError, WalletProxyController, WalletProxySpawnParams},
 };

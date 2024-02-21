@@ -637,7 +637,9 @@
 <a href="#637" id="637">637</a>
 <a href="#638" id="638">638</a>
 <a href="#639" id="639">639</a>
-</pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
+<a href="#640" id="640">640</a>
+</pre></div><pre class="rust"><code><span class="attr">#![allow(deprecated)]
+</span><span class="kw">use crate</span>::{
     types::vit_ss::{
         challenge::{Challenge, ChallengeHighlights},
         fund::{Fund, FundNextInfo, FundStageDates, FundWithNext},
@@ -699,7 +701,7 @@
     next_fund.voting_start AS next_voting_start,
     next_fund.voting_end AS next_voting_end,
     next_fund.tallying_end AS next_tallying_end
-    
+
     FROM event this_fund
     LEFT JOIN event next_fund ON next_fund.row_id = this_fund.row_id + 1
     WHERE this_fund.end_time &gt; CURRENT_TIMESTAMP AT TIME ZONE &#39;UTC&#39; AND this_fund.start_time &lt; CURRENT_TIMESTAMP AT TIME ZONE &#39;UTC&#39;

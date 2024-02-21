@@ -359,8 +359,8 @@
                 <span class="kw">let </span>vote_plan_def = x.build();
                 <span class="kw">let </span>owner = wallets
                     .iter()
+                    .find(|<span class="kw-2">&amp;</span>w| w.alias() == vote_plan_def.owner())
                     .cloned()
-                    .find(|w| w.alias() == vote_plan_def.owner())
                     .expect(<span class="string">&quot;cannot find wallet for vote plan&quot;</span>);
                 <span class="kw">let </span>vote_plan: VotePlan = vote_plan_def.into();
                 create_initial_vote_plan(<span class="kw-2">&amp;</span>vote_plan, <span class="kw-2">&amp;</span>[owner])
@@ -408,8 +408,8 @@
                     .map(|pk| {
                         wallets
                             .iter()
+                            .find(|<span class="kw-2">&amp;</span>x| x.public_key() == pk)
                             .cloned()
-                            .find(|x| x.public_key() == pk)
                             .expect(<span class="string">&quot;unknown key&quot;</span>)
                     })
                     .collect();
@@ -426,8 +426,8 @@
     ) -&gt; Vec&lt;Fragment&gt; {
         initials
             .iter()
+            .filter(|<span class="kw-2">&amp;</span>x| x.delegates_stake_pool().is_some())
             .cloned()
-            .filter(|x| x.delegates_stake_pool().is_some())
             .map(|wallet_template| {
                 <span class="kw">let </span>stake_pool_alias = wallet_template.delegates_stake_pool().unwrap();
                 <span class="kw">let </span>stake_pool = stake_pools

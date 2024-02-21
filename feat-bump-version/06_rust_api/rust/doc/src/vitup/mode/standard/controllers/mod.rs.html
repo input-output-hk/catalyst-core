@@ -19,13 +19,13 @@
 <a href="#19" id="19">19</a>
 </pre></div><pre class="rust"><code><span class="kw">mod </span>explorer;
 <span class="kw">mod </span>main;
-<span class="kw">mod </span>vit_station;
+<span class="kw">pub mod </span>vit_station;
 <span class="kw">mod </span>wallet_proxy;
 
 <span class="kw">pub use </span>vit_station::{
+    controller::VitStationController, controller::VitStationSettings, controller::VIT_CONFIG,
     generate_database, generate_random_database, DataError, DbGenerator,
     Error <span class="kw">as </span>VitStationControllerError, ValidVotePlanParameters, ValidVotingTemplateGenerator,
-    VitStationController, VitStationSettings,
 };
 
 <span class="kw">pub use </span>wallet_proxy::{

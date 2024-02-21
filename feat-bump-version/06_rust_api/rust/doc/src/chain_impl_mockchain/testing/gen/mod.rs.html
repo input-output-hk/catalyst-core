@@ -445,7 +445,7 @@
         rng.fill_bytes(<span class="kw-2">&amp;mut </span>policy_hash);
 
         TokenIdentifier {
-            policy_hash: TryFrom::try_from(policy_hash).unwrap(),
+            policy_hash: From::from(policy_hash),
             token_name: <span class="self">Self</span>::token_name(),
         }
     }

@@ -234,23 +234,23 @@
     <span class="kw">pub fn </span>utxos(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;AddressDataValue&gt; {
         <span class="self">self</span>.<span class="number">0
             </span>.iter()
+            .filter(|<span class="kw-2">&amp;</span>x| <span class="macro">matches!</span>(x.address_data.kind(), Kind::Single { .. }))
             .cloned()
-            .filter(|x| <span class="macro">matches!</span>(x.address_data.kind(), Kind::Single { .. }))
             .collect()
     }
     <span class="kw">pub fn </span>accounts(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;AddressDataValue&gt; {
         <span class="self">self</span>.<span class="number">0
             </span>.iter()
+            .filter(|<span class="kw-2">&amp;</span>x| <span class="macro">matches!</span>(x.address_data.kind(), Kind::Account { .. }))
             .cloned()
-            .filter(|x| <span class="macro">matches!</span>(x.address_data.kind(), Kind::Account { .. }))
             .collect()
     }
 
     <span class="kw">pub fn </span>delegations(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;AddressDataValue&gt; {
         <span class="self">self</span>.<span class="number">0
             </span>.iter()
+            .filter(|<span class="kw-2">&amp;</span>x| <span class="macro">matches!</span>(x.address_data.kind(), Kind::Group { .. }))
             .cloned()
-            .filter(|x| <span class="macro">matches!</span>(x.address_data.kind(), Kind::Group { .. }))
             .collect()
     }
 }

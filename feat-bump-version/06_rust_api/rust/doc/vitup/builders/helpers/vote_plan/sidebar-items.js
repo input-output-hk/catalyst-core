@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Initial"],"struct":["VitVotePlanDefBuilder"]};
+window.SIDEBAR_ITEMS = {"struct":["VitVotePlanDefBuilder"]};

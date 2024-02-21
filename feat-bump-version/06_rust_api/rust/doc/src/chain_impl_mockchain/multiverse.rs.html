@@ -566,7 +566,7 @@
     </span><span class="kw">pub fn </span>insert(<span class="kw-2">&amp;mut </span><span class="self">self</span>, chain_length: ChainLength, k: HeaderId, st: State) -&gt; Ref&lt;State&gt; {
         <span class="self">self</span>.states_by_chain_length
             .entry(chain_length)
-            .or_insert_with(HashSet::new)
+            .or_default()
             .insert(k);
         <span class="kw">let </span>state = Arc::new(st);
         <span class="self">self</span>.states_by_hash

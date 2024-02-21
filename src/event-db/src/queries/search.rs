@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use crate::{
     types::{
         search::{

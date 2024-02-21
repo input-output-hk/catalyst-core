@@ -21,7 +21,7 @@ pub struct SplitValueIn {
     pub parts: Value,
     pub remaining: Value,
 }
-
+#[allow(clippy::manual_try_fold)]
 impl Value {
     pub fn zero() -> Self {
         Value(0)
@@ -31,7 +31,7 @@ impl Value {
     where
         I: Iterator<Item = Self>,
     {
-        values.try_fold(Value::zero(), |acc, v| acc? + v)
+        values.fold(Ok(Value::zero()), |acc, v| acc? + v)
     }
 
     #[inline]

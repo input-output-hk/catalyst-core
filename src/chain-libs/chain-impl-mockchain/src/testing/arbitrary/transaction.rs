@@ -190,7 +190,8 @@ impl AccountStatesVerifier {
             .0
             .addresses
             .iter()
-            .filter(|&x| filter_accounts(x)).cloned()
+            .filter(|&x| filter_accounts(x))
+            .cloned()
             .map(|x| find_equal_and_sub(x, inputs))
             .collect();
 
@@ -231,7 +232,8 @@ impl AccountStatesVerifier {
 fn find_equal_and_sub(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
         .iter()
-        .find(|&y| y.address_data == x.address_data).cloned()
+        .find(|&y| y.address_data == x.address_data)
+        .cloned()
     {
         Some(y) => AddressDataValue::new(x.address_data, (x.value - y.value).unwrap()),
         None => x,
@@ -241,7 +243,8 @@ fn find_equal_and_sub(x: AddressDataValue, collection: &[AddressDataValue]) -> A
 fn find_equal_and_add(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
         .iter()
-        .find(|&y| y.address_data == x.address_data).cloned()
+        .find(|&y| y.address_data == x.address_data)
+        .cloned()
     {
         Some(y) => AddressDataValue::new(x.address_data, (x.value + y.value).unwrap()),
         None => x,
@@ -265,7 +268,7 @@ impl UtxoVerifier {
     pub fn new(transaction_data: ArbitraryValidTransactionData) -> Self {
         UtxoVerifier(transaction_data)
     }
-
+    #[allow(clippy::iter_overeager_cloned)]
     pub fn calculate_current_utxo(&self) -> Vec<AddressDataValue> {
         let inputs = &self.0.input_addresses;
         let all = &self.0.addresses;
@@ -273,12 +276,15 @@ impl UtxoVerifier {
 
         let utxo_not_changed: Vec<AddressDataValue> = all
             .iter()
+            .filter(|&x| filter_utxo(x))
             .cloned()
-            .filter(filter_utxo)
             .filter(|x| !inputs.contains(x))
             .collect();
-        let utxo_added: Vec<AddressDataValue> =
-            outputs.iter().cloned().filter(filter_utxo).collect();
+        let utxo_added: Vec<AddressDataValue> = outputs
+            .iter()
+            .filter(|&x| filter_utxo(x))
+            .cloned()
+            .collect();
 
         let mut snapshot = Vec::new();
         snapshot.extend(utxo_not_changed);

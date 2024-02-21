@@ -104,7 +104,7 @@ pub enum Error {
 #[cfg(test)]
 mod tests {
     use crate::network::wallet_state::template::{
-        build_default, delegator, registration, representative,
+        actor::delegator, actor::registration, actor::representative, build_default,
     };
     use crate::{Block0, BlockBuilder, Ledger, Settings};
     use cardano_serialization_lib::Transaction;

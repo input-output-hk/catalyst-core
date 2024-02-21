@@ -106,13 +106,15 @@ impl ArbitraryAddressDataValueVec {
     pub fn utxos(&self) -> Vec<AddressDataValue> {
         self.0
             .iter()
-            .filter(|&x| matches!(x.address_data.kind(), Kind::Single { .. })).cloned()
+            .filter(|&x| matches!(x.address_data.kind(), Kind::Single { .. }))
+            .cloned()
             .collect()
     }
     pub fn accounts(&self) -> Vec<AddressDataValue> {
         self.0
             .iter()
-            .filter(|&x| matches!(x.address_data.kind(), Kind::Account { .. })).cloned()
+            .filter(|&x| matches!(x.address_data.kind(), Kind::Account { .. }))
+            .cloned()
             .collect()
     }
 
@@ -120,6 +122,7 @@ impl ArbitraryAddressDataValueVec {
         self.0
             .iter()
             .filter(|&x| matches!(x.address_data.kind(), Kind::Group { .. }))
-            .cloned().collect()
+            .cloned()
+            .collect()
     }
 }

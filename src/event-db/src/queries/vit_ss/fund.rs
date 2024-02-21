@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use crate::{
     types::vit_ss::{
         challenge::{Challenge, ChallengeHighlights},
@@ -60,7 +61,7 @@ impl EventDB {
     next_fund.voting_start AS next_voting_start,
     next_fund.voting_end AS next_voting_end,
     next_fund.tallying_end AS next_tallying_end
-    
+
     FROM event this_fund
     LEFT JOIN event next_fund ON next_fund.row_id = this_fund.row_id + 1
     WHERE this_fund.end_time > CURRENT_TIMESTAMP AT TIME ZONE 'UTC' AND this_fund.start_time < CURRENT_TIMESTAMP AT TIME ZONE 'UTC'

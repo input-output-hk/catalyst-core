@@ -1,3 +1,4 @@
+#[allow(hidden_glob_reexports)]
 use self::{io::vecs_to_maps, types::NotFundedReason};
 use crate::types::{challenge::Challenge, proposal::Proposal};
 use chain_impl_mockchain::value::Value;

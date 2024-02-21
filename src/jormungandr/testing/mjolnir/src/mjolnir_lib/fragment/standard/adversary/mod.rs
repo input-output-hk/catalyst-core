@@ -3,7 +3,7 @@ mod votes_only;
 
 use crate::mjolnir_lib::MjolnirError;
 use clap::Parser;
-pub use votes_only::VotesOnly;
+
 
 #[derive(Parser, Debug)]
 pub enum Adversary {

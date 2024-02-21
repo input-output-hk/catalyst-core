@@ -3,7 +3,7 @@ mod tx_only;
 
 use crate::mjolnir_lib::MjolnirError;
 use clap::Parser;
-pub use tx_only::TxOnly;
+
 #[derive(Parser, Debug)]
 pub enum Batch {
     /// Prints nodes related data, like stats,fragments etc.

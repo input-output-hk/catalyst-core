@@ -8,7 +8,7 @@ pub use vit_servicing_station_lib::{
     db::models::funds::Fund, db::models::proposals::Proposal,
     v0::endpoints::service_version::ServiceVersion as VitVersion,
 };
-pub use wallet_core::{Choice, Value};
+
 
 pub trait ProposalExtension {
     fn chain_proposal_id_as_str(&self) -> String;

@@ -119,6 +119,9 @@ impl ArtificialUserLoad {
 /// Generator errors
 #[derive(Error, Debug)]
 pub enum Error {
+    /// Loading configuration
+    #[error("configuration error")]
+    LoadConfig(#[from] crate::load::config::NodeLoadConfigError),
     /// Building configuration
     #[error("configuration error")]
     ServicingConfig(#[from] crate::load::config::ServicingStationConfigError),

@@ -75,9 +75,6 @@ impl NodeLoad {
 /// Errors for node load
 #[derive(Error, Debug)]
 pub enum Error {
-    /// Configuration error
-    #[error("config error")]
-    ConfigError(#[from] crate::load::config::NodeLoadConfigError),
     /// Controller errors
     #[error("internal error")]
     MultiControllerError(#[from] MultiControllerError),

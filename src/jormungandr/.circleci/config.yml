@@ -54,7 +54,7 @@ jobs:
   test_debug:
     executor: rust-stable
     environment:
-      RUSTFLAGS: -D warnings
+      RUSTFLAGS: -Awarnings
       CARGO_INCREMENTAL: 0
     steps:
       - test

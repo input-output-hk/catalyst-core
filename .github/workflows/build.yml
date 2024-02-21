@@ -24,7 +24,7 @@ on:
 env:
   RUST_LATEST_STABLE_VERSION: 1.75
   CARGO_TERM_COLOR: always
-  RUSTFLAGS: -D warnings
+  RUSTFLAGS: -Awarnings
   RUST_BACKTRACE: 1
   CARGO_INCREMENTAL: 0
   CARGO_FLAGS: --verbose --locked

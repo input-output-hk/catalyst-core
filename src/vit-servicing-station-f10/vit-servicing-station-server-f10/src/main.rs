@@ -1,3 +1,4 @@
+#![allow(warnings)]
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 

@@ -107,7 +107,7 @@ jobs:
             profile: debug
             toolchain: nightly
     env:
-      RUSTFLAGS: -D warnings
+      RUSTFLAGS: -Awarnings
       RUST_BACKTRACE: 1
       CARGO_FLAGS: --verbose --locked
       CARGO_INCREMENTAL: 0

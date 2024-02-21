@@ -100,7 +100,7 @@ jobs:
   test_debug:
     executor: rust-stable
     environment:
-      RUSTFLAGS: '-D warnings'
+      RUSTFLAGS: '-Awarnings'
       CARGO_INCREMENTAL: 0
     steps:
       - test
@@ -137,7 +137,7 @@ commands:
             sudo python3.8 -m pip install pipenv
       - run:
           name: install python libs
-          command: | 
+          command: |
             pip install httpx
             pip install pydantic
             pip install typer

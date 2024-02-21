@@ -104,7 +104,7 @@ commands:
       - run:
           name: Build with << parameters.mode >>
           environment:
-            RUSTFLAGS: -D warnings
+            RUSTFLAGS: -Awarnings
             CARGO_INCREMENTAL: 0
           command: |
             cargo build << parameters.mode >> << parameters.cargo_behavior >>

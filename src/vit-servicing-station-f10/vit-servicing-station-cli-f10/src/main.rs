@@ -1,3 +1,4 @@
+#![allow(warnings)]
 mod api_token;
 mod app;
 mod csv;

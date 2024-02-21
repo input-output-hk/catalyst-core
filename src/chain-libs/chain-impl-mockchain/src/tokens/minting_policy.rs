@@ -49,7 +49,7 @@ impl MintingPolicy {
         if self.0.is_empty() {
             return Err(MintingPolicyViolation::AdditionalMintingNotAllowed);
         }
-
+        #[allow(clippy::never_loop)]
         for _entry in &self.0 {
             unreachable!("implement this when we have actual minting policies");
         }

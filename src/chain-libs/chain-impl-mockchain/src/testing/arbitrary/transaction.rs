@@ -190,8 +190,7 @@ impl AccountStatesVerifier {
             .0
             .addresses
             .iter()
-            .cloned()
-            .filter(filter_accounts)
+            .filter(|&x| filter_accounts(x)).cloned()
             .map(|x| find_equal_and_sub(x, inputs))
             .collect();
 
@@ -232,8 +231,7 @@ impl AccountStatesVerifier {
 fn find_equal_and_sub(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
         .iter()
-        .cloned()
-        .find(|y| y.address_data == x.address_data)
+        .find(|&y| y.address_data == x.address_data).cloned()
     {
         Some(y) => AddressDataValue::new(x.address_data, (x.value - y.value).unwrap()),
         None => x,
@@ -243,8 +241,7 @@ fn find_equal_and_sub(x: AddressDataValue, collection: &[AddressDataValue]) -> A
 fn find_equal_and_add(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
         .iter()
-        .cloned()
-        .find(|y| y.address_data == x.address_data)
+        .find(|&y| y.address_data == x.address_data).cloned()
     {
         Some(y) => AddressDataValue::new(x.address_data, (x.value + y.value).unwrap()),
         None => x,

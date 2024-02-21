@@ -23,7 +23,7 @@ impl Arbitrary for LedgerBuilder {
 
         let faucets = WalletCollection::arbitrary(g);
         let splits = utils::split_vec(&faucets.0, g, 3);
-        let stake_pools_owners = splits.get(0).unwrap();
+        let stake_pools_owners = splits.first().unwrap();
         let stake_pools: Vec<StakePool> = stake_pools_owners
             .iter()
             .cloned()

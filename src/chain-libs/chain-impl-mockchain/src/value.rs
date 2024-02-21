@@ -31,7 +31,7 @@ impl Value {
     where
         I: Iterator<Item = Self>,
     {
-        values.fold(Ok(Value::zero()), |acc, v| acc? + v)
+        values.try_fold(Value::zero(), |acc, v| acc? + v)
     }
 
     #[inline]

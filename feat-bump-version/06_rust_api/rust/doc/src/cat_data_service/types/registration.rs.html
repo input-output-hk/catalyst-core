@@ -358,7 +358,9 @@
 <a href="#358" id="358">358</a>
 <a href="#359" id="359">359</a>
 <a href="#360" id="360">360</a>
-</pre></div><pre class="rust"><code><span class="kw">use super</span>::{serialize_datetime_as_rfc3339, SerdeType};
+<a href="#361" id="361">361</a>
+</pre></div><pre class="rust"><code><span class="attr">#![allow(deprecated)]
+</span><span class="kw">use super</span>::{serialize_datetime_as_rfc3339, SerdeType};
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>event_db::types::registration::{
     Delegation, Delegator, RewardAddress, Voter, VoterGroupId, VoterInfo,

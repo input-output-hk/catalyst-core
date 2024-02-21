@@ -401,7 +401,9 @@
 <a href="#401" id="401">401</a>
 <a href="#402" id="402">402</a>
 <a href="#403" id="403">403</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::{serialize_datetime_as_rfc3339, SerdeType};
+<a href="#404" id="404">404</a>
+</pre></div><pre class="rust"><code><span class="attr">#![allow(deprecated)]
+</span><span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::{serialize_datetime_as_rfc3339, SerdeType};
 <span class="kw">use </span>chrono::{DateTime, Utc};
 <span class="kw">use </span>event_db::types::vit_ss::{
     challenge::Challenge,

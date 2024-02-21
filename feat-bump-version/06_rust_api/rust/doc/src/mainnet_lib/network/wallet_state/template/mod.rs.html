@@ -141,8 +141,8 @@
 
 <span class="kw">use </span><span class="kw">super</span>::MainnetWalletState;
 <span class="kw">use </span><span class="kw">crate</span>::CardanoWallet;
-<span class="kw">pub use </span>actor::{delegator, registration, representative, Actor};
-<span class="kw">pub use </span>arbitrary::{generate_arbitrary_delegator, Error <span class="kw">as </span>ArbitraryError};
+<span class="kw">pub use </span>actor::Actor;
+<span class="kw">pub use </span>arbitrary::generate_arbitrary_delegator;
 <span class="kw">use </span>chain_crypto::PublicKeyFromStrError;
 <span class="kw">pub use </span>external_providers::{DummyExternalProvider, ExternalProvider};
 <span class="kw">use </span>jormungandr_lib::crypto::account::Identifier;

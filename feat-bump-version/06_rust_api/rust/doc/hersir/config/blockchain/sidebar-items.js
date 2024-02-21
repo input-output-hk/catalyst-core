@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["BlockchainConfigurationOrHash"],"mod":["configuration"],"type":["ConsensusVersion"]};
+window.SIDEBAR_ITEMS = {"enum":["BlockchainConfigurationOrHash"],"mod":["configuration"]};

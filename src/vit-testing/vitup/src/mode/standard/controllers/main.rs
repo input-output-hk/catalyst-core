@@ -1,9 +1,9 @@
 use super::{
     super::VitSettings,
     vit_station::{
-        dump_settings_to_file, BootstrapCommandBuilder, DbGenerator,
-        Error as VitStationControllerError, RestClient, ValidVotePlanParameters,
-        ValidVotingTemplateGenerator, VitStationController, VIT_CONFIG,
+        controller::VitStationController, controller::VIT_CONFIG, dump_settings_to_file,
+        BootstrapCommandBuilder, DbGenerator, Error as VitStationControllerError, RestClient,
+        ValidVotePlanParameters, ValidVotingTemplateGenerator,
     },
     wallet_proxy::{Error as WalletProxyError, WalletProxyController, WalletProxySpawnParams},
 };

@@ -24,9 +24,10 @@ mod exports {
     };
     pub use crate::load::{
         ArtificialUserLoad, ArtificialUserLoadError, MultiController, MultiControllerError,
-        NodeLoad, NodeLoadConfig, NodeLoadError, ServicingStationLoad, ServicingStationLoadError,
+        NodeLoad, NodeLoadError, ServicingStationLoad, ServicingStationLoadError,
         VoteStatusProvider, WalletRequestGen,
     };
+
     pub use crate::utils::{expiry, qr};
     pub use crate::wallet::{Error as WalletError, Wallet};
 }

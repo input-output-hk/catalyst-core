@@ -1,4 +1,4 @@
-mod config;
+pub mod config;
 mod multi_controller;
 mod request_generators;
 mod scenario;

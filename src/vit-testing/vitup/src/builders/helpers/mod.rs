@@ -1,8 +1,8 @@
 mod archive;
-mod qr;
+pub mod qr;
 mod static_data;
 mod time;
-mod vote_plan;
+pub mod vote_plan;
 
 pub use self::time::{convert_to_blockchain_date, convert_to_human_date};
 pub use archive::{

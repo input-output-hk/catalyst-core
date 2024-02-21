@@ -1,7 +1,8 @@
-mod helpers;
+pub mod helpers;
 mod reviews;
 pub mod utils;
 
+use crate::builders::helpers::VitVotePlanDefBuilder;
 pub use crate::builders::helpers::{build_current_fund, build_servicing_station_parameters};
 use crate::builders::utils::DeploymentTree;
 use crate::config;
@@ -17,14 +18,13 @@ use config::Block0Initial::Wallet;
 pub use helpers::{
     convert_to_blockchain_date, convert_to_human_date, discover_archive_input_files,
     generate_qr_and_hashes, get_configuration_from_file_url, ArchiveConfError,
-    ArchiveConfiguration, VitVotePlanDefBuilder, WalletExtension,
+    ArchiveConfiguration,
 };
 use hersir::builder::settings::Blockchain;
 use hersir::builder::Node;
 use hersir::builder::Topology;
 use hersir::config::{CommitteeTemplate, ExplorerTemplate, SessionSettings, WalletTemplate};
 use jormungandr_automation::jormungandr::PersistenceMode;
-pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::NumberOfSlotsPerEpoch;
 use jormungandr_lib::interfaces::SlotDuration;
 use jormungandr_lib::interfaces::TokenIdentifier as TokenIdentifierLib;

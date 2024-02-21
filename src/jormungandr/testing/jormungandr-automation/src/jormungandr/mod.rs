@@ -16,7 +16,7 @@ pub mod grpc;
 pub use self::{
     configuration::{
         get_available_port, Block0ConfigurationBuilder, EitherHashOrBlock0, NodeConfigBuilder,
-        NodeConfigManager, SecretModelFactory,
+        NodeConfigManager, secret::SecretModelFactory,
     },
     explorer::{
         compare_schema as compare_explorer_schema, Explorer, ExplorerError, ExplorerProcess,

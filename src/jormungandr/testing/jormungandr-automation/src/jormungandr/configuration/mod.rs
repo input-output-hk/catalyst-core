@@ -8,7 +8,7 @@ use std::{
 mod block0;
 mod jormungandr_config;
 mod node;
-mod secret;
+pub mod secret;
 
 pub use block0::Block0ConfigurationBuilder;
 pub use jormungandr_config::EitherHashOrBlock0;

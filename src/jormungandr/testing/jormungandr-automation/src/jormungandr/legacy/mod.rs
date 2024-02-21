@@ -8,9 +8,6 @@ pub use config::{
     LegacyConfigError, LegacyNodeConfig, LegacyNodeConfigBuilder, LegacyNodeConfigConverter,
     LegacyNodeConfigManager,
 };
-pub use jormungandr_lib::interfaces::{
-    Log, Mempool, NodeConfig, P2p, Policy, Rest, TopicsOfInterest, TrustedPeer,
-};
 use jortestkit::file;
 pub use rest::BackwardCompatibleRest;
 use std::path::PathBuf;

@@ -7,8 +7,8 @@ use chain_core::property::Fragment as _;
 use chain_impl_mockchain::fragment::{Fragment, FragmentId};
 use indicatif::ProgressBar;
 pub use jormungandr_automation::jormungandr::{
-    grpc::{client::MockClientError, JormungandrClient}, FragmentNode, FragmentNodeError, JormungandrLogger, JormungandrRest,
-    MemPoolCheck, RestError,
+    grpc::{client::MockClientError, JormungandrClient},
+    FragmentNode, FragmentNodeError, JormungandrLogger, JormungandrRest, MemPoolCheck, RestError,
 };
 use jormungandr_automation::{
     jormungandr::{

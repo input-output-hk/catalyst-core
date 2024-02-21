@@ -4,7 +4,6 @@ mod tx_only;
 
 use crate::mjolnir_lib::MjolnirError;
 
-
 use clap::Parser;
 
 #[derive(Parser, Debug)]

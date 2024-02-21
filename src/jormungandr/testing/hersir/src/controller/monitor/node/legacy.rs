@@ -7,9 +7,8 @@ use chain_impl_mockchain::{
     header::HeaderId,
 };
 pub use jormungandr_automation::jormungandr::{
-    BackwardCompatibleRest, FragmentNode, FragmentNodeError,
-    JormungandrLogger, JormungandrProcess, JormungandrRest, MemPoolCheck, StartupVerificationMode,
-    Status,
+    BackwardCompatibleRest, FragmentNode, FragmentNodeError, JormungandrLogger, JormungandrProcess,
+    JormungandrRest, MemPoolCheck, StartupVerificationMode, Status,
 };
 use jormungandr_automation::{
     jormungandr::{LogLevel, NodeAlias, StartupError},

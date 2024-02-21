@@ -4,7 +4,6 @@ mod votes_only;
 use crate::mjolnir_lib::MjolnirError;
 use clap::Parser;
 
-
 #[derive(Parser, Debug)]
 pub enum Adversary {
     VotesOnly(votes_only::VotesOnly),

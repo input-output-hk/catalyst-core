@@ -9,7 +9,6 @@ pub use vit_servicing_station_lib::{
     v0::endpoints::service_version::ServiceVersion as VitVersion,
 };
 
-
 pub trait ProposalExtension {
     fn chain_proposal_id_as_str(&self) -> String;
     fn into_wallet_proposal(self) -> wallet_core::Proposal;

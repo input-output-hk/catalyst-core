@@ -72,7 +72,7 @@ impl<R, A: key::AsymmetricPublicKey> std::cmp::PartialEq<Self> for PublicKey<R, 
 }
 
 impl<R, A: key::AsymmetricPublicKey> std::cmp::Eq for PublicKey<R, A> {}
-
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl<R, A: key::AsymmetricPublicKey> std::cmp::PartialOrd<Self> for PublicKey<R, A> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.inner.partial_cmp(&other.inner)

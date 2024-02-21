@@ -306,7 +306,7 @@ impl<H: DigestAlg, T> PartialEq for DigestOf<H, T> {
 }
 
 impl<H: DigestAlg, T> Eq for DigestOf<H, T> {}
-
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl<H: DigestAlg, T> PartialOrd for DigestOf<H, T> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         self.inner.partial_cmp(&other.inner)

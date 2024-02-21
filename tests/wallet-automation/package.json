@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "downloadFile test"
+    "test": "npx playwright test"
   },
   "repository": {
     "type": "git",

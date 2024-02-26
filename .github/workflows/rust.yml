@@ -229,7 +229,7 @@ jobs:
         run: cargo install --force cargo-make
 
       - name: Install refinery
-        run: cargo install refinery_cli
+        run: cargo install refinery_cli --version 0.8.7 --locked
 
       - name: Install dependencies
         run:

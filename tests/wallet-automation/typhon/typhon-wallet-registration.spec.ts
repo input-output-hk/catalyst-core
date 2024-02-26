@@ -203,9 +203,4 @@ test('import wallet', async ({ }) => {
     const addNew = '//*[@id="app"]/div/div/div[3]/div/div[2]/div/div/div[4]';
     await newTab.waitForSelector(addNew, { state: 'visible' });
     await newTab.click(addNew);
-
-    // keeping the browser open for debugging and verifying (remove the timeout or adjust as needed)
-    // await page.waitForTimeout(300000); // adjust the time as needed
-    // await new Promise(resolve => { /* never resolves */ });
-
 });

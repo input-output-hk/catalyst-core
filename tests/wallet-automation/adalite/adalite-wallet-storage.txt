@@ -1,0 +1,9 @@
+# .txt file
+//WALLET2
+WALLET2_USERNAME=chaitea001
+WALLET2_PASSWORD=Chai1234!
+WALLET2_SEED_PHRASE="try pistol obvious apology budget rigid mail act permit photo cherry celery polar taxi remember"
+WALLET2_PIN1 = 1
+WALLET2_PIN2 = 2
+WALLET2_PIN3 = 3
+WALLET2_PIN4 = 4

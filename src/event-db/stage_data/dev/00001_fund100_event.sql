@@ -30,7 +30,7 @@ INSERT INTO event (
     'Fund 100',
     'Catalyst Testnet - Fund 100',
     '2024-01-15 21:45:00',  -- Registration Snapshot Time
-    '2024-01-15 22:00:00',  -- Snapshot Start.
+    '2024-01-15 22:15:00',  -- Snapshot Start.
     50000000,              -- Voting Power Threshold
     1,                      -- Max Voting Power PCT
     NULL,                   -- Review Rewards

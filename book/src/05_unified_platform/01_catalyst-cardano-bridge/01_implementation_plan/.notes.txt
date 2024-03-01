@@ -1,0 +1,25 @@
+
+It has two internal long running tasks.
+Read, validate and record latest registrations/delegations from the linked block chain.
+Read and record running total balance and unclaimed rewards for every stake address.
+It also exposes a Voting Power API.
+Get voting power for Stake Address or Voting Key as at (timestamp).  Would respect the registrations valid at that time.
+So if you asked for your voting power but you were delegated,
+the API would return you have X personal voting power,
+and Y..Z Voting power of yours has been delegated to Keys A-B.
+Options:
+Max Registration Age (So regitrations before this date/time are not considered).
+Must have valid payment address.
+(So we can later make a valid payment address a necessity if required, and this would also exclude just using stake address.)
+Voting power calculation type
+Absolute on the time of snapshot
+Average Maximum daily value
+Parameter: Length of time to average over (in days).
+Voting power linearity
+Linear (1 ADA = X voting power).  Where X is a parameter.
+Logarithmic (Voting power is attenuated by a logarithmic function).  Would need parameters to define the curve.
+Other??
+Get Registration/Delegation information for a Stake Address/Voting Key as at a time.  Similar to above but does NOT do any
+Get all active registrations as at a time.
+Time and max age of registrations are parameters.
+If stake addresses without registration are included in the output.

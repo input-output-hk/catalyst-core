@@ -1,0 +1,22 @@
+%%{init: {'theme':'forest'}}%%
+sequenceDiagram
+    actor U as User
+    participant D as dApp
+    participant W as Wallet
+    participant B as Cardano Block Chain
+    participant Br as Cardano-Catalyst Bridge
+    participant C as Catalyst Backend
+
+    rect rgb(200,255,200)
+      Note over U: Registering Authorization Credential
+    end
+    U->>D: Request Registration
+    Note over D: Registration Contains:<br>Type<br>Stake key<br>Payment Address<br>Registration Key
+    D->>W: Sign Registration
+    W->>D: Signed Registration
+    D->>W: Submit Transaction
+    W->>B: Registration Txn
+    Note right of U: Type/Public Key/Reward Address
+    Note over B: Block Minted
+    B->>Br: Reads Chain Tip, detects Registration
+    Br->>C: Records Latest Registration

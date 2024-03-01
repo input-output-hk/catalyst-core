@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["vote_cast","vote_plan"],"struct":["Certificate"]};

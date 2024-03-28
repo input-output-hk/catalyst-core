@@ -118,7 +118,6 @@ class ExternalDataImporter:
             network_ids=network_ids,
             snapshot_tool_path=os.environ.get("SNAPSHOT_TOOL_PATH", "snapshot_tool"),
             catalyst_toolbox_path=os.environ.get("CATALYST_TOOLBOX_PATH", "catalyst-toolbox"),
-            gvc_api_url=os.environ["GVC_API_URL"],
             ssh_config=ssh_config,
         )
         try:

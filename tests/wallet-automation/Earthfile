@@ -26,6 +26,6 @@ src:
     COPY global-setup.ts .
 
 # Define a test target that builds upon deps
-test:
+wallet-test:
     FROM +src
     RUN xvfb-run -a npx playwright test

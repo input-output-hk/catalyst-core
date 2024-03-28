@@ -226,7 +226,7 @@ jobs:
         uses: taiki-e/install-action@nextest
 
       - name: Install cargo-make
-        run: cargo install --force cargo-make
+        run: cargo install --force cargo-make --locked
 
       - name: Install refinery
         run: cargo install refinery_cli --version 0.8.7 --locked

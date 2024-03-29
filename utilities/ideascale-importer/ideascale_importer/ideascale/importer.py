@@ -232,7 +232,7 @@ class Importer:
         event_id: int,
         proposals_scores_csv_path: Optional[str],
         ideascale_api_url: str,
-        output_dir: Optional[Path],
+        output_dir: Optional[Path] = None,
     ):
         """Initialize the importer."""
         self.api_token = api_token

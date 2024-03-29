@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["SLOTS_PERCENTAGE_RANGE"],"enum":["ActiveSlotsCoeffError","FeesGoesTo"],"struct":["ActiveSlotsCoeff","Settings"]};

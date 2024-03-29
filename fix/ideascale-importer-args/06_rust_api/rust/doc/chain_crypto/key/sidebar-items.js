@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["PublicKeyError","PublicKeyFromStrError","SecretKeyError"],"mod":["test"],"struct":["KeyPair","PublicKey","SecretKey"],"trait":["AsymmetricKey","AsymmetricPublicKey","SecretKeySizeStatic"]};

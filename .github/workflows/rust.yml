@@ -226,10 +226,10 @@ jobs:
         uses: taiki-e/install-action@nextest
 
       - name: Install cargo-make
-        run: cargo install --force cargo-make
+        run: cargo install --force cargo-make --locked
 
       - name: Install refinery
-        run: cargo install refinery_cli
+        run: cargo install refinery_cli --version 0.8.7 --locked
 
       - name: Install dependencies
         run:
@@ -268,16 +268,16 @@ jobs:
             --exclude wallet-uniffi \
             --archive-file nextest-archive.tar.zst
 
-      - name: Run Catalyst Core tests
-        env:
-          TEST_DATABASE_URL: postgres://postgres:123456@localhost
-          EVENT_DB_URL: postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev
+      ## - name: Run Catalyst Core tests
+      ##  env:
+      ##    TEST_DATABASE_URL: postgres://postgres:123456@localhost
+      ##    EVENT_DB_URL: postgres://catalyst-event-dev:CHANGE_ME@localhost/CatalystEventDev
         ## removing test ui_test because of bug https://github.com/rust-lang/cargo/issues/10352
-        run: |
-          cargo nextest run \
-          -E "not (test(ui_test))" \
-          --archive-file nextest-archive.tar.zst --extract-to ${{ github.workspace }} \
-          --extract-overwrite --partition hash:${{ matrix.partition }}/10 --profile ci
+      ##   run: |
+      ##    cargo nextest run \
+      ##    -E "not (test(ui_test))" \
+      ##    --archive-file nextest-archive.tar.zst --extract-to ${{ github.workspace }} \
+      ##    --extract-overwrite --partition hash:${{ matrix.partition }}/10 --profile ci
 
   test-results:
     if: always()

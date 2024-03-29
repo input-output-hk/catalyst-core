@@ -15,13 +15,8 @@ jobs:
       aws_ecr_registry: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
       aws_role_arn: arn:aws:iam::332405224602:role/ci
       aws_region: eu-central-1
-      deployment_images: |
-        cat-data-service
-        fragment-exporter
-        migrations
-        voting-node
+      publish_docs: false
     secrets:
-      deployment_token: ${{ secrets.CI_BOT_TOKEN }}
       dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
       dockerhub_username: ${{ secrets.DOCKERHUB_USERNAME }}
       earthly_runner_address: ${{ secrets.EARTHLY_SATELLITE_ADDRESS }}

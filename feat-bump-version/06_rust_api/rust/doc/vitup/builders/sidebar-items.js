@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FOLLOWER","LEADER_1","LEADER_2","LEADER_3"],"enum":["Error"],"mod":["helpers","reviews","utils"],"struct":["ReviewGenerator","VitBackendSettingsBuilder"]};

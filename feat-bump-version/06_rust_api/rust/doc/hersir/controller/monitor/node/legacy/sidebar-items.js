@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["FragmentNodeError","StartupVerificationMode","Status"],"struct":["BackwardCompatibleRest","JormungandrLogger","JormungandrProcess","JormungandrRest","LegacyNode","MemPoolCheck"],"trait":["FragmentNode"]};

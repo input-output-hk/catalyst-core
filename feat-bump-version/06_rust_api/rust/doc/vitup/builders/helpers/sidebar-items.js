@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ArchiveConfError"],"fn":["build_current_fund","build_servicing_station_parameters","convert_to_blockchain_date","convert_to_human_date","discover_archive_input_files","get_configuration_from_file_url"],"mod":["archive","qr","static_data","time","vote_plan"],"struct":["ArchiveConfiguration"]};

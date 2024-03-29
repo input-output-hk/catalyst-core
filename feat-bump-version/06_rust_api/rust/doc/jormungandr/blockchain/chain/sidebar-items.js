@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAIN_BRANCH_TAG","PROCESS_LOGGING_DISTANCE"],"enum":["AppliedBlock","CheckHeaderProof","Error","HeaderChainVerifyError","PreCheckedHeader"],"fn":["new_epoch_leadership_from","pre_verify_link","write_reward_info"],"struct":["Blockchain","EpochLeadership","LeadershipBlock","PostCheckedHeader","StreamInfo","StreamReporter"],"type":["Result"]};

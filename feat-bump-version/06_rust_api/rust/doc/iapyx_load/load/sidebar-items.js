@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["IapyxLoadCommand","IapyxLoadCommandError","NodeOnlyLoadCommand","ProgressBarMode"],"fn":["build_monitor"],"mod":["burst","constant"],"struct":["ArtificialLoadCommand","StaticOnlyLoadCommand"]};

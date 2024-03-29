@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["GITHUB_TOKEN"],"fn":["download_last_n_releases","get_jormungandr_bin"],"mod":["config","rest","version"],"struct":["RELEASES"]};

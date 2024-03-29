@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["secret_key_into_keynesis"],"struct":["CustomLayerBuilder","LOCAL_ADDR","P2pTopology","View"]};

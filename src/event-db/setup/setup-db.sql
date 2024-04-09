@@ -29,13 +29,10 @@
   \set dbUserPw `echo ${DB_USER_PW:-CHANGE_ME}`
 \endif
 
--- DISPLAY ALL VARIABLES
-\echo VARIABLES:
-\echo -> dbName ................. = :dbName
-\echo -> dbDescription .......... = :dbDescription
-\echo -> dbUser ................. = :dbUser
-\echo -> dbUserPw / $DB_USER_PW . = :dbUserPw
-
+-- The root db user of the database instance (usually postgres).
+\if :{?dbRootUser} \else
+  \set dbRootUser 'postgres'
+\endif
 
 -- Cleanup if we already ran this before.
 DROP DATABASE IF EXISTS :"dbName";
@@ -49,6 +46,9 @@ CREATE USER :"dbUser" WITH PASSWORD :'dbUserPw';
 ALTER DEFAULT privileges REVOKE EXECUTE ON functions FROM public;
 
 ALTER DEFAULT privileges IN SCHEMA public REVOKE EXECUTE ON functions FROM :"dbUser";
+
+-- This is necessary for RDS to work.
+GRANT :"dbUser" TO :"dbRootUser";
 
 -- Create the database.
 CREATE DATABASE :"dbName" WITH OWNER :"dbUser";

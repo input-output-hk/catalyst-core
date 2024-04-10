@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["OPERATION_NAME","QUERY","__QUERY_WORKAROUND"],"struct":["EpochEpoch","EpochEpochFirstBlock","EpochEpochLastBlock","EpochTip","EpochTipBlocksByEpoch","EpochTipBlocksByEpochEdges","EpochTipBlocksByEpochEdgesNode","ResponseData","Variables"],"type":["Boolean","EpochNumber","Float","ID","Int"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["convert_advisor_review","convert_challenge","convert_fund","convert_goals","convert_proposal","convert_voteplan","unix_timestamp_to_rfc3339"],"struct":["CsvConverter"]};

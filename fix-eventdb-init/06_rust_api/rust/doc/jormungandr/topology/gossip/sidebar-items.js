@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["GossipError"],"struct":["Gossip","Gossips"]};

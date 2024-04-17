@@ -1,6 +1,6 @@
 -- Define F100 IdeaScale parameters.
 INSERT INTO config (id, id2, id3, value) VALUES (
-    'ideascale,
+    'ideascale',
     '100',
     '',
     '{

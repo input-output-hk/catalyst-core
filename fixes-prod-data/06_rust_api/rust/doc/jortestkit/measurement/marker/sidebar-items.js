@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["counter","resources_usage","timestamp"]};

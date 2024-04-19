@@ -4,9 +4,9 @@ pub unsafe extern &quot;C&quot; fn iohk_jormungandr_wallet_vote_cast(
     settings: <a class="type" href="type.SettingsPtr.html" title="type jormungandrwallet::SettingsPtr">SettingsPtr</a>,
     proposal: <a class="type" href="type.ProposalPtr.html" title="type jormungandrwallet::ProposalPtr">ProposalPtr</a>,
     choice: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>,
-    valid_until: BlockDate,
+    valid_until: <a class="struct" href="../wallet_core/c/time/struct.BlockDate.html" title="struct wallet_core::c::time::BlockDate">BlockDate</a>,
     lane: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>,
-    transaction_out: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*mut </a>TransactionOut
+    transaction_out: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*mut </a><a class="struct" href="../wallet_core/c/struct.TransactionOut.html" title="struct wallet_core::c::TransactionOut">TransactionOut</a>
 ) -&gt; <a class="type" href="type.ErrorPtr.html" title="type jormungandrwallet::ErrorPtr">ErrorPtr</a></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>build the vote cast transaction</p>
 <h2 id="errors"><a href="#errors">Errors</a></h2>
 <p>This function may fail upon receiving a null pointer or a <code>choice</code> value

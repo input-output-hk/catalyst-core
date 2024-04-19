@@ -2,7 +2,7 @@
 pub unsafe extern &quot;C&quot; fn iohk_jormungandr_wallet_set_state(
     wallet: <a class="type" href="type.WalletPtr.html" title="type jormungandrwallet::WalletPtr">WalletPtr</a>,
     value: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>,
-    counters: SpendingCounters
+    counters: <a class="struct" href="../wallet_core/c/struct.SpendingCounters.html" title="struct wallet_core::c::SpendingCounters">SpendingCounters</a>
 ) -&gt; <a class="type" href="type.ErrorPtr.html" title="type jormungandrwallet::ErrorPtr">ErrorPtr</a></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>update the wallet account state</p>
 <p>this is the value retrieved from any jormungandr endpoint that allows to query
 for the account state. It gives the value associated to the account as well as

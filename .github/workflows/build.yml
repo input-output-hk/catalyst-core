@@ -119,6 +119,11 @@ jobs:
         working-directory: "C:\\${{ github.event.repository.name }}"
         run: choco install -y protoc openssl sqlite postgresql14
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: choco_logs
+          path: C:\ProgramData\chocolatey\logs\*
+          
       - name: Set PostgreSQL env variables
         working-directory: "C:\\${{ github.event.repository.name }}"
         shell: powershell

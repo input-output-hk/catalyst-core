@@ -2,7 +2,7 @@
 pub unsafe extern &quot;C&quot; fn iohk_jormungandr_max_expiration_date(
     settings: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*const </a><a class="struct" href="../struct.Settings.html" title="struct jormungandrwallet::Settings">Settings</a>,
     current_time: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>,
-    block_date_out: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*mut </a><a class="struct" href="../../wallet_core/c/time/struct.BlockDate.html" title="struct wallet_core::c::time::BlockDate">BlockDate</a>
+    block_date_out: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.pointer.html">*mut </a>BlockDate
 ) -&gt; <a class="type" href="../type.ErrorPtr.html" title="type jormungandrwallet::ErrorPtr">ErrorPtr</a></code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>This function dereference raw pointers. Even though the function checks if
 the pointers are null. Mind not to put random values in or you may see
 unexpected behaviors.</p>

@@ -13,6 +13,7 @@
 # DB_HOST - The hostname of the database server
 # DB_PORT - The port of the database server
 # DB_NAME - The name of the database
+# DB_ROOT_NAME - The name of the root database (usually postgres)
 # DB_SUPERUSER - The username of the database superuser
 # DB_SUPERUSER_PASSWORD - The password of the database superuser
 # DB_USER - The username of the database user
@@ -20,16 +21,8 @@
 # DB_SKIP_HISTORICAL_DATA - If set, historical data will not be added to the database (optional)
 # DB_SKIP_TEST_DATA - If set, test data will not be added to the database (optional)
 # DB_SKIP_STAGE_DATA - If set, stage specific data will not be added to the database (optional)
-# ADMIN_ROLE_PASSWORD - The password of the cat_admin role for graphql
-# ADMIN_USER_PASSWORD - The password of the admin user for graphql
-# ANON_ROLE_PASSWORD - The password of the cat_anon role for graphql
-# ADMIN_FIRST_NAME - The first name of the admin user for graphql (optional)
-# ADMIN_LAST_NAME - The last name of the admin user for graphql (optional)
-# ADMIN_ABOUT - The about of the admin user for graphql (optional)
-# ADMIN_EMAIL - The email of the admin user for graphql (optional)
 # REINIT_EVENT_DB - If set, the database will be reinitialized (optional) (DESTRUCTIVE)
 # SKIP_EVENT_DB_INIT - If set, the event database will not be initialized (optional)
-# SKIP_GRAPHQL_INIT - If set, graphql will not be initialized (optional)
 # DEBUG - If set, the script will print debug information (optional)
 # DEBUG_SLEEP - If set, the script will sleep for the specified number of seconds (optional)
 # STAGE - The stage being run.  Currently only controls if stage specific data is applied to the DB (optional)
@@ -71,33 +64,40 @@ REQUIRED_ENV=(
     "DB_HOST"
     "DB_PORT"
     "DB_NAME"
+    "DB_ROOT_NAME"
     "DB_SUPERUSER"
     "DB_SUPERUSER_PASSWORD"
     "DB_USER"
     "DB_USER_PASSWORD"
-    "ADMIN_ROLE_PASSWORD"
-    "ADMIN_USER_PASSWORD"
-    "ANON_ROLE_PASSWORD"
 )
 check_env_vars "${REQUIRED_ENV[@]}"
 
 # Export environment variables
 export PGHOST="${DB_HOST}"
 export PGPORT="${DB_PORT}"
-export PGUSER="${DB_SUPERUSER}"
-export PGPASSWORD="${DB_SUPERUSER_PASSWORD}"
-export PGDATABASE="${DB_NAME}"
-
-: "${ADMIN_FIRST_NAME:='Admin'}"
-: "${ADMIN_LAST_NAME:='Default'}"
-: "${ADMIN_ABOUT:='Default Admin User'}"
-: "${ADMIN_EMAIL:='admin.default@projectcatalyst.io'}"
 
 # Sleep if DEBUG_SLEEP is set
 debug_sleep
 
+if [ -n "${DEBUG:-}" ]; then
+    echo ">>> Environment variables:"
+    echo "DB_HOST: ${DB_HOST}"
+    echo "DB_PORT: ${DB_PORT}"
+    echo "DB_NAME: ${DB_NAME}"
+    echo "DB_ROOT_NAME: ${DB_ROOT_NAME}"
+    echo "DB_SUPERUSER: ${DB_SUPERUSER}"
+    echo "DB_SUPERUSER_PASSWORD: ${DB_SUPERUSER_PASSWORD}"
+    echo "DB_USER: ${DB_USER}"
+    echo "DB_USER_PASSWORD: ${DB_USER_PASSWORD}"
+fi
+
 # Initialize database if necessary
 if [[ ! -f ./tmp/initialized || -n "${REINIT_EVENT_DB:-}" ]]; then
+
+    # Connect using the superuser to create the event database
+    export PGUSER="${DB_SUPERUSER}"
+    export PGPASSWORD="${DB_SUPERUSER_PASSWORD}"
+    export PGDATABASE="${DB_ROOT_NAME}"
 
     PSQL_FLAGS=""
     if [ -n "${DEBUG:-}" ]; then
@@ -110,21 +110,8 @@ if [[ ! -f ./tmp/initialized || -n "${REINIT_EVENT_DB:-}" ]]; then
             -v dbName="${DB_NAME}" \
             -v dbDescription="Catalayst Event DB" \
             -v dbUser="${DB_USER}" \
-            -v dbUserPw="${DB_USER_PASSWORD}"
-    fi
-
-    if [[ -z "${SKIP_GRAPHQL_INIT:-}" ]]; then
-        echo ">>> Initializing graphql..."
-        psql "${PSQL_FLAGS}" -f ./setup/graphql-setup.sql \
-            -v dbName="${DB_NAME}" \
-            -v dbUser="${DB_USER}" \
-            -v adminUserFirstName="${ADMIN_FIRST_NAME}" \
-            -v adminUserLastName="${ADMIN_LAST_NAME}" \
-            -v adminUserAbout="${ADMIN_ABOUT}" \
-            -v adminUserEmail="${ADMIN_EMAIL}" \
-            -v adminRolePw="${ADMIN_ROLE_PASSWORD}" \
-            -v adminUserPw="${ADMIN_USER_PASSWORD}" \
-            -v anonRolePw="${ANON_ROLE_PASSWORD}"
+            -v dbUserPw="${DB_USER_PASSWORD}" \
+            -v dbRootUser="${DB_SUPERUSER}"
     fi
 
     if [[ ! -f ./tmp/initialized ]]; then
@@ -135,6 +122,10 @@ else
 fi
 
 # Run migrations
+export PGUSER="${DB_USER}"
+export PGPASSWORD="${DB_USER_PASSWORD}"
+export PGDATABASE="${DB_NAME}"
+
 echo ">>> Running migrations..."
 export DATABASE_URL="postgres://${DB_USER}:${DB_USER_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
 ./refinery migrate -e DATABASE_URL -c ./refinery.toml -p ./migrations

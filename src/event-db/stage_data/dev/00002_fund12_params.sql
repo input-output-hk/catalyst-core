@@ -1,7 +1,7 @@
--- Define F100 IdeaScale parameters.
+-- Define F12 IdeaScale parameters.
 INSERT INTO config (id, id2, id3, value) VALUES (
-    'ideascale,
-    '100',
+    'ideascale',
+    '12',
     '',
     '{
         "group_id": 31051,
@@ -51,11 +51,11 @@ INSERT INTO config (id, id2, id3, value) VALUES (
 ) ON CONFLICT (id, id2, id3) DO UPDATE
 SET value = EXCLUDED.value;
 
--- Use F100 params for event with row_id = 100.
+-- Use F12 params for event with row_id = 12.
 INSERT INTO config (id, id2, id3, value) VALUES (
     'event',
     'ideascale_params',
-    '100',
-    '{"params_id": "F100"}'
+    '12',
+    '{"params_id": "F12"}'
 ) ON CONFLICT (id, id2, id3) DO UPDATE
 SET value = EXCLUDED.value;

@@ -1,7 +1,7 @@
 -- Define F100 IdeaScale parameters.
 INSERT INTO config (id, id2, id3, value) VALUES (
-    'ideascale,
-    '100',
+    'ideascale',
+    '12',
     '',
     '{
         "group_id": 31051,
@@ -17,14 +17,14 @@ INSERT INTO config (id, id2, id3, value) VALUES (
         "proposals": {
             "field_mappings": {
                 "proposer_url": ["relevant_link_1", "website__github_repository__or_any_other_relevant_link__", "relevant_link_3"],
-                "proposer_relevant_experience": "f11_project_team",
+                "proposer_relevant_experience": "f12_project_team",
                 "public_key": "ada_payment_address__",
-                "funds": ["f11_requested_funds", "requested_funds_in_ada","requested_funds_coti"]
+                "funds": ["f12_requested_funds", "requested_funds_in_ada","requested_funds_coti"]
             },
             "extra_field_mappings": {
                 "metrics": "key_metrics_to_measure",
                 "goal": "how_does_success_look_like_",
-                "solution": "f11_proposal_solution",
+                "solution": "f12_proposal_solution",
                 "brief": "challenge_brief",
                 "importance": "importance",
                 "full_solution": "please_describe_your_proposed_solution",
@@ -51,11 +51,11 @@ INSERT INTO config (id, id2, id3, value) VALUES (
 ) ON CONFLICT (id, id2, id3) DO UPDATE
 SET value = EXCLUDED.value;
 
--- Use F100 params for event with row_id = 100.
+-- Use F12 params for event with row_id = 12.
 INSERT INTO config (id, id2, id3, value) VALUES (
     'event',
     'ideascale_params',
-    '100',
-    '{"params_id": "F100"}'
+    '12',
+    '{"params_id": "F12"}'
 ) ON CONFLICT (id, id2, id3) DO UPDATE
 SET value = EXCLUDED.value;

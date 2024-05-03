@@ -4,8 +4,14 @@ This tool generates voting power info from a `cardano-db-sync` instance.
 
 Example usage:
 
-```
+```sh
 snapshot-tool --db postgres --db-user postgres --db-host localhost --out-file output.json
+```
+
+To get a full list of available arguments run:
+
+```sh
+snapshot-tool --help
 ```
 
 ## Building

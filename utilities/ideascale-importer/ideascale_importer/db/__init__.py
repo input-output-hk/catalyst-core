@@ -219,12 +219,12 @@ async def connect(url: str, *args, **kwargs) -> asyncpg.Connection:
     """
     try:
         conn = await asyncpg.connect(dsn=url, *args, **kwargs)
-    except Exception as _:
-        raise Exception("Database connection failed")
+    except Exception as e:
+        raise Exception(f"database connection failed: {e}")
 
     try:
         await conn.set_type_codec("jsonb", encoder=json.dumps, decoder=json.loads, schema="pg_catalog")
-    except Exception as _:
-        raise Exception("Failed to set jsonb codec")
+    except Exception as e:
+        raise Exception(f"failed to set jsonb codec: {e}")
 
     return conn

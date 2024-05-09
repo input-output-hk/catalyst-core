@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ArchiveCalculatorError"],"fn":["are_equal_or_adjacent"],"struct":["ArchiveStats"]};

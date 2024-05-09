@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["watch_signal_for_shutdown"]};

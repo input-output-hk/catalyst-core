@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["_impl_query_id_for_caster","_impl_query_id_for_choice","_impl_query_id_for_fragment_id","_impl_query_id_for_proposal","_impl_query_id_for_raw_fragment","_impl_query_id_for_time","_impl_query_id_for_voteplan_id"],"struct":["caster","choice","fragment_id","proposal","raw_fragment","star","time","voteplan_id"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["db_conn","handle_invalids","handle_unregistered","load","main"]};

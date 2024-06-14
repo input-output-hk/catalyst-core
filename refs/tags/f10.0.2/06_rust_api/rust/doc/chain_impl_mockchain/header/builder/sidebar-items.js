@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["HeaderCommonDone","HeaderSetConsensusData","HeaderSetConsensusSignature","HeaderSetDate","HeaderSetParenting"],"fn":["header_builder","header_builder_raw"],"struct":["HeaderBftBuilder","HeaderBuilder","HeaderGenesisPraosBuilder"],"type":["HeaderBuilderNew"]};

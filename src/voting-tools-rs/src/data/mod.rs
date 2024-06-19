@@ -225,6 +225,7 @@ impl RawRegistration {
         &self,
         cddl_config: &CddlConfig,
         network_id: NetworkId,
+        slot_no: SlotNo
     ) -> Result<SignedRegistration, Box<dyn Error>> {
         // validate cddl: 61284
         validate_reg_cddl(&self.bin_reg, cddl_config)?;
@@ -232,7 +233,7 @@ impl RawRegistration {
         // validate cddl: 61285
         validate_sig_cddl(&self.bin_sig, cddl_config)?;
 
-        let registration = self.raw_reg_conversion(network_id)?;
+        let registration = self.raw_reg_conversion(network_id, slot_no)?;
 
         let signature = self.raw_sig_conversion()?;
 
@@ -245,7 +246,7 @@ impl RawRegistration {
         })
     }
 
-    fn raw_reg_conversion(&self, network_id: NetworkId) -> Result<Registration, Box<dyn Error>> {
+    fn raw_reg_conversion(&self, network_id: NetworkId, slot_no: SlotNo) -> Result<Registration, Box<dyn Error>> {
         let decoded: ciborium::value::Value =
             ciborium::de::from_reader(Cursor::new(&self.bin_reg))?;
 
@@ -283,7 +284,11 @@ impl RawRegistration {
 
         // A nonce that identifies that most recent delegation
         let nonce = match inspect_nonce(metamap) {
-            Ok(value) => value,
+            Ok(value) => if value.0 < slot_no.0 { // Don't allow nonce > slot number
+                value
+            } else {
+                Nonce(slot_no.0)
+            },
             Err(value) => return value,
         };
 

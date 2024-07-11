@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ReadError","WriteError"],"trait":["Block","BlockDate","BlockId","ChainLength","Deserialize","DeserializeFromSlice","Fragment","FragmentId","FromStr","HasFragments","HasHeader","Header","Serialize","Transaction","TransactionId"]};

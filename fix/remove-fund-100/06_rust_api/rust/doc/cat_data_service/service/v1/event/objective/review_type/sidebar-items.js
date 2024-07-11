@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["review_type","review_types_exec"]};

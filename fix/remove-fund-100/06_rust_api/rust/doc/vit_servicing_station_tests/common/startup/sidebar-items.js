@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["empty_db","get_available_port","get_cli_exe","get_exe","get_working_directory","quick_start"],"mod":["db","server"],"struct":["NEXT_AVAILABLE_PORT_NUMBER"]};

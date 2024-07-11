@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["initialize_db_with_migration"],"mod":["embedded_migrations"]};

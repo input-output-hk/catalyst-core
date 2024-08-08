@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["block_event","node_client","node_server"],"struct":["BlockEvent","ClientAuthRequest","ClientAuthResponse","Gossip","HandshakeRequest","HandshakeResponse","PeersRequest","PeersResponse","PullBlocksRequest","PullBlocksToTipRequest","PullHeadersRequest","PushHeadersResponse","TipRequest","TipResponse","UploadBlocksResponse"]};

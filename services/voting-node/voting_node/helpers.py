@@ -50,7 +50,8 @@ async def add_default_event(
     end_time = tallying_end + slotdelta(slots=5)  # finish event 20 secs after tallying_end
 
     voting_power_threshold = 450
-    max_voting_power_pct = 1
+    # Integer up to 100
+    max_voting_power_pct = 100
 
     insight_sharing_start = block0_date + timedelta(minutes=4)
     proposal_submission_start = block0_date + timedelta(minutes=5)

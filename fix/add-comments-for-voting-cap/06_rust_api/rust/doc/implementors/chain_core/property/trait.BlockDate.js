@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"chain_impl_mockchain":[["impl <a class=\"trait\" href=\"chain_core/property/trait.BlockDate.html\" title=\"trait chain_core::property::BlockDate\">BlockDate</a> for <a class=\"struct\" href=\"chain_impl_mockchain/block/struct.BlockDate.html\" title=\"struct chain_impl_mockchain::block::BlockDate\">BlockDate</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

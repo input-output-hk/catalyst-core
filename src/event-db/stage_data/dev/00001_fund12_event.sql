@@ -32,7 +32,7 @@ INSERT INTO event (
     '2024-10-12 11:00:00',  -- Registration Snapshot Time
     '2024-10-12 11:15:00',  -- Snapshot Start.
     50000000,              -- Voting Power Threshold
-    1,                      -- Max Voting Power PCT
+    100,                      -- Max Voting Power PCT
     NULL,                   -- Review Rewards
     '2024-05-02 15:00:00',  -- Start Time
     '2024-10-14 07:00:00',  -- End Time

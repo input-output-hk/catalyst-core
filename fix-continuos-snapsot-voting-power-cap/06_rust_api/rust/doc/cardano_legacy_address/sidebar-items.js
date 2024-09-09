@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AddressMatchXPub","ParseExtendedAddrError"],"mod":["address","base58","cbor","crc32"],"struct":["Addr","Attributes","ExtendedAddr"]};

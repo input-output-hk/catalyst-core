@@ -1,7 +1,8 @@
 """IdeaScale CLI commands."""
 
 import asyncio
-from typing import Optional, List
+from pathlib import Path
+from typing import Optional
 import typer
 
 from ideascale_importer.ideascale.client import Client
@@ -39,6 +40,9 @@ def import_all(
         envvar="IDEASCALE_API_URL",
         help="IdeaScale API URL",
     ),
+    output_dir: Optional[str] = typer.Option(
+        default=None, envvar="IDEASCALE_OUTPUT_DIR", help="Output directory for generated files"
+    ),
 ):
     """Import all event data from IdeaScale for a given event."""
     configure_logger(log_level, log_format)
@@ -47,13 +51,23 @@ def import_all(
         event_id: int,
         proposals_scores_csv_path: Optional[str],
         ideascale_api_url: str,
+        output_dir: Optional[str]
     ):
+        # check if output_dir path exists, or create otherwise
+        if output_dir is None:
+            logger.info("No output directory was defined.")
+        else:
+            output_dir = Path(output_dir)
+            output_dir.mkdir(exist_ok=True, parents=True)
+            logger.info(f"Output directory for artifacts: {output_dir}")
+
         importer = Importer(
             api_token,
             database_url,
             event_id,
             proposals_scores_csv_path,
             ideascale_api_url,
+            output_dir
         )
 
         try:
@@ -63,4 +77,4 @@ def import_all(
         except Exception as e:
             logger.error(e)
 
-    asyncio.run(inner(event_id, proposals_scores_csv, ideascale_api_url))
+    asyncio.run(inner(event_id, proposals_scores_csv, ideascale_api_url, output_dir))

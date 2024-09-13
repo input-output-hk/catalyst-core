@@ -34,4 +34,34 @@ impl OutputFile {
             path: self.output.clone().unwrap_or_default(),
         })
     }
+
+    /// Adds a prefix to the current path extension.
+    /// For example, "my.long.filename.json" added ".is" becomes:
+    /// "my.long.filename.is.json"
+    #[must_use]
+    pub fn extension_prefix(self, ext_prefix: &str) -> Self {
+        match self.output {
+            None => self,
+            Some(ref path) => {
+                let mut new_path: PathBuf = path.parent().expect("Parent will exist").to_path_buf();
+
+                if let Some(path) = path.file_stem() {
+                    new_path.push(path);
+                };
+
+                if let Some(ext) = path.extension() {
+                    let ext =
+                        ext_prefix.to_owned() + "." + ext.to_str().expect("Extension will exist.");
+
+                    new_path.set_extension(ext);
+                } else {
+                    new_path.set_extension(ext_prefix);
+                }
+
+                Self {
+                    output: Some(new_path),
+                }
+            }
+        }
+    }
 }

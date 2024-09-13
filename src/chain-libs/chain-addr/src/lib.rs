@@ -46,7 +46,7 @@ use chain_crypto::testing::public_key_strategy;
 // Allow to differentiate between address in
 // production and testing setting, so that
 // one type of address is not used in another setting.
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Hash, serde::Serialize, Ord)]
 #[cfg_attr(
     any(test, feature = "property-test-api"),
     derive(test_strategy::Arbitrary)
@@ -62,7 +62,7 @@ pub enum Discrimination {
 /// * Group address : an ed25519 spending public key followed by a group public key used for staking
 /// * Account address : an ed25519 stake public key
 /// * Multisig address : a multisig public key
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Hash, Ord)]
 #[cfg_attr(
     any(test, feature = "property-test-api"),
     derive(test_strategy::Arbitrary)
@@ -133,7 +133,7 @@ impl KindType {
 
 /// An unstructured address including the
 /// discrimination and the kind of address
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(
     any(test, feature = "property-test-api"),
     derive(test_strategy::Arbitrary)

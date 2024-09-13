@@ -4,7 +4,7 @@ use std::{fmt, str::FromStr};
 /// Address with the appropriate implementation for Serde API and
 /// Display/FromStr interfaces.
 ///
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Address(pub String, pub chain_addr::Address);
 
 /* ---------------- Display ------------------------------------------------ */

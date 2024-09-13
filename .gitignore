@@ -117,5 +117,8 @@ tests/tmp/
 lefthook.yml
 treefmt.toml
 
-# local earthly Environments
+# local earthly environments
 local/*
+tests/wallet-automation/typhon/usrdatadir/*
+tests/wallet-automation/node_modules/*
+tests/wallet-automation/typhon/extensions/*

@@ -10,11 +10,9 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 jormungandr-lib = { workspace = true }
-serde = { version = "1", features = ["derive"] }
 proptest = { workspace = true, branch = "master", optional = true }
 chain-addr = { path = "../../chain-libs/chain-addr" }
 test-strategy = { version = "0.2", optional = true }
-serde_test = { version = "1", optional = true }
 hex = { version = "0.4" }
 thiserror = "1.0"
 fraction = { version = "0.12", features = ["with-serde-support"] }
@@ -24,11 +22,23 @@ chain-crypto = { path = "../../chain-libs/chain-crypto" }
 rust_decimal = "1.16"
 rust_decimal_macros = "1"
 
+rand = { workspace = true }
+rand_core = { workspace = true }
+rand_chacha = { workspace = true }
+
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+serde_test = { workspace = true, optional = true }
+
+
 [dev-dependencies]
-serde_test = "1"
 test-strategy = "0.2"
-serde_json = "1.0"
-serde_yaml = "0.8.17"
+
+serde_test = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+
 proptest = { workspace = true, branch = "master" }
 chain-addr = { path = "../../chain-libs/chain-addr" }
 

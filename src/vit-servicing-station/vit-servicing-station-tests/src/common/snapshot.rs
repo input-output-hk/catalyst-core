@@ -113,6 +113,9 @@ impl SnapshotBuilder {
                                     chain_addr::Kind::Account(identifier.into()),
                                 )
                                 .into(),
+                                overlimit: false,
+                                private_key: None,
+                                underthreshold: false,
                             }
                         },
                     })

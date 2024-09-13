@@ -7,11 +7,10 @@ from datetime import datetime
 import json
 import os
 import re
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Literal, Set, Tuple, Optional
 from loguru import logger
 from pydantic import BaseModel
 
-from ideascale_importer.gvc import Client as GvcClient
 import ideascale_importer.db
 from ideascale_importer.db import models
 from ideascale_importer.utils import run_cmd
@@ -40,6 +39,12 @@ class SnapshotProcessedEntry(BaseModel):
     hir: HIR
 
 
+class CatalystToolboxOutput(BaseModel):
+    """Represents the output of catalyst-toolbox."""
+
+    voters: List[SnapshotProcessedEntry]
+
+
 class Registration(BaseModel):
     """Represents a voter registration."""
 
@@ -53,7 +58,7 @@ class Registration(BaseModel):
 class CatalystToolboxDreps(BaseModel):
     """Represents the input format of the dreps file of catalyst-toolbox."""
 
-    reps: List[str]
+    reps: List[str] = []
 
 
 class OutputDirectoryDoesNotExist(Exception):
@@ -282,18 +287,15 @@ class Importer:
         eventdb_url: str,
         event_id: int,
         output_dir: str,
-        network_ids: List[str],
+        network_ids: List[Literal["mainnet", "preprod", "testnet"]],
         snapshot_tool_path: str,
         catalyst_toolbox_path: str,
-        gvc_api_url: str,
         raw_snapshot_file: Optional[str] = None,
-        dreps_file: Optional[str] = None,
         ssh_config: Optional[SSHConfig] = None,
     ):
         """Initialize the importer."""
         self.snapshot_tool_path = snapshot_tool_path
         self.catalyst_toolbox_path = catalyst_toolbox_path
-        self.gvc_api_url = gvc_api_url
 
         self.eventdb_url = eventdb_url
         self.event_id = event_id
@@ -314,11 +316,9 @@ class Importer:
         self.ssh_config = ssh_config
 
         self.dreps_json = "[]"
-        self.dreps_file = dreps_file
-        self.dreps_out_file = os.path.join(output_dir, "dreps.json")
 
         if not os.path.exists(output_dir):
-            raise OutputDirectoryDoesNotExist(output_dir)
+            os.makedirs(output_dir)
 
         self.output_dir = output_dir
 
@@ -361,24 +361,6 @@ class Importer:
                 if conn is not None:
                     await conn.close()
 
-    async def _fetch_gvc_dreps_list(self):
-        logger.info("Fetching drep list from GVC")
-
-        gvc_client = GvcClient(self.gvc_api_url)
-
-        dreps = []
-        try:
-            dreps = await gvc_client.dreps()
-        except Exception as e:
-            logger.error("Failed to get dreps, using drep cache", error=str(e))
-        await gvc_client.close()
-
-        self.dreps_json = json.dumps([d.model_dump() for d in dreps])
-
-        dreps_data = CatalystToolboxDreps(reps=[d.attributes.voting_key for d in dreps])
-        with open(self.dreps_out_file, "w") as f:
-            json.dump(dreps_data.model_dump(), f)
-
     def _split_raw_snapshot_file(self, raw_snapshot_file: str):
         logger.info("Splitting raw snapshot file for processing")
 
@@ -398,7 +380,7 @@ class Importer:
             with logger.contextualize(network_id=network_id):
                 # Extract the db_user, db_pass, db_host, and db_name from the address using a regular expression
                 match = re.match(
-                    r"^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+):?([0-9]*)\/(?P<db_name>[^?]+)?",
+                    r"^postgres:\/\/(?P<db_user>[^:]+):(?P<db_pass>[^@]+)@(?P<db_host>[^:\/]+:?[0-9]*)\/(?P<db_name>[^?]+)?",
                     dbsync_url,
                 )
 
@@ -412,6 +394,12 @@ class Importer:
 
                 params = self.network_params[network_id]
 
+                match network_id:
+                    case "mainnet":
+                        snapshot_net = "mainnet"
+                    case _:
+                        snapshot_net = "testnet"
+
                 if self.ssh_config is None:
                     snapshot_tool_cmd = (
                         f"{self.snapshot_tool_path}"
@@ -420,7 +408,7 @@ class Importer:
                         f" --db-host {db_host}"
                         f" --db {db_name}"
                         f" --min-slot 0 --max-slot {params.registration_snapshot_slot}"
-                        f" --network-id {network_id}"
+                        f" --network-id {snapshot_net}"
                         f" --out-file {params.snapshot_tool_out_file}"
                     )
 
@@ -436,6 +424,7 @@ class Importer:
                     snapshot_tool_cmd = (
                         "ssh"
                         f" -i {self.ssh_config.keyfile_path}"
+                        " -oTCPKeepAlive=no -oServerAliveInterval=20"
                         f" {self.ssh_config.destination}"
                         f" {self.ssh_config.snapshot_tool_path}"
                         f" --db-user {db_user}"
@@ -487,14 +476,17 @@ class Importer:
             )
 
         for network_id, params in self.network_params.items():
+            discr = "test"
+            if network_id == "main" or network_id == "mainnet":
+                discr = "production"
             with logger.contextualize(network_id=network_id):
                 catalyst_toolbox_cmd = (
                     f"{self.catalyst_toolbox_path} snapshot"
                     f" -s {params.snapshot_tool_out_file}"
                     f" -m {self.event_parameters.min_stake_threshold}"
                     f" -v {self.event_parameters.voting_power_cap}"
-                    f" --dreps {self.dreps_out_file}"
-                    f" --output-format json {params.catalyst_toolbox_out_file}"
+                    f" -d {discr}"
+                    f" {params.catalyst_toolbox_out_file}"
                 )
 
                 await run_cmd("catalyst-toolbox", catalyst_toolbox_cmd)
@@ -532,10 +524,10 @@ class Importer:
             catalyst_toolbox_data_raw_json = f.read()
 
         catalyst_toolbox_data_dict = json.loads(catalyst_toolbox_data_raw_json)
-        catalyst_toolbox_data: Dict[str, List[SnapshotProcessedEntry]] = {}
-        for k, entries in catalyst_toolbox_data_dict.items():
+        catalyst_toolbox_data: Dict[str, CatalystToolboxOutput] = {}
+        for network_id, data in catalyst_toolbox_data_dict.items():
             try:
-                catalyst_toolbox_data[k] = [SnapshotProcessedEntry.model_validate(e) for e in entries]
+                catalyst_toolbox_data[network_id] = CatalystToolboxOutput.model_validate(data)
             except Exception as e:
                 logger.error(f"ERROR: {repr(e)}")
 
@@ -696,11 +688,12 @@ class Importer:
 
         voters: Dict[str, models.Voter] = {}
         contributions: List[models.Contribution] = []
+        uniq_contrib_keys: Set[Tuple[str, str, str]] = set([])
 
-        for network_id, network_processed_snapshot in catalyst_toolbox_data.items():
+        async def process_voters(network_id, network_processed_snapshot):
             network_report = network_snapshot_reports[network_id]
 
-            for ctd in network_processed_snapshot:
+            for ctd in network_processed_snapshot.voters:
                 for snapshot_contribution in ctd.contributions:
                     network_report.processed_voting_power += snapshot_contribution.value
                     network_report.eligible_voters_count += 1
@@ -709,19 +702,19 @@ class Importer:
                     # This can be removed once it's fixed in catalyst-toolbox
                     if not voting_key.startswith("0x"):
                         voting_key = "0x" + voting_key
+                    stake_public_key = snapshot_contribution.stake_public_key
+                    voting_group = ctd.hir.voting_group
 
-                    delegation_data = registration_delegation_data[network_id][
-                        f"{snapshot_contribution.stake_public_key}{voting_key}"
-                    ]
+                    delegation_data = registration_delegation_data[network_id][f"{stake_public_key}{voting_key}"]
 
                     contribution = models.Contribution(
-                        stake_public_key=snapshot_contribution.stake_public_key,
+                        stake_public_key=stake_public_key,
                         snapshot_id=0,
                         voting_key=voting_key,
                         voting_weight=delegation_data["voting_weight"],
                         voting_key_idx=delegation_data["voting_key_idx"],
                         value=snapshot_contribution.value,
-                        voting_group=ctd.hir.voting_group,
+                        voting_group=voting_group,
                         reward_address=snapshot_contribution.reward_address,
                     )
 
@@ -732,8 +725,23 @@ class Importer:
                         voting_power=ctd.hir.voting_power,
                     )
 
-                    contributions.append(contribution)
-                    voters[f"{voter.voting_key}{voter.voting_group}"] = voter
+                    # uniq_key that mirrors the unique key constraint in the DB
+                    uniq_key = (stake_public_key, voting_key, voting_group)
+
+                    # Add uniq_key if not already present, and append
+                    # contribution and voter models.
+                    if uniq_key not in uniq_contrib_keys:
+                        uniq_contrib_keys.add(uniq_key)
+                        contributions.append(contribution)
+                        voters[f"{voter.voting_key}{voter.voting_group}"] = voter
+                    else:
+                        logger.error(
+                            "Duplicate unique contribution key found, ignoring voter contribution",
+                            network_id=network_id,
+                            uniq_key=str(uniq_key),
+                            contribution=str(contribution),
+                            voter=str(voter),
+                        )
 
                     await asyncio.sleep(0)
 
@@ -757,6 +765,16 @@ class Importer:
                 total_rewards_types=len(network_report.rewards_types),
                 total_unique_rewards=len(network_report.unique_rewards),
             )
+
+        # Process the snapshot from the highest_priority_network first to get the
+        # uniq_contrib_keys.
+        if highest_priority_network in catalyst_toolbox_data:
+            network_processed_snapshot = catalyst_toolbox_data.pop(highest_priority_network)
+            await process_voters(highest_priority_network, network_processed_snapshot)
+
+        # Process the rest of the network data.
+        for network_id, network_processed_snapshot in catalyst_toolbox_data.items():
+            await process_voters(network_id, network_processed_snapshot)
 
         conn = await ideascale_importer.db.connect(self.eventdb_url)
 
@@ -797,13 +815,6 @@ class Importer:
         """Take a snapshot and write the data to the database."""
         await self._fetch_eventdb_parameters()
         await self._fetch_network_parameters()
-
-        if self.dreps_file is None:
-            await self._fetch_gvc_dreps_list()
-        else:
-            logger.info("Skipping dreps GVC API call. Reading dreps file")
-            with open(self.dreps_file) as f:
-                self.dreps = json.load(f)
 
         if self.raw_snapshot_file is not None:
             logger.info("Skipping snapshot_tool execution")

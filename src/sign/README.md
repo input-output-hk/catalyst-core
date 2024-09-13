@@ -1,11 +1,12 @@
-# Fragment generator and signer:
+# **Vote** Fragment generator and signer:
+Generates vote fragments and signs them accordingly
 
 ## Specifications
  [*see here for format.abnf*](../chain-libs/chain-impl-mockchain/doc/format.abnf)
 
  [*see here for format.md*](../chain-libs/chain-impl-mockchain/doc/format.md)
 
-## Ingredients for generating a fragment
+## Ingredients for generating a **vote** fragment
 
 - Election public key
 - Alice public key
@@ -21,7 +22,7 @@
 cargo build --release -p sign
 ```  
 
-*Generate raw fragment in byte representation*
+*Generate raw vote fragment in byte representation*
 
 ```bash
 
@@ -32,7 +33,8 @@ PROPOSAL=5
 VOTE_PLAN_ID=36ad42885189a0ac3438cdb57bc8ac7f6542e05a59d1f2e4d1d38194c9d4ac7b
 EPOCH=0
 SLOT=0
+CHOICE=1
 
-./target/release/sign --election-pub-key $ELECTION_PUB_KEY --private-key $ALICE_SK --public-key $ALICE_PK --proposal $PROPOSAL --vote-plan-id $VOTE_PLAN_ID --epoch $EPOCH --slot $SLOT
+./target/release/sign --election-pub-key $ELECTION_PUB_KEY --private-key $ALICE_SK --public-key $ALICE_PK --proposal $PROPOSAL --vote-plan-id $VOTE_PLAN_ID --epoch $EPOCH --slot $SLOT --choice $CHOICE
 
 ```

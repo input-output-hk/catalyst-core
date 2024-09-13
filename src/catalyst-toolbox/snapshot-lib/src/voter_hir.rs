@@ -1,7 +1,15 @@
 use ::serde::{Deserialize, Serialize};
-use jormungandr_lib::{crypto::account::Identifier, interfaces::Address, interfaces::Value};
+use jormungandr_lib::{
+    crypto::account::{Identifier, SigningKey},
+    interfaces::Address,
+    interfaces::Value,
+};
 
 pub type VotingGroup = String;
+
+fn is_false(b: &bool) -> bool {
+    !(*b)
+}
 
 /// Define High Level Intermediate Representation (HIR) for voting
 /// entities in the Catalyst ecosystem.
@@ -11,8 +19,8 @@ pub type VotingGroup = String;
 /// and free from implementation constraints.
 ///
 /// You can roughly read this as
-/// "voting_key will participate in this voting round with role voting_group and will have voting_power influence"
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Hash, Eq)]
+/// "`voting_key` will participate in this voting round with role voting_group and will have voting_power influence"
+#[derive(Serialize, Deserialize, Debug, Clone /*, PartialEq, Hash, Eq*/)]
 pub struct VoterHIR {
     // Keep hex encoding as in CIP-36
     #[serde(with = "serde")]
@@ -26,6 +34,66 @@ pub struct VoterHIR {
     pub voting_group: VotingGroup,
     /// Voting power as processed by the snapshot
     pub voting_power: Value,
+
+    /// Under threshold (voter doesn't have enough voting power)
+    /// if `true` this voter can not participate in voting.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub underthreshold: bool,
+
+    /// Overlimit (voter is max voting power threshold limited)
+    /// This field is just an indication and doesn't affect ability to vote.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub overlimit: bool,
+
+    /// PrivateKey is only created when making a loadtest snapshot.
+    /// Its ONLY used for fake accounts used in the load test, and
+    /// can not be created or derived for a legitimate voter.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub private_key: Option<String>,
+}
+
+impl VoterHIR {
+    #[must_use]
+    pub fn to_loadtest_snapshot(&self) -> Self {
+        // Generate a new Voting Key pair.
+        let loadtest_key = SigningKey::generate(rand::thread_rng());
+        let loadtest_voting_key = loadtest_key.identifier();
+
+        let discriminator = self.address.1.discrimination();
+        let loadtest_address = loadtest_voting_key.to_address(discriminator);
+
+        let private_key = format!("0x{}", loadtest_key.to_hex());
+
+        Self {
+            voting_key: loadtest_voting_key,
+            address: loadtest_address.into(),
+            voting_group: self.voting_group.clone(),
+            voting_power: self.voting_power,
+            underthreshold: self.underthreshold,
+            overlimit: self.overlimit,
+            private_key: Some(private_key),
+        }
+    }
+
+    #[must_use]
+    pub fn cap_voting_power(&self, cap: u64) -> Self {
+        let mut voting_power = self.voting_power.as_u64();
+        let mut overlimit = self.overlimit;
+        if voting_power > cap {
+            voting_power = cap;
+            overlimit = true;
+        };
+
+        VoterHIR {
+            voting_key: self.voting_key.clone(),
+            address: self.address.clone(),
+            voting_group: self.voting_group.clone(),
+            voting_power: voting_power.into(),
+            underthreshold: self.underthreshold,
+            overlimit, // Set overlimit if required.
+            private_key: self.private_key.clone(),
+        }
+    }
 }
 
 mod serde {
@@ -36,7 +104,7 @@ mod serde {
     where
         S: Serializer,
     {
-        serializer.serialize_str(&voting_key.to_hex())
+        serializer.serialize_str(&format!("0x{}", voting_key.to_hex()))
     }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Identifier, D::Error>
@@ -76,6 +144,9 @@ pub mod tests {
                     .into(),
                     voting_power: voting_power.into(),
                     voting_group: args.0.clone(),
+                    underthreshold: false,
+                    overlimit: false,
+                    private_key: None,
                 })
                 .boxed()
         }

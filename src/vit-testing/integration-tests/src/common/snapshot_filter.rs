@@ -80,6 +80,8 @@ impl SnapshotFilter {
                 voting_threshold,
                 cap,
                 voting_group_assigner,
+                Discrimination::Production,
+                false,
             )
             .unwrap(),
         }

@@ -15,7 +15,8 @@ use std::error::Error;
 
 use crate::fragment::{compose_encrypted_vote_part, generate_vote_fragment};
 
-mod fragment;
+pub mod fragment;
+pub mod network;
 
 ///
 /// Args defines and declares CLI behaviour within the context of clap
@@ -44,6 +45,9 @@ pub struct Args {
     /// vote plan hash
     #[clap(short, long)]
     vote_plan_id: String,
+    /// vote yay or nay
+    #[clap(short, long)]
+    choice: u8,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -66,9 +70,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     sk.extend(pk.clone());
     let keypair: Keypair = Keypair::from_bytes(&sk)?;
 
-    // vote
-    let vote = chain_vote::Vote::new(2, 1_usize)?;
-    let crs = chain_vote::Crs::from_hash(args.vote_plan_id.clone().as_bytes());
+    let choice = args.choice;
+
+    let vote = chain_vote::Vote::new(2, choice.into())?;
+    // common reference string
+    let crs = chain_vote::Crs::from_hash(&hex::decode(args.vote_plan_id.clone())?);
 
     // parse ek key
     let ek = ElectionPublicKey::from_bytes(&election_pk)

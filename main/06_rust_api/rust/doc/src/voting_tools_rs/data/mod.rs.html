@@ -738,6 +738,18 @@
 <a href="#738" id="738">738</a>
 <a href="#739" id="739">739</a>
 <a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
+<a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
 </pre></div><pre class="rust"><code><span class="attr">#![allow(clippy::all)]
 </span><span class="kw">use </span>std::{error::Error, ffi::OsString, io::Cursor};
 
@@ -965,6 +977,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         cddl_config: <span class="kw-2">&amp;</span>CddlConfig,
         network_id: NetworkId,
+        slot_no: SlotNo,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;SignedRegistration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
         <span class="comment">// validate cddl: 61284
         </span>validate_reg_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_reg, cddl_config)<span class="question-mark">?</span>;
@@ -972,7 +985,7 @@
         <span class="comment">// validate cddl: 61285
         </span>validate_sig_cddl(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_sig, cddl_config)<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>registration = <span class="self">self</span>.raw_reg_conversion(network_id)<span class="question-mark">?</span>;
+        <span class="kw">let </span>registration = <span class="self">self</span>.raw_reg_conversion(network_id, slot_no)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>signature = <span class="self">self</span>.raw_sig_conversion()<span class="question-mark">?</span>;
 
@@ -985,7 +998,11 @@
         })
     }
 
-    <span class="kw">fn </span>raw_reg_conversion(<span class="kw-2">&amp;</span><span class="self">self</span>, network_id: NetworkId) -&gt; <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+    <span class="kw">fn </span>raw_reg_conversion(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        network_id: NetworkId,
+        slot_no: SlotNo,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Registration, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
         <span class="kw">let </span>decoded: ciborium::value::Value =
             ciborium::de::from_reader(Cursor::new(<span class="kw-2">&amp;</span><span class="self">self</span>.bin_reg))<span class="question-mark">?</span>;
 
@@ -1023,7 +1040,14 @@
 
         <span class="comment">// A nonce that identifies that most recent delegation
         </span><span class="kw">let </span>nonce = <span class="kw">match </span>inspect_nonce(metamap) {
-            <span class="prelude-val">Ok</span>(value) =&gt; value,
+            <span class="prelude-val">Ok</span>(value) =&gt; {
+                <span class="kw">if </span>value.<span class="number">0 </span>&lt; slot_no.<span class="number">0 </span>{
+                    <span class="comment">// Don&#39;t allow nonce &gt; slot number
+                    </span>value
+                } <span class="kw">else </span>{
+                    Nonce(slot_no.<span class="number">0</span>)
+                }
+            }
             <span class="prelude-val">Err</span>(value) =&gt; <span class="kw">return </span>value,
         };
 

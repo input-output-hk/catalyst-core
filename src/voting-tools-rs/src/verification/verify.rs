@@ -100,7 +100,7 @@ pub fn filter_registrations(
         };
 
         // deserialize the raw Binary CBOR.
-        let reg = match rawreg.to_signed(&cddl, network_id) {
+        let reg = match rawreg.to_signed(&cddl, network_id, SlotNo(slot as u64)) {
             Err(err) => {
                 invalids.push(InvalidRegistration {
                     spec_61284: Some(prefix_hex(&rawreg.bin_reg)),

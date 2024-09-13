@@ -143,7 +143,7 @@
 <span class="doccomment">/// Address with the appropriate implementation for Serde API and
 /// Display/FromStr interfaces.
 ///
-</span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+</span><span class="attr">#[derive(Debug, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 </span><span class="kw">pub struct </span>Address(<span class="kw">pub </span>String, <span class="kw">pub </span>chain_addr::Address);
 
 <span class="comment">/* ---------------- Display ------------------------------------------------ */

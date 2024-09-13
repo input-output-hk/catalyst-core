@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["serde","tests"],"struct":["VoterHIR"],"type":["VotingGroup"]};
+window.SIDEBAR_ITEMS = {"fn":["is_false"],"mod":["serde","tests"],"struct":["VoterHIR"],"type":["VotingGroup"]};

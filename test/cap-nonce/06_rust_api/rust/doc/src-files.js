@@ -42,10 +42,10 @@ var srcIndex = JSON.parse('{\
 "offline":["",[],["main.rs"]],\
 "scheduler_service_lib":["",[["client",[],["args.rs","mod.rs","rest.rs"]],["rest",[],["files.rs","health.rs","mod.rs","token.rs"]]],["config.rs","context.rs","file_lister.rs","lib.rs","service.rs","state.rs"]],\
 "settings":["",[],["lib.rs"]],\
-"sign":["",[],["fragment.rs","main.rs"]],\
+"sign":["",[],["fragment.rs","main.rs","network.rs"]],\
 "signals_handler":["",[],["lib.rs"]],\
 "snapshot_cli":["",[],["snapshot-cli.rs"]],\
-"snapshot_lib":["",[],["influence_cap.rs","lib.rs","registration.rs","sve.rs","voter_hir.rs","voting_group.rs"]],\
+"snapshot_lib":["",[],["lib.rs","registration.rs","sve.rs","voter_hir.rs","voting_group.rs"]],\
 "snapshot_tool":["",[],["snapshot_tool.rs"]],\
 "snapshot_trigger_service":["",[["args",[],["mod.rs"]],["client",[],["args.rs","mod.rs","rest.rs"]],["config",[],["job.rs","mod.rs"]]],["context.rs","job.rs","lib.rs","rest.rs"]],\
 "snapshot_wormhole":["",[],["snapshot-wormhole.rs"]],\

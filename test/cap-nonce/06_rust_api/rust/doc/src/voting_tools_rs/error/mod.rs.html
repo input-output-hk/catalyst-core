@@ -102,7 +102,6 @@
 <a href="#102" id="102">102</a>
 <a href="#103" id="103">103</a>
 <a href="#104" id="104">104</a>
-<a href="#105" id="105">105</a>
 </pre></div><pre class="rust"><code><span class="attr">#![allow(missing_docs)]
 
 </span><span class="kw">use </span>nonempty::NonEmpty;
@@ -191,8 +190,7 @@
 /// Useful for providing more detailed error messages about why a particular registration was
 /// rejected
 ///
-/// `registration` is an `Option` because some errors prevent us from even generating a
-/// [`SignedRegistration`] struct
+/// `registration` is an `Option` because some errors prevent us from even generating it
 </span><span class="attr">#[derive(Debug, Serialize)]
 </span><span class="kw">pub struct </span>InvalidRegistration {
     <span class="kw">pub </span>spec_61284: <span class="prelude-ty">Option</span>&lt;String&gt;,

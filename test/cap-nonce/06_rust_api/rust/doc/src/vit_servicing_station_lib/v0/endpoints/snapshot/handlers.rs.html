@@ -81,7 +81,7 @@
 }
 
 <span class="doccomment">/// Snapshot information update with timestamp.
-</span><span class="attr">#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+</span><span class="attr">#[derive(Clone, Debug, <span class="comment">/* PartialEq, Eq, */ </span>Deserialize, Serialize)]
 </span><span class="kw">pub struct </span>SnapshotInfoInput {
     <span class="kw">pub </span>snapshot: Vec&lt;SnapshotInfo&gt;,
     <span class="attr">#[serde(deserialize_with = <span class="string">&quot;crate::utils::serde::deserialize_unix_timestamp_from_rfc3339&quot;</span>)]

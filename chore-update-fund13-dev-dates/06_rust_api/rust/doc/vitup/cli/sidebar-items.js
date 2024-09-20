@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["GenerateCommand","StartCommand","VitCliCommand"],"mod":["diff","generate","import","start","time","validate"]};

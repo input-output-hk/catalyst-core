@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["calc_final_eligible_rankings","calc_final_ranking_per_review","calculate_veteran_advisors_incentives","disagreement_modifier"],"struct":["VeteranAdvisorIncentive"],"type":["EligibilityThresholds","VcaRewards"]};

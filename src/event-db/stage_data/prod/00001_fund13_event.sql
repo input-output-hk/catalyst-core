@@ -1,4 +1,4 @@
--- F100
+-- F13
 INSERT INTO event (
     row_id,
     name,
@@ -26,25 +26,25 @@ INSERT INTO event (
     extra,
     cast_to
 ) VALUES (
-    12,
-    'Fund 12',
-    'Catalyst - Fund 12',
-    '2024-06-18 21:45:00',  -- Registration Snapshot Time
-    '2024-06-18 22:00:00',  -- Snapshot Start.
-    50000000,              -- Voting Power Threshold
-    1,                      -- Max Voting Power PCT
+    13,
+    'Fund 13',
+    'Catalyst - Fund 13',
+    '2024-11-20 21:45:00',  -- Registration Snapshot Time
+    '2024-11-20 22:00:00',  -- Snapshot Start.
+    2500000,              -- Voting Power Threshold
+    100,                      -- Max Voting Power PCT
     NULL,                   -- Review Rewards
-    '2024-04-17 11:00:00',  -- Start Time
-    '2024-07-24 09:00:00',  -- End Time
-    '2024-04-17 11:00:00',  -- Insight Sharing Start
-    '2024-04-17 11:00:00',  -- Proposal Submission Start
-    '2024-04-17 11:00:00',  -- Refine Proposals Start
-    '2024-04-17 11:00:00',  -- Finalize Proposals Start
-    '2024-04-17 11:00:00',  -- Proposal Assessment Start
-    '2024-04-17 11:00:00',  -- Assessment QA Start
-    '2024-06-27 12:00:00',  -- Voting Starts
-    '2024-07-11 11:00:00',  -- Voting Ends
-    '2024-07-24 09:00:00',  -- Tallying Ends
+    '2024-10-01 09:00:00',  -- Start Time
+    '2024-12-25 19:00:00',  -- End Time
+    '2024-10-01 09:00:00',  -- Insight Sharing Start
+    '2024-10-01 09:00:00',  -- Proposal Submission Start
+    '2024-10-01 09:00:00',  -- Refine Proposals Start
+    '2024-10-01 09:00:00',  -- Finalize Proposals Start
+    '2024-10-01 09:00:00',  -- Proposal Assessment Start
+    '2024-10-01 09:00:00',  -- Assessment QA Start
+    '2024-11-28 12:00:00',  -- Voting Starts
+    '2024-12-12 11:00:00',  -- Voting Ends
+    '2024-12-25 19:00:00',  -- Tallying Ends
     NULL,                   -- Block 0 Data
     NULL,                   -- Block 0 Hash
     1,                      -- Committee Size

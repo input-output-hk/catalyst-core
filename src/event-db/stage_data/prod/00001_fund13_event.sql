@@ -31,7 +31,7 @@ INSERT INTO event (
     'Catalyst - Fund 13',
     '2024-11-20 21:45:00',  -- Registration Snapshot Time
     '2024-11-20 22:00:00',  -- Snapshot Start.
-    2500000,              -- Voting Power Threshold
+    25000000,              -- Voting Power Threshold
     100,                      -- Max Voting Power PCT
     NULL,                   -- Review Rewards
     '2024-10-01 09:00:00',  -- Start Time

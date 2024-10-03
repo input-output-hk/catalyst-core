@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["ballot","objective","proposal","review"],"trait":["EventQueries"]};

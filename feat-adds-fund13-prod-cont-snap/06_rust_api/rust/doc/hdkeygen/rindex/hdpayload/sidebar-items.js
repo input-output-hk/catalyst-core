@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["CBOR_BREAK","CBOR_INDEFINITE_ARRAY","HDKEY_SIZE","MAX_PAYLOAD_SIZE","NONCE","SALT","TAG_LEN"],"enum":["Error"],"fn":["cursor_read","decode_derivation","decode_derivation_path"],"struct":["HdKey"]};

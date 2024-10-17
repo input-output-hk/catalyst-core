@@ -1077,6 +1077,7 @@ dependencies = [
 [[package]]
 name = "catalyst-voting"
 version = "0.0.1"
+source = "git+https://github.com/input-output-hk/catalyst-libs.git?rev=d0b5784208abb7c4f2eddf8237099368e070620a#d0b5784208abb7c4f2eddf8237099368e070620a"
 dependencies = [
  "anyhow",
  "blake2b_simd",

@@ -10,7 +10,6 @@ use clap::Parser;
 use color_eyre::Result;
 use rand::SeedableRng;
 use rand_chacha::ChaCha20Rng;
-use std::convert::TryInto;
 
 use ed25519_dalek::*;
 use std::error::Error;

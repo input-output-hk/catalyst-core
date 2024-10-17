@@ -15,6 +15,9 @@ chain-impl-mockchain = { path = "../chain-libs/chain-impl-mockchain" ,features= 
 chain-ser = { path = "../chain-libs/chain-ser" }
 chain-storage = { path = "../chain-libs/chain-storage" }
 
+# catalyst-voting = { git = "https://github.com/input-output-hk/catalyst-libs.git" }
+catalyst-voting = { path = "/Users/alexeypoghilenkov/Work/catalyst-libs/rust/catalyst-voting" }
+
 
 hex = "0.4"
 cryptoxide = "0.4.2"

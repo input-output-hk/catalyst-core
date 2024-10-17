@@ -35,6 +35,6 @@ EPOCH=0
 SLOT=0
 CHOICE=1
 
-./target/release/sign --election-pub-key $ELECTION_PUB_KEY --private-key $ALICE_SK --public-key $ALICE_PK --proposal $PROPOSAL --vote-plan-id $VOTE_PLAN_ID --epoch $EPOCH --slot $SLOT --choice $CHOICE
+./target/release/sign v1 --election-pub-key $ELECTION_PUB_KEY --private-key $ALICE_SK --public-key $ALICE_PK --proposal $PROPOSAL --vote-plan-id $VOTE_PLAN_ID --epoch $EPOCH --slot $SLOT --choice $CHOICE
 
 ```

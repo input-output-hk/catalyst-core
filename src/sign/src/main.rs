@@ -64,17 +64,17 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let cli = Cli::parse();
 
-    let mut rng = ChaCha20Rng::from_entropy();
     match cli {
-        Cli::V1(args) => v1_exec(args, &mut rng),
-        Cli::V2(args) => v2_exec(args, &mut rng),
+        Cli::V1(args) => v1_exec(args),
+        Cli::V2(args) => v2_exec(args),
     }
 }
 
 /// Number of voting options
 const VOTING_OPTIONS: u8 = 2;
 
-fn v1_exec(args: CliArgs, rng: &mut ChaCha20Rng) -> Result<(), Box<dyn Error>> {
+fn v1_exec(args: CliArgs) -> Result<(), Box<dyn Error>> {
+    let mut rng = ChaCha20Rng::from_entropy();
     let pk = hex::decode(args.public_key)?;
     let mut sk = hex::decode(args.private_key)?;
 
@@ -99,7 +99,7 @@ fn v1_exec(args: CliArgs, rng: &mut ChaCha20Rng) -> Result<(), Box<dyn Error>> {
     let ek = ElectionPublicKey::from_bytes(&election_pk)
         .ok_or("unable to parse election pub key".to_string())?;
 
-    let (ciphertexts, proof) = ek.encrypt_and_prove_vote(rng, &crs, vote);
+    let (ciphertexts, proof) = ek.encrypt_and_prove_vote(&mut rng, &crs, vote);
     let (proof, encrypted_vote) = compose_encrypted_vote_part(ciphertexts.clone(), proof)?;
 
     let fragment_bytes = generate_vote_fragment(
@@ -118,7 +118,7 @@ fn v1_exec(args: CliArgs, rng: &mut ChaCha20Rng) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn v2_exec(args: CliArgs, rng: &mut ChaCha20Rng) -> Result<(), Box<dyn Error>> {
+fn v2_exec(args: CliArgs) -> Result<(), Box<dyn Error>> {
     let sk_bytes = hex::decode(args.private_key)?;
 
     // Election pub key published as a Bech32_encoded address
@@ -146,14 +146,13 @@ fn v2_exec(args: CliArgs, rng: &mut ChaCha20Rng) -> Result<(), Box<dyn Error>> {
     let proposal_index = args.proposal;
     let choice = args.choice;
 
-    let tx = catalyst_voting::txs::v1::Tx::new_private(
+    let tx = catalyst_voting::txs::v1::Tx::new_private_with_default_rng(
         vote_plan_id,
         proposal_index,
         VOTING_OPTIONS,
         choice,
         &election_public_key,
         &private_key,
-        rng,
     )?;
 
     // fragment in hex: output consumed as input to another program

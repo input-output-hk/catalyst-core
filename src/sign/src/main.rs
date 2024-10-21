@@ -5,6 +5,7 @@
 use bech32::Error as Bech32Error;
 use bech32::FromBase32;
 use chain_vote::ElectionPublicKey;
+use clap::Args;
 use clap::Parser;
 use color_eyre::Result;
 use rand::SeedableRng;
@@ -23,7 +24,15 @@ pub mod network;
 ///
 #[derive(Parser, Debug, Clone)]
 #[clap(about, version, author)]
-pub struct Args {
+pub enum Cli {
+    /// Original jormungandr transaction generation
+    V1(CliArgs),
+    /// `catalyst-voting` transaction generation
+    V2(CliArgs),
+}
+
+#[derive(Args, Debug, Clone)]
+pub struct CliArgs {
     /// Election public key issued by Trent
     #[clap(short, long)]
     pub election_pub_key: String,
@@ -53,9 +62,19 @@ pub struct Args {
 fn main() -> Result<(), Box<dyn Error>> {
     color_eyre::install()?;
 
-    let args = Args::parse();
-    let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
+    let cli = Cli::parse();
 
+    match cli {
+        Cli::V1(args) => v1_exec(args),
+        Cli::V2(args) => v2_exec(args),
+    }
+}
+
+/// Number of voting options
+const VOTING_OPTIONS: u8 = 2;
+
+fn v1_exec(args: CliArgs) -> Result<(), Box<dyn Error>> {
+    let mut rng = ChaCha20Rng::from_entropy();
     let pk = hex::decode(args.public_key)?;
     let mut sk = hex::decode(args.private_key)?;
 
@@ -72,7 +91,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let choice = args.choice;
 
-    let vote = chain_vote::Vote::new(2, choice.into())?;
+    let vote = chain_vote::Vote::new(VOTING_OPTIONS.into(), choice.into())?;
     // common reference string
     let crs = chain_vote::Crs::from_hash(&hex::decode(args.vote_plan_id.clone())?);
 
@@ -95,6 +114,49 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // fragment in hex: output consumed as input to another program
     println!("{:?}", hex::encode(fragment_bytes.clone()));
+
+    Ok(())
+}
+
+fn v2_exec(args: CliArgs) -> Result<(), Box<dyn Error>> {
+    let sk_bytes = hex::decode(args.private_key)?;
+
+    // Election pub key published as a Bech32_encoded address
+    // which consists of 3 parts: A Human-Readable Part (HRP) + Separator + Data:
+    let (_hrp, data, _variant) =
+        bech32::decode(&args.election_pub_key).map_err(Bech32Error::from)?;
+
+    let election_pk_bytes = Vec::<u8>::from_base32(&data).map_err(Bech32Error::from)?;
+
+    let private_key = catalyst_voting::crypto::ed25519::PrivateKey::from_bytes(
+        &sk_bytes
+            .try_into()
+            .map_err(|_| "private key invalid length")?,
+    );
+    let election_public_key =
+        catalyst_voting::vote_protocol::committee::ElectionPublicKey::from_bytes(
+            &election_pk_bytes
+                .try_into()
+                .map_err(|_| "election public key invalid length")?,
+        )?;
+
+    let vote_plan_id = hex::decode(args.vote_plan_id.clone())?
+        .try_into()
+        .map_err(|_| "vote plan id invalid length")?;
+    let proposal_index = args.proposal;
+    let choice = args.choice;
+
+    let tx = catalyst_voting::txs::v1::Tx::new_private_with_default_rng(
+        vote_plan_id,
+        proposal_index,
+        VOTING_OPTIONS,
+        choice,
+        &election_public_key,
+        &private_key,
+    )?;
+
+    // fragment in hex: output consumed as input to another program
+    println!("{:?}", hex::encode(tx.to_bytes()));
 
     Ok(())
 }

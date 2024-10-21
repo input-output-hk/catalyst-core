@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["convert_to_snapshot_entry","voting_power"],"mod":["args"]};

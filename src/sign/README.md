@@ -39,7 +39,7 @@ CHOICE=1
 
 ```
 
-*Generate raw vote fragment in byte representation using original `catalyst-voting` crate*
+*Generate raw vote fragment in byte representation using `catalyst-voting` crate*
 
 ```bash
 

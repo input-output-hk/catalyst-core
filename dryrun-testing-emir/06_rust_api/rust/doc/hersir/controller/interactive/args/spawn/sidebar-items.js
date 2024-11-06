@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Spawn"],"fn":["spawn_node"],"struct":["SpawnLeaderNode","SpawnPassiveNode"]};

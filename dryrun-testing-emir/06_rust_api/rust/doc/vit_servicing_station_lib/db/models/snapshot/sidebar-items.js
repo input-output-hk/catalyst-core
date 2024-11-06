@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_impl_insertable_for_contribution","_impl_insertable_for_snapshot","_impl_insertable_for_voter","_impl_queryable_for_contribution","_impl_queryable_for_snapshot","_impl_queryable_for_voter"],"struct":["Contribution","Snapshot","Voter"]};

@@ -26,32 +26,32 @@ INSERT INTO event (
     extra,
     cast_to
 ) VALUES (
-    13,
-    'Fund 13',
-    'Catalyst Testnet - Fund 13',
-    '2024-10-22 15:00:00',  -- Registration Snapshot Time
-    '2024-10-22 15:15:00',  -- Snapshot Start.
-    25000000,              -- Voting Power Threshold
-    100,                      -- Max Voting Power PCT
-    NULL,                   -- Review Rewards
-    '2024-10-21 11:00:00',  -- Start Time
-    '2024-10-30 10:00:00',  -- End Time
-    '2024-10-21 11:00:00',  -- Insight Sharing Start
-    '2024-10-21 11:00:00',  -- Proposal Submission Start
-    '2024-10-21 11:00:00',  -- Refine Proposals Start
-    '2024-10-21 11:00:00',  -- Finalize Proposals Start
-    '2024-10-21 11:00:00',  -- Proposal Assessment Start
-    '2024-10-21 11:00:00',  -- Assessment QA Start
-    '2024-10-23 08:00:00',  -- Voting Starts
-    '2024-10-25 00:00:00',  -- Voting Ends
-    '2024-10-30 09:00:00',  -- Tallying Ends
-    NULL,                   -- Block 0 Data
-    NULL,                   -- Block 0 Hash
-    1,                      -- Committee Size
-    1,                      -- Committee Threshold
-    NULL,                   -- Extra
-    NULL                    -- Cast to
-) ON CONFLICT (row_id) DO UPDATE
+             13,
+             'Fund 13',
+             'Catalyst Testnet - Fund 13',
+             '2024-11-07 11:00:00',  -- Registration Snapshot Time
+             '2024-11-07 11:15:00',  -- Snapshot Start.
+             25000000,              -- Voting Power Threshold
+             100,                      -- Max Voting Power PCT
+             NULL,                   -- Review Rewards
+             '2024-11-06 12:00:00',  -- Start Time
+             '2024-11-27 03:00:00',  -- End Time
+             '2024-10-21 10:00:00',  -- Insight Sharing Start
+             '2024-10-21 10:00:00',  -- Proposal Submission Start
+             '2024-10-21 10:00:00',  -- Refine Proposals Start
+             '2024-10-21 10:00:00',  -- Finalize Proposals Start
+             '2024-10-21 10:00:00',  -- Proposal Assessment Start
+             '2024-11-06 12:00:00',  -- Assessment QA Start
+             '2024-11-08 09:00:00',  -- Voting Starts
+             '2024-11-12 13:00:00',  -- Voting Ends
+             '2024-11-27 03:00:00',  -- Tallying Ends
+             NULL,                   -- Block 0 Data
+             NULL,                   -- Block 0 Hash
+             1,                      -- Committee Size
+             1,                      -- Committee Threshold
+             NULL,                   -- Extra
+             NULL                    -- Cast to
+         ) ON CONFLICT (row_id) DO UPDATE
 SET name = EXCLUDED.name,
     description = EXCLUDED.description,
     registration_snapshot_time = EXCLUDED.registration_snapshot_time,

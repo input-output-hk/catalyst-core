@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["BRANCH_REPROCESSING_INTERVAL","INTERNAL_TIP_UPDATE_QUEUE_SIZE"],"struct":["Tip","TipUpdater"]};

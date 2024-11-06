@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"mod":["data"],"struct":["LegacyNodeConfigBuilder","LegacyNodeConfigConverter"]};

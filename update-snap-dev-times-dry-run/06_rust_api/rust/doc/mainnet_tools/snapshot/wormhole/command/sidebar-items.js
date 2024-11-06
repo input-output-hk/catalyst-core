@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","Operation"],"fn":["one_shot","read_config"],"struct":["Command","Schedule"]};

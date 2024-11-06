@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["VoteCastCounterError"],"mod":["builder","vote_cast_register"],"struct":["VoteCastCounter","VotePlanBuilder"],"trait":["VotePlanExtension"]};

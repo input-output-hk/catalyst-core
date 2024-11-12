@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["_impl_queryable_for_goal"],"mod":["goals_impl"],"struct":["Goal","InsertGoal"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"mod":["builder","communication"],"struct":["JormungandrParams"],"trait":["ConfigurableNodeConfig"]};

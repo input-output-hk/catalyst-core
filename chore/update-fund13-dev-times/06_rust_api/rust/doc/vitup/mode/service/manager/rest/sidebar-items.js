@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["authorize_token","file_lister_handler","report_invalid","start_default_handler","start_handler","start_rest_server","status_handler","stop_handler"],"struct":["ServerStopper"]};

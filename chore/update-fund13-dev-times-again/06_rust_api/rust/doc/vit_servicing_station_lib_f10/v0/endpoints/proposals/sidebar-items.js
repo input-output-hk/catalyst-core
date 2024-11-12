@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["filter"],"mod":["handlers","logic","requests","routes"],"struct":["ProposalVoteplanIdAndIndexes"],"type":["ProposalsByVoteplanIdAndIndex"]};

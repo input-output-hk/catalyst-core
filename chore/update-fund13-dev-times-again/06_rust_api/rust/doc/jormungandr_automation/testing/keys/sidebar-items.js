@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["create_new_key_pair"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Discrimination"],"fn":["settings_block0_hash","settings_discrimination","settings_fees","settings_new"],"struct":["LinearFee","PerCertificateFee","PerVoteCertificateFee","SettingsInit","TimeEra"],"type":["Epoch","Slot"]};

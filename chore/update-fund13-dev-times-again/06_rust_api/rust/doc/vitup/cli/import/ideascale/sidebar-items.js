@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error","Format","ImportFromIdeascaleFormatCommand"],"struct":["ImportChallenges","ImportProposals","ImportReviews","ImportScores","InputScores"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["watch_client","watch_server"],"struct":["BlockSubscriptionRequest","MempoolSubscriptionRequest","SyncMultiverseRequest","TipSubscriptionRequest"]};

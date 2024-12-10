@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["JCliCommand"],"mod":["address","block","certificate","debug","key","rest","transaction","utils","vote"],"struct":["JCli"]};

@@ -7,11 +7,7 @@ build:
     FROM +deps
 
     # Build refinery
-    RUN apt-get update && \
-        apt-get install -y --no-install-recommends \
-        libssl-dev \
-        pkg-config
-    RUN cargo install --locked refinery_cli --version 0.8.7 --root .
+    RUN cargo install refinery_cli --version 0.8.14 --locked --root .
 
     SAVE ARTIFACT ./bin/refinery refinery
     SAVE IMAGE --cache-hint

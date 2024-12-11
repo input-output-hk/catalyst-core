@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["MAIN_TAG"],"enum":["Error"],"fn":["decrypt_shares_to_b64","deserialize_truthy_falsy","extract_decryption_shares_and_results","extract_fragments_from_storage","json_from_file","ledger_after_tally","ledger_before_tally"],"struct":["Vote"]};

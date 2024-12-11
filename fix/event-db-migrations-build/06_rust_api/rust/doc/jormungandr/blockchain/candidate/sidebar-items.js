@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["advance_branch","land_header_chain"],"mod":["chain_advance","chain_landing"],"struct":["ChainAdvance"],"type":["HeaderStream"]};

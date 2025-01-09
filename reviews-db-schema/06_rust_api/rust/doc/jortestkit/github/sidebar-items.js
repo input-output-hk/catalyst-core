@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ChecksumType","GitHubApiError"],"mod":["release"],"struct":["Asset","AssetDto","CachedReleases","GitHubApi","GitHubApiBuilder","Release","ReleaseDto"]};

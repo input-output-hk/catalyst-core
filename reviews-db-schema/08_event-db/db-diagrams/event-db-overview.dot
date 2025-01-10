@@ -152,6 +152,11 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="username"  align='text'><font>username</font><br align='left'/></td>
+                <td port="username_out"  ><font>varchar</font></td>
+            </tr>
+            
+            <tr>
                 <td port="signed_email"  align='text'><font>signed_email</font><br align='left'/></td>
                 <td port="signed_email_out"  ><font>varchar</font></td>
             </tr>
@@ -163,7 +168,17 @@ digraph erd {
             
             <tr>
                 <td port="confirmation_token"  align='text'><font>confirmation_token</font><br align='left'/></td>
-                <td port="confirmation_token_out"  ><font>varchar</font></td>
+                <td port="confirmation_token_out"  ><font><i>varchar</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="confirmation_requested_at"  align='text'><font>confirmation_requested_at</font><br align='left'/></td>
+                <td port="confirmation_requested_at_out"  ><font><i>timestamp</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="confirmed_at"  align='text'><font>confirmed_at</font><br align='left'/></td>
+                <td port="confirmed_at_out"  ><font><i>timestamp</i></font></td>
             </tr>
             
 
@@ -946,11 +961,6 @@ digraph erd {
             <tr>
                 <td port="assessor_level"  align='text'><font>assessor_level</font><br align='left'/></td>
                 <td port="assessor_level_out"  ><font><i>integer</i></font></td>
-            </tr>
-            
-            <tr>
-                <td port="reward_address"  align='text'><font>reward_address</font><br align='left'/></td>
-                <td port="reward_address_out"  ><font><i>text</i></font></td>
             </tr>
             
             <tr>

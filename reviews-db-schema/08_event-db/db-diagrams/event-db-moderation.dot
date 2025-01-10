@@ -43,13 +43,13 @@ digraph erd {
             <tr>
                 <td port="review_id"  align='text'><font>review_id</font><br align='left'/></td>
                 <td   ><font>integer</font></td>
-                <td port="review_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The review the moderation is related to.</i><br align="left"/></font></td>
+                <td port="review_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The review ID the moderation belongs to.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
                 <td   ><font>integer</font></td>
-                <td port="user_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The user the moderation is submitted<br align='left'/>from.</i><br align="left"/></font></td>
+                <td port="user_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The user ID the moderation belongs to.</i><br align="left"/></font></td>
             </tr>
             
             <tr>

@@ -29,6 +29,7 @@ build:
     RUN poetry env use python
     RUN poetry config installer.max-workers 10
     RUN poetry install --no-cache --no-root
+    RUN poetry self add poetry-plugin-export
 
     # Build the distribution wheels and save them as artifacts
     RUN poetry export --without-hashes -f requirements.txt --output requirements.txt

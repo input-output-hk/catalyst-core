@@ -4,6 +4,7 @@ use crate::{
     vote::{Choice, Options},
 };
 use chain_vote::EncryptedTally;
+use num_integer::Roots;
 use std::fmt;
 use thiserror::Error;
 
@@ -166,7 +167,11 @@ impl TallyResult {
         } else {
             let index = choice.as_byte() as usize;
 
-            self.results[index] = self.results[index].saturating_add(weight);
+            // Returns the truncated principal square root of an integer – ⌊√x⌋
+            // This is solving for r in r² = x, rounding toward zero. The result will satisfy r² ≤ x < (r+1)²
+            let weight_gammad = weight.0.sqrt();
+
+            self.results[index] = self.results[index].saturating_add(Weight(weight_gammad));
 
             Ok(())
         }

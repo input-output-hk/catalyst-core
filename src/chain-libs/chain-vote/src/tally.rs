@@ -11,6 +11,8 @@ use crate::{
 use base64::{engine::general_purpose, Engine as _};
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
+use num_integer::Roots;
+
 use rand_core::{CryptoRng, RngCore};
 
 /// Secret key for opening vote
@@ -155,10 +157,15 @@ impl EncryptedTally {
     pub fn add(&mut self, ballot: &Ballot, weight: u64) {
         assert_eq!(ballot.vote().len(), self.r.len());
         assert_eq!(ballot.fingerprint(), &self.fingerprint);
+
+        // Returns the truncated principal square root of an integer – ⌊√x⌋
+        // This is solving for r in r² = x, rounding toward zero. The result will satisfy r² ≤ x < (r+1)²
+        let weight_gammad = weight.sqrt();
+
         for (ri, ci) in self.r.iter_mut().zip(ballot.vote().iter()) {
-            *ri = &*ri + &(ci * weight);
+            *ri = &*ri + &(ci * weight_gammad);
         }
-        self.max_stake += weight;
+        self.max_stake += weight_gammad;
     }
 
     /// Given a single committee member's `secret_key`, returns a partial decryption of

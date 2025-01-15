@@ -1,0 +1,313 @@
+digraph erd {
+
+    
+    label = "Catalyst Event Database - Vote Plans"
+    labelloc = t
+    fontsize = 30
+    fontcolor = blue
+    
+
+    graph [
+        rankdir = "LR"
+    ];
+
+    node [
+        fontsize = "16"
+        shape = "plaintext"
+    ];
+
+    edge [
+    ];
+
+    
+        
+
+    "proposal_voteplan" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>proposal_voteplan</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Synthetic ID of this Voteplan&#x2f;Proposal<br align='left'/>M-M relationship.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="proposal_id"  align='text'><font>proposal_id</font><br align='left'/></td>
+                <td   ><font><i>integer</i></font></td>
+                <td port="proposal_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The link to the Proposal primary key<br align='left'/>that links to this voteplan.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="voteplan_id"  align='text'><font>voteplan_id</font><br align='left'/></td>
+                <td   ><font><i>integer</i></font></td>
+                <td port="voteplan_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The link to the Voteplan primary key<br align='left'/>that links to this proposal.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="bb_proposal_index"  align='text'><font>bb_proposal_index</font><br align='left'/></td>
+                <td   ><font><i>bigint</i></font></td>
+                <td port="bb_proposal_index_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The Index with the voteplan used by<br align='left'/>the voting ledger&#x2f;bulletin board that<br align='left'/>references this proposal.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>Table to link Proposals to Vote plans in a Many to Many relationship.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "voteplan" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>voteplan</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Synthetic Unique Key</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="objective_id"  align='text'><font>objective_id</font><br align='left'/></td>
+                <td   ><font>integer</font></td>
+                <td port="objective_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="id"  align='text'><font>id</font><br align='left'/></td>
+                <td   ><font>varchar</font></td>
+                <td port="id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The ID of the Vote plan in the voting<br align='left'/>ledger&#x2f;bulletin board.<br align='left'/>A Binary value encoded as hex.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="category"  align='text'><font>category</font><br align='left'/></td>
+                <td   ><font>text</font></td>
+                <td port="category_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The kind of vote which can be cast on<br align='left'/>this vote plan.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="encryption_key"  align='text'><font>encryption_key</font><br align='left'/></td>
+                <td   ><font><i>varchar</i></font></td>
+                <td port="encryption_key_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The public encryption key used.<br align='left'/>ONLY if required by the voteplan<br align='left'/>category.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="group_id"  align='text'><font>group_id</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="group_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The identifier of voting power token<br align='left'/>used withing this plan.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="token_id"  align='text'><font>token_id</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="token_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>none</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>All Vote plans.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "voteplan_category" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>voteplan_category</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="name" bgcolor="seagreen1" align='text'><font>name</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>text</font></td>
+                <td port="name_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The UNIQUE name of this voteplan<br align='left'/>category.</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
+                <td port="public_key"  align='text'><font>public_key</font><br align='left'/></td>
+                <td   ><font><i>boolean</i></font></td>
+                <td port="public_key_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Does this vote plan category require a<br align='left'/>public key.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>The category of vote plan currently supported.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "voting_group" [shape=plain label=<
+        <table border='0' cellborder='1' cellspacing='0' >
+            <tr>
+                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>voting_group</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="name" bgcolor="seagreen1" align='text'><font>name</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>text</font></td>
+                <td port="name_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The ID of this voting group.</i><br align="left"/></font></td>
+            </tr>
+            
+
+            
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>All Groups.</i><br align="left"/></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+
+    
+
+    "objective" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>objective</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id"  align='text'><font>row_id</font><br align='left'/></td>
+            </tr>
+            
+
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>ABRIDGED</i><br align="left"/></font></td>
+            </tr>
+        </table>
+    >];
+
+    
+
+    "proposal" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>proposal</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id"  align='text'><font>row_id</font><br align='left'/></td>
+            </tr>
+            
+
+            <tr>
+                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>ABRIDGED</i><br align="left"/></font></td>
+            </tr>
+        </table>
+    >];
+
+    
+
+
+    "LEGEND" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='Pink' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>LEGEND</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Type</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18'><b>Example</b></font></td>
+            </tr>
+
+            <tr>
+                <td align='text' bgcolor="seagreen1" ><font>Primary Key</font><br align='left'/></td>
+                <td  bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+
+
+            <tr>
+                <td align='text'><font>Standard Field</font><br align='left'/></td>
+                <td><font>bytea</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Nullable Field</font><br align='left'/></td>
+                <td><font><i>text</i></font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Sized Field</font><br align='left'/></td>
+                <td><font>varchar(32)</font></td>
+            </tr>
+
+            <tr>
+                <td align='text'><font>Autoincrement Field</font><br align='left'/></td>
+                <td><font>integer+</font></td>
+            </tr>
+
+        </table>
+    >];
+
+    
+    "voteplan":"objective_id_out" -> "objective":"row_id"
+    
+    "voteplan":"category_out" -> "voteplan_category":"name"
+    
+    "voteplan":"group_id_out" -> "voting_group":"name"
+    
+    "proposal_voteplan":"proposal_id_out" -> "proposal":"row_id"
+    
+    "proposal_voteplan":"voteplan_id_out" -> "voteplan":"row_id"
+    
+
+
+}

@@ -11,9 +11,6 @@ permissions:
   packages: write
 
 env:
-  AWS_REGION: eu-central-1
-  AWS_ROLE_ARN: arn:aws:iam::332405224602:role/ci
-  ECR_REGISTRY: 332405224602.dkr.ecr.eu-central-1.amazonaws.com
   TAG: ${{ github.sha }}
 
 jobs:
@@ -24,20 +21,20 @@ jobs:
       FORCE_COLOR: 1
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Forge
+        uses: input-output-hk/catalyst-forge/actions/install@ci/v1.5.3
         with:
-          fetch-depth: 0
+          version: 0.8.0
+        if: always()
+
       - name: Setup CI
-        uses: input-output-hk/catalyst-ci/actions/setup@master
-        with:
-          aws_role_arn: ${{ env.AWS_ROLE_ARN }}
-          aws_region: ${{ env.AWS_REGION }}
-          earthly_runner_secret: ${{ secrets.EARTHLY_RUNNER_SECRET }}
-      - name: Login to ECR
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.ECR_REGISTRY }}
+        uses: input-output-hk/catalyst-forge/actions/setup@ci/v1.5.3
+
       - name: Run tests
-        env:
-          EARTHLY_SECRETS: "IDEASCALE_EMAIL=${{ secrets.IDEASCALE_EMAIL }}, IDEASCALE_PASSWORD=${{ secrets.IDEASCALE_PASSWORD }}, IDEASCALE_API_TOKEN=${{ secrets.IDEASCALE_API_TOKEN }}"
-        run: |
-          earthly -P --buildkit-host "tcp://${{ secrets.EARTHLY_SATELLITE_ADDRESS }}:8372" +test-all
+        uses: input-output-hk/catalyst-forge/actions/run@ci/v1.5.3
+        if: always()
+        continue-on-error: true
+        with:
+          command: run
+          args: ./+test-all

@@ -21,7 +21,7 @@ builder:
             zlib1g-dev
 
     # Install Poetry
-    RUN curl -sSL https://install.python-poetry.org | python3 -
+    RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.0
 
     SAVE IMAGE --cache-hint
 

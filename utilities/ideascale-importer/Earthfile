@@ -15,8 +15,7 @@ build:
         apt-get install -y --no-install-recommends curl build-essential libxml2-dev libxslt-dev zlib1g-dev python3-lxml
 
     # Install Poetry
-    RUN curl -sSL https://install.python-poetry.org | python3 -
-
+    RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.0
     # Set path to poetry
     ENV PATH=/root/.local/bin:$PATH
 

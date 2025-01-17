@@ -22,6 +22,50 @@ digraph erd {
     
         
 
+    "allocation" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>allocation</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+            
+            <tr>
+                <td port="proposal_id"  align='text'><font>proposal_id</font><br align='left'/></td>
+                <td port="proposal_id_out"  ><font><i>integer</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="review_id"  align='text'><font>review_id</font><br align='left'/></td>
+                <td port="review_id_out"  ><font><i>integer</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
+                <td port="user_id_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="type"  align='text'><font>type</font><br align='left'/></td>
+                <td port="type_out"  ><font>integer</font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
     "ballot" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
             <tr>
@@ -71,6 +115,114 @@ digraph erd {
             <tr>
                 <td port="raw_fragment"  align='text'><font>raw_fragment</font><br align='left'/></td>
                 <td port="raw_fragment_out"  ><font>bytea</font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "catalyst_id_map" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>catalyst_id_map</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+            
+            <tr>
+                <td port="catalyst_id"  align='text'><font>catalyst_id</font><br align='left'/></td>
+                <td port="catalyst_id_out"  ><font>varchar</font></td>
+            </tr>
+            
+            <tr>
+                <td port="email"  align='text'><font>email</font><br align='left'/></td>
+                <td port="email_out"  ><font>varchar</font></td>
+            </tr>
+            
+            <tr>
+                <td port="username"  align='text'><font>username</font><br align='left'/></td>
+                <td port="username_out"  ><font>varchar</font></td>
+            </tr>
+            
+            <tr>
+                <td port="signed_email"  align='text'><font>signed_email</font><br align='left'/></td>
+                <td port="signed_email_out"  ><font>varchar</font></td>
+            </tr>
+            
+            <tr>
+                <td port="status"  align='text'><font>status</font><br align='left'/></td>
+                <td port="status_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="confirmation_token"  align='text'><font>confirmation_token</font><br align='left'/></td>
+                <td port="confirmation_token_out"  ><font><i>varchar</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="confirmation_requested_at"  align='text'><font>confirmation_requested_at</font><br align='left'/></td>
+                <td port="confirmation_requested_at_out"  ><font><i>timestamp</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="confirmed_at"  align='text'><font>confirmed_at</font><br align='left'/></td>
+                <td port="confirmed_at_out"  ><font><i>timestamp</i></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "catalyst_user" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>catalyst_user</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+            
+            <tr>
+                <td port="catalyst_id"  align='text'><font>catalyst_id</font><br align='left'/></td>
+                <td port="catalyst_id_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="enc_password"  align='text'><font>enc_password</font><br align='left'/></td>
+                <td port="enc_password_out"  ><font>varchar</font></td>
+            </tr>
+            
+            <tr>
+                <td port="salt"  align='text'><font>salt</font><br align='left'/></td>
+                <td port="salt_out"  ><font>varchar</font></td>
+            </tr>
+            
+            <tr>
+                <td port="extra"  align='text'><font>extra</font><br align='left'/></td>
+                <td port="extra_out"  ><font><i>jsonb</i></font></td>
             </tr>
             
 
@@ -504,40 +656,6 @@ digraph erd {
     
         
 
-    "moderation_allocation" [label=<
-        <table border='0' cellborder='1' cellspacing='0'>
-            <tr>
-                <td colspan='2' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>moderation_allocation</b></font></td>
-            </tr>
-            <tr>
-                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
-                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
-            </tr>
-
-            
-            <tr>
-                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
-                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
-            </tr>
-            
-            <tr>
-                <td port="review_id"  align='text'><font>review_id</font><br align='left'/></td>
-                <td port="review_id_out"  ><font>integer</font></td>
-            </tr>
-            
-            <tr>
-                <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
-                <td port="user_id_out"  ><font>integer</font></td>
-            </tr>
-            
-
-        </table>
-    >];
-
-        
-    
-        
-
     "objective" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
             <tr>
@@ -831,6 +949,11 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
+                <td port="user_id_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
                 <td port="assessor"  align='text'><font>assessor</font><br align='left'/></td>
                 <td port="assessor_out"  ><font>varchar</font></td>
             </tr>
@@ -838,11 +961,6 @@ digraph erd {
             <tr>
                 <td port="assessor_level"  align='text'><font>assessor_level</font><br align='left'/></td>
                 <td port="assessor_level_out"  ><font><i>integer</i></font></td>
-            </tr>
-            
-            <tr>
-                <td port="reward_address"  align='text'><font>reward_address</font><br align='left'/></td>
-                <td port="reward_address_out"  ><font><i>text</i></font></td>
             </tr>
             
             <tr>
@@ -873,6 +991,11 @@ digraph erd {
             <tr>
                 <td port="auditability_note"  align='text'><font>auditability_note</font><br align='left'/></td>
                 <td port="auditability_note_out"  ><font><i>varchar</i></font></td>
+            </tr>
+            
+            <tr>
+                <td port="allocated"  align='text'><font>allocated</font><br align='left'/></td>
+                <td port="allocated_out"  ><font><i>integer</i></font></td>
             </tr>
             
             <tr>
@@ -1153,6 +1276,55 @@ digraph erd {
             <tr>
                 <td port="catalyst_snapshot_data"  align='text'><font>catalyst_snapshot_data</font><br align='left'/></td>
                 <td port="catalyst_snapshot_data_out"  ><font><i>bytea</i></font></td>
+            </tr>
+            
+
+        </table>
+    >];
+
+        
+    
+        
+
+    "subscription" [label=<
+        <table border='0' cellborder='1' cellspacing='0'>
+            <tr>
+                <td colspan='2' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>subscription</b></font></td>
+            </tr>
+            <tr>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
+                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
+            </tr>
+
+            
+            <tr>
+                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
+                <td port="row_id_out" bgcolor="seagreen1" ><font>integer+</font></td>
+            </tr>
+            
+            <tr>
+                <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
+                <td port="user_id_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="event_id"  align='text'><font>event_id</font><br align='left'/></td>
+                <td port="event_id_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="role"  align='text'><font>role</font><br align='left'/></td>
+                <td port="role_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="status"  align='text'><font>status</font><br align='left'/></td>
+                <td port="status_out"  ><font>integer</font></td>
+            </tr>
+            
+            <tr>
+                <td port="extra"  align='text'><font>extra</font><br align='left'/></td>
+                <td port="extra_out"  ><font><i>jsonb</i></font></td>
             </tr>
             
 
@@ -1493,15 +1665,17 @@ digraph erd {
     
     "objective":"vote_options_out" -> "vote_options":"id"
     
+    "catalyst_user":"catalyst_id_out" -> "catalyst_id_map":"row_id"
+    
     "proposal":"objective_out" -> "objective":"row_id"
     
     "proposal":"bb_vote_options_out" -> "vote_options":"objective"
     
     "reviewer_level":"event_id_out" -> "event":"row_id"
     
-    "proposal_review":"proposal_id_out" -> "proposal":"row_id"
+    "proposal_review":"user_id_out" -> "catalyst_user":"row_id"
     
-    "proposal_review":"assessor_level_out" -> "reviewer_level":"row_id"
+    "proposal_review":"proposal_id_out" -> "proposal":"row_id"
     
     "objective_review_metric":"objective_out" -> "objective":"row_id"
     
@@ -1539,13 +1713,19 @@ digraph erd {
     
     "committee_member":"committee_out" -> "tally_committee":"row_id"
     
-    "moderation_allocation":"review_id_out" -> "proposal_review":"row_id"
+    "subscription":"user_id_out" -> "catalyst_user":"row_id"
     
-    "moderation_allocation":"user_id_out" -> "config":"row_id"
+    "subscription":"event_id_out" -> "event":"row_id"
+    
+    "allocation":"proposal_id_out" -> "proposal":"row_id"
+    
+    "allocation":"review_id_out" -> "proposal_review":"row_id"
+    
+    "allocation":"user_id_out" -> "catalyst_user":"row_id"
     
     "moderation":"review_id_out" -> "proposal_review":"row_id"
     
-    "moderation":"user_id_out" -> "config":"row_id"
+    "moderation":"user_id_out" -> "catalyst_user":"row_id"
     
 
 

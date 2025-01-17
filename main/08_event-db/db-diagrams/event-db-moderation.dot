@@ -43,13 +43,13 @@ digraph erd {
             <tr>
                 <td port="review_id"  align='text'><font>review_id</font><br align='left'/></td>
                 <td   ><font>integer</font></td>
-                <td port="review_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The review the moderation is related to.</i><br align="left"/></font></td>
+                <td port="review_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The review ID the moderation belongs to.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
                 <td   ><font>integer</font></td>
-                <td port="user_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The user the moderation is submitted<br align='left'/>from.</i><br align="left"/></font></td>
+                <td port="user_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The user ID the moderation belongs to.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
@@ -76,57 +76,13 @@ digraph erd {
 
         
     
-        
-
-    "moderation_allocation" [shape=plain label=<
-        <table border='0' cellborder='1' cellspacing='0' >
-            <tr>
-                <td colspan='3' bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>moderation_allocation</b></font></td>
-            </tr>
-            <tr>
-                <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
-                <td><font color='black' face='Courier bold' point-size='18' ><b>Type</b></font></td>
-                <td><font color='black' face='Courier bold' point-size='18' ><b>Description</b></font></td>
-            </tr>
-
-            
-            <tr>
-                <td port="row_id" bgcolor="seagreen1" align='text'><font>row_id</font><br align='left'/></td>
-                <td  bgcolor="seagreen1" ><font>integer+</font></td>
-                <td port="row_id_out" bgcolor="seagreen1" align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Synthetic ID of this relationship.</i><br align="left"/></font></td>
-            </tr>
-            
-            <tr>
-                <td port="review_id"  align='text'><font>review_id</font><br align='left'/></td>
-                <td   ><font>integer</font></td>
-                <td port="review_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The review the relationship is related<br align='left'/>to.</i><br align="left"/></font></td>
-            </tr>
-            
-            <tr>
-                <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
-                <td   ><font>integer</font></td>
-                <td port="user_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The user the relationship is related to.</i><br align="left"/></font></td>
-            </tr>
-            
-
-            
-            <tr>
-                <td colspan='3' bgcolor="grey20" align='text'><font color='white' face='Monospace' point-size='14'><i>The relationship between users and proposals_reviews.</i><br align="left"/></font></td>
-            </tr>
-            
-
-        </table>
-    >];
-
-        
-    
 
     
 
-    "config" [label=<
+    "catalyst_user" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
             <tr>
-                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>config</b></font></td>
+                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>catalyst_user</b></font></td>
             </tr>
             <tr>
                 <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
@@ -210,13 +166,9 @@ digraph erd {
     >];
 
     
-    "moderation_allocation":"review_id_out" -> "proposal_review":"row_id"
-    
-    "moderation_allocation":"user_id_out" -> "config":"row_id"
-    
     "moderation":"review_id_out" -> "proposal_review":"row_id"
     
-    "moderation":"user_id_out" -> "config":"row_id"
+    "moderation":"user_id_out" -> "catalyst_user":"row_id"
     
 
 

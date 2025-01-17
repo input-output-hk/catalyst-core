@@ -8,7 +8,7 @@ FROM jormungandr:latest as jorm
 
 # stage 3
 FROM python as poetry
-RUN pip install poetry
+RUN pip install poetry==1.8.0
 
 # Add python codebase
 COPY . /voting

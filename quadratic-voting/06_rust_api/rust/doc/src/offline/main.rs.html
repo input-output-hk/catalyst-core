@@ -245,6 +245,16 @@
     <span class="macro">info!</span>(<span class="string">&quot;Audit Tool.&quot;</span>);
     <span class="macro">info!</span>(<span class="string">&quot;Starting Offline Tally&quot;</span>);
 
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(gamma) = args.gamma {
+        <span class="kw">const </span>GAMMA: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_GAMMA&quot;</span>;
+        std::env::set_var(GAMMA, gamma);
+    }
+
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(precision) = args.precision {
+        <span class="kw">const </span>PRECISION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_PRECISION&quot;</span>;
+        std::env::set_var(PRECISION, precision);
+    }
+
     <span class="comment">// Load and replay fund fragments from storage
     </span><span class="kw">let </span>storage_path = PathBuf::from(args.fragments);
 
@@ -278,16 +288,6 @@
     <span class="comment">// decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -&gt; tallyResultPlaintext
     // use tally tool to validate decrypted results
     </span><span class="kw">let </span>shares_and_results = extract_decryption_shares_and_results(all_fragments);
-
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(gamma) = args.gamma {
-        <span class="kw">const </span>GAMMA: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_GAMMA&quot;</span>;
-        std::env::set_var(GAMMA, gamma);
-    }
-
-    <span class="kw">if let </span><span class="prelude-val">Some</span>(precision) = args.precision {
-        <span class="kw">const </span>PRECISION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_PRECISION&quot;</span>;
-        std::env::set_var(PRECISION, precision);
-    }
 
     <span class="comment">// Compare decrypted tallies with official results if provided
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(official_results) = args.official_results {

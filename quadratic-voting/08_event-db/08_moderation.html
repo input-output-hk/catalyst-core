@@ -152,234 +152,142 @@
                         <h1 id="moderation-stage"><a class="header" href="#moderation-stage">Moderation Stage</a></h1>
 <p>Tables for storing moderation stage data. WIP.</p>
 <h2 id="moderation-stage-diagram"><a class="header" href="#moderation-stage-diagram">Moderation Stage Diagram</a></h2>
-<pre><svg width="774pt" height="670pt"
- viewBox="0.00 0.00 774.00 670.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 666)">
+<pre><svg width="774pt" height="486pt"
+ viewBox="0.00 0.00 774.00 485.50" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 481.5)">
 <title>erd</title>
-<polygon fill="white" stroke="none" points="-4,4 -4,-666 770,-666 770,4 -4,4"/>
-<text text-anchor="middle" x="383" y="-629.5" font-family="Times,serif" font-size="30.00" fill="blue">Catalyst Event Database Moderation Stage</text>
+<polygon fill="white" stroke="none" points="-4,4 -4,-481.5 770,-481.5 770,4 -4,4"/>
+<text text-anchor="middle" x="383" y="-445" font-family="Times,serif" font-size="30.00" fill="blue">Catalyst Event Database Moderation Stage</text>
 <!-- moderation -->
 <g id="node1" class="node">
 <title>moderation</title>
-<polygon fill="#009879" stroke="none" points="0,-389 0,-416 528,-416 528,-389 0,-389"/>
-<polygon fill="none" stroke="black" points="0,-389 0,-416 528,-416 528,-389 0,-389"/>
-<text text-anchor="start" x="204" y="-395" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">moderation</text>
-<polygon fill="none" stroke="black" points="0,-365 0,-389 113,-389 113,-365 0,-365"/>
-<text text-anchor="start" x="25" y="-369.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="113,-365 113,-389 192,-389 192,-365 113,-365"/>
-<text text-anchor="start" x="131.5" y="-369.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
-<polygon fill="none" stroke="black" points="192,-365 192,-389 528,-389 528,-365 192,-365"/>
-<text text-anchor="start" x="302.25" y="-369.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
-<polygon fill="#54ff9f" stroke="none" points="0,-340 0,-365 113,-365 113,-340 0,-340"/>
-<polygon fill="none" stroke="black" points="0,-340 0,-365 113,-365 113,-340 0,-340"/>
-<text text-anchor="start" x="3" y="-346.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#54ff9f" stroke="none" points="113,-340 113,-365 192,-365 192,-340 113,-340"/>
-<polygon fill="none" stroke="black" points="113,-340 113,-365 192,-365 192,-340 113,-340"/>
-<text text-anchor="start" x="115.75" y="-346.8" font-family="Times,serif" font-size="16.00">integer+</text>
-<polygon fill="#54ff9f" stroke="none" points="192,-340 192,-365 528,-365 528,-340 192,-340"/>
-<polygon fill="none" stroke="black" points="192,-340 192,-365 528,-365 528,-340 192,-340"/>
-<text text-anchor="start" x="195" y="-348.82" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic ID of this moderation.</text>
-<polygon fill="none" stroke="black" points="0,-315 0,-340 113,-340 113,-315 0,-315"/>
-<text text-anchor="start" x="3" y="-321.8" font-family="Times,serif" font-size="16.00">review_id</text>
-<polygon fill="none" stroke="black" points="113,-315 113,-340 192,-340 192,-315 113,-315"/>
-<text text-anchor="start" x="122.5" y="-321.8" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="192,-315 192,-340 528,-340 528,-315 192,-315"/>
-<text text-anchor="start" x="195" y="-323.82" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The review the moderation is related to.</text>
-<polygon fill="none" stroke="black" points="0,-281 0,-315 113,-315 113,-281 0,-281"/>
-<text text-anchor="start" x="3" y="-292.55" font-family="Times,serif" font-size="16.00">user_id</text>
-<polygon fill="none" stroke="black" points="113,-281 113,-315 192,-315 192,-281 113,-281"/>
-<text text-anchor="start" x="122.5" y="-292.55" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="192,-281 192,-315 528,-315 528,-281 192,-281"/>
-<text text-anchor="start" x="195" y="-299.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The user the moderation is submitted</text>
-<text text-anchor="start" x="195" y="-285.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">from.</text>
-<polygon fill="none" stroke="black" points="0,-233 0,-281 113,-281 113,-233 0,-233"/>
-<text text-anchor="start" x="3" y="-251.55" font-family="Times,serif" font-size="16.00">classification</text>
-<polygon fill="none" stroke="black" points="113,-233 113,-281 192,-281 192,-233 113,-233"/>
-<text text-anchor="start" x="122.5" y="-251.55" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="192,-233 192,-281 528,-281 528,-233 192,-233"/>
-<text text-anchor="start" x="195" y="-265.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The value used to describe the</text>
-<text text-anchor="start" x="195" y="-251.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">moderation (e.g. 0: excluded, 1:</text>
-<text text-anchor="start" x="195" y="-237.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">included).</text>
-<polygon fill="none" stroke="black" points="0,-199 0,-233 113,-233 113,-199 0,-199"/>
-<text text-anchor="start" x="3" y="-210.55" font-family="Times,serif" font-size="16.00">rationale</text>
-<polygon fill="none" stroke="black" points="113,-199 113,-233 192,-233 192,-199 113,-199"/>
-<text text-anchor="start" x="121" y="-211.55" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
-<polygon fill="none" stroke="black" points="192,-199 192,-233 528,-233 528,-199 192,-199"/>
-<text text-anchor="start" x="195" y="-217.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The rationale for the given</text>
-<text text-anchor="start" x="195" y="-203.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">classification.</text>
-<polygon fill="#333333" stroke="none" points="0,-176 0,-199 528,-199 528,-176 0,-176"/>
-<polygon fill="none" stroke="black" points="0,-176 0,-199 528,-199 528,-176 0,-176"/>
-<text text-anchor="start" x="3" y="-183.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">An individual moderation for a proposal review.</text>
+<polygon fill="#009879" stroke="none" points="0,-204 0,-231 528,-231 528,-204 0,-204"/>
+<polygon fill="none" stroke="black" points="0,-204 0,-231 528,-231 528,-204 0,-204"/>
+<text text-anchor="start" x="204" y="-210" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">moderation</text>
+<polygon fill="none" stroke="black" points="0,-180 0,-204 113,-204 113,-180 0,-180"/>
+<text text-anchor="start" x="25" y="-184.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="113,-180 113,-204 192,-204 192,-180 113,-180"/>
+<text text-anchor="start" x="131.5" y="-184.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="192,-180 192,-204 528,-204 528,-180 192,-180"/>
+<text text-anchor="start" x="302.25" y="-184.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
+<polygon fill="#54ff9f" stroke="none" points="0,-155 0,-180 113,-180 113,-155 0,-155"/>
+<polygon fill="none" stroke="black" points="0,-155 0,-180 113,-180 113,-155 0,-155"/>
+<text text-anchor="start" x="3" y="-161.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#54ff9f" stroke="none" points="113,-155 113,-180 192,-180 192,-155 113,-155"/>
+<polygon fill="none" stroke="black" points="113,-155 113,-180 192,-180 192,-155 113,-155"/>
+<text text-anchor="start" x="115.75" y="-161.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="#54ff9f" stroke="none" points="192,-155 192,-180 528,-180 528,-155 192,-155"/>
+<polygon fill="none" stroke="black" points="192,-155 192,-180 528,-180 528,-155 192,-155"/>
+<text text-anchor="start" x="195" y="-163.82" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic ID of this moderation.</text>
+<polygon fill="none" stroke="black" points="0,-130 0,-155 113,-155 113,-130 0,-130"/>
+<text text-anchor="start" x="3" y="-136.8" font-family="Times,serif" font-size="16.00">review_id</text>
+<polygon fill="none" stroke="black" points="113,-130 113,-155 192,-155 192,-130 113,-130"/>
+<text text-anchor="start" x="122.5" y="-136.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="192,-130 192,-155 528,-155 528,-130 192,-130"/>
+<text text-anchor="start" x="195" y="-138.82" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The review ID the moderation belongs to.</text>
+<polygon fill="none" stroke="black" points="0,-105 0,-130 113,-130 113,-105 0,-105"/>
+<text text-anchor="start" x="3" y="-111.8" font-family="Times,serif" font-size="16.00">user_id</text>
+<polygon fill="none" stroke="black" points="113,-105 113,-130 192,-130 192,-105 113,-105"/>
+<text text-anchor="start" x="122.5" y="-111.8" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="192,-105 192,-130 528,-130 528,-105 192,-105"/>
+<text text-anchor="start" x="195" y="-113.83" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The user ID the moderation belongs to.</text>
+<polygon fill="none" stroke="black" points="0,-57 0,-105 113,-105 113,-57 0,-57"/>
+<text text-anchor="start" x="3" y="-75.55" font-family="Times,serif" font-size="16.00">classification</text>
+<polygon fill="none" stroke="black" points="113,-57 113,-105 192,-105 192,-57 113,-57"/>
+<text text-anchor="start" x="122.5" y="-75.55" font-family="Times,serif" font-size="16.00">integer</text>
+<polygon fill="none" stroke="black" points="192,-57 192,-105 528,-105 528,-57 192,-57"/>
+<text text-anchor="start" x="195" y="-89.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The value used to describe the</text>
+<text text-anchor="start" x="195" y="-75.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">moderation (e.g. 0: excluded, 1:</text>
+<text text-anchor="start" x="195" y="-61.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">included).</text>
+<polygon fill="none" stroke="black" points="0,-23 0,-57 113,-57 113,-23 0,-23"/>
+<text text-anchor="start" x="3" y="-34.55" font-family="Times,serif" font-size="16.00">rationale</text>
+<polygon fill="none" stroke="black" points="113,-23 113,-57 192,-57 192,-23 113,-23"/>
+<text text-anchor="start" x="121" y="-35.55" font-family="Times,serif" font-style="italic" font-size="16.00">varchar</text>
+<polygon fill="none" stroke="black" points="192,-23 192,-57 528,-57 528,-23 192,-23"/>
+<text text-anchor="start" x="195" y="-41.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The rationale for the given</text>
+<text text-anchor="start" x="195" y="-27.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">classification.</text>
+<polygon fill="#333333" stroke="none" points="0,0 0,-23 528,-23 528,0 0,0"/>
+<polygon fill="none" stroke="black" points="0,0 0,-23 528,-23 528,0 0,0"/>
+<text text-anchor="start" x="3" y="-7.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">An individual moderation for a proposal review.</text>
 </g>
-<!-- config -->
-<g id="node3" class="node">
-<title>config</title>
-<polygon fill="#009879" stroke="none" points="629,-113.5 629,-140.5 699,-140.5 699,-113.5 629,-113.5"/>
-<polygon fill="none" stroke="black" points="629,-113.5 629,-140.5 699,-140.5 699,-113.5 629,-113.5"/>
-<text text-anchor="start" x="634" y="-119.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">config</text>
-<polygon fill="none" stroke="black" points="629,-89.5 629,-113.5 699,-113.5 699,-89.5 629,-89.5"/>
-<text text-anchor="start" x="632.5" y="-94.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="629,-64.5 629,-89.5 699,-89.5 699,-64.5 629,-64.5"/>
-<text text-anchor="start" x="632" y="-71.3" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#333333" stroke="none" points="629,-41.5 629,-64.5 701,-64.5 701,-41.5 629,-41.5"/>
-<polygon fill="none" stroke="black" points="629,-41.5 629,-64.5 701,-64.5 701,-41.5 629,-41.5"/>
-<text text-anchor="start" x="632" y="-49.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+<!-- catalyst_user -->
+<g id="node2" class="node">
+<title>catalyst_user</title>
+<polygon fill="#009879" stroke="none" points="584,-104 584,-131 746,-131 746,-104 584,-104"/>
+<polygon fill="none" stroke="black" points="584,-104 584,-131 746,-131 746,-104 584,-104"/>
+<text text-anchor="start" x="587" y="-110" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">catalyst_user</text>
+<polygon fill="none" stroke="black" points="584,-80 584,-104 746,-104 746,-80 584,-80"/>
+<text text-anchor="start" x="633.5" y="-84.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="584,-55 584,-80 746,-80 746,-55 584,-55"/>
+<text text-anchor="start" x="587" y="-61.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#333333" stroke="none" points="584,-32 584,-55 746,-55 746,-32 584,-32"/>
+<polygon fill="none" stroke="black" points="584,-32 584,-55 746,-55 746,-32 584,-32"/>
+<text text-anchor="start" x="587" y="-39.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
 </g>
-<!-- moderation&#45;&gt;config -->
-<g id="edge4" class="edge">
-<title>moderation:user_id_out&#45;&gt;config:row_id</title>
-<path fill="none" stroke="black" d="M528,-298C552.11,-298 591.54,-121.16 618.88,-83.86"/>
-<polygon fill="black" stroke="black" points="620.9,-86.72 626.79,-77.91 616.69,-81.12 620.9,-86.72"/>
+<!-- moderation&#45;&gt;catalyst_user -->
+<g id="edge2" class="edge">
+<title>moderation:user_id_out&#45;&gt;catalyst_user:row_id</title>
+<path fill="none" stroke="black" d="M528,-117.5C556.65,-117.5 552.13,-79.9 571.96,-69.91"/>
+<polygon fill="black" stroke="black" points="572.5,-73.38 581.52,-67.82 571,-66.54 572.5,-73.38"/>
 </g>
 <!-- proposal_review -->
-<g id="node4" class="node">
+<g id="node3" class="node">
 <title>proposal_review</title>
-<polygon fill="#009879" stroke="none" points="572,-322.5 572,-349.5 758,-349.5 758,-322.5 572,-322.5"/>
-<polygon fill="none" stroke="black" points="572,-322.5 572,-349.5 758,-349.5 758,-322.5 572,-322.5"/>
-<text text-anchor="start" x="575" y="-328.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal_review</text>
-<polygon fill="none" stroke="black" points="572,-298.5 572,-322.5 758,-322.5 758,-298.5 572,-298.5"/>
-<text text-anchor="start" x="633.5" y="-303.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="572,-273.5 572,-298.5 758,-298.5 758,-273.5 572,-273.5"/>
-<text text-anchor="start" x="575" y="-280.3" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#333333" stroke="none" points="572,-250.5 572,-273.5 758,-273.5 758,-250.5 572,-250.5"/>
-<polygon fill="none" stroke="black" points="572,-250.5 572,-273.5 758,-273.5 758,-250.5 572,-250.5"/>
-<text text-anchor="start" x="575" y="-258.2" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
+<polygon fill="#009879" stroke="none" points="572,-229 572,-256 758,-256 758,-229 572,-229"/>
+<polygon fill="none" stroke="black" points="572,-229 572,-256 758,-256 758,-229 572,-229"/>
+<text text-anchor="start" x="575" y="-235" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">proposal_review</text>
+<polygon fill="none" stroke="black" points="572,-205 572,-229 758,-229 758,-205 572,-205"/>
+<text text-anchor="start" x="633.5" y="-209.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
+<polygon fill="none" stroke="black" points="572,-180 572,-205 758,-205 758,-180 572,-180"/>
+<text text-anchor="start" x="575" y="-186.8" font-family="Times,serif" font-size="16.00">row_id</text>
+<polygon fill="#333333" stroke="none" points="572,-157 572,-180 758,-180 758,-157 572,-157"/>
+<polygon fill="none" stroke="black" points="572,-157 572,-180 758,-180 758,-157 572,-157"/>
+<text text-anchor="start" x="575" y="-164.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">ABRIDGED</text>
 </g>
 <!-- moderation&#45;&gt;proposal_review -->
-<g id="edge3" class="edge">
-<title>moderation:review_id_out&#45;&gt;proposal_review:row_id</title>
-<path fill="none" stroke="black" d="M528,-328C550.12,-328 546.77,-299.2 560.14,-289.3"/>
-<polygon fill="black" stroke="black" points="561,-292.69 569.55,-286.44 558.97,-285.99 561,-292.69"/>
-</g>
-<!-- moderation_allocation -->
-<g id="node2" class="node">
-<title>moderation_allocation</title>
-<polygon fill="#009879" stroke="none" points="14.5,-131 14.5,-158 513.5,-158 513.5,-131 14.5,-131"/>
-<polygon fill="none" stroke="black" points="14.5,-131 14.5,-158 513.5,-158 513.5,-131 14.5,-131"/>
-<text text-anchor="start" x="138" y="-137" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">moderation_allocation</text>
-<polygon fill="none" stroke="black" points="14.5,-107 14.5,-131 98.5,-131 98.5,-107 14.5,-107"/>
-<text text-anchor="start" x="25" y="-111.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Column</text>
-<polygon fill="none" stroke="black" points="98.5,-107 98.5,-131 177.5,-131 177.5,-107 98.5,-107"/>
-<text text-anchor="start" x="117" y="-111.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
-<polygon fill="none" stroke="black" points="177.5,-107 177.5,-131 513.5,-131 513.5,-107 177.5,-107"/>
-<text text-anchor="start" x="287.75" y="-111.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Description</text>
-<polygon fill="#54ff9f" stroke="none" points="14.5,-82 14.5,-107 98.5,-107 98.5,-82 14.5,-82"/>
-<polygon fill="none" stroke="black" points="14.5,-82 14.5,-107 98.5,-107 98.5,-82 14.5,-82"/>
-<text text-anchor="start" x="17.5" y="-88.8" font-family="Times,serif" font-size="16.00">row_id</text>
-<polygon fill="#54ff9f" stroke="none" points="98.5,-82 98.5,-107 177.5,-107 177.5,-82 98.5,-82"/>
-<polygon fill="none" stroke="black" points="98.5,-82 98.5,-107 177.5,-107 177.5,-82 98.5,-82"/>
-<text text-anchor="start" x="101.25" y="-88.8" font-family="Times,serif" font-size="16.00">integer+</text>
-<polygon fill="#54ff9f" stroke="none" points="177.5,-82 177.5,-107 513.5,-107 513.5,-82 177.5,-82"/>
-<polygon fill="none" stroke="black" points="177.5,-82 177.5,-107 513.5,-107 513.5,-82 177.5,-82"/>
-<text text-anchor="start" x="180.5" y="-90.83" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">Synthetic ID of this relationship.</text>
-<polygon fill="none" stroke="black" points="14.5,-48 14.5,-82 98.5,-82 98.5,-48 14.5,-48"/>
-<text text-anchor="start" x="17.5" y="-59.55" font-family="Times,serif" font-size="16.00">review_id</text>
-<polygon fill="none" stroke="black" points="98.5,-48 98.5,-82 177.5,-82 177.5,-48 98.5,-48"/>
-<text text-anchor="start" x="108" y="-59.55" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="177.5,-48 177.5,-82 513.5,-82 513.5,-48 177.5,-48"/>
-<text text-anchor="start" x="180.5" y="-66.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The review the relationship is related</text>
-<text text-anchor="start" x="180.5" y="-52.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">to.</text>
-<polygon fill="none" stroke="black" points="14.5,-23 14.5,-48 98.5,-48 98.5,-23 14.5,-23"/>
-<text text-anchor="start" x="17.5" y="-29.8" font-family="Times,serif" font-size="16.00">user_id</text>
-<polygon fill="none" stroke="black" points="98.5,-23 98.5,-48 177.5,-48 177.5,-23 98.5,-23"/>
-<text text-anchor="start" x="108" y="-29.8" font-family="Times,serif" font-size="16.00">integer</text>
-<polygon fill="none" stroke="black" points="177.5,-23 177.5,-48 513.5,-48 513.5,-23 177.5,-23"/>
-<text text-anchor="start" x="180.5" y="-31.82" font-family="Monospace" font-style="italic" font-size="14.00" fill="#7f7f7f">The user the relationship is related to.</text>
-<polygon fill="#333333" stroke="none" points="14.5,0 14.5,-23 513.5,-23 513.5,0 14.5,0"/>
-<polygon fill="none" stroke="black" points="14.5,0 14.5,-23 513.5,-23 513.5,0 14.5,0"/>
-<text text-anchor="start" x="17.5" y="-7.7" font-family="Monospace" font-style="italic" font-size="14.00" fill="white">The relationship between users and proposals_reviews.</text>
-</g>
-<!-- moderation_allocation&#45;&gt;config -->
-<g id="edge2" class="edge">
-<title>moderation_allocation:user_id_out&#45;&gt;config:row_id</title>
-<path fill="none" stroke="black" d="M515,-35C564.5,-35 573.25,-70.85 616.55,-76.31"/>
-<polygon fill="black" stroke="black" points="616.3,-79.8 626.49,-76.91 616.72,-72.81 616.3,-79.8"/>
-</g>
-<!-- moderation_allocation&#45;&gt;proposal_review -->
 <g id="edge1" class="edge">
-<title>moderation_allocation:review_id_out&#45;&gt;proposal_review:row_id</title>
-<path fill="none" stroke="black" d="M515,-65C612.17,-65 481.29,-268.24 559.75,-284.92"/>
-<polygon fill="black" stroke="black" points="559.2,-288.38 569.49,-285.85 559.88,-281.41 559.2,-288.38"/>
+<title>moderation:review_id_out&#45;&gt;proposal_review:row_id</title>
+<path fill="none" stroke="black" d="M528,-142.5C552.73,-142.5 545.47,-178.1 560.21,-189.22"/>
+<polygon fill="black" stroke="black" points="558.97,-192.5 569.55,-192.06 561,-185.8 558.97,-192.5"/>
 </g>
 <!-- LEGEND -->
-<g id="node5" class="node">
+<g id="node4" class="node">
 <title>LEGEND</title>
-<polygon fill="Pink" stroke="none" points="125.5,-587 125.5,-614 402.5,-614 402.5,-587 125.5,-587"/>
-<polygon fill="none" stroke="black" points="125.5,-587 125.5,-614 402.5,-614 402.5,-587 125.5,-587"/>
-<text text-anchor="start" x="228" y="-593" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">LEGEND</text>
-<polygon fill="none" stroke="black" points="125.5,-563 125.5,-587 300.5,-587 300.5,-563 125.5,-563"/>
-<text text-anchor="start" x="192" y="-567.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
-<polygon fill="none" stroke="black" points="300.5,-563 300.5,-587 402.5,-587 402.5,-563 300.5,-563"/>
-<text text-anchor="start" x="314.75" y="-567.9" font-family="Courier bold" font-weight="bold" font-size="18.00">Example</text>
-<polygon fill="#54ff9f" stroke="none" points="125.5,-538 125.5,-563 300.5,-563 300.5,-538 125.5,-538"/>
-<polygon fill="none" stroke="black" points="125.5,-538 125.5,-563 300.5,-563 300.5,-538 125.5,-538"/>
-<text text-anchor="start" x="128.5" y="-544.8" font-family="Times,serif" font-size="16.00">Primary Key</text>
-<polygon fill="#54ff9f" stroke="none" points="300.5,-538 300.5,-563 402.5,-563 402.5,-538 300.5,-538"/>
-<polygon fill="none" stroke="black" points="300.5,-538 300.5,-563 402.5,-563 402.5,-538 300.5,-538"/>
-<text text-anchor="start" x="314.75" y="-544.8" font-family="Times,serif" font-size="16.00">integer+</text>
-<polygon fill="none" stroke="black" points="125.5,-513 125.5,-538 300.5,-538 300.5,-513 125.5,-513"/>
-<text text-anchor="start" x="128.5" y="-519.8" font-family="Times,serif" font-size="16.00">Standard Field</text>
-<polygon fill="none" stroke="black" points="300.5,-513 300.5,-538 402.5,-538 402.5,-513 300.5,-513"/>
-<text text-anchor="start" x="328.62" y="-519.8" font-family="Times,serif" font-size="16.00">bytea</text>
-<polygon fill="none" stroke="black" points="125.5,-488 125.5,-513 300.5,-513 300.5,-488 125.5,-488"/>
-<text text-anchor="start" x="128.5" y="-494.8" font-family="Times,serif" font-size="16.00">Nullable Field</text>
-<polygon fill="none" stroke="black" points="300.5,-488 300.5,-513 402.5,-513 402.5,-488 300.5,-488"/>
-<text text-anchor="start" x="335.38" y="-495.8" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
-<polygon fill="none" stroke="black" points="125.5,-463 125.5,-488 300.5,-488 300.5,-463 125.5,-463"/>
-<text text-anchor="start" x="128.5" y="-469.8" font-family="Times,serif" font-size="16.00">Sized Field</text>
-<polygon fill="none" stroke="black" points="300.5,-463 300.5,-488 402.5,-488 402.5,-463 300.5,-463"/>
-<text text-anchor="start" x="303.5" y="-469.8" font-family="Times,serif" font-size="16.00">varchar(32)</text>
-<polygon fill="none" stroke="black" points="125.5,-438 125.5,-463 300.5,-463 300.5,-438 125.5,-438"/>
-<text text-anchor="start" x="128.5" y="-444.8" font-family="Times,serif" font-size="16.00">Autoincrement Field</text>
-<polygon fill="none" stroke="black" points="300.5,-438 300.5,-463 402.5,-463 402.5,-438 300.5,-438"/>
-<text text-anchor="start" x="314.75" y="-444.8" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="Pink" stroke="none" points="125.5,-402.5 125.5,-429.5 402.5,-429.5 402.5,-402.5 125.5,-402.5"/>
+<polygon fill="none" stroke="black" points="125.5,-402.5 125.5,-429.5 402.5,-429.5 402.5,-402.5 125.5,-402.5"/>
+<text text-anchor="start" x="228" y="-408.5" font-family="Courier bold italic" font-weight="bold" font-size="20.00" fill="white">LEGEND</text>
+<polygon fill="none" stroke="black" points="125.5,-378.5 125.5,-402.5 300.5,-402.5 300.5,-378.5 125.5,-378.5"/>
+<text text-anchor="start" x="192" y="-383.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Type</text>
+<polygon fill="none" stroke="black" points="300.5,-378.5 300.5,-402.5 402.5,-402.5 402.5,-378.5 300.5,-378.5"/>
+<text text-anchor="start" x="314.75" y="-383.4" font-family="Courier bold" font-weight="bold" font-size="18.00">Example</text>
+<polygon fill="#54ff9f" stroke="none" points="125.5,-353.5 125.5,-378.5 300.5,-378.5 300.5,-353.5 125.5,-353.5"/>
+<polygon fill="none" stroke="black" points="125.5,-353.5 125.5,-378.5 300.5,-378.5 300.5,-353.5 125.5,-353.5"/>
+<text text-anchor="start" x="128.5" y="-360.3" font-family="Times,serif" font-size="16.00">Primary Key</text>
+<polygon fill="#54ff9f" stroke="none" points="300.5,-353.5 300.5,-378.5 402.5,-378.5 402.5,-353.5 300.5,-353.5"/>
+<polygon fill="none" stroke="black" points="300.5,-353.5 300.5,-378.5 402.5,-378.5 402.5,-353.5 300.5,-353.5"/>
+<text text-anchor="start" x="314.75" y="-360.3" font-family="Times,serif" font-size="16.00">integer+</text>
+<polygon fill="none" stroke="black" points="125.5,-328.5 125.5,-353.5 300.5,-353.5 300.5,-328.5 125.5,-328.5"/>
+<text text-anchor="start" x="128.5" y="-335.3" font-family="Times,serif" font-size="16.00">Standard Field</text>
+<polygon fill="none" stroke="black" points="300.5,-328.5 300.5,-353.5 402.5,-353.5 402.5,-328.5 300.5,-328.5"/>
+<text text-anchor="start" x="328.62" y="-335.3" font-family="Times,serif" font-size="16.00">bytea</text>
+<polygon fill="none" stroke="black" points="125.5,-303.5 125.5,-328.5 300.5,-328.5 300.5,-303.5 125.5,-303.5"/>
+<text text-anchor="start" x="128.5" y="-310.3" font-family="Times,serif" font-size="16.00">Nullable Field</text>
+<polygon fill="none" stroke="black" points="300.5,-303.5 300.5,-328.5 402.5,-328.5 402.5,-303.5 300.5,-303.5"/>
+<text text-anchor="start" x="335.38" y="-311.3" font-family="Times,serif" font-style="italic" font-size="16.00">text</text>
+<polygon fill="none" stroke="black" points="125.5,-278.5 125.5,-303.5 300.5,-303.5 300.5,-278.5 125.5,-278.5"/>
+<text text-anchor="start" x="128.5" y="-285.3" font-family="Times,serif" font-size="16.00">Sized Field</text>
+<polygon fill="none" stroke="black" points="300.5,-278.5 300.5,-303.5 402.5,-303.5 402.5,-278.5 300.5,-278.5"/>
+<text text-anchor="start" x="303.5" y="-285.3" font-family="Times,serif" font-size="16.00">varchar(32)</text>
+<polygon fill="none" stroke="black" points="125.5,-253.5 125.5,-278.5 300.5,-278.5 300.5,-253.5 125.5,-253.5"/>
+<text text-anchor="start" x="128.5" y="-260.3" font-family="Times,serif" font-size="16.00">Autoincrement Field</text>
+<polygon fill="none" stroke="black" points="300.5,-253.5 300.5,-278.5 402.5,-278.5 402.5,-253.5 300.5,-253.5"/>
+<text text-anchor="start" x="314.75" y="-260.3" font-family="Times,serif" font-size="16.00">integer+</text>
 </g>
 </g>
 </svg>
 </pre>
 <h2 id="schema"><a class="header" href="#schema">Schema</a></h2>
-<pre><code class="language-sql">-- Catalyst Event Database
-
--- ModerationAllocation - Defines the relationship between users and proposals_reviews
--- to describe the allocation of moderations that needs to be done.
-
-CREATE TABLE moderation_allocation (
-  row_id SERIAL PRIMARY KEY,
-  review_id INTEGER NOT NULL,
-  user_id INTEGER NOT NULL,
-
-  FOREIGN KEY (review_id) REFERENCES proposal_review(row_id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES config(row_id) ON DELETE CASCADE
-);
-
-
-COMMENT ON TABLE moderation_allocation IS 'The relationship between users and proposals_reviews.';
-COMMENT ON COLUMN moderation_allocation.row_id IS 'Synthetic ID of this relationship.';
-COMMENT ON COLUMN moderation_allocation.review_id IS 'The review the relationship is related to.';
-COMMENT ON COLUMN moderation_allocation.user_id IS 'The user the relationship is related to.';
-
-
--- Moderation - Defines the moderation submitted by users for each proposal_review.
-
-CREATE TABLE moderation (
-  row_id SERIAL PRIMARY KEY,
-  review_id INTEGER NOT NULL,
-  user_id INTEGER NOT NULL,
-  classification INTEGER NOT NULL,
-  rationale VARCHAR,
-  UNIQUE (review_id, user_id),
-
-  FOREIGN KEY (review_id) REFERENCES proposal_review(row_id) ON DELETE CASCADE,
-  FOREIGN KEY (user_id) REFERENCES config(row_id) ON DELETE CASCADE
-);
-
-
-COMMENT ON TABLE moderation IS 'An individual moderation for a proposal review.';
-COMMENT ON COLUMN moderation.row_id IS 'Synthetic ID of this moderation.';
-COMMENT ON COLUMN moderation.review_id IS 'The review the moderation is related to.';
-COMMENT ON COLUMN moderation.user_id IS 'The user the moderation is submitted from.';
-COMMENT ON COLUMN moderation.classification IS 'The value used to describe the moderation (e.g. 0: excluded, 1: included).';
-COMMENT ON COLUMN moderation.rationale IS 'The rationale for the given classification.';
+<pre><code class="language-sql">{{#template ../../../src/event-db/migrations/V9__moderation_stage.sql}}
 </code></pre>
 <footer id="open-on-gh">Found a bug? <a href="https://github.com/input-output-hk/catalyst-core/edit/main/book/src/08_event-db/08_moderation.md">Edit this page on GitHub.</a></footer>
                     </main>

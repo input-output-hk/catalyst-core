@@ -295,6 +295,11 @@
 <a href="#295" id="295">295</a>
 <a href="#296" id="296">296</a>
 <a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     stake::Stake,
     value::Value,
@@ -475,10 +480,15 @@
 
             <span class="comment">// Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
             </span><span class="kw">let </span>gamma = env::var(GAMMA).unwrap_or(<span class="number">1</span>.to_string());
+
             <span class="kw">let </span>precision =
                 i64::from_str(<span class="kw-2">&amp;</span>env::var(PRECISION).unwrap_or(<span class="number">1</span>.to_string())).unwrap_or(<span class="number">1</span>);
 
-            <span class="kw">let </span>gamma = BigDecimal::from_str(<span class="kw-2">&amp;</span>gamma).unwrap_or(BigDecimal::from(<span class="number">1</span>));
+            <span class="kw">let </span><span class="kw-2">mut </span>gamma = BigDecimal::from_str(<span class="kw-2">&amp;</span>gamma).unwrap_or(BigDecimal::from(<span class="number">1</span>));
+            <span class="comment">// Gamma must be between 0 and 1, anything else is treated as bad input; defaulting gamma to 1.
+            </span><span class="kw">if </span>gamma &lt; BigDecimal::from(<span class="number">0</span>) || gamma &gt; BigDecimal::from(<span class="number">1</span>) {
+                gamma = BigDecimal::from(<span class="number">1</span>);
+            }
             <span class="kw">let </span>stake = BigDecimal::from(weight.<span class="number">0</span>);
 
             <span class="kw">let </span>weight = (gamma * stake)

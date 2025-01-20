@@ -15,7 +15,7 @@ build:
         apt-get install -y --no-install-recommends curl build-essential libxml2-dev libxslt-dev zlib1g-dev python3-lxml
 
     # Install Poetry
-    RUN curl -sSL https://install.python-poetry.org | python3 -
+    RUN curl -sSL https://install.python-poetry.org | python3 - --version 2.0.1
 
     # Set path to poetry
     ENV PATH=/root/.local/bin:$PATH
@@ -29,6 +29,7 @@ build:
     RUN poetry env use python
     RUN poetry config installer.max-workers 10
     RUN poetry install --no-cache --no-root
+    RUN poetry self add poetry-plugin-export
 
     # Build the distribution wheels and save them as artifacts
     RUN poetry export --without-hashes -f requirements.txt --output requirements.txt

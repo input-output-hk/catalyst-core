@@ -14,7 +14,6 @@ thiserror = "1.0"
 cryptoxide = "^0.4.2"
 const_format = "0.2"
 base64 = "0.21.0"
-tracing = "0.1"
 bigdecimal = "0.4.7"
 
 

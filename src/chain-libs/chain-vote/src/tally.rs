@@ -168,6 +168,7 @@ impl EncryptedTally {
         const GAMMA: &str = "QUADRATIC_VOTING_GAMMA";
         const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
 
+        // Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
         let gamma = env::var(GAMMA).unwrap_or(1.to_string());
         let precision = i64::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
 

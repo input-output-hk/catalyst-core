@@ -158,6 +158,23 @@
 <a href="#158" id="158">158</a>
 <a href="#159" id="159">159</a>
 <a href="#160" id="160">160</a>
+<a href="#161" id="161">161</a>
+<a href="#162" id="162">162</a>
+<a href="#163" id="163">163</a>
+<a href="#164" id="164">164</a>
+<a href="#165" id="165">165</a>
+<a href="#166" id="166">166</a>
+<a href="#167" id="167">167</a>
+<a href="#168" id="168">168</a>
+<a href="#169" id="169">169</a>
+<a href="#170" id="170">170</a>
+<a href="#171" id="171">171</a>
+<a href="#172" id="172">172</a>
+<a href="#173" id="173">173</a>
+<a href="#174" id="174">174</a>
+<a href="#175" id="175">175</a>
+<a href="#176" id="176">176</a>
+<a href="#177" id="177">177</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//!
 //! Tool for offline tally
 //!
@@ -179,6 +196,7 @@
 
 <span class="kw">use </span>chain_core::packer::Codec;
 <span class="kw">use </span>color_eyre::{eyre::Context, Report};
+<span class="kw">use </span>std::env;
 <span class="kw">use </span>std::{error::Error, path::PathBuf};
 
 <span class="doccomment">///
@@ -196,6 +214,12 @@
     <span class="doccomment">/// cross reference official results
     </span><span class="attr">#[clap(short, long)]
     </span>official_results: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="doccomment">/// Quadratic scaling
+    </span><span class="attr">#[clap(short, long)]
+    </span>gamma: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="doccomment">/// Quadratic scaling
+    </span><span class="attr">#[clap(short, long)]
+    </span>precision: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
 <span class="kw">fn </span>main() -&gt; <span class="prelude-ty">Result</span>&lt;(), Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
@@ -254,6 +278,16 @@
     <span class="comment">// decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -&gt; tallyResultPlaintext
     // use tally tool to validate decrypted results
     </span><span class="kw">let </span>shares_and_results = extract_decryption_shares_and_results(all_fragments);
+
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(gamma) = args.gamma {
+        <span class="kw">const </span>SCALE_FACTOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_SCALING_FACTOR&quot;</span>;
+        std::env::set_var(SCALE_FACTOR, gamma);
+    }
+
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(precision) = args.precision {
+        <span class="kw">const </span>PRECISION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_PRECISION&quot;</span>;
+        std::env::set_var(PRECISION, precision);
+    }
 
     <span class="comment">// Compare decrypted tallies with official results if provided
     </span><span class="kw">if let </span><span class="prelude-val">Some</span>(official_results) = args.official_results {

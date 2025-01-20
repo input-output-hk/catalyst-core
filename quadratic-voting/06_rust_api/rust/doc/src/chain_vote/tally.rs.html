@@ -851,7 +851,24 @@
 <a href="#851" id="851">851</a>
 <a href="#852" id="852">852</a>
 <a href="#853" id="853">853</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::num::NonZeroU64;
+<a href="#854" id="854">854</a>
+<a href="#855" id="855">855</a>
+<a href="#856" id="856">856</a>
+<a href="#857" id="857">857</a>
+<a href="#858" id="858">858</a>
+<a href="#859" id="859">859</a>
+<a href="#860" id="860">860</a>
+<a href="#861" id="861">861</a>
+<a href="#862" id="862">862</a>
+<a href="#863" id="863">863</a>
+<a href="#864" id="864">864</a>
+<a href="#865" id="865">865</a>
+<a href="#866" id="866">866</a>
+<a href="#867" id="867">867</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::num::NonZeroI64;
+<span class="kw">use </span>std::num::NonZeroU64;
+
+<span class="kw">use </span>std::str::FromStr;
 
 <span class="kw">use </span><span class="kw">crate</span>::GroupElement;
 <span class="kw">use crate</span>::{
@@ -862,9 +879,13 @@
     TallyOptimizationTable,
 };
 <span class="kw">use </span>base64::{engine::general_purpose, Engine <span class="kw">as _</span>};
+
+<span class="kw">use </span>bigdecimal::BigDecimal;
+<span class="kw">use </span>bigdecimal::ToPrimitive;
 <span class="kw">use </span>cryptoxide::blake2b::Blake2b;
 <span class="kw">use </span>cryptoxide::digest::Digest;
-<span class="kw">use </span>num_integer::Roots;
+
+<span class="kw">use </span>std::env;
 
 <span class="kw">use </span>rand_core::{CryptoRng, RngCore};
 
@@ -1011,14 +1032,21 @@
         <span class="macro">assert_eq!</span>(ballot.vote().len(), <span class="self">self</span>.r.len());
         <span class="macro">assert_eq!</span>(ballot.fingerprint(), <span class="kw-2">&amp;</span><span class="self">self</span>.fingerprint);
 
-        <span class="comment">// Returns the truncated principal square root of an integer – ⌊√x⌋
-        // This is solving for r in r² = x, rounding toward zero. The result will satisfy r² ≤ x &lt; (r+1)²
-        </span><span class="kw">let </span>weight_gammad = weight.sqrt();
+        <span class="kw">const </span>SCALE_FACTOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_SCALING_FACTOR&quot;</span>;
+        <span class="kw">const </span>PRECISION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_PRECISION&quot;</span>;
+
+        <span class="kw">let </span>scaling_factor = env::var(SCALE_FACTOR).unwrap_or(<span class="number">1</span>.to_string());
+        <span class="kw">let </span>precision = i64::from_str(<span class="kw-2">&amp;</span>env::var(PRECISION).unwrap_or(<span class="number">1</span>.to_string())).unwrap_or(<span class="number">1</span>);
+
+        <span class="kw">let </span>gamma = BigDecimal::from_str(<span class="kw-2">&amp;</span>scaling_factor).unwrap_or(BigDecimal::from(<span class="number">1</span>));
+        <span class="kw">let </span>stake = BigDecimal::from(weight);
+
+        <span class="kw">let </span>weight = (gamma * stake).round(precision).to_u64().unwrap_or(weight);
 
         <span class="kw">for </span>(ri, ci) <span class="kw">in </span><span class="self">self</span>.r.iter_mut().zip(ballot.vote().iter()) {
-            <span class="kw-2">*</span>ri = <span class="kw-2">&amp;*</span>ri + <span class="kw-2">&amp;</span>(ci * weight_gammad);
+            <span class="kw-2">*</span>ri = <span class="kw-2">&amp;*</span>ri + <span class="kw-2">&amp;</span>(ci * weight);
         }
-        <span class="self">self</span>.max_stake += weight_gammad;
+        <span class="self">self</span>.max_stake += weight;
     }
 
     <span class="doccomment">/// Given a single committee member&#39;s `secret_key`, returns a partial decryption of

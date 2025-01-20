@@ -37,10 +37,10 @@ pub struct Args {
     /// cross reference official results
     #[clap(short, long)]
     official_results: Option<String>,
-    /// Quadratic scaling
+    /// Gamma value for Quadratic scaling
     #[clap(short, long)]
     gamma: Option<String>,
-    /// Quadratic scaling
+    /// Rounding precision for arithmetic
     #[clap(short, long)]
     precision: Option<String>,
 }
@@ -103,8 +103,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     let shares_and_results = extract_decryption_shares_and_results(all_fragments);
 
     if let Some(gamma) = args.gamma {
-        const SCALE_FACTOR: &str = "QUADRATIC_VOTING_SCALING_FACTOR";
-        std::env::set_var(SCALE_FACTOR, gamma);
+        const GAMMA: &str = "QUADRATIC_VOTING_GAMMA";
+        std::env::set_var(GAMMA, gamma);
     }
 
     if let Some(precision) = args.precision {

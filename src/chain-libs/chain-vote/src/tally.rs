@@ -165,13 +165,13 @@ impl EncryptedTally {
         assert_eq!(ballot.vote().len(), self.r.len());
         assert_eq!(ballot.fingerprint(), &self.fingerprint);
 
-        const SCALE_FACTOR: &str = "QUADRATIC_VOTING_SCALING_FACTOR";
+        const GAMMA: &str = "QUADRATIC_VOTING_GAMMA";
         const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
 
-        let scaling_factor = env::var(SCALE_FACTOR).unwrap_or(1.to_string());
+        let gamma = env::var(GAMMA).unwrap_or(1.to_string());
         let precision = i64::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
 
-        let gamma = BigDecimal::from_str(&scaling_factor).unwrap_or(BigDecimal::from(1));
+        let gamma = BigDecimal::from_str(&gamma).unwrap_or(BigDecimal::from(1));
         let stake = BigDecimal::from(weight);
 
         let weight = (gamma * stake).round(precision).to_u64().unwrap_or(weight);

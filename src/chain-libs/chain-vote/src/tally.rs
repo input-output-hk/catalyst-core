@@ -1,4 +1,7 @@
+use std::num::NonZeroI64;
 use std::num::NonZeroU64;
+
+use std::str::FromStr;
 
 use crate::GroupElement;
 use crate::{
@@ -9,9 +12,13 @@ use crate::{
     TallyOptimizationTable,
 };
 use base64::{engine::general_purpose, Engine as _};
+
+use bigdecimal::BigDecimal;
+use bigdecimal::ToPrimitive;
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
-use num_integer::Roots;
+
+use std::env;
 
 use rand_core::{CryptoRng, RngCore};
 
@@ -158,14 +165,21 @@ impl EncryptedTally {
         assert_eq!(ballot.vote().len(), self.r.len());
         assert_eq!(ballot.fingerprint(), &self.fingerprint);
 
-        // Returns the truncated principal square root of an integer – ⌊√x⌋
-        // This is solving for r in r² = x, rounding toward zero. The result will satisfy r² ≤ x < (r+1)²
-        let weight_gammad = weight.sqrt();
+        const SCALE_FACTOR: &str = "QUADRATIC_VOTING_SCALING_FACTOR";
+        const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
+
+        let scaling_factor = env::var(SCALE_FACTOR).unwrap_or(1.to_string());
+        let precision = i64::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
+
+        let gamma = BigDecimal::from_str(&scaling_factor).unwrap_or(BigDecimal::from(1));
+        let stake = BigDecimal::from(weight);
+
+        let weight = (gamma * stake).round(precision).to_u64().unwrap_or(weight);
 
         for (ri, ci) in self.r.iter_mut().zip(ballot.vote().iter()) {
-            *ri = &*ri + &(ci * weight_gammad);
+            *ri = &*ri + &(ci * weight);
         }
-        self.max_stake += weight_gammad;
+        self.max_stake += weight;
     }
 
     /// Given a single committee member's `secret_key`, returns a partial decryption of

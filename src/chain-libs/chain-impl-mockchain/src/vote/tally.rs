@@ -3,8 +3,14 @@ use crate::{
     value::Value,
     vote::{Choice, Options},
 };
+use bigdecimal::BigDecimal;
+use bigdecimal::ToPrimitive;
 use chain_vote::EncryptedTally;
-use num_integer::Roots;
+use std::num::NonZeroI64;
+
+use std::str::FromStr;
+
+use std::env;
 use std::fmt;
 use thiserror::Error;
 
@@ -167,11 +173,22 @@ impl TallyResult {
         } else {
             let index = choice.as_byte() as usize;
 
-            // Returns the truncated principal square root of an integer – ⌊√x⌋
-            // This is solving for r in r² = x, rounding toward zero. The result will satisfy r² ≤ x < (r+1)²
-            let weight_gammad = weight.0.sqrt();
+            const SCALE_FACTOR: &str = "QUADRATIC_VOTING_SCALING_FACTOR";
+            const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
 
-            self.results[index] = self.results[index].saturating_add(Weight(weight_gammad));
+            let scaling_factor = env::var(SCALE_FACTOR).unwrap_or(1.to_string());
+            let precision =
+                i64::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
+
+            let gamma = BigDecimal::from_str(&scaling_factor).unwrap_or(BigDecimal::from(1));
+            let stake = BigDecimal::from(weight.0);
+
+            let weight = (gamma * stake)
+                .round(precision)
+                .to_u64()
+                .unwrap_or(weight.0);
+
+            self.results[index] = self.results[index].saturating_add(Weight(weight));
 
             Ok(())
         }

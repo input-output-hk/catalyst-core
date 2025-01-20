@@ -31,6 +31,17 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 
 ```
 
+```bash
+
+OFFICIAL_RESULTS=/tmp/activevoteplans.json 
+BLOCK0=/tmp/fund9-leader-1/artifacts/block0.bin
+FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
+QUADRATIC_SCALE=0.1
+
+./target/release/offline --fragments $FRAGMENTS_STORAGE --block0 $BLOCK0 --official-results $OFFICIAL_RESULTS --quadratic_scaling $QUADRATIC_SCALE
+
+```
+
 This will create three files:
 - *ledger_after_tally.json* **(decrypted ledger state after tally)** *should match official results!*
 - *ledger_before_tally.json* **(encrypted ledger state before tally)** 

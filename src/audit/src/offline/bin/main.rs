@@ -19,6 +19,7 @@ use lib::offline::{
 
 use chain_core::packer::Codec;
 use color_eyre::{eyre::Context, Report};
+use std::env;
 use std::{error::Error, path::PathBuf};
 
 ///
@@ -36,6 +37,12 @@ pub struct Args {
     /// cross reference official results
     #[clap(short, long)]
     official_results: Option<String>,
+    /// Quadratic scaling
+    #[clap(short, long)]
+    gamma: Option<String>,
+    /// Quadratic scaling
+    #[clap(short, long)]
+    precision: Option<String>,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -94,6 +101,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     // decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext
     // use tally tool to validate decrypted results
     let shares_and_results = extract_decryption_shares_and_results(all_fragments);
+
+    if let Some(gamma) = args.gamma {
+        const SCALE_FACTOR: &str = "QUADRATIC_VOTING_SCALING_FACTOR";
+        std::env::set_var(SCALE_FACTOR, gamma);
+    }
+
+    if let Some(precision) = args.precision {
+        const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
+        std::env::set_var(PRECISION, precision);
+    }
 
     // Compare decrypted tallies with official results if provided
     if let Some(official_results) = args.official_results {

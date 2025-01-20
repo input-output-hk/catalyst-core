@@ -15,7 +15,6 @@ cryptoxide = "^0.4.2"
 const_format = "0.2"
 base64 = "0.21.0"
 bigdecimal = "0.4.7"
-tracing = "0.1.41"
 
 
 [dev-dependencies]

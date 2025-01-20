@@ -178,10 +178,15 @@ impl TallyResult {
 
             // Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
             let gamma = env::var(GAMMA).unwrap_or(1.to_string());
+
             let precision =
                 i64::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
 
-            let gamma = BigDecimal::from_str(&gamma).unwrap_or(BigDecimal::from(1));
+            let mut gamma = BigDecimal::from_str(&gamma).unwrap_or(BigDecimal::from(1));
+            // Gamma must be between 0 and 1, anything else is treated as bad input; defaulting gamma to 1.
+            if gamma < BigDecimal::from(0) || gamma > BigDecimal::from(1) {
+                gamma = BigDecimal::from(1);
+            }
             let stake = BigDecimal::from(weight.0);
 
             let weight = (gamma * stake)

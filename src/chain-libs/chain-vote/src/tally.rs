@@ -2,6 +2,7 @@ use std::num::NonZeroI64;
 use std::num::NonZeroU64;
 
 use std::str::FromStr;
+use tracing::info;
 
 use crate::GroupElement;
 use crate::{
@@ -172,7 +173,11 @@ impl EncryptedTally {
         let gamma = env::var(GAMMA).unwrap_or(1.to_string());
         let precision = i64::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
 
-        let gamma = BigDecimal::from_str(&gamma).unwrap_or(BigDecimal::from(1));
+        let mut gamma = BigDecimal::from_str(&gamma).unwrap_or(BigDecimal::from(1));
+        // Gamma must be between 0 and 1, anything else is treated as bad input; defaulting gamma to 1.
+        if gamma < BigDecimal::from(0) || gamma > BigDecimal::from(1) {
+            gamma = BigDecimal::from(1);
+        }
         let stake = BigDecimal::from(weight);
 
         let weight = (gamma * stake).round(precision).to_u64().unwrap_or(weight);

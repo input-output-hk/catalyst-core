@@ -68,6 +68,16 @@ fn main() -> Result<(), Box<dyn Error>> {
     info!("Audit Tool.");
     info!("Starting Offline Tally");
 
+    if let Some(gamma) = args.gamma {
+        const GAMMA: &str = "QUADRATIC_VOTING_GAMMA";
+        std::env::set_var(GAMMA, gamma);
+    }
+
+    if let Some(precision) = args.precision {
+        const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
+        std::env::set_var(PRECISION, precision);
+    }
+
     // Load and replay fund fragments from storage
     let storage_path = PathBuf::from(args.fragments);
 
@@ -101,16 +111,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     // decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext
     // use tally tool to validate decrypted results
     let shares_and_results = extract_decryption_shares_and_results(all_fragments);
-
-    if let Some(gamma) = args.gamma {
-        const GAMMA: &str = "QUADRATIC_VOTING_GAMMA";
-        std::env::set_var(GAMMA, gamma);
-    }
-
-    if let Some(precision) = args.precision {
-        const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
-        std::env::set_var(PRECISION, precision);
-    }
 
     // Compare decrypted tallies with official results if provided
     if let Some(official_results) = args.official_results {

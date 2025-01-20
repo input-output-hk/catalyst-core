@@ -33,6 +33,7 @@ rand = "0.8"
 cryptoxide = "0.4"
 tracing.workspace = true
 bigdecimal = "0.4.7"
+num = "0.4.3"
 
 
 [features]

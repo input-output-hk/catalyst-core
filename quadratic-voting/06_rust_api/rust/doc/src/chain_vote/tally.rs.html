@@ -865,6 +865,7 @@
 <a href="#865" id="865">865</a>
 <a href="#866" id="866">866</a>
 <a href="#867" id="867">867</a>
+<a href="#868" id="868">868</a>
 </pre></div><pre class="rust"><code><span class="kw">use </span>std::num::NonZeroI64;
 <span class="kw">use </span>std::num::NonZeroU64;
 
@@ -1032,13 +1033,14 @@
         <span class="macro">assert_eq!</span>(ballot.vote().len(), <span class="self">self</span>.r.len());
         <span class="macro">assert_eq!</span>(ballot.fingerprint(), <span class="kw-2">&amp;</span><span class="self">self</span>.fingerprint);
 
-        <span class="kw">const </span>SCALE_FACTOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_SCALING_FACTOR&quot;</span>;
+        <span class="kw">const </span>GAMMA: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_GAMMA&quot;</span>;
         <span class="kw">const </span>PRECISION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_PRECISION&quot;</span>;
 
-        <span class="kw">let </span>scaling_factor = env::var(SCALE_FACTOR).unwrap_or(<span class="number">1</span>.to_string());
+        <span class="comment">// Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
+        </span><span class="kw">let </span>gamma = env::var(GAMMA).unwrap_or(<span class="number">1</span>.to_string());
         <span class="kw">let </span>precision = i64::from_str(<span class="kw-2">&amp;</span>env::var(PRECISION).unwrap_or(<span class="number">1</span>.to_string())).unwrap_or(<span class="number">1</span>);
 
-        <span class="kw">let </span>gamma = BigDecimal::from_str(<span class="kw-2">&amp;</span>scaling_factor).unwrap_or(BigDecimal::from(<span class="number">1</span>));
+        <span class="kw">let </span>gamma = BigDecimal::from_str(<span class="kw-2">&amp;</span>gamma).unwrap_or(BigDecimal::from(<span class="number">1</span>));
         <span class="kw">let </span>stake = BigDecimal::from(weight);
 
         <span class="kw">let </span>weight = (gamma * stake).round(precision).to_u64().unwrap_or(weight);

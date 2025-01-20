@@ -214,10 +214,10 @@
     <span class="doccomment">/// cross reference official results
     </span><span class="attr">#[clap(short, long)]
     </span>official_results: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="doccomment">/// Quadratic scaling
+    <span class="doccomment">/// Gamma value for Quadratic scaling
     </span><span class="attr">#[clap(short, long)]
     </span>gamma: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="doccomment">/// Quadratic scaling
+    <span class="doccomment">/// Rounding precision for arithmetic
     </span><span class="attr">#[clap(short, long)]
     </span>precision: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
@@ -280,8 +280,8 @@
     </span><span class="kw">let </span>shares_and_results = extract_decryption_shares_and_results(all_fragments);
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(gamma) = args.gamma {
-        <span class="kw">const </span>SCALE_FACTOR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_SCALING_FACTOR&quot;</span>;
-        std::env::set_var(SCALE_FACTOR, gamma);
+        <span class="kw">const </span>GAMMA: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_GAMMA&quot;</span>;
+        std::env::set_var(GAMMA, gamma);
     }
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(precision) = args.precision {

@@ -31,14 +31,18 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 
 ```
 
+
+*Generate encrypted tally with gamma scaling*
+
+
 ```bash
 
-OFFICIAL_RESULTS=/tmp/activevoteplans.json 
 BLOCK0=/tmp/fund9-leader-1/artifacts/block0.bin
 FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
-QUADRATIC_SCALE=0.1
+GAMMA=0.1
+PRECISION=5
 
-./target/release/offline --fragments $FRAGMENTS_STORAGE --block0 $BLOCK0 --official-results $OFFICIAL_RESULTS --quadratic_scaling $QUADRATIC_SCALE
+./target/release/offline --fragments $FRAGMENTS_STORAGE --block0 $BLOCK0  --gamma $GAMMA --precision $PRECISION
 
 ```
 

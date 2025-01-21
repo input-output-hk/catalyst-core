@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["ranking_mux"],"struct":["AdvisorReviewRow","VeteranRankingRow"],"type":["AdvisorReviewId","VeteranAdvisorId"]};

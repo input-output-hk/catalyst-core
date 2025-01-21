@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["VotePlanLedgerError"],"struct":["VotePlanLedger"]};

@@ -181,7 +181,11 @@ impl TallyResult {
             const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
 
             // Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
-            let gamma = f64::from_str(&env::var(GAMMA).unwrap_or(1.0.to_string())).unwrap();
+            let mut gamma = f64::from_str(&env::var(GAMMA).unwrap_or(1.0.to_string())).unwrap();
+            // Gamma must be between 0 and 1, anything else is treated as bad input; defaulting gamma to 1.
+            if gamma < 0.0 || gamma > 1.0 {
+                gamma = 1.0;
+            }
 
             let precision =
                 u32::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);

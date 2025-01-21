@@ -18,8 +18,6 @@ use base64::{engine::general_purpose, Engine as _};
 use num::Rational32;
 use rug::Integer;
 
-use tracing::info;
-
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
 
@@ -174,7 +172,11 @@ impl EncryptedTally {
         const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
 
         // Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
-        let gamma = f64::from_str(&env::var(GAMMA).unwrap_or(1.0.to_string())).unwrap();
+        let mut gamma = f64::from_str(&env::var(GAMMA).unwrap_or(1.0.to_string())).unwrap();
+        // Gamma must be between 0 and 1, anything else is treated as bad input; defaulting gamma to 1.
+        if gamma < 0.0 || gamma > 1.0 {
+            gamma = 1.0;
+        }
 
         let precision = u32::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
 
@@ -189,10 +191,6 @@ impl EncryptedTally {
         let gamma = Float::with_val(precision, &Rational::from((*numer, *denom)));
 
         let stake_with_gamma_scaling = stake.clone().pow(&gamma);
-        info!(
-            "{} to the power of {} is: {}",
-            stake, gamma, stake_with_gamma_scaling
-        );
 
         let weight = stake_with_gamma_scaling
             .to_integer_round(Round::Down)

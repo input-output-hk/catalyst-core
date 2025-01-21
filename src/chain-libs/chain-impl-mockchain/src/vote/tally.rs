@@ -191,12 +191,14 @@ impl TallyResult {
             let numer = gamma.numer();
 
             let stake = Float::with_val(precision, weight.0);
-            // r = gamma in rational form
-            let exp_r = Rational::from((*numer, *denom));
-            let exp_f = Float::with_val(precision, &exp_r);
-            let p = stake.clone().pow(&exp_f);
 
-            let weight = p
+            // rational = gamma in rational form i.e fraction
+            // 0.5 = 1/2
+            let gamma = Float::with_val(precision, &Rational::from((*numer, *denom)));
+
+            let stake_with_gamma_scaling = stake.clone().pow(&gamma);
+
+            let weight = stake_with_gamma_scaling
                 .to_integer_round(Round::Down)
                 .unwrap_or((Integer::from(weight.0), Ordering::Less))
                 .0

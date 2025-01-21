@@ -183,13 +183,18 @@ impl EncryptedTally {
         let numer = gamma.numer();
 
         let stake = Float::with_val(precision, weight);
-        // r = gamma in rational form
-        let exp_r = Rational::from((*numer, *denom));
-        let exp_f = Float::with_val(precision, &exp_r);
-        let p = stake.clone().pow(&exp_f);
-        info!("{} to the power of {} is: {}", stake, exp_f, p);
 
-        let weight = p
+        // rational = gamma in rational form i.e fraction
+        // 0.5 = 1/2
+        let gamma = Float::with_val(precision, &Rational::from((*numer, *denom)));
+
+        let stake_with_gamma_scaling = stake.clone().pow(&gamma);
+        info!(
+            "{} to the power of {} is: {}",
+            stake, gamma, stake_with_gamma_scaling
+        );
+
+        let weight = stake_with_gamma_scaling
             .to_integer_round(Round::Down)
             .unwrap_or((Integer::from(weight), Ordering::Less))
             .0

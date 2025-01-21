@@ -40,6 +40,9 @@ pub struct Args {
     /// Gamma value for Quadratic scaling
     #[clap(short, long)]
     gamma: Option<String>,
+    /// Rounding precision for arithmetic
+    #[clap(short, long)]
+    precision: Option<String>,
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -68,6 +71,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     if let Some(gamma) = args.gamma {
         const GAMMA: &str = "QUADRATIC_VOTING_GAMMA";
         std::env::set_var(GAMMA, gamma);
+    }
+
+    if let Some(precision) = args.precision {
+        const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
+        std::env::set_var(PRECISION, precision);
     }
 
     // Load and replay fund fragments from storage

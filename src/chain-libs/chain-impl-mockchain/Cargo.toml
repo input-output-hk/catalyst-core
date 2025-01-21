@@ -32,7 +32,8 @@ criterion = { version = "0.3.0", optional = true }
 rand = "0.8"
 cryptoxide = "0.4"
 tracing.workspace = true
-bigdecimal = "0.4.7"
+bigdecimal = "~0.2"
+bigdecimalmath = "0.1.0"
 num = "0.4.3"
 
 

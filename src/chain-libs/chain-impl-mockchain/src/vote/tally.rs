@@ -4,11 +4,13 @@ use crate::{
     vote::{Choice, Options},
 };
 use bigdecimal::BigDecimal;
+
 use bigdecimal::ToPrimitive;
+use bigdecimalmath::root;
 use chain_vote::EncryptedTally;
-use num::BigRational;
-use num::{BigInt, FromPrimitive};
-use std::num::NonZeroI64;
+
+use num::FromPrimitive;
+use num::Rational32;
 
 use std::str::FromStr;
 
@@ -176,23 +178,24 @@ impl TallyResult {
             let index = choice.as_byte() as usize;
 
             const GAMMA: &str = "QUADRATIC_VOTING_GAMMA";
-            const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
 
             // Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
             let gamma = f64::from_str(&env::var(GAMMA).unwrap_or(1.0.to_string())).unwrap();
 
-            let precision =
-                i64::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
+            let gamma = Rational32::from_f64(gamma).unwrap_or(Rational32::from_integer(1));
+            let denom = isize::try_from(*gamma.denom()).unwrap();
+            let numer = gamma.numer();
 
-            let gamma =
-                BigRational::from_f64(gamma).unwrap_or(BigRational::from_integer(BigInt::from(1)));
-            let denom = BigDecimal::from_bigint(gamma.denom().clone(), precision);
-            let numer = BigDecimal::from_bigint(gamma.numer().clone(), precision);
+            // stake
+            let base = BigDecimal::from(weight.0);
 
-            let stake = BigDecimal::from(weight.0);
+            // m-th power, then take the n-th root: where x^(m/n)
+            // mth power equals x^m where m in the numerator
+            let mth_power = self.pow_fractional_exponent(&base, *numer);
 
-            let weight = ((stake.clone() * numer.clone()) / denom)
-                .round(precision)
+            // nth root
+            let weight = root(denom, mth_power)
+                .unwrap_or(base.clone())
                 .to_u64()
                 .unwrap_or(weight.0);
 
@@ -200,6 +203,13 @@ impl TallyResult {
 
             Ok(())
         }
+    }
+
+    fn pow_fractional_exponent(&self, x: &BigDecimal, n: i32) -> BigDecimal {
+        let (bigint, scale) = x.as_bigint_and_exponent();
+        let new_scale = scale * n as i64;
+
+        BigDecimal::new(bigint.pow(n as u32), new_scale)
     }
 }
 

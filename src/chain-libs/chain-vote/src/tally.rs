@@ -1,6 +1,7 @@
-use std::num::NonZeroI64;
 use std::num::NonZeroU64;
 
+use bigdecimal::BigDecimal;
+use bigdecimalmath::root;
 use std::str::FromStr;
 
 use crate::GroupElement;
@@ -12,12 +13,11 @@ use crate::{
     TallyOptimizationTable,
 };
 use base64::{engine::general_purpose, Engine as _};
-use num::BigInt;
-use num::BigRational;
+
 use num::FromPrimitive;
+use num::Rational32;
 use tracing::info;
 
-use bigdecimal::BigDecimal;
 use bigdecimal::ToPrimitive;
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
@@ -170,30 +170,40 @@ impl EncryptedTally {
         assert_eq!(ballot.fingerprint(), &self.fingerprint);
 
         const GAMMA: &str = "QUADRATIC_VOTING_GAMMA";
-        const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
 
         // Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
         let gamma = f64::from_str(&env::var(GAMMA).unwrap_or(1.0.to_string())).unwrap();
-        let precision = i64::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
 
-        let gamma =
-            BigRational::from_f64(gamma).unwrap_or(BigRational::from_integer(BigInt::from(1)));
-        let denom = BigDecimal::from_bigint(gamma.denom().clone(), precision);
-        let numer = BigDecimal::from_bigint(gamma.numer().clone(), precision);
+        let gamma = Rational32::from_f64(gamma).unwrap_or(Rational32::from_integer(1));
+        let denom = isize::try_from(*gamma.denom()).unwrap();
+        let numer = gamma.numer();
 
-        let stake = BigDecimal::from(weight);
+        // stake
+        let base = BigDecimal::from(weight);
 
-        let weight = ((stake.clone() * numer.clone()) / denom)
-            .round(precision)
+        // m-th power, then take the n-th root: where x^(m/n)
+        // mth power equals x^m where m in the numerator
+        let mth_power = self.pow_fractional_exponent(&base, *numer);
+
+        // nth root
+        let weight = root(denom, mth_power)
+            .unwrap_or(base.clone())
             .to_u64()
             .unwrap_or(weight);
 
-        info!("stake before {:?} stake after {:?}", stake.to_u64(), weight);
+        info!("stake before {:?} stake after {:?}", base.to_u64(), weight);
 
         for (ri, ci) in self.r.iter_mut().zip(ballot.vote().iter()) {
             *ri = &*ri + &(ci * weight);
         }
         self.max_stake += weight;
+    }
+
+    fn pow_fractional_exponent(&self, x: &BigDecimal, n: i32) -> BigDecimal {
+        let (bigint, scale) = x.as_bigint_and_exponent();
+        let new_scale = scale * n as i64;
+
+        BigDecimal::new(bigint.pow(n as u32), new_scale)
     }
 
     /// Given a single committee member's `secret_key`, returns a partial decryption of

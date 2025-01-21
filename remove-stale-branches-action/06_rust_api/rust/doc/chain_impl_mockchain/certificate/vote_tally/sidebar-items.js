@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["TallyProof","VoteTallyPayload"],"struct":["DecryptedPrivateTally","DecryptedPrivateTallyError","DecryptedPrivateTallyProposal","VoteTally"]};

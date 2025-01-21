@@ -879,9 +879,20 @@
 <a href="#879" id="879">879</a>
 <a href="#880" id="880">880</a>
 <a href="#881" id="881">881</a>
-</pre></div><pre class="rust"><code><span class="kw">use </span>std::num::NonZeroI64;
-<span class="kw">use </span>std::num::NonZeroU64;
+<a href="#882" id="882">882</a>
+<a href="#883" id="883">883</a>
+<a href="#884" id="884">884</a>
+<a href="#885" id="885">885</a>
+<a href="#886" id="886">886</a>
+<a href="#887" id="887">887</a>
+<a href="#888" id="888">888</a>
+<a href="#889" id="889">889</a>
+<a href="#890" id="890">890</a>
+<a href="#891" id="891">891</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span>std::num::NonZeroU64;
 
+<span class="kw">use </span>bigdecimal::BigDecimal;
+<span class="kw">use </span>bigdecimalmath::root;
 <span class="kw">use </span>std::str::FromStr;
 
 <span class="kw">use </span><span class="kw">crate</span>::GroupElement;
@@ -893,12 +904,11 @@
     TallyOptimizationTable,
 };
 <span class="kw">use </span>base64::{engine::general_purpose, Engine <span class="kw">as _</span>};
-<span class="kw">use </span>num::BigInt;
-<span class="kw">use </span>num::BigRational;
+
 <span class="kw">use </span>num::FromPrimitive;
+<span class="kw">use </span>num::Rational32;
 <span class="kw">use </span>tracing::info;
 
-<span class="kw">use </span>bigdecimal::BigDecimal;
 <span class="kw">use </span>bigdecimal::ToPrimitive;
 <span class="kw">use </span>cryptoxide::blake2b::Blake2b;
 <span class="kw">use </span>cryptoxide::digest::Digest;
@@ -1051,30 +1061,40 @@
         <span class="macro">assert_eq!</span>(ballot.fingerprint(), <span class="kw-2">&amp;</span><span class="self">self</span>.fingerprint);
 
         <span class="kw">const </span>GAMMA: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_GAMMA&quot;</span>;
-        <span class="kw">const </span>PRECISION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_PRECISION&quot;</span>;
 
         <span class="comment">// Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
         </span><span class="kw">let </span>gamma = f64::from_str(<span class="kw-2">&amp;</span>env::var(GAMMA).unwrap_or(<span class="number">1.0</span>.to_string())).unwrap();
-        <span class="kw">let </span>precision = i64::from_str(<span class="kw-2">&amp;</span>env::var(PRECISION).unwrap_or(<span class="number">1</span>.to_string())).unwrap_or(<span class="number">1</span>);
 
-        <span class="kw">let </span>gamma =
-            BigRational::from_f64(gamma).unwrap_or(BigRational::from_integer(BigInt::from(<span class="number">1</span>)));
-        <span class="kw">let </span>denom = BigDecimal::from_bigint(gamma.denom().clone(), precision);
-        <span class="kw">let </span>numer = BigDecimal::from_bigint(gamma.numer().clone(), precision);
+        <span class="kw">let </span>gamma = Rational32::from_f64(gamma).unwrap_or(Rational32::from_integer(<span class="number">1</span>));
+        <span class="kw">let </span>denom = isize::try_from(<span class="kw-2">*</span>gamma.denom()).unwrap();
+        <span class="kw">let </span>numer = gamma.numer();
 
-        <span class="kw">let </span>stake = BigDecimal::from(weight);
+        <span class="comment">// stake
+        </span><span class="kw">let </span>base = BigDecimal::from(weight);
 
-        <span class="kw">let </span>weight = ((stake.clone() * numer.clone()) / denom)
-            .round(precision)
+        <span class="comment">// m-th power, then take the n-th root: where x^(m/n)
+        // mth power equals x^m where m in the numerator
+        </span><span class="kw">let </span>mth_power = <span class="self">self</span>.pow_fractional_exponent(<span class="kw-2">&amp;</span>base, <span class="kw-2">*</span>numer);
+
+        <span class="comment">// nth root
+        </span><span class="kw">let </span>weight = root(denom, mth_power)
+            .unwrap_or(base.clone())
             .to_u64()
             .unwrap_or(weight);
 
-        <span class="macro">info!</span>(<span class="string">&quot;stake before {:?} stake after {:?}&quot;</span>, stake.to_u64(), weight);
+        <span class="macro">info!</span>(<span class="string">&quot;stake before {:?} stake after {:?}&quot;</span>, base.to_u64(), weight);
 
         <span class="kw">for </span>(ri, ci) <span class="kw">in </span><span class="self">self</span>.r.iter_mut().zip(ballot.vote().iter()) {
             <span class="kw-2">*</span>ri = <span class="kw-2">&amp;*</span>ri + <span class="kw-2">&amp;</span>(ci * weight);
         }
         <span class="self">self</span>.max_stake += weight;
+    }
+
+    <span class="kw">fn </span>pow_fractional_exponent(<span class="kw-2">&amp;</span><span class="self">self</span>, x: <span class="kw-2">&amp;</span>BigDecimal, n: i32) -&gt; BigDecimal {
+        <span class="kw">let </span>(bigint, scale) = x.as_bigint_and_exponent();
+        <span class="kw">let </span>new_scale = scale * n <span class="kw">as </span>i64;
+
+        BigDecimal::new(bigint.pow(n <span class="kw">as </span>u32), new_scale)
     }
 
     <span class="doccomment">/// Given a single committee member&#39;s `secret_key`, returns a partial decryption of

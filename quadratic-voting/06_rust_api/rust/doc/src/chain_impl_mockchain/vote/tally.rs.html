@@ -302,17 +302,29 @@
 <a href="#302" id="302">302</a>
 <a href="#303" id="303">303</a>
 <a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
 </pre></div><pre class="rust"><code><span class="kw">use crate</span>::{
     stake::Stake,
     value::Value,
     vote::{Choice, Options},
 };
 <span class="kw">use </span>bigdecimal::BigDecimal;
+
 <span class="kw">use </span>bigdecimal::ToPrimitive;
+<span class="kw">use </span>bigdecimalmath::root;
 <span class="kw">use </span>chain_vote::EncryptedTally;
-<span class="kw">use </span>num::BigRational;
-<span class="kw">use </span>num::{BigInt, FromPrimitive};
-<span class="kw">use </span>std::num::NonZeroI64;
+
+<span class="kw">use </span>num::FromPrimitive;
+<span class="kw">use </span>num::Rational32;
 
 <span class="kw">use </span>std::str::FromStr;
 
@@ -480,23 +492,24 @@
             <span class="kw">let </span>index = choice.as_byte() <span class="kw">as </span>usize;
 
             <span class="kw">const </span>GAMMA: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_GAMMA&quot;</span>;
-            <span class="kw">const </span>PRECISION: <span class="kw-2">&amp;</span>str = <span class="string">&quot;QUADRATIC_VOTING_PRECISION&quot;</span>;
 
             <span class="comment">// Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
             </span><span class="kw">let </span>gamma = f64::from_str(<span class="kw-2">&amp;</span>env::var(GAMMA).unwrap_or(<span class="number">1.0</span>.to_string())).unwrap();
 
-            <span class="kw">let </span>precision =
-                i64::from_str(<span class="kw-2">&amp;</span>env::var(PRECISION).unwrap_or(<span class="number">1</span>.to_string())).unwrap_or(<span class="number">1</span>);
+            <span class="kw">let </span>gamma = Rational32::from_f64(gamma).unwrap_or(Rational32::from_integer(<span class="number">1</span>));
+            <span class="kw">let </span>denom = isize::try_from(<span class="kw-2">*</span>gamma.denom()).unwrap();
+            <span class="kw">let </span>numer = gamma.numer();
 
-            <span class="kw">let </span>gamma =
-                BigRational::from_f64(gamma).unwrap_or(BigRational::from_integer(BigInt::from(<span class="number">1</span>)));
-            <span class="kw">let </span>denom = BigDecimal::from_bigint(gamma.denom().clone(), precision);
-            <span class="kw">let </span>numer = BigDecimal::from_bigint(gamma.numer().clone(), precision);
+            <span class="comment">// stake
+            </span><span class="kw">let </span>base = BigDecimal::from(weight.<span class="number">0</span>);
 
-            <span class="kw">let </span>stake = BigDecimal::from(weight.<span class="number">0</span>);
+            <span class="comment">// m-th power, then take the n-th root: where x^(m/n)
+            // mth power equals x^m where m in the numerator
+            </span><span class="kw">let </span>mth_power = <span class="self">self</span>.pow_fractional_exponent(<span class="kw-2">&amp;</span>base, <span class="kw-2">*</span>numer);
 
-            <span class="kw">let </span>weight = ((stake.clone() * numer.clone()) / denom)
-                .round(precision)
+            <span class="comment">// nth root
+            </span><span class="kw">let </span>weight = root(denom, mth_power)
+                .unwrap_or(base.clone())
                 .to_u64()
                 .unwrap_or(weight.<span class="number">0</span>);
 
@@ -504,6 +517,13 @@
 
             <span class="prelude-val">Ok</span>(())
         }
+    }
+
+    <span class="kw">fn </span>pow_fractional_exponent(<span class="kw-2">&amp;</span><span class="self">self</span>, x: <span class="kw-2">&amp;</span>BigDecimal, n: i32) -&gt; BigDecimal {
+        <span class="kw">let </span>(bigint, scale) = x.as_bigint_and_exponent();
+        <span class="kw">let </span>new_scale = scale * n <span class="kw">as </span>i64;
+
+        BigDecimal::new(bigint.pow(n <span class="kw">as </span>u32), new_scale)
     }
 }
 

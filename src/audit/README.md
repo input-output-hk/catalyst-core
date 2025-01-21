@@ -40,9 +40,10 @@ FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 BLOCK0=/tmp/fund9-leader-1/artifacts/block0.bin
 FRAGMENTS_STORAGE=/tmp/fund9-leader-1/persist/leader-1
 GAMMA=0.5
+PRECISION=5
 
 
-./target/release/offline --fragments $FRAGMENTS_STORAGE --block0 $BLOCK0  --gamma $GAMMA
+./target/release/offline --fragments $FRAGMENTS_STORAGE --block0 $BLOCK0  --gamma $GAMMA --precision $PRECISION
 ```
 
 This will create three files:

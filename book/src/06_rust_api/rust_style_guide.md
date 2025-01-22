@@ -11,7 +11,8 @@ Exceptions can (and sometimes should) be made, however:
   * [Toolchain](#toolchain)
   * [Basic Rules](#basic-rules)
     * [Creating a new crate](#creating-a-new-crate)
-    * [Exceptions for clippy](#exceptions-for-clippy)
+      * [Motivation for enabling lints](#motivation-for-enabling-lints)
+      * [Exceptions for clippy](#exceptions-for-clippy)
   * [Guidelines](#guidelines)
     * [Prefer references over generics](#prefer-references-over-generics)
     * [Abbreviations and naming things](#abbreviations-and-naming-things)
@@ -59,25 +60,26 @@ before submitting a PR
 
 ### Creating a new crate
 
-We add the following preamble to all crates' `lib.rs`:
+All rust projects must have the same `Cargo.toml`, `clippy.toml`, `deny.toml`, `nextest.toml`, `rust-toolchain.toml`
+and `rustfmt.toml` configurations as defined in the `catalyst-ci` repository in the [`stdcfgs` folder][rust-stdcfgs].
+See also [examples][rust-examples] in the same repository.
 
-```rust
-#![warn(clippy::pedantic)]
-#![forbid(clippy::integer_arithmetic)]
-#![forbid(missing_docs)]
-#![forbid(unsafe_code)]
-#![allow(/* known bad lints outlined below */)]
-```
+[rust-stdcfgs]: https://github.com/input-output-hk/catalyst-ci/tree/master/earthly/rust/stdcfgs
+[rust-examples]: https://github.com/input-output-hk/catalyst-ci/tree/master/examples/rust
 
-We enable `#![forbid(missing_docs)]` for a couple of reasons:
+#### Motivation for enabling lints
+
+Generally we prefer to enable all meaningful lints to prevent as many potential errors as possible.
+
+We enable `#![deny(missing_docs)]` for a couple of reasons:
 
 * it forces developers to write doc comments for publicly exported items
 * it serves as a reminder that the item you're working on is part of your **public API**
 
-We enable `#![forbid(unsafe_code)]` to reinforce the fact that **unsafe code should not be mixed in with the rest of our code**.
+We enable `#![deny(unsafe_code)]` to reinforce the fact that **unsafe code should not be mixed in with the rest of our code**.
 More details are below.
 
-We enable `#![forbid(integer_arithmetic)]` to prevent you from writing code like:
+We enable `#![deny(arithmetic_side_effects)]` to prevent you from writing code like:
 
 ```rust
 let x = 1;
@@ -100,20 +102,11 @@ By forbidding integer arithmetic, you have to choose a behaviour, by writing eit
 By being explicit, we prevent the developer from "simply not considering" how their code behaves in the presence of overflows.
 In a ledger application, silently wrapping could be catastrophic, so we really want to be explicit about what behaviour we expect.
 
-### Exceptions for `clippy`
+#### Exceptions for `clippy`
 
-These lints are disabled:
-
-* `clippy::match_bool` - sometimes a `match` statement with `true =>` and `false =>` arms is sometimes more concise and equally readable
-* `clippy::module_name_repetition` - warns when creating an item with a name than ends with the name of the module it's in
-* `clippy::derive_partial_eq_without_eq` - warns when deriving `PartialEq` and not `Eq`.
-  This is a semver hazard. Deriving `Eq` is a stronger semver guarantee than just `PartialEq`, and shouldn't be the default.
-* `clippy::missing_panics_doc` - this lint warns when a function might panic, but the docs don't have a `panics` section.
-  This lint is buggy, and doesn't correctly identify all panics.
-  Code should be written to explicitly avoid intentional panics.
-  You should still add panic docs if a function is **intended to panic** under some conditions.
-  If a panic may occur, but you'd consider it a bug if it did, don't document it.
-  We disable this lint because it creates a false sense of security.
+While all lints are enabled by default, there are some cases when it is acceptable to suppress a lint locally. Still
+one shouldn't do that without good reasons. For example, it is often ok to allow `clippy::module_name_repetitions`
+especially if the type is reexported.
 
 ## Guidelines
 

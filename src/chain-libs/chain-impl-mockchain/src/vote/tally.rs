@@ -203,7 +203,7 @@ impl TallyResult {
             let stake_with_gamma_scaling = stake.clone().pow(&gamma);
 
             let weight = stake_with_gamma_scaling
-                .to_integer_round(Round::Down)
+                .to_integer_round(Round::Nearest)
                 .unwrap_or((Integer::from(weight.0), Ordering::Less))
                 .0
                 .to_u64()

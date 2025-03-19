@@ -4,7 +4,7 @@ project: {
 	release: {
 		docker: {
 			on: {
-				any: {}
+				always: {}
 				//merge: {}
 				//tag: {}
 			}

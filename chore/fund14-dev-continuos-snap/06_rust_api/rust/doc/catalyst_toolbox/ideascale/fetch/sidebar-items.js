@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["get_funds_data","get_funnels_data_for_fund","get_proposals_data","get_stages","is_token_valid"],"type":["Scores","Sponsors"]};

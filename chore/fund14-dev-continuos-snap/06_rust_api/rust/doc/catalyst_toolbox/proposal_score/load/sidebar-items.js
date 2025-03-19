@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["ALLOCATED_TYPE","NOT_ALLOCATED_TYPE"],"enum":["Error"],"fn":["load_proposals_from_json","load_reviews_from_csv","retrieve_proposal_id"],"struct":["ReviewsRow"]};

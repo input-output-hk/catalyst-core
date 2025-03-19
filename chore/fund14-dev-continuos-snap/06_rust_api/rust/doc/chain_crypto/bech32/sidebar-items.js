@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["to_bech32_from_bytes","try_from_bech32_to_bytes"],"trait":["Bech32"],"type":["Result"]};

@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"jormungandr":[["impl <a class=\"trait\" href=\"chain_network/core/server/node/trait.Node.html\" title=\"trait chain_network::core::server::node::Node\">Node</a> for <a class=\"struct\" href=\"jormungandr/network/service/struct.NodeService.html\" title=\"struct jormungandr::network::service::NodeService\">NodeService</a>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

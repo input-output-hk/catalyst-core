@@ -91,7 +91,7 @@ pdoc:
     SAVE ARTIFACT /doc
 
 # Docker image built for distribution and use in production.
-publish:
+package:
     FROM python:3.11-slim-bullseye
     ARG tag="latest"
 
@@ -165,3 +165,11 @@ integration-test:
                 --service leader0
         RUN docker-compose run leader0 echo "<<<INTEGRATION TESTING GOES HERE>>>"
     END
+
+docker:
+    FROM +package
+
+    ARG container='voting-node'
+    ARG tag="latest"
+
+    SAVE IMAGE ${container}:${tag}

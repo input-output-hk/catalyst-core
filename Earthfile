@@ -92,7 +92,7 @@ all:
     END
 
     # Build and tag all Docker images
-    BUILD ./containers/event-db-migrations+publish --tag=$tag --registry=$registry_final
+    BUILD ./containers/event-db-migrations+package --tag=$tag --registry=$registry_final
 
     # Build crate images from the workspace
     BUILD ./src/jormungandr/jormungandr+docker --tag=$tag --registry=$registry_final
@@ -147,7 +147,7 @@ tag-workspace:
 
 local:
     LOCALLY
-    BUILD ./containers/event-db-migrations+publish
+    BUILD ./containers/event-db-migrations+package
     BUILD ./src/cat-data-service+publish
     BUILD ./services/voting-node+package
 

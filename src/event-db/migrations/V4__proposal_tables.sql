@@ -99,7 +99,6 @@ COMMENT ON COLUMN reviewer_level.event_id IS 'The specific Event ID this review 
 CREATE TABLE proposal_review (
   row_id SERIAL PRIMARY KEY,
   proposal_id INTEGER NOT NULL,
-  user_id INTEGER NOT NULL,
   assessor VARCHAR NOT NULL,
   assessor_level INTEGER,
 
@@ -109,12 +108,11 @@ CREATE TABLE proposal_review (
   feasibility_note VARCHAR,
   auditability_rating_given INTEGER,
   auditability_note VARCHAR,
-  allocated INTEGER,
   ranking INTEGER,
   flags JSONB NULL,
 
-  FOREIGN KEY (user_id) REFERENCES catalyst_user(row_id) ON DELETE SET NULL,
-  FOREIGN KEY (proposal_id) REFERENCES proposal(row_id) ON DELETE CASCADE
+  FOREIGN KEY (proposal_id) REFERENCES proposal(row_id) ON DELETE CASCADE,
+  FOREIGN KEY (assessor_level) REFERENCES reviewer_level(row_id) ON DELETE CASCADE
 );
 
 COMMENT ON TABLE proposal_review IS 'All Reviews.';
@@ -136,10 +134,6 @@ COMMENT ON COLUMN proposal_review.auditability_rating_given IS
 'The numeric auditability rating given.';
 COMMENT ON COLUMN proposal_review.auditability_note IS
 'A note about the auditability rating given.';
-
-COMMENT ON COLUMN proposal_review.allocated IS
-'Describes if the review was part of the original reviewer allocation.
-';
 
 COMMENT ON COLUMN proposal_review.ranking IS
 'Numeric  Measure of quality of this review according to veteran community advisors.

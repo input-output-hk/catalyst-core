@@ -17,14 +17,6 @@ CREATE TABLE catalyst_user
 CREATE UNIQUE INDEX user_catalyst_id_idx ON catalyst_user(catalyst_id);
 
 
-COMMENT ON TABLE catalyst_user IS '
-This tables stores the user account for the Review Module.
-It contains a reference to the catalyst_id that is used as public and unique identifier.
-';
-
-COMMENT ON COLUMN catalyst_user.catalyst_id IS 'The catalyst_id this account belongs to.';
-COMMENT ON COLUMN catalyst_user.enc_password IS 'The encrypted password.';
-COMMENT ON COLUMN catalyst_user.salt IS 'The salt for the password encryption.';
 COMMENT ON COLUMN catalyst_user.extra IS
 'This field is used to store all meta information about a user that 
 are required by the application. Specifically:

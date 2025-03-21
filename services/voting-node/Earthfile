@@ -21,7 +21,7 @@ builder:
             zlib1g-dev
 
     # Install Poetry
-    RUN curl -sSL https://install.python-poetry.org | python3 - --version 1.8.0
+    RUN curl -sSL https://install.python-poetry.org | python3 - --version 2.0.1
 
     SAVE IMAGE --cache-hint
 
@@ -42,7 +42,8 @@ deps:
     RUN poetry config installer.max-workers 10
     # Install package dependencies without the voting_node package
     RUN poetry install --only main --no-root
-
+    RUN poetry self add poetry-plugin-export
+    
     # Copy the voting_node source code
     COPY --dir voting_node README.md ./
 

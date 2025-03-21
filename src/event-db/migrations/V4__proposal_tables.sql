@@ -101,10 +101,7 @@ CREATE TABLE proposal_review (
   proposal_id INTEGER NOT NULL,
   assessor VARCHAR NOT NULL,
   assessor_level INTEGER,
-  reward_address TEXT,
 
-  -- These fields are deprecated and WILL BE removed in a future migration.
-  -- They MUST only be used for Vit-SS compatibility.
   impact_alignment_rating_given INTEGER,
   impact_alignment_note VARCHAR,
   feasibility_rating_given INTEGER,
@@ -120,31 +117,23 @@ CREATE TABLE proposal_review (
 
 COMMENT ON TABLE proposal_review IS 'All Reviews.';
 COMMENT ON COLUMN proposal_review.row_id IS 'Synthetic Unique Key.';
-COMMENT ON COLUMN proposal_review.proposal_id IS 'The Proposal this review is for.';
-COMMENT ON COLUMN proposal_review.assessor IS 'Assessors Anonymized ID';
+COMMENT ON COLUMN proposal_review.proposal_id IS 'The Proposal id this review belongs to.';
+COMMENT ON COLUMN proposal_review.user_id IS 'The user id this review belongs to.';
+COMMENT ON COLUMN proposal_review.assessor IS 'Assessors Anonymized ID.';
 COMMENT ON COLUMN proposal_review.assessor_level IS 'Assessors level ID';
-COMMENT ON COLUMN proposal_review.reward_address IS 'Assessors reward address';
 
 COMMENT ON COLUMN proposal_review.impact_alignment_rating_given IS
-'The  numeric rating assigned to the proposal by the assessor.
-DEPRECATED: Only used for Vit-SS compatibility.';
+'The  numeric rating assigned to the proposal by the assessor.';
 COMMENT ON COLUMN proposal_review.impact_alignment_note IS
-'A note about why the impact rating was given.
-DEPRECATED: Only used for Vit-SS compatibility.';
-
+'A note about why the impact rating was given.';
 COMMENT ON COLUMN proposal_review.feasibility_rating_given IS
-'The numeric feasibility rating given.
-DEPRECATED: Only used for Vit-SS compatibility.';
+'The numeric feasibility rating given.';
 COMMENT ON COLUMN proposal_review.feasibility_note IS
-'A note about why the feasibility rating was given.
-DEPRECATED: Only used for Vit-SS compatibility.';
-
+'A note about why the feasibility rating was given.';
 COMMENT ON COLUMN proposal_review.auditability_rating_given IS
-'The numeric auditability rating given.
-DEPRECATED: Only used for Vit-SS compatibility.';
+'The numeric auditability rating given.';
 COMMENT ON COLUMN proposal_review.auditability_note IS
-'A note about the auditability rating given.
-DEPRECATED: Only used for Vit-SS compatibility.';
+'A note about the auditability rating given.';
 
 COMMENT ON COLUMN proposal_review.ranking IS
 'Numeric  Measure of quality of this review according to veteran community advisors.

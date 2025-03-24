@@ -92,7 +92,7 @@ all:
     END
 
     # Build and tag all Docker images
-    BUILD ./containers/event-db-migrations+publish --tag=$tag --registry=$registry_final
+    BUILD ./containers/event-db-migrations+package --tag=$tag --registry=$registry_final
 
     # Build crate images from the workspace
     BUILD ./src/jormungandr/jormungandr+docker --tag=$tag --registry=$registry_final
@@ -101,7 +101,7 @@ all:
     BUILD ./src/voting-tools-rs+docker --tag=$tag --registry=$registry_final
     BUILD ./src/cat-data-service+publish --tag=$tag --registry=$registry_final
 
-    BUILD ./services/voting-node+publish --tag=$tag --registry=$registry_final
+    BUILD ./services/voting-node+package --tag=$tag --registry=$registry_final
     BUILD ./utilities/ideascale-importer+docker --tag=$tag --registry=$registry_final
 
 all-with-tags:
@@ -147,9 +147,9 @@ tag-workspace:
 
 local:
     LOCALLY
-    BUILD ./containers/event-db-migrations+publish
+    BUILD ./containers/event-db-migrations+package
     BUILD ./src/cat-data-service+publish
-    BUILD ./services/voting-node+publish
+    BUILD ./services/voting-node+package
 
     RUN mkdir -p ./local
     COPY ./containers/dev-local+build/docker-compose.yml ./local/

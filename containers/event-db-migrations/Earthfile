@@ -67,7 +67,7 @@ package:
 docker:
     FROM +package
 
-    ARG container='voting-node'
+    ARG container='migrations'
     ARG tag="latest"
 
     SAVE IMAGE ${container}:${tag}

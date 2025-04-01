@@ -12,7 +12,7 @@ build:
     SAVE ARTIFACT ./bin/refinery refinery
     SAVE IMAGE --cache-hint
 
-publish:
+package:
     FROM debian:stable-slim
     ARG tag="latest"
     ARG data="historic"
@@ -63,3 +63,11 @@ publish:
 #         --load test:latest=+docker
 #         RUN docker run test:latest
 #     END
+
+docker:
+    FROM +package
+
+    ARG container='migrations'
+    ARG tag="latest"
+
+    SAVE IMAGE ${container}:${tag}

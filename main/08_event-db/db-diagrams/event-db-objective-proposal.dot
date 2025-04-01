@@ -419,19 +419,13 @@ digraph erd {
             <tr>
                 <td port="proposal_id"  align='text'><font>proposal_id</font><br align='left'/></td>
                 <td   ><font>integer</font></td>
-                <td port="proposal_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The Proposal id this review belongs to.</i><br align="left"/></font></td>
-            </tr>
-            
-            <tr>
-                <td port="user_id"  align='text'><font>user_id</font><br align='left'/></td>
-                <td   ><font>integer</font></td>
-                <td port="user_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The user id this review belongs to.</i><br align="left"/></font></td>
+                <td port="proposal_id_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The Proposal this review is for.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="assessor"  align='text'><font>assessor</font><br align='left'/></td>
                 <td   ><font>varchar</font></td>
-                <td port="assessor_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Assessors Anonymized ID.</i><br align="left"/></font></td>
+                <td port="assessor_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Assessors Anonymized ID</i><br align="left"/></font></td>
             </tr>
             
             <tr>
@@ -441,45 +435,45 @@ digraph erd {
             </tr>
             
             <tr>
+                <td port="reward_address"  align='text'><font>reward_address</font><br align='left'/></td>
+                <td   ><font><i>text</i></font></td>
+                <td port="reward_address_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Assessors reward address</i><br align="left"/></font></td>
+            </tr>
+            
+            <tr>
                 <td port="impact_alignment_rating_given"  align='text'><font>impact_alignment_rating_given</font><br align='left'/></td>
                 <td   ><font><i>integer</i></font></td>
-                <td port="impact_alignment_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The  numeric rating assigned to the<br align='left'/>proposal by the assessor.</i><br align="left"/></font></td>
+                <td port="impact_alignment_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The  numeric rating assigned to the<br align='left'/>proposal by the assessor.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="impact_alignment_note"  align='text'><font>impact_alignment_note</font><br align='left'/></td>
                 <td   ><font><i>varchar</i></font></td>
-                <td port="impact_alignment_note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A note about why the impact rating was<br align='left'/>given.</i><br align="left"/></font></td>
+                <td port="impact_alignment_note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A note about why the impact rating was<br align='left'/>given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="feasibility_rating_given"  align='text'><font>feasibility_rating_given</font><br align='left'/></td>
                 <td   ><font><i>integer</i></font></td>
-                <td port="feasibility_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The numeric feasibility rating given.</i><br align="left"/></font></td>
+                <td port="feasibility_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The numeric feasibility rating given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="feasibility_note"  align='text'><font>feasibility_note</font><br align='left'/></td>
                 <td   ><font><i>varchar</i></font></td>
-                <td port="feasibility_note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A note about why the feasibility rating<br align='left'/>was given.</i><br align="left"/></font></td>
+                <td port="feasibility_note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A note about why the feasibility rating<br align='left'/>was given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="auditability_rating_given"  align='text'><font>auditability_rating_given</font><br align='left'/></td>
                 <td   ><font><i>integer</i></font></td>
-                <td port="auditability_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The numeric auditability rating given.</i><br align="left"/></font></td>
+                <td port="auditability_rating_given_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>The numeric auditability rating given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
                 <td port="auditability_note"  align='text'><font>auditability_note</font><br align='left'/></td>
                 <td   ><font><i>varchar</i></font></td>
-                <td port="auditability_note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A note about the auditability rating<br align='left'/>given.</i><br align="left"/></font></td>
-            </tr>
-            
-            <tr>
-                <td port="allocated"  align='text'><font>allocated</font><br align='left'/></td>
-                <td   ><font><i>integer</i></font></td>
-                <td port="allocated_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>Describes if the review was part of the<br align='left'/>original reviewer allocation.</i><br align="left"/></font></td>
+                <td port="auditability_note_out"  align='text'><font color='grey50' face='Monospace' point-size='14' ><i>A note about the auditability rating<br align='left'/>given.<br align='left'/>DEPRECATED: Only used for Vit-SS<br align='left'/>compatibility.</i><br align="left"/></font></td>
             </tr>
             
             <tr>
@@ -671,10 +665,10 @@ digraph erd {
 
     
 
-    "catalyst_user" [label=<
+    "event" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
             <tr>
-                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>catalyst_user</b></font></td>
+                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>event</b></font></td>
             </tr>
             <tr>
                 <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
@@ -694,10 +688,10 @@ digraph erd {
 
     
 
-    "event" [label=<
+    "reviewer_level" [label=<
         <table border='0' cellborder='1' cellspacing='0'>
             <tr>
-                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>event</b></font></td>
+                <td bgcolor='#009879' port='__title'><font color='white' face='Courier bold italic' point-size='20'><b>reviewer_level</b></font></td>
             </tr>
             <tr>
                 <td><font color='black' face='Courier bold' point-size='18' ><b>Column</b></font></td>
@@ -770,9 +764,9 @@ digraph erd {
     
     "proposal":"bb_vote_options_out" -> "vote_options":"objective"
     
-    "proposal_review":"user_id_out" -> "catalyst_user":"row_id"
-    
     "proposal_review":"proposal_id_out" -> "proposal":"row_id"
+    
+    "proposal_review":"assessor_level_out" -> "reviewer_level":"row_id"
     
     "objective_review_metric":"objective_out" -> "objective":"row_id"
     

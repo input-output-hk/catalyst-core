@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["file_binary_content_is_same_as","file_exists_and_not_empty","file_text_content_is_same_as"]};

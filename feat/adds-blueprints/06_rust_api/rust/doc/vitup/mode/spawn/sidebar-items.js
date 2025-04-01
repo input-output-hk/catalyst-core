@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["spawn_network"],"mod":["interactive","monitor","service","standard"],"struct":["NetworkSpawnParams"]};

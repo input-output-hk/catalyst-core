@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["TryFromNumberOfSlotsPerEpochError"],"struct":["NumberOfSlotsPerEpoch"]};

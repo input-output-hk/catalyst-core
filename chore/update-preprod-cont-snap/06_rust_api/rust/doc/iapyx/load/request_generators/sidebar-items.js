@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["artificial_user","jormungandr","servicing_station"]};

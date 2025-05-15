@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["addr_to_id","blacklist_addresses","calculate_active_wallet_distribution","calculate_wallet_distribution","calculate_wallet_distribution_from_initials","calculate_wallet_distribution_from_initials_utxo","vote_counts_as_utxo"]};

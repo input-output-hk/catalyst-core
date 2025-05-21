@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["explorer","main","vit_station","wallet_proxy"],"struct":["ValidVotePlanParameters"],"trait":["ValidVotingTemplateGenerator"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["VIT_STATION","VIT_STATION_ARCHIVE"],"struct":["VitSettings"],"trait":["PrepareSettings","PrepareVitServerSettings","PrepareWalletProxySettings"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DATABASE_SCHEMA_VERSION","DATABASE_URL_ENVVAR"],"fn":["establish_connection"],"mod":["config_table","error","queries","schema_check","types"],"struct":["EventDB"]};

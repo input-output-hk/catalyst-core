@@ -17,7 +17,7 @@ chain-core      = { path = "../../../chain-libs/chain-core" }
 chain-vote      = { path = "../../../chain-libs/chain-vote" }
 assert_fs = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-cocoon =  { git = "https://github.com/dkijania/cocoon.git" }
+cocoon = "0.4.3"
 dirs = "4.0.0"
 serde_yaml = "0.8"
 clap = { workspace = true }

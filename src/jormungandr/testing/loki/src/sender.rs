@@ -29,14 +29,13 @@ use thor::{
 
 /// Send malformed transactions
 /// Only supports account based wallets
-#[derive(custom_debug::Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum AdversaryFragmentSenderError {
     #[error("fragment sent to node: {alias} is not in rejected, date: '{date}', block: '{block}'")]
     FragmentNotRejected {
         alias: String,
         date: jormungandr_lib::interfaces::BlockDate,
         block: Hash,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error("cannot build fragment")]

@@ -79,16 +79,17 @@ mod tests {
     };
     use serde_json::json;
     use test_strategy::proptest;
+    use proptest::arbitrary::any;
 
     use super::*;
 
     impl Arbitrary for CleanString {
         type Parameters = ();
-        type Strategy = Map<StrategyFor<String>, fn(String) -> Self>;
-
         fn arbitrary_with((): Self::Parameters) -> Self::Strategy {
             any::<String>().prop_map(|s| CleanString(clean_str(&s)))
         }
+
+        type Strategy = Map<StrategyFor<String>, fn(String) -> Self>;
     }
 
     fn parse(s: &str) -> CleanString {

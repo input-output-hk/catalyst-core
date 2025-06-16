@@ -27,13 +27,12 @@ use jormungandr_lib::{
 };
 use std::{str::FromStr, time::Duration};
 
-#[derive(custom_debug::Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum FragmentSenderError {
     #[error("fragment sent to node: {alias} is not in block due to '{reason}'")]
     FragmentNotInBlock {
         alias: String,
         reason: String,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error(

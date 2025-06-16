@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 mod commands;
-pub use commands::{get_command, CommandBuilder};
+pub use commands::get_command;
 
 mod params;
 mod testing_directory;

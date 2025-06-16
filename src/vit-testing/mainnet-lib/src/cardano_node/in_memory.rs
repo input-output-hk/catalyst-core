@@ -118,7 +118,7 @@ impl Drop for InMemoryNode {
 #[cfg(test)]
 mod tests {
     use crate::{Block0, CardanoWallet, InMemoryNode};
-    use cardano_serialization_lib::utils::BigNum;
+use cardano_serialization_lib::BigNum;
     use futures_util::StreamExt;
     use pharos::{Channel, Observable};
 

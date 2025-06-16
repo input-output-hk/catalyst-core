@@ -1,7 +1,6 @@
 use bech32::{self, Error as Bech32Error, FromBase32};
 use bech32::{ToBase32, Variant};
 
-use chain_crypto::testing::TestCryptoRng;
 use chain_crypto::{Ed25519, SecretKey};
 use chain_vote::committee::MemberSecretKey;
 use chain_vote::tally::batch_decrypt;
@@ -13,6 +12,7 @@ use base64::{engine::general_purpose, Engine as _};
 
 use color_eyre::Result;
 use rand_core::SeedableRng;
+use rand::rngs::StdRng;
 
 /// A Bech32_encoded address consists of 3 parts: A Human-Readable Part (HRP) + Separator + Data:
 const HRP_PK: &str = "ristretto255_memberpk";
@@ -50,7 +50,7 @@ pub fn extract_decrypt_shares(
     encrypted_tally: EncryptedTally,
     committee_priv_keys: Vec<MemberSecretKey>,
 ) -> Vec<TallyDecryptShare> {
-    let mut rng = TestCryptoRng::seed_from_u64(0);
+    let mut rng = StdRng::seed_from_u64(0);
 
     let mut shares = vec![];
 
@@ -171,7 +171,7 @@ pub fn decrypt_tally_with_secret_keys(
     encrypted_tally: EncryptedTally,
     committee_priv_keys: Vec<MemberSecretKey>,
 ) -> Result<Vec<Tally>, Box<dyn std::error::Error>> {
-    let mut rng = TestCryptoRng::seed_from_u64(0);
+    let mut rng = StdRng::seed_from_u64(0);
 
     let mut public_keys = vec![];
 

@@ -1,6 +1,6 @@
 mod connect;
 
-pub use self::connect::{connect, ConnectError, ConnectFuture, ConnectHandle};
+pub use self::connect::{connect, ConnectError, ConnectHandle};
 use super::{
     buffer_sizes,
     convert::{Decode, Encode},

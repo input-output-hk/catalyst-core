@@ -162,7 +162,7 @@ jobs:
           mkdir .cargo
           cat > .cargo/config.toml <<EOF
           [target.${{ matrix.config.target }}]
-          rustflags = ["-Ctarget-cpu=generic", "-Cembed-bitcode=yes", "-Anon_local_definitions"]
+          rustflags = ["-Ctarget-cpu=generic", "-Cembed-bitcode=yes"]
           [profile.release]
           lto = "thin"
           EOF

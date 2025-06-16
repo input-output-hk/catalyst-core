@@ -1,4 +1,4 @@
-use self::{io::vecs_to_maps, types::NotFundedReason};
+use self::io::vecs_to_maps;
 use crate::types::{challenge::Challenge, proposal::Proposal};
 use chain_impl_mockchain::value::Value;
 use color_eyre::{

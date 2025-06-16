@@ -70,7 +70,7 @@ pub fn clean_str(s: &str) -> String {
     REGEX.replace_all(s, "").to_string()
 }
 
-#[cfg(any(test, feature = "property-test-api"))]
+#[cfg(any(test, feature = "test-api"))]
 mod tests {
     use proptest::{
         arbitrary::{Arbitrary, StrategyFor},

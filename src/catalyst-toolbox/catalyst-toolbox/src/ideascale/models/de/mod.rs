@@ -98,6 +98,7 @@ pub struct Stage {
     #[serde(alias = "funnelId", default)]
     pub funnel_id: u32,
     #[serde(alias = "assessmentId", default)]
+    #[allow(dead_code)]
     pub assessment_id: u32,
 }
 

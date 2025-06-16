@@ -72,6 +72,8 @@ pub fn clean_str(s: &str) -> String {
 
 #[cfg(any(test, feature = "test-api"))]
 mod tests {
+    use proptest::arbitrary::any;
+    use proptest::prelude::*;
     use proptest::{
         arbitrary::{Arbitrary, StrategyFor},
         prelude::*,
@@ -79,7 +81,6 @@ mod tests {
     };
     use serde_json::json;
     use test_strategy::proptest;
-    use proptest::arbitrary::any;
 
     use super::*;
 
@@ -92,6 +93,7 @@ mod tests {
         type Strategy = Map<StrategyFor<String>, fn(String) -> Self>;
     }
 
+    #[allow(dead_code)]
     fn parse(s: &str) -> CleanString {
         let s = format!(r#""{s}""#);
         serde_json::from_str(&s).unwrap()
@@ -103,9 +105,11 @@ mod tests {
         assert_eq!(parse("h*e-l/lo"), CleanString::from("hello"));
     }
 
-    #[proptest]
-    fn any_string_deserializes_to_clean_string(s: String) {
-        let json = json!(s);
-        let _: CleanString = serde_json::from_value(json).unwrap();
+    proptest! {
+        #[test]
+        fn any_string_deserializes_to_clean_string(s in any::<String>()) {
+            let json = json!(s);
+            let _: CleanString = serde_json::from_value(json).unwrap();
+        }
     }
 }

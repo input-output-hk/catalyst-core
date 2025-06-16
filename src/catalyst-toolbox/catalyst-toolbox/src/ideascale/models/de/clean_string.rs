@@ -76,7 +76,6 @@ mod tests {
     use proptest::prelude::*;
     use proptest::{
         arbitrary::{Arbitrary, StrategyFor},
-        prelude::*,
         strategy::Map,
     };
     use serde_json::json;
@@ -105,11 +104,9 @@ mod tests {
         assert_eq!(parse("h*e-l/lo"), CleanString::from("hello"));
     }
 
-    proptest! {
-        #[test]
-        fn any_string_deserializes_to_clean_string(s in any::<String>()) {
-            let json = json!(s);
-            let _: CleanString = serde_json::from_value(json).unwrap();
-        }
+    #[proptest]
+    fn any_string_deserializes_to_clean_string(s: String) {
+        let json = json!(s);
+        let _: CleanString = serde_json::from_value(json).unwrap();
     }
 }

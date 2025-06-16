@@ -23,9 +23,9 @@ chain-ser = { path = "../../chain-libs/chain-ser" }
 chain-crypto = { path = "../../chain-libs/chain-crypto" }
 voting_tools_rs = {path = "../../voting-tools-rs"}
 chain-impl-mockchain = { workspace = true, features = [ "property-test-api" ] }
-vitup = { path = "../vitup"} 
-iapyx = { path = "../iapyx"} 
-valgrind = { path = "../valgrind"} 
+vitup = { path = "../vitup"}
+iapyx = { path = "../iapyx"}
+valgrind = { path = "../valgrind"}
 mainnet-tools = { path = "../mainnet-tools"}
 mainnet-lib = { path = "../mainnet-lib"}
 snapshot-trigger-service = { path = "../snapshot-trigger-service" }
@@ -34,7 +34,7 @@ tokio = { version = "1.1", features = ["macros","rt","rt-multi-thread"] }
 catalyst-toolbox = { path = "../../catalyst-toolbox/catalyst-toolbox", features=["test-api"]}
 snapshot-lib = { path = "../../catalyst-toolbox/snapshot-lib", features=["test-api"]}
 thiserror = "1.0"
-netstat2 = "0.9"
+netstat2 = "0.11.1"
 image = "0.23"
 rand = "0.8"
 hex = "0.4.3"

@@ -32,7 +32,7 @@ use std::{
     time::Duration,
 };
 
-#[derive(custom_debug::Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]
     Io(#[from] io::Error),
@@ -87,7 +87,6 @@ pub enum Error {
     ShutdownProcedure {
         alias: String,
         message: String,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error("node '{alias}' failed to shutdown: {e}")]
@@ -100,7 +99,6 @@ pub enum Error {
     FragmentNotInMemPoolLogs {
         alias: String,
         fragment_id: FragmentId,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error("fragment '{fragment_id}' is pending for too long ({} s) for node '{alias}'", .duration.as_secs())]
@@ -108,7 +106,6 @@ pub enum Error {
         fragment_id: FragmentId,
         duration: Duration,
         alias: String,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error(transparent)]

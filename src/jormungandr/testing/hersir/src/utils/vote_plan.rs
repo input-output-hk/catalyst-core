@@ -6,6 +6,7 @@ use chain_impl_mockchain::{
 };
 
 pub trait VotePlanExtension {
+    #[allow(dead_code)]
     fn convert_to_def(self, key: &VotePlanKey) -> VotePlanDef;
 }
 

@@ -73,12 +73,13 @@ pub fn clean_str(s: &str) -> String {
 #[cfg(any(test, feature = "test-api"))]
 mod tests {
     use proptest::arbitrary::any;
+    #[allow(unused_imports)]
+    use serde_json::json;
     use proptest::prelude::*;
     use proptest::{
         arbitrary::{Arbitrary, StrategyFor},
         strategy::Map,
     };
-    use serde_json::json;
     use test_strategy::proptest;
 
     use super::*;
@@ -105,6 +106,7 @@ mod tests {
     }
 
     #[proptest]
+    #[allow(dead_code)]
     fn any_string_deserializes_to_clean_string(s: String) {
         let json = json!(s);
         let _: CleanString = serde_json::from_value(json).unwrap();

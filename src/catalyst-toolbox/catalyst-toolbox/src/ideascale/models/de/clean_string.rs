@@ -71,6 +71,7 @@ pub fn clean_str(s: &str) -> String {
 }
 
 #[cfg(any(test, feature = "test-api"))]
+#[allow(dead_code)]
 mod tests {
     use proptest::arbitrary::any;
     #[allow(unused_imports)]
@@ -93,7 +94,6 @@ mod tests {
         type Strategy = Map<StrategyFor<String>, fn(String) -> Self>;
     }
 
-    #[allow(dead_code)]
     fn parse(s: &str) -> CleanString {
         let s = format!(r#""{s}""#);
         serde_json::from_str(&s).unwrap()
@@ -106,7 +106,6 @@ mod tests {
     }
 
     #[proptest]
-    #[allow(dead_code)]
     fn any_string_deserializes_to_clean_string(s: String) {
         let json = json!(s);
         let _: CleanString = serde_json::from_value(json).unwrap();

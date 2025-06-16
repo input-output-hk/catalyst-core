@@ -1,6 +1,5 @@
 use crate::{Block0, InMemoryNode, CARDANO_MAINNET_SLOTS_PER_EPOCH};
-use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
-use cardano_serialization_lib::utils::BigNum;
+use cardano_serialization_lib::{BigNum, GeneralTransactionMetadata};
 use cardano_serialization_lib::{Block, Transaction, TransactionWitnessSet};
 use futures::executor::block_on;
 use futures_util::StreamExt;

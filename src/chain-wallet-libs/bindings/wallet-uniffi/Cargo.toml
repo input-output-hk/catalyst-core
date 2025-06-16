@@ -25,4 +25,5 @@ thiserror = {version = "1.0", default-features = false}
 uniffi_build = "0.21"
 
 [features]
+default = ["builtin-bindgen"]
 builtin-bindgen = ["uniffi_build/builtin-bindgen"]

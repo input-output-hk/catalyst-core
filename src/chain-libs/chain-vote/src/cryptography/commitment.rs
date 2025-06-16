@@ -67,7 +67,7 @@ pub struct Open {
     pub r: Scalar,
 }
 
-#[cfg(tests)]
+#[cfg(test)]
 mod tests {
     use super::*;
     use rand_chacha::rand_core::SeedableRng;

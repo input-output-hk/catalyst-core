@@ -1,7 +1,5 @@
-use cardano_serialization_lib::address::Address;
-use cardano_serialization_lib::metadata::{AuxiliaryData, GeneralTransactionMetadata};
-use cardano_serialization_lib::utils::{Coin, Value};
 use cardano_serialization_lib::{
+    Address, AuxiliaryData, GeneralTransactionMetadata, Coin, Value,
     Transaction, TransactionBody, TransactionInputs, TransactionOutput, TransactionOutputs,
     TransactionWitnessSet,
 };

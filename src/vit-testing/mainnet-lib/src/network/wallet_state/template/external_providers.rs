@@ -3,8 +3,7 @@ use crate::network::wallet_state::template::Error;
 use crate::wallet_state::MainnetWalletState;
 use crate::CardanoWallet;
 use async_trait::async_trait;
-use cardano_serialization_lib::address::Address;
-use rand::Rng;
+use cardano_serialization_lib::{Address, BigNum, Coin, Value};
 
 /// Trait for retrieving information about address registrations from network
 #[async_trait]

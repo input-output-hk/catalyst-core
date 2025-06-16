@@ -5,7 +5,7 @@ pub use builder::MainnetWalletStateBuilder;
 use std::fmt::{Debug, Formatter};
 pub use template::{build, build_default, Actor, Error as TemplateError, ExternalProvider};
 
-use cardano_serialization_lib::address::Address;
+use cardano_serialization_lib::Address;
 use cardano_serialization_lib::Transaction;
 use jormungandr_lib::crypto::account::Identifier;
 

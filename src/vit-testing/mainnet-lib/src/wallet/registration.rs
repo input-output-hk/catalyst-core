@@ -1,14 +1,11 @@
 use crate::cardano_node::TransactionBuilder;
 use crate::CardanoWallet;
-use cardano_serialization_lib::address::Address;
-use cardano_serialization_lib::chain_crypto::Blake2b256;
-use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
-use cardano_serialization_lib::error::JsError;
-use cardano_serialization_lib::metadata::{
-    decode_metadatum_to_json_str, encode_json_value_to_metadatum, GeneralTransactionMetadata,
-    MetadataJsonSchema, MetadataList, MetadataMap, TransactionMetadatum, TransactionMetadatumLabel,
+use cardano_serialization_lib::{
+    Address, BigNum, Ed25519Signature, GeneralTransactionMetadata, Int, JsError,
+    MetadataJsonSchema, MetadataList, MetadataMap, PublicKey, TransactionMetadatum,
+    TransactionMetadatumLabel, decode_metadatum_to_json_str, encode_json_value_to_metadatum,
 };
-use cardano_serialization_lib::utils::{BigNum, Int};
+use cardano_serialization_lib::chain_crypto::Blake2b256;
 use cardano_serialization_lib::Transaction;
 use serde_json::Map;
 use snapshot_lib::registration::Delegations;
@@ -356,9 +353,6 @@ impl GeneralTransactionMetadataInfo for GeneralTransactionMetadata {
 #[cfg(test)]
 mod test {
     use super::*;
-    use cardano_serialization_lib::metadata::{
-        decode_metadatum_to_json_str, encode_json_value_to_metadatum, MetadataJsonSchema,
-    };
     use jormungandr_lib::crypto::account::Identifier;
 
     #[test]

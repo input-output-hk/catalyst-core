@@ -201,11 +201,6 @@ impl SignedRegistration {
 ///
 #[derive(Debug, Clone)]
 pub struct RawRegistration {
-    /// cip 15/36: 61284 json from DB.
-    pub json_reg: serde_json::Value,
-
-    /// cip 15/36: 61285 json from DB.
-    pub json_sig: serde_json::Value,
 
     /// cip 15/36: 61284 raw binary
     pub bin_reg: Vec<u8>,

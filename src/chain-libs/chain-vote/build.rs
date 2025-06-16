@@ -13,6 +13,8 @@ const BACKEND_FLAG_P256K1: &str = "__internal_ex_backend_p256k1";
 const BACKEND_FLAG_RISTRETTO255: &str = "__internal_ex_backend_ristretto255";
 
 fn main() {
+    // Register the custom cfg for rustc
+    println!("cargo:rustc-check-cfg=cfg(crypto_backend, values(\"__internal_ex_backend_p256k1\", \"__internal_ex_backend_ristretto255\"))");
     cfg_if::cfg_if! {
         if #[cfg(feature = "p256k1")] {
             println!("cargo:rustc-cfg=crypto_backend=\"{}\"", BACKEND_FLAG_P256K1);

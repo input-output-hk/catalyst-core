@@ -97,7 +97,6 @@ impl<A: Clone> Ptp<A> {
             }
         }
         Ptp {
-            orig_len,
             elements: vec,
         }
     }

@@ -8911,7 +8911,6 @@ dependencies = [
  "chain-ser",
  "clap 4.5.40",
  "diesel",
- "diesel_migrations",
  "dotenv",
  "eccoxide 0.2.0",
  "event-db",

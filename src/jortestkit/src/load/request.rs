@@ -1,6 +1,6 @@
 use super::Status;
 use rayon::iter::plumbing::{Folder, UnindexedProducer};
-use std::{collections::HashMap, time::Duration};
+use std::{time::Duration};
 use thiserror::Error;
 
 #[derive(Error, Debug, Clone)]
@@ -56,10 +56,6 @@ impl<T: RequestGenerator> UnindexedProducer for RayonWrapper<T> {
         }
         folder
     }
-}
-
-pub trait RequestStatusProvider {
-    fn get_status(&self) -> HashMap<String, RequestStatus>;
 }
 
 #[derive(Debug, Clone)]

@@ -388,7 +388,7 @@ jobs:
 
       - name: Install uniffi
         run: |
-          cargo add uniffi_bindgen --version 0.29.3
+          cargo add uniffi_bindgen@0.29.3 --package wallet-uniffi
 
       - name: Clippy and fmt
         uses: actions-rs/toolchain@v1

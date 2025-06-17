@@ -211,7 +211,7 @@ impl TransactionCommand {
             .arg("--block0-hash")
             .arg(block0_hash)
             .arg("--valid-until")
-            .arg(&expiry_date.to_string())
+            .arg(expiry_date.to_string())
             .arg("--force");
 
         if post {

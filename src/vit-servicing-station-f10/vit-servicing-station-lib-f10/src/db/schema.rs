@@ -1,3 +1,5 @@
+#![allow(non_local_definitions)]
+
 table! {
     api_tokens (token) {
         token -> Binary,

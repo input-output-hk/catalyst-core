@@ -69,7 +69,7 @@ pub struct LegacyNodeConfig {
     pub p2p: P2p,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub log: Option<Log>,
-    #[serde(rename = "log", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub single_log: Option<jormungandr_lib::interfaces::Log>,
     pub mempool: Option<Mempool>,
     pub bootstrap_from_trusted_peers: Option<bool>,

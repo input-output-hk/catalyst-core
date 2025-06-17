@@ -156,7 +156,7 @@ async fn run_server_with_app<App>(
     };
 }
 
-pub(self) fn display_internal_server_error(err: &impl Error) -> String {
+fn display_internal_server_error(err: &impl Error) -> String {
     use std::fmt::{self, Write};
 
     fn error_to_body(err: &impl Error) -> Result<String, fmt::Error> {

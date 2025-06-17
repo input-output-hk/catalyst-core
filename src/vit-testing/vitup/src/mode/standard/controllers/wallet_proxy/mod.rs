@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+#![allow(non_local_definitions)]
 
 mod controller;
 mod settings;
@@ -21,6 +22,7 @@ pub use self::settings::WalletProxySettings;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[allow(non_local_definitions)]
 #[derive(custom_debug::Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]

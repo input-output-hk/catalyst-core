@@ -5,7 +5,6 @@ use jormungandr_automation::{
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-#[allow(clippy::large_enum_variant)]
 pub enum MjolnirError {
     #[error("cannot query rest")]
     RestError(#[from] RestError),
@@ -18,5 +17,5 @@ pub enum MjolnirError {
     #[error("pace is too low ({0})")]
     PaceTooLow(u64),
     #[error("get block0 error")]
-    Block0Error(#[from] Block0Error),
+    Block0Error(#[from] Box<Block0Error>),
 }

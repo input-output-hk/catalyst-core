@@ -182,10 +182,10 @@ impl RawSettings {
 
         #[cfg(feature = "prometheus-metrics")]
         let prometheus = command_arguments.prometheus_enabled
-            || config.as_ref().map_or(false, |cfg| {
+            || config.as_ref().is_some_and(|cfg| {
                 cfg.prometheus
                     .as_ref()
-                    .map_or(false, |settings| settings.enabled)
+                    .is_some_and(|settings| settings.enabled)
             });
 
         Ok(Settings {

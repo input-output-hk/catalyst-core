@@ -198,12 +198,11 @@ impl Sink<net_data::Header> for BlockAnnouncementProcessor {
     }
 
     fn start_send(mut self: Pin<&mut Self>, raw_header: net_data::Header) -> Result<(), Error> {
-        let header = raw_header.decode().map_err(|e| {
+        let header = raw_header.decode().inspect_err(|e| {
             tracing::info!(
                 reason = %e.source().unwrap(),
                 "failed to decode incoming block announcement header"
             );
-            e
         })?;
 
         tracing::debug!(hash = %header.hash(), "received block announcement");
@@ -593,12 +592,11 @@ impl Sink<net_data::Fragment> for FragmentProcessor {
             self.buffered_fragments.len() < buffer_sizes::inbound::FRAGMENTS,
             "should call `poll_ready` which returns `Poll::Ready(Ok(()))` before `start_send`",
         );
-        let fragment = raw_fragment.decode().map_err(|e| {
+        let fragment = raw_fragment.decode().inspect_err(|e| {
             tracing::info!(
                 reason = %e.source().unwrap(),
                 "failed to decode incoming fragment"
             );
-            e
         })?;
         tracing::debug!(hash = %fragment.hash(), "received fragment");
 
@@ -653,12 +651,11 @@ impl Sink<net_data::Gossip> for GossipProcessor {
     }
 
     fn start_send(mut self: Pin<&mut Self>, gossip: net_data::Gossip) -> Result<(), Error> {
-        let nodes = gossip.nodes.decode().map_err(|e| {
+        let nodes = gossip.nodes.decode().inspect_err(|e| {
             tracing::info!(
                 reason = %e.source().unwrap(),
                 "failed to decode incoming gossip"
             );
-            e
         })?;
         tracing::debug!("received gossip on {} nodes", nodes.len());
         let (nodes, filtered_out): (Vec<_>, Vec<_>) = nodes

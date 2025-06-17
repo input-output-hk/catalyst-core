@@ -40,19 +40,10 @@ struct VoteplanDateTimes {
     tally: OffsetDateTime,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct ArbitrarySnapshotGenerator {
     id_generator: ArbitraryGenerator,
     template_generator: ArbitraryValidVotingTemplateGenerator,
-}
-
-impl Default for ArbitrarySnapshotGenerator {
-    fn default() -> Self {
-        Self {
-            id_generator: ArbitraryGenerator::new(),
-            template_generator: ArbitraryValidVotingTemplateGenerator::new(),
-        }
-    }
 }
 
 impl ArbitrarySnapshotGenerator {
@@ -129,7 +120,7 @@ impl ArbitrarySnapshotGenerator {
             chain_vote_options: proposal.chain_vote_options,
             chain_voteplan_id: fund
                 .chain_vote_plans
-                .get(0)
+                .first()
                 .unwrap()
                 .chain_voteplan_id
                 .clone(),

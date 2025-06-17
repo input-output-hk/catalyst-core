@@ -56,7 +56,7 @@ json = "0.12.4"
 strum = { version = "0.24", features = ["derive"] }
 tracing.workspace = true
 log = { version = "0.4", features = ["serde"] }
-netstat2 = "0.9"
+netstat2 = "0.11.1"
 multiaddr = { package = "parity-multiaddr", version = "0.11" }
 keynesis = "1"
 tempfile = "3"

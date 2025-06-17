@@ -12,7 +12,7 @@ hex = "0.4.2"
 base64 = "0.13"
 cfg-if = "0.1"
 time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
-diesel = { version = "1.4.4", features = ["postgres", "r2d2", "chrono"] }
+diesel = { version = "1.4.8", features = ["postgres", "r2d2", "64-column-tables", "chrono", "serde_json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.53"
 clap = { workspace = true }

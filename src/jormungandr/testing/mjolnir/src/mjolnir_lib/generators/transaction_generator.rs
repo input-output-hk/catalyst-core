@@ -71,7 +71,7 @@ impl<'a, S: SyncNode + Send> TransactionGenerator<'a, S> {
         let (split_marker, witness_mode) = self.split_lane.next(self.wallets.len());
         let (senders, recievers) = self.wallets.split_at_mut(split_marker);
         let sender = senders.get_mut(senders.len() - 1).unwrap();
-        let reciever = recievers.get(0).unwrap();
+        let reciever = recievers.first().unwrap();
 
         self.fragment_sender
             .send_transaction_with_witness_mode(

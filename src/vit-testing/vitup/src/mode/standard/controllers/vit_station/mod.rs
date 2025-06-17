@@ -1,3 +1,5 @@
+#![allow(non_local_definitions)]
+
 mod controller;
 mod data;
 
@@ -12,11 +14,12 @@ pub use vit_servicing_station_tests::common::{
 
 pub use vit_servicing_station_lib::server::settings::dump_settings_to_file;
 
-pub use controller::{VitStationController, VitStationSettings, VIT_CONFIG, VIT_STATION_LOG};
+pub use controller::{VitStationController, VitStationSettings, VIT_CONFIG};
 pub use data::{generate_database, generate_random_database, DbGenerator, Error as DataError};
 use std::time::Duration;
 pub type Result<T> = std::result::Result<T, Error>;
 
+#[allow(non_local_definitions)]
 #[derive(custom_debug::Debug, thiserror::Error)]
 pub enum Error {
     #[error(transparent)]

@@ -62,10 +62,10 @@ where
 
     /// check wether the given state associate to this key is present
     /// in the States
-    pub fn contains<Q: ?Sized>(&self, key: &Q) -> bool
+    pub fn contains<Q>(&self, key: &Q) -> bool
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: ?Sized + Hash + Eq,
     {
         self.states.contains_key(key)
     }
@@ -77,10 +77,10 @@ where
         assert!(self.states.insert(key, state).is_none());
     }
 
-    pub fn confirm<Q: ?Sized>(&mut self, key: &Q)
+    pub fn confirm<Q>(&mut self, key: &Q)
     where
         K: Borrow<Q>,
-        Q: Hash + Eq,
+        Q: ?Sized + Hash + Eq,
     {
         if let Some(state) = self.states.get_mut(key) {
             state.confirm();

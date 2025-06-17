@@ -70,22 +70,22 @@ where
         }
     }
 
-    fn block_service(&self) -> Result<&T::BlockService, Status> {
+    fn block_service(&self) -> Result<&T::BlockService, Box<Status>> {
         self.inner
             .block_service()
-            .ok_or_else(|| Status::new(Code::Unimplemented, "not implemented"))
+            .ok_or_else(|| Box::new(Status::new(Code::Unimplemented, "not implemented")))
     }
 
-    fn fragment_service(&self) -> Result<&T::FragmentService, Status> {
+    fn fragment_service(&self) -> Result<&T::FragmentService, Box<Status>> {
         self.inner
             .fragment_service()
-            .ok_or_else(|| Status::new(Code::Unimplemented, "not implemented"))
+            .ok_or_else(|| Box::new(Status::new(Code::Unimplemented, "not implemented")))
     }
 
-    fn gossip_service(&self) -> Result<&T::GossipService, Status> {
+    fn gossip_service(&self) -> Result<&T::GossipService, Box<Status>> {
         self.inner
             .gossip_service()
-            .ok_or_else(|| Status::new(Code::Unimplemented, "not implemented"))
+            .ok_or_else(|| Box::new(Status::new(Code::Unimplemented, "not implemented")))
     }
 
     #[allow(unused_mut)]
@@ -101,12 +101,12 @@ where
     }
 }
 
-fn remote_addr_to_peer(maybe_addr: Option<SocketAddr>) -> Result<Peer, Status> {
+fn remote_addr_to_peer(maybe_addr: Option<SocketAddr>) -> Result<Peer, Box<Status>> {
     match maybe_addr {
         Some(addr) => Ok(addr.into()),
-        None => Err(Status::internal(
+        None => Err(Box::new(Status::internal(
             "transport does not provide the remote address",
-        )),
+        ))),
     }
 }
 
@@ -119,7 +119,7 @@ where
         &self,
         req: tonic::Request<proto::node::HandshakeRequest>,
     ) -> Result<tonic::Response<proto::node::HandshakeResponse>, tonic::Status> {
-        let peer = remote_addr_to_peer(req.remote_addr())?;
+        let peer = remote_addr_to_peer(req.remote_addr()).map_err(|e| *e)?;
         let req = req.into_inner();
         let nonce = &req.nonce;
         let hr = self.inner.handshake(peer, nonce).await?;
@@ -137,7 +137,7 @@ where
         &self,
         req: tonic::Request<proto::node::ClientAuthRequest>,
     ) -> Result<tonic::Response<proto::node::ClientAuthResponse>, tonic::Status> {
-        let peer = remote_addr_to_peer(req.remote_addr())?;
+        let peer = remote_addr_to_peer(req.remote_addr()).map_err(|e| *e)?;
         let req = req.into_inner();
         let node_id = NodeId::try_from(&req.node_id[..])?;
         let auth = node_id.authenticated(&req.signature)?;
@@ -150,7 +150,7 @@ where
         &self,
         _: tonic::Request<proto::node::TipRequest>,
     ) -> Result<tonic::Response<proto::node::TipResponse>, tonic::Status> {
-        let service = self.block_service()?;
+        let service = self.block_service().map_err(|e| *e)?;
         let header = service.tip().await?;
         let res = proto::node::TipResponse {
             block_header: header.into(),
@@ -162,7 +162,7 @@ where
         &self,
         req: tonic::Request<proto::node::PeersRequest>,
     ) -> Result<tonic::Response<proto::node::PeersResponse>, tonic::Status> {
-        let service = self.gossip_service()?;
+        let service = self.gossip_service().map_err(|e| *e)?;
         let peers = service.peers(req.into_inner().limit).await?;
         let res = proto::node::PeersResponse {
             peers: peers
@@ -181,7 +181,7 @@ where
         &self,
         req: tonic::Request<proto::types::BlockIds>,
     ) -> Result<tonic::Response<Self::GetBlocksStream>, tonic::Status> {
-        let service = self.block_service()?;
+        let service = self.block_service().map_err(|e| *e)?;
         let ids = block::try_ids_from_iter(req.into_inner().ids)?;
         let stream = service.get_blocks(ids).await?;
         Ok(tonic::Response::new(OutboundTryStream::new(stream)))
@@ -193,7 +193,7 @@ where
         &self,
         req: tonic::Request<proto::types::BlockIds>,
     ) -> Result<tonic::Response<Self::GetHeadersStream>, tonic::Status> {
-        let service = self.block_service()?;
+        let service = self.block_service().map_err(|e| *e)?;
         let ids = block::try_ids_from_iter(req.into_inner().ids)?;
         let stream = service.get_headers(ids).await?;
         Ok(tonic::Response::new(OutboundTryStream::new(stream)))
@@ -206,7 +206,7 @@ where
         &self,
         req: tonic::Request<proto::types::FragmentIds>,
     ) -> Result<tonic::Response<Self::GetFragmentsStream>, tonic::Status> {
-        let service = self.fragment_service()?;
+        let service = self.fragment_service().map_err(|e| *e)?;
         let ids = fragment::try_ids_from_iter(req.into_inner().ids)?;
         let stream = service.get_fragments(ids).await?;
         Ok(tonic::Response::new(OutboundTryStream::new(stream)))
@@ -219,7 +219,7 @@ where
         &self,
         req: tonic::Request<proto::node::PullHeadersRequest>,
     ) -> Result<tonic::Response<Self::PullHeadersStream>, tonic::Status> {
-        let service = self.block_service()?;
+        let service = self.block_service().map_err(|e| *e)?;
         let (from, to) = {
             let req = req.into_inner();
             (
@@ -237,7 +237,7 @@ where
         &self,
         req: tonic::Request<proto::node::PullBlocksRequest>,
     ) -> Result<tonic::Response<Self::PullBlocksStream>, tonic::Status> {
-        let service = self.block_service()?;
+        let service = self.block_service().map_err(|e| *e)?;
         let req = req.into_inner();
         let from = block::try_ids_from_iter(req.from)?;
         let to = BlockId::try_from(&req.to[..])?;
@@ -252,7 +252,7 @@ where
         &self,
         req: tonic::Request<proto::node::PullBlocksToTipRequest>,
     ) -> Result<tonic::Response<Self::PullBlocksToTipStream>, tonic::Status> {
-        let service = self.block_service()?;
+        let service = self.block_service().map_err(|e| *e)?;
         let from = block::try_ids_from_iter(req.into_inner().from)?;
         let stream = service.pull_blocks_to_tip(from).await?;
         Ok(tonic::Response::new(OutboundTryStream::new(stream)))
@@ -262,7 +262,7 @@ where
         &self,
         req: tonic::Request<tonic::Streaming<proto::types::Header>>,
     ) -> Result<tonic::Response<proto::node::PushHeadersResponse>, tonic::Status> {
-        let service = self.block_service()?;
+        let service = self.block_service().map_err(|e| *e)?;
         let stream = InboundStream::new(req.into_inner());
         service.push_headers(Box::pin(stream)).await?;
         Ok(tonic::Response::new(proto::node::PushHeadersResponse {}))
@@ -272,7 +272,7 @@ where
         &self,
         req: tonic::Request<tonic::Streaming<proto::types::Block>>,
     ) -> Result<tonic::Response<proto::node::UploadBlocksResponse>, tonic::Status> {
-        let service = self.block_service()?;
+        let service = self.block_service().map_err(|e| *e)?;
         let stream = InboundStream::new(req.into_inner());
         service.upload_blocks(Box::pin(stream)).await?;
         Ok(tonic::Response::new(proto::node::UploadBlocksResponse {}))
@@ -285,8 +285,8 @@ where
         &self,
         req: tonic::Request<tonic::Streaming<proto::types::Header>>,
     ) -> Result<tonic::Response<Self::BlockSubscriptionStream>, tonic::Status> {
-        let service = self.block_service()?;
-        let peer = remote_addr_to_peer(req.remote_addr())?;
+        let service = self.block_service().map_err(|e| *e)?;
+        let peer = remote_addr_to_peer(req.remote_addr()).map_err(|e| *e)?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service.block_subscription(peer, Box::pin(inbound)).await?;
         let res = self.subscription_response(outbound);
@@ -300,8 +300,8 @@ where
         &self,
         req: tonic::Request<tonic::Streaming<proto::types::Fragment>>,
     ) -> Result<tonic::Response<Self::FragmentSubscriptionStream>, tonic::Status> {
-        let service = self.fragment_service()?;
-        let peer = remote_addr_to_peer(req.remote_addr())?;
+        let service = self.fragment_service().map_err(|e| *e)?;
+        let peer = remote_addr_to_peer(req.remote_addr()).map_err(|e| *e)?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service
             .fragment_subscription(peer, Box::pin(inbound))
@@ -317,8 +317,8 @@ where
         &self,
         req: tonic::Request<tonic::Streaming<proto::node::Gossip>>,
     ) -> Result<tonic::Response<Self::GossipSubscriptionStream>, tonic::Status> {
-        let service = self.gossip_service()?;
-        let peer = remote_addr_to_peer(req.remote_addr())?;
+        let service = self.gossip_service().map_err(|e| *e)?;
+        let peer = remote_addr_to_peer(req.remote_addr()).map_err(|e| *e)?;
         let inbound = InboundStream::new(req.into_inner());
         let outbound = service.gossip_subscription(peer, Box::pin(inbound)).await?;
         let res = self.subscription_response(outbound);

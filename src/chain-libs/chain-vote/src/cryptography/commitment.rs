@@ -67,7 +67,7 @@ pub struct Open {
     pub r: Scalar,
 }
 
-#[cfg(tests)]
+#[cfg(test)]
 mod tests {
     use super::*;
     use rand_chacha::rand_core::SeedableRng;
@@ -82,8 +82,8 @@ mod tests {
         let (comm, rand) = commitment_key.commit(&message, &mut rng);
 
         let opening = Open {
-            m: message,
-            r: rand,
+            m: message.clone(),
+            r: rand.clone(),
         };
 
         assert!(commitment_key.verify(&comm, &opening));

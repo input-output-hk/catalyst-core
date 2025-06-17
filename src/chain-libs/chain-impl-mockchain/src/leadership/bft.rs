@@ -17,7 +17,7 @@ pub struct LeadershipData {
 impl LeadershipData {
     /// Create a new BFT leadership
     pub fn new(leaders: Arc<[BftLeaderId]>) -> Option<Self> {
-        if leaders.len() == 0 {
+        if leaders.is_empty() {
             return None;
         }
 

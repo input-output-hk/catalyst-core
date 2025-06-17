@@ -63,7 +63,7 @@ mod test {
     fn value_serde_yaml() {
         const FIXED: u64 = 8170;
         const NUMERATOR: u64 = 192;
-        const DENOMINATOR: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(1291) };
+        const DENOMINATOR: NonZeroU64 = NonZeroU64::new(1291).unwrap();
         let tax_type = TaxType {
             fixed: FIXED.into(),
             ratio: Ratio::new(NUMERATOR, DENOMINATOR),
@@ -83,7 +83,7 @@ mod test {
     fn value_serde_yaml_with_max_limit() {
         const FIXED: u64 = 8170;
         const NUMERATOR: u64 = 192;
-        const DENOMINATOR: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(1291) };
+        const DENOMINATOR: NonZeroU64 = NonZeroU64::new(1291).unwrap();
         const MAX_LIMIT: u64 = 2028;
         let tax_type = TaxType {
             fixed: FIXED.into(),

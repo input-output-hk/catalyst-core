@@ -4,7 +4,7 @@ mod request_generators;
 mod scenario;
 mod status_provider;
 
-pub use config::{ArtificialUserLoadConfig, NodeLoadConfig};
+pub use config::NodeLoadConfig;
 pub use multi_controller::{MultiController, MultiControllerError};
 pub use request_generators::{ServicingStationRequestGen, WalletRequestGen};
 pub use scenario::*;

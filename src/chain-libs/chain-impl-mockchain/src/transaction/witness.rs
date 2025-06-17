@@ -143,7 +143,6 @@ impl AsRef<[u8]> for WitnessMultisigData {
 
 impl Witness {
     /// Creates new `Witness` value.
-
     pub fn new_utxo_data(
         block0: &HeaderId,
         sign_data_hash: &TransactionSignDataHash,

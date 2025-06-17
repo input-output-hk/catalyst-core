@@ -143,7 +143,6 @@ impl WitnessBuilder {
 }
 
 /// Verify that the declaration and the witnesses in parameters fulfill the requirements:
-///
 /// * The threshold is met: there's at least T or more witnesses available
 /// * the witnesses and declaration together can re-create
 pub fn verify_identifier_threshold(

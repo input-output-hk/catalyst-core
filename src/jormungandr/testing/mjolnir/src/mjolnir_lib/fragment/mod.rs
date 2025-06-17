@@ -18,7 +18,7 @@ pub enum FragmentLoadCommand {
 #[derive(Error, Debug)]
 pub enum FragmentLoadCommandError {
     #[error("Client Error")]
-    ClientError(#[from] MjolnirError),
+    ClientError(#[from] Box<MjolnirError>),
 }
 
 impl FragmentLoadCommand {

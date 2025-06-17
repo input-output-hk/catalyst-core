@@ -1,3 +1,5 @@
+#![allow(non_local_definitions)]
+
 use crate::db::schema::community_advisors_reviews;
 
 use diesel::prelude::*;
@@ -9,6 +11,7 @@ use diesel::{
 };
 use serde::{Deserialize, Serialize};
 
+#[allow(non_local_definitions)]
 #[derive(Copy, Clone, PartialEq, Eq, Debug, Serialize, FromSqlRow, Deserialize)]
 pub enum ReviewRanking {
     Excellent = 0,
@@ -33,6 +36,7 @@ where
     }
 }
 
+#[allow(non_local_definitions)]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Queryable)]
 pub struct AdvisorReview {
     pub id: i32,

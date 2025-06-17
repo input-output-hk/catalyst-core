@@ -6,11 +6,10 @@ pub use crate::wallet::registration::{
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
     REGISTRATION_SIGNATURE_METADATA_IDX,
 };
-use cardano_serialization_lib::address::{
-    BaseAddress, NetworkInfo, RewardAddress, StakeCredential,
-};
-use cardano_serialization_lib::crypto::{PrivateKey, PublicKey};
 use cardano_serialization_lib::Transaction;
+use cardano_serialization_lib::{
+    BaseAddress, Credential, NetworkInfo, PrivateKey, PublicKey, RewardAddress,
+};
 use chain_addr::Discrimination;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Address;
@@ -62,14 +61,14 @@ impl CardanoWallet {
 
     /// Stake address based on stake public key
     #[must_use]
-    pub fn stake_credential(&self) -> StakeCredential {
-        StakeCredential::from_keyhash(&self.stake_key.to_public().hash())
+    pub fn stake_credential(&self) -> Credential {
+        Credential::from_keyhash(&self.stake_key.to_public().hash())
     }
 
     /// Payment address based on stake public key
     #[must_use]
-    pub fn payment_credential(&self) -> StakeCredential {
-        StakeCredential::from_keyhash(&self.payment_key.to_public().hash())
+    pub fn payment_credential(&self) -> Credential {
+        Credential::from_keyhash(&self.payment_key.to_public().hash())
     }
 
     /// Cardano stake public key

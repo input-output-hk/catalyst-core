@@ -100,7 +100,7 @@ pub trait RequestStatusProvider {
 ///
 /// * `responses_clone` - input response collection
 /// * `limit` - Optional parameter which defined limit of statuses in single fetch. This can solve some issues
-/// for example: uri is too long etc.
+///   for example: uri is too long etc.
 /// * `request_status_provider` - trait implementation which is capable to provide information about statuses
 ///
 fn update_statuses(

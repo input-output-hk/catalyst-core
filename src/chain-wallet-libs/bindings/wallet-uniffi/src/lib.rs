@@ -21,6 +21,9 @@ use wallet_core::Options;
 use wallet_core::Settings as InnerSettings;
 use wallet_core::Wallet as InnerWallet;
 
+// Allow clippy warnings for generated uniffi code
+#[allow(clippy::unneeded_struct_pattern)]
+#[allow(clippy::useless_conversion)]
 include!(concat!(env!("OUT_DIR"), "/lib.uniffi.rs"));
 
 #[derive(Debug, thiserror::Error)]

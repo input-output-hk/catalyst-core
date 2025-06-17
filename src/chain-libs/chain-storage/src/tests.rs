@@ -394,11 +394,7 @@ fn get_blocks_by_chain_length() {
             .into_iter()
             .map(|block| Value::owned(block.into_boxed_slice())),
     );
-    let actual = HashSet::from_iter(
-        store
-            .get_blocks_by_chain_length(chain_length)
-            .unwrap(),
-    );
+    let actual = HashSet::from_iter(store.get_blocks_by_chain_length(chain_length).unwrap());
 
     assert_eq!(expected, actual);
 }

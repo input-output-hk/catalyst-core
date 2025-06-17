@@ -296,7 +296,8 @@ impl VitBackendSettingsBuilder {
                         .collect(),
                 )
                 .build()
-                .into_iter().collect(),
+                .into_iter()
+                .collect(),
         );
 
         builder = builder.blockchain(blockchain);

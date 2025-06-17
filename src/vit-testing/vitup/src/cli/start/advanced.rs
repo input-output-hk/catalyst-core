@@ -140,5 +140,6 @@ impl AdvancedStartCommandArgs {
             config.service.version.clone(),
             testing_directory,
         );
-        spawn_network(mode, network_spawn_params, &mut template_generator, config)}
+        spawn_network(mode, network_spawn_params, &mut template_generator, config)
+    }
 }

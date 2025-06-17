@@ -140,7 +140,9 @@ pub async fn get_challenge_by_id(id: i32, context: ContextLock) -> Result<impl R
         .state()
         .vit()
         .challenges()
-        .iter().find(|&ch| ch.id == id).cloned()
+        .iter()
+        .find(|&ch| ch.id == id)
+        .cloned()
         .ok_or_else(|| HandleError::NotFound(id.to_string()))?;
     let proposals: Vec<Proposal> = context
         .state()
@@ -175,7 +177,9 @@ pub async fn get_challenge_by_id_and_group_id(
         .state()
         .vit()
         .challenges()
-        .iter().find(|&ch| ch.id == id).cloned()
+        .iter()
+        .find(|&ch| ch.id == id)
+        .cloned()
         .ok_or_else(|| HandleError::NotFound(id.to_string()))?;
     let proposals: Vec<Proposal> = context
         .state()
@@ -213,7 +217,9 @@ pub async fn get_review_by_id(id: i32, context: ContextLock) -> Result<impl Repl
         .state()
         .vit()
         .advisor_reviews()
-        .iter().filter(|&review| review.proposal_id == id).cloned()
+        .iter()
+        .filter(|&review| review.proposal_id == id)
+        .cloned()
         .group_by(|review| review.assessor.to_string())
         .into_iter()
         .map(|(key, group)| (key, group.collect::<Vec<_>>()))

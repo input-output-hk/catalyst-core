@@ -221,5 +221,6 @@ impl CommitteeDataManager {
                     },
                 )
                 .collect(),
-        )}
+        )
+    }
 }

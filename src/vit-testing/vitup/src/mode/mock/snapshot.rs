@@ -251,9 +251,11 @@ impl Arbitrary for VoterSnapshot {
     type Strategy = BoxedStrategy<Self>;
 
     fn arbitrary_with(_args: Self::Parameters) -> Self::Strategy {
-        let tags = [String::from("latest"),
+        let tags = [
+            String::from("latest"),
             String::from("fund8"),
-            String::from("nightly")];
+            String::from("nightly"),
+        ];
         any_with::<(Vec<ArbitraryVoterHIR>, Vec<ArbitraryVoterHIR>, usize)>((
             (Default::default(), Some("direct".to_string())),
             (Default::default(), Some("dreps".to_string())),

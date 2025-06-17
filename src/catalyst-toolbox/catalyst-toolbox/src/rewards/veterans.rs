@@ -126,7 +126,7 @@ pub fn calculate_veteran_advisors_incentives(
 
     reputation_eligible_rankings
         .into_iter()
-        .zip(rewards_eligible_rankings.into_iter())
+        .zip(rewards_eligible_rankings)
         .map(|((vca, reputation), (_vca2, reward))| {
             assert_eq!(vca, _vca2); // the use of BTreeMaps ensures iteration is consistent
             (
@@ -226,11 +226,11 @@ mod tests {
             2..=2,
             THRESHOLDS
                 .into_iter()
-                .zip(REWARDS_DISAGREEMENT_MODIFIERS.into_iter())
+                .zip(REWARDS_DISAGREEMENT_MODIFIERS)
                 .collect(),
             THRESHOLDS
                 .into_iter()
-                .zip(REPUTATION_DISAGREEMENT_MODIFIERS.into_iter())
+                .zip(REPUTATION_DISAGREEMENT_MODIFIERS)
                 .collect(),
         );
         assert!(results.get(VCA_1).is_none());
@@ -255,11 +255,11 @@ mod tests {
             1..=1,
             THRESHOLDS
                 .into_iter()
-                .zip(REWARDS_DISAGREEMENT_MODIFIERS.into_iter())
+                .zip(REWARDS_DISAGREEMENT_MODIFIERS)
                 .collect(),
             THRESHOLDS
                 .into_iter()
-                .zip(REPUTATION_DISAGREEMENT_MODIFIERS.into_iter())
+                .zip(REPUTATION_DISAGREEMENT_MODIFIERS)
                 .collect(),
         );
         let res1 = results.get(VCA_1).unwrap();

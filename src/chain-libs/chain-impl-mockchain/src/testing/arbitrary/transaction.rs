@@ -189,7 +189,9 @@ impl AccountStatesVerifier {
         let snapshot: Vec<AddressDataValue> = self
             .0
             .addresses
-            .iter().filter(|&x| filter_accounts(x)).cloned()
+            .iter()
+            .filter(|&x| filter_accounts(x))
+            .cloned()
             .map(|x| find_equal_and_sub(x, inputs))
             .collect();
 
@@ -229,7 +231,9 @@ impl AccountStatesVerifier {
 
 fn find_equal_and_sub(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
-        .iter().find(|&y| y.address_data == x.address_data).cloned()
+        .iter()
+        .find(|&y| y.address_data == x.address_data)
+        .cloned()
     {
         Some(y) => AddressDataValue::new(x.address_data, (x.value - y.value).unwrap()),
         None => x,
@@ -238,7 +242,9 @@ fn find_equal_and_sub(x: AddressDataValue, collection: &[AddressDataValue]) -> A
 
 fn find_equal_and_add(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
-        .iter().find(|&y| y.address_data == x.address_data).cloned()
+        .iter()
+        .find(|&y| y.address_data == x.address_data)
+        .cloned()
     {
         Some(y) => AddressDataValue::new(x.address_data, (x.value + y.value).unwrap()),
         None => x,
@@ -269,11 +275,14 @@ impl UtxoVerifier {
         let outputs = &self.0.output_addresses;
 
         let utxo_not_changed: Vec<AddressDataValue> = all
-            .iter().filter(|&x| filter_utxo(x)).cloned()
-            .filter(|x| !inputs.contains(x))
+            .iter()
+            .filter(|&x| filter_utxo(x)).filter(|&x| !inputs.contains(x)).cloned()
             .collect();
-        let utxo_added: Vec<AddressDataValue> =
-            outputs.iter().filter(|&x| filter_utxo(x)).cloned().collect();
+        let utxo_added: Vec<AddressDataValue> = outputs
+            .iter()
+            .filter(|&x| filter_utxo(x))
+            .cloned()
+            .collect();
 
         let mut snapshot = Vec::new();
         snapshot.extend(utxo_not_changed);

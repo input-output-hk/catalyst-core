@@ -316,10 +316,7 @@ pub async fn get_settings(context: &Context) -> Result<SettingsDto, Error> {
     Ok(SettingsDto {
         block0_hash: static_params.block0_initial_hash.to_string(),
         block0_time: SystemTime::from_secs_since_epoch(static_params.block0_start_time.0),
-        curr_slot_start_time: full_context
-            .stats_counter
-            .get_stats()
-            .last_block_time,
+        curr_slot_start_time: full_context.stats_counter.get_stats().last_block_time,
         consensus_version: consensus_version.to_string(),
         fees,
         block_content_max_size,

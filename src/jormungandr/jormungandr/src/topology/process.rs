@@ -40,10 +40,7 @@ pub async fn start(task_data: TaskData) {
 
     let mut topology = P2pTopology::new(&config, stats_counter);
 
-    topology.accept_gossips(Gossips::from(
-        initial_peers
-            .into_iter().collect::<Vec<_>>(),
-    ));
+    topology.accept_gossips(Gossips::from(initial_peers.into_iter().collect::<Vec<_>>()));
 
     let mut gossip_interval = tokio::time::interval(config.gossip_interval);
     gossip_interval.set_missed_tick_behavior(MissedTickBehavior::Delay);

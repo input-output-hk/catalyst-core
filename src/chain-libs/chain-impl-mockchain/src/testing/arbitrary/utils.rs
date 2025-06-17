@@ -138,7 +138,9 @@ impl Verify {
 
     pub fn get_result(&self) -> TestResult {
         self.0
-            .iter().find(|&x| TestResult::is_failure(x)).cloned()
+            .iter()
+            .find(|&x| TestResult::is_failure(x))
+            .cloned()
             .unwrap_or_else(TestResult::passed)
     }
 }

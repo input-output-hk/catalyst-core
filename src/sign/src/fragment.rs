@@ -262,21 +262,18 @@ mod tests {
         let threshold = 1;
         let m1 = MemberState::new(&mut rng, threshold, &h, &mc, 0);
         let participants = vec![m1.public_key()];
-        
+
         ElectionPublicKey::from_participants(&participants)
     }
 
     #[test]
     fn generate_keys_from_bytes() {
-        let pk = hex::decode(
-            "ac247e6cbc2106a8858d67a9b6aa9fc6105a2f42abfd8d269f4096488b7e5d81",
-        )
-        .unwrap();
+        let pk = hex::decode("ac247e6cbc2106a8858d67a9b6aa9fc6105a2f42abfd8d269f4096488b7e5d81")
+            .unwrap();
 
-        let mut sk = hex::decode(
-            "40cc7f02e04324b63a4db949854d5f24c9041a2bebe9b42064ff868071d1d72d",
-        )
-        .unwrap();
+        let mut sk =
+            hex::decode("40cc7f02e04324b63a4db949854d5f24c9041a2bebe9b42064ff868071d1d72d")
+                .unwrap();
 
         sk.extend(pk.clone());
         let keys = sk.clone();

@@ -600,8 +600,7 @@ impl WalletAddSubcommand {
             Self::QR { qr, pin, testing } => {
                 let img = image::open(qr)?;
                 let bytes: Vec<u8> = pin.chars().map(|x| x.to_digit(10).unwrap() as u8).collect();
-                let secret = KeyQrCode::decode(img, &bytes)?
-                    .get(0)
+                let secret = KeyQrCode::decode(img, &bytes)?.first()
                     .unwrap()
                     .clone()
                     .leak_secret();

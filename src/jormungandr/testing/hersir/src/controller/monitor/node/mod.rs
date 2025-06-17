@@ -213,7 +213,7 @@ impl Node {
                     e,
                 }
             })
-            .inspect(|exit_status| {
+            .inspect(|_exit_status| {
                 self.progress_bar.log_info("shutdown successfully.");
             })
     }

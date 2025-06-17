@@ -70,7 +70,9 @@ impl Controller {
 
     pub fn wallet(&self, alias: &str) -> Result<Wallet, ControllerError> {
         self.declared_wallets
-            .iter().find(|&x| x.alias() == alias).cloned()
+            .iter()
+            .find(|&x| x.alias() == alias)
+            .cloned()
             .ok_or(ControllerError::UnknownWallet {
                 alias: alias.to_owned(),
             })
@@ -78,7 +80,9 @@ impl Controller {
 
     pub fn vote_plan(&self, alias: &str) -> Result<VotePlanDef, ControllerError> {
         self.declared_vote_plans
-            .iter().find(|&x| x.alias() == alias).cloned()
+            .iter()
+            .find(|&x| x.alias() == alias)
+            .cloned()
             .ok_or(ControllerError::UnknownVotePlan {
                 alias: alias.to_owned(),
             })
@@ -90,7 +94,9 @@ impl Controller {
 
     pub fn stake_pool(&self, alias: &str) -> Result<StakePool, ControllerError> {
         self.declared_stake_pools
-            .iter().find(|&x| x.alias() == alias).cloned()
+            .iter()
+            .find(|&x| x.alias() == alias)
+            .cloned()
             .ok_or(ControllerError::UnknownStakePool {
                 alias: alias.to_owned(),
             })

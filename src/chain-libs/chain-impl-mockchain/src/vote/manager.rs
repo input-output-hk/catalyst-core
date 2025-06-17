@@ -909,7 +909,7 @@ mod tests {
         let vote_cast = VoteCast::new(vote_plan.to_id(), 0, vote_cast_payload);
 
         let mut proposal_manager =
-            ProposalManager::new_public(vote_plan.proposals().get(0).unwrap());
+            ProposalManager::new_public(vote_plan.proposals().first().unwrap());
 
         let identifier = TestGen::identifier();
 
@@ -947,7 +947,7 @@ mod tests {
         let mut rng = OsRng;
         let vote_cast_payload = VoteTestGen::private_vote_cast_payload_for(
             &vote_plan,
-            vote_plan.proposals().get(0).unwrap(),
+            vote_plan.proposals().first().unwrap(),
             vote_choice,
             &mut rng,
         );
@@ -955,7 +955,7 @@ mod tests {
 
         let identifier = TestGen::identifier();
 
-        let proposal_manager = ProposalManager::new_public(vote_plan.proposals().get(0).unwrap());
+        let proposal_manager = ProposalManager::new_public(vote_plan.proposals().first().unwrap());
 
         assert_eq!(
             proposal_manager
@@ -983,7 +983,7 @@ mod tests {
         let election_pk = ElectionPublicKey::from_participants(vote_plan.committee_public_keys());
 
         let proposal_manager =
-            ProposalManager::new_private(vote_plan.proposals().get(0).unwrap(), election_pk, crs);
+            ProposalManager::new_private(vote_plan.proposals().first().unwrap(), election_pk, crs);
 
         assert_eq!(
             proposal_manager
@@ -1002,7 +1002,7 @@ mod tests {
         );
     }
 
-    const CENT: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(100) };
+    const CENT: NonZeroU64 = NonZeroU64::new(100).unwrap();
     use crate::certificate::Proposals;
     use crate::ledger::governance::{ParametersGovernance, ParametersGovernanceAction};
     use crate::ledger::governance::{TreasuryGovernance, TreasuryGovernanceAction};
@@ -1476,7 +1476,7 @@ mod tests {
         );
 
         let mut first_proposal_manager =
-            ProposalManager::new_public(vote_plan.proposals().get(0).unwrap());
+            ProposalManager::new_public(vote_plan.proposals().first().unwrap());
         let mut second_proposal_manager =
             ProposalManager::new_public(vote_plan.proposals().get(1).unwrap());
 

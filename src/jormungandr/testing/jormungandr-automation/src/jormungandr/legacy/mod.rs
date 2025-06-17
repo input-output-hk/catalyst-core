@@ -24,8 +24,9 @@ lazy_static::lazy_static! {
 
 pub fn download_last_n_releases(n: u32) -> Vec<Release> {
     RELEASES
-        .into_iter().filter(|&x| !x.version_str().starts_with("nightly")).cloned()
-        .take(n as usize)
+        .into_iter()
+        .filter(|&x| !x.version_str().starts_with("nightly"))
+        .take(n as usize).cloned()
         .collect()
 }
 

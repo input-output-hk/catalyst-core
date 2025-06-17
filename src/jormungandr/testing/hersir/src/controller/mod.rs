@@ -63,21 +63,25 @@ impl Controller {
     pub fn wallet(&mut self, wallet: &str) -> Option<crate::builder::Wallet> {
         self.settings
             .wallets
-            .iter().find(|&w| w.has_alias(&wallet.to_string())).cloned()
+            .iter()
+            .find(|&w| w.has_alias(&wallet.to_string()))
+            .cloned()
     }
 
     pub fn controlled_wallet(&self, wallet: &str) -> Option<Wallet> {
         self.settings
             .wallets
-            .iter().filter(|&x| x.template().is_generated()).cloned()
-            .find(|w| w.has_alias(&wallet.to_string()))
+            .iter()
+            .filter(|&x| x.template().is_generated()).find(|&w| w.has_alias(&wallet.to_string())).cloned()
             .map(|w| w.into())
     }
 
     pub fn controlled_wallets(&self) -> Vec<Wallet> {
         self.settings()
             .wallets
-            .iter().filter(|&x| x.template().is_generated()).cloned()
+            .iter()
+            .filter(|&x| x.template().is_generated())
+            .cloned()
             .map(|w| w.into())
             .collect()
     }

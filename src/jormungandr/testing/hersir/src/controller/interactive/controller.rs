@@ -186,7 +186,9 @@ impl UserInteractionController {
 
         let to = self
             .wallets()
-            .iter().find(|&x| x.address() == to_address).cloned()
+            .iter()
+            .find(|&x| x.address() == to_address)
+            .cloned()
             .unwrap_or_else(|| panic!("cannot find wallet with alias: {}", to_str));
 
         let mut temp_wallets = self.wallets_mut().clone();
@@ -214,7 +216,8 @@ impl UserInteractionController {
     }
 
     pub fn spawn_node(&mut self, input_params: SpawnParams) -> Result<JormungandrProcess, Error> {
-        self.controller.spawn(input_params)}
+        self.controller.spawn(input_params)
+    }
 }
 
 pub fn do_for_all_alias<F: Fn(&JormungandrProcess), G: Fn(&JormungandrProcess)>(

@@ -186,7 +186,7 @@ pub fn read_qrs<P: AsRef<Path>>(
                 continue;
             }
         };
-        secrets.push(secret.get(0).unwrap().clone());
+        secrets.push(secret.first().unwrap().clone());
     }
     secrets
 }

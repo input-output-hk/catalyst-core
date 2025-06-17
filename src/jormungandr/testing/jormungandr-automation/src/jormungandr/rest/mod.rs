@@ -232,7 +232,8 @@ impl JormungandrRest {
     }
 
     pub fn block_as_bytes(&self, header_hash: &HeaderId) -> Result<Vec<u8>, RestError> {
-        self.inner.block_as_bytes(header_hash)}
+        self.inner.block_as_bytes(header_hash)
+    }
 
     pub fn shutdown(&self) -> Result<String, RestError> {
         self.inner.shutdown().map_err(Into::into)
@@ -250,15 +251,16 @@ impl JormungandrRest {
         &self,
         ids: Vec<String>,
     ) -> Result<HashMap<String, FragmentStatus>, RestError> {
-        self.inner.fragments_statuses(ids)}
+        self.inner.fragments_statuses(ids)
+    }
 
     pub fn send_fragment_batch(
         &self,
         fragments: Vec<Fragment>,
         fail_fast: bool,
     ) -> Result<FragmentsProcessingSummary, RestError> {
-        self.inner
-            .send_fragment_batch(fragments, fail_fast)}
+        self.inner.send_fragment_batch(fragments, fail_fast)
+    }
 
     pub fn vote_plan_statuses(&self) -> Result<Vec<VotePlanStatus>, RestError> {
         serde_json::from_str(&self.inner.vote_plan_statuses()?)

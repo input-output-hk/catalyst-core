@@ -60,8 +60,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     // Election pub key published as a Bech32_encoded address
     // which consists of 3 parts: A Human-Readable Part (HRP) + Separator + Data:
-    let (_hrp, data, _variant) =
-        bech32::decode(&args.election_pub_key)?;
+    let (_hrp, data, _variant) = bech32::decode(&args.election_pub_key)?;
 
     let election_pk = Vec::<u8>::from_base32(&data)?;
 

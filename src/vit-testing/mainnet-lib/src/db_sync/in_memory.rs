@@ -289,7 +289,7 @@ mod tests {
     use crate::{CardanoWallet, InMemoryDbSync};
     use assert_fs::fixture::PathChild;
     use assert_fs::TempDir;
-    use cardano_serialization_lib::utils::BigNum;
+    use cardano_serialization_lib::BigNum;
     use std::time::Duration;
 
     #[tokio::test]

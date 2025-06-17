@@ -142,10 +142,10 @@ impl MonitorController {
         self.inner
             .settings()
             .wallets
-            .iter().filter(|&x| x.template().is_generated()).cloned()
-            .map(|x| {
-                x.into()
-            })
+            .iter()
+            .filter(|&x| x.template().is_generated())
+            .cloned()
+            .map(|x| x.into())
             .collect()
     }
 
@@ -172,7 +172,9 @@ impl MonitorController {
     pub fn controlled_wallet(&self, wallet: &str) -> Result<Wallet, Error> {
         self.settings()
             .wallets
-            .iter().find(|&w| w.template().alias() == Some(wallet.to_string())).cloned()
+            .iter()
+            .find(|&w| w.template().alias() == Some(wallet.to_string()))
+            .cloned()
             .map(|w| w.into())
             .ok_or_else(|| Error::WalletNotFound(wallet.to_owned()))
     }

@@ -39,7 +39,7 @@ pub fn sanity_notification() {
     let output = std::str::from_utf8(&result.get_output().stdout).unwrap();
     let response: CreateMessageResponse = serde_json::from_str(output).unwrap();
     println!("{:?}", response);
-    let id = response.response.messages.get(0).unwrap();
+    let id = response.response.messages.first().unwrap();
     NotificationsVerifier::new(&access_token)
         .verify_message_done_with_text(id, &message.to_string());
 }

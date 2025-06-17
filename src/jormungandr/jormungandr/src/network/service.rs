@@ -333,7 +333,8 @@ impl GossipService for NodeService {
         let gossip = Gossips::from(
             std::iter::once(res.self_node)
                 .chain(res.peers.into_iter())
-                .take(limit as usize).collect::<Vec<_>>(),
+                .take(limit as usize)
+                .collect::<Vec<_>>(),
         )
         .encode();
         Ok(gossip)

@@ -112,7 +112,9 @@ impl ScenarioBuilder {
             .map(|x| {
                 let vote_plan_def = x.build();
                 let owner = wallets
-                    .iter().find(|&w| w.alias() == vote_plan_def.owner()).cloned()
+                    .iter()
+                    .find(|&w| w.alias() == vote_plan_def.owner())
+                    .cloned()
                     .expect("cannot find wallet for vote plan");
                 let vote_plan: VotePlan = vote_plan_def.into();
                 create_initial_vote_plan(&vote_plan, &[owner])
@@ -159,7 +161,9 @@ impl ScenarioBuilder {
                     .cloned()
                     .map(|pk| {
                         wallets
-                            .iter().find(|&x| x.public_key() == pk).cloned()
+                            .iter()
+                            .find(|&x| x.public_key() == pk)
+                            .cloned()
                             .expect("unknown key")
                     })
                     .collect();
@@ -175,7 +179,9 @@ impl ScenarioBuilder {
         wallets: &[Wallet],
     ) -> Vec<Fragment> {
         initials
-            .iter().filter(|&x| x.delegates_stake_pool().is_some()).cloned()
+            .iter()
+            .filter(|&x| x.delegates_stake_pool().is_some())
+            .cloned()
             .map(|wallet_template| {
                 let stake_pool_alias = wallet_template.delegates_stake_pool().unwrap();
                 let stake_pool = stake_pools

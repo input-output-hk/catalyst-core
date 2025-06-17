@@ -23,6 +23,7 @@ name = "imhamt"
 
 [features]
 property-test-api = ["proptest", "test-strategy"]
+nightly = []
 
 [build-dependencies]
 rustc_version = "0.4"

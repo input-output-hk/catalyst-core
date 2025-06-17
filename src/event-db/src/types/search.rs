@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use super::{event::EventSummary, objective::ObjectiveSummary, proposal::ProposalSummary};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -16,15 +17,16 @@ pub enum SearchColumn {
     Funds,
 }
 
-impl ToString for SearchColumn {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for SearchColumn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let str = match self {
             SearchColumn::Title => "title".to_string(),
             SearchColumn::Type => "type".to_string(),
             SearchColumn::Description => "description".to_string(),
             SearchColumn::Author => "author".to_string(),
             SearchColumn::Funds => "funds".to_string(),
-        }
+        };
+        write!(f, "{}", str)
     }
 }
 

@@ -37,7 +37,7 @@ pub struct EventDB {
 /// * `url` set to the postgres connection string needed to connect to the
 ///   database.  IF it is None, then the env var "`DATABASE_URL`" will be used
 ///   for this connection string. eg:
-/// "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
+///   "`postgres://catalyst-dev:CHANGE_ME@localhost/CatalystDev`"
 ///
 /// # Errors
 ///

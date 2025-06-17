@@ -49,7 +49,7 @@ impl EventDB {
                 format!(
                     "WHERE {0}.{1} LIKE '%{2}%'",
                     table,
-                    filter.column.to_string(),
+                    filter.column,
                     filter.search
                 )
                 .as_str(),
@@ -59,7 +59,7 @@ impl EventDB {
                     format!(
                         "AND {0}.{1} LIKE '%{2}%'",
                         table,
-                        filter.column.to_string(),
+                        filter.column,
                         filter.search
                     )
                     .as_str(),
@@ -78,7 +78,7 @@ impl EventDB {
                 format!(
                     "ORDER BY {0}.{1} {2}",
                     table,
-                    order_by.column.to_string(),
+                    order_by.column,
                     order_type
                 )
                 .as_str(),
@@ -86,10 +86,10 @@ impl EventDB {
             for order_by in order_by_iter {
                 let order_type = if order_by.descending { "DESC" } else { "ASC" };
                 order_by_clause.push_str(
-                    format!(
-                        ", {0}.{1} LIKE '%{2}%'",
+                format!(
+                        ", {0}.{1} {2}",
                         table,
-                        order_by.column.to_string(),
+                        order_by.column,
                         order_type
                     )
                     .as_str(),

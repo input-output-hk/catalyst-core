@@ -41,9 +41,9 @@ pub const NONCES_SIZE: usize = 8 * 4;
 /// # parameters
 ///
 /// * account_key: the Ed25519 extended key used wallet's account address private key
-/// in the form of a 64 bytes array.
+///   in the form of a 64 bytes array.
 /// * utxo_keys: an array of Ed25519 keys in the form of 64 bytes, used as utxo
-/// keys for the wallet
+///   keys for the wallet
 /// * utxo_keys_len: the number of keys in the utxo_keys array (not the number of bytes)
 /// * wallet_out: the recovered wallet
 ///

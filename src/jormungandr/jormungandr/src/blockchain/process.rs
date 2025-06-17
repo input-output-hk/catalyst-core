@@ -61,10 +61,10 @@ pub struct TaskData {
 /// The blockchain process is comprised mainly of two parts:
 ///
 /// * Bookkeeping of all blocks known to the node:
-/// This is the most resource heavy operation but can be parallelized depending on the chain structure.
+///   This is the most resource heavy operation but can be parallelized depending on the chain structure.
 /// * Tip selection and update:
-/// Tip updates must be serialized to avoid inconsistent states but are very light on resources.
-/// No performance penalty should come from this synchronization point.
+///   Tip updates must be serialized to avoid inconsistent states but are very light on resources.
+///   No performance penalty should come from this synchronization point.
 struct Process {
     blockchain: Blockchain,
     blockchain_tip: Tip,

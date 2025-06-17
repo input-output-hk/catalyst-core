@@ -32,12 +32,12 @@ impl MockController {
         }
     }
 
-    pub fn finish_and_verify_that<F: 'static + std::marker::Send>(
+    pub fn finish_and_verify_that<F>(
         self,
         verify_func: F,
     ) -> MockExitCode
     where
-        F: Fn(&MockVerifier) -> bool,
+        F: 'static + std::marker::Send + Fn(&MockVerifier) -> bool,
     {
         let start = Instant::now();
         let timeout = Duration::from_secs(120);

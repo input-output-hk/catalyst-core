@@ -242,10 +242,10 @@ impl InMemoryDbSync {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Settings {
-    pub db_name: String,
-    pub db_user: String,
-    pub db_host: String,
-    pub db_pass: String,
+    pub name: String,
+    pub user: String,
+    pub host: String,
+    pub pass: String,
 }
 
 /// Basic converter from absolute slot number and {epoch,slot} pair

@@ -24,25 +24,25 @@ pub enum Error {
     #[error(transparent)]
     ParseTime(#[from] time::error::Parse),
     #[error(transparent)]
-    Block0Error(#[from] jormungandr_automation::testing::block0::Block0Error),
+    Block0Error(#[from] Box<jormungandr_automation::testing::block0::Block0Error>),
     #[error(transparent)]
-    Node(#[from] NodeError),
+    Node(#[from] Box<NodeError>),
     #[error(transparent)]
-    Wallet(#[from] WalletError),
+    Wallet(#[from] Box<WalletError>),
     #[error(transparent)]
-    FragmentSender(#[from] FragmentSenderError),
+    FragmentSender(#[from] Box<FragmentSenderError>),
     #[error(transparent)]
-    FragmentVerifier(#[from] FragmentVerifierError),
+    FragmentVerifier(#[from] Box<FragmentVerifierError>),
     #[error(transparent)]
     VerificationFailed(#[from] VerificationError),
     #[error(transparent)]
     MonitorResourcesError(#[from] ConsumptionBenchmarkError),
     #[error(transparent)]
-    VitStationControllerError(#[from] VitStationControllerError),
+    VitStationControllerError(#[from] Box<VitStationControllerError>),
     #[error(transparent)]
-    WalletProxyError(#[from] WalletProxyError),
+    WalletProxyError(#[from] Box<WalletProxyError>),
     #[error(transparent)]
-    TemplateLoadError(#[from] vit_servicing_station_tests::common::data::TemplateLoad),
+    TemplateLoadError(#[from] Box<vit_servicing_station_tests::common::data::TemplateLoad>),
     #[error(transparent)]
     SerdeError(#[from] serde_json::Error),
     #[error(transparent)]
@@ -58,7 +58,7 @@ pub enum Error {
     #[error(transparent)]
     Block0ConfigurationError(#[from] Block0ConfigurationError),
     #[error(transparent)]
-    VitServerBootstrapperError(#[from] ServerBootstrapperError),
+    VitServerBootstrapperError(#[from] Box<ServerBootstrapperError>),
     #[error(transparent)]
     VitRestError(#[from] vit_servicing_station_tests::common::clients::RestError),
     #[error(transparent)]
@@ -74,9 +74,9 @@ pub enum Error {
     #[error(transparent)]
     Validate(#[from] crate::cli::ValidateError),
     #[error(transparent)]
-    ControllerError(#[from] hersir::controller::Error),
+    ControllerError(#[from] Box<hersir::controller::Error>),
     #[error(transparent)]
-    Block0(#[from] Block0Error),
+    Block0(#[from] Box<Block0Error>),
     #[error(transparent)]
     Builder(#[from] crate::builders::Error),
     #[error(transparent)]
@@ -84,7 +84,7 @@ pub enum Error {
     #[error(transparent)]
     Data(#[from] crate::mode::standard::DataError),
     #[error(transparent)]
-    Main(#[from] crate::mode::standard::VitControllerError),
+    Main(#[from] Box<crate::mode::standard::VitControllerError>),
     #[error(transparent)]
     WalletProxyController(#[from] WalletProxyControllerError),
     #[error("Cannot find snapshot file in: {0}")]
@@ -118,4 +118,65 @@ pub enum Error {
     NoChallengeIdAndGroupFound { id: String, group: String },
     #[error("cannot set tracing")]
     SetGlobalDefault(#[from] SetGlobalDefaultError),
+}
+
+// Helper implementations for automatic boxing
+impl From<hersir::controller::Error> for Error {
+    fn from(e: hersir::controller::Error) -> Self {
+        Error::ControllerError(Box::new(e))
+    }
+}
+
+impl From<NodeError> for Error {
+    fn from(e: NodeError) -> Self {
+        Error::Node(Box::new(e))
+    }
+}
+
+impl From<ServerBootstrapperError> for Error {
+    fn from(e: ServerBootstrapperError) -> Self {
+        Error::VitServerBootstrapperError(Box::new(e))
+    }
+}
+
+impl From<VitStationControllerError> for Error {
+    fn from(e: VitStationControllerError) -> Self {
+        Error::VitStationControllerError(Box::new(e))
+    }
+}
+
+impl From<WalletProxyError> for Error {
+    fn from(e: WalletProxyError) -> Self {
+        Error::WalletProxyError(Box::new(e))
+    }
+}
+
+impl From<crate::mode::standard::VitControllerError> for Error {
+    fn from(e: crate::mode::standard::VitControllerError) -> Self {
+        Error::Main(Box::new(e))
+    }
+}
+
+impl From<WalletError> for Error {
+    fn from(e: WalletError) -> Self {
+        Error::Wallet(Box::new(e))
+    }
+}
+
+impl From<FragmentSenderError> for Error {
+    fn from(e: FragmentSenderError) -> Self {
+        Error::FragmentSender(Box::new(e))
+    }
+}
+
+impl From<FragmentVerifierError> for Error {
+    fn from(e: FragmentVerifierError) -> Self {
+        Error::FragmentVerifier(Box::new(e))
+    }
+}
+
+impl From<vit_servicing_station_tests::common::data::TemplateLoad> for Error {
+    fn from(e: vit_servicing_station_tests::common::data::TemplateLoad) -> Self {
+        Error::TemplateLoadError(Box::new(e))
+    }
 }

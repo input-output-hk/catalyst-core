@@ -103,7 +103,7 @@ pub async fn post_fragments(
         fail_fast: batch.fail_fast,
         reply_handle,
     };
-    msgbox.try_send(msg)?;
+    msgbox.try_send(msg).map_err(|e| Error::TxMsgSend(Box::new(e)))?;
     let reply = reply_future.await?;
     if reply.is_error() {
         Err(Error::Fragments(reply))

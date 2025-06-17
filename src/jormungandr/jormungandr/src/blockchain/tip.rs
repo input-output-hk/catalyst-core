@@ -93,7 +93,7 @@ impl TipUpdater {
         while let Some(block) = stream.next().await {
             let block = block?;
             let fragment_ids = block.fragments().map(|f| f.id()).collect();
-            self.try_request_fragment_removal(fragment_ids, block.header())?;
+            self.try_request_fragment_removal(fragment_ids, block.header()).map_err(|e| Error::from(*e))?;
         }
 
         self.blockchain
@@ -116,7 +116,7 @@ impl TipUpdater {
             .put_tag(MAIN_BRANCH_TAG, candidate_hash)?;
 
         let fragment_ids = block.fragments().map(|f| f.id()).collect();
-        self.try_request_fragment_removal(fragment_ids, block.header())?;
+        self.try_request_fragment_removal(fragment_ids, block.header()).map_err(|e| Error::from(*e))?;
 
         self.tip.update_ref(candidate).await;
         Ok(())
@@ -187,7 +187,7 @@ impl TipUpdater {
         &mut self,
         fragment_ids: Vec<FragmentId>,
         header: &Header,
-    ) -> Result<(), async_msg::TrySendError<TransactionMsg>> {
+    ) -> Result<(), Box<async_msg::TrySendError<TransactionMsg>>> {
         if let Some(ref mut mbox) = self.fragment_mbox {
             let hash = header.hash().into();
             let date = header.block_date();

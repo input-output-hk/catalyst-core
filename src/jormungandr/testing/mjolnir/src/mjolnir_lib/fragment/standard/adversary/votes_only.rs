@@ -80,7 +80,7 @@ impl VotesOnly {
             Some(self.faucet_spending_counter.into()),
             Discrimination::from_testing_bool(self.testing),
         );
-        let block0 = get_block(&self.block0_path)?;
+        let block0 = get_block(&self.block0_path).map_err(|e| MjolnirError::Block0Error(Box::new(e)))?;
         let vote_plans = block0.vote_plans();
 
         let remote_jormungandr = RemoteJormungandrBuilder::new("node".to_owned())

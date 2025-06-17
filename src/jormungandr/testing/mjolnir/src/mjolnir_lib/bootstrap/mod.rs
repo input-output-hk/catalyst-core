@@ -10,12 +10,11 @@ use std::path::PathBuf;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
-#[allow(clippy::large_enum_variant)]
 pub enum ClientLoadCommandError {
     #[error("No scenario defined for run. Available: [duration,iteration]")]
     NoScenarioDefined,
     #[error("Client Error")]
-    ClientError(#[from] MjolnirError),
+    ClientError(#[from] Box<MjolnirError>),
 }
 
 #[derive(Parser, Debug)]
@@ -61,7 +60,7 @@ impl ClientLoadCommand {
 
         let config = self.build_config();
 
-        Ok(PassiveBootstrapLoad::new(config).exec(scenario_type.unwrap())?)
+        PassiveBootstrapLoad::new(config).exec(scenario_type.unwrap()).map_err(|e| ClientLoadCommandError::ClientError(Box::new(e)))
     }
 
     fn get_block0_hash(&self) -> Hash {

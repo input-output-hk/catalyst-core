@@ -177,6 +177,7 @@ fn epoch(explorer: &Explorer) {
     assert_eq!(epoch.data.unwrap().epoch.id, "1", "can't find epoch");
 }
 
+#[allow(dead_code)]
 struct ExplorerProcess {
     handler: Option<std::process::Child>,
     logs_dir: Option<std::path::PathBuf>,

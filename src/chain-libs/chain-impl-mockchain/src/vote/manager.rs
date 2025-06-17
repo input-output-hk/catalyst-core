@@ -1290,7 +1290,6 @@ mod tests {
 
     #[test]
     #[cfg(not(feature = "audit"))]
-
     pub fn vote_plan_manager_tally_invalid_date_private() {
         let (
             members,

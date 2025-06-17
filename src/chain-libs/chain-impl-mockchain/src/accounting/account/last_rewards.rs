@@ -100,11 +100,11 @@ mod tests {
     #[test]
     #[should_panic]
     pub fn add_for_value_overflow() {
-        let value_to_add = Value(std::u64::MAX);
+        let value_to_add = Value(u64::MAX);
         let epoch = 0;
         let mut last_rewards = LastRewards {
             epoch: 0,
-            reward: Value(std::u64::MAX),
+            reward: Value(u64::MAX),
         };
         last_rewards.add_for(epoch, value_to_add);
     }

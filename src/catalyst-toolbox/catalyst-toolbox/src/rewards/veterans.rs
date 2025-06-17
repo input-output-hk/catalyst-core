@@ -233,7 +233,7 @@ mod tests {
                 .zip(REPUTATION_DISAGREEMENT_MODIFIERS)
                 .collect(),
         );
-        assert!(results.get(VCA_1).is_none());
+        assert!(!results.contains_key(VCA_1));
         let res = results.get(VCA_2).unwrap();
         assert_eq!(res.reputation, 2);
         assert_eq!(res.rewards, total_rewards);

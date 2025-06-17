@@ -34,7 +34,7 @@ impl ExplorerVerifier {
 
         for edges in explorer_transactions.edges.iter() {
             let node = &edges.node;
-            assert!(fragment_statuses.get(&node.id.to_string()).is_some());
+            assert!(fragment_statuses.contains_key(&node.id.to_string()));
             let fragment_status = fragment_statuses.get(&node.id.to_string()).unwrap().1;
             assert!(
                 matches!(fragment_status, FragmentStatus::InABlock { date, block: _ } if

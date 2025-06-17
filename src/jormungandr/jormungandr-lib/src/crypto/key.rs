@@ -40,7 +40,6 @@ pub struct Identifier<A: AsymmetricPublicKey>(
 /// More info at the module documentation
 ///
 /// [`Identifier`]: ./struct.Identifier.html
-
 pub struct SigningKey<A: AsymmetricKey>(pub(crate) SecretKey<A>);
 
 impl<A> Serialize for SigningKey<A>
@@ -460,7 +459,7 @@ impl<T, A: VerificationAlgorithm> Eq for Signature<T, A> {}
 
 impl<A: AsymmetricPublicKey> PartialOrd<Identifier<A>> for Identifier<A> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.0.partial_cmp(&other.0)
+        Some(self.cmp(other))
     }
 }
 

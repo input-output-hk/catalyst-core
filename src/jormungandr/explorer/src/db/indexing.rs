@@ -477,7 +477,6 @@ impl ExplorerTransaction {
     /// the fragment id is the associated to the given AuthenticatedTransaction before 'unwrapping'
     /// The discrimination is needed to get addresses from account inputs.
     /// The transactions and blocks are used to resolve utxo inputs
-
     pub fn from<'context, T>(
         context: &'context ExplorerBlockBuildingContext<'context>,
         id: &FragmentId,

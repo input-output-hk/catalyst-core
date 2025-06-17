@@ -145,14 +145,14 @@ pub fn read_qrs<P: AsRef<Path>>(
 ) -> Vec<Secret> {
     let mut secrets = Vec::new();
     for (idx, qr) in qrs.iter().enumerate() {
-        println!("[{}/{}] Decoding {:?}", idx + 1, qrs.len(), qr.as_ref());
+        println!("[{}/{}] Decoding {:?}", idx + 1, qrs.len(), qr.as_ref().display());
 
         let pin = match pin_read_mode.into_qr_pin_mode(qr).into_qr_pin() {
             Ok(pin) => pin,
             Err(err) => {
                 println!(
                     "Cannot detect pin from file: {:?}, due to {:?}",
-                    qr.as_ref(),
+                    qr.as_ref().display(),
                     err
                 );
                 continue;
@@ -180,7 +180,7 @@ pub fn read_qrs<P: AsRef<Path>>(
             Err(err) => {
                 println!(
                     "Cannot decode qr from file: {:?}, due to {:?}",
-                    qr.as_ref(),
+                    qr.as_ref().display(),
                     err
                 );
                 continue;

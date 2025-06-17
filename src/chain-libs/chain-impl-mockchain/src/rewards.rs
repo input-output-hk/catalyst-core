@@ -150,7 +150,7 @@ impl Parameters {
             initial_value: 0,
             compounding_ratio: Ratio::zero(),
             compounding_type: CompoundingType::Linear,
-            epoch_rate: NonZeroU32::new(u32::max_value()).unwrap(),
+            epoch_rate: NonZeroU32::new(u32::MAX).unwrap(),
             epoch_start: 0,
             reward_drawing_limit_max: Limit::None,
             pool_participation_capping: None,

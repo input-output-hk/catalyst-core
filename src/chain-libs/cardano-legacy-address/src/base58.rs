@@ -105,7 +105,6 @@ fn base_decode(alphabet_s: &str, input: &[u8]) -> Result<Vec<u8>> {
 //pub fn decode_bytes(input: &[u8]) -> Result<Vec<u8>> {
 //    base_decode(ALPHABET, input)
 //}
-
 #[cfg(test)]
 mod tests {
     fn encode(input: &[u8], expected: &str) {

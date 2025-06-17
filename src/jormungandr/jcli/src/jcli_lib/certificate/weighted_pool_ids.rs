@@ -59,7 +59,7 @@ fn delegation_ratio_sum(pool_ids: &[WeightedPoolId]) -> Result<u8, Error> {
         .sum::<Result<_, _>>()?;
     u8::try_from(parts).map_err(|_| Error::InvalidPoolDelegationWeights {
         actual: parts,
-        max: u8::max_value() as u64,
+        max: u8::MAX as u64,
     })
 }
 

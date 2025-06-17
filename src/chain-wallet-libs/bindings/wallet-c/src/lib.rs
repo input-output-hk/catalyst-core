@@ -49,9 +49,9 @@ pub type EncryptingVoteKeyPtr = *mut EncryptingVoteKey;
 /// # parameters
 ///
 /// * account_key: the Ed25519 extended key used wallet's account address private key
-///     in the form of a 64 bytes array.
+///  in the form of a 64 bytes array.
 /// * utxo_keys: an array of Ed25519 extended keys in the form of 64 bytes, used as utxo
-///     keys for the wallet
+///  keys for the wallet
 /// * utxo_keys_len: the number of keys in the utxo_keys array (not the number of bytes)
 /// * wallet_out: the recovered wallet
 ///
@@ -243,7 +243,7 @@ pub unsafe extern "C" fn iohk_jormungandr_vote_proposal_new_public(
 /// build the proposal object
 ///
 /// * `vote_encryption_key`: a null terminated string (c-string) with the bech32
-/// representation of the encryption vote key
+///   representation of the encryption vote key
 ///
 /// # Errors
 ///

@@ -43,7 +43,7 @@ impl Mock {
 
         println!(
             "VoterRegistrationMock set dynamic response: {:?}",
-            metadata_file.path()
+            metadata_file.path().display()
         );
 
         let mut file = std::fs::File::create(metadata_file.path()).unwrap();

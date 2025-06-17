@@ -291,7 +291,7 @@ mod tests {
 
         for (_, voting_key) in inactive_voters_keys {
             for contrib in snapshot.contributions_for_voting_key(voting_key.clone()) {
-                assert!(all_rewards.get(&contrib.reward_address).is_none());
+                assert!(!all_rewards.contains_key(&contrib.reward_address));
             }
         }
     }

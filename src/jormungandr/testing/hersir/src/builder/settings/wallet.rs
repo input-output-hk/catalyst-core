@@ -151,11 +151,10 @@ impl TryFrom<Wallet> for WalletLib {
     type Error = Error;
 
     fn try_from(wallet: Wallet) -> Result<WalletLib, Error> {
-        Ok(Inner::try_from(wallet)
-            .map_err(|_| {
-                Error::OperationUnavailableForExternalWallet("into WalletLib".to_string())
-            })?
-            .into())
+        if wallet.inner.is_none() {
+            return Err(Error::OperationUnavailableForExternalWallet("into WalletLib".to_string()));
+        }
+        Ok(Inner::from(wallet).into())
     }
 }
 

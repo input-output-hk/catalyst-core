@@ -17,11 +17,11 @@ use wallet_core::Choice;
 /// to load testing framework. Responsibility is to keep track of wallets under tests and prepare
 /// each time valid vote transaction whenever asked. There are two challenges:
 /// - keeping track of spending counter and increase it each time fragment is sent. Current limitation
-/// is a lack of recovery scenario when transaction is failed (no resend strategy or spending counter revert)
+///   is a lack of recovery scenario when transaction is failed (no resend strategy or spending counter revert)
 /// - keeping track of valid proposals to vote. One can vote only once per proposal. Duplicated votes will
-/// result in failed transaction which can skew load test results. Therefore, we need to also know which
-/// proposals are eligible to vote on.  Having in mind internal structure of vote plan (voteplan can have many proposals)
-/// and requirement to send batch of votes may result in different proposals from different voteplan.
+///   result in failed transaction which can skew load test results. Therefore, we need to also know which
+///   proposals are eligible to vote on.  Having in mind internal structure of vote plan (voteplan can have many proposals)
+///   and requirement to send batch of votes may result in different proposals from different voteplan.
 pub struct WalletRequestGen {
     rand: OsRng,
     multi_controller: MultiController,

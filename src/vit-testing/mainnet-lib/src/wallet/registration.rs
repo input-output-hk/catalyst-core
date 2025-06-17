@@ -17,19 +17,26 @@ pub static REGISTRATION_METADATA_IDX: LazyLock<u32> = LazyLock::new(|| 61284u32)
 /// registration signature metadata index constant
 pub static REGISTRATION_SIGNATURE_METADATA_IDX: LazyLock<u32> = LazyLock::new(|| 61285u32);
 /// registration metadata constant
-pub static REGISTRATION_METADATA_LABEL: LazyLock<TransactionMetadatumLabel> = LazyLock::new(|| TransactionMetadatumLabel::from(*REGISTRATION_METADATA_IDX));
+pub static REGISTRATION_METADATA_LABEL: LazyLock<TransactionMetadatumLabel> =
+    LazyLock::new(|| TransactionMetadatumLabel::from(*REGISTRATION_METADATA_IDX));
 ///registration signature metadata constant
-pub static REGISTRATION_METADATA_SIGNATURE_LABEL: LazyLock<TransactionMetadatumLabel> = LazyLock::new(|| TransactionMetadatumLabel::from(*REGISTRATION_SIGNATURE_METADATA_IDX));
+pub static REGISTRATION_METADATA_SIGNATURE_LABEL: LazyLock<TransactionMetadatumLabel> =
+    LazyLock::new(|| TransactionMetadatumLabel::from(*REGISTRATION_SIGNATURE_METADATA_IDX));
 /// metadatum label 1 constant
-pub static METADATUM_1: LazyLock<TransactionMetadatum> = LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(1)));
+pub static METADATUM_1: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(1)));
 /// metadatum label 2 constant
-pub static METADATUM_2: LazyLock<TransactionMetadatum> = LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(2)));
+pub static METADATUM_2: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(2)));
 /// metadatum label 3 constant
-pub static METADATUM_3: LazyLock<TransactionMetadatum> = LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(3)));
+pub static METADATUM_3: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(3)));
 /// metadatum label 4 constant
-pub static METADATUM_4: LazyLock<TransactionMetadatum> = LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(4)));
+pub static METADATUM_4: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(4)));
 /// metadatum label 5 constant
-pub static METADATUM_5: LazyLock<TransactionMetadatum> = LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(5)));
+pub static METADATUM_5: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(5)));
 
 /// Responsible for building registration transaction metadata
 pub struct RegistrationTransactionBuilder<'a> {

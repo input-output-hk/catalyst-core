@@ -19,7 +19,7 @@ pub enum RequestType {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Config {
-    pub config: HashMap<RequestType, Configuration>,
+    pub request_configs: HashMap<RequestType, Configuration>,
     pub criterion: Option<u8>,
     pub address: String,
     pub use_https: bool,
@@ -27,7 +27,7 @@ pub struct Config {
 
 impl Config {
     pub fn get(&self, request_type: RequestType) -> Result<Configuration, Error> {
-        self.config
+        self.request_configs
             .get(&request_type)
             .cloned()
             .ok_or(Error::CannotFindConfigurationFor(request_type))

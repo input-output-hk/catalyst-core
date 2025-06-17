@@ -146,7 +146,7 @@ pub fn read_qrs<P: AsRef<Path>>(
     let mut secrets = Vec::new();
     for (idx, qr) in qrs.iter().enumerate() {
         println!(
-            "[{}/{}] Decoding {:?}",
+            "[{}/{}] Decoding {}",
             idx + 1,
             qrs.len(),
             qr.as_ref().display()
@@ -156,7 +156,7 @@ pub fn read_qrs<P: AsRef<Path>>(
             Ok(pin) => pin,
             Err(err) => {
                 println!(
-                    "Cannot detect pin from file: {:?}, due to {:?}",
+                    "Cannot detect pin from file: {}, due to {:?}",
                     qr.as_ref().display(),
                     err
                 );
@@ -167,8 +167,8 @@ pub fn read_qrs<P: AsRef<Path>>(
             Ok(img) => img,
             Err(err) => {
                 println!(
-                    "Cannot read qr from file: {:?}, due to {:?}",
-                    qr.as_ref(),
+                    "Cannot read qr from file: {}, due to {:?}",
+                    qr.as_ref().display(),
                     err
                 );
                 continue;
@@ -184,7 +184,7 @@ pub fn read_qrs<P: AsRef<Path>>(
             Ok(secret) => secret,
             Err(err) => {
                 println!(
-                    "Cannot decode qr from file: {:?}, due to {:?}",
+                    "Cannot decode qr from file: {}, due to {:?}",
                     qr.as_ref().display(),
                     err
                 );

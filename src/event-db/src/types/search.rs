@@ -1,5 +1,5 @@
-use std::fmt::Display;
 use super::{event::EventSummary, objective::ObjectiveSummary, proposal::ProposalSummary};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum SearchTable {

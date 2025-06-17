@@ -1,3 +1,7 @@
+#![allow(clippy::unneeded_struct_pattern)]
+#![allow(clippy::useless_conversion)]
+#![allow(unused_attributes)]
+
 use chain_crypto::bech32::Bech32;
 use chain_crypto::Ed25519Extended;
 use chain_crypto::SecretKey;
@@ -22,8 +26,6 @@ use wallet_core::Settings as InnerSettings;
 use wallet_core::Wallet as InnerWallet;
 
 // Allow clippy warnings for generated uniffi code
-#[allow(clippy::unneeded_struct_pattern)]
-#[allow(clippy::useless_conversion)]
 include!(concat!(env!("OUT_DIR"), "/lib.uniffi.rs"));
 
 #[derive(Debug, thiserror::Error)]

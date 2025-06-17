@@ -57,6 +57,10 @@ impl Command {
     /// # Errors
     ///
     /// On IO related errors
+    ///
+    /// # Panics
+    ///
+    /// Panics if the log level string is invalid.
     pub fn exec(self) -> Result<()> {
         let subscriber = FmtSubscriber::builder()
             .with_file(false)

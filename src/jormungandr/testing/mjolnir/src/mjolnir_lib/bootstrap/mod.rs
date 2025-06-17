@@ -60,7 +60,9 @@ impl ClientLoadCommand {
 
         let config = self.build_config();
 
-        PassiveBootstrapLoad::new(config).exec(scenario_type.unwrap()).map_err(|e| ClientLoadCommandError::ClientError(Box::new(e)))
+        PassiveBootstrapLoad::new(config)
+            .exec(scenario_type.unwrap())
+            .map_err(|e| ClientLoadCommandError::ClientError(Box::new(e)))
     }
 
     fn get_block0_hash(&self) -> Hash {

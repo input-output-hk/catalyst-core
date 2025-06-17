@@ -46,7 +46,8 @@ impl DiffCommand {
 
         let remote_genesis_yaml = remote.path().join("genesis_remote.yaml");
 
-        decode_block0(remote_client.block0()?, remote_genesis_yaml.clone()).map_err(|e| crate::error::Error::Block0Error(Box::new(e)))?;
+        decode_block0(remote_client.block0()?, remote_genesis_yaml.clone())
+            .map_err(|e| crate::error::Error::Block0Error(Box::new(e)))?;
 
         let local_genesis_content = read_file(&local_genesis_yaml)?;
         let remote_genesis_content = read_file(remote_genesis_yaml)?;

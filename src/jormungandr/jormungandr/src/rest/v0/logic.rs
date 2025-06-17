@@ -164,7 +164,12 @@ pub async fn post_message(
         fail_fast: true,
         reply_handle,
     };
-    context.try_full()?.transaction_task.clone().try_send(msg).map_err(|e| Error::TxMsgSendError(Box::new(e)))?;
+    context
+        .try_full()?
+        .transaction_task
+        .clone()
+        .try_send(msg)
+        .map_err(|e| Error::TxMsgSendError(Box::new(e)))?;
     let reply = reply_future.await?;
     if reply.is_error() {
         Err(Error::Fragment(reply))

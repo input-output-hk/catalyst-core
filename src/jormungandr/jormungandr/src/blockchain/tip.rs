@@ -93,7 +93,8 @@ impl TipUpdater {
         while let Some(block) = stream.next().await {
             let block = block?;
             let fragment_ids = block.fragments().map(|f| f.id()).collect();
-            self.try_request_fragment_removal(fragment_ids, block.header()).map_err(|e| Error::from(*e))?;
+            self.try_request_fragment_removal(fragment_ids, block.header())
+                .map_err(|e| Error::from(*e))?;
         }
 
         self.blockchain
@@ -116,7 +117,8 @@ impl TipUpdater {
             .put_tag(MAIN_BRANCH_TAG, candidate_hash)?;
 
         let fragment_ids = block.fragments().map(|f| f.id()).collect();
-        self.try_request_fragment_removal(fragment_ids, block.header()).map_err(|e| Error::from(*e))?;
+        self.try_request_fragment_removal(fragment_ids, block.header())
+            .map_err(|e| Error::from(*e))?;
 
         self.tip.update_ref(candidate).await;
         Ok(())

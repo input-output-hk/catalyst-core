@@ -78,7 +78,10 @@ mod chain_landing {
                     stream,
                 } = state;
 
-                let pre_checked = blockchain.pre_check_header(header, false).await.map_err(|e| Error::Blockchain(Box::new(e)))?;
+                let pre_checked = blockchain
+                    .pre_check_header(header, false)
+                    .await
+                    .map_err(|e| Error::Blockchain(Box::new(e)))?;
 
                 match pre_checked {
                     PreCheckedHeader::AlreadyPresent { .. } => {

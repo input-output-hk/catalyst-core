@@ -209,6 +209,5 @@ impl CliController {
     }
 
     pub fn save_config(&self) -> Result<(), Error> {
-        self.wallets.save_config().map_err(Into::into)
-    }
+        self.wallets.save_config()}
 }

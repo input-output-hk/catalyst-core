@@ -221,7 +221,5 @@ impl CommitteeDataManager {
                     },
                 )
                 .collect(),
-        )
-        .map_err(Into::into)
-    }
+        )}
 }

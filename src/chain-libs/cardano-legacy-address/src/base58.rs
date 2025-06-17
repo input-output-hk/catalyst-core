@@ -31,6 +31,76 @@ pub fn decode(input: &str) -> Result<Vec<u8>> {
     base_decode(ALPHABET, input.as_bytes())
 }
 
+fn base_encode(alphabet_s: &str, input: &[u8]) -> Vec<u8> {
+    let alphabet = alphabet_s.as_bytes();
+    let base = alphabet.len() as u32;
+
+    let mut digits = vec![0u8];
+    for input in input.iter() {
+        let mut carry = *input as u32;
+        for digit in digits.iter_mut() {
+            carry += (*digit as u32) << 8;
+            *digit = (carry % base) as u8;
+            carry /= base;
+        }
+
+        while carry > 0 {
+            digits.push((carry % base) as u8);
+            carry /= base;
+        }
+    }
+
+    let mut string = vec![];
+
+    let mut k = 0;
+    while (k < input.len()) && (input[k] == 0) {
+        string.push(alphabet[0]);
+        k += 1;
+    }
+    for digit in digits.iter().rev() {
+        string.push(alphabet[*digit as usize]);
+    }
+
+    string
+}
+
+fn base_decode(alphabet_s: &str, input: &[u8]) -> Result<Vec<u8>> {
+    let alphabet = alphabet_s.as_bytes();
+    let base = alphabet.len() as u32;
+
+    let mut bytes: Vec<u8> = vec![0];
+    let zcount = input.iter().take_while(|x| **x == alphabet[0]).count();
+
+    for (i, input) in input[zcount..].iter().enumerate() {
+        let value = match alphabet.iter().position(|&x| x == *input) {
+            Some(idx) => idx,
+            None => return Err(Error::UnknownSymbol(i)),
+        };
+        let mut carry = value as u32;
+        for byte in bytes.iter_mut() {
+            carry += (*byte as u32) * base;
+            *byte = carry as u8;
+            carry >>= 8;
+        }
+
+        while carry > 0 {
+            bytes.push(carry as u8);
+            carry >>= 8;
+        }
+    }
+    let leading_zeros = bytes.iter().rev().take_while(|x| **x == 0).count();
+    if zcount > leading_zeros {
+        let unpad = if leading_zeros > 0 {
+            leading_zeros + 1
+        } else {
+            0
+        };
+        bytes.resize(bytes.len() + zcount - unpad, 0);
+    }
+    bytes.reverse();
+    Ok(bytes)
+}
+
 /// decode from base58 the given input
 //pub fn decode_bytes(input: &[u8]) -> Result<Vec<u8>> {
 //    base_decode(ALPHABET, input)
@@ -100,74 +170,4 @@ mod tests {
             "3yxU3u1igY8WkgtjK92fbJQCd4BZiiT1v25f",
         );
     }
-}
-
-fn base_encode(alphabet_s: &str, input: &[u8]) -> Vec<u8> {
-    let alphabet = alphabet_s.as_bytes();
-    let base = alphabet.len() as u32;
-
-    let mut digits = vec![0u8];
-    for input in input.iter() {
-        let mut carry = *input as u32;
-        for digit in digits.iter_mut() {
-            carry += (*digit as u32) << 8;
-            *digit = (carry % base) as u8;
-            carry /= base;
-        }
-
-        while carry > 0 {
-            digits.push((carry % base) as u8);
-            carry /= base;
-        }
-    }
-
-    let mut string = vec![];
-
-    let mut k = 0;
-    while (k < input.len()) && (input[k] == 0) {
-        string.push(alphabet[0]);
-        k += 1;
-    }
-    for digit in digits.iter().rev() {
-        string.push(alphabet[*digit as usize]);
-    }
-
-    string
-}
-
-fn base_decode(alphabet_s: &str, input: &[u8]) -> Result<Vec<u8>> {
-    let alphabet = alphabet_s.as_bytes();
-    let base = alphabet.len() as u32;
-
-    let mut bytes: Vec<u8> = vec![0];
-    let zcount = input.iter().take_while(|x| **x == alphabet[0]).count();
-
-    for (i, input) in input[zcount..].iter().enumerate() {
-        let value = match alphabet.iter().position(|&x| x == *input) {
-            Some(idx) => idx,
-            None => return Err(Error::UnknownSymbol(i)),
-        };
-        let mut carry = value as u32;
-        for byte in bytes.iter_mut() {
-            carry += (*byte as u32) * base;
-            *byte = carry as u8;
-            carry >>= 8;
-        }
-
-        while carry > 0 {
-            bytes.push(carry as u8);
-            carry >>= 8;
-        }
-    }
-    let leading_zeros = bytes.iter().rev().take_while(|x| **x == 0).count();
-    if zcount > leading_zeros {
-        let unpad = if leading_zeros > 0 {
-            leading_zeros + 1
-        } else {
-            0
-        };
-        bytes.resize(bytes.len() + zcount - unpad, 0);
-    }
-    bytes.reverse();
-    Ok(bytes)
 }

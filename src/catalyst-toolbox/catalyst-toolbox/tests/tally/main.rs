@@ -99,9 +99,7 @@ fn tally_ok() {
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -127,9 +125,7 @@ fn shuffle_tally_ok() {
 
     let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -153,9 +149,7 @@ fn shuffle_tally_ok_private() {
 
     let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -323,9 +317,7 @@ fn multi_voteplan_ok() {
 
     let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -353,9 +345,7 @@ fn multi_voteplan_ok_private() {
 
     let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -553,9 +543,7 @@ fn expired_transaction() {
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vec![fragment_yes]
-            .into_iter()
-            .chain(tally_fragments),
+        vec![fragment_yes].into_iter().chain(tally_fragments),
     )
     .unwrap();
 

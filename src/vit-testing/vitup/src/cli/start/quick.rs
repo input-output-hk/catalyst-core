@@ -179,11 +179,9 @@ impl QuickStartCommandArgs {
             config_builder = config_builder.use_https();
         }
 
-        let vote_timestamps = vec![
-            self.vote_start_timestamp.clone(),
+        let vote_timestamps = [self.vote_start_timestamp.clone(),
             self.tally_start_timestamp.clone(),
-            self.tally_end_timestamp.clone(),
-        ];
+            self.tally_end_timestamp.clone()];
 
         let vote_timestamps_defined = vote_timestamps.iter().filter(|x| x.is_some()).count();
         if vote_timestamps_defined < 3 && vote_timestamps_defined > 0 {
@@ -234,7 +232,5 @@ impl QuickStartCommandArgs {
             config.service.version.clone(),
             testing_directory,
         );
-        spawn_network(mode, network_spawn_params, &mut template_generator, config)
-            .map_err(Into::into)
-    }
+        spawn_network(mode, network_spawn_params, &mut template_generator, config)}
 }

@@ -82,8 +82,8 @@ mod tests {
         let (comm, rand) = commitment_key.commit(&message, &mut rng);
 
         let opening = Open {
-            m: message,
-            r: rand,
+            m: message.clone(),
+            r: rand.clone(),
         };
 
         assert!(commitment_key.verify(&comm, &opening));

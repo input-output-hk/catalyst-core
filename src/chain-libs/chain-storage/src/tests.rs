@@ -320,7 +320,7 @@ fn branch_pruning() {
         hs.insert(second_branch_blocks.last().unwrap().id.serialize_as_value());
         hs
     };
-    let actual_tips = HashSet::from_iter(store.get_tips_ids().unwrap().into_iter());
+    let actual_tips = HashSet::from_iter(store.get_tips_ids().unwrap());
     assert_eq!(expected_tips, actual_tips);
 
     store
@@ -397,8 +397,7 @@ fn get_blocks_by_chain_length() {
     let actual = HashSet::from_iter(
         store
             .get_blocks_by_chain_length(chain_length)
-            .unwrap()
-            .into_iter(),
+            .unwrap(),
     );
 
     assert_eq!(expected, actual);

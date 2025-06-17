@@ -141,7 +141,7 @@ pub fn representative_multiple_vote_plans() {
 fn get_expected_tokens(files_tree: &DeploymentTree) -> (String, String) {
     let contents = std::fs::read_to_string(files_tree.voting_token()).unwrap();
     let voting_tokens: Vec<(Role, TokenIdentifier)> = serde_json::from_str(&contents).unwrap();
-    let tokens: HashMap<Role, _> = voting_tokens.iter().cloned().map(|(r, t)| (r, t)).collect();
+    let tokens: HashMap<Role, _> = voting_tokens.iter().cloned().collect();
     (
         voting_token_to_string(tokens.get(&Role::Voter).unwrap()),
         voting_token_to_string(tokens.get(&Role::Representative).unwrap()),

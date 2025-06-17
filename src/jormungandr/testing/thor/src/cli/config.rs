@@ -205,7 +205,7 @@ mod tests {
 
         let encoded: Vec<u8> = bincode::serialize(&secret_config).unwrap();
 
-        let cocoon = Cocoon::new(b"password");
+        let mut cocoon = Cocoon::new(b"password");
         let filename = "secret.key";
         {
             let mut file = File::create(filename).unwrap();

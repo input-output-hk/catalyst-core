@@ -72,7 +72,9 @@ impl Controller {
         self.settings
             .wallets
             .iter()
-            .filter(|&x| x.template().is_generated()).find(|&w| w.has_alias(&wallet.to_string())).cloned()
+            .filter(|&x| x.template().is_generated())
+            .find(|&w| w.has_alias(&wallet.to_string()))
+            .cloned()
             .map(|w| w.into())
     }
 

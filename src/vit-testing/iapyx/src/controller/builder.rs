@@ -121,7 +121,8 @@ impl ControllerBuilder {
             .map(|x| x.to_digit(10).unwrap() as u8)
             .collect();
         let secret = KeyQrCode::decode(img, &bytes)
-            .unwrap().first()
+            .unwrap()
+            .first()
             .ok_or(Error::NoSecretKeyEncoded)?
             .clone()
             .leak_secret();

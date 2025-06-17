@@ -38,7 +38,8 @@ impl TriggerServiceCommand {
             Box::new(job_runner),
             handle,
         )
-        .await}
+        .await
+    }
 }
 
 #[derive(Debug, Error)]

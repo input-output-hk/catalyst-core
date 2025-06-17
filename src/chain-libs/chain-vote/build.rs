@@ -8,7 +8,6 @@
 /// * If no non-default feature is selected, activate the default backend
 ///
 /// Flags exported by this module are guaranteed to be mutually exclusive.
-
 const BACKEND_FLAG_P256K1: &str = "__internal_ex_backend_p256k1";
 const BACKEND_FLAG_RISTRETTO255: &str = "__internal_ex_backend_ristretto255";
 

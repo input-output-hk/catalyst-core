@@ -276,7 +276,9 @@ impl UtxoVerifier {
 
         let utxo_not_changed: Vec<AddressDataValue> = all
             .iter()
-            .filter(|&x| filter_utxo(x)).filter(|&x| !inputs.contains(x)).cloned()
+            .filter(|&x| filter_utxo(x))
+            .filter(|&x| !inputs.contains(x))
+            .cloned()
             .collect();
         let utxo_added: Vec<AddressDataValue> = outputs
             .iter()

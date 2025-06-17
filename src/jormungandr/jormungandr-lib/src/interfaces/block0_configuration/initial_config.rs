@@ -43,7 +43,7 @@ pub struct BlockchainConfiguration {
     /// depending of `block0_consensus` value:
     ///
     /// * `bft`: will be the list of BFT leaders, they will write blocks
-    /// in a round robin fashion, filling every blocks deterministically.
+    ///   in a round robin fashion, filling every blocks deterministically.
     /// * `genesis`: will be the list of leaders that will take over creating
     ///   blocks from the stake pool. Useful for during transition from BFT
     ///   to genesis.

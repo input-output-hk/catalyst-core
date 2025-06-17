@@ -304,12 +304,11 @@ impl FragmentBuilder {
         let election_key =
             chain_vote::ElectionPublicKey::from_participants(vote_plan.committee_public_keys());
 
-        let options = vote_plan
+        let proposal: &chain_impl_mockchain::certificate::Proposal = vote_plan
             .proposals()
-            .iter()
-            .nth((proposal_index).into())
-            .unwrap()
-            .options();
+            .get(proposal_index as usize)
+            .unwrap();
+        let options = proposal.options();
 
         let length = options
             .choice_range()

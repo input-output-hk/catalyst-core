@@ -1,9 +1,12 @@
+#![allow(non_local_definitions)]
+
 use crate::db::schema::goals;
 use diesel::{Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
 pub use goals_impl::InsertGoal;
 
+#[allow(non_local_definitions)]
 #[derive(Serialize, Deserialize, Queryable, Clone, Debug, PartialEq, Eq)]
 #[diesel(table_name = goals)]
 pub struct Goal {
@@ -19,6 +22,7 @@ mod goals_impl {
 
     use super::*;
 
+    #[allow(non_local_definitions)]
     #[derive(Deserialize, Insertable, Clone, Debug)]
     #[table_name = "goals"]
     pub struct InsertGoal {

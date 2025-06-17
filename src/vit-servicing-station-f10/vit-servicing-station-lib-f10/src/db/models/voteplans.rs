@@ -1,7 +1,10 @@
+#![allow(non_local_definitions)]
+
 use crate::db::schema::voteplans;
 use diesel::{ExpressionMethods, Insertable, Queryable};
 use serde::{Deserialize, Serialize};
 
+#[allow(non_local_definitions)]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, Queryable)]
 pub struct Voteplan {
     pub id: i32,

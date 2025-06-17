@@ -35,7 +35,7 @@ pub enum Error {
     #[error(transparent)]
     Intercom(#[from] intercom::Error),
     #[error(transparent)]
-    TxMsgSend(#[from] TrySendError<TransactionMsg>),
+    TxMsgSend(#[from] Box<TrySendError<TransactionMsg>>),
     #[error(transparent)]
     MsgSend(#[from] SendError),
     #[error("Block value calculation error")]

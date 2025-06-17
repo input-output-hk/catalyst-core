@@ -59,7 +59,7 @@ pub enum Error {
     #[error(transparent)]
     Deserialize(ReadError),
     #[error(transparent)]
-    TxMsgSendError(#[from] TrySendError<TransactionMsg>),
+    TxMsgSendError(#[from] Box<TrySendError<TransactionMsg>>),
     #[error(transparent)]
     MsgSendError(#[from] SendError),
     #[error("Block value calculation error")]

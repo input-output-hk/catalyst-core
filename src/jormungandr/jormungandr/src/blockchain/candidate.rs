@@ -24,7 +24,7 @@ pub enum Error {
     #[error("the incoming header stream is empty")]
     EmptyHeaderStream,
     #[error("header chain verification failed")]
-    Blockchain(#[from] chain::Error),
+    Blockchain(#[from] Box<chain::Error>),
     #[error("the parent block {0} of the first received block header is not found in storage")]
     MissingParentBlock(HeaderHash),
     #[error("the parent hash field {0} of a received block header does not match the hash of the preceding header")]
@@ -78,7 +78,7 @@ mod chain_landing {
                     stream,
                 } = state;
 
-                let pre_checked = blockchain.pre_check_header(header, false).await?;
+                let pre_checked = blockchain.pre_check_header(header, false).await.map_err(|e| Error::Blockchain(Box::new(e)))?;
 
                 match pre_checked {
                     PreCheckedHeader::AlreadyPresent { .. } => {

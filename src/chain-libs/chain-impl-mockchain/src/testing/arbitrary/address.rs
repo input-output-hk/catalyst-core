@@ -105,24 +105,18 @@ impl Arbitrary for AddressDataValue {
 impl ArbitraryAddressDataValueVec {
     pub fn utxos(&self) -> Vec<AddressDataValue> {
         self.0
-            .iter()
-            .cloned()
-            .filter(|x| matches!(x.address_data.kind(), Kind::Single { .. }))
+            .iter().filter(|&x| matches!(x.address_data.kind(), Kind::Single { .. })).cloned()
             .collect()
     }
     pub fn accounts(&self) -> Vec<AddressDataValue> {
         self.0
-            .iter()
-            .cloned()
-            .filter(|x| matches!(x.address_data.kind(), Kind::Account { .. }))
+            .iter().filter(|&x| matches!(x.address_data.kind(), Kind::Account { .. })).cloned()
             .collect()
     }
 
     pub fn delegations(&self) -> Vec<AddressDataValue> {
         self.0
-            .iter()
-            .cloned()
-            .filter(|x| matches!(x.address_data.kind(), Kind::Group { .. }))
+            .iter().filter(|&x| matches!(x.address_data.kind(), Kind::Group { .. })).cloned()
             .collect()
     }
 }

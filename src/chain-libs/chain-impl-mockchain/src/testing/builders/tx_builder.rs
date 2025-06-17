@@ -84,8 +84,7 @@ impl TestTxBuilder {
             "method can be used only for single faucet ledger"
         );
         let mut faucet = test_ledger
-            .faucets
-            .get(0)
+            .faucets.first()
             .cloned()
             .as_mut()
             .expect("test ledger with no faucet configured")
@@ -125,8 +124,7 @@ impl TestTxBuilder {
             "method can be used only for single faucet ledger"
         );
         let mut faucet = test_ledger
-            .faucets
-            .get(0)
+            .faucets.first()
             .as_mut()
             .expect("test ledger with no faucet configured")
             .clone();

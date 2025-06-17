@@ -7,10 +7,7 @@ pub trait BlockchainConfigurationExtension {
 
 impl BlockchainConfigurationExtension for BlockchainConfiguration {
     fn reward_parameters(&self) -> Option<Parameters> {
-        let reward_param = match self.reward_parameters {
-            None => return None,
-            Some(r) => r,
-        };
+        let reward_param = self.reward_parameters?;
 
         let reward_drawing = match self.reward_constraints.reward_drawing_limit_max {
             None => Limit::None,

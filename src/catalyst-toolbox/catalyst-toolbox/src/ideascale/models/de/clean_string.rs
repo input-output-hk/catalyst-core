@@ -74,13 +74,13 @@ pub fn clean_str(s: &str) -> String {
 #[allow(dead_code)]
 mod tests {
     use proptest::arbitrary::any;
-    #[allow(unused_imports)]
-    use serde_json::json;
     use proptest::prelude::*;
     use proptest::{
         arbitrary::{Arbitrary, StrategyFor},
         strategy::Map,
     };
+    #[allow(unused_imports)]
+    use serde_json::json;
     use test_strategy::proptest;
 
     use super::*;

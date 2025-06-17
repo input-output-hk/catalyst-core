@@ -187,7 +187,7 @@ mod tests {
         // User key for signing witness
         let keypair = Keypair::generate(&mut csprng);
 
-        let pk = keypair.public.as_bytes().clone();
+        let pk = *keypair.public.as_bytes();
 
         println!("Secret key: {}", hex::encode(keypair.secret.as_bytes()));
         println!("Public key: {}", hex::encode(keypair.public.as_bytes()));
@@ -204,7 +204,7 @@ mod tests {
         println!("election public key {:?}", hex::encode(ek.to_bytes()));
 
         // vote
-        let vote = chain_vote::Vote::new(2, 1 as usize).unwrap();
+        let vote = chain_vote::Vote::new(2, 1_usize).unwrap();
 
         let crs = chain_vote::Crs::from_hash(&hex::decode(vote_plan_id.as_bytes()).unwrap());
 
@@ -262,19 +262,19 @@ mod tests {
         let threshold = 1;
         let m1 = MemberState::new(&mut rng, threshold, &h, &mc, 0);
         let participants = vec![m1.public_key()];
-        let ek = ElectionPublicKey::from_participants(&participants);
-        ek
+        
+        ElectionPublicKey::from_participants(&participants)
     }
 
     #[test]
     fn generate_keys_from_bytes() {
         let pk = hex::decode(
-            "ac247e6cbc2106a8858d67a9b6aa9fc6105a2f42abfd8d269f4096488b7e5d81".to_string(),
+            "ac247e6cbc2106a8858d67a9b6aa9fc6105a2f42abfd8d269f4096488b7e5d81",
         )
         .unwrap();
 
         let mut sk = hex::decode(
-            "40cc7f02e04324b63a4db949854d5f24c9041a2bebe9b42064ff868071d1d72d".to_string(),
+            "40cc7f02e04324b63a4db949854d5f24c9041a2bebe9b42064ff868071d1d72d",
         )
         .unwrap();
 
@@ -301,7 +301,7 @@ mod tests {
         // election public key
         let ek = create_election_pub_key(shared_string, rng.clone());
 
-        let vote = chain_vote::Vote::new(2, 1 as usize).unwrap();
+        let vote = chain_vote::Vote::new(2, 1_usize).unwrap();
         let crs = chain_vote::Crs::from_hash(vote_plan_id.as_bytes());
 
         let (ciphertexts, proof) = ek.encrypt_and_prove_vote(&mut rng, &crs, vote);

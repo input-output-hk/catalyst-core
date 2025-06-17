@@ -1,7 +1,6 @@
 use cardano_serialization_lib::{
-    Address, AuxiliaryData, GeneralTransactionMetadata, Coin, Value,
-    Transaction, TransactionBody, TransactionInputs, TransactionOutput, TransactionOutputs,
-    TransactionWitnessSet,
+    Address, AuxiliaryData, Coin, GeneralTransactionMetadata, Transaction, TransactionBody,
+    TransactionInputs, TransactionOutput, TransactionOutputs, TransactionWitnessSet, Value,
 };
 
 /// Transaction builder for cardano mainnet

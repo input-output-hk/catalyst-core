@@ -398,7 +398,7 @@ impl SyncNode for JormungandrProcess {
         self.logger
             .get_log_lines_with_level(LogLevel::ERROR)
             .map(|x| x.to_string())
-            .chain(self.logger.get_panic_lines().into_iter())
+            .chain(self.logger.get_panic_lines())
             .collect()
     }
 

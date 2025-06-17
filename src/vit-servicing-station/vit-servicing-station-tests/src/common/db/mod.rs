@@ -1,6 +1,12 @@
 use std::collections::BTreeMap;
 
-use diesel::{RunQueryDsl, row::NamedRow, deserialize::{self, FromSql}, backend::Backend, sql_types::Integer};
+use diesel::{
+    backend::Backend,
+    deserialize::{self, FromSql},
+    row::NamedRow,
+    sql_types::Integer,
+    RunQueryDsl,
+};
 
 // Simple struct to receive row_id without derive macros to avoid non-local impl warnings
 struct RowId {
@@ -27,7 +33,6 @@ use vit_servicing_station_lib::db::models::{
     proposals::{FullProposalInfo, ProposalChallengeInfo},
 };
 use vit_servicing_station_lib::db::DbConnection;
-
 
 pub struct DbInserter<'a> {
     connection: &'a DbConnection,
@@ -211,60 +216,69 @@ impl<'a> DbInserter<'a> {
             .bind::<diesel::sql_types::Text, _>(&fund.fund_name)
             .bind::<diesel::sql_types::Text, _>(&fund.fund_goal)
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
-                chrono::DateTime::from_timestamp_millis(
-                    fund.registration_snapshot_time * 1000,
-                ).map(|dt| dt.naive_utc()),
+                chrono::DateTime::from_timestamp_millis(fund.registration_snapshot_time * 1000)
+                    .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::BigInt, _>(fund.voting_power_threshold)
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
-                chrono::DateTime::from_timestamp_millis(fund.fund_start_time * 1000).map(|dt| dt.naive_utc()),
+                chrono::DateTime::from_timestamp_millis(fund.fund_start_time * 1000)
+                    .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
-                chrono::DateTime::from_timestamp_millis(fund.fund_end_time * 1000).map(|dt| dt.naive_utc()),
+                chrono::DateTime::from_timestamp_millis(fund.fund_end_time * 1000)
+                    .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
                 chrono::DateTime::from_timestamp_millis(
                     fund.stage_dates.insight_sharing_start * 1000,
-                ).map(|dt| dt.naive_utc()),
+                )
+                .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
                 chrono::DateTime::from_timestamp_millis(
                     fund.stage_dates.proposal_submission_start * 1000,
-                ).map(|dt| dt.naive_utc()),
+                )
+                .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
                 chrono::DateTime::from_timestamp_millis(
                     fund.stage_dates.refine_proposals_start * 1000,
-                ).map(|dt| dt.naive_utc()),
+                )
+                .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
                 chrono::DateTime::from_timestamp_millis(
                     fund.stage_dates.finalize_proposals_start * 1000,
-                ).map(|dt| dt.naive_utc()),
+                )
+                .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
                 chrono::DateTime::from_timestamp_millis(
                     fund.stage_dates.proposal_assessment_start * 1000,
-                ).map(|dt| dt.naive_utc()),
+                )
+                .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
                 chrono::DateTime::from_timestamp_millis(
                     fund.stage_dates.assessment_qa_start * 1000,
-                ).map(|dt| dt.naive_utc()),
+                )
+                .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
-                chrono::DateTime::from_timestamp_millis(
-                    fund.stage_dates.snapshot_start * 1000,
-                ).map(|dt| dt.naive_utc()),
+                chrono::DateTime::from_timestamp_millis(fund.stage_dates.snapshot_start * 1000)
+                    .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
-                chrono::DateTime::from_timestamp_millis(fund.stage_dates.voting_start * 1000).map(|dt| dt.naive_utc()),
+                chrono::DateTime::from_timestamp_millis(fund.stage_dates.voting_start * 1000)
+                    .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
-                chrono::DateTime::from_timestamp_millis(fund.stage_dates.voting_end * 1000).map(|dt| dt.naive_utc()),
+                chrono::DateTime::from_timestamp_millis(fund.stage_dates.voting_end * 1000)
+                    .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Nullable<diesel::sql_types::Timestamp>, _>(
-                chrono::DateTime::from_timestamp_millis(fund.stage_dates.tallying_end * 1000).map(|dt| dt.naive_utc()),
+                chrono::DateTime::from_timestamp_millis(fund.stage_dates.tallying_end * 1000)
+                    .map(|dt| dt.naive_utc()),
             )
             .bind::<diesel::sql_types::Jsonb, _>(serde_json::json!({
                 "url": {

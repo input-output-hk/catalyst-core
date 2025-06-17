@@ -50,7 +50,7 @@ impl MintingPolicy {
             return Err(MintingPolicyViolation::AdditionalMintingNotAllowed);
         }
 
-        for _entry in &self.0 {
+        if let Some(_entry) = self.0.iter().next() {
             unreachable!("implement this when we have actual minting policies");
         }
 

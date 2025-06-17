@@ -28,7 +28,6 @@ pub type FragmentPtr = *mut Fragment;
 #[error("null pointer")]
 struct NulPtr;
 
-
 pub const FRAGMENT_ID_LENGTH: usize = 32;
 pub const NONCES_SIZE: usize = 8 * 4;
 

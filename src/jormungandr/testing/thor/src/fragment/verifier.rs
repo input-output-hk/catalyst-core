@@ -51,9 +51,7 @@ pub enum FragmentVerifierError {
         logs: Vec<String>,
     },
     #[error("timeout reached while waiting for all fragments in a block")]
-    TimeoutReachedWhileWaitingForAllFragmentsInBlock {
-        logs: Vec<String>,
-    },
+    TimeoutReachedWhileWaitingForAllFragmentsInBlock { logs: Vec<String> },
 }
 
 impl FragmentVerifierError {

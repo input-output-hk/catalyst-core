@@ -68,7 +68,7 @@ pub fn add_generated_token_to_db() -> Result<(), Box<dyn Error>> {
         .assert()
         .success();
 
-    let first_token = tokens.get(0).unwrap();
+    let first_token = tokens.first().unwrap();
     let raw: RawRestClient = server.rest_client_with_token(first_token).into();
 
     assert_eq!(raw.health()?.status(), StatusCode::OK);

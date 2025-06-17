@@ -146,7 +146,7 @@ impl SearchQueries for EventDB {
                 )
                 .await
                 .map_err(|e| Error::NotFound(e.to_string()))?;
-            let row = rows.get(0).unwrap();
+            let row = rows.first().unwrap();
 
             Ok(SearchResult {
                 total: row.try_get("total")?,

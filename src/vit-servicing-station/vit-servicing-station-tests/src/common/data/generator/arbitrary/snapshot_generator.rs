@@ -202,8 +202,7 @@ impl ArbitrarySnapshotGenerator {
             voteplan: ProposalVotePlanCommon {
                 chain_proposal_index: self.id_generator.next_u32() as i64,
                 chain_voteplan_id: fund
-                    .chain_vote_plans
-                    .get(0)
+                    .chain_vote_plans.first()
                     .unwrap()
                     .chain_voteplan_id
                     .clone(),

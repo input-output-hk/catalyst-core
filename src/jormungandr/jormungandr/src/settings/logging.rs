@@ -203,7 +203,7 @@ impl LogSettings {
             LogOutput::File(path) => {
                 let file = fs::OpenOptions::new()
                     .create(true)
-                    .write(true)
+                    
                     .append(true)
                     .open(path)
                     .map_err(|cause| Error::FileError {

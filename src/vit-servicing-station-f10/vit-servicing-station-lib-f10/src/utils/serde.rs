@@ -47,7 +47,7 @@ where
 }
 
 pub fn serialize_bin_as_str<S: Serializer>(data: &[u8], serializer: S) -> Result<S::Ok, S::Error> {
-    serializer.serialize_str(&String::from_utf8(data.to_vec()).unwrap())
+    serializer.serialize_str(core::str::from_utf8(data).unwrap())
 }
 
 pub fn deserialize_string_as_bytes<'de, D>(deserializer: D) -> Result<Vec<u8>, D::Error>

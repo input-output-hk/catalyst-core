@@ -6,10 +6,10 @@ pub use crate::wallet::registration::{
     REGISTRATION_METADATA_LABEL, REGISTRATION_METADATA_SIGNATURE_LABEL,
     REGISTRATION_SIGNATURE_METADATA_IDX,
 };
+use cardano_serialization_lib::Transaction;
 use cardano_serialization_lib::{
     BaseAddress, Credential, NetworkInfo, PrivateKey, PublicKey, RewardAddress,
 };
-use cardano_serialization_lib::Transaction;
 use chain_addr::Discrimination;
 use jormungandr_lib::crypto::account::Identifier;
 use jormungandr_lib::interfaces::Address;

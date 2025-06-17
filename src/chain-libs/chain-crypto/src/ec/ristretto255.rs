@@ -254,7 +254,7 @@ impl From<bool> for Scalar {
 // FE + FE
 //////////
 
-impl<'a, 'b> Add<&'b Scalar> for &'a Scalar {
+impl<'b> Add<&'b Scalar> for &Scalar {
     type Output = Scalar;
 
     fn add(self, other: &'b Scalar) -> Scalar {
@@ -268,7 +268,7 @@ std_ops_gen!(Scalar, Add, Scalar, Scalar, add);
 // FE - FE
 //////////
 
-impl<'a, 'b> Sub<&'b Scalar> for &'a Scalar {
+impl<'b> Sub<&'b Scalar> for &Scalar {
     type Output = Scalar;
 
     fn sub(self, other: &'b Scalar) -> Scalar {
@@ -282,7 +282,7 @@ std_ops_gen!(Scalar, Sub, Scalar, Scalar, sub);
 // FE * FE
 //////////
 
-impl<'a, 'b> Mul<&'b Scalar> for &'a Scalar {
+impl<'b> Mul<&'b Scalar> for &Scalar {
     type Output = Scalar;
 
     fn mul(self, other: &'b Scalar) -> Scalar {
@@ -296,7 +296,7 @@ std_ops_gen!(Scalar, Mul, Scalar, Scalar, mul);
 // FE * GE
 //////////
 
-impl<'a, 'b> Mul<&'b GroupElement> for &'a Scalar {
+impl<'b> Mul<&'b GroupElement> for &Scalar {
     type Output = GroupElement;
 
     fn mul(self, other: &'b GroupElement) -> GroupElement {
@@ -304,7 +304,7 @@ impl<'a, 'b> Mul<&'b GroupElement> for &'a Scalar {
     }
 }
 
-impl<'a, 'b> Mul<&'b Scalar> for &'a GroupElement {
+impl<'b> Mul<&'b Scalar> for &GroupElement {
     type Output = GroupElement;
 
     fn mul(self, other: &'b Scalar) -> GroupElement {
@@ -332,7 +332,7 @@ impl<'a> Mul<&'a GroupElement> for u64 {
     }
 }
 
-impl<'a> Mul<u64> for &'a GroupElement {
+impl Mul<u64> for &GroupElement {
     type Output = GroupElement;
 
     fn mul(self, mut other: u64) -> GroupElement {
@@ -354,7 +354,7 @@ impl<'a> Mul<u64> for &'a GroupElement {
 // GE + GE
 //////////
 
-impl<'a, 'b> Add<&'b GroupElement> for &'a GroupElement {
+impl<'b> Add<&'b GroupElement> for &GroupElement {
     type Output = GroupElement;
 
     fn add(self, other: &'b GroupElement) -> GroupElement {
@@ -368,7 +368,7 @@ std_ops_gen!(GroupElement, Add, GroupElement, GroupElement, add);
 // GE - GE
 //////////
 
-impl<'a, 'b> Sub<&'b GroupElement> for &'a GroupElement {
+impl<'b> Sub<&'b GroupElement> for &GroupElement {
     type Output = GroupElement;
 
     fn sub(self, other: &'b GroupElement) -> GroupElement {

@@ -123,9 +123,7 @@ impl RestClient {
     pub fn client(&self) -> Result<reqwest::blocking::Client, reqwest::Error> {
         reqwest::blocking::Client::builder()
             .danger_accept_invalid_certs(true)
-            .build()
-            .map_err(Into::into)
-    }
+            .build()}
 
     pub fn set_api_token(&mut self, token: String) {
         self.api_token = Some(token);

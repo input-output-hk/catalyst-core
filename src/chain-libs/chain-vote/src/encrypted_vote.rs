@@ -96,9 +96,7 @@ impl<A: Clone> Ptp<A> {
                 vec.push(a.clone());
             }
         }
-        Ptp {
-            elements: vec,
-        }
+        Ptp { elements: vec }
     }
 
     /// Iterates over the elements

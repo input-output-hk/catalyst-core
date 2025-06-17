@@ -61,7 +61,7 @@ pub mod test {
         let result = warp::test::request().method("GET").reply(&filter).await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let mut result_fund: FundWithNext =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         result_fund
             .fund
             .challenges
@@ -111,7 +111,7 @@ pub mod test {
             .await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let mut result_fund: Fund =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         result_fund
             .challenges
             .sort_by(|a, b| a.internal_id.cmp(&b.internal_id));
@@ -156,7 +156,7 @@ pub mod test {
         let result = warp::test::request().method("GET").reply(&filter).await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_funds: Vec<i32> =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
 
         assert_eq!(funds_ids, result_funds);
     }

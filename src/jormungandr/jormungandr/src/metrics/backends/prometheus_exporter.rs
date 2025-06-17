@@ -294,7 +294,7 @@ impl MetricsBackend for Prometheus {
             .set(block.header().block_date().epoch.into());
         self.block_slot
             .set(block.header().block_date().slot_id.into());
-        let chain_length: u32 = block.header().chain_length().try_into().unwrap();
+        let chain_length: u32 = block.header().chain_length().into();
         self.block_chain_length.set(chain_length as u64);
         self.block_time.set(
             block_ref

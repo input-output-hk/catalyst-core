@@ -423,7 +423,7 @@ impl SoftDerivation {
 
         // allow `unwrap_or`, it's 32bits of integer or a function pointer
         #[allow(clippy::or_fun_call)]
-        Self::new(d).unwrap_or(Self::min_value())
+        Self::new(d).unwrap_or_default()
     }
 }
 
@@ -611,7 +611,7 @@ impl HardDerivation {
 
         // allow `unwrap_or`, it's 32bits of integer or a function pointer
         #[allow(clippy::or_fun_call)]
-        Self::new(d).unwrap_or(Self::min_value())
+        Self::new(d).unwrap_or_default()
     }
 }
 

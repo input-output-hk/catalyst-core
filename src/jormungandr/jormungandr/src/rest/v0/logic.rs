@@ -319,8 +319,7 @@ pub async fn get_settings(context: &Context) -> Result<SettingsDto, Error> {
         curr_slot_start_time: full_context
             .stats_counter
             .get_stats()
-            .last_block_time
-            .map(SystemTime::from),
+            .last_block_time,
         consensus_version: consensus_version.to_string(),
         fees,
         block_content_max_size,

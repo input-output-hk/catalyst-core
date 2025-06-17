@@ -430,7 +430,6 @@ pub(super) mod internal {
         }
     }
 
-
     pub struct Pool {
         entries: IndexedQueue<FragmentId, Fragment>,
         max_entries: usize,

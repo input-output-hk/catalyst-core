@@ -201,14 +201,13 @@ impl SignedRegistration {
 ///
 #[derive(Debug, Clone)]
 pub struct RawRegistration {
-
     /// cip 15/36: 61284 raw binary
     pub bin_reg: Vec<u8>,
 
     /// cip 15/36: 61285 raw binary
     pub bin_sig: Vec<u8>,
 
-    /// registration tx_id
+    /// registration `tx_id`
     pub tx_id: TxId,
 
     /// The slot the registration was found in.

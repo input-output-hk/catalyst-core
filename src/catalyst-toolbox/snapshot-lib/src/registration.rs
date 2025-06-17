@@ -253,7 +253,7 @@ pub mod serde_impl {
 
             let addr_type = match addr_type {
                 // Shelley
-                0x0 | 0x1 | 0x2 | 0x3 | 0x4 | 0x5 | 0x6 | 0x7 => AddrType::Shelley,
+                0x0..=0x7 => AddrType::Shelley,
                 // Stake
                 0xf | 0xe => AddrType::Stake,
                 _ => {

@@ -1,7 +1,7 @@
 use chain_crypto::bech32::Bech32;
 use chain_impl_mockchain::{certificate::VotePlanId, vote::Options};
 use chain_vote::ElectionPublicKey;
-use std::{convert::TryFrom, str};
+use std::str;
 use vit_servicing_station_lib::db::models::proposals::FullProposalInfo;
 pub use vit_servicing_station_lib::{
     db::models::challenges::Challenge, db::models::community_advisors_reviews::AdvisorReview,
@@ -30,13 +30,13 @@ impl ProposalExtension for FullProposalInfo {
 
         if self.proposal.chain_voteplan_payload == "public" {
             return wallet_core::Proposal::new_public(
-                VotePlanId::try_from(vote_plan_id).unwrap(),
+                VotePlanId::from(vote_plan_id),
                 chain_proposal_index,
                 Options::new_length(self.proposal.chain_vote_options.0.len() as u8).unwrap(),
             );
         }
         wallet_core::Proposal::new_private(
-            VotePlanId::try_from(vote_plan_id).unwrap(),
+            VotePlanId::from(vote_plan_id),
             chain_proposal_index,
             Options::new_length(self.proposal.chain_vote_options.0.len() as u8).unwrap(),
             ElectionPublicKey::try_from_bech32_str(&self.proposal.chain_vote_encryption_key)

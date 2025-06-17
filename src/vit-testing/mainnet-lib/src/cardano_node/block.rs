@@ -1,8 +1,8 @@
 use crate::cardano_node::Settings;
 use cardano_serialization_lib::{
     AuxiliaryData, AuxiliaryDataSet, BigNum, Block, BlockHash, Ed25519Signature, Header,
-    HeaderBody, KESSignature, KESVKey, OperationalCert, PrivateKey, ProtocolVersion,
-    Transaction, TransactionBodies, TransactionWitnessSets, VRFCert, VRFVKey, Vkey,
+    HeaderBody, KESSignature, KESVKey, OperationalCert, PrivateKey, ProtocolVersion, Transaction,
+    TransactionBodies, TransactionWitnessSets, VRFCert, VRFVKey, Vkey,
 };
 
 /// Block0 representation

@@ -54,9 +54,7 @@ pub async fn peers_from_trusted_peer(peer: &Peer) -> Result<Vec<topology::Peer>,
         .nodes
         .decode()
         .map_err(Error::PeerDecodingFailed)?
-        .into_iter()
-        .map(topology::Peer::from)
-        .collect::<Vec<_>>();
+        .into_iter().collect::<Vec<_>>();
 
     tracing::info!("peer {} : peers known : {}", peer.connection, peers.len());
     Ok(peers)

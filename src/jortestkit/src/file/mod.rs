@@ -92,7 +92,7 @@ pub fn get_file_as_byte_vec<P: AsRef<Path>>(filename: P) -> Result<Vec<u8>, std:
 
 pub fn append<P: AsRef<Path>, S: Into<String>>(filename: P, line: S) -> Result<(), std::io::Error> {
     let mut file = OpenOptions::new()
-        .write(true)
+        
         .append(true)
         .open(filename.as_ref())?;
 
@@ -104,7 +104,7 @@ pub fn write_lines<P: AsRef<Path>, S: Into<String>>(
     lines: Vec<S>,
 ) -> Result<(), std::io::Error> {
     let mut file = OpenOptions::new()
-        .write(true)
+        
         .append(true)
         .open(filename.as_ref())?;
 

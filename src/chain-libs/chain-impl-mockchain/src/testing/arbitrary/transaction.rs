@@ -189,9 +189,7 @@ impl AccountStatesVerifier {
         let snapshot: Vec<AddressDataValue> = self
             .0
             .addresses
-            .iter()
-            .cloned()
-            .filter(filter_accounts)
+            .iter().filter(|&x| filter_accounts(x)).cloned()
             .map(|x| find_equal_and_sub(x, inputs))
             .collect();
 
@@ -231,9 +229,7 @@ impl AccountStatesVerifier {
 
 fn find_equal_and_sub(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
-        .iter()
-        .cloned()
-        .find(|y| y.address_data == x.address_data)
+        .iter().find(|&y| y.address_data == x.address_data).cloned()
     {
         Some(y) => AddressDataValue::new(x.address_data, (x.value - y.value).unwrap()),
         None => x,
@@ -242,9 +238,7 @@ fn find_equal_and_sub(x: AddressDataValue, collection: &[AddressDataValue]) -> A
 
 fn find_equal_and_add(x: AddressDataValue, collection: &[AddressDataValue]) -> AddressDataValue {
     match collection
-        .iter()
-        .cloned()
-        .find(|y| y.address_data == x.address_data)
+        .iter().find(|&y| y.address_data == x.address_data).cloned()
     {
         Some(y) => AddressDataValue::new(x.address_data, (x.value + y.value).unwrap()),
         None => x,
@@ -275,13 +269,11 @@ impl UtxoVerifier {
         let outputs = &self.0.output_addresses;
 
         let utxo_not_changed: Vec<AddressDataValue> = all
-            .iter()
-            .cloned()
-            .filter(filter_utxo)
+            .iter().filter(|&x| filter_utxo(x)).cloned()
             .filter(|x| !inputs.contains(x))
             .collect();
         let utxo_added: Vec<AddressDataValue> =
-            outputs.iter().cloned().filter(filter_utxo).collect();
+            outputs.iter().filter(|&x| filter_utxo(x)).cloned().collect();
 
         let mut snapshot = Vec::new();
         snapshot.extend(utxo_not_changed);

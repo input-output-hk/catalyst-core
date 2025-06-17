@@ -156,7 +156,7 @@ impl VotePlanDef {
     }
 
     pub fn proposals(&self) -> Vec<ProposalDef> {
-        self.proposals.iter().cloned().map(Into::into).collect()
+        self.proposals.iter().cloned().collect()
     }
 
     pub fn proposal(&self, index: usize) -> ProposalDef {

@@ -350,7 +350,7 @@ pub fn dump_settings_to_file(
 ) -> Result<(), impl std::error::Error> {
     let f = fs::File::create(file_path)?;
     serde_json::to_writer_pretty(&f, settings)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))
+        .map_err(|e| std::io::Error::other(e.to_string()))
 }
 
 #[cfg(test)]

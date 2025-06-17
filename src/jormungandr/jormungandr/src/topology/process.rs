@@ -1,4 +1,4 @@
-use super::{Gossip, Gossips, P2pTopology, Peer};
+use super::{Gossips, P2pTopology, Peer};
 use crate::{
     intercom::{NetworkMsg, PropagateMsg, TopologyMsg},
     metrics::Metrics,
@@ -42,9 +42,7 @@ pub async fn start(task_data: TaskData) {
 
     topology.accept_gossips(Gossips::from(
         initial_peers
-            .into_iter()
-            .map(Gossip::from)
-            .collect::<Vec<_>>(),
+            .into_iter().collect::<Vec<_>>(),
     ));
 
     let mut gossip_interval = tokio::time::interval(config.gossip_interval);

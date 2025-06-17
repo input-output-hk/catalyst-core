@@ -10,7 +10,7 @@ use super::{
 use crate::{
     blockcfg as app_data,
     intercom::{self, BlockMsg, ClientMsg, RequestSink, TopologyMsg},
-    topology::{self, Gossips, NodeId},
+    topology::{Gossips, NodeId},
     utils::async_msg::MessageBox,
 };
 use async_trait::async_trait;
@@ -333,9 +333,7 @@ impl GossipService for NodeService {
         let gossip = Gossips::from(
             std::iter::once(res.self_node)
                 .chain(res.peers.into_iter())
-                .take(limit as usize)
-                .map(topology::Gossip::from)
-                .collect::<Vec<_>>(),
+                .take(limit as usize).collect::<Vec<_>>(),
         )
         .encode();
         Ok(gossip)

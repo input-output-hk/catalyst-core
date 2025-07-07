@@ -36,13 +36,13 @@ project: {
 						}
 						DB_SUPERUSER: {
 							secret: {
-								name: "db-root"
+								name: "root"
 								key:  "username"
 							}
 						}
 						DB_SUPERUSER_PASSWORD: {
 							secret: {
-								name: "db-root"
+								name: "root"
 								key:  "password"
 							}
 						}

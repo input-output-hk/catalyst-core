@@ -3,7 +3,8 @@ project: {
 	name: "event-db-migrations"
 	deployment: {
 		on: {
-			always: {}
+			merge: {}
+			tag: {}
 		}
 
 		bundle: modules: main: {
@@ -91,9 +92,8 @@ project: {
 	release: {
 		docker: {
 			on: {
-				//merge: {}
-				//tag: {}
-				always: {}
+				merge: {}
+				tag: {}
 			}
 			config: {
 				tag: _ @forge(name="GIT_HASH_OR_TAG")

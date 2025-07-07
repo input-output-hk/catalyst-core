@@ -53,6 +53,17 @@ global: {
 			},
 		]
 	}
+	deployment: {
+		registries: {
+			containers: ci.providers.aws.ecr.registry
+			modules:    ci.providers.aws.ecr.registry + "/catalyst-deployments"
+		}
+		repo: {
+			url: "https://github.com/input-output-hk/catalyst-world"
+			ref: "master"
+		}
+		root: "k8s"
+	}
 	repo: {
 		defaultBranch: "main"
 		name:          "input-output-hk/catalyst-core"

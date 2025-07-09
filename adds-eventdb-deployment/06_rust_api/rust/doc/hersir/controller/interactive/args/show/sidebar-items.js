@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Show"],"fn":["show_logs_for"],"struct":["ActiveVotePlans","ShowBlockHeight","ShowFragmentCount","ShowFragments","ShowLogs","ShowNodeStats","ShowPeerStats","ShowStatus"]};

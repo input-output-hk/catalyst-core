@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["DEFAULT_DECIMAL_PRECISION"],"fn":["assert_are_close","json_from_file"],"mod":["csv","serde"]};

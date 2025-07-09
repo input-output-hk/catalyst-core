@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ParseDerivationPathError"],"struct":["AnyScheme","DerivationPath","DerivationPathRange"]};

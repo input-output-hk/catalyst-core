@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["OPERATION_NAME","QUERY","__QUERY_WORKAROUND"],"struct":["ResponseData","SettingsSettings","SettingsSettingsEpochStabilityDepth","SettingsSettingsFees","SettingsSettingsFeesPerCertificateFees","SettingsSettingsFeesPerVoteCertificateFees","Variables"],"type":["Boolean","Float","ID","Int"]};

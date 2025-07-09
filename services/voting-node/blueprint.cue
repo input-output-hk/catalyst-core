@@ -14,7 +14,7 @@ project: {
 			env: string | *"dev"
 			modules: main: {
 				name:    "app"
-				version: "0.11.1"
+				version: "0.12.0"
 				values: {
 					deployment: {
 						containers: main: {
@@ -68,7 +68,7 @@ project: {
 								DBSYNC_SSH_HOST_KEY: {
 									secret: {
 										name: "ssh"
-										key:  "host"
+										key:  "host-key"
 									}
 								}
 								SSH_SNAPSHOT_TOOL_DESTINATION: {
@@ -94,8 +94,8 @@ project: {
 								SSH_SNAPSHOT_TOOL_OUTPUT_DIR: value: string | *"/home/snapshot/dev_snapshot_tool_out"
 								GVC_API_URL: value:                  string | *"unused"
 								IS_NODE_RELOADABLE: value:           string | *"true"
-								VOTING_HOST: value:                  string | *"unused"
-								VOTING_PORT: value:                  string | *"8080"
+								VOTING_HOST: value:                  string | *"0.0.0.0"
+								VOTING_PORT: value:                  string | *"8000"
 								VOTING_LOG_LEVEL: value:             string | *"debug"
 								JORM_PATH: value:                    string | *"jormungandr"
 								JCLI_PATH: value:                    string | *"jcli"
@@ -126,7 +126,10 @@ project: {
 							ports: {
 								http: port: 8080
 							}
+							securityContext: {}
 						}
+						hostname: "leader0"
+						strategy: "Recreate"
 					}
 
 					configs: ideascale: data: "ideascale.json": json.Marshal({

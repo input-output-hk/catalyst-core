@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ReadError","WriteError"],"trait":["Deserialize","DeserializeFromSlice","Serialize"]};

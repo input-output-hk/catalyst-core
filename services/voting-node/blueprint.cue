@@ -107,7 +107,7 @@ project: {
 								SNAPSHOT_INTERVAL_SECONDS: value:    string | *"1800"
 								SNAPSHOT_CONFIG_PATH: value:         string | *"/app/snapshot-importer-example-config.json"
 								SNAPSHOT_OUTPUT_DIR: value:          string | *"/tmp/snapshot-output"
-								SNAPSHOT_NETWORK_IDS: value:         string | *"testnet mainnet"
+								SNAPSHOT_NETWORK_IDS: value:         string | *"testnet"
 								SNAPSHOT_LOG_LEVEL: value:           string | *"debug"
 								SNAPSHOT_LOG_FORMAT: value:          string | *"text"
 							}

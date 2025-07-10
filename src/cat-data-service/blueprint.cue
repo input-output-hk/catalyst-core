@@ -2,9 +2,8 @@ project: {
 	name: "cat-data-service"
 	deployment: {
 		on: {
-			//tag: {}
-			//merge: {}
-			always: {}
+			tag: {}
+			merge: {}
 		}
 		bundle: {
 			env: string | *"dev"
@@ -66,9 +65,8 @@ project: {
 	release: {
 		docker: {
 			on: {
-				//tag: {}
-				//merge: {}
-				always: {}
+				tag: {}
+				merge: {}
 			}
 			config: {
 				tag: _ @forge(name="GIT_HASH_OR_TAG")

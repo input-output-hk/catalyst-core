@@ -30,7 +30,7 @@ build:
 #                 cargo test -p cat-data-service --all-features
 #     END
 
-publish:
+package:
     FROM debian:stable-slim
 
     WORKDIR /app
@@ -43,3 +43,10 @@ publish:
     ENTRYPOINT ["/app/entry.sh"]
     SAVE IMAGE cat-data-service:$tag
 
+docker:
+    FROM +package
+
+    ARG container='cat-data-service'
+    ARG tag="latest"
+
+    SAVE IMAGE ${container}:${tag}

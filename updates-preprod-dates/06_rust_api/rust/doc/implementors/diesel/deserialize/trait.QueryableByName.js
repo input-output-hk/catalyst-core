@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"vit_servicing_station_tests":[["impl&lt;__DB: Backend&gt; QueryableByName&lt;__DB&gt; for <a class=\"struct\" href=\"vit_servicing_station_tests/common/db/struct.RowId.html\" title=\"struct vit_servicing_station_tests::common::db::RowId\">RowId</a><span class=\"where fmt-newline\">where\n    <a class=\"primitive\" href=\"https://doc.rust-lang.org/nightly/std/primitive.i32.html\">i32</a>: FromSql&lt;Integer, __DB&gt;,</span>"]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

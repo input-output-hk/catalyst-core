@@ -115,9 +115,9 @@ mod test {
     fn linear_serde_yaml() {
         const CONSTANT: u64 = 8170;
         const RATIO_NUMERATOR: u64 = 13;
-        const RATIO_DENOMINATOR: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(19) };
+        const RATIO_DENOMINATOR: NonZeroU64 = NonZeroU64::new(19).unwrap();
         const EPOCH_START: Epoch = 2;
-        const EPOCH_RATE: NonZeroU32 = unsafe { NonZeroU32::new_unchecked(5) };
+        const EPOCH_RATE: NonZeroU32 = NonZeroU32::new(5).unwrap();
 
         let parameters = RewardParams::Linear {
             constant: CONSTANT,
@@ -139,9 +139,9 @@ mod test {
     fn halving_serde_yaml() {
         const CONSTANT: u64 = 8170;
         const RATIO_NUMERATOR: u64 = 13;
-        const RATIO_DENOMINATOR: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(19) };
+        const RATIO_DENOMINATOR: NonZeroU64 = NonZeroU64::new(19).unwrap();
         const EPOCH_START: Epoch = 2;
-        const EPOCH_RATE: NonZeroU32 = unsafe { NonZeroU32::new_unchecked(5) };
+        const EPOCH_RATE: NonZeroU32 = NonZeroU32::new(5).unwrap();
 
         let parameters = RewardParams::Halving {
             constant: CONSTANT,

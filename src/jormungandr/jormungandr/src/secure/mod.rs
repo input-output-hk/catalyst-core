@@ -26,6 +26,7 @@ pub struct GenesisPraos {
 }
 
 #[derive(Clone, Deserialize)]
+#[allow(dead_code)]
 pub struct OwnerKey(Identifier<Ed25519>);
 
 /// Node Secret(s)

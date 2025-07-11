@@ -59,7 +59,7 @@ pub enum Error {
     #[error(transparent)]
     Deserialize(ReadError),
     #[error(transparent)]
-    TxMsgSendError(#[from] TrySendError<TransactionMsg>),
+    TxMsgSendError(#[from] Box<TrySendError<TransactionMsg>>),
     #[error(transparent)]
     MsgSendError(#[from] SendError),
     #[error("Block value calculation error")]
@@ -164,7 +164,12 @@ pub async fn post_message(
         fail_fast: true,
         reply_handle,
     };
-    context.try_full()?.transaction_task.clone().try_send(msg)?;
+    context
+        .try_full()?
+        .transaction_task
+        .clone()
+        .try_send(msg)
+        .map_err(|e| Error::TxMsgSendError(Box::new(e)))?;
     let reply = reply_future.await?;
     if reply.is_error() {
         Err(Error::Fragment(reply))
@@ -316,11 +321,7 @@ pub async fn get_settings(context: &Context) -> Result<SettingsDto, Error> {
     Ok(SettingsDto {
         block0_hash: static_params.block0_initial_hash.to_string(),
         block0_time: SystemTime::from_secs_since_epoch(static_params.block0_start_time.0),
-        curr_slot_start_time: full_context
-            .stats_counter
-            .get_stats()
-            .last_block_time
-            .map(SystemTime::from),
+        curr_slot_start_time: full_context.stats_counter.get_stats().last_block_time,
         consensus_version: consensus_version.to_string(),
         fees,
         block_content_max_size,

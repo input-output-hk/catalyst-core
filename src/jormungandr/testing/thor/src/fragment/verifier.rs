@@ -4,13 +4,12 @@ use jormungandr_lib::interfaces::{FragmentLog, FragmentStatus};
 use jortestkit::prelude::Wait;
 use std::{collections::HashMap, time::Duration};
 
-#[derive(custom_debug::Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum FragmentVerifierError {
     #[error("fragment sent to node: {alias} is not in block :({status:?})")]
     FragmentNotInBlock {
         alias: String,
         status: FragmentStatus,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error("cannot match rejection reason '{message}' does not contains '{expected_part}'")]
@@ -22,7 +21,6 @@ pub enum FragmentVerifierError {
     FragmentNotRejected {
         alias: String,
         status: FragmentStatus,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error("transaction is pending for too long")]
@@ -30,14 +28,12 @@ pub enum FragmentVerifierError {
         fragment_id: FragmentId,
         timeout: Duration,
         alias: String,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error("transactions are pending for too long")]
     FragmentsArePendingForTooLong {
         timeout: Duration,
         alias: String,
-        #[debug(skip)]
         logs: Vec<String>,
     },
 
@@ -45,7 +41,6 @@ pub enum FragmentVerifierError {
     FragmentNotInMemPoolLogs {
         alias: String,
         fragment_id: FragmentId,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error("fragment node error")]
@@ -53,14 +48,10 @@ pub enum FragmentVerifierError {
     #[error("at least on rejected fragment error")]
     AtLeastOneRejectedFragment {
         fragment_id: FragmentId,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error("timeout reached while waiting for all fragments in a block")]
-    TimeoutReachedWhileWaitingForAllFragmentsInBlock {
-        #[debug(skip)]
-        logs: Vec<String>,
-    },
+    TimeoutReachedWhileWaitingForAllFragmentsInBlock { logs: Vec<String> },
 }
 
 impl FragmentVerifierError {

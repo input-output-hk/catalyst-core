@@ -110,7 +110,7 @@ impl<State> Multiverse<State> {
     pub fn insert(&mut self, chain_length: ChainLength, k: HeaderId, st: State) -> Ref<State> {
         self.states_by_chain_length
             .entry(chain_length)
-            .or_insert_with(HashSet::new)
+            .or_default()
             .insert(k);
         let state = Arc::new(st);
         self.states_by_hash

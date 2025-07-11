@@ -85,7 +85,7 @@ impl TestTxBuilder {
         );
         let mut faucet = test_ledger
             .faucets
-            .get(0)
+            .first()
             .cloned()
             .as_mut()
             .expect("test ledger with no faucet configured")
@@ -126,7 +126,7 @@ impl TestTxBuilder {
         );
         let mut faucet = test_ledger
             .faucets
-            .get(0)
+            .first()
             .as_mut()
             .expect("test ledger with no faucet configured")
             .clone();

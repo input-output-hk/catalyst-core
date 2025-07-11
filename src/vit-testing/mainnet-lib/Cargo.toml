@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cardano-serialization-lib = "11.3.1"
+cardano-serialization-lib = "12"
 jormungandr-lib = { workspace = true }
 jortestkit = { path = "../../jortestkit" }
 tempdir = "0.3.7"

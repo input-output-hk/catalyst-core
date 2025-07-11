@@ -5,6 +5,7 @@ use wasm_bindgen::prelude::*;
 
 /// Identifier of a block fragment
 #[wasm_bindgen]
+#[allow(dead_code)]
 pub struct FragmentId(pub(crate) wallet_core::FragmentId);
 
 /// this is used only for giving the Array a type in the typescript generated notation

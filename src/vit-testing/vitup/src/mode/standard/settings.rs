@@ -13,6 +13,7 @@ use vit_servicing_station_tests::common::startup::server::ServerSettingsBuilder;
 pub const VIT_STATION: &str = "vit_station";
 pub const VIT_STATION_ARCHIVE: &str = "vit_station_archive";
 
+#[allow(dead_code)]
 pub trait PrepareVitServerSettings: Clone + Send {
     fn prepare(session_settings: &mut SessionSettings) -> Self;
 }
@@ -24,6 +25,7 @@ pub trait PrepareWalletProxySettings: Clone + Send {
     ) -> Self;
 }
 
+#[allow(dead_code)]
 pub trait PrepareSettings {
     fn prepare(
         topology: Topology,

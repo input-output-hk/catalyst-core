@@ -125,7 +125,6 @@ impl LogSettings {
             LogOutput::File(ref path) => {
                 let file = fs::OpenOptions::new()
                     .create(true)
-                    .write(true)
                     .append(true)
                     .open(path)
                     .map_err(|cause| Error::File {

@@ -120,7 +120,7 @@ impl WalletController {
         data: Vec<bech32::u5>,
         password: &str,
     ) -> Result<(), Error> {
-        let cocoon = Cocoon::new(password.as_bytes());
+        let mut cocoon = Cocoon::new(password.as_bytes());
         let secret_file = self.config_manager.alias_secret_file(&alias)?;
         let mut file = File::create(&secret_file)?;
 

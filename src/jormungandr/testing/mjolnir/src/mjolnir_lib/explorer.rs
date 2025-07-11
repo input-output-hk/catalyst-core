@@ -11,7 +11,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum ExplorerLoadCommandError {
     #[error("Client Error")]
-    ClientError(#[from] MjolnirError),
+    ClientError(#[from] Box<MjolnirError>),
 }
 
 #[derive(Parser, Debug)]

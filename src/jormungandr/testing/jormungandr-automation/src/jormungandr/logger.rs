@@ -291,7 +291,7 @@ impl JormungandrLogger {
             .iter()
             .filter(|x| x.message().contains("validated block"))
             .map(|x| x.block_date())
-            .last()
+            .next_back()
             .unwrap_or(None)
     }
 

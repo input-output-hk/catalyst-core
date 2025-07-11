@@ -96,8 +96,8 @@ impl Stats {
     pub fn errors(&self) -> Vec<RequestFailure> {
         self.requests
             .iter()
+            .filter(|&r| r.is_err())
             .cloned()
-            .filter(|r| r.is_err())
             .map(|r| r.err().unwrap())
             .collect()
     }

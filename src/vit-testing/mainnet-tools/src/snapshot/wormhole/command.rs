@@ -38,8 +38,8 @@ pub struct Command {
 /// - one-shot - Ends program after single job is done,
 ///
 /// - schedule - Run job continuously based on cron string.
-///              WARNING: there is custom cron string used which allows to program scheduler based on seconds.
-///              The scheduling format is as follows:
+///   WARNING: there is custom cron string used which allows to program scheduler based on seconds.
+///   The scheduling format is as follows:
 ///```cron
 ///sec   min   hour   day of month   month   day of week   year
 ///
@@ -57,6 +57,10 @@ impl Command {
     /// # Errors
     ///
     /// On IO related errors
+    ///
+    /// # Panics
+    ///
+    /// Panics if the log level string is invalid.
     pub fn exec(self) -> Result<()> {
         let subscriber = FmtSubscriber::builder()
             .with_file(false)

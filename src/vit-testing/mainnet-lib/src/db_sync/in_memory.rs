@@ -1,6 +1,5 @@
 use crate::{Block0, InMemoryNode, CARDANO_MAINNET_SLOTS_PER_EPOCH};
-use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
-use cardano_serialization_lib::utils::BigNum;
+use cardano_serialization_lib::{BigNum, GeneralTransactionMetadata};
 use cardano_serialization_lib::{Block, Transaction, TransactionWitnessSet};
 use futures::executor::block_on;
 use futures_util::StreamExt;
@@ -243,10 +242,10 @@ impl InMemoryDbSync {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct Settings {
-    pub db_name: String,
-    pub db_user: String,
-    pub db_host: String,
-    pub db_pass: String,
+    pub name: String,
+    pub user: String,
+    pub host: String,
+    pub pass: String,
 }
 
 /// Basic converter from absolute slot number and {epoch,slot} pair
@@ -290,7 +289,7 @@ mod tests {
     use crate::{CardanoWallet, InMemoryDbSync};
     use assert_fs::fixture::PathChild;
     use assert_fs::TempDir;
-    use cardano_serialization_lib::utils::BigNum;
+    use cardano_serialization_lib::BigNum;
     use std::time::Duration;
 
     #[tokio::test]

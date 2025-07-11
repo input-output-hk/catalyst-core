@@ -70,7 +70,7 @@ pub mod test {
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         println!("{}", String::from_utf8(result.body().to_vec()).unwrap());
         let result_proposal: FullProposalInfo =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         assert_eq!(proposal, result_proposal);
     }
 
@@ -98,7 +98,7 @@ pub mod test {
         let result = warp::test::request().method("GET").reply(&filter).await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_proposals: Vec<FullProposalInfo> =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         assert_eq!(vec![proposal], result_proposals);
     }
 
@@ -137,7 +137,7 @@ pub mod test {
 
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_proposals: Vec<FullProposalInfo> =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         assert_eq!(vec![proposal], result_proposals);
     }
 }

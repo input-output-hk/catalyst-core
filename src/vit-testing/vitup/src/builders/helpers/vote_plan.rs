@@ -4,7 +4,6 @@ use chain_impl_mockchain::testing::scenario::template::ProposalDefBuilder;
 use chain_impl_mockchain::testing::TestGen;
 use hersir::builder::VotePlanKey;
 use hersir::config::{CommitteeTemplate, PrivateParameters, VotePlanTemplate};
-pub use jormungandr_lib::interfaces::Initial;
 use jormungandr_lib::interfaces::{BlockDate, TokenIdentifier};
 use std::iter;
 

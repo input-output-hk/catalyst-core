@@ -759,7 +759,7 @@ mod test {
                 match proposal.tally {
                     Tally::Public { result } => {
                         let results = result.results();
-                        assert_eq!(*results.get(0).unwrap(), 0.into());
+                        assert_eq!(*results.first().unwrap(), 0.into());
                         assert_eq!(*results.get(1).unwrap(), funds.into());
                         assert_eq!(*results.get(2).unwrap(), 0.into());
                     }

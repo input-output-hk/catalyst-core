@@ -8,9 +8,6 @@ pub use config::{
     LegacyConfigError, LegacyNodeConfig, LegacyNodeConfigBuilder, LegacyNodeConfigConverter,
     LegacyNodeConfigManager,
 };
-pub use jormungandr_lib::interfaces::{
-    Log, Mempool, NodeConfig, P2p, Policy, Rest, TopicsOfInterest, TrustedPeer,
-};
 use jortestkit::file;
 pub use rest::BackwardCompatibleRest;
 use std::path::PathBuf;
@@ -28,9 +25,9 @@ lazy_static::lazy_static! {
 pub fn download_last_n_releases(n: u32) -> Vec<Release> {
     RELEASES
         .into_iter()
-        .cloned()
-        .filter(|x| !x.version_str().starts_with("nightly"))
+        .filter(|&x| !x.version_str().starts_with("nightly"))
         .take(n as usize)
+        .cloned()
         .collect()
 }
 

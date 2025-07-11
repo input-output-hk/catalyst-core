@@ -1,7 +1,6 @@
-use bech32::{self, Error as Bech32Error, FromBase32};
+use bech32::{self, FromBase32};
 use bech32::{ToBase32, Variant};
 
-use chain_crypto::testing::TestCryptoRng;
 use chain_crypto::{Ed25519, SecretKey};
 use chain_vote::committee::MemberSecretKey;
 use chain_vote::tally::batch_decrypt;
@@ -12,6 +11,7 @@ use chain_vote::TallyDecryptShare;
 use base64::{engine::general_purpose, Engine as _};
 
 use color_eyre::Result;
+use rand::rngs::StdRng;
 use rand_core::SeedableRng;
 
 /// A Bech32_encoded address consists of 3 parts: A Human-Readable Part (HRP) + Separator + Data:
@@ -24,9 +24,9 @@ const HRP_SK: &str = "ristretto255_membersk";
 pub fn get_members_secret_share(
     key: String,
 ) -> Result<MemberSecretKey, Box<dyn std::error::Error>> {
-    let (_hrp, data, _variant) = bech32::decode(&key).map_err(Bech32Error::from)?;
+    let (_hrp, data, _variant) = bech32::decode(&key)?;
 
-    let bytes = Vec::<u8>::from_base32(&data).map_err(Bech32Error::from)?;
+    let bytes = Vec::<u8>::from_base32(&data)?;
 
     Ok(MemberSecretKey::from_bytes(&bytes).ok_or("member secret key from bytes")?)
 }
@@ -36,9 +36,9 @@ pub fn get_members_secret_share(
 pub fn get_members_public_share(
     key: String,
 ) -> Result<MemberPublicKey, Box<dyn std::error::Error>> {
-    let (_hrp, data, _variant) = bech32::decode(&key).map_err(Bech32Error::from)?;
+    let (_hrp, data, _variant) = bech32::decode(&key)?;
 
-    let bytes = Vec::<u8>::from_base32(&data).map_err(Bech32Error::from)?;
+    let bytes = Vec::<u8>::from_base32(&data)?;
 
     Ok(MemberPublicKey::from_bytes(&bytes).ok_or("member public key from bytes")?)
 }
@@ -50,7 +50,7 @@ pub fn extract_decrypt_shares(
     encrypted_tally: EncryptedTally,
     committee_priv_keys: Vec<MemberSecretKey>,
 ) -> Vec<TallyDecryptShare> {
-    let mut rng = TestCryptoRng::seed_from_u64(0);
+    let mut rng = StdRng::seed_from_u64(0);
 
     let mut shares = vec![];
 
@@ -171,7 +171,7 @@ pub fn decrypt_tally_with_secret_keys(
     encrypted_tally: EncryptedTally,
     committee_priv_keys: Vec<MemberSecretKey>,
 ) -> Result<Vec<Tally>, Box<dyn std::error::Error>> {
-    let mut rng = TestCryptoRng::seed_from_u64(0);
+    let mut rng = StdRng::seed_from_u64(0);
 
     let mut public_keys = vec![];
 

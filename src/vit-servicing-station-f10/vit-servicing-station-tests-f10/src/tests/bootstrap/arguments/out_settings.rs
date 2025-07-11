@@ -26,7 +26,7 @@ pub fn out_settings_provided() {
         .assert()
         .success();
 
-    let actual_settings = load_settings(&out_settings_file.path());
+    let actual_settings = load_settings(out_settings_file.path());
     assert_eq!(settings, actual_settings);
 }
 
@@ -62,7 +62,7 @@ pub fn out_settings_file_from_cmdline() {
         .assert()
         .success();
 
-    let actual_settings = load_settings(&out_settings_file.path());
+    let actual_settings = load_settings(out_settings_file.path());
     assert_eq!(settings, actual_settings);
 }
 

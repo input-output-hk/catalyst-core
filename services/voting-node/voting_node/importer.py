@@ -24,6 +24,7 @@ Common to IdeaScale and DBSync snapshots:
 * `CATALYST_TOOLBOX_PATH` - Path to the catalyst-toolbox executable (optional).
 
 """
+
 import asyncio
 import os
 from datetime import datetime
@@ -32,6 +33,28 @@ from ideascale_importer.ideascale.importer import Importer as IdeascaleImporter
 from ideascale_importer.snapshot_importer import Importer as DBSyncImporter, SSHConfig as SnapshotToolSSHConfig
 from loguru import logger
 from pydantic import BaseModel
+from prometheus_client import Gauge, Counter, Histogram
+
+# Prometheus gauge metric to track remaining snapshot intervals
+snapshot_intervals_remaining = Gauge(
+    "snapshot_intervals_remaining", "Number of remaining snapshot intervals before snapshot start time", ["event_id"]
+)
+
+# Prometheus gauge metric to track the Unix timestamp of the next snapshot time
+next_snapshot_timestamp = Gauge("next_snapshot_timestamp", "Unix timestamp of the next scheduled snapshot time", ["event_id"])
+
+# Prometheus counter metrics to track snapshot operations
+snapshots_taken_total = Counter("snapshots_taken_total", "Total number of snapshots attempted", ["event_id"])
+snapshots_completed_total = Counter("snapshots_completed_total", "Total number of snapshots completed successfully", ["event_id"])
+snapshots_failed_total = Counter("snapshots_failed_total", "Total number of snapshots that failed", ["event_id"])
+
+# Prometheus histogram metric to track snapshot duration
+snapshot_duration_seconds = Histogram(
+    "snapshot_duration_seconds",
+    "Time taken to complete snapshots",
+    ["event_id"],
+    buckets=[60, 120, 300, 600, 900, 1200, 1800, 2400, 3000, 3600, 4500, 5400, 6300, 7200],  # 1min to 2hr
+)
 
 
 class ExternalDataImporter:
@@ -184,6 +207,9 @@ class SnapshotRunner(BaseModel):
         # Check if snapshot start time has passed
         if self.snapshot_start_has_passed():
             logger.info("Snapshot has become stable. Skipping...")
+            # Set metrics to 0 when snapshots are skipped
+            snapshot_intervals_remaining.labels(event_id=event_id).set(0)
+            next_snapshot_timestamp.labels(event_id=event_id).set(0)
             return
 
         # Take snapshots at regular intervals
@@ -192,14 +218,36 @@ class SnapshotRunner(BaseModel):
             current_time = datetime.utcnow()
             num_intervals, secs_to_sleep = self._remaining_intervals_n_seconds_to_next_snapshot(current_time, interval)
 
+            # Calculate the next snapshot timestamp
+            next_snapshot_time = current_time.timestamp() + secs_to_sleep
+
+            # Update Prometheus gauge metrics
+            snapshot_intervals_remaining.labels(event_id=event_id).set(num_intervals)
+            next_snapshot_timestamp.labels(event_id=event_id).set(next_snapshot_time)
+
             logger.info(f"{num_intervals + 1} snapshots remaining. Next snapshot is in {secs_to_sleep} seconds...")
             # Wait for the next snapshot interval
             await asyncio.sleep(secs_to_sleep)
 
             # Take snapshot
             logger.info("Taking snapshot now")
-            logger.debug("|---> Starting DBSync snapshot now")
-            await self._dbsync_snapshot(event_id)
+
+            # Track DBSync snapshot
+            snapshots_taken_total.labels(event_id=event_id).inc()
+            try:
+                logger.debug("|---> Starting DBSync snapshot now")
+                start_time = datetime.utcnow()
+
+                await self._dbsync_snapshot(event_id)
+
+                end_time = datetime.utcnow()
+                duration = (end_time - start_time).total_seconds()
+                snapshot_duration_seconds.labels(event_id=event_id).observe(duration)
+                snapshots_completed_total.labels(event_id=event_id).inc()
+            except Exception:
+                snapshots_failed_total.labels(event_id=event_id).inc()
+                raise  # Re-raise the exception for parent code to handle
+
             logger.debug("|---> Starting IdeasScale snapshot now")
             await self._ideascale_snapshot(event_id)
 
@@ -207,4 +255,7 @@ class SnapshotRunner(BaseModel):
                 await asyncio.sleep(0)
                 continue
             else:
+                # Set metrics to 0 when snapshots are complete
+                snapshot_intervals_remaining.labels(event_id=event_id).set(0)
+                next_snapshot_timestamp.labels(event_id=event_id).set(0)
                 break

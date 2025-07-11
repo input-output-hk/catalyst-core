@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["deserialize_delegation_type","serialize_delegation_type"],"struct":["OwnerStakeDelegation","StakeDelegation"]};

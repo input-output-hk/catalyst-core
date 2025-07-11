@@ -5,8 +5,9 @@ project: {
 
 	deployment: {
 		on: {
-			merge: {}
-			tag: {}
+			//merge: {}
+			//tag: {}
+			always: {}
 		}
 
 		bundle: {
@@ -94,7 +95,7 @@ project: {
 								GVC_API_URL: value:                  string | *"unused"
 								IS_NODE_RELOADABLE: value:           string | *"true"
 								VOTING_HOST: value:                  string | *"0.0.0.0"
-								VOTING_PORT: value:                  string | *"8000"
+								VOTING_PORT: value:                  string | *"8080"
 								VOTING_LOG_LEVEL: value:             string | *"debug"
 								JORM_PATH: value:                    string | *"jormungandr"
 								JCLI_PATH: value:                    string | *"jcli"
@@ -123,7 +124,7 @@ project: {
 								}
 							}
 							ports: {
-								http: port: 8080
+								metrics: port: 8080
 							}
 							securityContext: {}
 						}
@@ -215,7 +216,9 @@ project: {
 						}
 					}
 
-					service: {}
+					service: {
+						scrape: true
+					}
 
 					volumes: snapshot: {
 						size: "1Gi"
@@ -228,8 +231,9 @@ project: {
 	release: {
 		docker: {
 			on: {
-				merge: {}
-				tag: {}
+				//merge: {}
+				//tag: {}
+				always: {}
 			}
 			config: {
 				tag: _ @forge(name="GIT_HASH_OR_TAG")

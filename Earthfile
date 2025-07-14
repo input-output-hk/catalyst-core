@@ -99,7 +99,7 @@ all:
     BUILD ./src/jormungandr/jcli+docker --tag=$tag --registry=$registry_final
     BUILD ./src/catalyst-toolbox/catalyst-toolbox+docker --tag=$tag --registry=$registry_final
     BUILD ./src/voting-tools-rs+docker --tag=$tag --registry=$registry_final
-    BUILD ./src/cat-data-service+publish --tag=$tag --registry=$registry_final
+    BUILD ./src/cat-data-service+docker --tag=$tag --registry=$registry_final
 
     BUILD ./services/voting-node+package --tag=$tag --registry=$registry_final
     BUILD ./utilities/ideascale-importer+docker --tag=$tag --registry=$registry_final
@@ -148,7 +148,7 @@ tag-workspace:
 local:
     LOCALLY
     BUILD ./containers/event-db-migrations+package
-    BUILD ./src/cat-data-service+publish
+    BUILD ./src/cat-data-service+docker
     BUILD ./services/voting-node+package
 
     RUN mkdir -p ./local

@@ -1,4 +1,3 @@
-version: "1.0"
 global: {
 	ci: {
 		local: [
@@ -52,6 +51,17 @@ global: {
 				path:     "GITHUB_TOKEN"
 			},
 		]
+	}
+	deployment: {
+		registries: {
+			containers: ci.providers.aws.ecr.registry
+			modules:    ci.providers.aws.ecr.registry + "/catalyst-deployments"
+		}
+		repo: {
+			url: "https://github.com/input-output-hk/catalyst-world"
+			ref: "master"
+		}
+		root: "k8s"
 	}
 	repo: {
 		defaultBranch: "main"

@@ -43,7 +43,7 @@ INSERT INTO event (
     '2025-07-14 10:00:00',  -- Proposal Assessment Start
     '2025-07-14 10:00:00',  -- Assessment QA Start
     '2025-08-04 06:00:00',  -- Voting Starts
-    '2025-08-04 11:00:00',  -- Voting Ends
+    '2025-08-04 12:00:00',  -- Voting Ends
     '2025-08-04 16:00:00',  -- Tallying Ends
     NULL,                   -- Block 0 Data
     NULL,                   -- Block 0 Hash

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"constant":["FRAGMENT_OVERHEAD"],"enum":["SetPayload"],"struct":["SetAuthData","SetIOs","SetTtl","SetWitnesses","TxBuilderState"],"type":["TxBuilder"]};

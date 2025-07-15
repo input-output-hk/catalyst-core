@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["TransactionStructError"],"fn":["get_spine"],"struct":["InputsIter","InputsSlice","InputsWitnessesIter","InputsWitnessesSlice","OutputsIter","OutputsSlice","Transaction","TransactionAuthData","TransactionBindingAuthData","TransactionSlice","TransactionStruct","UnverifiedTransactionSlice","WitnessesIter","WitnessesSlice"]};

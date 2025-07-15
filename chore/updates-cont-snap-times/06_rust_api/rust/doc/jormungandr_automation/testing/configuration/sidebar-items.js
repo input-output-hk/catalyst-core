@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["get_app_from_current_dir","get_explorer_app","get_jcli_app","get_jormungandr_app","get_openapi_path","get_working_directory"]};

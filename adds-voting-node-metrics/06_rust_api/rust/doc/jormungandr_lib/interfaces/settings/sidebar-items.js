@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CompoundingTypeDef","DiscriminationDef","LimitDef"],"struct":["ParametersDef","RatioDef","SettingsDto","TaxTypeDef","TaxTypeSerde"]};

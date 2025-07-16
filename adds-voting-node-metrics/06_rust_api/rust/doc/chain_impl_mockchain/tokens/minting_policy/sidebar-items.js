@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["MintingPolicyEntry","MintingPolicyViolation"],"mod":["tests"],"struct":["MintingPolicy"]};

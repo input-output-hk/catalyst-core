@@ -229,7 +229,7 @@ impl Scalar {
             rng.fill_bytes(&mut r[..]);
 
             if let Some(s) = IScalar::from_bytes(&r) {
-                break (Scalar(s));
+                break Scalar(s);
             }
         }
     }

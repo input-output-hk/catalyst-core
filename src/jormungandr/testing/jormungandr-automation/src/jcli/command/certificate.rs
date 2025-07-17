@@ -34,7 +34,7 @@ impl CertificateCommand {
             .arg("--pool-id")
             .arg(stake_pool_id.into())
             .arg("--retirement-time")
-            .arg(&retirement_time.to_string());
+            .arg(retirement_time.to_string());
         self
     }
 
@@ -136,9 +136,9 @@ impl CertificateCommand {
             .arg("--vrf-key")
             .arg(vrf_key.into())
             .arg("--start-validity")
-            .arg(&start_validity.to_string())
+            .arg(start_validity.to_string())
             .arg("--management-threshold")
-            .arg(&management_threshold.to_string())
+            .arg(management_threshold.to_string())
             .arg("--owner")
             .arg(owner_pk.into());
 

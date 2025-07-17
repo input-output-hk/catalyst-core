@@ -13,7 +13,7 @@ mod kes;
 mod key;
 pub mod multilock;
 mod sign;
-mod vrf;
+pub mod vrf;
 
 pub mod role;
 

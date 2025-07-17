@@ -94,7 +94,7 @@ impl SyncNode for RemoteJormungandr {
             Some(logger) => logger
                 .get_log_lines_with_level(LogLevel::ERROR)
                 .map(|x| x.to_string())
-                .chain(logger.get_panic_lines().into_iter())
+                .chain(logger.get_panic_lines())
                 .collect(),
             None => vec!["log not available".to_string()],
         }

@@ -64,27 +64,27 @@ impl Controller {
         self.settings
             .wallets
             .iter()
+            .find(|&w| w.has_alias(&wallet.to_string()))
             .cloned()
-            .find(|w| w.has_alias(&wallet.to_string()))
     }
 
     pub fn controlled_wallet(&self, wallet: &str) -> Option<Wallet> {
         self.settings
             .wallets
             .iter()
+            .filter(|&x| x.template().is_generated())
+            .find(|&w| w.has_alias(&wallet.to_string()))
             .cloned()
-            .filter(|x| x.template().is_generated())
-            .find(|w| w.has_alias(&wallet.to_string()))
-            .map(|w| w.try_into().unwrap())
+            .map(|w| w.into())
     }
 
     pub fn controlled_wallets(&self) -> Vec<Wallet> {
         self.settings()
             .wallets
             .iter()
+            .filter(|&x| x.template().is_generated())
             .cloned()
-            .filter(|x| x.template().is_generated())
-            .map(|w| w.try_into().unwrap())
+            .map(|w| w.into())
             .collect()
     }
 

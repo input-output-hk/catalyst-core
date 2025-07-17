@@ -33,7 +33,7 @@ impl<'a> TokenDistribution<'a, ()> {
         }
     }
 
-    pub fn token(self, token: &'a TokenIdentifier) -> TokenDistribution<TokenIdentifier> {
+    pub fn token(self, token: &'a TokenIdentifier) -> TokenDistribution<'a, TokenIdentifier> {
         TokenDistribution {
             token_totals: self.token_totals,
             account_ledger: self.account_ledger,

@@ -262,7 +262,7 @@ mod tests {
         let mut reference = BTreeMap::new();
         let mut h: Hamt<DefaultHasher, Vec<u8>, u32> = Hamt::new();
         for (k, v) in xs.iter() {
-            if reference.get(k).is_some() {
+            if reference.contains_key(k) {
                 continue;
             }
             reference.insert(k.clone(), *v);

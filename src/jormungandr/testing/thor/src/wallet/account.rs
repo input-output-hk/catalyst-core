@@ -65,9 +65,7 @@ impl Wallet {
         Wallet {
             signing_key,
             internal_counters: SpendingCounterIncreasing::new_from_counter(
-                spending_counter
-                    .map(Into::into)
-                    .unwrap_or_else(SpendingCounter::zero),
+                spending_counter.unwrap_or_else(SpendingCounter::zero),
             ),
             discrimination,
         }

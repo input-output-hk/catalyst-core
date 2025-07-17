@@ -5,6 +5,7 @@ pub mod vote_cast;
 pub mod vote_plan;
 
 #[wasm_bindgen]
+#[allow(dead_code)]
 pub struct Certificate(pub(crate) CertificateLib);
 
 #[wasm_bindgen]

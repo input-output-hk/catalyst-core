@@ -33,7 +33,7 @@ pub const DEFAULT_SLOT_DURATION: u8 = 5;
 /// minimum slot duration in seconds
 pub const MINIMUM_SLOT_DURATION: u8 = 1;
 /// maximum slot duration in seconds (here is it max of u8: 255)
-pub const MAXIMUM_SLOT_DURATION: u8 = u8::max_value();
+pub const MAXIMUM_SLOT_DURATION: u8 = u8::MAX;
 
 /// default proposal expiration in epochs
 pub const DEFAULT_PROPOSAL_EXPIRATION: u32 = 100;

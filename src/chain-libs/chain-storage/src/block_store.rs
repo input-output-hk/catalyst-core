@@ -250,7 +250,6 @@ impl BlockStore {
                     .map(Value::volatile)
             })
             .collect::<Result<Vec<_>, _>>()
-            .map_err(Into::into)
     }
 
     /// Add a tag for a given block. The block id can be later retrieved by this

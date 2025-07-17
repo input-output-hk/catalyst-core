@@ -54,7 +54,7 @@ pub fn write_into_persistent_log<P: AsRef<Path>>(
     Ok(())
 }
 
-#[derive(custom_debug::Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum Error {
     #[error("cannot serialize entry of persistent log")]
     CannotSerializeEntry,

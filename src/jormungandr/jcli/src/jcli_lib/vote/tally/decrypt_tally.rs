@@ -10,7 +10,6 @@ use jormungandr_lib::{
     interfaces::{PrivateTallyState, Tally},
 };
 use rayon::prelude::*;
-use serde::Serialize;
 use std::{convert::TryInto, path::PathBuf};
 
 #[derive(Parser)]
@@ -35,11 +34,6 @@ pub struct TallyVotePlanWithAllShares {
     shares: Option<PathBuf>,
     #[clap(flatten)]
     output_format: OutputFormat,
-}
-
-#[derive(Serialize)]
-struct Output {
-    result: Vec<u64>,
 }
 
 impl TallyVotePlanWithAllShares {

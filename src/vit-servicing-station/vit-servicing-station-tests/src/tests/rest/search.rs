@@ -30,7 +30,9 @@ fn assert_response_contains_challenge(
     expected_challenge: &Challenge,
     search_response: SearchResponse,
 ) {
-    let SearchResponse::Challenge(challenges) = search_response else { panic!("internal error: querying for challenges but got proposals") };
+    let SearchResponse::Challenge(challenges) = search_response else {
+        panic!("internal error: querying for challenges but got proposals")
+    };
 
     assert!(challenges
         .iter()
@@ -91,7 +93,9 @@ pub fn search_challenges_by_title_empty() {
         )
         .unwrap();
 
-    let SearchResponse::Challenge(challenges) = response else { panic!("internal error: querying for challenges but got proposals") };
+    let SearchResponse::Challenge(challenges) = response else {
+        panic!("internal error: querying for challenges but got proposals")
+    };
     assert!(challenges.is_empty());
 }
 
@@ -250,8 +254,8 @@ pub fn sort_challenges_result_by_title_desc() {
         )
         .unwrap();
 
-    let SearchResponse::Challenge(challenges) = response  else {
-            panic!("internal error: querying for challenges but got proposals");
+    let SearchResponse::Challenge(challenges) = response else {
+        panic!("internal error: querying for challenges but got proposals");
     };
 
     let mut expected: Vec<&String> = expected_challenges.iter().map(|x| &x.title).collect();

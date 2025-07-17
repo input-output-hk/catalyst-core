@@ -35,7 +35,7 @@ pub mod test {
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         println!("{}", String::from_utf8(result.body().to_vec()).unwrap());
         let service_version_result: ServiceVersion =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         assert_eq!(service_version_result.service_version, "2.0".to_string());
     }
 }

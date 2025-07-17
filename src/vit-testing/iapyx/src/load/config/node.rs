@@ -30,7 +30,7 @@ pub struct Config {
     /// This parameter work in conjunction with `global_pin` and `qr_codes_folder`.
     /// If source of account secrets is a specific folder with qr codes, then each qr code need to be
     /// individually decrypted using pin code. This parameter defines strategy of acquiring pin for qr code.
-    /// Using this parameter and with correct format of file (which should be for example alice_1234.png)
+    /// Using this parameter and with correct format of file (which should be for example `alice_1234.png`)
     /// load tool can successfully decrypt all qr code. Alternative for this setting is global pin.
     pub read_pin_from_filename: bool,
     /// Sometimes we may want to run load tool again on the same environment. The problem is that,
@@ -118,7 +118,7 @@ pub enum Error {
     /// Cannot read qr
     #[error("cannot read folder {0:?}")]
     CannotReadQrs(PathBuf),
-    /// MultiController setup
+    /// `MultiController` setup
     #[error("multicontoller error")]
     MultiController(#[from] MultiControllerError),
 }

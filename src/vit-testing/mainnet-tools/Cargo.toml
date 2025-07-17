@@ -28,7 +28,7 @@ jortestkit = { path = "../../jortestkit" }
 jormungandr-automation = { path = "../../jormungandr/testing/jormungandr-automation" }
 vit-servicing-station-tests = { path = "../../vit-servicing-station/vit-servicing-station-tests" }
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
-cardano-serialization-lib = "11.3.1"
+cardano-serialization-lib = "12"
 scheduler-service-lib = { path = "../scheduler-service-lib"}
 tempdir = "0.3.7"
 num-traits = "0.2.15"

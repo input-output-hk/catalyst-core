@@ -13,9 +13,7 @@ use nonempty::nonempty;
 /// DB columns
 const REG_TX_ID: usize = 2;
 const REG_SLOT_NO: usize = 4;
-const REG_JSON: usize = 6;
 const REG_BIN: usize = 7;
-const SIG_JSON: usize = 9;
 const SIG_BIN: usize = 10;
 
 /// Contains the most recent registration for each public stake address
@@ -91,8 +89,6 @@ pub fn filter_registrations(
 
         // The raw registration data from the database.
         let rawreg = RawRegistration {
-            json_reg: row.get(REG_JSON),
-            json_sig: row.get(SIG_JSON),
             bin_reg: row.get(REG_BIN),
             bin_sig: row.get(SIG_BIN),
             tx_id: TxId(tx_id as u64),
@@ -120,7 +116,7 @@ pub fn filter_registrations(
         };
 
         match reg.validate_signature_bin(rawreg.bin_reg.clone()) {
-            Ok(_) => (),
+            Ok(()) => (),
             Err(err) => {
                 invalids.push(InvalidRegistration {
                     spec_61284: Some(prefix_hex(&rawreg.bin_reg)),
@@ -136,7 +132,7 @@ pub fn filter_registrations(
         }
 
         match reg.validate_multi_delegation(cip_36_multidelegations) {
-            Ok(_) => (),
+            Ok(()) => (),
             Err(err) => {
                 invalids.push(InvalidRegistration {
                     spec_61284: Some(prefix_hex(&rawreg.bin_reg)),

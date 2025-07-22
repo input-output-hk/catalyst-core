@@ -27,13 +27,11 @@ global: {
 			}
 
 			earthly: {
-				credentials: {
+				satellite: credentials: {
 					provider: "aws"
-					path:     "global/ci/earthly"
+					path:     "global/ci/ci-tls"
 				}
-				org:       "Catalyst"
-				satellite: "ci"
-				version:   "0.8.15"
+				version: "0.8.16"
 			}
 
 			github: registry: "ghcr.io"

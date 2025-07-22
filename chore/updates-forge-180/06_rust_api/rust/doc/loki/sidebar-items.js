@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AdversaryFragmentSenderError"],"mod":["args","block","error","process","rest","sender"],"struct":["AdversaryFragmentSender","AdversaryFragmentSenderSetup","FaultyTransactionBuilder"]};

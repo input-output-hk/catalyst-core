@@ -1,0 +1,368 @@
+<!DOCTYPE HTML>
+<html lang="en" class="sidebar-visible no-js light">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Overview - Catalyst Voting System - Core Technology</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff" />
+
+        <link rel="icon" href="../../favicon.svg">
+        <link rel="shortcut icon" href="../../favicon.png">
+        <link rel="stylesheet" href="../../css/variables.css">
+        <link rel="stylesheet" href="../../css/general.css">
+        <link rel="stylesheet" href="../../css/chrome.css">
+        <link rel="stylesheet" href="../../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../../highlight.css">
+        <link rel="stylesheet" href="../../tomorrow-night.css">
+        <link rel="stylesheet" href="../../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="../.././book/assets/css/mdbook-admonish.css">
+        <link rel="stylesheet" href="../.././book/assets/css/open-in.css">
+
+    </head>
+    <body>
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('no-js')
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add('js');
+        </script>
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var html = document.querySelector('html');
+            var sidebar = null;
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            html.classList.remove('sidebar-visible');
+            html.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item affix "><a href="../../00_prologue.html">Prologue</a></li><li class="chapter-item "><a href="../../01_intro.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item "><a href="../../02_core_ledger/index.html"><strong aria-hidden="true">2.</strong> Core Ledger</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/index.html"><strong aria-hidden="true">2.1.</strong> General Concepts</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/blockchain.html"><strong aria-hidden="true">2.1.1.</strong> Blockchain concepts</a></li><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/network.html"><strong aria-hidden="true">2.1.2.</strong> Network overview</a></li><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/node.html"><strong aria-hidden="true">2.1.3.</strong> Node organization</a></li><li class="chapter-item "><a href="../../02_core_ledger/01_concepts/stake.html"><strong aria-hidden="true">2.1.4.</strong> Stake</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/index.html"><strong aria-hidden="true">2.2.</strong> Quickstart</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/01_command_line.html"><strong aria-hidden="true">2.2.1.</strong> Command line tools</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/02_passive_node.html"><strong aria-hidden="true">2.2.2.</strong> Starting a passive node</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/03_rest_api.html"><strong aria-hidden="true">2.2.3.</strong> REST Api</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/04_explorer.html"><strong aria-hidden="true">2.2.4.</strong> Explorer mode</a></li><li class="chapter-item "><a href="../../02_core_ledger/02_quickstart/05_leader_candidate.html"><strong aria-hidden="true">2.2.5.</strong> How to start a node as a leader candidate</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/index.html"><strong aria-hidden="true">2.3.</strong> Configuration</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/leadership.html"><strong aria-hidden="true">2.3.1.</strong> Leadership</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/logging.html"><strong aria-hidden="true">2.3.2.</strong> Logging</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/mempool.html"><strong aria-hidden="true">2.3.3.</strong> Mempool</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/network.html"><strong aria-hidden="true">2.3.4.</strong> Node network</a></li><li class="chapter-item "><a href="../../02_core_ledger/03_configuration/prometheus.html"><strong aria-hidden="true">2.3.5.</strong> Prometheus</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/index.html"><strong aria-hidden="true">2.4.</strong> jcli</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/address.html"><strong aria-hidden="true">2.4.1.</strong> Address</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/certificate.html"><strong aria-hidden="true">2.4.2.</strong> Certificate</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/genesis.html"><strong aria-hidden="true">2.4.3.</strong> Genesis</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/key.html"><strong aria-hidden="true">2.4.4.</strong> cryptographic keys</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/rest.html"><strong aria-hidden="true">2.4.5.</strong> REST</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/transaction.html"><strong aria-hidden="true">2.4.6.</strong> Transaction</a></li><li class="chapter-item "><a href="../../02_core_ledger/04_jcli/vote.html"><strong aria-hidden="true">2.4.7.</strong> Voting</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/index.html"><strong aria-hidden="true">2.5.</strong> Staking with Jörmungandr</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/delegating_stake.html"><strong aria-hidden="true">2.5.1.</strong> Delegating your stake</a></li><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/registering_stake_pool.html"><strong aria-hidden="true">2.5.2.</strong> Registering a stake pool</a></li><li class="chapter-item "><a href="../../02_core_ledger/05_stake_pool/retiring_stake_pool.html"><strong aria-hidden="true">2.5.3.</strong> Retiring a stake pool</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/index.html"><strong aria-hidden="true">2.6.</strong> Advanced</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/01_the_genesis_block.html"><strong aria-hidden="true">2.6.1.</strong> genesis file</a></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/02_starting_bft_blockchain.html"><strong aria-hidden="true">2.6.2.</strong> starting a bft node</a></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/03_starting_genesis_praos_blockchain.html"><strong aria-hidden="true">2.6.3.</strong> starting a genesis blockchain</a></li><li class="chapter-item "><a href="../../02_core_ledger/06_advanced/04_vote_fragments_voteplan_blockchain_relationships.html"><strong aria-hidden="true">2.6.4.</strong> How Vote plans, Vote Fragments and the blockchain transaction work and inter-relate</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/07_specs/index.html"><strong aria-hidden="true">2.7.</strong> Jormungandr Specifications</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/07_specs/migration.html"><strong aria-hidden="true">2.7.1.</strong> MIGRATION</a></li><li class="chapter-item "><a href="../../02_core_ledger/07_specs/network.html"><strong aria-hidden="true">2.7.2.</strong> Network</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/index.html"><strong aria-hidden="true">2.8.</strong> testing</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/08_testing/automation.html"><strong aria-hidden="true">2.8.1.</strong> jormungandr-automation</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/hersir.html"><strong aria-hidden="true">2.8.2.</strong> Hersir</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/integration_tests.html"><strong aria-hidden="true">2.8.3.</strong> jormungandr-integration-tests</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/loki.html"><strong aria-hidden="true">2.8.4.</strong> Loki</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/mjolnir.html"><strong aria-hidden="true">2.8.5.</strong> Mjolnir</a></li><li class="chapter-item "><a href="../../02_core_ledger/08_testing/thor.html"><strong aria-hidden="true">2.8.6.</strong> Thor</a></li></ol></li><li class="chapter-item "><a href="../../02_core_ledger/09_internal_design/index.html"><strong aria-hidden="true">2.9.</strong> Internal Design</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../02_core_ledger/09_internal_design/01_auto-start.html"><strong aria-hidden="true">2.9.1.</strong> Automatic deployment of the voting blockchain</a></li><li class="chapter-item "><a href="../../02_core_ledger/09_internal_design/02_permissionless_auth.html"><strong aria-hidden="true">2.9.2.</strong> Permissionless Auth</a></li></ol></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/index.html"><strong aria-hidden="true">3.</strong> Catalyst testing User Guide</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/iapyx/index.html"><strong aria-hidden="true">3.1.</strong> Iapyx</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/iapyx/iapyx.html"><strong aria-hidden="true">3.1.1.</strong> Iapyx</a></li><li class="chapter-item "><a href="../../03_core_testing/iapyx/load.html"><strong aria-hidden="true">3.1.2.</strong> Iapyx Load</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/integration-tests/index.html"><strong aria-hidden="true">3.2.</strong> integration-tests</a></li><li class="chapter-item "><a href="../../03_core_testing/registration-service/index.html"><strong aria-hidden="true">3.3.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/registration-service/cli.html"><strong aria-hidden="true">3.3.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../../03_core_testing/registration-service/configuration.html"><strong aria-hidden="true">3.3.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/registration-verify-service/index.html"><strong aria-hidden="true">3.4.</strong> Registration service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/registration-verify-service/cli.html"><strong aria-hidden="true">3.4.1.</strong> Registration Verify CLI</a></li><li class="chapter-item "><a href="../../03_core_testing/registration-verify-service/configuration.html"><strong aria-hidden="true">3.4.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/snapshot-service/index.html"><strong aria-hidden="true">3.5.</strong> Snapshot trigger service</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/snapshot-service/cli.html"><strong aria-hidden="true">3.5.1.</strong> Registration CLI</a></li><li class="chapter-item "><a href="../../03_core_testing/snapshot-service/configuration.html"><strong aria-hidden="true">3.5.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/snapshot-wormhole/index.html"><strong aria-hidden="true">3.6.</strong> snapshot wormhole</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/snapshot-wormhole/configuration.html"><strong aria-hidden="true">3.6.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/valgrind/index.html"><strong aria-hidden="true">3.7.</strong> valgrind</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/valgrind/configuration.html"><strong aria-hidden="true">3.7.1.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/vitup/index.html"><strong aria-hidden="true">3.8.</strong> vitup</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/vitup/configuration.html"><strong aria-hidden="true">3.8.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation/index.html"><strong aria-hidden="true">3.8.2.</strong> Data Generation</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation/reset.html"><strong aria-hidden="true">3.8.2.1.</strong> Configuration</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation/snapshot.html"><strong aria-hidden="true">3.8.2.2.</strong> Configuration</a></li></ol></li><li class="chapter-item "><a href="../../03_core_testing/vitup/data_generation.html"><strong aria-hidden="true">3.8.3.</strong> Data Generation</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/mock.html"><strong aria-hidden="true">3.8.4.</strong> Mock</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/mock_farm.html"><strong aria-hidden="true">3.8.5.</strong> Mock Farm</a></li><li class="chapter-item "><a href="../../03_core_testing/vitup/run_modes.html"><strong aria-hidden="true">3.8.6.</strong> Configuration modes</a></li></ol></li></ol></li><li class="chapter-item "><a href="../../04_core_vitss/index.html"><strong aria-hidden="true">4.</strong> Core VIT Servicing Station</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../04_core_vitss/testing.html"><strong aria-hidden="true">4.1.</strong> vit-servicing-station-tests</a></li></ol></li><li class="chapter-item expanded "><a href="../../05_unified_platform/index.html"><strong aria-hidden="true">5.</strong> Unified Platform</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/index.html" class="active"><strong aria-hidden="true">5.1.</strong> Overview</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/01_cardano_nodes.html"><strong aria-hidden="true">5.1.1.</strong> Cardano Nodes</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/index.html"><strong aria-hidden="true">5.1.2.</strong> Bridge Pipeline</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/02_bridge_pipeline/01_block_reader.html"><strong aria-hidden="true">5.1.2.1.</strong> Block Reader</a></li></ol></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/03_rest_http_service.html"><strong aria-hidden="true">5.1.3.</strong> REST HTTP Service</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/04_event_stream.html"><strong aria-hidden="true">5.1.4.</strong> Event Stream</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/index.html"><strong aria-hidden="true">5.1.5.</strong> Database</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/01_registration_db.html"><strong aria-hidden="true">5.1.5.1.</strong> Registrations Database</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/02_staked_ada_db.html"><strong aria-hidden="true">5.1.5.2.</strong> Staked ADA Database</a></li><li class="chapter-item "><a href="../../05_unified_platform/01_catalyst-cardano-bridge/05_database/03_transaction_state.html"><strong aria-hidden="true">5.1.5.3.</strong> Transaction State Database</a></li></ol></li></ol></li></ol></li><li class="chapter-item "><a href="../../06_rust_api/index.html"><strong aria-hidden="true">6.</strong> Rust API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../06_rust_api/rust_style_guide.html"><strong aria-hidden="true">6.1.</strong> 🦀 Rust Style Guide</a></li></ol></li><li class="chapter-item "><a href="../../07_web_api/index.html"><strong aria-hidden="true">7.</strong> Web API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../07_web_api/catalyst-core-api.html"><strong aria-hidden="true">7.1.</strong> Catalyst Core API V1</a></li><li class="chapter-item "><a href="../../07_web_api/dbsync-explorer.html"><strong aria-hidden="true">7.2.</strong> dbSync Explorer HTTP/REST API V1</a></li><li class="chapter-item "><a href="../../07_web_api/vit-servicing-station-v0.html"><strong aria-hidden="true">7.3.</strong> VIT Servicing Station HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vit-testing-mock-farm-v0.html"><strong aria-hidden="true">7.4.</strong> VIT Testing Mock Farm HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vit-testing-mock-v0.html"><strong aria-hidden="true">7.5.</strong> VIT Testing Mock HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vote-ledger-v0.html"><strong aria-hidden="true">7.6.</strong> Vote Ledger HTTP/REST API V0</a></li><li class="chapter-item "><a href="../../07_web_api/vote-ledger-v1.html"><strong aria-hidden="true">7.7.</strong> Vote Ledger HTTP/REST API V1</a></li></ol></li><li class="chapter-item "><a href="../../08_event-db/index.html"><strong aria-hidden="true">8.</strong> Event DB crate</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../08_event-db/01_development.html"><strong aria-hidden="true">8.1.</strong> Event DB Local Development</a></li><li class="chapter-item "><a href="../../08_event-db/02_config-tables.html"><strong aria-hidden="true">8.2.</strong> General Configuration</a></li><li class="chapter-item "><a href="../../08_event-db/03_event-table.html"><strong aria-hidden="true">8.3.</strong> Event Definition Table</a></li><li class="chapter-item "><a href="../../08_event-db/04_objective_tables.html"><strong aria-hidden="true">8.4.</strong> Objective and Proposal  Tables</a></li><li class="chapter-item "><a href="../../08_event-db/05_vote_plans.html"><strong aria-hidden="true">8.5.</strong> Vote Plan Tables</a></li><li class="chapter-item "><a href="../../08_event-db/06_snapshot_tables.html"><strong aria-hidden="true">8.6.</strong> Voter Voting Power Snapshot and Vote Storage Table</a></li><li class="chapter-item "><a href="../../08_event-db/07_automation_support.html"><strong aria-hidden="true">8.7.</strong> Catalyst Automation Support Tables</a></li><li class="chapter-item "><a href="../../08_event-db/08_moderation.html"><strong aria-hidden="true">8.8.</strong> Moderation Stage</a></li></ol></li><li class="chapter-item "><a href="../../09_python_api/index.html"><strong aria-hidden="true">9.</strong> Python API</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../09_python_api/voting-node-api.html"><strong aria-hidden="true">9.1.</strong> Voting Node API documentation</a></li></ol></li><li class="chapter-item "><a href="../../10_prometheus_metrics/index.html"><strong aria-hidden="true">10.</strong> Prometheus Metrics</a><a class="toggle"><div>❱</div></a></li><li><ol class="section"><li class="chapter-item "><a href="../../10_prometheus_metrics/01_description.html"><strong aria-hidden="true">10.1.</strong> `jormungandr` Prometheus Metrics</a></li></ol></li><li class="chapter-item "><a href="../../97_CONTRIBUTING.html"><strong aria-hidden="true">11.</strong> Contributing to Catalyst Core</a></li><li class="chapter-item "><a href="../../98_CODE_OF_CONDUCT.html"><strong aria-hidden="true">12.</strong> Contributor Covenant Code of Conduct</a></li><li class="chapter-item "><a href="../../99_example_enhanced_markup.html"><strong aria-hidden="true">13.</strong> Example Enhanced Markup</a></li><li class="chapter-item affix "><a href="../../ZZ_suffix.html">Suffix</a></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+        </nav>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky bordered">
+                    <div class="left-buttons">
+                        <button id="sidebar-toggle" class="icon-button" type="button" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">Catalyst Voting System - Core Technology</h1>
+
+                    <div class="right-buttons">
+                        <a href="../../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+                        <a href="https://github.com/input-output-hk/catalyst-core" title="Git repository" aria-label="Git repository">
+                            <i id="git-repository-button" class="fa fa-github"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="overview"><a class="header" href="#overview">Overview</a></h1>
+<p>The Catalyst-Cardano bridge is a custom bridge interface between Catalyst and a Cardano Node.
+It tracks data relevant to the unified Catalyst system, as it appears on the Cardano network, in real-time.</p>
+<p>The bridge is not just a data logger,  it also:</p>
+<ul>
+<li>Acts as an event trigger for other Catalyst systems.</li>
+<li>Acts as an information server to data pertinent to Catalyst operations.</li>
+</ul>
+<h2 id="issues-with-the-previous-systems"><a class="header" href="#issues-with-the-previous-systems">Issues with the previous systems</a></h2>
+<p>Catalyst has used a tool called <code>dbsync</code> to aquire “snapshot” data.
+A “snapshot” is a record at a moment in time of all staked ADA in the network.</p>
+<p><code>dbsync</code> is a tool which captures a relational interpretation of the Cardano blockchain to an SQL database.
+This is useful for general-purpose queries of information contained on Cardano, but to query bulk data it is slow, and complex.
+The relational structure means that individual transactions need to be pieced together from multiple tables.
+Even with indexes this exerts a heavy efficiency toll when a single transactions state is queried.
+When bulk data is queried, it results in a large and complex query which takes a very long time to run (on the order of hours).</p>
+<p><code>dbsync</code> itself takes a very very long time to sync to the blockchain, and get progressively slower.
+As at mid january 2023, one dbsync instance in a production environment took more than 5 days to sync with a local node.</p>
+<p>It is supposed to be possible to recover <code>dbsync</code> database from a backup, however experience shows this is a time consuming process itself.
+It took more than 12 hours just to load the backup image into the database, but then the node would not sync with main net.
+These issues cause excessive complexity, slow operation and fragile environments.</p>
+<p>Project Catalyst is also not in control of the <code>dbsync</code> database schema, and the schema can change between revisions.
+This could mean the entire database needs to be re-synched (taking days), or the schema changes and breaks tools which rely on the schema.</p>
+<h2 id="the-solution"><a class="header" href="#the-solution">The solution</a></h2>
+<p>The solution detailed here is a new bridge service, that has the following features:</p>
+<ul>
+<li>Can sync from multiple redundant nodes.</li>
+<li>Does not need to trust any single node (so it can sync from public nodes).</li>
+<li>Focused on data and events required by Project Catalyst:
+<ul>
+<li>Registration Records at all points in the past.</li>
+<li>Staked ADA at all points in the past.</li>
+<li>Minimum necessary state to track staked ADA.</li>
+</ul>
+</li>
+<li>More efficient database schema.</li>
+<li>Schema is not accessed directly but via a simple API Service.
+<ul>
+<li>Prevents downstream consumers from breaking if the DB Schema needs to change.</li>
+</ul>
+</li>
+<li>Does not need to snapshot:
+<ul>
+<li>Data is accumulated progressively, not at instants in time.</li>
+<li>Data storage allows the state at any past time to be calculated simply and efficiently.</li>
+</ul>
+</li>
+<li>Is easy to independently deploy by the Catalyst Community, so they can independently validate data reported by Project Catalyst.
+<ul>
+<li>Distributed use does not rely on any Catalyst-supplied data, which improves audibility and trust.</li>
+</ul>
+</li>
+</ul>
+<h3 id="architecture-overview"><a class="header" href="#architecture-overview">Architecture Overview</a></h3>
+<p>The System has these components:</p>
+<ul>
+<li>1 or more Cardano Nodes (Preferably 2 or more)</li>
+<li>A Pipeline which processes the data from the nodes:
+<ul>
+<li>Read blocks from multiple nodes</li>
+<li>Validate blocks by independent reference (A valid block has <code>n</code> independent copies)</li>
+<li>Queue valid blocks for processing.</li>
+<li>Read valid blocks from the queue and process every transaction in the block.
+<ul>
+<li>Calculate the change in staked ADA caused by all transactions in the block.</li>
+<li>Validate all Registration Records in the block:
+<ul>
+<li>Record all validated registrations.</li>
+<li>Record all in-valid registrations (including the reason the registration is invalid).</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Queue the complete block of transactions, ledger state and registration updates for storing and alerting.</li>
+<li>Lock the Databases for writing (Transactional)</li>
+<li>Check if the block being recorded is new:
+<ul>
+<li>New:
+<ul>
+<li>Record the updated current ledger state.</li>
+<li>Record the staked ADA for every stake address which changed in this block (time series record)</li>
+<li>Record the registrations (time series record)</li>
+<li>Send alerts to all upstream subscribers that subscribed events have changed.</li>
+<li>Commit the transaction (unlocks the DB)</li>
+</ul>
+</li>
+<li>Already Recorded:
+<ul>
+<li>Abort the write transaction (release the DB)</li>
+<li>Read the recorded data from the DB</li>
+<li>Validate the DB data with the data calculated from the block.</li>
+<li>If there is any discrepancy, LOG errors and send configured alerts.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>A REST/HTTP service to report catalyst bridge data
+<ul>
+<li>Report current staked/unpaid rewards in ADA for any stake address.</li>
+<li>Report staked/unpaid rewards in ADA for any stake address, at any past time.</li>
+<li>Report staked/unpaid rewards over a period of previous time, with various processing:
+<ul>
+<li>Daily Averages</li>
+<li>All records</li>
+<li>other</li>
+</ul>
+</li>
+<li>Calculate voting power given a set of voting power options for a single address, or all registrations of a particular type.
+<ul>
+<li>Snapshot (instantaneous) voting power</li>
+<li>Time window based voting power calculation</li>
+<li>Linear vs functional voting power function of raw ADA.</li>
+<li>Capped at a particular %</li>
+<li>other parameters which can affect the voting power calculation.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Catalyst Event stream published via:
+<ul>
+<li>Kafka</li>
+<li>other</li>
+</ul>
+</li>
+</ul>
+<h3 id="architectural-diagram"><a class="header" href="#architectural-diagram">Architectural Diagram</a></h3>
+<div style="background-color:blue">
+<pre><svg aria-roledescription="class" role="graphics-document document" viewBox="0 0 597.6796875 548" height="548" class="classDiagram" xmlns="http://www.w3.org/2000/svg" width="597.6796875" id="container"><style>#container{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#container .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#container .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#container .error-icon{fill:#552222;}#container .error-text{fill:#552222;stroke:#552222;}#container .edge-thickness-normal{stroke-width:1px;}#container .edge-thickness-thick{stroke-width:3.5px;}#container .edge-pattern-solid{stroke-dasharray:0;}#container .edge-thickness-invisible{stroke-width:0;fill:none;}#container .edge-pattern-dashed{stroke-dasharray:3;}#container .edge-pattern-dotted{stroke-dasharray:2;}#container .marker{fill:#333333;stroke:#333333;}#container .marker.cross{stroke:#333333;}#container svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#container p{margin:0;}#container g.classGroup text{fill:#9370DB;stroke:none;font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:10px;}#container g.classGroup text .title{font-weight:bolder;}#container .nodeLabel,#container .edgeLabel{color:#131300;}#container .edgeLabel .label rect{fill:#ECECFF;}#container .label text{fill:#131300;}#container .labelBkg{background:#ECECFF;}#container .edgeLabel .label span{background:#ECECFF;}#container .classTitle{font-weight:bolder;}#container .node rect,#container .node circle,#container .node ellipse,#container .node polygon,#container .node path{fill:#ECECFF;stroke:#9370DB;stroke-width:1px;}#container .divider{stroke:#9370DB;stroke-width:1;}#container g.clickable{cursor:pointer;}#container g.classGroup rect{fill:#ECECFF;stroke:#9370DB;}#container g.classGroup line{stroke:#9370DB;stroke-width:1;}#container .classLabel .box{stroke:none;stroke-width:0;fill:#ECECFF;opacity:0.5;}#container .classLabel .label{fill:#9370DB;font-size:10px;}#container .relation{stroke:#333333;stroke-width:1;fill:none;}#container .dashed-line{stroke-dasharray:3;}#container .dotted-line{stroke-dasharray:1 2;}#container #compositionStart,#container .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#container #compositionEnd,#container .composition{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#container #dependencyStart,#container .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#container #dependencyStart,#container .dependency{fill:#333333!important;stroke:#333333!important;stroke-width:1;}#container #extensionStart,#container .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#container #extensionEnd,#container .extension{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#container #aggregationStart,#container .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#container #aggregationEnd,#container .aggregation{fill:transparent!important;stroke:#333333!important;stroke-width:1;}#container #lollipopStart,#container .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#container #lollipopEnd,#container .lollipop{fill:#ECECFF!important;stroke:#333333!important;stroke-width:1;}#container .edgeTerminals{font-size:11px;line-height:initial;}#container .classTitleText{text-anchor:middle;font-size:18px;fill:#333;}#container :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><defs><marker orient="auto" markerHeight="240" markerWidth="190" refY="7" refX="18" class="marker aggregation class" id="container_class-aggregationStart"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker orient="auto" markerHeight="28" markerWidth="20" refY="7" refX="1" class="marker aggregation class" id="container_class-aggregationEnd"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker orient="auto" markerHeight="240" markerWidth="190" refY="7" refX="18" class="marker extension class" id="container_class-extensionStart"><path d="M 1,7 L18,13 V 1 Z"></path></marker></defs><defs><marker orient="auto" markerHeight="28" markerWidth="20" refY="7" refX="1" class="marker extension class" id="container_class-extensionEnd"><path d="M 1,1 V 13 L18,7 Z"></path></marker></defs><defs><marker orient="auto" markerHeight="240" markerWidth="190" refY="7" refX="18" class="marker composition class" id="container_class-compositionStart"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker orient="auto" markerHeight="28" markerWidth="20" refY="7" refX="1" class="marker composition class" id="container_class-compositionEnd"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker orient="auto" markerHeight="240" markerWidth="190" refY="7" refX="6" class="marker dependency class" id="container_class-dependencyStart"><path d="M 5,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker orient="auto" markerHeight="28" markerWidth="20" refY="7" refX="13" class="marker dependency class" id="container_class-dependencyEnd"><path d="M 18,7 L9,13 L14,7 L9,1 Z"></path></marker></defs><defs><marker orient="auto" markerHeight="240" markerWidth="190" refY="7" refX="13" class="marker lollipop class" id="container_class-lollipopStart"><circle r="6" cy="7" cx="7" fill="transparent" stroke="black"></circle></marker></defs><defs><marker orient="auto" markerHeight="240" markerWidth="190" refY="7" refX="1" class="marker lollipop class" id="container_class-lollipopEnd"><circle r="6" cy="7" cx="7" fill="transparent" stroke="black"></circle></marker></defs><g class="root"><g class="clusters"></g><g class="edgePaths"><path marker-start="url(#container_class-extensionStart)" style=";" class="edge-thickness-normal edge-pattern-solid relation" id="id_ContractKey_ContractHash_1" d="M161.625,161.421L157.398,164.017C153.171,166.614,144.716,171.807,140.489,178.57C136.262,185.333,136.262,193.667,136.262,197.833L136.262,202"></path><path marker-start="url(#container_class-extensionStart)" style=";" class="edge-thickness-normal edge-pattern-solid relation" id="id_ContractKey_ParameterHash_2" d="M426.738,161.421L430.965,164.017C435.193,166.614,443.647,171.807,447.874,178.57C452.102,185.333,452.102,193.667,452.102,197.833L452.102,202"></path><path marker-start="url(#container_class-extensionStart)" style=";" class="edge-thickness-normal edge-pattern-solid relation" id="id_ContractHash_Contract_3" d="M136.262,364L136.262,365.167C136.262,366.333,136.262,368.667,136.262,374C136.262,379.333,136.262,387.667,136.262,391.833L136.262,396"></path><path marker-start="url(#container_class-extensionStart)" style=";" class="edge-thickness-normal edge-pattern-solid relation" id="id_ParameterHash_Parameters_4" d="M452.102,364L452.102,365.167C452.102,366.333,452.102,368.667,452.102,374C452.102,379.333,452.102,387.667,452.102,391.833L452.102,396"></path></g><g class="edgeLabels"><g class="edgeLabel"><g transform="translate(0, -12)" class="label"><foreignObject height="24" width="0"><div class="labelBkg" xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel" style=";display: inline-block"></span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, -12)" class="label"><foreignObject height="24" width="0"><div class="labelBkg" xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel" style=";display: inline-block"></span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, -12)" class="label"><foreignObject height="24" width="0"><div class="labelBkg" xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel" style=";display: inline-block"></span></div></foreignObject></g></g><g class="edgeLabel"><g transform="translate(0, -12)" class="label"><foreignObject height="24" width="0"><div class="labelBkg" xmlns="http://www.w3.org/1999/xhtml" style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span class="edgeLabel" style=";display: inline-block"></span></div></foreignObject></g></g></g><g class="nodes"><g transform="translate(294.181640625, 80)" id="classId-ContractKey-0" class="node default"><g class="basic label-container"><path style="" fill="#ECECFF" stroke-width="0" stroke="none" d="M-199.8828125 -72 L199.8828125 -72 L199.8828125 72 L-199.8828125 72"></path><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-199.8828125 -72 C-49.8738559529086 -72, 100.1351005941828 -72, 199.8828125 -72 M-199.8828125 -72 C-70.18710773505535 -72, 59.5085970298893 -72, 199.8828125 -72 M199.8828125 -72 C199.8828125 -42.73225282358723, 199.8828125 -13.464505647174455, 199.8828125 72 M199.8828125 -72 C199.8828125 -28.89502099351951, 199.8828125 14.209958012960982, 199.8828125 72 M199.8828125 72 C77.84529370975127 72, -44.19222508049745 72, -199.8828125 72 M199.8828125 72 C96.59294168315952 72, -6.696929133680953 72, -199.8828125 72 M-199.8828125 72 C-199.8828125 17.682714325353807, -199.8828125 -36.634571349292386, -199.8828125 -72 M-199.8828125 72 C-199.8828125 42.51254539977073, -199.8828125 13.02509079954146, -199.8828125 -72"></path></g><g transform="translate(0, -48)" class="annotation-group text"></g><g transform="translate(-44.46875, -48)" class="label-group text"><g transform="translate(0,-12)" style="font-weight: bolder" class="label"><foreignObject height="24" width="88.9375"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 137px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>ContractKey</p></span></div></foreignObject></g></g><g transform="translate(-187.8828125, 0)" class="members-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="139.65625"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 190px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>contract_key: bytes</p></span></div></foreignObject></g></g><g transform="translate(-187.8828125, 48)" class="methods-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="331.296875"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 381px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>hash(concat(contract_hash, parameter_hash))</p></span></div></foreignObject></g></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-199.8828125 -24 C-106.27481449834036 -24, -12.666816496680724 -24, 199.8828125 -24 M-199.8828125 -24 C-98.85475581752826 -24, 2.173300864943485 -24, 199.8828125 -24"></path></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-199.8828125 24 C-51.17000409279677 24, 97.54280431440645 24, 199.8828125 24 M-199.8828125 24 C-85.04730444519689 24, 29.788203609606228 24, 199.8828125 24"></path></g></g><g transform="translate(136.26171875, 274)" id="classId-ContractHash-1" class="node default"><g class="basic label-container"><path style="" fill="#ECECFF" stroke-width="0" stroke="none" d="M-128.26171875 -72 L128.26171875 -72 L128.26171875 72 L-128.26171875 72"></path><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-128.26171875 -72 C-34.22395273627015 -72, 59.8138132774597 -72, 128.26171875 -72 M-128.26171875 -72 C-34.05541629807148 -72, 60.150886153857044 -72, 128.26171875 -72 M128.26171875 -72 C128.26171875 -43.1329194761486, 128.26171875 -14.265838952297202, 128.26171875 72 M128.26171875 -72 C128.26171875 -20.83802539310421, 128.26171875 30.32394921379158, 128.26171875 72 M128.26171875 72 C46.19524540956759 72, -35.87122793086482 72, -128.26171875 72 M128.26171875 72 C62.07951541196509 72, -4.1026879260698195 72, -128.26171875 72 M-128.26171875 72 C-128.26171875 29.862432350150257, -128.26171875 -12.275135299699485, -128.26171875 -72 M-128.26171875 72 C-128.26171875 38.84988759698467, -128.26171875 5.699775193969344, -128.26171875 -72"></path></g><g transform="translate(0, -48)" class="annotation-group text"></g><g transform="translate(-49.1640625, -48)" class="label-group text"><g transform="translate(0,-12)" style="font-weight: bolder" class="label"><foreignObject height="24" width="98.328125"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 147px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>ContractHash</p></span></div></foreignObject></g></g><g transform="translate(-116.26171875, 0)" class="members-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="154.03125"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 204px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>contract_hash : bytes</p></span></div></foreignObject></g></g><g transform="translate(-116.26171875, 48)" class="methods-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="183.359375"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 233px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>hash(Contract.as_bytes())</p></span></div></foreignObject></g></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-128.26171875 -24 C-76.86031883769566 -24, -25.458918925391316 -24, 128.26171875 -24 M-128.26171875 -24 C-27.163847438537417 -24, 73.93402387292517 -24, 128.26171875 -24"></path></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-128.26171875 24 C-52.51639541710949 24, 23.228927915781014 24, 128.26171875 24 M-128.26171875 24 C-42.205305593458675 24, 43.85110756308265 24, 128.26171875 24"></path></g></g><g transform="translate(452.1015625, 274)" id="classId-ParameterHash-2" class="node default"><g class="basic label-container"><path style="" fill="#ECECFF" stroke-width="0" stroke="none" d="M-137.578125 -72 L137.578125 -72 L137.578125 72 L-137.578125 72"></path><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-137.578125 -72 C-57.3685546842144 -72, 22.841015631571196 -72, 137.578125 -72 M-137.578125 -72 C-70.34517351073254 -72, -3.1122220214650724 -72, 137.578125 -72 M137.578125 -72 C137.578125 -23.327875767752985, 137.578125 25.34424846449403, 137.578125 72 M137.578125 -72 C137.578125 -24.936304050512774, 137.578125 22.12739189897445, 137.578125 72 M137.578125 72 C34.64928974172592 72, -68.27954551654815 72, -137.578125 72 M137.578125 72 C72.1871240358141 72, 6.7961230716281875 72, -137.578125 72 M-137.578125 72 C-137.578125 24.46825155268499, -137.578125 -23.06349689463002, -137.578125 -72 M-137.578125 72 C-137.578125 14.41881301046979, -137.578125 -43.16237397906042, -137.578125 -72"></path></g><g transform="translate(0, -48)" class="annotation-group text"></g><g transform="translate(-55.9375, -48)" class="label-group text"><g transform="translate(0,-12)" style="font-weight: bolder" class="label"><foreignObject height="24" width="111.875"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 161px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>ParameterHash</p></span></div></foreignObject></g></g><g transform="translate(-125.578125, 0)" class="members-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="117.046875"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 167px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>parameter_hash</p></span></div></foreignObject></g></g><g transform="translate(-125.578125, 48)" class="methods-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="195.21875"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 245px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>hash(Paramters.as_bytes())</p></span></div></foreignObject></g></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-137.578125 -24 C-75.42160979037376 -24, -13.265094580747544 -24, 137.578125 -24 M-137.578125 -24 C-50.168261037338354 -24, 37.24160292532329 -24, 137.578125 -24"></path></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-137.578125 24 C-65.22536491136186 24, 7.12739517727627 24, 137.578125 24 M-137.578125 24 C-79.17503890963135 24, -20.771952819262708 24, 137.578125 24"></path></g></g><g transform="translate(136.26171875, 468)" id="classId-Contract-3" class="node default"><g class="basic label-container"><path style="" fill="#ECECFF" stroke-width="0" stroke="none" d="M-85.18359375 -72 L85.18359375 -72 L85.18359375 72 L-85.18359375 72"></path><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-85.18359375 -72 C-38.460143264504055 -72, 8.26330722099189 -72, 85.18359375 -72 M-85.18359375 -72 C-17.650822816806198 -72, 49.881948116387605 -72, 85.18359375 -72 M85.18359375 -72 C85.18359375 -42.51246923463826, 85.18359375 -13.024938469276513, 85.18359375 72 M85.18359375 -72 C85.18359375 -40.59844972476374, 85.18359375 -9.196899449527471, 85.18359375 72 M85.18359375 72 C36.63205485502194 72, -11.919484039956117 72, -85.18359375 72 M85.18359375 72 C41.990806960503654 72, -1.201979828992691 72, -85.18359375 72 M-85.18359375 72 C-85.18359375 27.470704395902473, -85.18359375 -17.058591208195054, -85.18359375 -72 M-85.18359375 72 C-85.18359375 37.626569674549934, -85.18359375 3.253139349099868, -85.18359375 -72"></path></g><g transform="translate(0, -48)" class="annotation-group text"></g><g transform="translate(-31.0546875, -48)" class="label-group text"><g transform="translate(0,-12)" style="font-weight: bolder" class="label"><foreignObject height="24" width="62.109375"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 111px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>Contract</p></span></div></foreignObject></g></g><g transform="translate(-73.18359375, 0)" class="members-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="115.3125"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 165px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>Compiled Wasm</p></span></div></foreignObject></g></g><g transform="translate(-73.18359375, 48)" class="methods-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="73.4375"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 123px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>as_bytes()</p></span></div></foreignObject></g></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-85.18359375 -24 C-27.210536315729627 -24, 30.762521118540747 -24, 85.18359375 -24 M-85.18359375 -24 C-35.86430103920769 -24, 13.454991671584622 -24, 85.18359375 -24"></path></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-85.18359375 24 C-18.585964490722276 24, 48.01166476855545 24, 85.18359375 24 M-85.18359375 24 C-46.08350868234321 24, -6.983423614686416 24, 85.18359375 24"></path></g></g><g transform="translate(452.1015625, 468)" id="classId-Parameters-4" class="node default"><g class="basic label-container"><path style="" fill="#ECECFF" stroke-width="0" stroke="none" d="M-129.15625 -72 L129.15625 -72 L129.15625 72 L-129.15625 72"></path><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-129.15625 -72 C-31.001077919664183 -72, 67.15409416067163 -72, 129.15625 -72 M-129.15625 -72 C-41.053795944518285 -72, 47.04865811096343 -72, 129.15625 -72 M129.15625 -72 C129.15625 -17.895226267782697, 129.15625 36.20954746443461, 129.15625 72 M129.15625 -72 C129.15625 -15.243104443587846, 129.15625 41.51379111282431, 129.15625 72 M129.15625 72 C44.64579975188482 72, -39.864650496230354 72, -129.15625 72 M129.15625 72 C73.18769252040738 72, 17.21913504081475 72, -129.15625 72 M-129.15625 72 C-129.15625 25.006473580787095, -129.15625 -21.98705283842581, -129.15625 -72 M-129.15625 72 C-129.15625 33.976951947913605, -129.15625 -4.04609610417279, -129.15625 -72"></path></g><g transform="translate(0, -48)" class="annotation-group text"></g><g transform="translate(-41.59375, -48)" class="label-group text"><g transform="translate(0,-12)" style="font-weight: bolder" class="label"><foreignObject height="24" width="83.1875"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 132px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>Parameters</p></span></div></foreignObject></g></g><g transform="translate(-117.15625, 0)" class="members-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="192.71875"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 243px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>Structured Parameter Data</p></span></div></foreignObject></g></g><g transform="translate(-117.15625, 48)" class="methods-group text"><g transform="translate(0,-12)" style="" class="label"><foreignObject height="24" width="73.4375"><div style="display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 123px; text-align: center;" xmlns="http://www.w3.org/1999/xhtml"><span style="" class="nodeLabel markdown-node-label"><p>as_bytes()</p></span></div></foreignObject></g></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-129.15625 -24 C-37.170945911417164 -24, 54.81435817716567 -24, 129.15625 -24 M-129.15625 -24 C-77.37901293057551 -24, -25.601775861151026 -24, 129.15625 -24"></path></g><g style="" class="divider"><path style="" fill="none" stroke-width="1.3" stroke="#9370DB" d="M-129.15625 24 C-76.3619125686196 24, -23.567575137239217 24, 129.15625 24 M-129.15625 24 C-33.977597858382296 24, 61.20105428323541 24, 129.15625 24"></path></g></g></g></g></g></svg></pre>
+</div>
+<div style="background-color:white">
+<pre><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="323" height="86" viewBox="132 80 323 86" version="1.1"><g class="djs-group"><g class="djs-element djs-shape" data-element-id="StartEvent_1y45yut" style="display: block;" transform="matrix(1 0 0 1 152 102)"><g class="djs-visual"><circle cx="18" cy="18" r="18" style="stroke-linecap: round; stroke-linejoin: round; stroke: rgb(34, 36, 42); stroke-width: 2px; fill: white; fill-opacity: 0.95;"/></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="36" height="36" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="StartEvent_1y45yut_label" style="display: block;" transform="matrix(1 0 0 1 132 145)"><g class="djs-visual"><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: rgb(34, 36, 42);"><tspan x="0" y="9.899999999999999">hunger noticed</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="78" height="14" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="Task_1hcentk" style="display: block;" transform="matrix(1 0 0 1 240 80)"><g class="djs-visual"><rect x="0" y="0" width="100" height="80" rx="10" ry="10" style="stroke-linecap: round; stroke-linejoin: round; stroke: rgb(34, 36, 42); stroke-width: 2px; fill: white; fill-opacity: 0.95;"/><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 12px; font-weight: normal; fill: rgb(34, 36, 42);"><tspan x="11.0595703125" y="43.599999999999994">choose recipe</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="100" height="80" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="ExclusiveGateway_15hu1pt" style="display: block;" transform="matrix(1 0 0 1 395 95)"><g class="djs-visual"><polygon points="25,0 50,25 25,50 0,25" style="stroke-linecap: round; stroke-linejoin: round; stroke: rgb(34, 36, 42); stroke-width: 2px; fill: white; fill-opacity: 0.95;"/><path d="m 16,15 7.42857142857143,9.714285714285715 -7.42857142857143,9.714285714285715 3.428571428571429,0 5.714285714285715,-7.464228571428572 5.714285714285715,7.464228571428572 3.428571428571429,0 -7.42857142857143,-9.714285714285715 7.42857142857143,-9.714285714285715 -3.428571428571429,0 -5.714285714285715,7.464228571428572 -5.714285714285715,-7.464228571428572 -3.428571428571429,0 z" style="fill: rgb(34, 36, 42); stroke-linecap: round; stroke-linejoin: round; stroke: rgb(34, 36, 42); stroke-width: 1px;"/></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="50" height="50" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/></g></g><g class="djs-group"><g class="djs-element djs-shape" data-element-id="ExclusiveGateway_15hu1pt_label" style="display: block;" transform="matrix(1 0 0 1 387 152)"><g class="djs-visual"><text lineHeight="1.2" class="djs-label" style="font-family: Arial, sans-serif; font-size: 11px; font-weight: normal; fill: rgb(34, 36, 42);"><tspan x="0" y="9.899999999999999">desired dish?</tspan></text></g><rect class="djs-hit djs-hit-all" x="0" y="0" width="68" height="14" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="SequenceFlow_0h21x7r" style="display: block;"><g class="djs-visual"><defs><marker id="marker-8mpzbnd1c7qlebk18w7bh8wlm" viewBox="0 0 20 20" refX="11" refY="10" markerWidth="10" markerHeight="10" orient="auto"><path d="M 1 5 L 11 10 L 1 15 Z" style="stroke-linecap: round; stroke-linejoin: round; stroke: rgb(34, 36, 42); stroke-width: 1px; fill: rgb(34, 36, 42);"/></marker></defs><path data-corner-radius="5" style="fill: none; stroke-linecap: round; stroke-linejoin: round; stroke: rgb(34, 36, 42); stroke-width: 2px; marker-end: url('#marker-8mpzbnd1c7qlebk18w7bh8wlm');" d="M188,120L240,120"/></g><path d="M188,120L240,120" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/></g></g><g class="djs-group"><g class="djs-element djs-connection" data-element-id="SequenceFlow_0wnb4ke" style="display: block;"><g class="djs-visual"><defs><marker id="marker-2kt7vdjhuyb9t62qyl1s6zkh8" viewBox="0 0 20 20" refX="11" refY="10" markerWidth="10" markerHeight="10" orient="auto"><path d="M 1 5 L 11 10 L 1 15 Z" style="stroke-linecap: round; stroke-linejoin: round; stroke: rgb(34, 36, 42); stroke-width: 1px; fill: rgb(34, 36, 42);"/></marker></defs><path data-corner-radius="5" style="fill: none; stroke-linecap: round; stroke-linejoin: round; stroke: rgb(34, 36, 42); stroke-width: 2px; marker-end: url('#marker-2kt7vdjhuyb9t62qyl1s6zkh8');" d="M340,120L395,120"/></g><path d="M340,120L395,120" class="djs-hit djs-hit-stroke" style="fill: none; stroke-opacity: 0; stroke: white; stroke-width: 15px;"/></g></g></svg></pre>
+</div>
+<h3 id="integration-to-the-catalyst-unified-backend"><a class="header" href="#integration-to-the-catalyst-unified-backend">Integration to the Catalyst Unified Backend</a></h3>
+<p>The Cardano-Catalyst bridge is an essential and integral part of the Catalyst Unified backend.
+However, it is also a useful and capable tool in its own right.</p>
+<p>It has a secondary use case of allowing the community to INDEPENDENTLY validate their registrations and voting power.</p>
+<p>Accordingly, it is developed as a stand-alone service.
+This means it can be easily distributed and deployed INDEPENDENTLY of the rest of the catalyst unified backend services.</p>
+<p>It has two internal long running tasks.
+Read, validate and record latest registrations/delegations from the linked block chain.
+Read and record running total balance and unclaimed rewards for every stake address.
+It also exposes a Voting Power API.
+Get voting power for Stake Address or Voting Key as at (timestamp).  Would respect the registrations valid at that time.
+So if you asked for your voting power but you were delegated,
+the API would return you have X personal voting power,
+and Y..Z Voting power of yours has been delegated to Keys A-B.
+Options:
+Max Registration Age (So regitrations before this date/time are not considered).
+Must have valid payment address.
+(So we can later make a valid payment address a necessity if required, and this would also exclude just using stake address.)
+Voting power calculation type
+Absolute on the time of snapshot
+Average Maximum daily value
+Parameter: Length of time to average over (in days).
+Voting power linearity
+Linear (1 ADA = X voting power).  Where X is a parameter.
+Logarithmic (Voting power is attenuated by a logarithmic function).  Would need parameters to define the curve.
+Other??
+Get Registration/Delegation information for a Stake Address/Voting Key as at a time.  Similar to above but does NOT do any
+Get all active registrations as at a time.
+Time and max age of registrations are parameters.
+If stake addresses without registration are included in the output.
+What do you think? (edited)</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../../05_unified_platform/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next" href="../../05_unified_platform/01_catalyst-cardano-bridge/01_cardano_nodes.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../../05_unified_platform/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next" href="../../05_unified_platform/01_catalyst-cardano-bridge/01_cardano_nodes.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../../elasticlunr.min.js"></script>
+        <script src="../../mark.min.js"></script>
+        <script src="../../searcher.js"></script>
+
+        <script src="../../clipboard.min.js"></script>
+        <script src="../../highlight.js"></script>
+        <script src="../../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

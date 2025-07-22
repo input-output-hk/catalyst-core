@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["HASH_SIZE_256"],"enum":["Error"],"macro":["define_blake2b_new","define_hash_object"],"struct":["Blake2b256"],"type":["Result"]};

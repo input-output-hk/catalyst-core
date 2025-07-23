@@ -36,9 +36,13 @@ global: {
 
 			github: registry: "ghcr.io"
 
-			kcl: {
-				install: true
-				version: "v0.11.0"
+			tailscale: {
+				credentials: {
+					provider: "aws"
+					path:     "global/ci/tailscale"
+				}
+				tags:    "tag:cat-github"
+				version: "latest"
 			}
 		}
 		secrets: [

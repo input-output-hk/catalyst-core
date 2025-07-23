@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["fund","fund_exec"]};

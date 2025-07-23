@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["watch_signal","with_signal_handler"]};

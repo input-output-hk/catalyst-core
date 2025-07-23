@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["per_certificate_fee_is_zero","per_vote_certificate_fee_is_zero"],"struct":["LinearFeeDef","PerCertificateFeeDef","PerVoteCertificateFeeDef"]};

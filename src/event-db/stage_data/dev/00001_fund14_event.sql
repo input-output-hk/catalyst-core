@@ -36,12 +36,12 @@ INSERT INTO event (
     NULL,                   -- Review Rewards
     '2025-07-22 10:00:00',  -- Start Time
     '2025-10-27 07:00:00',  -- End Time
-    '2025-07-22 07:00:00',  -- Insight Sharing Start
-    '2025-07-22 07:00:00',  -- Proposal Submission Start
-    '2025-07-22 07:00:00',  -- Refine Proposals Start
-    '2025-07-22 07:00:00',  -- Finalize Proposals Start
-    '2025-07-22 07:00:00',  -- Proposal Assessment Start
-    '2025-07-22 07:00:00',  -- Assessment QA Start
+    '2025-07-22 10:00:00',  -- Insight Sharing Start
+    '2025-07-22 10:00:00',  -- Proposal Submission Start
+    '2025-07-22 10:00:00',  -- Refine Proposals Start
+    '2025-07-22 10:00:00',  -- Finalize Proposals Start
+    '2025-07-22 10:00:00',  -- Proposal Assessment Start
+    '2025-07-22 10:00:00',  -- Assessment QA Start
     '2025-09-22 12:00:00',  -- Voting Starts
     '2025-10-06 11:00:00',  -- Voting Ends
     '2025-10-27 07:00:00',  -- Tallying Ends

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["EitherAccount","Error"],"struct":["AccountId","State","Wallet","WalletBuildTx"]};

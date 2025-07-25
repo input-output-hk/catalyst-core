@@ -1,0 +1,1232 @@
+openapi: 3.0.3
+info:
+  title: Catalyst Backend Mock
+  description: All in One mock for testing thirdparty components which integrates with Catalyst Backend Mock
+  version: 1.0.0
+  contact: 
+    url: "https://github.com/input-output-hk/jormungandr/"
+
+servers:
+- url: http://localhost
+
+tags:
+- name: availability
+- name: fund
+- name: files
+- name: health
+- name: reset
+
+paths:
+  /api/control/command/available/true:
+    post:
+      summary: makes mock available to client calls
+      description: Controls backend availability. By default it is set to true, and anyone can connect to mock (unless mock is configured with access token and client does not have it). This endpoint can alter mock behaviour and make it available for all the call (contrary to sibling endpoint with ..available/false ) returning always an error code (predefined in error-codes endpoint)
+      operationId: commandAvailableTrue
+      tags:
+      - availability  
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/available/false:
+    post:
+      summary: drops all connection attempts from clients
+      description: Controls backend availability. By default it is set to true, and anyone can connect to mock (unless mock is configured with access token and client does not have it). This endpoint can alter mock behaviour and make it unavailable for all the call returning always an error code (predefined in error-codes endpoint)
+      operationId: commandAvailableFalse
+      tags:
+      - availability  
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/block-account/{amount}:
+    post:
+      summary: block v0/account/... endpoint for x calls
+      description: Blocks account endpoint for X calls simulating lack of connectivity with blockchain part of catalyst. As a result client cannot learn about his voting power
+      operationId: commandBlockAccount
+      tags:
+      - availability  
+      parameters:
+      - name: amount
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 3 
+        description: Amount of calls to be blocked 
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/block-account/reset:
+    post:
+      summary: resets block account mechanism
+      description: Reverts behavior modified block-account/{} endpoint. As a result client should be able to reach account endpoint
+      operationId: commandBlockAccountReset
+      tags:
+      - availability  
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/error-code/{code}:
+    post:
+      summary: makes mock always return error code
+      description: Sets return error code when mock is configured as not available
+      operationId: commandErrorCodes
+      tags:
+      - availability  
+      parameters:
+      - name: code
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 500 
+        description: valid http error code 
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fund/id/{new-id}:
+    post:
+      summary: updates fund id for current fund
+      description: Updates current fund id. This method is useful to test client on any new fund appearance
+      operationId: commandFundId
+      tags:
+      - fund  
+      parameters:
+      - name: new-id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 1 
+        description: new fund id as number
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fund/update:
+    put:
+      summary: updates fund content
+      description: Updates fund content with given data
+      operationId: commandFundUpdate
+      tags:
+      - fund  
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                assessment_qa_start:
+                  type: string
+                  example: 2022-12-28T19:50:54Z
+                chain_vote_plans:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      chain_committee_end_time:
+                        type: string
+                        example: 2023-01-02T20:20:54Z
+                      chain_vote_encryption_key:
+                        type: string
+                        example: ''
+                      chain_vote_end_time:
+                        type: string
+                        example: 2023-01-02T20:10:54Z
+                      chain_vote_start_time:
+                        type: string
+                        example: 2023-01-02T20:00:54Z
+                      chain_voteplan_id:
+                        type: string
+                        example: 225aa4b1d85faefe1b056ae413897a7e816b8413db1a84bf57526f2358e5b458
+                      chain_voteplan_payload:
+                        type: string
+                        example: public
+                      fund_id:
+                        type: number
+                        example: 9
+                      id:
+                        type: number
+                        example: -769245555
+                  example:
+                  - chain_committee_end_time: 2023-01-02T20:20:54Z
+                    chain_vote_encryption_key: ''
+                    chain_vote_end_time: 2023-01-02T20:10:54Z
+                    chain_vote_start_time: 2023-01-02T20:00:54Z
+                    chain_voteplan_id: 225aa4b1d85faefe1b056ae413897a7e816b8413db1a84bf57526f2358e5b458
+                    chain_voteplan_payload: public
+                    fund_id: 9
+                    id: -769245555
+                challenges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      challenge_type:
+                        type: string
+                        example: simple
+                      challenge_url:
+                        type: string
+                        example: http://runolfsson-and-walsh-llc.io
+                      description:
+                        type: string
+                        example: Devolved
+                      fund_id:
+                        type: number
+                        example: 9
+                      highlights:
+                        type: object
+                        nullable: true
+                        example: null
+                      id:
+                        type: number
+                        example: 1807880197
+                      internal_id:
+                        type: number
+                        example: 1
+                      proposers_rewards:
+                        type: number
+                        example: 3766
+                      rewards_total:
+                        type: number
+                        example: 1417
+                      title:
+                        type: string
+                        example: Seamless asynchronous initiative
+                  example:
+                  - challenge_type: simple
+                    challenge_url: http://runolfsson-and-walsh-llc.io
+                    description: Devolved
+                    fund_id: 9
+                    highlights: null
+                    id: 1807880197
+                    internal_id: 1
+                    proposers_rewards: 3766
+                    rewards_total: 1417
+                    title: Seamless asynchronous initiative
+                  - challenge_type: native
+                    challenge_url: http://gislason-and-ritchie-group.net
+                    description: User-centric
+                    fund_id: 9
+                    highlights: null
+                    id: 653731209
+                    internal_id: 2
+                    proposers_rewards: 6898
+                    rewards_total: 685
+                    title: Open-source intermediate paradigm
+                  - challenge_type: simple
+                    challenge_url: http://nienow-inc.info
+                    description: Persistent
+                    fund_id: 9
+                    highlights: null
+                    id: 1505287677
+                    internal_id: 3
+                    proposers_rewards: 7602
+                    rewards_total: 8377
+                    title: Realigned leading edge Graphic Interface
+                  - challenge_type: simple
+                    challenge_url: http://o'keefe-and-orn-and-sons.io
+                    description: Re-engineered
+                    fund_id: 9
+                    highlights: null
+                    id: 1101749926
+                    internal_id: 4
+                    proposers_rewards: 6665
+                    rewards_total: 6182
+                    title: Ergonomic full-range time-frame
+                  - challenge_type: native
+                    challenge_url: http://kozey-llc.net
+                    description: Enterprise-wide
+                    fund_id: 9
+                    highlights:
+                      sponsor: Rempel Group
+                    id: 1357451625
+                    internal_id: 5
+                    proposers_rewards: 2945
+                    rewards_total: 2681
+                    title: Enhanced regional structure
+                  - challenge_type: community-choice
+                    challenge_url: http://flatley-and-sons.name
+                    description: Virtual
+                    fund_id: 9
+                    highlights: null
+                    id: 622480193
+                    internal_id: 6
+                    proposers_rewards: 4714
+                    rewards_total: 4665
+                    title: Synergized bandwidth-monitored paradigm
+                  - challenge_type: native
+                    challenge_url: http://oberbrunner-and-tremblay-inc.co
+                    description: Up-sized
+                    fund_id: 9
+                    highlights:
+                      sponsor: Bosco and Sons
+                    id: 308170523
+                    internal_id: 7
+                    proposers_rewards: 1851
+                    rewards_total: 3542
+                    title: Decentralized coherent hub
+                  - challenge_type: simple
+                    challenge_url: http://will-and-o'kon-group.info
+                    description: Focused
+                    fund_id: 9
+                    highlights: null
+                    id: -114748809
+                    internal_id: 8
+                    proposers_rewards: 7070
+                    rewards_total: 4180
+                    title: Intuitive client-driven access
+                  - challenge_type: community-choice
+                    challenge_url: http://wilkinson-and-jones-llc.info
+                    description: Synchronised
+                    fund_id: 9
+                    highlights:
+                      sponsor: Wolff and Sons
+                    id: 363010863
+                    internal_id: 9
+                    proposers_rewards: 2795
+                    rewards_total: 5248
+                    title: Front-line contextually-based approach
+                finalize_proposals_start:
+                  type: string
+                  example: 2022-12-26T19:50:54Z
+                fund_end_time:
+                  type: string
+                  example: 2023-01-02T20:10:54Z
+                fund_goal:
+                  type: string
+                  example: How will we encourage developers and entrepreneurs to build Dapps and businesses on top of Cardano in the next 6 months?
+                fund_name:
+                  type: string
+                  example: Fund9
+                fund_start_time:
+                  type: string
+                  example: 2023-01-02T20:00:54Z
+                goals:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      fund_id:
+                        type: number
+                        example: 9
+                      goal_name:
+                        type: string
+                        example: first Goal
+                      id:
+                        type: number
+                        example: 900
+                  example:
+                  - fund_id: 9
+                    goal_name: first Goal
+                    id: 900
+                  - fund_id: 9
+                    goal_name: second Goal
+                    id: 901
+                  - fund_id: 9
+                    goal_name: third Goal
+                    id: 902
+                id:
+                  type: number
+                  example: 9
+                insight_sharing_start:
+                  type: string
+                  example: 2022-12-23T19:50:54Z
+                next:
+                  type: object
+                  properties:
+                    assessment_qa_start:
+                      type: string
+                      example: 2023-01-04T09:52:50Z
+                    finalize_proposals_start:
+                      type: string
+                      example: 2023-01-03T20:29:19Z
+                    fund_name:
+                      type: string
+                      example: Fund1576382552
+                    id:
+                      type: number
+                      example: 1576382552
+                    insight_sharing_start:
+                      type: string
+                      example: 2023-01-03T06:19:29Z
+                    proposal_assessment_start:
+                      type: string
+                      example: 2023-01-04T09:24:15Z
+                    proposal_submission_start:
+                      type: string
+                      example: 2023-01-03T16:11:32Z
+                    refine_proposals_start:
+                      type: string
+                      example: 2023-01-03T20:18:59Z
+                    snapshot_start:
+                      type: string
+                      example: 2023-01-04T10:51:19Z
+                    tallying_end:
+                      type: string
+                      example: 2023-01-04T11:19:44Z
+                    voting_end:
+                      type: string
+                      example: 2023-01-04T11:19:29Z
+                    voting_start:
+                      type: string
+                      example: 2023-01-04T11:17:51Z
+                next_fund_start_time:
+                  type: string
+                  example: 2023-02-01T19:50:54Z
+                next_registration_snapshot_time:
+                  type: string
+                  example: 2023-01-22T19:50:54Z
+                proposal_assessment_start:
+                  type: string
+                  example: 2022-12-27T19:50:54Z
+                proposal_submission_start:
+                  type: string
+                  example: 2022-12-24T19:50:54Z
+                refine_proposals_start:
+                  type: string
+                  example: 2022-12-25T19:50:54Z
+                registration_snapshot_time:
+                  type: string
+                  example: 2023-01-02T16:50:54Z
+                results_url:
+                  type: string
+                  example: https://catalyst.domain/survey
+                snapshot_start:
+                  type: string
+                  example: 2023-01-02T16:50:54Z
+                survey_url:
+                  type: string
+                  example: https://catalyst.domain/result
+                tallying_end:
+                  type: string
+                  example: 2023-01-02T20:20:54Z
+                voting_end:
+                  type: string
+                  example: 2023-01-02T20:10:54Z
+                voting_power_threshold:
+                  type: number
+                  example: 8000000000
+                voting_start:
+                  type: string
+                  example: 2023-01-02T20:00:54Z
+            example:
+              assessment_qa_start: 2022-12-28T19:50:54Z
+              chain_vote_plans:
+              - chain_committee_end_time: 2023-01-02T20:20:54Z
+                chain_vote_encryption_key: ''
+                chain_vote_end_time: 2023-01-02T20:10:54Z
+                chain_vote_start_time: 2023-01-02T20:00:54Z
+                chain_voteplan_id: 225aa4b1d85faefe1b056ae413897a7e816b8413db1a84bf57526f2358e5b458
+                chain_voteplan_payload: public
+                fund_id: 9
+                id: -769245555
+              challenges:
+              - challenge_type: simple
+                challenge_url: http://runolfsson-and-walsh-llc.io
+                description: Devolved
+                fund_id: 9
+                highlights: null
+                id: 1807880197
+                internal_id: 1
+                proposers_rewards: 3766
+                rewards_total: 1417
+                title: Seamless asynchronous initiative
+              - challenge_type: native
+                challenge_url: http://gislason-and-ritchie-group.net
+                description: User-centric
+                fund_id: 9
+                highlights: null
+                id: 653731209
+                internal_id: 2
+                proposers_rewards: 6898
+                rewards_total: 685
+                title: Open-source intermediate paradigm
+              - challenge_type: simple
+                challenge_url: http://nienow-inc.info
+                description: Persistent
+                fund_id: 9
+                highlights: null
+                id: 1505287677
+                internal_id: 3
+                proposers_rewards: 7602
+                rewards_total: 8377
+                title: Realigned leading edge Graphic Interface
+              - challenge_type: simple
+                challenge_url: http://o'keefe-and-orn-and-sons.io
+                description: Re-engineered
+                fund_id: 9
+                highlights: null
+                id: 1101749926
+                internal_id: 4
+                proposers_rewards: 6665
+                rewards_total: 6182
+                title: Ergonomic full-range time-frame
+              - challenge_type: native
+                challenge_url: http://kozey-llc.net
+                description: Enterprise-wide
+                fund_id: 9
+                highlights:
+                  sponsor: Rempel Group
+                id: 1357451625
+                internal_id: 5
+                proposers_rewards: 2945
+                rewards_total: 2681
+                title: Enhanced regional structure
+              - challenge_type: community-choice
+                challenge_url: http://flatley-and-sons.name
+                description: Virtual
+                fund_id: 9
+                highlights: null
+                id: 622480193
+                internal_id: 6
+                proposers_rewards: 4714
+                rewards_total: 4665
+                title: Synergized bandwidth-monitored paradigm
+              - challenge_type: native
+                challenge_url: http://oberbrunner-and-tremblay-inc.co
+                description: Up-sized
+                fund_id: 9
+                highlights:
+                  sponsor: Bosco and Sons
+                id: 308170523
+                internal_id: 7
+                proposers_rewards: 1851
+                rewards_total: 3542
+                title: Decentralized coherent hub
+              - challenge_type: simple
+                challenge_url: http://will-and-o'kon-group.info
+                description: Focused
+                fund_id: 9
+                highlights: null
+                id: -114748809
+                internal_id: 8
+                proposers_rewards: 7070
+                rewards_total: 4180
+                title: Intuitive client-driven access
+              - challenge_type: community-choice
+                challenge_url: http://wilkinson-and-jones-llc.info
+                description: Synchronised
+                fund_id: 9
+                highlights:
+                  sponsor: Wolff and Sons
+                id: 363010863
+                internal_id: 9
+                proposers_rewards: 2795
+                rewards_total: 5248
+                title: Front-line contextually-based approach
+              finalize_proposals_start: 2022-12-26T19:50:54Z
+              fund_end_time: 2023-01-02T20:10:54Z
+              fund_goal: How will we encourage developers and entrepreneurs to build Dapps and businesses on top of Cardano in the next 6 months?
+              fund_name: Fund9
+              fund_start_time: 2023-01-02T20:00:54Z
+              goals:
+              - fund_id: 9
+                goal_name: first Goal
+                id: 900
+              - fund_id: 9
+                goal_name: second Goal
+                id: 901
+              - fund_id: 9
+                goal_name: third Goal
+                id: 902
+              id: 9
+              insight_sharing_start: 2022-12-23T19:50:54Z
+              next:
+                assessment_qa_start: 2023-01-04T09:52:50Z
+                finalize_proposals_start: 2023-01-03T20:29:19Z
+                fund_name: Fund1576382552
+                id: 1576382552
+                insight_sharing_start: 2023-01-03T06:19:29Z
+                proposal_assessment_start: 2023-01-04T09:24:15Z
+                proposal_submission_start: 2023-01-03T16:11:32Z
+                refine_proposals_start: 2023-01-03T20:18:59Z
+                snapshot_start: 2023-01-04T10:51:19Z
+                tallying_end: 2023-01-04T11:19:44Z
+                voting_end: 2023-01-04T11:19:29Z
+                voting_start: 2023-01-04T11:17:51Z
+              next_fund_start_time: 2023-02-01T19:50:54Z
+              next_registration_snapshot_time: 2023-01-22T19:50:54Z
+              proposal_assessment_start: 2022-12-27T19:50:54Z
+              proposal_submission_start: 2022-12-24T19:50:54Z
+              refine_proposals_start: 2022-12-25T19:50:54Z
+              registration_snapshot_time: 2023-01-02T16:50:54Z
+              results_url: https://catalyst.domain/survey
+              snapshot_start: 2023-01-02T16:50:54Z
+              survey_url: https://catalyst.domain/result
+              tallying_end: 2023-01-02T20:20:54Z
+              voting_end: 2023-01-02T20:10:54Z
+              voting_power_threshold: 8000000000
+              voting_start: 2023-01-02T20:00:54Z
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/reset:
+    post:
+      summary: resets mock service
+      description: Resets mock service with new initial data as new wallets and time of voting.
+      operationId: commandReset
+      tags:
+      - reset
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                blockchain:
+                  type: object
+                  properties:
+                    block_content_max_size:
+                      type: number
+                      example: 20971520
+                    linear_fees:
+                      type: object
+                      properties:
+                        certificate:
+                          type: number
+                          example: 0
+                        coefficient:
+                          type: number
+                          example: 0
+                        constant:
+                          type: number
+                          example: 0
+                    slot_duration:
+                      type: number
+                      example: 4
+                data:
+                  type: object
+                  properties:
+                    current_fund:
+                      type: object
+                      properties:
+                        challenges:
+                          type: number
+                          example: 23
+                        dates:
+                          type: object
+                          properties:
+                            assessment_qa_start:
+                              type: string
+                              example: 2022-05-05T12:00:00Z
+                            finalize_proposals_start:
+                              type: string
+                              example: 2022-05-04T12:00:00Z
+                            insight_sharing_start:
+                              type: string
+                              example: 2022-05-01T12:00:00Z
+                            next_snapshot_time:
+                              type: string
+                              example: 2023-05-07T12:00:00Z
+                            next_vote_start_time:
+                              type: string
+                              example: 2022-07-14T12:00:00Z
+                            proposal_assessment_start:
+                              type: string
+                              example: 2022-05-04T12:00:00Z
+                            proposal_submission_start:
+                              type: string
+                              example: 2022-05-02T12:00:00Z
+                            refine_proposals_start:
+                              type: string
+                              example: 2022-05-03T12:00:00Z
+                            snapshot_time:
+                              type: string
+                              example: 2022-05-07T12:00:00Z
+                        fund_id:
+                          type: number
+                          example: 9
+                        fund_name:
+                          type: string
+                          example: Fund9
+                        options:
+                          type: string
+                          example: yes,no
+                        proposals:
+                          type: number
+                          example: 1134
+                        reviews:
+                          type: number
+                          example: 7045
+                        voting_power:
+                          type: number
+                          example: 450
+                    next_funds:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          dates:
+                            type: object
+                            properties:
+                              assessment_qa_start:
+                                type: string
+                                example: 2023-05-05T12:00:00Z
+                              finalize_proposals_start:
+                                type: string
+                                example: 2023-05-04T12:00:00Z
+                              insight_sharing_start:
+                                type: string
+                                example: 2023-05-01T12:00:00Z
+                              next_snapshot_time:
+                                type: string
+                                example: 2023-07-07T12:00:00Z
+                              next_vote_start_time:
+                                type: string
+                                example: 2023-07-14T12:00:00Z
+                              proposal_assessment_start:
+                                type: string
+                                example: 2023-05-04T12:00:00Z
+                              proposal_submission_start:
+                                type: string
+                                example: 2023-05-02T12:00:00Z
+                              refine_proposals_start:
+                                type: string
+                                example: 2023-05-03T12:00:00Z
+                              snapshot_time:
+                                type: string
+                                example: 2023-05-07T12:00:00Z
+                              voting_start:
+                                type: string
+                                example: 2023-07-14T12:00:00Z
+                              voting_tally_end:
+                                type: string
+                                example: 2023-07-14T12:00:00Z
+                              voting_tally_start:
+                                type: string
+                                example: 2023-07-14T12:00:00Z
+                          fund_id:
+                            type: number
+                            example: 10
+                          fund_name:
+                            type: string
+                            example: Fund10
+                      example:
+                      - dates:
+                          assessment_qa_start: 2023-05-05T12:00:00Z
+                          finalize_proposals_start: 2023-05-04T12:00:00Z
+                          insight_sharing_start: 2023-05-01T12:00:00Z
+                          next_snapshot_time: 2023-07-07T12:00:00Z
+                          next_vote_start_time: 2023-07-14T12:00:00Z
+                          proposal_assessment_start: 2023-05-04T12:00:00Z
+                          proposal_submission_start: 2023-05-02T12:00:00Z
+                          refine_proposals_start: 2023-05-03T12:00:00Z
+                          snapshot_time: 2023-05-07T12:00:00Z
+                          voting_start: 2023-07-14T12:00:00Z
+                          voting_tally_end: 2023-07-14T12:00:00Z
+                          voting_tally_start: 2023-07-14T12:00:00Z
+                        fund_id: 10
+                        fund_name: Fund10
+                initials:
+                  type: object
+                  properties:
+                    block0:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          above_threshold:
+                            type: number
+                            example: 10
+                          funds:
+                            type: number
+                            example: 10000
+                          name:
+                            type: string
+                            example: alice
+                          pin:
+                            type: string
+                            example: '1234'
+                          zero_funds:
+                            type: number
+                            example: 10
+                      example:
+                      - above_threshold: 10
+                        pin: '1234'
+                      - funds: 10000
+                        name: alice
+                        pin: '1234'
+                      - funds: 10000
+                        name: bob
+                        pin: '1234'
+                      - pin: '1234'
+                        zero_funds: 10
+                    snapshot:
+                      type: object
+                      properties:
+                        content:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              count:
+                                type: number
+                                example: 2
+                              funds:
+                                type: number
+                                example: 10001
+                              level:
+                                type: number
+                                example: 1234
+                              name:
+                                type: string
+                                example: alice
+                          example:
+                          - count: 2
+                            level: 1234
+                          - name: alice
+                          - funds: 10001
+                            name: bob
+                        tag:
+                          type: string
+                          example: daily
+                version:
+                  type: string
+                  example: '3.8'
+                vote_plan:
+                  type: object
+                  properties:
+                    private:
+                      type: boolean
+                      example: true
+                    vote_time:
+                      type: object
+                      properties:
+                        slots_per_epoch:
+                          type: number
+                          example: 3600
+                        tally_end:
+                          type: number
+                          example: 234
+                        tally_start:
+                          type: number
+                          example: 134
+                        vote_start:
+                          type: number
+                          example: 0
+            example:
+              blockchain:
+                block_content_max_size: 20971520
+                linear_fees:
+                  certificate: 0
+                  coefficient: 0
+                  constant: 0
+                slot_duration: 4
+              data:
+                current_fund:
+                  challenges: 23
+                  dates:
+                    assessment_qa_start: 2022-05-05T12:00:00Z
+                    finalize_proposals_start: 2022-05-04T12:00:00Z
+                    insight_sharing_start: 2022-05-01T12:00:00Z
+                    next_snapshot_time: 2023-05-07T12:00:00Z
+                    next_vote_start_time: 2022-07-14T12:00:00Z
+                    proposal_assessment_start: 2022-05-04T12:00:00Z
+                    proposal_submission_start: 2022-05-02T12:00:00Z
+                    refine_proposals_start: 2022-05-03T12:00:00Z
+                    snapshot_time: 2022-05-07T12:00:00Z
+                  fund_id: 9
+                  fund_name: Fund9
+                  options: yes,no
+                  proposals: 1134
+                  reviews: 7045
+                  voting_power: 450
+                next_funds:
+                - dates:
+                    assessment_qa_start: 2023-05-05T12:00:00Z
+                    finalize_proposals_start: 2023-05-04T12:00:00Z
+                    insight_sharing_start: 2023-05-01T12:00:00Z
+                    next_snapshot_time: 2023-07-07T12:00:00Z
+                    next_vote_start_time: 2023-07-14T12:00:00Z
+                    proposal_assessment_start: 2023-05-04T12:00:00Z
+                    proposal_submission_start: 2023-05-02T12:00:00Z
+                    refine_proposals_start: 2023-05-03T12:00:00Z
+                    snapshot_time: 2023-05-07T12:00:00Z
+                    voting_start: 2023-07-14T12:00:00Z
+                    voting_tally_end: 2023-07-14T12:00:00Z
+                    voting_tally_start: 2023-07-14T12:00:00Z
+                  fund_id: 10
+                  fund_name: Fund10
+              initials:
+                block0:
+                - above_threshold: 10
+                  pin: '1234'
+                - funds: 10000
+                  name: alice
+                  pin: '1234'
+                - funds: 10000
+                  name: bob
+                  pin: '1234'
+                - pin: '1234'
+                  zero_funds: 10
+                snapshot:
+                  content:
+                  - count: 2
+                    level: 1234
+                  - name: alice
+                  - funds: 10001
+                    name: bob
+                  tag: daily
+              version: '3.8'
+              vote_plan:
+                private: true
+                vote_time:
+                  slots_per_epoch: 3600
+                  tally_end: 234
+                  tally_start: 134
+                  vote_start: 0
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/health:
+    post:
+      summary: health endpoint
+      description: should serve as health endpoint for various instrumentation tools
+      operationId: health
+      tags:
+      - health
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/files/list:
+    get:
+      tags:
+      - files  
+      summary: list local mock files
+      description: Lists all files in control of mock service
+      operationId: filesList
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/files/get/{local-file-path}:
+    get:
+      summary: get file content by local path
+      description: get files content by relative to mock service root path
+      operationId: filesGet
+      tags:
+      - files  
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      - name: local-file-path
+        in: path
+        required: true
+        schema:
+          type: string
+          example: genesis.yaml
+        description: local file path with extension 
+      responses:
+        '200':
+          description: 'raw content of file'
+  /api/control/command/fragments/reject:
+    post:
+      summary: rejects all fragments
+      description: Alter behavior of mempool part of node. Rejects all incoming fragments. As a result all of them will have \`rejected\` status in mempool and won't be applied to blockchain history
+      operationId: commandFragmentsReject
+      tags:
+      - files
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fragments/accept:
+    post:
+      summary: accepts all fragments
+      description: Alter behavior of mempool part of node. Accept all incoming fragments. As a result all of them will have \`in a block\` status in mempool and will be applied to blockchain
+      operationId: commandFragmentsAccept
+      tags:
+      - fragment
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fragments/pending:
+    post:
+      summary: put all fragments on hold
+      description: Alter behavior of mempool part of node. Accept all incoming fragments. As a result all of them will have \`pending\` status in mempool
+      operationId: commandFragmentsPending
+      tags:
+      - fragment
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fragments/reset:
+    post:
+      summary: reset fragment acceptance strategy
+      description: Resets behavior of mempool part of node. Reverts mechanism to default which means that every fragment will be verified against current tip and outcome of this verification will affect it status
+      operationId: commandFragmentsReset
+      tags:
+      - fragment
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fragments/forget:
+    post:
+      summary: drop all incoming fragments without a trace
+      description: Alters behavior of mempool part of node. Forgets every fragment that reaches mempool. As a result fragment will not appear in mempool
+      operationId: commandFragmentsForget
+      tags:
+      - fragment
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/congestion/reset:
+    post:
+      summary: set congestion stats derived from actual data
+      description: Alters congestion statistics available when querying node/stats endpoint. Reverts statistics to default mechanism. Congestion stats should now be based on actual data from mempool (mempool size/ last 3 block size etc.)
+      operationId: commandCongestionReset
+      tags:
+      - congestion
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/congestion/normal:
+    post:
+      summary: set congestion to normal
+      description: Alters congestion statistics available when querying node/stats endpoint. Sets system o parameters in a way client recognize them as normal congestion (mempool size/ last 3 block size etc.)
+      operationId: commandCongestionNormal
+      tags:
+      - congestion
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/congestion/jammed:
+    post:
+      summary: set congestion to jammed
+      description: Alters congestion statistics available when querying node/stats endpoint. Sets system o parameters in a way client recognize them as high congestion (mempool size/ last 3 block size etc.)
+      operationId: commandCongestionJammed
+      tags:
+      - congestion
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/congestion/moderate:
+    post:
+      summary: set congestion to moderate
+      description: Alters congestion statistics available when querying node/stats endpoint. Sets system o parameters in a way client recognize them as moderate congestion (mempool size/ last 3 block size etc.)
+      operationId: commandCongestionModerate
+      tags:
+      - congestion
+      parameters:
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fragments/update/{fragment-id}/reject:
+    post:
+      summary: update already sent fragment to reject
+      description: Alters status of existing fragment in mempool to \`reject\`. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id.
+      operationId: commandFragmentsUpdateReject
+      tags:
+      - fragment
+      parameters:
+      - name: fragment-id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: b4bd37b8ac4c1a753bc0fe673e757388e81bd8ce0b49276a2eedf89b903b6e53
+        description: fragment id hash or special keyword 'LAST' for last send fragment
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fragments/update/{fragment-id}/forget:
+    post:
+      summary: remove already sent fragment from mempool
+      description: Removes fragment from mempool, like it was never sent. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id.
+      operationId: commandFragmentsUpdateForget
+      tags:
+      - fragment
+      parameters:
+      - name: fragment-id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: b4bd37b8ac4c1a753bc0fe673e757388e81bd8ce0b49276a2eedf89b903b6e53
+        description: fragment id hash or special keyword 'LAST' for last send fragment
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fragments/update/{fragment-id}/accept:
+    post:
+      summary: update already sent fragment to be in block
+      description: Alters staus of existing fragment in mempool to \`accept\`, but it now modifies the ledger. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id.
+      operationId: commandFragmentsUpdateAccept
+      tags:
+      - fragment
+      parameters:
+      - name: fragment-id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: b4bd37b8ac4c1a753bc0fe673e757388e81bd8ce0b49276a2eedf89b903b6e53
+        description: fragment id hash or special keyword 'LAST' for last send fragment
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'
+  /api/control/command/fragments/update/{fragment-id}/pending:
+    post:
+      summary: update already sent fragment to pending
+      description: Alters status of existing fragment in mempool to \`pending\`. There is a special keyword 'LAST' for modifying last fragment instead of fragment with particular id.
+      operationId: commandFragmentsUpdatePending
+      tags:
+      - fragment
+      parameters:
+      - name: fragment-id
+        in: path
+        required: true
+        schema:
+          type: string
+          example: b4bd37b8ac4c1a753bc0fe673e757388e81bd8ce0b49276a2eedf89b903b6e53
+        description: fragment id hash or special keyword 'LAST' for last send fragment
+      - name: API-Token
+        description: Optional access token
+        in: header
+        schema:
+          type: string
+          example: RBj0OfHw5jT87A
+      responses:
+        '200':
+          description: 'Command accepted'

@@ -56,7 +56,7 @@ impl MockBuilder {
 
     pub fn build_data(&self) -> Arc<RwLock<MockServerData>> {
         let storage = BlockStore::memory(Hash::zero_hash().as_bytes().to_owned()).unwrap();
-        let block0 = if let Some(block) = self.genesis_block.clone().take() {
+        let block0 = if let Some(block) = self.genesis_block.clone() {
             block
         } else {
             // Block contents do not really matter.

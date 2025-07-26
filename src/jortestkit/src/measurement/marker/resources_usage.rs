@@ -18,6 +18,7 @@ impl PartialEq for ResourcesUsage {
     }
 }
 
+#[allow(clippy::non_canonical_partial_ord_impl)]
 impl PartialOrd for ResourcesUsage {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         let cpu_cmp = self.cpu_usage().partial_cmp(&other.cpu_usage()).unwrap();

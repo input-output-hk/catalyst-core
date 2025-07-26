@@ -148,7 +148,7 @@ pub fn encrypt<R: RngCore + CryptoRng>(
 /// * data is too small
 /// * any of the point is not in the first format
 /// * tag don't match
-/// Success otherwise
+///   Success otherwise
 ///
 /// # Panics
 ///

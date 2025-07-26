@@ -289,7 +289,7 @@ impl Storage {
         descendant: HeaderHash,
     ) -> Result<Option<Ancestor>, Error> {
         let mut ancestor = None;
-        let mut closest_found = std::u32::MAX;
+        let mut closest_found = u32::MAX;
 
         for checkpoint in checkpoints {
             // Checkpoints sent by a peer may not

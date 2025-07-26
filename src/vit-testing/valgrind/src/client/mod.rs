@@ -163,7 +163,7 @@ impl ValgrindClient {
     }
 
     pub fn block0(&self) -> Result<Vec<u8>, Error> {
-        Ok(self.proxy_client.block0().map(Into::into)?)
+        Ok(self.proxy_client.block0()?)
     }
 
     pub fn vote_plan_statuses(&self) -> Result<Vec<VotePlanStatus>, Error> {

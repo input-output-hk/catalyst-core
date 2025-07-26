@@ -32,7 +32,7 @@ tracing.workspace = true
 tracing-subscriber.workspace = true
 rust_decimal = { version = "1.26", features = ["serde", "db-postgres"] }
 
-cardano-serialization-lib = "11.4"
+cardano-serialization-lib = "12"
 
 thiserror = "1"
 

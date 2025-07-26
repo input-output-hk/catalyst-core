@@ -122,7 +122,7 @@ impl LegacyNodeConfigConverter {
 
         LegacyNodeConfig {
             storage: source.storage.clone(),
-            single_log: source.log.clone().map(Into::into),
+            single_log: source.log.clone(),
             log: None,
             rest: Rest {
                 listen: source.rest.listen,
@@ -164,7 +164,7 @@ impl LegacyNodeConfigConverter {
 
         LegacyNodeConfig {
             storage: source.storage.clone(),
-            single_log: source.log.clone().map(Into::into),
+            single_log: source.log.clone(),
             log: None,
             rest: Rest {
                 listen: source.rest.listen,
@@ -251,7 +251,7 @@ impl LegacyNodeConfigConverter {
             mempool: source.mempool.clone(),
             bootstrap_from_trusted_peers: source.bootstrap_from_trusted_peers,
             skip_bootstrap: source.skip_bootstrap,
-            single_log: source.log.clone().map(Into::into),
+            single_log: source.log.clone(),
         }
     }
 }

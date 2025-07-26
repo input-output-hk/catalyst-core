@@ -221,7 +221,7 @@ impl TryFrom<RepresentativeBuilder> for Actor {
         } else {
             Err(Error::CannotBuildActor {
                 name: builder.name.clone(),
-                details: "no voting ke defined for external representative".to_string(),
+                details: "no voting key defined for external representative".to_string(),
             })
         }
     }
@@ -269,6 +269,7 @@ mod tests {
                     target: vec![("bob", 1), ("alice", 1)].into(),
                     slotno: 1,
                 })
+                .with_ada(0)
                 .try_into()
                 .unwrap(),
             delegator("david")
@@ -285,14 +286,14 @@ mod tests {
             actors[0]
         );
         assert_eq!(
-            actors[0],
+            actors[1],
             Actor::ExternalRep {
                 name: "bob".to_string(),
                 voting_key: String::new()
             }
         );
         assert_eq!(
-            actors[0],
+            actors[2],
             Actor::GeneratedDelegator {
                 name: "clarice".to_string(),
                 registration: Registration {
@@ -303,7 +304,7 @@ mod tests {
             }
         );
         assert_eq!(
-            actors[0],
+            actors[3],
             Actor::ExternalDelegator {
                 name: "david".to_string(),
                 address: "testadd".to_string()

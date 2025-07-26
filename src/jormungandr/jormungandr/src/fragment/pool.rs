@@ -12,7 +12,7 @@ use crate::{
     utils::async_msg::MessageBox,
 };
 use chain_core::{packer::Codec, property::Serialize};
-use chain_impl_mockchain::{block::BlockDate, fragment::Contents, transaction::Transaction};
+use chain_impl_mockchain::{fragment::Contents, transaction::Transaction};
 use futures::{channel::mpsc::SendError, sink::SinkExt};
 use jormungandr_lib::{
     interfaces::{
@@ -312,7 +312,6 @@ fn is_transaction_valid<E>(tx: &Transaction<E>) -> bool {
 pub(super) mod internal {
     use super::*;
     use std::{
-        cmp::Ordering,
         collections::HashMap,
         hash::{Hash, Hasher},
         ptr,
@@ -428,28 +427,6 @@ pub(super) mod internal {
     impl<K: Hash> Hash for IndexedQueueKeyRef<K> {
         fn hash<H: Hasher>(&self, state: &mut H) {
             unsafe { (*self.0).hash(state) }
-        }
-    }
-
-    #[derive(Clone, PartialEq, Eq)]
-    struct TimeoutQueueItem {
-        valid_until: BlockDate,
-        id: FragmentId,
-    }
-
-    impl Ord for TimeoutQueueItem {
-        fn cmp(&self, other: &Self) -> Ordering {
-            let res = self.valid_until.cmp(&other.valid_until);
-            if res != Ordering::Equal {
-                return res;
-            }
-            self.id.cmp(&other.id)
-        }
-    }
-
-    impl PartialOrd for TimeoutQueueItem {
-        fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-            Some(self.cmp(other))
         }
     }
 

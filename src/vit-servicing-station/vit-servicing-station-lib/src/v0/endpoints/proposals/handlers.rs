@@ -80,7 +80,7 @@ pub mod test {
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         println!("{}", String::from_utf8(result.body().to_vec()).unwrap());
         let result_proposal: FullProposalInfo =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         assert_eq!(
             serde_json::to_value(&proposal).unwrap(),
             serde_json::to_value(result_proposal).unwrap()
@@ -125,7 +125,7 @@ pub mod test {
             .await;
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_proposals: Vec<FullProposalInfo> =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         assert_eq!(
             serde_json::to_value(proposals).unwrap(),
             serde_json::to_value(result_proposals).unwrap()
@@ -171,7 +171,7 @@ pub mod test {
 
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_proposals: Vec<FullProposalInfo> =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         assert_eq!(
             serde_json::to_value(vec![proposal]).unwrap(),
             serde_json::to_value(result_proposals).unwrap()

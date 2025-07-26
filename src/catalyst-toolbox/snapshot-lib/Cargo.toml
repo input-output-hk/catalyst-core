@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 jormungandr-lib = { workspace = true }
-proptest = { workspace = true, branch = "master", optional = true }
+proptest = { workspace = true, optional = true }
 chain-addr = { path = "../../chain-libs/chain-addr" }
 test-strategy = { version = "0.2", optional = true }
 hex = { version = "0.4" }
@@ -39,7 +39,7 @@ serde_test = { workspace = true }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }
 
-proptest = { workspace = true, branch = "master" }
+proptest = { workspace = true }
 chain-addr = { path = "../../chain-libs/chain-addr" }
 
 [features]

@@ -11,8 +11,7 @@ license = "MIT OR Apache-2.0"
 async-trait = "0.1.33"
 base64 = "0.13"
 time = { version = "0.3", features = ["parsing", "formatting"] }
-diesel = { version = "1.4.5", features = ["postgres", "r2d2", "64-column-tables", "serde_json"] }
-diesel_migrations = "1.4.0"
+diesel = { version = "1.4.8", features = ["postgres", "r2d2", "64-column-tables", "chrono"] }
 dotenv = "0.15"
 itertools = "0.10"
 log = { version = "0.4.11", features = ["serde"] }

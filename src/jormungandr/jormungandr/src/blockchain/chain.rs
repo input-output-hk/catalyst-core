@@ -909,7 +909,6 @@ pub struct StreamReporter<R> {
 }
 
 pub struct StreamInfo {
-    pub start: std::time::SystemTime,
     pub last_reported: std::time::SystemTime,
     pub last_bytes_received: u64,
     pub bytes_received: u64,
@@ -925,7 +924,6 @@ impl<R: Fn(&StreamInfo)> StreamReporter<R> {
         let lbd: Option<HeaderDesc> = None;
         StreamReporter {
             stream_info: StreamInfo {
-                start: now,
                 last_reported: now,
                 last_bytes_received: 0,
                 bytes_received: 0,

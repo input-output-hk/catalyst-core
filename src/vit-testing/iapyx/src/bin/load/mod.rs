@@ -8,7 +8,7 @@ use iapyx::ArtificialUserLoad;
 use iapyx::MultiControllerError;
 use iapyx::NodeLoadError;
 use iapyx::ServicingStationLoad;
-pub use jortestkit::console::progress_bar::{parse_progress_bar_mode_from_str, ProgressBarMode};
+pub use jortestkit::console::progress_bar::ProgressBarMode;
 use jortestkit::load::Monitor;
 use std::path::PathBuf;
 use thiserror::Error;

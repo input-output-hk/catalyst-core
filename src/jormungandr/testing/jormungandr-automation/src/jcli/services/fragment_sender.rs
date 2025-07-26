@@ -11,7 +11,7 @@ impl<'a> FragmentSender<'a> {
         Self { jcli, jormungandr }
     }
 
-    pub fn send(self, transaction: &'a str) -> FragmentCheck {
+    pub fn send(self, transaction: &'a str) -> FragmentCheck<'a> {
         let summary = self
             .jcli
             .rest()
@@ -30,7 +30,7 @@ impl<'a> FragmentSender<'a> {
         FragmentCheck::new(self.jcli, self.jormungandr, id, summary)
     }
 
-    pub fn send_many(self, transactions: &'a [String]) -> FragmentsCheck {
+    pub fn send_many(self, transactions: &'a [String]) -> FragmentsCheck<'a> {
         for tx in transactions {
             self.jcli
                 .rest()

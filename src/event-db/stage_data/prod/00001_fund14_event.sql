@@ -28,7 +28,7 @@ INSERT INTO event (
 ) VALUES (
     14,
     'Fund 14',
-    'Catalyst Testnet - Fund 14',
+    'Catalyst - Fund 14',
     '2025-09-11 21:45:00',  -- Registration Snapshot Time
     '2025-09-11 22:00:00',  -- Snapshot Start.
     25000000,              -- Voting Power Threshold

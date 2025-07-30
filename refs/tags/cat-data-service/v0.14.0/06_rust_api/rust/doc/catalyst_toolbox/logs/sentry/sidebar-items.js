@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["MALFORMED_QR_MESSAGE","REGISTERED_MESSAGE"],"enum":["Error","SentryLogsStatChecker"],"fn":["raw_log_message_starts_with"],"struct":["LazySentryLogs","MalformedQr","RegexMatch","SentryFragmentLog","SentryLogClient","SentryLogsStatsExecutor","SuccessfulScan"],"trait":["Stat"],"type":["RawLog"]};

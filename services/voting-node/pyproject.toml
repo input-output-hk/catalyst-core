@@ -23,6 +23,7 @@ opentelemetry-instrumentation = "^0.37b0"
 opentelemetry-instrumentation-fastapi = "^0.37b0"
 opentelemetry-instrumentation-asyncpg = "^0.37b0"
 prometheus-fastapi-instrumentator = "^5.10.0"
+prometheus-client = "^0.17.1"
 PyYAML = "^6.0"
 uvicorn = {extras = ["standard"], version = "~0.23.2"}
 aiofile = "^3.8.5"

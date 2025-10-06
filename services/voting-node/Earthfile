@@ -48,7 +48,19 @@ deps:
     COPY --dir voting_node README.md ./
 
     SAVE ARTIFACT .venv .venv
-    SAVE IMAGE --cache-hint
+
+lock:
+    FROM +builder
+
+    WORKDIR /src/services/voting-node
+
+    COPY pyproject.toml .
+    COPY poetry.lock .
+    COPY ../../utilities/ideascale-importer+build/src /src/utilities/ideascale-importer
+
+    RUN poetry lock
+
+    SAVE ARTIFACT ./poetry.lock AS LOCAL poetry.lock
 
 # Build for distribution
 build:
@@ -91,7 +103,7 @@ pdoc:
     SAVE ARTIFACT /doc
 
 # Docker image built for distribution and use in production.
-publish:
+package:
     FROM python:3.11-slim-bullseye
     ARG tag="latest"
 
@@ -165,3 +177,11 @@ integration-test:
                 --service leader0
         RUN docker-compose run leader0 echo "<<<INTEGRATION TESTING GOES HERE>>>"
     END
+
+docker:
+    FROM +package
+
+    ARG container='voting-node'
+    ARG tag="latest"
+
+    SAVE IMAGE ${container}:${tag}

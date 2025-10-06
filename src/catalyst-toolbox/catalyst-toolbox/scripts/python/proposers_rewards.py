@@ -72,11 +72,6 @@ class Author(pydantic.BaseModel):
     email: str
     user_name: str = pydantic.Field(alias="userName")
 
-# CatGateway models
-
-class CatalystDocumentProposal(pydantic.BaseModel):
-
-
 # Ideascale models
 
 class IdeascaleProposal(pydantic.BaseModel):

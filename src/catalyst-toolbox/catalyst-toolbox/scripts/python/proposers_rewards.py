@@ -21,6 +21,7 @@ import aiohttp
 from rich import print
 from asyncio import run as aiorun
 from copy import deepcopy
+from fractions import Fraction
 
 
 # VIT servicing station models
@@ -584,13 +585,13 @@ def filter_excluded_proposals(
 
 
 def calculate_total_stake_from_block0_configuration(
-    block0_config: Dict[str, Dict], committee_keys: List[str]
+    block0_config: Dict[str, Dict], committee_keys: List[str], gamma: Fraction
 ):
     funds = (
         initial["fund"] for initial in block0_config["initial"] if "fund" in initial
     )
     return sum(
-        fund["value"]
+        fund["value"] ** gamma
         for fund in itertools.chain.from_iterable(funds)
         if fund["address"] not in [key for key in committee_keys]
     )
@@ -698,6 +699,12 @@ def save_results(output_path: str, title: str, output_format: OutputFormat, resu
 def calculate_rewards(
     output_file: str = typer.Option(...),
     block0_path: str = typer.Option(...),
+    gamma: str = typer.Option(
+        1,
+        help="""
+        The gamma value applied for the calculation of the total stake threshold. It is applied to every single voting value before the sum is executed.
+        """
+    ),
     total_stake_threshold: float = typer.Option(
         0.01,
         help="""
@@ -785,7 +792,7 @@ def calculate_rewards(
         load_json_from_file(committee_keys_path) if committee_keys_path else []
     )
     total_stake = calculate_total_stake_from_block0_configuration(
-        block0_config, committee_keys
+        block0_config, committee_keys, gamma
     )
     # minimum amount of stake needed for a proposal to be accepted
     total_stake_approval_threshold = float(total_stake_threshold) * float(total_stake)

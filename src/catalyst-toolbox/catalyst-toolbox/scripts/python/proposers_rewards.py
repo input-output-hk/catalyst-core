@@ -72,6 +72,11 @@ class Author(pydantic.BaseModel):
     email: str
     user_name: str = pydantic.Field(alias="userName")
 
+# CatGateway models
+
+class CatalystDocumentProposal(pydantic.BaseModel):
+
+
 # Ideascale models
 
 class IdeascaleProposal(pydantic.BaseModel):
@@ -700,7 +705,7 @@ def calculate_rewards(
     output_file: str = typer.Option(...),
     block0_path: str = typer.Option(...),
     gamma: str = typer.Option(
-        1,
+        "1",
         help="""
         The gamma value applied for the calculation of the total stake threshold. It is applied to every single voting value before the sum is executed.
         """
@@ -713,7 +718,7 @@ def calculate_rewards(
         """
     ),
     relative_threshold: float = typer.Option(
-        0,
+        -1,
         help="This value indicates the relative threshold between Yes/No votes needed by projects to be eligible for funding."
     ),
     output_format: OutputFormat = typer.Option("csv", help="Output format"),

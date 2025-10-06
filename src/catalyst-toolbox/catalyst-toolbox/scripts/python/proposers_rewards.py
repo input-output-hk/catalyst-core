@@ -631,13 +631,13 @@ def filter_excluded_proposals(
 
 
 def calculate_total_stake_from_block0_configuration(
-    block0_config: Dict[str, Dict], committee_keys: List[str]
+    block0_config: Dict[str, Dict], committee_keys: List[str], gamma: Fraction
 ):
     funds = (
         initial["fund"] for initial in block0_config["initial"] if "fund" in initial
     )
     return sum(
-        fund["value"]
+        fund["value"] ** gamma
         for fund in itertools.chain.from_iterable(funds)
         if fund["address"] not in [key for key in committee_keys]
     )
@@ -761,7 +761,12 @@ def save_results(
 def calculate_rewards(
     output_file: str = typer.Option(...),
     block0_path: str = typer.Option(...),
-    gamma: str = typer.Option(...),  # quadratic voting
+    gamma: str = typer.Option(
+        "1",
+        help="""
+        The gamma value applied for the calculation of the total stake threshold. It is applied to every single voting value before the sum is executed.
+        """
+    ),
     total_stake_threshold: float = typer.Option(
         0.01,
         help="""
@@ -770,7 +775,7 @@ def calculate_rewards(
         """,
     ),
     relative_threshold: float = typer.Option(
-        0,
+        -1,
         help="This value indicates the relative threshold between Yes/No votes needed by projects to be eligible for funding.",
     ),
     output_format: OutputFormat = typer.Option("csv", help="Output format"),
@@ -853,15 +858,18 @@ def calculate_rewards(
     committee_keys = (
         load_json_from_file(committee_keys_path) if committee_keys_path else []
     )
-    total_stake = calculate_total_stake_from_block0_configuration(
-        block0_config, committee_keys
-    )
+
     # minimum amount of stake needed for a proposal to be accepted
-    print(f"\nTotal stake before gamma applied {total_stake}")
+    _total_stake = calculate_total_stake_from_block0_configuration(
+        block0_config, committee_keys, Fraction(1)
+    )
+    print(f"\nTotal stake before gamma applied {_total_stake}")
     print(f"Gamma as fractional exponent: {gamma}")
 
-    expo = Fraction(gamma)  # gamma as fractional exponent
-    total_stake = Fraction(total_stake) ** expo
+    total_stake = calculate_total_stake_from_block0_configuration(
+        block0_config, committee_keys, Fraction(gamma)
+    )
+
     total_stake_approval_threshold = float(total_stake_threshold) * float(total_stake)
     print(f"Total stake after gamma applied {total_stake}\n")
 

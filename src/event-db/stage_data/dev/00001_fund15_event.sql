@@ -1,4 +1,4 @@
--- F14
+-- F15
 INSERT INTO event (
     row_id,
     name,
@@ -26,25 +26,25 @@ INSERT INTO event (
     extra,
     cast_to
 ) VALUES (
-    14,
-    'Fund 14',
-    'Catalyst Testnet - Fund 14',
-    '2025-09-06 21:45:00',  -- Registration Snapshot Time
-    '2025-09-06 22:00:00',  -- Snapshot Start.
+    15,
+    'Fund 15',
+    'Catalyst Testnet - Fund 15',
+    '2025-11-10 10:00:00',  -- Registration Snapshot Time
+    '2025-11-10 10:15:00',  -- Snapshot Start.
     25000000,              -- Voting Power Threshold
     100,                      -- Max Voting Power PCT
     NULL,                   -- Review Rewards
-    '2025-07-22 10:00:00',  -- Start Time
-    '2025-10-27 07:00:00',  -- End Time
-    '2025-07-22 10:00:00',  -- Insight Sharing Start
-    '2025-07-22 10:00:00',  -- Proposal Submission Start
-    '2025-07-22 10:00:00',  -- Refine Proposals Start
-    '2025-07-22 10:00:00',  -- Finalize Proposals Start
-    '2025-07-22 10:00:00',  -- Proposal Assessment Start
-    '2025-07-22 10:00:00',  -- Assessment QA Start
-    '2025-09-22 12:00:00',  -- Voting Starts
-    '2025-10-06 11:00:00',  -- Voting Ends
-    '2025-10-27 07:00:00',  -- Tallying Ends
+    '2025-11-10 10:00:00',  -- Start Time
+    '2026-02-15 07:00:00',  -- End Time
+    '2025-11-10 10:00:00',  -- Insight Sharing Start
+    '2025-11-10 10:00:00',  -- Proposal Submission Start
+    '2025-11-10 10:00:00',  -- Refine Proposals Start
+    '2025-11-10 10:00:00',  -- Finalize Proposals Start
+    '2025-11-10 10:00:00',  -- Proposal Assessment Start
+    '2025-11-10 10:00:00',  -- Assessment QA Start
+    '2025-11-10 10:00:00',  -- Voting Starts
+    '2026-01-25 11:00:00',  -- Voting Ends
+    '2026-02-15 07:00:00',  -- Tallying Ends
     NULL,                   -- Block 0 Data
     NULL,                   -- Block 0 Hash
     1,                      -- Committee Size

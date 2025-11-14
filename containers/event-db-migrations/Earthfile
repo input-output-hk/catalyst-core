@@ -21,6 +21,7 @@ package:
 
     # Add psql
     RUN apt-get update && apt-get install -y --no-install-recommends \
+        apt \
         wget \
          gnupg2 \
          ca-certificates \

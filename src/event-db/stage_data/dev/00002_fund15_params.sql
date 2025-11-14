@@ -1,7 +1,7 @@
--- Define F14 IdeaScale parameters.
+-- Define F15 IdeaScale parameters.
 INSERT INTO config (id, id2, id3, value) VALUES (
     'ideascale',
-    '14',
+    '15',
     '',
     '{
         "group_id": 31051,
@@ -51,11 +51,11 @@ INSERT INTO config (id, id2, id3, value) VALUES (
 ) ON CONFLICT (id, id2, id3) DO UPDATE
 SET value = EXCLUDED.value;
 
--- Use F14 params for event with row_id = 14.
+-- Use F15 params for event with row_id = 15.
 INSERT INTO config (id, id2, id3, value) VALUES (
     'event',
     'ideascale_params',
-    '14',
-    '{"params_id": "F14"}'
+    '15',
+    '{"params_id": "F15"}'
 ) ON CONFLICT (id, id2, id3) DO UPDATE
 SET value = EXCLUDED.value;

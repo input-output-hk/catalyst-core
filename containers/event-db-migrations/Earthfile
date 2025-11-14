@@ -20,20 +20,37 @@ package:
     WORKDIR /eventdb
 
     # Add psql
-    RUN apt-get update && apt-get install -y --no-install-recommends \
-        wget \
-         gnupg2 \
-         ca-certificates \
-         lsb-release \
-         apt-transport-https \
-         && rm -rf /var/lib/apt/lists/* && \
-         wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - && \
-         echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
-         apt-get update && \
-         apt-get install -y --no-install-recommends postgresql-14 && \
-         apt-get remove -y wget gnupg2 lsb-release apt-transport-https && \
-         apt-get autoremove -y && \
-         apt-get clean && rm -rf /var/lib/apt/lists/*
+    RUN apt-get update && \
+        # Install dependencies needed for adding the key and postgres
+        apt-get install -y --no-install-recommends \
+          wget \
+          gnupg2 \
+          ca-certificates \
+          lsb-release \
+          apt-transport-https && \
+        \
+        # Create the keyring directory
+        install -m 0755 -d /etc/apt/keyrings && \
+        \
+        # Download, de-armor, and save the PostgreSQL key
+        wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+          gpg --dearmor -o /etc/apt/keyrings/postgresql.gpg && \
+        \
+        # Set permissions for the key
+        chmod 644 /etc/apt/keyrings/postgresql.gpg && \
+        \
+        # Create the sources list, pointing to the key
+        echo "deb [signed-by=/etc/apt/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+        \
+        # Update apt and install postgresql
+        apt-get update && \
+        apt-get install -y --no-install-recommends postgresql-14 && \
+        \
+        # Clean up
+        apt-get remove -y wget gnupg2 lsb-release apt-transport-https && \
+        apt-get autoremove -y && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
 
     # Add refinery
     COPY +build/refinery .
@@ -55,7 +72,7 @@ package:
 
     ENTRYPOINT ["./entry.sh"]
     SAVE IMAGE migrations:$tag
-
+    
 # TODO: Enable this when CI supports passing -P dynamically
 # test:
 #     FROM earthly/dind:alpine

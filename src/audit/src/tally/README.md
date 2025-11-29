@@ -42,6 +42,34 @@ SHARES_ALICE='WDDMb68A6JCVR5UdhDtl7QYrQHSMOFqg44lHcmtB/Q3IfSoqusq+obtC/JJOtDYWad
 #### Public use: Validate results 
 #### `decrypt_tally_from_shares(pub_keys, encrypted_tally, decrypt_shares) -> tallyResultPlaintext`
 
+**Public Verification: Independently Validate Voting Results**
+This function allows anyone to independently verify that encrypted voting results have been correctly decrypted without requiring access to any private keys or secret information. It uses publicly available data to cryptographically prove the integrity of the decryption process.
+**What it does:**
+- Takes encrypted tallies, decryption shares, and public keys as input
+- Validates that the decryption shares are legitimate and correspond to the correct public keys
+- Combines the shares to reproduce the plaintext voting results
+- Provides cryptographic proof that the decryption was performed correctly
+
+**Why it's important:**
+- **Transparency**: Anyone can verify results using only publicly available information
+- **Trust**: No need to trust election officials or committee members
+- **Auditability**: Results can be independently verified by multiple parties
+- **Security**: The verification process is cryptographically sound and tamper-proof
+
+**Who can use it:**
+- Voters wanting to verify their voting event results
+- Independent auditors and researchers
+- Media organizations and watchdog groups
+- Anyone interested in election integrity
+
+**What makes it "public":**
+- No secret keys or private information required
+- All necessary data is publicly available after the election
+- The verification process is transparent and reproducible
+- Results are deterministic - anyone running the same verification will get identical results
+
+This verification method ensures that the democratic process remains transparent and that election results can be independently validated by the community.
+
 ```bash
 SHARES_ALICE='0DDHBs4TnabGQjvhIiQP2S53mTThxqilR+ogY8MpIRV6PdDb+5NWVZYQvAQQZUIe8e/rzeZjGX5QkCpd84b/CyvrivhD4u7zvhccz6zSgOfLx3EVjY9PXBXOhPYkrUoE0DDHBs4TnabGQjvhIiQP2S53mTThxqilR+ogY8MpIRXOp9W5weElw0uZSyz4oCkRMKiRv2L1kfrOuNLOXtobBnWorfj2FLdBb2jZ5Cb0tqYvMKj+WLTTs2hrohjlSC0D'
 

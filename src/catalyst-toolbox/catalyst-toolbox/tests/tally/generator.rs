@@ -225,7 +225,7 @@ impl VoteRoundGenerator {
                         let decrypted_tally = DecryptedPrivateTally::new(
                             results
                                 .into_iter()
-                                .zip(shares.into_iter())
+                                .zip(shares)
                                 .map(|(tally_result, decrypt_shares)| {
                                     DecryptedPrivateTallyProposal {
                                         decrypt_shares,

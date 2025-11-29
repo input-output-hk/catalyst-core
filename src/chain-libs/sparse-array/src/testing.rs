@@ -22,7 +22,7 @@ pub(crate) fn sparse_array_test_data() -> impl Strategy<Value = Vec<(u8, u8)>> {
         // populate an array with the given indexes
         prop::collection::vec(prop::arbitrary::any::<u8>(), indexes.len()).prop_map(move |values| {
             let indexes = indexes.clone();
-            indexes.into_iter().zip(values.into_iter()).collect()
+            indexes.into_iter().zip(values).collect()
         })
     })
 }

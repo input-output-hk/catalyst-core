@@ -77,18 +77,18 @@ impl BlockVersion {
 
     pub const fn get_size(self) -> NonZeroUsize {
         const SIZE: [NonZeroUsize; 3] = [
-            unsafe { NonZeroUsize::new_unchecked(cstruct::HEADER_COMMON_SIZE) },
-            unsafe { NonZeroUsize::new_unchecked(cstruct::HEADER_BFT_SIZE) },
-            unsafe { NonZeroUsize::new_unchecked(cstruct::HEADER_GP_SIZE) },
+            NonZeroUsize::new(cstruct::HEADER_COMMON_SIZE).unwrap(),
+            NonZeroUsize::new(cstruct::HEADER_BFT_SIZE).unwrap(),
+            NonZeroUsize::new(cstruct::HEADER_GP_SIZE).unwrap(),
         ];
         SIZE[self as usize]
     }
 
     pub const fn get_auth_size(self) -> NonZeroUsize {
         const SIZE: [NonZeroUsize; 3] = [
-            unsafe { NonZeroUsize::new_unchecked(cstruct::HEADER_COMMON_SIZE) },
-            unsafe { NonZeroUsize::new_unchecked(cstruct::HEADER_BFT_AUTHED_SIZE) },
-            unsafe { NonZeroUsize::new_unchecked(cstruct::HEADER_GP_AUTHED_SIZE) },
+            NonZeroUsize::new(cstruct::HEADER_COMMON_SIZE).unwrap(),
+            NonZeroUsize::new(cstruct::HEADER_BFT_AUTHED_SIZE).unwrap(),
+            NonZeroUsize::new(cstruct::HEADER_GP_AUTHED_SIZE).unwrap(),
         ];
         SIZE[self as usize]
     }

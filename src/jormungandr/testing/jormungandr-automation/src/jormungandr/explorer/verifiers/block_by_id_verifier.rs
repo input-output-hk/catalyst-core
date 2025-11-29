@@ -355,7 +355,7 @@ impl ExplorerVerifier {
 
     fn assert_block_config_param(
         config_params: &ConfigParams,
-        explorer_config_param: &Vec<block_by_id::configParam>,
+        explorer_config_param: &[block_by_id::configParam],
     ) {
         assert_eq!(explorer_config_param.len(), config_params.iter().len());
 

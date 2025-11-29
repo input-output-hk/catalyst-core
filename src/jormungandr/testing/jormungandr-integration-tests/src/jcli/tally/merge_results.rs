@@ -159,14 +159,14 @@ pub fn merge_two_voteplans() {
         .merge_results(vote_plan_statuses_file.path())
         .unwrap();
 
-    let merged_vote_plan = merged_vote_plans.get(0).unwrap();
+    let merged_vote_plan = merged_vote_plans.first().unwrap();
     let mut ids: BTreeSet<jormungandr_lib::crypto::hash::Hash> = BTreeSet::new();
     ids.insert(first_vote_plan.to_id().into());
     ids.insert(second_vote_plan.to_id().into());
 
     assert_eq!(merged_vote_plan.ids, ids);
 
-    let merged_proposal = merged_vote_plan.proposals.get(0).unwrap();
+    let merged_proposal = merged_vote_plan.proposals.first().unwrap();
     assert_eq!(merged_proposal.proposal_id, proposal_external_id.into());
     assert_eq!(merged_proposal.votes_cast, 2);
     assert_eq!(

@@ -52,15 +52,15 @@ impl From<String> for CleanString {
     }
 }
 
-impl ToString for CleanString {
-    fn to_string(&self) -> String {
-        self.0.clone()
-    }
-}
-
 impl AsRef<str> for CleanString {
     fn as_ref(&self) -> &str {
         &self.0
+    }
+}
+
+impl std::fmt::Display for CleanString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 
@@ -70,13 +70,16 @@ pub fn clean_str(s: &str) -> String {
     REGEX.replace_all(s, "").to_string()
 }
 
-#[cfg(any(test, feature = "property-test-api"))]
+#[cfg(any(test, feature = "test-api"))]
+#[allow(dead_code)]
 mod tests {
+    use proptest::arbitrary::any;
+    use proptest::prelude::*;
     use proptest::{
         arbitrary::{Arbitrary, StrategyFor},
-        prelude::*,
         strategy::Map,
     };
+    #[allow(unused_imports)]
     use serde_json::json;
     use test_strategy::proptest;
 
@@ -84,11 +87,11 @@ mod tests {
 
     impl Arbitrary for CleanString {
         type Parameters = ();
-        type Strategy = Map<StrategyFor<String>, fn(String) -> Self>;
-
         fn arbitrary_with((): Self::Parameters) -> Self::Strategy {
             any::<String>().prop_map(|s| CleanString(clean_str(&s)))
         }
+
+        type Strategy = Map<StrategyFor<String>, fn(String) -> Self>;
     }
 
     fn parse(s: &str) -> CleanString {

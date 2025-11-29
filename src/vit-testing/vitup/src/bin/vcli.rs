@@ -1,8 +1,7 @@
 use clap::Parser;
 use vitup::client::args::VitupClientCommand;
-use vitup::Result;
 
 #[tokio::main]
-pub async fn main() -> Result<()> {
-    VitupClientCommand::parse().exec()
+pub async fn main() -> std::result::Result<(), Box<vitup::error::Error>> {
+    VitupClientCommand::parse().exec().map_err(Box::new)
 }

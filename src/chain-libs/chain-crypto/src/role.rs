@@ -75,7 +75,7 @@ impl<R, A: key::AsymmetricPublicKey> std::cmp::Eq for PublicKey<R, A> {}
 
 impl<R, A: key::AsymmetricPublicKey> std::cmp::PartialOrd<Self> for PublicKey<R, A> {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.inner.partial_cmp(&other.inner)
+        Some(self.cmp(other))
     }
 }
 

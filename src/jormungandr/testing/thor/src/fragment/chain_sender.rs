@@ -149,7 +149,7 @@ impl<'a, S: SyncNode + Send> FragmentChainSender<'a, S> {
     }
 }
 
-#[derive(custom_debug::Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum FragmentChainSenderError {
     #[error("fragment sender error")]
     FragmentSenderError(#[from] FragmentSenderError),

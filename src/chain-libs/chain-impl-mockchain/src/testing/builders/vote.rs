@@ -42,7 +42,7 @@ pub fn decrypt_tally(
 
     let proposals = shares
         .into_iter()
-        .zip(tallies.into_iter())
+        .zip(tallies)
         .map(|(shares, tally)| DecryptedPrivateTallyProposal {
             decrypt_shares: shares.into_boxed_slice(),
             tally_result: tally.votes.into_boxed_slice(),

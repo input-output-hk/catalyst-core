@@ -211,7 +211,7 @@ impl TestGen {
         rng.fill_bytes(&mut policy_hash);
 
         TokenIdentifier {
-            policy_hash: TryFrom::try_from(policy_hash).unwrap(),
+            policy_hash: From::from(policy_hash),
             token_name: Self::token_name(),
         }
     }

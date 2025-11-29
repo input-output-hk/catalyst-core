@@ -8,7 +8,7 @@ use fake::faker::internet::en::SafeEmail;
 use fake::{
     faker::lorem::en::*,
     faker::{
-        company::en::{Buzzword, CatchPhase, Industry},
+        company::en::{Buzzword, CatchPhrase, Industry},
         name::en::Name,
     },
     Fake,
@@ -139,14 +139,14 @@ impl ArbitraryValidVotingTemplateGenerator {
     ) -> ProposalChallengeInfo {
         match challenge_type {
             ChallengeType::Simple => ProposalChallengeInfo::Simple(SimpleChallengeInfo {
-                proposal_solution: CatchPhase().fake::<String>(),
+                proposal_solution: CatchPhrase().fake::<String>(),
             }),
             ChallengeType::CommunityChoice => {
                 ProposalChallengeInfo::CommunityChoice(CommunityChoiceChallengeInfo {
-                    proposal_brief: CatchPhase().fake::<String>(),
-                    proposal_importance: CatchPhase().fake::<String>(),
-                    proposal_goal: CatchPhase().fake::<String>(),
-                    proposal_metrics: CatchPhase().fake::<String>(),
+                    proposal_brief: CatchPhrase().fake::<String>(),
+                    proposal_importance: CatchPhrase().fake::<String>(),
+                    proposal_goal: CatchPhrase().fake::<String>(),
+                    proposal_metrics: CatchPhrase().fake::<String>(),
                 })
             }
         }
@@ -160,8 +160,8 @@ impl ArbitraryValidVotingTemplateGenerator {
             proposal_id: self.next_proposal_id().to_string(),
             internal_id: self.generator.id().to_string(),
             category_name: Industry().fake::<String>(),
-            proposal_title: CatchPhase().fake::<String>(),
-            proposal_summary: CatchPhase().fake::<String>(),
+            proposal_title: CatchPhrase().fake::<String>(),
+            proposal_summary: CatchPhrase().fake::<String>(),
 
             proposal_funds: funds.to_string(),
             proposal_url: proposal_url.to_string(),
@@ -198,7 +198,7 @@ impl ValidVotingTemplateGenerator for ArbitraryValidVotingTemplateGenerator {
             internal_id: self.next_challenge_id(),
             id: self.generator.id().to_string(),
             challenge_type: self.challenge_type(),
-            title: CatchPhase().fake::<String>(),
+            title: CatchPhrase().fake::<String>(),
             description: Buzzword().fake::<String>(),
             rewards_total: (self.generator.next_u32() % 10000).to_string(),
             proposers_rewards: (self.generator.next_u32() % 10000).to_string(),

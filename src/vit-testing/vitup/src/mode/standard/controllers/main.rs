@@ -327,10 +327,10 @@ impl VitController {
             .arg("--address")
             .arg(settings_overriden.base_address().to_string())
             .arg("--vit-address")
-            .arg(&settings_overriden.base_vit_address().to_string())
+            .arg(settings_overriden.base_vit_address().to_string())
             .arg("--node-address")
             .arg(
-                &settings_overriden
+                settings_overriden
                     .base_node_backend_address()
                     .unwrap()
                     .to_string(),

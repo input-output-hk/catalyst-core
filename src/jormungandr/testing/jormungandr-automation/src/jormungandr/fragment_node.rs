@@ -6,14 +6,13 @@ use jormungandr_lib::{
 };
 use std::collections::HashMap;
 
-#[derive(custom_debug::Debug, thiserror::Error)]
+#[derive(Debug, thiserror::Error)]
 pub enum FragmentNodeError {
     #[error("cannot send fragment due to '{reason}' to '{fragment_id}' to node '{alias}'")]
     CannotSendFragment {
         reason: String,
         alias: String,
         fragment_id: FragmentId,
-        #[debug(skip)]
         logs: Vec<String>,
     },
     #[error("reqwest error")]
@@ -29,7 +28,6 @@ pub enum FragmentNodeError {
         reason: String,
         alias: String,
         fragment_ids: Vec<FragmentId>,
-        #[debug(skip)]
         logs: Vec<String>,
     },
 }

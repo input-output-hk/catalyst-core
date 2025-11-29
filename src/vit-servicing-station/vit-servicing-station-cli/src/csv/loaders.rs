@@ -224,11 +224,11 @@ impl LoadCmd {
                 .ok_or_else(|| Error::InvalidFundData(self.funds.to_string_lossy().to_string()))?,
             db_conn,
         )
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        .map_err(|e| io::Error::other(format!("{}", e)))?;
 
         for fund in funds_iter {
             vit_servicing_station_lib::db::queries::funds::insert_fund(fund, db_conn)
-                .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+                .map_err(|e| io::Error::other(format!("{}", e)))?;
         }
 
         // apply fund id in voteplans
@@ -275,12 +275,12 @@ impl LoadCmd {
         vit_servicing_station_lib::db::queries::voteplans::batch_insert_voteplans(
             &voteplans, db_conn,
         )
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        .map_err(|e| io::Error::other(format!("{}", e)))?;
 
         vit_servicing_station_lib::db::queries::proposals::batch_insert_proposals(
             &proposals, db_conn,
         )
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        .map_err(|e| io::Error::other(format!("{}", e)))?;
 
         let proposals_voteplans = csv_proposals
             .iter()
@@ -297,19 +297,19 @@ impl LoadCmd {
             proposals_voteplans,
             db_conn,
         )
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        .map_err(|e| io::Error::other(format!("{}", e)))?;
 
         vit_servicing_station_lib::db::queries::proposals::batch_insert_simple_challenge_data(
             &simple_proposals_data,
             db_conn,
         )
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        .map_err(|e| io::Error::other(format!("{}", e)))?;
 
         vit_servicing_station_lib::db::queries::proposals::batch_insert_community_choice_challenge_data(
             &community_proposals_data,
             db_conn,
         )
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+            .map_err(|e| io::Error::other(format!("{}", e)))?;
 
         vit_servicing_station_lib::db::queries::challenges::batch_insert_challenges(
             &challenges
@@ -318,10 +318,10 @@ impl LoadCmd {
                 .collect::<Vec<_>>(),
             db_conn,
         )
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        .map_err(|e| io::Error::other(format!("{}", e)))?;
 
         vit_servicing_station_lib::db::queries::community_advisors_reviews::batch_insert_advisor_reviews(&reviews, db_conn)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+            .map_err(|e| io::Error::other(format!("{}", e)))?;
 
         let groups = if let Some(groups_path) = &self.groups {
             LoadCmd::load_from_csv::<vit_servicing_station_lib::db::models::groups::Group>(
@@ -343,7 +343,7 @@ impl LoadCmd {
             &groups.into_iter().map(|c| c.values()).collect::<Vec<_>>(),
             db_conn,
         )
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        .map_err(|e| io::Error::other(format!("{}", e)))?;
 
         Ok(())
     }
@@ -378,7 +378,7 @@ impl LoadCmd {
             &votes.into_iter().map(|c| c.values()).collect::<Vec<_>>(),
             &db_conn,
         )
-        .map_err(|e| io::Error::new(io::ErrorKind::Other, format!("{}", e)))?;
+        .map_err(|e| io::Error::other(format!("{}", e)))?;
         Ok(())
     }
 

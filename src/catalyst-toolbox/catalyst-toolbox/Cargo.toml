@@ -65,6 +65,8 @@ fraction = "0.12"
 tracing.workspace = true
 tracing-subscriber.workspace = true
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib", optional = true }
+proptest.workspace = true
+test-strategy = "0.2"
 
 [dev-dependencies]
 rand_chacha = "0.3"
@@ -72,7 +74,7 @@ assert_cmd = "2"
 predicates = "2"
 assert_fs = "1.0.0"
 chain-vote = { path = "../../chain-libs/chain-vote" }
-proptest = { workspace = true, branch = "master" }
+proptest = { workspace = true }
 test-strategy = "0.2"
 serde_test = "1"
 snapshot-lib =  { path = "../snapshot-lib", features = ["proptest"] }

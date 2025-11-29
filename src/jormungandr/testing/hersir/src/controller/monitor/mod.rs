@@ -143,12 +143,9 @@ impl MonitorController {
             .settings()
             .wallets
             .iter()
+            .filter(|&x| x.template().is_generated())
             .cloned()
-            .filter(|x| x.template().is_generated())
-            .map(|x| {
-                x.try_into()
-                    .expect("internal error.. generated wallet should have inner wallet")
-            })
+            .map(|x| x.into())
             .collect()
     }
 
@@ -176,8 +173,8 @@ impl MonitorController {
         self.settings()
             .wallets
             .iter()
+            .find(|&w| w.template().alias() == Some(wallet.to_string()))
             .cloned()
-            .find(|w| w.template().alias() == Some(wallet.to_string()))
             .map(|w| w.into())
             .ok_or_else(|| Error::WalletNotFound(wallet.to_owned()))
     }

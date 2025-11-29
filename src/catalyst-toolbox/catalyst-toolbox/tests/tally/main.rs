@@ -99,9 +99,7 @@ fn tally_ok() {
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments.into_iter()),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -127,9 +125,7 @@ fn shuffle_tally_ok() {
 
     let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments.into_iter()),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -153,9 +149,7 @@ fn shuffle_tally_ok_private() {
 
     let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments.into_iter()),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -196,7 +190,7 @@ fn wallet_not_in_block0() {
                 time: jump_to_epoch(0, generator.block0_config()),
                 fragment,
             })))
-            .chain(tally_fragments.into_iter()),
+            .chain(tally_fragments),
     )
     .unwrap();
 
@@ -242,7 +236,7 @@ fn only_last_vote_is_counted() {
                     fragment,
                 })
             })
-            .chain(tally_fragments.into_iter()),
+            .chain(tally_fragments),
     )
     .unwrap();
 
@@ -289,7 +283,7 @@ fn replay_not_counted() {
                     fragment,
                 })
             })
-            .chain(tally_fragments.into_iter()),
+            .chain(tally_fragments),
     )
     .unwrap();
 
@@ -323,9 +317,7 @@ fn multi_voteplan_ok() {
 
     let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments.into_iter()),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -353,9 +345,7 @@ fn multi_voteplan_ok_private() {
 
     let (ledger, _) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vote_fragments
-            .into_iter()
-            .chain(tally_fragments.into_iter()),
+        vote_fragments.into_iter().chain(tally_fragments),
     )
     .unwrap();
 
@@ -509,7 +499,7 @@ fn transaction_transfer_does_not_decrease_voting_power() {
         &generator.block0(),
         vec![transaction, fragment_yes, fragment_no]
             .into_iter()
-            .chain(tally_fragments.into_iter()),
+            .chain(tally_fragments),
     )
     .unwrap();
 
@@ -553,9 +543,7 @@ fn expired_transaction() {
 
     let (ledger, failed_fragments) = catalyst_toolbox::recovery::tally::recover_ledger_from_logs(
         &generator.block0(),
-        vec![fragment_yes]
-            .into_iter()
-            .chain(tally_fragments.into_iter()),
+        vec![fragment_yes].into_iter().chain(tally_fragments),
     )
     .unwrap();
 

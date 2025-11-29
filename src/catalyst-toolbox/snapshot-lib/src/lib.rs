@@ -360,6 +360,7 @@ pub mod tests {
     use proptest::prelude::*;
     //use test_strategy::proptest;
 
+    #[allow(dead_code)]
     struct DummyAssigner;
 
     impl VotingGroupAssigner for DummyAssigner {

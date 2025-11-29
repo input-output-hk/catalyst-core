@@ -45,6 +45,7 @@ pub struct TestBlockchain {
     pub committee_wallets: HashMap<Address, Wallet>,
     pub committee_manager: CommitteeMembersManager,
     pub vote_plans: Vec<VotePlan>,
+    #[allow(dead_code)]
     pub voting_token: TokenIdentifier,
 }
 

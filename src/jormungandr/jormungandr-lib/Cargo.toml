@@ -20,7 +20,7 @@ typed-bytes = { path = "../../chain-libs/typed-bytes" }
 rand = "0.8"
 rand_core = "0.6"
 rand_chacha = "0.3"
-time = { version = "0.3", features = ["serde", "local-offset", "parsing", "formatting", "macros"]}
+time = { version = "0.3.29", features = ["serde", "local-offset", "parsing", "formatting", "macros"]}
 humantime = "2.0"
 thiserror = "1.0"
 multiaddr = { package = "parity-multiaddr", version = "0.11", default-features = false }

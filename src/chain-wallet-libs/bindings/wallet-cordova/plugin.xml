@@ -27,10 +27,10 @@
         <framework src="src/android/jna-compile.gradle" custom="true" type="gradleReference" />
 
 
-        <source-file src="src/android/libs/x86/libuniffi_jormungandr_wallet.so" target-dir="libs/x86" />
-        <source-file src="src/android/libs/x86_64/libuniffi_jormungandr_wallet.so" target-dir="libs/x86_64" />
-        <source-file src="src/android/libs/arm64-v8a/libuniffi_jormungandr_wallet.so" target-dir="libs/arm64-v8a" />
-        <source-file src="src/android/libs/armeabi-v7a/libuniffi_jormungandr_wallet.so" target-dir="libs/armeabi-v7a" />
+        <source-file src="src/android/libs/i686-linux-android/libuniffi_jormungandr_wallet.so" target-dir="libs/x86" />
+        <source-file src="src/android/libs/x86_64-linux-android/libuniffi_jormungandr_wallet.so" target-dir="libs/x86_64" />
+        <source-file src="src/android/libs/aarch64-linux-android/libuniffi_jormungandr_wallet.so" target-dir="libs/arm64-v8a" />
+        <source-file src="src/android/libs/armv7a-linux-androideabi/libuniffi_jormungandr_wallet.so" target-dir="libs/armeabi-v7a" />
     </platform>
 
     <platform name="electron">

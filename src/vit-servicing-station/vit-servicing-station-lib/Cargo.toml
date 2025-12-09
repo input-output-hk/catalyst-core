@@ -10,7 +10,7 @@ license = "MIT OR Apache-2.0"
 [dependencies]
 async-trait = "0.1.33"
 base64 = "0.13"
-time = { version = "0.3", features = ["parsing", "formatting"] }
+time = { version = "0.3.29", features = ["parsing", "formatting"] }
 diesel = { version = "1.4.5", features = ["postgres", "r2d2", "64-column-tables", "serde_json"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15"

@@ -42,7 +42,7 @@ poldercast = "1"
 rand = "0.8"
 path-slash = "0.2.0"
 netstat2 = "0.9"
-time = { version = "0.3.7", features=["serde","serde-well-known","parsing"]}
+time = { version = "0.3.29", features=["serde","serde-well-known","parsing"]}
 fake = { version = "2.2", features=['chrono','http']}
 strum = "0.24"
 strum_macros = "0.24"

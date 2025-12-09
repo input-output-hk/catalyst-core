@@ -1,6 +1,6 @@
 [package]
 name = "wallet-uniffi"
-version = "0.8.3"
+version = "0.8.6"
 edition = "2018"
 
 [lib]

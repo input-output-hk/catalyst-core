@@ -27,7 +27,7 @@ chain-ser = { path = "../../chain-libs/chain-ser" }
 chain-storage = { path = "../../chain-libs/chain-storage" }
 chain-time = { path = "../../chain-libs/chain-time" }
 chain-impl-mockchain = { workspace = true }
-time = { version = "0.3", features = ["formatting", "parsing", "macros"] }
+time = { version = "0.3.29", features = ["formatting", "parsing", "macros"] }
 itertools = "0.10"
 jcli = { path = "../../jormungandr/jcli" }
 jormungandr-lib = { workspace = true }

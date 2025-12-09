@@ -53,7 +53,7 @@ image = "0.23"
 eccoxide = { git = "https://github.com/eugene-babichenko/eccoxide.git", branch = "fast-u64-scalar-mul", features = ["fast-u64-scalar-mul"], optional = true }
 rayon = "1"
 bincode = "1.3.3"
-cocoon =  { git = "https://github.com/dkijania/cocoon.git" }
+cocoon =  { version = "0.4.3" }
 vit-servicing-station-lib = { path = "../../vit-servicing-station/vit-servicing-station-lib" }
 prettytable-rs = "0.10.0"
 reqwest = { workspace = true }

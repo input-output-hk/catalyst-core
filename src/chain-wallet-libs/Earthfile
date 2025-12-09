@@ -1,0 +1,34 @@
+VERSION 0.7
+
+cordova-build:
+    # It is needed to use an older version of rustc
+    FROM rust:1.89.0-slim-bullseye
+
+    # Install deps
+    RUN rustup component add rustfmt
+    # Install python
+    RUN apt update
+    RUN apt -y install python3
+    RUN python3 --version
+    # Install uniffi_bindgen
+    RUN cargo install --version 0.21.1 uniffi_bindgen
+    RUN uniffi-bindgen --version
+    # Install podman needed for cross
+    RUN apt-get -y install podman
+
+    # Install Android NDK 29
+    RUN wget -q https://dl.google.com/android/repository/android-ndk-r29-linux.zip -O /tmp/ndk.zip && \
+        unzip -q /tmp/ndk.zip -d /opt && \
+        rm /tmp/ndk.zip
+    ENV ANDROID_NDK_HOME=/opt/android-ndk-r29
+
+
+    COPY --dir ../../+rust-source/src \
+        ../../+rust-source/tests \
+        ../../+rust-source/Cargo.toml \
+        ../../+rust-source/Cargo.lock \
+        ./catalyst-core
+    RUN ls ./catalyst-core/src/chain-wallet-libs/bindings/wallet-cordova/src/android
+    RUN cd ./catalyst-core && cargo b -p wallet-uniffi --release
+    RUN cd ./catalyst-core/src/chain-wallet-libs/bindings/wallet-cordova/scripts && RUSTFLAGS="-C embed-bitcode" python3 build_android.py
+    RUN ls ./catalyst-core/src/chain-wallet-libs/bindings/wallet-cordova/src/android

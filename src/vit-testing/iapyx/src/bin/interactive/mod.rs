@@ -87,7 +87,7 @@ impl CliController {
     fn controller(&self, password: &str) -> Result<Controller, Error> {
         let template = self.inner.wallets().wallet()?;
         let contents = std::fs::read(&template.secret_file)?;
-        let cocoon = Cocoon::new(password.as_bytes());
+        let mut cocoon = Cocoon::new(password.as_bytes());
 
         let unwrapped: Vec<u8> = cocoon.unwrap(&contents)?;
         let data_u5: Vec<u5> = unwrapped

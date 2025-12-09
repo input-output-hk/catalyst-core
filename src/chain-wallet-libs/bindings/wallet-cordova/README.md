@@ -47,8 +47,7 @@ compatible.
 
 ### Android
 
-- [cross](https://github.com/cross-rs/cross) is currently used for building the
-native libraries for Android.
+- Android NDK >= 29 and ANDROID_NDK_HOME env variable properly set pointing to it.
 - [uniffi-bindgen](https://github.com/mozilla/uniffi-rs). The version must be the same one that is used in the `wallet-uniffi` crate. This can be found [here](../wallet-uniffi/Cargo.toml).
 
 ### iOS
@@ -86,11 +85,12 @@ cargo b --release
 ./gen_bindings.sh
 ```
 
-[build_jni.py](scripts/build_jni.py) in the `scripts` directory will compile the
+[build_android.py](scripts/build_android.py) in the `scripts` directory will compile the
 Android native libraries, generate the Kotlin bindings, and copy those to this
 package in the `src/android` directory.
+The script to compile legacy version of the libraries is at [build_jni.py](scripts/build_jni.py)
 ```
-RUSTFLAGS="-C embed-bitcode" python3 build_jni.py
+RUSTFLAGS="-C embed-bitcode" python3 build_android.py
 ```
 
 [build_ios.py](scripts/build_ios.py) in the `scripts` directory will compile the

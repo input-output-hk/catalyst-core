@@ -29,22 +29,22 @@ INSERT INTO event (
     15,
     'Fund 15',
     'Catalyst Testnet - Fund 15',
-    '2026-01-04 21:45:00',  -- Registration Snapshot Time
-    '2026-01-04 22:00:00',  -- Snapshot Start.
+    '2025-12-10 12:00:00',  -- Registration Snapshot Time
+    '2025-12-10 12:15:00',  -- Snapshot Start.
     25000000,              -- Voting Power Threshold
     100,                      -- Max Voting Power PCT
     NULL,                   -- Review Rewards
-    '2025-11-10 13:00:00',  -- Start Time
-    '2026-02-22 17:00:00',  -- End Time
-    '2025-11-10 13:00:00',  -- Insight Sharing Start
-    '2025-11-10 13:00:00',  -- Proposal Submission Start
-    '2025-11-10 13:00:00',  -- Refine Proposals Start
-    '2025-11-10 13:00:00',  -- Finalize Proposals Start
-    '2025-11-10 13:00:00',  -- Proposal Assessment Start
-    '2025-11-10 13:00:00',  -- Assessment QA Start
-    '2026-01-13 12:00:00',  -- Voting Starts
-    '2026-01-27 11:00:00',  -- Voting Ends
-    '2026-02-22 17:00:00',  -- Tallying Ends
+    '2025-12-10 08:00:00',  -- Start Time
+    '2026-03-17 05:00:00',  -- End Time
+    '2025-12-10 08:00:00',  -- Insight Sharing Start
+    '2025-12-10 08:00:00',  -- Proposal Submission Start
+    '2025-12-10 08:00:00',  -- Refine Proposals Start
+    '2025-12-10 08:00:00',  -- Finalize Proposals Start
+    '2025-12-10 08:00:00',  -- Proposal Assessment Start
+    '2025-12-10 08:00:00',  -- Assessment QA Start
+    '2025-12-10 13:00:00',  -- Voting Starts
+    '2026-02-24 09:00:00',  -- Voting Ends
+    '2026-03-17 05:00:00',  -- Tallying Ends
     NULL,                   -- Block 0 Data
     NULL,                   -- Block 0 Hash
     1,                      -- Committee Size

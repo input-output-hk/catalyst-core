@@ -121,15 +121,19 @@ impl BatchWalletRequestGen {
 
         for item in &counter {
             for i in item.range() {
-                match self.proposals.iter().find(|x| {
-                    x.voteplan.chain_voteplan_id == item.id().to_string()
-                        && (x.voteplan.chain_proposal_index % i64::from(u8::MAX)) == i as i64
-                }) {
-                    Some(proposal) => {
-                        println!("vote on: {}/{}", proposal.voteplan.chain_voteplan_id, i);
-                        proposals.push(proposal.clone());
+                match i64::try_from(i) {
+                    Ok(i_i64) => {
+                        if let Some(proposal) = self.proposals.iter().find(|x| {
+                            x.voteplan.chain_voteplan_id == item.id().to_string()
+                                && (x.voteplan.chain_proposal_index % i64::from(u8::MAX)) == i_i64
+                        }) {
+                            println!("vote on: {}/{}", proposal.voteplan.chain_voteplan_id, i);
+                            proposals.push(proposal.clone());
+                        } else {
+                            return Err(MultiControllerError::NotEnoughProposals);
+                        }
                     }
-                    None => {
+                    Err(_) => {
                         return Err(MultiControllerError::NotEnoughProposals);
                     }
                 }

@@ -271,7 +271,7 @@ impl HybridCiphertext {
     }
 }
 
-impl<'a, 'b> Add<&'b Ciphertext> for &'a Ciphertext {
+impl<'b> Add<&'b Ciphertext> for &Ciphertext {
     type Output = Ciphertext;
 
     fn add(self, other: &'b Ciphertext) -> Ciphertext {
@@ -284,7 +284,7 @@ impl<'a, 'b> Add<&'b Ciphertext> for &'a Ciphertext {
 
 std_ops_gen!(Ciphertext, Add, Ciphertext, Ciphertext, add);
 
-impl<'a, 'b> Sub<&'b Ciphertext> for &'a Ciphertext {
+impl<'b> Sub<&'b Ciphertext> for &Ciphertext {
     type Output = Ciphertext;
 
     fn sub(self, other: &'b Ciphertext) -> Ciphertext {
@@ -297,7 +297,7 @@ impl<'a, 'b> Sub<&'b Ciphertext> for &'a Ciphertext {
 
 std_ops_gen!(Ciphertext, Sub, Ciphertext, Ciphertext, sub);
 
-impl<'a, 'b> Mul<&'b Scalar> for &'a Ciphertext {
+impl<'b> Mul<&'b Scalar> for &Ciphertext {
     type Output = Ciphertext;
     fn mul(self, rhs: &'b Scalar) -> Self::Output {
         Ciphertext {
@@ -309,7 +309,7 @@ impl<'a, 'b> Mul<&'b Scalar> for &'a Ciphertext {
 
 std_ops_gen!(Ciphertext, Mul, Scalar, Ciphertext, mul);
 
-impl<'a> Mul<u64> for &'a Ciphertext {
+impl Mul<u64> for &Ciphertext {
     type Output = Ciphertext;
     fn mul(self, rhs: u64) -> Self::Output {
         Ciphertext {

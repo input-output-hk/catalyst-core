@@ -4,7 +4,7 @@ pub mod fake;
 
 use assert_fs::fixture::PathChild;
 use assert_fs::TempDir;
-use cardano_serialization_lib::metadata::GeneralTransactionMetadata;
+use cardano_serialization_lib::GeneralTransactionMetadata;
 use command::PATH_TO_DYNAMIC_CONTENT;
 pub use command::{Command, Error};
 use std::env;
@@ -43,7 +43,7 @@ impl Mock {
 
         println!(
             "VoterRegistrationMock set dynamic response: {:?}",
-            metadata_file.path()
+            metadata_file.path().display()
         );
 
         let mut file = std::fs::File::create(metadata_file.path()).unwrap();

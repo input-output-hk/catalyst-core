@@ -95,7 +95,7 @@ impl Wallet {
         let bech32_str = jortestkit::file::read_file(secret_key_file).unwrap();
         Wallet::Account(account::Wallet::from_existing_account(
             &bech32_str,
-            spending_counter.map(Into::into),
+            spending_counter,
             discrimination,
         ))
     }
@@ -117,7 +117,7 @@ impl Wallet {
     ) -> Wallet {
         Wallet::Account(account::Wallet::from_existing_account(
             signing_key_bech32,
-            spending_counter.map(Into::into),
+            spending_counter,
             discrimination,
         ))
     }

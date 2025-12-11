@@ -302,7 +302,7 @@ mod tests {
         let v2 = 0x12345;
         let v3 = 0xffee_ddcc_0011_2233;
         let v4 = 0xff_eedd_cc00_1122_3321_4902_1948_0912;
-        let bs1 = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
+        let bs1 = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         let e = Encoder::new()
             .u16(v1)
             .u32(v2)

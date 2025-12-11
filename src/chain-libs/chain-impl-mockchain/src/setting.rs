@@ -266,13 +266,11 @@ impl Settings {
             self.transaction_max_expiry_epochs,
         ));
 
-        match &self.reward_params {
-            Some(p) => params.push(ConfigParam::RewardParams(p.clone())),
-            None => (),
+        if let Some(p) = &self.reward_params {
+            params.push(ConfigParam::RewardParams(p.clone()))
         };
-        match &self.treasury_params {
-            Some(p) => params.push(ConfigParam::TreasuryParams(*p)),
-            None => (),
+        if let Some(p) = &self.treasury_params {
+            params.push(ConfigParam::TreasuryParams(*p))
         };
 
         debug_assert_eq!(self, &Settings::new().try_apply(&params).unwrap());

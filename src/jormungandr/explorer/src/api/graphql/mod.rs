@@ -161,7 +161,7 @@ impl Branch {
             .state
             .state()
             .transactions_by_address(&address)
-            .unwrap_or_else(PersistentSequence::<FragmentId>::new);
+            .unwrap_or_default();
 
         let len = transactions.len();
 
@@ -311,8 +311,8 @@ impl Branch {
         stake_pools.sort_unstable_by_key(|(id, _data)| id.clone());
 
         query(
-            after.map(Into::into),
-            before.map(Into::into),
+            after,
+            before,
             first,
             last,
             |after, before, first, last| async move {
@@ -1080,7 +1080,7 @@ impl Pool {
             first,
             last,
             |after, before, first, last| async move {
-                let bounds = if blocks.len() > 0 {
+                let bounds = if !blocks.is_empty() {
                     PaginationInterval::Inclusive(InclusivePaginationInterval {
                         lower_bound: 0u32,
                         upper_bound: blocks

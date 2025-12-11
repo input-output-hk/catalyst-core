@@ -65,7 +65,6 @@ impl Ballot {
 #[derive(Clone)]
 pub struct Ptp<A> {
     pub elements: Vec<A>,
-    pub orig_len: usize,
 }
 
 impl<A: Clone> Ptp<A> {
@@ -97,10 +96,7 @@ impl<A: Clone> Ptp<A> {
                 vec.push(a.clone());
             }
         }
-        Ptp {
-            orig_len,
-            elements: vec,
-        }
+        Ptp { elements: vec }
     }
 
     /// Iterates over the elements

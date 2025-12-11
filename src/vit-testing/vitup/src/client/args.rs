@@ -134,7 +134,7 @@ impl ControlCommand {
             Self::SetFundId(set_fund_id) => {
                 rest.set_fund_id(set_fund_id.fund_id).map_err(Into::into)
             }
-            Self::Fragments(fragments_command) => fragments_command.exec(rest).map_err(Into::into),
+            Self::Fragments(fragments_command) => fragments_command.exec(rest),
             Self::Health => {
                 match rest.is_up() {
                     true => {

@@ -2,8 +2,7 @@
 
 use crate::data::SnapshotEntry;
 use crate::VotingKey;
-use cardano_serialization_lib::address::RewardAddress;
-use cardano_serialization_lib::crypto::PublicKey;
+use cardano_serialization_lib::{PublicKey, RewardAddress};
 
 /// Allows [`SnapshotEntry`] struct to be assertable
 pub trait VerifiableSnapshotOutput {

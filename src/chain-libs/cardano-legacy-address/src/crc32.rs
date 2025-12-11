@@ -277,7 +277,7 @@ impl Crc32 {
     /// beware that the order in which you update the Crc32
     /// matter.
     #[inline]
-    pub fn update<'a, I>(&'a mut self, bytes: I) -> &mut Self
+    pub fn update<'a, I>(&mut self, bytes: I) -> &mut Self
     where
         I: IntoIterator<Item = &'a u8>,
     {

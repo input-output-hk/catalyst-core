@@ -7,9 +7,8 @@ use chain_impl_mockchain::{
     header::HeaderId,
 };
 pub use jormungandr_automation::jormungandr::{
-    grpc::JormungandrClient, BackwardCompatibleRest, FragmentNode, FragmentNodeError,
-    JormungandrLogger, JormungandrProcess, JormungandrRest, MemPoolCheck, StartupVerificationMode,
-    Status,
+    BackwardCompatibleRest, FragmentNode, FragmentNodeError, JormungandrLogger, JormungandrProcess,
+    JormungandrRest, MemPoolCheck, StartupVerificationMode, Status,
 };
 use jormungandr_automation::{
     jormungandr::{LogLevel, NodeAlias, StartupError},
@@ -73,7 +72,7 @@ impl LegacyNode {
     pub fn stats(&self) -> Result<Yaml, Error> {
         let stats = self.legacy_rest().stats()?;
         let docs = YamlLoader::load_from_str(&stats)?;
-        Ok(docs.get(0).unwrap().clone())
+        Ok(docs.first().unwrap().clone())
     }
 
     pub fn log_stats(&self) {

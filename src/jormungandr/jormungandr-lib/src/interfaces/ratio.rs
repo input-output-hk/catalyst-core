@@ -151,7 +151,7 @@ mod test {
     #[test]
     fn value_display_as_u64() {
         const NUMERATOR: u64 = 928_170;
-        const DENOMINATOR: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(1291) };
+        const DENOMINATOR: NonZeroU64 = NonZeroU64::new(1291).unwrap();
         let ratio = Ratio(rewards::Ratio {
             numerator: NUMERATOR,
             denominator: DENOMINATOR,
@@ -163,7 +163,7 @@ mod test {
     #[test]
     fn value_serde_as_u64() {
         const NUMERATOR: u64 = 928_170;
-        const DENOMINATOR: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(1291) };
+        const DENOMINATOR: NonZeroU64 = NonZeroU64::new(1291).unwrap();
         let ratio = Ratio(rewards::Ratio {
             numerator: NUMERATOR,
             denominator: DENOMINATOR,

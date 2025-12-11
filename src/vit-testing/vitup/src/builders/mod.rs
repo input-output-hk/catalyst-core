@@ -297,7 +297,6 @@ impl VitBackendSettingsBuilder {
                 )
                 .build()
                 .into_iter()
-                .map(Into::into)
                 .collect(),
         );
 

@@ -4,7 +4,7 @@ pub use self::{
     initial_certificates::{signed_delegation_cert, signed_stake_pool_cert, vote_plan_cert},
     persistent_log::{write_into_persistent_log, PersistentLogViewer},
     sender::{BlockDateGenerator, FragmentSender, FragmentSenderError},
-    setup::{DummySyncNode, FragmentSenderSetup, FragmentSenderSetupBuilder, VerifyStrategy},
+    setup::{DummySyncNode, FragmentSenderSetup, FragmentSenderSetupBuilder},
     verifier::{ExitStrategy as VerifyExitStrategy, FragmentVerifier, FragmentVerifierError},
 };
 use crate::{
@@ -304,12 +304,9 @@ impl FragmentBuilder {
         let election_key =
             chain_vote::ElectionPublicKey::from_participants(vote_plan.committee_public_keys());
 
-        let options = vote_plan
-            .proposals()
-            .iter()
-            .nth((proposal_index).into())
-            .unwrap()
-            .options();
+        let proposal: &chain_impl_mockchain::certificate::Proposal =
+            vote_plan.proposals().get(proposal_index as usize).unwrap();
+        let options = proposal.options();
 
         let length = options
             .choice_range()

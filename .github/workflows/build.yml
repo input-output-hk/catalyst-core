@@ -22,7 +22,7 @@ on:
       - "book/**"
 
 env:
-  RUST_LATEST_STABLE_VERSION: 1.71
+  RUST_LATEST_STABLE_VERSION: 1.87.0
   CARGO_TERM_COLOR: always
   RUSTFLAGS: -D warnings
   RUST_BACKTRACE: 1
@@ -123,7 +123,7 @@ jobs:
         with:
           name: choco_logs
           path: C:\ProgramData\chocolatey\logs\*
-          
+
       - name: Set PostgreSQL env variables
         working-directory: "C:\\${{ github.event.repository.name }}"
         shell: powershell

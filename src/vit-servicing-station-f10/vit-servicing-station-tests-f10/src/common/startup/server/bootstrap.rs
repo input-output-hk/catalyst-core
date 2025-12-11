@@ -76,7 +76,7 @@ impl ServerBootstrapper {
         let mut command_builder = BootstrapCommandBuilder::new(exe);
 
         command_builder
-            .address(&settings.address.to_string())
+            .address(settings.address.to_string())
             .db_url(&settings.db_url)
             .log_file(&logger_file)
             .enable_api_tokens(settings.enable_api_tokens)

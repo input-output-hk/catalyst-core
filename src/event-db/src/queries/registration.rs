@@ -100,7 +100,7 @@ impl RegistrationQueries for EventDB {
                 .await?
         };
         let voter = rows
-            .get(0)
+            .first()
             .ok_or_else(|| Error::NotFound("can not find voter value".to_string()))?;
 
         let voting_group = VoterGroupId(voter.try_get("voting_group")?);
@@ -118,7 +118,7 @@ impl RegistrationQueries for EventDB {
         };
 
         let total_voting_power_per_group: i64 = rows
-            .get(0)
+            .first()
             .ok_or_else(|| {
                 Error::NotFound("can not find total voting power per group value".to_string())
             })?
@@ -186,7 +186,7 @@ impl RegistrationQueries for EventDB {
                 .await?
         };
         let delegator_snapshot_info = rows
-            .get(0)
+            .first()
             .ok_or_else(|| Error::NotFound("can not find delegator value".to_string()))?;
 
         let delegation_rows = if let Some(event) = event {
@@ -227,7 +227,7 @@ impl RegistrationQueries for EventDB {
                 .await?
         };
         let total_power: i64 = rows
-            .get(0)
+            .first()
             .ok_or_else(|| Error::NotFound("can not find total power value".to_string()))?
             .try_get("total_voting_power")?;
 

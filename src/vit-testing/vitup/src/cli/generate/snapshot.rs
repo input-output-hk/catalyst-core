@@ -125,7 +125,8 @@ impl SnapshotCommandArgs {
         }
 
         // write snapshot.json
-        let config = read_genesis_yaml(&genesis_yaml)?;
+        let config = read_genesis_yaml(&genesis_yaml)
+            .map_err(|e| crate::error::Error::Block0Error(Box::new(e)))?;
 
         let initials: Vec<Initial> = config
             .initial

@@ -39,7 +39,6 @@ impl TriggerServiceCommand {
             handle,
         )
         .await
-        .map_err(Into::into)
     }
 }
 

@@ -34,7 +34,7 @@ pub struct GovernanceAcceptanceCriteria {
 
 impl Default for GovernanceAcceptanceCriteria {
     fn default() -> Self {
-        const CENT: NonZeroU64 = unsafe { NonZeroU64::new_unchecked(100) };
+        const CENT: NonZeroU64 = NonZeroU64::new(100).unwrap();
 
         Self {
             minimum_stake_participation: Some(Ratio {

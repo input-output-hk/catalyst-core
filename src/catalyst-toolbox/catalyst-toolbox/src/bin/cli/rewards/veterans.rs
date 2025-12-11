@@ -143,11 +143,11 @@ pub fn vca_rewards(
         min_rankings..=max_rankings_reputation,
         rewards_agreement_rate_cutoffs
             .into_iter()
-            .zip(rewards_agreement_rate_modifiers.into_iter())
+            .zip(rewards_agreement_rate_modifiers)
             .collect(),
         reputation_agreement_rate_cutoffs
             .into_iter()
-            .zip(reputation_agreement_rate_modifiers.into_iter())
+            .zip(reputation_agreement_rate_modifiers)
             .collect(),
     );
 

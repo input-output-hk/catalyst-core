@@ -1,5 +1,4 @@
 use crate::builders::utils::logger;
-pub use crate::builders::{VitBackendSettingsBuilder, FOLLOWER, LEADER_1, LEADER_2, LEADER_3};
 use crate::config::read_voter_hirs;
 use crate::config::ConfigBuilder;
 use crate::config::{
@@ -180,7 +179,7 @@ impl QuickStartCommandArgs {
             config_builder = config_builder.use_https();
         }
 
-        let vote_timestamps = vec![
+        let vote_timestamps = [
             self.vote_start_timestamp.clone(),
             self.tally_start_timestamp.clone(),
             self.tally_end_timestamp.clone(),
@@ -236,6 +235,5 @@ impl QuickStartCommandArgs {
             testing_directory,
         );
         spawn_network(mode, network_spawn_params, &mut template_generator, config)
-            .map_err(Into::into)
     }
 }

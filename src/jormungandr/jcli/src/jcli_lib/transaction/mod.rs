@@ -205,7 +205,7 @@ pub enum Error {
     TxWithOwnerStakeDelegationHasOutputs,
 
     #[error(transparent)]
-    Block0Error(#[from] block::Error),
+    Block0Error(#[from] Box<block::Error>),
 
     #[error(transparent)]
     AccountIdError(#[from] utils::account_id::Error),

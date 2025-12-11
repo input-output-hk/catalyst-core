@@ -36,7 +36,7 @@ impl<'a, S: SyncNode + Send> AdversaryVoteCastsGenerator<'a, S> {
         node: RemoteJormungandr,
         fragment_sender: FragmentSender<'a, S>,
     ) -> Self {
-        let voting_privacy = vote_plans.get(0).unwrap().payload_type();
+        let voting_privacy = vote_plans.first().unwrap().payload_type();
 
         Self {
             expiry_generator,
@@ -101,7 +101,7 @@ impl<'a, S: SyncNode + Send> AdversaryVoteCastsGenerator<'a, S> {
     }
 
     fn wrong_voting_privacy(&self) -> Fragment {
-        let vote_plan = self.vote_plans.get(0).unwrap();
+        let vote_plan = self.vote_plans.first().unwrap();
         let block0_hash = self.fragment_sender.block0_hash();
         let fees = self.fragment_sender.fees();
 
@@ -118,7 +118,7 @@ impl<'a, S: SyncNode + Send> AdversaryVoteCastsGenerator<'a, S> {
     }
 
     fn wrong_choice(&self) -> Fragment {
-        let vote_plan = self.vote_plans.get(0).unwrap();
+        let vote_plan = self.vote_plans.first().unwrap();
         let options: u8 = vote_plan.proposals()[0].options().choice_range().end + 1;
         let block0_hash = self.fragment_sender.block0_hash();
         let fees = self.fragment_sender.fees();

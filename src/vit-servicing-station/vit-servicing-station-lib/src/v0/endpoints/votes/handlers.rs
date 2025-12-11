@@ -55,7 +55,7 @@ mod test {
 
         assert_eq!(result.status(), warp::http::StatusCode::OK);
         let result_votes: Vec<Vote> =
-            serde_json::from_str(&String::from_utf8(result.body().to_vec()).unwrap()).unwrap();
+            serde_json::from_str(core::str::from_utf8(result.body()).unwrap()).unwrap();
         assert_eq!(vec![vote], result_votes);
     }
 }

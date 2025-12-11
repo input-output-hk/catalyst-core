@@ -13,7 +13,7 @@ mod secret;
 pub use block0::Block0ConfigurationBuilder;
 pub use jormungandr_config::EitherHashOrBlock0;
 pub use node::{NodeConfigBuilder, NodeConfigManager};
-pub use secret::{NodeSecretExtension, SecretModelFactory};
+pub use secret::SecretModelFactory;
 
 lazy_static! {
     static ref NEXT_AVAILABLE_PORT_NUMBER: AtomicU16 = AtomicU16::new(10000);

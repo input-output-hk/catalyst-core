@@ -147,7 +147,7 @@ impl Controller {
                             self.confirm_transaction(*id);
                         }
                         FragmentStatus::Pending => (),
-                    };
+                    }
                 }
             }
 

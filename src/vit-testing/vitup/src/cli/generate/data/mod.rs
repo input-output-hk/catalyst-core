@@ -4,7 +4,6 @@ mod random;
 
 use crate::Result;
 pub use external::ExternalDataCommandArgs;
-pub use jormungandr_lib::interfaces::Initial;
 pub use perf::PerfDataCommandArgs;
 pub use random::{
     AllRandomDataCommandArgs, RandomReviewsDataCommandArgs, RandomScoresDataCommandArgs,

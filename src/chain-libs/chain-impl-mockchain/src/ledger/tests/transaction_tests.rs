@@ -29,7 +29,7 @@ pub fn transaction_fail_when_255_outputs() {
         address: receiver.address,
         value: Value(1),
     };
-    let outputs: Vec<_> = std::iter::repeat(output).take(255).collect();
+    let outputs: Vec<_> = std::iter::repeat_n(output, 255).collect();
 
     let fragment = TestTxBuilder::new(test_ledger.block0_hash)
         .move_to_outputs_from_faucet(&mut test_ledger, &outputs)

@@ -1,38 +1,42 @@
 use crate::cardano_node::TransactionBuilder;
 use crate::CardanoWallet;
-use cardano_serialization_lib::address::Address;
 use cardano_serialization_lib::chain_crypto::Blake2b256;
-use cardano_serialization_lib::crypto::{Ed25519Signature, PublicKey};
-use cardano_serialization_lib::error::JsError;
-use cardano_serialization_lib::metadata::{
-    decode_metadatum_to_json_str, encode_json_value_to_metadatum, GeneralTransactionMetadata,
-    MetadataJsonSchema, MetadataList, MetadataMap, TransactionMetadatum, TransactionMetadatumLabel,
-};
-use cardano_serialization_lib::utils::{BigNum, Int};
 use cardano_serialization_lib::Transaction;
+use cardano_serialization_lib::{
+    decode_metadatum_to_json_str, encode_json_value_to_metadatum, Address, BigNum,
+    Ed25519Signature, GeneralTransactionMetadata, Int, JsError, MetadataJsonSchema, MetadataList,
+    MetadataMap, PublicKey, TransactionMetadatum, TransactionMetadatumLabel,
+};
 use serde_json::Map;
 use snapshot_lib::registration::Delegations;
 
-lazy_static::lazy_static! {
-    /// registration metadata index constant
-   pub static ref REGISTRATION_METADATA_IDX: u32 = 61284u32;
-    /// registration signature metadata index constant
-    pub static ref REGISTRATION_SIGNATURE_METADATA_IDX: u32 = 61285u32;
-    /// registration metadata constant
-   pub static ref REGISTRATION_METADATA_LABEL: TransactionMetadatumLabel = TransactionMetadatumLabel::from(*REGISTRATION_METADATA_IDX);
-    ///registration signature metadata constant
-    pub static ref REGISTRATION_METADATA_SIGNATURE_LABEL: TransactionMetadatumLabel = TransactionMetadatumLabel::from(*REGISTRATION_SIGNATURE_METADATA_IDX);
-    /// metadatum label 1 constant
-   pub static ref METADATUM_1: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(1));
-    /// metadatum label 2 constant
-    pub static ref METADATUM_2: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(2));
-    /// metadatum label 3 constant
-    pub  static ref METADATUM_3: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(3));
-    /// metadatum label 4 constant
-    pub  static ref METADATUM_4: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(4));
-    /// metadatum label 5 constant
-    pub  static ref METADATUM_5: TransactionMetadatum = TransactionMetadatum::new_int(&Int::new_i32(5));
-}
+use std::sync::LazyLock;
+
+/// registration metadata index constant
+pub static REGISTRATION_METADATA_IDX: LazyLock<u32> = LazyLock::new(|| 61284u32);
+/// registration signature metadata index constant
+pub static REGISTRATION_SIGNATURE_METADATA_IDX: LazyLock<u32> = LazyLock::new(|| 61285u32);
+/// registration metadata constant
+pub static REGISTRATION_METADATA_LABEL: LazyLock<TransactionMetadatumLabel> =
+    LazyLock::new(|| TransactionMetadatumLabel::from(*REGISTRATION_METADATA_IDX));
+///registration signature metadata constant
+pub static REGISTRATION_METADATA_SIGNATURE_LABEL: LazyLock<TransactionMetadatumLabel> =
+    LazyLock::new(|| TransactionMetadatumLabel::from(*REGISTRATION_SIGNATURE_METADATA_IDX));
+/// metadatum label 1 constant
+pub static METADATUM_1: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(1)));
+/// metadatum label 2 constant
+pub static METADATUM_2: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(2)));
+/// metadatum label 3 constant
+pub static METADATUM_3: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(3)));
+/// metadatum label 4 constant
+pub static METADATUM_4: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(4)));
+/// metadatum label 5 constant
+pub static METADATUM_5: LazyLock<TransactionMetadatum> =
+    LazyLock::new(|| TransactionMetadatum::new_int(&Int::new_i32(5)));
 
 /// Responsible for building registration transaction metadata
 pub struct RegistrationTransactionBuilder<'a> {
@@ -356,9 +360,6 @@ impl GeneralTransactionMetadataInfo for GeneralTransactionMetadata {
 #[cfg(test)]
 mod test {
     use super::*;
-    use cardano_serialization_lib::metadata::{
-        decode_metadatum_to_json_str, encode_json_value_to_metadatum, MetadataJsonSchema,
-    };
     use jormungandr_lib::crypto::account::Identifier;
 
     #[test]

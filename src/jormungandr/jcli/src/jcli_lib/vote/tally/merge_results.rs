@@ -172,7 +172,7 @@ mod tests {
                 tally: Tally::Private {
                     state: PrivateTallyState::Decrypted {
                         result: TallyResult {
-                            results: results.try_into().unwrap(),
+                            results: results.into(),
                             options: 0..2,
                         },
                     },

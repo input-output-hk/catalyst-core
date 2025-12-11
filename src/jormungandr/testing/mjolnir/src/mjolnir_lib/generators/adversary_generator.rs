@@ -77,7 +77,7 @@ impl<'a, S: SyncNode + Send> AdversaryFragmentGenerator<'a, S> {
         self.increment_split_marker();
         let (senders, recievers) = self.wallets.split_at_mut(self.split_marker);
         let sender = senders.get_mut(senders.len() - 1).unwrap();
-        let reciever = recievers.get(0).unwrap();
+        let reciever = recievers.first().unwrap();
 
         self.adversary_fragment_sender
             .send_random_faulty_transaction(sender, reciever, &self.jormungandr)

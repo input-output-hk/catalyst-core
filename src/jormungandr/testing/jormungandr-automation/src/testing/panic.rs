@@ -8,7 +8,7 @@ pub fn persist_dir_on_panic<S1: AsRef<str>, S2: AsRef<str>>(
 ) {
     if panicking() {
         let logs_dir = match tempfile::Builder::new().prefix("jormungandr_").tempdir() {
-            Ok(dir) => dir.into_path(),
+            Ok(dir) => dir.keep(),
             Err(e) => {
                 eprintln!("Could not create logs dir: {}", e);
                 return;

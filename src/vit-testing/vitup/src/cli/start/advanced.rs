@@ -141,6 +141,5 @@ impl AdvancedStartCommandArgs {
             testing_directory,
         );
         spawn_network(mode, network_spawn_params, &mut template_generator, config)
-            .map_err(Into::into)
     }
 }

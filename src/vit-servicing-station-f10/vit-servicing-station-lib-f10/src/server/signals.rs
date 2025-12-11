@@ -1,6 +1,6 @@
 use tokio::signal;
 
-#[cfg(target_os = "unix")]
+#[cfg(target_family = "unix")]
 pub async fn watch_signal_for_shutdown() {
     let mut interrupt_signal = signal::unix::signal(signal::unix::SignalKind::interrupt())
         .expect("Error setting up interrupt signal");
@@ -13,13 +13,13 @@ pub async fn watch_signal_for_shutdown() {
 
     tokio::select! {
         _ = signal::ctrl_c() => (),
-        _ = interrupt_stream.recv() => (),
+        _ = interrupt_signal.recv() => (),
         _ = terminate_signal.recv() => (),
         _ = quit_signal.recv() => (),
     }
 }
 
-#[cfg(not(target_os = "unix"))]
+#[cfg(not(target_family = "unix"))]
 pub async fn watch_signal_for_shutdown() {
     signal::ctrl_c().await.ok();
 }

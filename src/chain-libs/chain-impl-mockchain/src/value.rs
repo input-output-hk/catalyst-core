@@ -27,11 +27,11 @@ impl Value {
         Value(0)
     }
 
-    pub fn sum<I>(values: I) -> Result<Self, ValueError>
+    pub fn sum<I>(mut values: I) -> Result<Self, ValueError>
     where
         I: Iterator<Item = Self>,
     {
-        values.fold(Ok(Value::zero()), |acc, v| acc? + v)
+        values.try_fold(Value::zero(), |acc, v| acc + v)
     }
 
     #[inline]

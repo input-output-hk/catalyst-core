@@ -41,7 +41,7 @@ valgrind = { path = "../valgrind" }
 poldercast = "1"
 rand = "0.8"
 path-slash = "0.2.0"
-netstat2 = "0.9"
+netstat2 = "0.11.1"
 time = { version = "0.3.7", features=["serde","serde-well-known","parsing"]}
 fake = { version = "2.2", features=['chrono','http']}
 strum = "0.24"

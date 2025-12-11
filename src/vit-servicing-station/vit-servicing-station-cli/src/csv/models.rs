@@ -314,7 +314,7 @@ pub struct Proposal {
     pub chain_committee_end_time: i64,
     #[serde(alias = "chainVoteplanPayload", default = "Default::default")]
     pub chain_voteplan_payload: String,
-    #[serde(alias = "chainVoteplanPayload", default = "Default::default")]
+    #[serde(alias = "chainVoteplanId", default = "Default::default")]
     pub chain_voteplan_id: String,
     #[serde(alias = "chainVoteEncryptionKey", default = "Default::default")]
     pub chain_vote_encryption_key: String,

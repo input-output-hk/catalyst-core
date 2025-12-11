@@ -135,7 +135,7 @@ impl Derivation {
     /// ```
     #[inline]
     pub const fn max_value() -> Self {
-        Self::new(u32::max_value())
+        Self::new(u32::MAX)
     }
 
     /// returns the min derivation index value
@@ -147,7 +147,7 @@ impl Derivation {
     /// ```
     #[inline]
     pub const fn min_value() -> Self {
-        Self::new(u32::min_value())
+        Self::new(u32::MIN)
     }
 
     /// calculate `derivation + rhs`
@@ -423,7 +423,7 @@ impl SoftDerivation {
 
         // allow `unwrap_or`, it's 32bits of integer or a function pointer
         #[allow(clippy::or_fun_call)]
-        Self::new(d).unwrap_or(Self::min_value())
+        Self::new(d).unwrap_or_default()
     }
 }
 
@@ -611,7 +611,7 @@ impl HardDerivation {
 
         // allow `unwrap_or`, it's 32bits of integer or a function pointer
         #[allow(clippy::or_fun_call)]
-        Self::new(d).unwrap_or(Self::min_value())
+        Self::new(d).unwrap_or_default()
     }
 }
 
@@ -1081,7 +1081,7 @@ mod tests {
     fn derivation_iterator_4() {
         let range = DerivationRange::new::<_, u32>(..);
 
-        assert_eq!(range.len(), u32::max_value() as usize);
+        assert_eq!(range.len(), u32::MAX as usize);
     }
 
     #[test]

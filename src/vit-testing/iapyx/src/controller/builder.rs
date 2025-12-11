@@ -122,7 +122,7 @@ impl ControllerBuilder {
             .collect();
         let secret = KeyQrCode::decode(img, &bytes)
             .unwrap()
-            .get(0)
+            .first()
             .ok_or(Error::NoSecretKeyEncoded)?
             .clone()
             .leak_secret();

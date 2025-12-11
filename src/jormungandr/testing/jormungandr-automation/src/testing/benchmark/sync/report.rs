@@ -30,18 +30,18 @@ impl MeasurementReporter {
         self.counter >= self.interval
     }
 
-    pub fn do_if_interval_reached<F: std::marker::Send>(&self, method: F)
+    pub fn do_if_interval_reached<F>(&self, method: F)
     where
-        F: Fn(),
+        F: std::marker::Send + Fn(),
     {
         if self.is_interval_reached() {
             method();
         }
     }
 
-    pub fn do_if_interval_reached_and_inc<F: std::marker::Send>(&mut self, method: F)
+    pub fn do_if_interval_reached_and_inc<F>(&mut self, method: F)
     where
-        F: Fn(),
+        F: std::marker::Send + Fn(),
     {
         if self.is_interval_reached() {
             method();

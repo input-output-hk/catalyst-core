@@ -35,7 +35,7 @@ pub enum Error {
     #[error(transparent)]
     Intercom(#[from] intercom::Error),
     #[error(transparent)]
-    TxMsgSend(#[from] TrySendError<TransactionMsg>),
+    TxMsgSend(#[from] Box<TrySendError<TransactionMsg>>),
     #[error(transparent)]
     MsgSend(#[from] SendError),
     #[error("Block value calculation error")]
@@ -103,7 +103,9 @@ pub async fn post_fragments(
         fail_fast: batch.fail_fast,
         reply_handle,
     };
-    msgbox.try_send(msg)?;
+    msgbox
+        .try_send(msg)
+        .map_err(|e| Error::TxMsgSend(Box::new(e)))?;
     let reply = reply_future.await?;
     if reply.is_error() {
         Err(Error::Fragments(reply))

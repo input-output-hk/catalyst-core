@@ -4,8 +4,10 @@ mod external_providers;
 
 use super::MainnetWalletState;
 use crate::CardanoWallet;
-pub use actor::{delegator, registration, representative, Actor};
-pub use arbitrary::{generate_arbitrary_delegator, Error as ArbitraryError};
+pub use actor::Actor;
+#[cfg(test)]
+pub use actor::{delegator, registration, representative};
+pub use arbitrary::generate_arbitrary_delegator;
 use chain_crypto::PublicKeyFromStrError;
 pub use external_providers::{DummyExternalProvider, ExternalProvider};
 use jormungandr_lib::crypto::account::Identifier;
@@ -98,7 +100,7 @@ pub enum Error {
     Arbitrary(#[from] arbitrary::Error),
     /// Arbitrary error
     #[error(transparent)]
-    CannotParseAddress(#[from] cardano_serialization_lib::error::JsError),
+    CannotParseAddress(#[from] cardano_serialization_lib::JsError),
 }
 
 #[cfg(test)]

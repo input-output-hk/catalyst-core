@@ -46,7 +46,7 @@ impl<'a, S: SyncNode + Send> VoteCastsGenerator<'a, S> {
             .votes_register
             .advance_single(self.send_marker)
             .unwrap();
-        let vote_cast = vote_casts.get(0).unwrap();
+        let vote_cast = vote_casts.first().unwrap();
 
         let choice = Choice::new((self.rand.next_u32() % 3) as u8);
 

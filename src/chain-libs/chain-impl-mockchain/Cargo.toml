@@ -32,6 +32,9 @@ criterion = { version = "0.3.0", optional = true }
 rand = "0.8"
 cryptoxide = "0.4"
 tracing.workspace = true
+rug = "1.26.1"
+num = "0.4.3"
+
 
 [features]
 property-test-api = [

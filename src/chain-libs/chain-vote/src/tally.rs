@@ -1,5 +1,11 @@
 use std::num::NonZeroU64;
 
+use core::cmp::Ordering;
+use num::FromPrimitive;
+use rug::{float::Round, ops::Pow, Float, Rational};
+
+use std::str::FromStr;
+
 use crate::GroupElement;
 use crate::{
     committee::*,
@@ -9,8 +15,14 @@ use crate::{
     TallyOptimizationTable,
 };
 use base64::{engine::general_purpose, Engine as _};
+use num::Rational32;
+use rug::Integer;
+
 use cryptoxide::blake2b::Blake2b;
 use cryptoxide::digest::Digest;
+
+use std::env;
+
 use rand_core::{CryptoRng, RngCore};
 
 /// Secret key for opening vote
@@ -155,6 +167,38 @@ impl EncryptedTally {
     pub fn add(&mut self, ballot: &Ballot, weight: u64) {
         assert_eq!(ballot.vote().len(), self.r.len());
         assert_eq!(ballot.fingerprint(), &self.fingerprint);
+
+        const GAMMA: &str = "QUADRATIC_VOTING_GAMMA";
+        const PRECISION: &str = "QUADRATIC_VOTING_PRECISION";
+
+        // Apply quadratic scaling if gamma value specified in env var. Else gamma is 1 and has no effect.
+        let mut gamma = f64::from_str(&env::var(GAMMA).unwrap_or(1.0.to_string())).unwrap();
+        // Gamma must be between 0 and 1, anything else is treated as bad input; defaulting gamma to 1.
+        if gamma < 0.0 || gamma > 1.0 {
+            gamma = 1.0;
+        }
+
+        let precision = u32::from_str(&env::var(PRECISION).unwrap_or(1.to_string())).unwrap_or(1);
+
+        let gamma = Rational32::from_f64(gamma).unwrap_or(Rational32::from_integer(1));
+        let denom = gamma.denom();
+        let numer = gamma.numer();
+
+        let stake = Float::with_val(precision, weight);
+
+        // rational = gamma in rational form i.e fraction
+        // 0.5 = 1/2
+        let gamma = Float::with_val(precision, &Rational::from((*numer, *denom)));
+
+        let stake_with_gamma_scaling = stake.clone().pow(&gamma);
+
+        let weight = stake_with_gamma_scaling
+            .to_integer_round(Round::Down)
+            .unwrap_or((Integer::from(weight), Ordering::Less))
+            .0
+            .to_u64()
+            .unwrap_or(weight);
+
         for (ri, ci) in self.r.iter_mut().zip(ballot.vote().iter()) {
             *ri = &*ri + &(ci * weight);
         }

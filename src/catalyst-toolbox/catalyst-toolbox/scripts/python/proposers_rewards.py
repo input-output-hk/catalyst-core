@@ -1,5 +1,16 @@
 # coding: utf-8
-from typing import Dict, Optional, List, Tuple, Generator, TextIO, Union, Any, Set, Mapping
+from typing import (
+    Dict,
+    Optional,
+    List,
+    Tuple,
+    Generator,
+    TextIO,
+    Union,
+    Any,
+    Set,
+    Mapping,
+)
 
 import sys
 import asyncio
@@ -21,6 +32,7 @@ import aiohttp
 from rich import print
 from asyncio import run as aiorun
 from copy import deepcopy
+from fractions import Fraction
 
 
 # VIT servicing station models
@@ -34,6 +46,7 @@ NOT_FUNDED_OVER_BUDGET = "Not Funded - Over Budget"
 NOT_FUNDED_APPROVAL_THRESHOLD = "Not Funded - Approval Threshold"
 LOVELACE_FACTOR = 1000000
 
+
 class Challenge(pydantic.BaseModel):
     id: int
     challenge_type: str
@@ -42,6 +55,7 @@ class Challenge(pydantic.BaseModel):
     rewards_total: int
     fund_id: int
     challenge_url: str
+
 
 class Proposal(pydantic.BaseModel):
     internal_id: int
@@ -57,11 +71,12 @@ class Proposal(pydantic.BaseModel):
     challenge_id: int
     challenge_type: str
     challenge: Challenge
-    
+
     @pydantic.computed_field
     @property
     def ideascale_url(self) -> str:
         return f"https://cardano.ideascale.com/c/idea/{self.proposal_id}"
+
 
 class Author(pydantic.BaseModel):
     """Represents an author."""
@@ -71,7 +86,9 @@ class Author(pydantic.BaseModel):
     email: str
     user_name: str = pydantic.Field(alias="userName")
 
+
 # Ideascale models
+
 
 class IdeascaleProposal(pydantic.BaseModel):
     id: int
@@ -91,7 +108,9 @@ class IdeascaleProposal(pydantic.BaseModel):
         values["authors"] = authors
         return values
 
+
 # Jormungandr models
+
 
 class Options(pydantic.BaseModel):
     start: int
@@ -170,6 +189,7 @@ class Result(pydantic.BaseModel):
     votes_cast: int
     vote_result: Optional[int] = None
 
+
 class Winner(pydantic.BaseModel):
     internal_id: int
     proposal_id: str
@@ -187,15 +207,17 @@ class Winner(pydantic.BaseModel):
         # Override std dict to list all authors in different columns
         output = super().dict(**kwargs)
         _output = {}
-        for k,v in output.items():
-            if k == 'authors':
+        for k, v in output.items():
+            if k == "authors":
                 for idx, author in enumerate(v):
-                    _output[f"{k}_{idx}"] = author['email']
+                    _output[f"{k}_{idx}"] = author["email"]
             else:
                 _output[k] = v
         return _output
 
+
 # Ideascale interface
+
 
 class JsonHttpClient:
     """HTTP Client for JSON APIs."""
@@ -222,6 +244,7 @@ class JsonHttpClient:
                 else:
                     raise GetFailed(r.status, r.reason, content)
 
+
 class GetFailed(Exception):
     """Raised when a request fails."""
 
@@ -229,10 +252,13 @@ class GetFailed(Exception):
         """Initialize a new instance of GetFailed."""
         super().__init__(f"{status} {reason}\n{content})")
 
+
 class IdeascaleImporter:
     """Interface with IdeaScale API."""
 
-    def __init__(self, api_key: str, api_url: str = "https://temp-cardano-sandbox.ideascale.com"):
+    def __init__(
+        self, api_key: str, api_url: str = "https://temp-cardano-sandbox.ideascale.com"
+    ):
         """Initialize entities."""
         self.api_key = api_key
         self.api_url = api_url
@@ -240,7 +266,7 @@ class IdeascaleImporter:
         self.N_WORKERS = 3
 
         self.proposals: List[IdeascaleProposal] = []
-    
+
     async def import_proposals(self, stage_ids: List[int], page_size: int = 50):
         """Get all ideas from the stage with the given id.
 
@@ -264,7 +290,9 @@ class IdeascaleImporter:
                 p = d.page
                 d.page += 1
 
-                res = await self._get(f"/a/rest/v1/stages/{stage_id}/ideas/{p}/{page_size}")
+                res = await self._get(
+                    f"/a/rest/v1/stages/{stage_id}/ideas/{p}/{page_size}"
+                )
 
                 res_proposals: List[IdeascaleProposal] = []
                 for i in res:
@@ -275,19 +303,23 @@ class IdeascaleImporter:
 
                 if len(res_proposals) < page_size:
                     d.done = True
+
         d = {}
-        for stage_id in stage_ids: 
+        for stage_id in stage_ids:
             print(f"Start proposal requests for stage: {stage_id}")
             d = WorkerData(stage_id)
-            worker_tasks = [asyncio.create_task(worker(d, stage_id)) for _ in range(self.N_WORKERS)]
+            worker_tasks = [
+                asyncio.create_task(worker(d, stage_id)) for _ in range(self.N_WORKERS)
+            ]
             for task in worker_tasks:
                 await task
             self.proposals.extend(d.proposals)
-    
+
     async def _get(self, path: str):
         """Execute a GET request."""
         headers = {"api_token": self.api_key}
         return await self.inner.get(path, headers)
+
 
 # File loaders
 
@@ -297,9 +329,11 @@ def load_json_from_file(file_path: str) -> Dict:
         return json.load(f)
 
 
-def get_proposals_from_file(proposals_file_path: str, challenges: Dict[int, Challenge]) -> Dict[str, Proposal]:
+def get_proposals_from_file(
+    proposals_file_path: str, challenges: Dict[int, Challenge]
+) -> Dict[str, Proposal]:
     proposals: Generator[Proposal, None, None] = (
-        Proposal(**proposal_data, challenge=challenges[proposal_data['challenge_id']])
+        Proposal(**proposal_data, challenge=challenges[proposal_data["challenge_id"]])
         for proposal_data in load_json_from_file(proposals_file_path)
     )
     proposals_dict = {proposal.chain_proposal_id: proposal for proposal in proposals}
@@ -411,8 +445,7 @@ def load_block0_data(block0_path: str) -> Dict[str, Any]:
 # Checkers
 
 
-class SanityException(Exception):
-    ...
+class SanityException(Exception): ...
 
 
 def sanity_check_data(
@@ -436,9 +469,11 @@ def sanity_check_data(
 
 # Analyse and compute needed data
 
+
 class WinnerSelectionRule(enum.Enum):
     YES_ONLY: str = "yes_only"
     YES_NO_DIFF: str = "yes_no_diff"
+
 
 def extract_choices_votes(proposal: Proposal, voteplan_proposal: ProposalStatus):
     yes_index = int(proposal.chain_vote_options["yes"])
@@ -454,16 +489,22 @@ def calc_approval_threshold(
     voteplan_proposal: ProposalStatus,
     total_stake_threshold: float,
     winner_selection_rule: WinnerSelectionRule,
-    relative_threshold: float
+    relative_threshold: float,
 ) -> Tuple[int, bool]:
-    yes_result, second_choice_result = extract_choices_votes(proposal, voteplan_proposal)
-    pass_relative_threshold = ((yes_result - second_choice_result) / (yes_result + second_choice_result)) >= float(relative_threshold)
+    yes_result, second_choice_result = extract_choices_votes(
+        proposal, voteplan_proposal
+    )
+    pass_relative_threshold = (
+        (yes_result - second_choice_result) / (yes_result + second_choice_result)
+    ) >= float(relative_threshold)
     if winner_selection_rule == WinnerSelectionRule.YES_ONLY:
         vote_result = yes_result
         pass_total_threshold = yes_result >= float(total_stake_threshold)
     elif winner_selection_rule == WinnerSelectionRule.YES_NO_DIFF:
         vote_result = yes_result - second_choice_result
-        pass_total_threshold = (yes_result + second_choice_result) >= float(total_stake_threshold)
+        pass_total_threshold = (yes_result + second_choice_result) >= float(
+            total_stake_threshold
+        )
     threshold_rules = pass_total_threshold and pass_relative_threshold
     return vote_result, threshold_rules
 
@@ -473,7 +514,7 @@ def calc_vote_value_and_threshold_success(
     voteplan_proposals: Dict[str, ProposalStatus],
     total_stake_threshold: float,
     winner_selection_rule: WinnerSelectionRule,
-    relative_threshold: float
+    relative_threshold: float,
 ) -> Dict[str, Tuple[int, bool]]:
     full_ids = set(proposals.keys())
     result = {
@@ -482,7 +523,7 @@ def calc_vote_value_and_threshold_success(
             voteplan_proposals[proposal_id],
             total_stake_threshold,
             winner_selection_rule,
-            relative_threshold
+            relative_threshold,
         )
         for proposal_id in full_ids
     }
@@ -495,10 +536,14 @@ def calc_results(
     funds: float,
     total_stake_threshold: float,
     winner_selection_rule: WinnerSelectionRule,
-    relative_threshold: float
+    relative_threshold: float,
 ) -> List[Result]:
     success_results = calc_vote_value_and_threshold_success(
-        proposals, voteplan_proposals, total_stake_threshold, winner_selection_rule, relative_threshold
+        proposals,
+        voteplan_proposals,
+        total_stake_threshold,
+        winner_selection_rule,
+        relative_threshold,
     )
     sorted_ids = sorted(
         success_results.keys(), key=lambda x: success_results[x][0], reverse=True
@@ -509,7 +554,9 @@ def calc_results(
         proposal = proposals[proposal_id]
         voteplan_proposal = voteplan_proposals[proposal_id]
         vote_result, threshold_success = success_results[proposal_id]
-        yes_result, second_choice_result = extract_choices_votes(proposal, voteplan_proposal)
+        yes_result, second_choice_result = extract_choices_votes(
+            proposal, voteplan_proposal
+        )
         funded = all(
             (threshold_success, depletion > 0, depletion >= proposal.proposal_funds)
         )
@@ -541,7 +588,7 @@ def calc_results(
             ideascale_url=proposal.ideascale_url,
             challenge_id=proposal.challenge.id,
             challenge_title=proposal.challenge.title,
-            votes_cast=voteplan_proposal.votes_cast
+            votes_cast=voteplan_proposal.votes_cast,
         )
 
         if winner_selection_rule == WinnerSelectionRule.YES_ONLY:
@@ -584,16 +631,17 @@ def filter_excluded_proposals(
 
 
 def calculate_total_stake_from_block0_configuration(
-    block0_config: Dict[str, Dict], committee_keys: List[str]
+    block0_config: Dict[str, Dict], committee_keys: List[str], gamma: Fraction
 ):
     funds = (
         initial["fund"] for initial in block0_config["initial"] if "fund" in initial
     )
     return sum(
-        fund["value"]
+        fund["value"] ** gamma
         for fund in itertools.chain.from_iterable(funds)
         if fund["address"] not in [key for key in committee_keys]
     )
+
 
 def extract_relevant_choice(x, winner_selection_rule):
     if winner_selection_rule == WinnerSelectionRule.YES_ONLY:
@@ -601,52 +649,64 @@ def extract_relevant_choice(x, winner_selection_rule):
     elif winner_selection_rule == WinnerSelectionRule.YES_NO_DIFF:
         return x.vote_result
 
-def calc_leftovers(results, remaining_funds, excluded_categories, winner_selection_rule):
-    leftovers_candidates = sorted([
-        result
-        for result in deepcopy(results)
-        if (
-            result.status == NOT_FUNDED and
-            result.meets_threshold == YES and
-            result.challenge_id not in excluded_categories
-        )
-    ], key=lambda x: extract_relevant_choice(x, winner_selection_rule), reverse=True)
+
+def calc_leftovers(
+    results, remaining_funds, excluded_categories, winner_selection_rule
+):
+    leftovers_candidates = sorted(
+        [
+            result
+            for result in deepcopy(results)
+            if (
+                result.status == NOT_FUNDED
+                and result.meets_threshold == YES
+                and result.challenge_id not in excluded_categories
+            )
+        ],
+        key=lambda x: extract_relevant_choice(x, winner_selection_rule),
+        reverse=True,
+    )
 
     depletion = remaining_funds
     for candidate in leftovers_candidates:
         funded = depletion >= candidate.requested_funds
-        not_funded_reason = (
-            ""
-            if funded
-            else NOT_FUNDED_OVER_BUDGET
-        )
+        not_funded_reason = "" if funded else NOT_FUNDED_OVER_BUDGET
         if funded:
             depletion -= candidate.requested_funds
         candidate.status = FUNDED if funded else NOT_FUNDED
         candidate.fund_depletion = depletion
         candidate.not_funded_reason = not_funded_reason
-    
+
     return leftovers_candidates, depletion
+
 
 def pick_milestones_qty(winner, limits, qty):
     idx = next((i for i, l in enumerate(limits) if winner.requested_funds > l), None)
     return qty[idx]
 
-def generate_winners(results, fund_prefix, milestones_limit, milestones_qty, _ideascale_proposals):
+
+def generate_winners(
+    results, fund_prefix, milestones_limit, milestones_qty, _ideascale_proposals
+):
     ideascale_proposals = {p.id: p for p in _ideascale_proposals}
     winners = []
-    _winners = sorted([r for r in results if r.status == FUNDED], key=lambda r: r.proposal.lower())
+    _winners = sorted(
+        [r for r in results if r.status == FUNDED], key=lambda r: r.proposal.lower()
+    )
     for idx, _winner in enumerate(_winners):
         winner = Winner(
             **_winner.dict(),
             proposal_title=_winner.proposal,
             project_id=fund_prefix + idx,
-            milestone_qty=pick_milestones_qty(_winner, milestones_limit, milestones_qty)
+            milestone_qty=pick_milestones_qty(
+                _winner, milestones_limit, milestones_qty
+            ),
         )
         if winner.internal_id in ideascale_proposals.keys():
             winner.authors = ideascale_proposals[winner.internal_id].authors
         winners.append(winner)
     return winners
+
 
 # Output results
 
@@ -666,24 +726,27 @@ def output_json(results: List[Result], f: TextIO):
 
 # CLI
 
+
 class OutputFormat(enum.Enum):
     CSV: str = "csv"
     JSON: str = "json"
 
 
-def build_path_for_challenge(file_path: str, challenge_name: str, output_format: OutputFormat) -> str:
+def build_path_for_challenge(
+    file_path: str, challenge_name: str, output_format: OutputFormat
+) -> str:
     path, suffix = os.path.splitext(file_path)
-    suffix = 'json' if (output_format == OutputFormat.JSON) else 'csv'
+    suffix = "json" if (output_format == OutputFormat.JSON) else "csv"
     return f"{path}_{challenge_name}.{suffix}"
 
 
-def save_results(output_path: str, title: str, output_format: OutputFormat, results: List[Results]):
+def save_results(
+    output_path: str, title: str, output_format: OutputFormat, results: List[Results]
+):
     challenge_output_file_path = build_path_for_challenge(
         output_path,
-        re.sub(
-            r"(?u)[^-\w.]", "", title.replace(" ", "_").replace(":", "_")
-        ),
-        output_format
+        re.sub(r"(?u)[^-\w.]", "", title.replace(" ", "_").replace(":", "_")),
+        output_format,
     )
 
     with open(
@@ -698,16 +761,22 @@ def save_results(output_path: str, title: str, output_format: OutputFormat, resu
 def calculate_rewards(
     output_file: str = typer.Option(...),
     block0_path: str = typer.Option(...),
+    gamma: str = typer.Option(
+        "1",
+        help="""
+        The gamma value applied for the calculation of the total stake threshold. It is applied to every single voting value before the sum is executed.
+        """
+    ),
     total_stake_threshold: float = typer.Option(
         0.01,
         help="""
         This value indicates the minimum percentage of voting needed by projects to be eligible for funding.
         Voting choices considered for this depends by the winner rule.
-        """
+        """,
     ),
     relative_threshold: float = typer.Option(
-        0,
-        help="This value indicates the relative threshold between Yes/No votes needed by projects to be eligible for funding."
+        -1,
+        help="This value indicates the relative threshold between Yes/No votes needed by projects to be eligible for funding.",
     ),
     output_format: OutputFormat = typer.Option("csv", help="Output format"),
     winner_selection_rule: WinnerSelectionRule = typer.Option(
@@ -717,7 +786,7 @@ def calculate_rewards(
         Possible choices are:
         -   `yes_only` Fuzzy threshold voting: only YES votes are considered for ranking. Only YES votes are considered to calculate thresholds.
         -   `yes_no_diff` Fuzzy threshold voting: YES/NO difference is considered for ranking. Sum of YES/NO is considered to calculate thresholds.
-        """
+        """,
     ),
     proposals_path: Optional[str] = typer.Option(None),
     excluded_proposals_path: Optional[str] = typer.Option(None),
@@ -725,21 +794,26 @@ def calculate_rewards(
     challenges_path: Optional[str] = typer.Option(None),
     vit_station_url: str = typer.Option("https://servicing-station.vit.iohk.io"),
     committee_keys_path: Optional[str] = typer.Option(None),
-    fund_prefix: int = typer.Option(1100001, help="This number will be used to assign progressively project ids to winners."),
+    fund_prefix: int = typer.Option(
+        1100001,
+        help="This number will be used to assign progressively project ids to winners.",
+    ),
     leftovers_excluded_categories: List[int] = typer.Option(
         [],
-        help="List of categories IDs that are not considered in leftovers winners calculation."
+        help="List of categories IDs that are not considered in leftovers winners calculation.",
     ),
     milestones_limit: List[int] = typer.Option(
         [0, 75000, 150000, 300000],
-        help="Map of budgets to assign number of milestones. Lenght must coincide with `milestones_qty` parameter."
+        help="Map of budgets to assign number of milestones. Lenght must coincide with `milestones_qty` parameter.",
     ),
     milestones_qty: List[int] = typer.Option(
         [3, 4, 5, 6],
-        help="Map of milestones qty to assign number of milestones. Lenght must coincide with `milestones_limit` parameter."
+        help="Map of milestones qty to assign number of milestones. Lenght must coincide with `milestones_limit` parameter.",
     ),
     ideascale_api_key: str = typer.Option(None, help="IdeaScale API key"),
-    ideascale_api_url: str = typer.Option("https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"),
+    ideascale_api_url: str = typer.Option(
+        "https://temp-cardano-sandbox.ideascale.com", help="IdeaScale API url"
+    ),
     stage_ids: List[int] = typer.Option([], help="Stage IDs"),
 ):
     """
@@ -784,11 +858,20 @@ def calculate_rewards(
     committee_keys = (
         load_json_from_file(committee_keys_path) if committee_keys_path else []
     )
-    total_stake = calculate_total_stake_from_block0_configuration(
-        block0_config, committee_keys
-    )
+
     # minimum amount of stake needed for a proposal to be accepted
+    _total_stake = calculate_total_stake_from_block0_configuration(
+        block0_config, committee_keys, Fraction(1)
+    )
+    print(f"\nTotal stake before gamma applied {_total_stake}")
+    print(f"Gamma as fractional exponent: {gamma}")
+
+    total_stake = calculate_total_stake_from_block0_configuration(
+        block0_config, committee_keys, Fraction(gamma)
+    )
+
     total_stake_approval_threshold = float(total_stake_threshold) * float(total_stake)
+    print(f"Total stake after gamma applied {total_stake}\n")
 
     total_remaining_funds = 0
 
@@ -804,19 +887,24 @@ def calculate_rewards(
             challenge.rewards_total,
             total_stake_approval_threshold,
             winner_selection_rule,
-            relative_threshold
+            relative_threshold,
         )
 
         total_remaining_funds += remaining_funds
         all_results += results
 
         save_results(output_file, challenge.title, output_format, results)
-        
-    leftover_results, final_remaining_funds = calc_leftovers(all_results, total_remaining_funds, leftovers_excluded_categories, winner_selection_rule)
-    save_results(output_file, 'leftovers', output_format, leftover_results)
+
+    leftover_results, final_remaining_funds = calc_leftovers(
+        all_results,
+        total_remaining_funds,
+        leftovers_excluded_categories,
+        winner_selection_rule,
+    )
+    save_results(output_file, "leftovers", output_format, leftover_results)
 
     ideascale_proposals = []
-    if (ideascale_api_key):
+    if ideascale_api_key:
         ideascale = IdeascaleImporter(ideascale_api_key, ideascale_api_url)
 
         async def _get_proposals():
@@ -827,8 +915,14 @@ def calculate_rewards(
 
     milestones_limit.reverse()
     milestones_qty.reverse()
-    winners = generate_winners(all_results + leftover_results, fund_prefix, milestones_limit, milestones_qty, ideascale_proposals)
-    save_results(output_file, 'winners', output_format, winners)
+    winners = generate_winners(
+        all_results + leftover_results,
+        fund_prefix,
+        milestones_limit,
+        milestones_qty,
+        ideascale_proposals,
+    )
+    save_results(output_file, "winners", output_format, winners)
 
     print("[bold green]Winners generated.[/bold green]")
     print(f"Total Stake: {total_stake}")
@@ -836,6 +930,7 @@ def calculate_rewards(
     print(f"Leftover budget: {total_remaining_funds}")
     print(f"Unallocated budget: {final_remaining_funds}")
     print(f"Funded projects: {len(winners)}")
+
 
 if __name__ == "__main__":
     typer.run(calculate_rewards)

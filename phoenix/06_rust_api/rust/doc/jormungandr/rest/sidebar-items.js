@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["display_internal_server_error","run_server_with_app","setup_cors","setup_prometheus","start_rest_server"],"mod":["prometheus","v0","v1"],"struct":["Config"]};

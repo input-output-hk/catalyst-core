@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["error_from_grpc","error_into_grpc","ids_into_repeated_bytes"],"trait":["FromProtobuf","IntoProtobuf"]};

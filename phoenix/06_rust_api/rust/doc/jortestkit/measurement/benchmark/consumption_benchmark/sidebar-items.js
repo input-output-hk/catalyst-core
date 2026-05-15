@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ConsumptionBenchmarkError"],"struct":["ConsumptionBenchmarkDef","ConsumptionBenchmarkFinish","ConsumptionBenchmarkRun","ConsumptionBenchmarkRunAsync"]};

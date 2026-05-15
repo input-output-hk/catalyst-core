@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["test"],"struct":["Identifier"],"type":["AccountAlg","Ledger","Witness"]};

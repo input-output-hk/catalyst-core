@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BlockEvent"],"fn":["try_ids_from_iter"],"mod":["block","header","id","subscription"],"struct":["Block","BlockId","ChainPullRequest","Header"],"type":["BlockIds"]};

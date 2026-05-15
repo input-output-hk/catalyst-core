@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["TOKEN_NAME_MAX_SIZE"],"mod":["tests"],"struct":["TokenName","TokenNameTooLong"]};

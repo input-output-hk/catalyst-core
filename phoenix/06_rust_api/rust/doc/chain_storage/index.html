@@ -1,0 +1,120 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Block storage crate."><title>chain_storage - Rust</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="chain_storage" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (0288f2e19 2023-09-25)" data-channel="nightly" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="logo-container" href="../chain_storage/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a></nav><nav class="sidebar"><a class="logo-container" href="../chain_storage/index.html"><img class="rust-logo" src="../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><h2 class="location"><a href="#">Crate chain_storage</a></h2><div class="sidebar-elems"><ul class="block"><li class="version">Version 0.1.0</li><li><a id="all-types" href="all.html">All Items</a></li></ul><section><ul class="block"><li><a href="#modules">Modules</a></li><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li></ul></section></div></nav><main><div class="width-limiter"><nav class="sub"><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="main-heading"><h1>Crate <a class="mod" href="#">chain_storage</a><button id="copy-path" title="Copy item path to clipboard"><img src="../static.files/clipboard-7571035ce49a181d.svg" width="19" height="18" alt="Copy item path"></button></h1><span class="out-of-band"><a class="src" href="../src/chain_storage/lib.rs.html#1-153">source</a> · <button id="toggle-all-docs" title="collapse all docs">[<span>&#x2212;</span>]</button></span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Block storage crate.</p>
+<h2 id="data-model"><a href="#data-model">Data model</a></h2>
+<p>This storage is designed to be independent from a particular block strucure.
+At the same time, since it is designed specifically for block chains, it
+handles the minimum amount of data required to maintain consistency. Such
+data includes:</p>
+<ul>
+<li>Block ID</li>
+<li>ID of the parent block</li>
+<li>Chain length</li>
+</ul>
+<p>This data is provided alongside a block in the <code>BlockInfo</code> structure.</p>
+<h2 id="volatile--permanent-storage-model"><a href="#volatile--permanent-storage-model">Volatile + permanent storage model</a></h2>
+<p>Since blockchain can be branching extensively, this library provides the
+mechanism to have multiple blockchain branches. However, doing so for all
+block screates a lot of overhead for maintaining volatile storage. At the
+same time, branches usually die out pretty fast.</p>
+<p>Given that, the storage is separated into two parts:</p>
+<ul>
+<li>Volatile storage should be used for the part of a blockchain where a
+developer may need access to different branches.</li>
+<li>Permanent storage for the part of the blockchain that is guaranteed not to
+change anymore.</li>
+</ul>
+<h3 id="moving-blocks-to-the-permanent-store"><a href="#moving-blocks-to-the-permanent-store">Moving blocks to the permanent store.</a></h3>
+<p>if you have this block structure and call
+<code>store.flush_to_permanent_store(block 2 id)</code>, then <code>block 1</code> and <code>block 2</code>
+will be moved to the permanent storage. if you call
+<code>store.flush_to_permanent_store(block 3 id)</code>, <code>block 3</code> will also be moved
+to the permanent store, but <code>block 3'</code> will still exist in the volatile store.
+note that if you call <code>store.get_blocks_by_chain_length(3)</code> only <code>block 3</code>
+(which is in the permanent store) will be returned; and you cannot call
+<code>store.flush_to_permanent_store(block 3' id)</code> now.</p>
+<p><strong>fig.1 - note that root does not actually exist, this is an id referredby</strong>
+<strong>the first block in the chain</strong></p>
+<div class="example-wrap"><pre class="language-text"><code>+---------+       +---------+
+|         |       |         |
+| block 4 |       | block 4&#39;|
+|         |       |         |
++---------+       +---------+
+     |                 |
+     |                 |
+     v                 v
++---------+       +---------+
+|         |       |         |
+| block 3 |       | block 3&#39;|
+|         |       |         |
++---------+       +---------+
+     |                 |
+     |                 |
+     v                 |
++---------+            |
+|         |            |
+| block 2 +&lt;-----------+
+|         |
++---------+
+     |
+     |
+     v
++---------+
+|         |
+| block 1 |
+|         |
++---------+
+     |
+     |
+     v
++---------+
+|         |
+|  (root) |
+|         |
++---------+
+</code></pre></div><h3 id="removing-stale-branches"><a href="#removing-stale-branches">Removing stale branches</a></h3>
+<p>If you want to clean up branches, do the following:</p>
+<ul>
+<li>Call <code>store.get_tips_ids()</code>, in our example it will return
+<code>[Block 4 id, Block 4' id]</code>;</li>
+<li>Determine which branches do you want to remove.</li>
+<li>Call, for example, <code>store.prune_branch(Block 4' id)</code>.</li>
+</ul>
+<h3 id="performance-benefits-of-permanent-storage"><a href="#performance-benefits-of-permanent-storage">Performance benefits of permanent storage</a></h3>
+<p>Since blocks in the permanent storage are stored just one after another (the
+structure is <code>block_length.to_le_bytes() ++ block_bytes</code> and a file with
+references to blocks in the order they were added to the storage), it allows
+for the following scenarios:</p>
+<ul>
+<li>Very fast block iteration</li>
+<li>Transferring a portion of the data file over the network without locking
+it.</li>
+<li>O(1) access by chain length.</li>
+</ul>
+<p><strong>fig. 2 - permanent storage structure</strong></p>
+<div class="example-wrap"><pre class="language-text"><code>store                  block no. index
+
++--------------+       +-------------+
+|              |       |             |
+| block1       |       | block1 pos  |
+|              |       |             |
++--------------+       +-------------+
+|              |       |             |
+| block2       |       | block2 pos  |
+|              |       |             |
++--------------+       +-------------+
+|              |       |             |
+| ...          |       | ...         |
+|              |       |             |
++--------------+       +-------------+
+|              |       |             |
+| blockn       |       | blockn pos  |
+|              |       |             |
++--------------+       +-------------+
+</code></pre></div><h2 id="storage-directory-layout"><a href="#storage-directory-layout">Storage directory layout</a></h2><div class="example-wrap"><pre class="language-text"><code>store
+├── permanent       - permanent storage directory
+│   └── flatfile    - storage file that can be transferred over the network
+└── volatile        - volatile storage
+</code></pre></div></div></details><h2 id="modules" class="small-section-header"><a href="#modules">Modules</a></h2><ul class="item-table"><li><div class="item-name"><a class="mod" href="block_info/index.html" title="mod chain_storage::block_info">block_info</a><span title="Restricted Visibility">&nbsp;🔒</span> </div></li><li><div class="item-name"><a class="mod" href="block_store/index.html" title="mod chain_storage::block_store">block_store</a><span title="Restricted Visibility">&nbsp;🔒</span> </div></li><li><div class="item-name"><a class="mod" href="error/index.html" title="mod chain_storage::error">error</a><span title="Restricted Visibility">&nbsp;🔒</span> </div></li><li><div class="item-name"><a class="mod" href="iterator/index.html" title="mod chain_storage::iterator">iterator</a><span title="Restricted Visibility">&nbsp;🔒</span> </div></li><li><div class="item-name"><a class="mod" href="permanent_store/index.html" title="mod chain_storage::permanent_store">permanent_store</a><span title="Restricted Visibility">&nbsp;🔒</span> </div></li><li><div class="item-name"><a class="mod" href="test_utils/index.html" title="mod chain_storage::test_utils">test_utils</a></div><div class="desc docblock-short">Utilities for testing the storage.</div></li><li><div class="item-name"><a class="mod" href="value/index.html" title="mod chain_storage::value">value</a><span title="Restricted Visibility">&nbsp;🔒</span> </div></li></ul><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><ul class="item-table"><li><div class="item-name"><a class="struct" href="struct.BlockInfo.html" title="struct chain_storage::BlockInfo">BlockInfo</a></div><div class="desc docblock-short">A structure that holds the information about a blocks, that is needed to
+maintain consistency of the storage. This include the ID of the blocks, the
+ID of its parent and the length of the block chain for the given block.</div></li><li><div class="item-name"><a class="struct" href="struct.BlockStore.html" title="struct chain_storage::BlockStore">BlockStore</a></div></li><li><div class="item-name"><a class="struct" href="struct.StorageIterator.html" title="struct chain_storage::StorageIterator">StorageIterator</a></div><div class="desc docblock-short">Iterator over blocks. Starts from n-th ancestor of the given block.</div></li><li><div class="item-name"><a class="struct" href="struct.Value.html" title="struct chain_storage::Value">Value</a></div><div class="desc docblock-short">Wrapper for data held by the database. This wrapper holds structs returned
+by both volatile and permanent storage to ensure we don’t have needless
+copying on return. Data should be accessed through the <code>AsRef</code> trait.</div></li></ul><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><ul class="item-table"><li><div class="item-name"><a class="enum" href="enum.ConsistencyFailure.html" title="enum chain_storage::ConsistencyFailure">ConsistencyFailure</a></div></li><li><div class="item-name"><a class="enum" href="enum.Error.html" title="enum chain_storage::Error">Error</a></div></li></ul></section></div></main></body></html>

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["_impl_query_id_for_last_updated","_impl_query_id_for_tag"],"struct":["last_updated","star","tag"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["CommStatus"],"struct":["ClientAuth","Entry","PeerData","PeerMap"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["NodeServer","_Inner"],"trait":["Node"]};

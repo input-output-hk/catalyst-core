@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ParametersGovernanceAction","ParametersGovernanceActionType","TreasuryGovernanceAction","TreasuryGovernanceActionType"],"mod":["parameters","treasury"],"struct":["Governance","GovernanceAcceptanceCriteria","ParametersGovernance","TreasuryGovernance"]};

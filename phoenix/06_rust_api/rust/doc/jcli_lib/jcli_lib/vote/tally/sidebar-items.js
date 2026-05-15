@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Tally"],"mod":["decrypt_tally","decryption_shares","merge_results"]};

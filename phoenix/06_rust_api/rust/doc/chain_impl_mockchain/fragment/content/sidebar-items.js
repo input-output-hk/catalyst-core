@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["Contents","ContentsBuilder"],"type":["BlockContentHash","BlockContentSize"]};

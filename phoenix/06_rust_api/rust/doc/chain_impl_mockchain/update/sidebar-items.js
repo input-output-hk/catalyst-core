@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error"],"mod":["tests"],"struct":["UpdateProposalState","UpdateState"]};

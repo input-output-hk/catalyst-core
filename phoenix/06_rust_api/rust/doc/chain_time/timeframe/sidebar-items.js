@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["Slot","SlotAndDuration","SlotDuration","TimeFrame"]};

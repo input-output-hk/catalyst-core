@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["preferred_list","rings"],"struct":["LayersConfig","ParseError","PreferredListConfig","RingsConfig"]};

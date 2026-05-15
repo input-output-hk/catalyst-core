@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["block0_config_builder"]};

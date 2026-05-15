@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["make_url"],"struct":["RestArgs","RestClient","RestRequestBuilder","RestResponse"]};

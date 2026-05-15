@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["block","in_memory","ledger","settings","transaction"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["InteractiveCommand","InteractiveCommandError"],"fn":["do_for_all_alias"],"mod":["args","command","controller"],"struct":["ConsoleWriter","JormungandrInteractiveCommandExec","UserInteractionController"],"trait":["InteractiveCommandExec"]};

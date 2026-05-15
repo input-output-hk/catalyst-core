@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CERTIFICATE_HRP","SIGNED_CERTIFICATE_HRP"],"enum":["CertificateFromBech32Error","CertificateFromStrError","CertificateToBech32Error"],"struct":["Certificate","SignedCertificate"]};

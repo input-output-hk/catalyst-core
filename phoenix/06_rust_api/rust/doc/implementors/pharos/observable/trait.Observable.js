@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"mainnet_lib":[["impl <a class=\"trait\" href=\"https://docs.rs/pharos/pharos/observable/trait.Observable.html\" title=\"trait pharos::observable::Observable\">Observable</a>&lt;Block&gt; for <a class=\"struct\" href=\"mainnet_lib/cardano_node/in_memory/struct.InMemoryNode.html\" title=\"struct mainnet_lib::cardano_node::in_memory::InMemoryNode\">InMemoryNode</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["get_available_port"],"struct":["MockBootstrap","MockController","NEXT_AVAILABLE_PORT_NUMBER","OCCUPIED_PORTS"]};

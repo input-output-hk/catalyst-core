@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["batch_decrypt","trivial_convert"],"struct":["Base64DecodeError","DecryptionError","ElectionFingerprint","EncryptedTally","EncryptedTallyError","ProvenDecryptShare","Tally","TallyDecryptShare","TallyError","ValidatedTally"],"type":["Crs","OpeningVoteKey"]};

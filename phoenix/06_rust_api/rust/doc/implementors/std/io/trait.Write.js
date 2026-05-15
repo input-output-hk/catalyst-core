@@ -1,0 +1,4 @@
+(function() {var implementors = {
+"cardano_legacy_address":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/std/io/trait.Write.html\" title=\"trait std::io::Write\">Write</a> for <a class=\"struct\" href=\"cardano_legacy_address/crc32/struct.Crc32.html\" title=\"struct cardano_legacy_address::crc32::Crc32\">Crc32</a>"]],
+"jormungandr_automation":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/std/io/trait.Write.html\" title=\"trait std::io::Write\">Write</a> for <a class=\"struct\" href=\"jormungandr_automation/jormungandr/grpc/server/builder/struct.ChannelWriter.html\" title=\"struct jormungandr_automation::jormungandr::grpc::server::builder::ChannelWriter\">ChannelWriter</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

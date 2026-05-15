@@ -1,0 +1,315 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/jormungandr/jcli/src/jcli_lib/certificate/new_stake_pool_registration.rs`."><title>new_stake_pool_registration.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-fa3bb1812debf86c.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="jcli_lib" data-themes="" data-resource-suffix="" data-rustdoc-version="1.74.0-nightly (0288f2e19 2023-09-25)" data-channel="nightly" data-search-js="search-8be46b629f5f14a8.js" data-settings-js="settings-74424d7eec62a23e.js" ><script src="../../../../static.files/storage-fec3eaa3851e447d.js"></script><script defer src="../../../../static.files/src-script-3280b574d94e47b4.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-c5bd66d33317d69f.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-5d8b3c7633ad77ba.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../jcli_lib/index.html"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<a href="#2" id="2">2</a>
+<a href="#3" id="3">3</a>
+<a href="#4" id="4">4</a>
+<a href="#5" id="5">5</a>
+<a href="#6" id="6">6</a>
+<a href="#7" id="7">7</a>
+<a href="#8" id="8">8</a>
+<a href="#9" id="9">9</a>
+<a href="#10" id="10">10</a>
+<a href="#11" id="11">11</a>
+<a href="#12" id="12">12</a>
+<a href="#13" id="13">13</a>
+<a href="#14" id="14">14</a>
+<a href="#15" id="15">15</a>
+<a href="#16" id="16">16</a>
+<a href="#17" id="17">17</a>
+<a href="#18" id="18">18</a>
+<a href="#19" id="19">19</a>
+<a href="#20" id="20">20</a>
+<a href="#21" id="21">21</a>
+<a href="#22" id="22">22</a>
+<a href="#23" id="23">23</a>
+<a href="#24" id="24">24</a>
+<a href="#25" id="25">25</a>
+<a href="#26" id="26">26</a>
+<a href="#27" id="27">27</a>
+<a href="#28" id="28">28</a>
+<a href="#29" id="29">29</a>
+<a href="#30" id="30">30</a>
+<a href="#31" id="31">31</a>
+<a href="#32" id="32">32</a>
+<a href="#33" id="33">33</a>
+<a href="#34" id="34">34</a>
+<a href="#35" id="35">35</a>
+<a href="#36" id="36">36</a>
+<a href="#37" id="37">37</a>
+<a href="#38" id="38">38</a>
+<a href="#39" id="39">39</a>
+<a href="#40" id="40">40</a>
+<a href="#41" id="41">41</a>
+<a href="#42" id="42">42</a>
+<a href="#43" id="43">43</a>
+<a href="#44" id="44">44</a>
+<a href="#45" id="45">45</a>
+<a href="#46" id="46">46</a>
+<a href="#47" id="47">47</a>
+<a href="#48" id="48">48</a>
+<a href="#49" id="49">49</a>
+<a href="#50" id="50">50</a>
+<a href="#51" id="51">51</a>
+<a href="#52" id="52">52</a>
+<a href="#53" id="53">53</a>
+<a href="#54" id="54">54</a>
+<a href="#55" id="55">55</a>
+<a href="#56" id="56">56</a>
+<a href="#57" id="57">57</a>
+<a href="#58" id="58">58</a>
+<a href="#59" id="59">59</a>
+<a href="#60" id="60">60</a>
+<a href="#61" id="61">61</a>
+<a href="#62" id="62">62</a>
+<a href="#63" id="63">63</a>
+<a href="#64" id="64">64</a>
+<a href="#65" id="65">65</a>
+<a href="#66" id="66">66</a>
+<a href="#67" id="67">67</a>
+<a href="#68" id="68">68</a>
+<a href="#69" id="69">69</a>
+<a href="#70" id="70">70</a>
+<a href="#71" id="71">71</a>
+<a href="#72" id="72">72</a>
+<a href="#73" id="73">73</a>
+<a href="#74" id="74">74</a>
+<a href="#75" id="75">75</a>
+<a href="#76" id="76">76</a>
+<a href="#77" id="77">77</a>
+<a href="#78" id="78">78</a>
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a>
+<a href="#90" id="90">90</a>
+<a href="#91" id="91">91</a>
+<a href="#92" id="92">92</a>
+<a href="#93" id="93">93</a>
+<a href="#94" id="94">94</a>
+<a href="#95" id="95">95</a>
+<a href="#96" id="96">96</a>
+<a href="#97" id="97">97</a>
+<a href="#98" id="98">98</a>
+<a href="#99" id="99">99</a>
+<a href="#100" id="100">100</a>
+<a href="#101" id="101">101</a>
+<a href="#102" id="102">102</a>
+<a href="#103" id="103">103</a>
+<a href="#104" id="104">104</a>
+<a href="#105" id="105">105</a>
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+<a href="#146" id="146">146</a>
+<a href="#147" id="147">147</a>
+<a href="#148" id="148">148</a>
+<a href="#149" id="149">149</a>
+<a href="#150" id="150">150</a>
+<a href="#151" id="151">151</a>
+<a href="#152" id="152">152</a>
+<a href="#153" id="153">153</a>
+<a href="#154" id="154">154</a>
+<a href="#155" id="155">155</a>
+<a href="#156" id="156">156</a>
+<a href="#157" id="157">157</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::jcli_lib::{
+    certificate::{write_cert, Error},
+    utils::key_parser::parse_pub_key,
+};
+<span class="kw">use </span>chain_crypto::{Ed25519, PublicKey, RistrettoGroup2HashDh, SumEd25519_12};
+<span class="kw">use </span>chain_impl_mockchain::{
+    certificate::{Certificate, PoolPermissions, PoolRegistration},
+    key::GenesisPraosLeader,
+    rewards,
+};
+<span class="kw">use </span>chain_time::DurationSeconds;
+<span class="kw">use </span>clap::Parser;
+<span class="kw">use </span>jormungandr_lib::interfaces::{AccountIdentifier, Ratio, Value};
+<span class="kw">use </span>std::{
+    num::{NonZeroU64, NonZeroU8},
+    path::PathBuf,
+};
+
+<span class="doccomment">/// create the stake pool registration certificate.
+///
+/// This contains all the declaration data of a stake pool. Including the management
+/// data. Once registered and accepted the users can delegate stake to the stake pool
+/// by referring the stake pool id.
+///
+/// `--tax-*` parameters allow to set the rewards the stake pool will take before
+/// serving the stake delegators. If the total reward for a stake pool is `Y`. The
+/// stake pool will take a fixed (`--tax-fixed`) first: `X`. Then will take a percentage
+/// of the remaining rewards (`--tax-ratio`): `R`. The total of the rewards gained from `R`
+/// can be capped by an optional `--tax-limit`: `L` where the actual tax `T` is `X` plus
+/// the minimum of `L` and `R`.
+///
+/// Delegators will then receive a share of the remaining rewards: `Y - T`.
+///
+</span><span class="attr">#[derive(Debug, Parser)]
+</span><span class="kw">pub struct </span>StakePoolRegistration {
+    <span class="doccomment">/// management threshold
+    ///
+    /// This is the number of owners keys that are required to update the stake
+    /// pools parameter (the tax, update the keys, the threshold itsef...).
+    </span><span class="attr">#[clap(long = <span class="string">&quot;management-threshold&quot;</span>, name = <span class="string">&quot;THRESHOLD&quot;</span>)]
+    </span><span class="kw">pub </span>management_threshold: NonZeroU8,
+
+    <span class="doccomment">/// start validity
+    ///
+    /// This state when the stake pool registration becomes effective in seconds since
+    /// the block0 start time.
+    </span><span class="attr">#[clap(long = <span class="string">&quot;start-validity&quot;</span>, name = <span class="string">&quot;SECONDS-SINCE-START&quot;</span>)]
+    </span><span class="kw">pub </span>start_validity: u64,
+
+    <span class="doccomment">/// public key of the owner(s)
+    ///
+    /// Owner can change any of the stake pool parameters as long as there
+    /// is `&lt;THRESHOLD&gt;` number of owners to sign the stake pool parameters update.
+    ///
+    /// Owner will receive a share of the fixed and ratio tax too. unless a reward
+    /// account is specified for the stake pool.
+    </span><span class="attr">#[clap(
+        long = <span class="string">&quot;owner&quot;</span>,
+        name = <span class="string">&quot;OWNER_KEY&quot;</span>,
+        value_parser = parse_pub_key::&lt;Ed25519&gt;,
+        required = <span class="bool-val">true
+    </span>)]
+    </span><span class="kw">pub </span>owners: Vec&lt;PublicKey&lt;Ed25519&gt;&gt;,
+
+    <span class="doccomment">/// public key of the operators(s)
+    ///
+    /// Owners can allow an operator to update some or all of the stake pool parameters.
+    /// Different operators can have different permissions.
+    </span><span class="attr">#[clap(
+        long = <span class="string">&quot;operator&quot;</span>,
+        name = <span class="string">&quot;OPERATOR_KEY&quot;</span>,
+        value_parser = parse_pub_key::&lt;Ed25519&gt;,
+    )]
+    </span><span class="kw">pub </span>operators: Vec&lt;PublicKey&lt;Ed25519&gt;&gt;,
+
+    <span class="doccomment">/// Public key of the block signing key
+    </span><span class="attr">#[clap(
+        long = <span class="string">&quot;kes-key&quot;</span>,
+        name = <span class="string">&quot;KES_KEY&quot;</span>,
+        value_parser = parse_pub_key::&lt;SumEd25519_12&gt;,
+    )]
+    </span><span class="kw">pub </span>kes_key: PublicKey&lt;SumEd25519_12&gt;,
+
+    <span class="doccomment">/// public key of the VRF key
+    </span><span class="attr">#[clap(
+        long = <span class="string">&quot;vrf-key&quot;</span>,
+        name = <span class="string">&quot;VRF_KEY&quot;</span>,
+        value_parser = parse_pub_key::&lt;RistrettoGroup2HashDh&gt;,
+    )]
+    </span><span class="kw">pub </span>vrf_key: PublicKey&lt;RistrettoGroup2HashDh&gt;,
+
+    <span class="doccomment">/// set the fixed value tax the stake pool will reserve from the reward
+    ///
+    /// For example, a stake pool may set this value to cover their fixed operation
+    /// costs.
+    </span><span class="attr">#[clap(long = <span class="string">&quot;tax-fixed&quot;</span>, name = <span class="string">&quot;TAX_VALUE&quot;</span>, default_value = <span class="string">&quot;0&quot;</span>)]
+    </span><span class="kw">pub </span>tax_fixed: Value,
+
+    <span class="doccomment">/// The percentage take of the stake pool.
+    ///
+    /// Once the `tax-fixed` has been take, this is the percentage the stake pool will
+    /// take for themselves.
+    </span><span class="attr">#[clap(long = <span class="string">&quot;tax-ratio&quot;</span>, name = <span class="string">&quot;TAX_RATIO&quot;</span>, default_value = <span class="string">&quot;0/1&quot;</span>)]
+    </span><span class="kw">pub </span>tax_ratio: Ratio,
+
+    <span class="doccomment">/// The maximum tax value the stake pool will take.
+    ///
+    /// This will set the maximum the stake pool value will reserve for themselves from
+    /// the `--tax-ratio` (excluding `--tax-fixed`).
+    </span><span class="attr">#[clap(long = <span class="string">&quot;tax-limit&quot;</span>, name = <span class="string">&quot;TAX_LIMIT&quot;</span>)]
+    </span><span class="kw">pub </span>tax_limit: <span class="prelude-ty">Option</span>&lt;NonZeroU64&gt;,
+
+    <span class="doccomment">/// the account to reward the stake pool tax too
+    ///
+    /// If this value is set, instead of distributing the rewards to the owners
+    /// the rewards will be distributed to this account.
+    </span><span class="attr">#[clap(long = <span class="string">&quot;reward-account&quot;</span>, name = <span class="string">&quot;REWARD_ACCOUNT&quot;</span>)]
+    </span><span class="kw">pub </span>reward_account: <span class="prelude-ty">Option</span>&lt;AccountIdentifier&gt;,
+
+    <span class="doccomment">/// print the output signed certificate in the given file, if no file given
+    /// the output will be printed in the standard output
+    </span><span class="kw">pub </span>output: <span class="prelude-ty">Option</span>&lt;PathBuf&gt;,
+}
+
+<span class="kw">impl </span>StakePoolRegistration {
+    <span class="kw">pub fn </span>exec(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>rewards = rewards::TaxType {
+            fixed: <span class="self">self</span>.tax_fixed.into(),
+            ratio: <span class="self">self</span>.tax_ratio.into(),
+            max_limit: <span class="self">self</span>.tax_limit,
+        };
+
+        <span class="kw">let </span>content = PoolRegistration {
+            serial: <span class="number">0</span>,
+            owners: <span class="self">self</span>.owners.clone(),
+            operators: <span class="self">self</span>.operators.clone().into(),
+            permissions: PoolPermissions::new(<span class="self">self</span>.management_threshold.get()),
+            start_validity: DurationSeconds::from(<span class="self">self</span>.start_validity).into(),
+            rewards,
+            reward_account: <span class="self">self</span>.reward_account.map(Into::into),
+            keys: GenesisPraosLeader {
+                kes_public_key: <span class="self">self</span>.kes_key,
+                vrf_public_key: <span class="self">self</span>.vrf_key,
+            },
+        };
+
+        <span class="kw">if </span><span class="self">self</span>.management_threshold.get() <span class="kw">as </span>usize &gt; <span class="self">self</span>.owners.len() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(Error::ManagementThresholdInvalid {
+                got: <span class="self">self</span>.management_threshold.get() <span class="kw">as </span>usize,
+                max_expected: <span class="self">self</span>.owners.len(),
+            });
+        };
+
+        <span class="kw">let </span>cert = Certificate::PoolRegistration(content);
+        write_cert(<span class="self">self</span>.output.as_deref(), cert.into())
+    }
+}
+</code></pre></div></section></main></body></html>

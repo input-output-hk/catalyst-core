@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["communication_key","member_key"],"struct":["CommitteeCommand"]};

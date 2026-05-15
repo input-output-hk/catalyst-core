@@ -1,0 +1,174 @@
+openapi: 3.0.3
+info:
+  title: Db Sync Explorer
+  version: 1.0.0
+  contact: {url: "https://github.com/input-output-hk/catalyst-core"}
+servers:
+- url: http://localhost
+
+
+paths:
+  /api/v0/sync/behind:
+    get:
+      tags: [sync]
+      summary: Behind Tip
+      description: Request for fetching information about Db Sync synchronization status. 'Behind' endpoint return date interval object which represent difference between utc::now() and last block time registered in db sync.
+      operationId: behindTip
+      responses:
+        '200':
+          description: 'On correct response'
+          content:
+            application/json:
+              schema: 
+                $ref: '#/components/schemas/Behind'
+              example:
+                - behind_by: 
+                    secs_since_epoch: 1669792739,
+                    nanos_since_epoch: 0
+        '500': 
+          description: 'On internal server error' 
+  /api/v0/meta:
+    get:
+      tags: [meta]
+      summary: Meta information
+      description: Provides information about meta information of db sync, like version, network and start date
+      operationId: metaInformation
+      responses:
+        '200':
+          description: 'On correct response'
+          content: 
+            application/json:
+              schema:
+                items: 
+                  $ref: "#/components/schemas/Meta"
+              example:
+                - id: 1,
+                  start_time: 
+                    secs_since_epoch: 1654041600
+                    nanos_since_epoch: 0
+                  network_name: "preprod"
+                  version: "Version {versionBranch = [13,0,5], versionTags = []}"
+        '500': 
+          description: 'On internal server error' 
+      
+  /api/v0/tx/hash/{hash}:
+    get:
+      tags: [tx]
+      summary: Transaction info by hash
+      description: Returns information about transaction by given hash. Returns collection of transaction matching given hash. If none transaction is found, returns empty collection.
+      operationId: transactionInfoByHash
+      parameters:
+        - in: path
+          name: hash
+          description: valid transaction hash 
+          example: bc692d5a2a6b014b50fc6216e544c6dc08299add60b62a64eb682c53ffedd4c9
+          schema:
+            type: string
+          required: true
+      responses:
+        "200":
+          description: Valid response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/TransactionConfirmation"
+              example: 
+                - epoch_no: 36
+                  slot_no: 14062141
+                  absolute_slot: 151741
+                  block_no: 338669
+                
+  /api/v0/sync/progress:
+    get:
+      tags: [sync]
+      summary: Sync percentage
+      description: Endpoint can provide float represents percentage of synchronization between dbsync and target network (to check target network please use meta endpoint). Number is expressed as BigDecimal
+      operationId: syncPercentage
+      responses:
+        '200':
+          description: 'On correct request'
+          content: 
+            application/json:
+              schema: 
+                $ref: "#/components/schemas/SyncPercentage"
+              example:
+                sync_percentage: "99.9999554682794478"
+                
+  /api/v0/health:
+    post:
+      tags: [meta]
+      summary: Health
+      description: Health endpoint for checking if service is up
+      operationId: health
+      responses:
+        '200':
+          description: 'Server is up'
+
+tags:
+  - name: sync
+    description: Information on db sync state against network.
+  - name: tx
+    description: Information on transactions.
+  - name: meta
+    description: Information on service or db sync condition.
+    
+ 
+components:
+  schemas:
+    TransactionConfirmation:
+      type: object
+      properties:
+        epoch_no:
+          type: integer
+          format: int32
+          description: epoch number in which transction was minted.
+        slot_no:
+          type: integer
+          description: slot number in which transaction was minted.
+        absolute_slot:
+          type: integer
+          description: absolute slot number in which transaction was minted
+        block_no:
+          type: integer
+          description: block number in which transaction was minted
+    Behind:
+      type: object
+      properties: 
+        behind_by: 
+          $ref: '#/components/schemas/SystemTime'
+
+    SyncPercentage:
+      type: object
+      properties:
+        sync_percentage:
+          type: number
+          format: float
+          description: "sync progression expressed in percents"
+    Meta:
+      type: object
+      properties:
+        id:
+          type: number
+          format: int64
+          description: "identifier of meta information" 
+        start_time:
+          $ref: '#/components/schemas/SystemTime'
+        version:
+          type: number
+          format: float
+          description: "db sync version"
+        network_name:
+          type: number
+          format: float
+          description: "network name db sync points to"
+    SystemTime:
+      type: object
+      properties:
+        secs_since_epoch:
+          type: integer
+          format: int32
+          description: seconds since epoch start represents date.
+        nanos_since_epoch:
+          type: integer
+          description: seconds since epoch start represents date.

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["_impl_query_id_for_fund_id","_impl_query_id_for_group_id","_impl_query_id_for_token_identifier"],"struct":["fund_id","group_id","star","token_identifier"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["arbitrary","external"],"struct":["ChallengeTemplate","FundTemplate","ProposalChallengeInfoTemplate","ProposalTemplate","ReviewTemplate"],"trait":["ValidVotingTemplateGenerator"]};

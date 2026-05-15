@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["delegations_exec","registration","voter_exec"],"struct":["DelegationsQuery","VotersQuery"]};

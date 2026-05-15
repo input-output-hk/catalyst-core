@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["PATH_TO_DYNAMIC_CONTENT"],"enum":["Error"],"struct":["Command"]};

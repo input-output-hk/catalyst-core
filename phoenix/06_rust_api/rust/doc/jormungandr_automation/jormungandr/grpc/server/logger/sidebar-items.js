@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["MethodType"],"struct":["ChannelReader","MockLogger"]};

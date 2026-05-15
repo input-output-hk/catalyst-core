@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error","FormatVariant"],"fn":["json_array_to_gtmpl","json_number_to_gtmpl","json_object_to_gtmpl","json_value_to_gtmpl"],"struct":["GtmplError","OutputFormat"]};

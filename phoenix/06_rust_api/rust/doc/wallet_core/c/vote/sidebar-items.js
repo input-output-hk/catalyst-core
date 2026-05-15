@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["proposal_new"],"struct":["ProposalPrivate","ProposalPublic","Settings"]};

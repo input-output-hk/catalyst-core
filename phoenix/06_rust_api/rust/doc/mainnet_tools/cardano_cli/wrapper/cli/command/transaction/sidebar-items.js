@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["build","id","sign","submit"],"struct":["Transaction"]};

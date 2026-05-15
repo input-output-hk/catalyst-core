@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["RATE_LIMIT_ENV_VAR"],"fn":["default_http_client"],"mod":["rate_limit","reqwest"],"struct":["HttpResponse"],"trait":["HttpClient"]};

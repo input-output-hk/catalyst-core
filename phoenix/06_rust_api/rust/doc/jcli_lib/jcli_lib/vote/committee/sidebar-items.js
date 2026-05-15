@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Committee"],"mod":["communication_key","member_key"]};
